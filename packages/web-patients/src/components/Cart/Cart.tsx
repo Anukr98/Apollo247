@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Typography, Tabs, Tab, CircularProgress } from '@material-ui/core';
 import Scrollbars from 'react-custom-scrollbars';
@@ -11,11 +11,17 @@ import { UploadPrescription } from 'components/Prescriptions/UploadPrescription'
 import { useShoppingCart } from 'components/MedicinesCartProvider';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ApplyCoupon } from 'components/Cart/ApplyCoupon';
-import { SAVE_MEDICINE_ORDER } from 'graphql/medicines';
+import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT_RESULT } from 'graphql/medicines';
 import { SaveMedicineOrder, SaveMedicineOrderVariables } from 'graphql/types/SaveMedicineOrder';
+import {
+  SaveMedicineOrderPayment,
+  SaveMedicineOrderPaymentVariables,
+} from 'graphql/types/SaveMedicineOrderPayment';
 import { Mutation } from 'react-apollo';
 import { MEDICINE_DELIVERY_TYPE } from 'graphql/types/globalTypes';
 import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
+import { PrescriptionCard } from 'components/Prescriptions/PrescriptionCard';
+import { useMutation } from 'react-apollo-hooks';
 
 // import { MedicineCard } from 'components/Medicine/MedicineCard';
 // import { EPrescriptionCard } from 'components/Prescriptions/EPrescriptionCard';
@@ -296,8 +302,18 @@ const TabContainer: React.FC = (props) => {
   return <Typography component="div">{props.children}</Typography>;
 };
 
+export interface PrescriptionFormat {
+  name: string | null;
+  imageUrl: string | null;
+}
+
 export const Cart: React.FC = (props) => {
   const classes = useStyles();
+
+  const defPresObject = {
+    name: '',
+    imageUrl: '',
+  };
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isUploadPreDialogOpen, setIsUploadPreDialogOpen] = React.useState<boolean>(false);
@@ -307,6 +323,36 @@ export const Cart: React.FC = (props) => {
   const [checkoutDialogOpen, setCheckoutDialogOpen] = React.useState<boolean>(false);
   const [paymentMethod, setPaymentMethod] = React.useState<string>('');
   const [mutationLoading, setMutationLoading] = useState(false);
+  const [prescriptionUploaded, setPrescriptionUploaded] = React.useState<PrescriptionFormat>(
+    defPresObject
+  );
+  const [prescriptions, setPrescriptions] = React.useState<PrescriptionFormat[]>([]);
+  const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
+  const [amountPaid, setAmountPaid] = React.useState<number>(0);
+
+  // const codPaymentMutation = useMutation<
+  //   SaveMedicineOrderPayment,
+  //   SaveMedicineOrderPaymentVariables
+  // >(SAVE_MEDICINE_ORDER_PAYMENT_RESULT, {
+  //   variables: {
+  //     medicinePaymentInput: {
+  //       orderAutoId: orderAutoId,
+  //       amountPaid: amountPaid,
+  //     },
+  //   },
+  // });
+
+  // console.log(prescriptions, '..........');
+
+  const removePrescription = (fileName: string) => {
+    setPrescriptions(prescriptions.filter((fileDetails) => fileDetails.name !== fileName));
+  };
+
+  useEffect(() => {
+    if (prescriptionUploaded.name !== '') {
+      setPrescriptions((prevValues) => [...prevValues, prescriptionUploaded]);
+    }
+  }, [prescriptionUploaded]);
 
   const { cartTotal, cartItems } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
@@ -360,6 +406,11 @@ export const Cart: React.FC = (props) => {
   //   paymentMethod
   // );
 
+  // console.log(
+  //   Array.prototype.map.call(prescriptions, (presDetails) => presDetails.imageUrl).toString(),
+  //   'pres data...........'
+  // );
+
   return (
     <div className={classes.root}>
       <div className={classes.leftSection}>
@@ -396,10 +447,30 @@ export const Cart: React.FC = (props) => {
                       </span>
                     </div>
                     <div className={classes.uploadPrescription}>
-                      <div className={classes.noPrescriptionUpload}>
-                        Some of your medicines require prescription to make a purchase. Please
-                        upload the necessary prescriptions.
-                      </div>
+                      {prescriptions.length > 0 ? (
+                        <>
+                          {prescriptions.map((prescriptionDetails, index) => {
+                            const fileName = prescriptionDetails.name;
+                            const imageUrl = prescriptionDetails.imageUrl;
+                            return (
+                              <PrescriptionCard
+                                fileName={fileName || ''}
+                                imageUrl={imageUrl || ''}
+                                removePrescription={(fileName: string) =>
+                                  removePrescription(fileName)
+                                }
+                                key={index}
+                              />
+                            );
+                          })}
+                        </>
+                      ) : (
+                        <div className={classes.noPrescriptionUpload}>
+                          Some of your medicines require prescription to make a purchase. Please
+                          upload the necessary prescriptions.
+                        </div>
+                      )}
+
                       {/* <EPrescriptionCard /> */}
                     </div>
                   </>
@@ -554,11 +625,13 @@ export const Cart: React.FC = (props) => {
                   estimatedAmount: parseFloat(totalAmount),
                   patientAddressId: deliveryMode === 'HOME' ? deliveryAddressId : '',
                   devliveryCharges: 0,
-                  prescriptionImageUrl: '',
+                  prescriptionImageUrl: Array.prototype.map
+                    .call(prescriptions, (presDetails) => presDetails.imageUrl)
+                    .toString(),
                   medicineDeliveryType:
                     deliveryMode === 'HOME'
                       ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
-                      : MEDICINE_DELIVERY_TYPE.STORE_PICK_UP,
+                      : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
                   patientId: currentPatient ? currentPatient.id : '',
                   items: cartItemsForApi,
                 },
@@ -569,6 +642,16 @@ export const Cart: React.FC = (props) => {
                 if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
                   const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&orderAutoId=${orderAutoId}&token=${authToken}`;
                   window.location.href = pgUrl;
+                } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
+                  setOrderAutoId(orderAutoId);
+                  setAmountPaid(amountPaid);
+                  // codPaymentMutation()
+                  //   .then((data) => {
+                  //     console.log(data, 'in mutation.......');
+                  //   })
+                  //   .catch(() => {
+                  //     window.alert('An error occurred while saving your order :(');
+                  //   });
                 }
               }}
               onError={(errorResponse) => {
@@ -596,8 +679,16 @@ export const Cart: React.FC = (props) => {
       </AphDialog>
 
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
+        <AphDialogClose onClick={() => setIsUploadPreDialogOpen(false)} />
         <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
-        <UploadPrescription />
+        <UploadPrescription
+          setPrescriptionUrls={(prescription) => {
+            setPrescriptionUploaded(prescription);
+          }}
+          closeDialog={() => {
+            setIsUploadPreDialogOpen(false);
+          }}
+        />
       </AphDialog>
 
       <AphDialog open={isApplyCouponDialogOpen} maxWidth="sm">

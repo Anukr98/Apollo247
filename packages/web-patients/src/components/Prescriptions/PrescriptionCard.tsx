@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { AphButton, AphLinearProgress } from '@aph/web-ui-components';
@@ -47,8 +47,33 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const PrescriptionCard: React.FC = (props) => {
+interface PrescriptionCardProps {
+  imageUrl: string;
+  fileName: string;
+  removePrescription: (fileName: string) => void;
+}
+
+export const PrescriptionCard: React.FC<PrescriptionCardProps> = (props) => {
   const classes = useStyles();
+  const [completed, setCompleted] = React.useState(0);
+
+  useEffect(() => {
+    function progress() {
+      setCompleted((oldCompleted) => {
+        if (oldCompleted === 100) {
+          /* this will stop animation once the progress bar reaches 100 */
+          return oldCompleted;
+        }
+        const diff = Math.random() * 10;
+        return Math.min(oldCompleted + diff, 100);
+      });
+    }
+    const timer = setInterval(progress, 500);
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
   return (
     <div className={classes.root}>
       <div className={classes.prescriptionGroup}>
@@ -56,18 +81,24 @@ export const PrescriptionCard: React.FC = (props) => {
           <img src={require('images/ic_prescription_thumbnail.png')} alt="" />
         </div>
         <div className={classes.fileInfo}>
-          IMG_20190726
+          <a href={props.imageUrl} target="_blank" title="Download Document">
+            {props.fileName}
+          </a>
           <AphLinearProgress
             color="secondary"
             variant="determinate"
             className={classes.progressRoot}
-            value={100}
+            value={completed}
           />
         </div>
       </div>
       <div className={classes.closeBtn}>
-        <AphButton>
-          <img src={require('images/ic_cross_onorange_small.svg')} alt="" />
+        <AphButton
+          onClick={() => {
+            props.removePrescription(props.fileName);
+          }}
+        >
+          <img src={require('images/ic_cross_onorange_small.svg')} alt="Remove Document" />
         </AphButton>
       </div>
     </div>

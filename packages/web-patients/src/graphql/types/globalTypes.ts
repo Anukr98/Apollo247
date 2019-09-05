@@ -24,6 +24,7 @@ export enum ConsultType {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   STAR_APOLLO = "STAR_APOLLO",
 }
@@ -36,13 +37,13 @@ export enum Gender {
 
 export enum MEDICINE_DELIVERY_TYPE {
   HOME_DELIVERY = "HOME_DELIVERY",
-  STORE_PICK_UP = "STORE_PICK_UP",
+  STORE_PICKUP = "STORE_PICKUP",
 }
 
 export enum MEDICINE_ORDER_PAYMENT_TYPE {
+  CASHLESS = "CASHLESS",
   COD = "COD",
   NO_PAYMENT = "NO_PAYMENT",
-  ONLINE = "ONLINE",
 }
 
 export enum MEDICINE_ORDER_STATUS {
@@ -151,7 +152,7 @@ export interface MedicineCartInput {
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  patientAddressId?: string | null;
+  patientAddressId: string;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
   items?: (MedicineCartItem | null)[] | null;
@@ -170,10 +171,10 @@ export interface MedicineCartItem {
 }
 
 export interface MedicinePaymentInput {
-  orderId?: string | null;
-  orderAutoId?: number | null;
-  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
-  amountPaid?: number | null;
+  orderId: string;
+  orderAutoId: number;
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  amountPaid: number;
   paymentRefId?: string | null;
   paymentStatus?: string | null;
   paymentDateTime?: any | null;

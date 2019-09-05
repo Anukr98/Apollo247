@@ -196,7 +196,7 @@ export const Checkout: React.FC<CheckOutProps> = (props) => {
                 label="Cash On Delivery"
                 onChange={() => {
                   setPaymentMethod('COD');
-                  props.setPaymentMethod('ONEAPOLLO');
+                  props.setPaymentMethod('COD');
                 }}
               />
             </li>
