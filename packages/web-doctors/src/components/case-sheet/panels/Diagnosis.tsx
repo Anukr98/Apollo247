@@ -27,7 +27,7 @@ interface OptionType {
 let suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
+  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
 
   return (
     <AphTextField
@@ -214,8 +214,6 @@ export const Diagnosis: React.FC = () => {
       suggestions!.map((item, idx) => {
         selectedValues!.map((val) => {
           if (item.name === val.name) {
-            console.log(item, val);
-
             const indexDelete = suggestions.indexOf(item);
             suggestions!.splice(indexDelete, 1);
           }
@@ -267,15 +265,15 @@ export const Diagnosis: React.FC = () => {
     return inputLength === 0
       ? []
       : suggestions.filter((suggestion) => {
-          const keep =
-            count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
+        const keep =
+          count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
 
-          if (keep) {
-            count += 1;
-          }
+        if (keep) {
+          count += 1;
+        }
 
-          return keep;
-        });
+        return keep;
+      });
   };
 
   function getSuggestionValue(suggestion: OptionType) {

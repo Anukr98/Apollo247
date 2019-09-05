@@ -37,7 +37,7 @@ let suggestions: OptionType[] = [
 // const suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
+  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
 
   return (
     <AphTextField
@@ -84,15 +84,15 @@ function getSuggestions(value: string) {
   return inputLength === 0
     ? []
     : suggestions.filter((suggestion) => {
-        const keep =
-          count < 5 && suggestion.instruction.slice(0, inputLength).toLowerCase() === inputValue;
+      const keep =
+        count < 5 && suggestion.instruction.slice(0, inputLength).toLowerCase() === inputValue;
 
-        if (keep) {
-          count += 1;
-        }
+      if (keep) {
+        count += 1;
+      }
 
-        return keep;
-      });
+      return keep;
+    });
 }
 
 function getSuggestionValue(suggestion: OptionType) {
