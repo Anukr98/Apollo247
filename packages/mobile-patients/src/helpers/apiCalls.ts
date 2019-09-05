@@ -124,7 +124,12 @@ export interface Store {
   message: string;
 }
 // 9f15bdd0fcd5423190c2e877ba0228A24
-const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
+// const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
+const config = {
+  AUTH_TOKEN: 'dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+  BASE_URL: 'http://13.126.95.18',
+  AUTH_TOKEN_OLD: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+};
 
 export const getQuoteId = async () =>
   (await AsyncStorage.getItem('QUOTE_ID')) || (await generateAndSaveQuoteId()); // in-progress, need to optimize
@@ -169,11 +174,11 @@ export const getMedicineDetailsApi = (
   productSku: string
 ): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
   return Axios.post(
-    `http://13.126.95.18/searchpdp_api.php`,
+    `${config.BASE_URL}/popcsrchpdp_api.php`,
     { params: productSku },
     {
       headers: {
-        Authorization: AUTH_TOKEN,
+        Authorization: config.AUTH_TOKEN,
       },
     }
   );
@@ -183,12 +188,11 @@ export const searchMedicineApi = (
   searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   return Axios.post(
-    // `http://uat.apollopharmacy.in/searchprd_api.php`,
-    `http://13.126.95.18/searchprd_api.php`,
+    `${config.BASE_URL}/popcsrchprd_api.php`,
     { params: searchText },
     {
       headers: {
-        Authorization: AUTH_TOKEN,
+        Authorization: config.AUTH_TOKEN,
         'Content-Type': 'application/json',
       },
     }
@@ -250,11 +254,11 @@ export const searchPickupStoresApi = async (
   pincode: string
 ): Promise<AxiosResponse<{ Stores: Store[]; stores_count: number }>> => {
   return Axios.post(
-    `http://13.126.95.18/searchpin_api.php`,
+    `${config.BASE_URL}/popcsrchpin_api.php`,
     { params: pincode },
     {
       headers: {
-        Authorization: AUTH_TOKEN,
+        Authorization: config.AUTH_TOKEN,
       },
     }
   );
@@ -276,7 +280,7 @@ export const pinCodeServiceabilityApi = (
     },
     {
       headers: {
-        Authorization: AUTH_TOKEN,
+        Authorization: config.AUTH_TOKEN_OLD,
       },
     }
   );

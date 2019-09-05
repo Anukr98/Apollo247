@@ -462,7 +462,7 @@ export const GET_CASESHEET_DETAILS = gql`
           name
         }
         diagnosticPrescription {
-          name
+          itemname
         }
         doctorId
         followUp
@@ -516,7 +516,6 @@ export const SAVE_DEVICE_TOKEN = gql`
 // export const END_APPOINTMENT_SESSION = gql`
 //   mutation endAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput!) {
 //     endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput) {
-
 //     }
 //   }
 // `;
@@ -535,10 +534,36 @@ export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
 export const SAVE_MEDICINE_ORDER = gql`
   mutation SaveMedicineOrder($MedicineCartInput: MedicineCartInput!) {
     SaveMedicineOrder(MedicineCartInput: $MedicineCartInput) {
-      status
       errorCode
       errorMessage
       orderId
+      orderAutoId
     }
   }
 `;
+
+export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
+  mutation SaveMedicineOrderPayment($medicinePaymentInput: MedicinePaymentInput!) {
+    SaveMedicineOrderPayment(medicinePaymentInput: $medicinePaymentInput) {
+      errorCode
+      errorMessage
+      # orderId
+      # orderAutoId
+    }
+  }
+`;
+
+// export const GET_MEDICINE_ORDERS_RESULT = gql`
+//   query GetMedicineOrdersList($patientId: String) {
+//     MedicineOrdersList(patientId: $patientId) {
+//       id
+//       orderAutoId
+//       deliveryType
+//       medicineOrdersStatus {
+//         id
+//         orderStatus
+//         statusDate
+//       }
+//     }
+//   }
+// `;
