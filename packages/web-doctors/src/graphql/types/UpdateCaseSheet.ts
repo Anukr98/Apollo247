@@ -20,7 +20,7 @@ export interface UpdateCaseSheet_updateCaseSheet_diagnosis {
 
 export interface UpdateCaseSheet_updateCaseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
-  name: string | null;
+  itemname: string | null;
 }
 
 export interface UpdateCaseSheet_updateCaseSheet_medicinePrescription {
