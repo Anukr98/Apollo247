@@ -27,7 +27,7 @@ interface OptionType {
 let suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
+  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
 
   return (
     <AphTextField
@@ -244,8 +244,15 @@ export const Diagnosis: React.FC = () => {
         variables: { searchString: value },
       })
       .then((_data: any) => {
-        console.log(_data!.data!.searchDiagnosis!);
-        suggestions = _data!.data!.searchDiagnosis!;
+        let filterVal: any = _data!.data!.searchDiagnosis!
+        filterVal.forEach((val: any, index: any) => {
+          selectedValues!.forEach((selectedval: any) => {
+            if (val.name === selectedval.name) {
+              filterVal.splice(index, 1)
+            }
+          });
+        });
+        suggestions = filterVal
         setSearchInput(value);
       })
       .catch((e) => {
@@ -260,15 +267,15 @@ export const Diagnosis: React.FC = () => {
     return inputLength === 0
       ? []
       : suggestions.filter((suggestion) => {
-          const keep =
-            count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
+        const keep =
+          count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
 
-          if (keep) {
-            count += 1;
-          }
+        if (keep) {
+          count += 1;
+        }
 
-          return keep;
-        });
+        return keep;
+      });
   };
 
   function getSuggestionValue(suggestion: OptionType) {
@@ -294,7 +301,7 @@ export const Diagnosis: React.FC = () => {
   };
   const handleDelete = (item: any, idx: number) => {
     console.log(item);
-    suggestions.splice(0, 0, item);
+    // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();

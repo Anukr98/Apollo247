@@ -29,7 +29,7 @@ interface OptionType {
 let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
+  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
 
   return (
     <AphTextField
@@ -216,8 +216,17 @@ export const DiagnosticPrescription: React.FC = () => {
         variables: { searchString: value },
       })
       .then((_data: any) => {
-        console.log(_data!.data!.searchDiagnostic!);
-        suggestions = _data!.data!.searchDiagnostic!;
+        // console.log(_data!.data!.searchDiagnostic!);
+        // suggestions = _data!.data!.searchDiagnostic!;
+        let filterVal: any = _data!.data!.searchDiagnostic!
+        filterVal.forEach((val: any, index: any) => {
+          selectedValues!.forEach((selectedval: any) => {
+            if (val.name === selectedval.name) {
+              filterVal.splice(index, 1)
+            }
+          });
+        });
+        suggestions = filterVal
         setSearchInput(value);
       })
       .catch((e) => {
@@ -232,17 +241,17 @@ export const DiagnosticPrescription: React.FC = () => {
     return inputLength === 0
       ? []
       : suggestions.filter((suggestion) => {
-          const keep =
-            count < 5 &&
-            suggestion !== null &&
-            suggestion.itemname!.slice(0, inputLength).toLowerCase() === inputValue;
+        const keep =
+          count < 5 &&
+          suggestion !== null &&
+          suggestion.itemname!.slice(0, inputLength).toLowerCase() === inputValue;
 
-          if (keep) {
-            count += 1;
-          }
+        if (keep) {
+          count += 1;
+        }
 
-          return keep;
-        });
+        return keep;
+      });
   };
 
   function getSuggestionValue(suggestion: OptionType | null) {
@@ -297,8 +306,7 @@ export const DiagnosticPrescription: React.FC = () => {
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
   const handleDelete = (item: any, idx: number) => {
-    console.log(item);
-    suggestions.splice(0, 0, item);
+    // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
