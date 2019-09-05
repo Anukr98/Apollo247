@@ -113,6 +113,11 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#f7f7f7',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
     },
+    loading: {
+      position: 'absolute',
+      left: '50%',
+      top: '35%',
+    },
     tabBar: {
       backgroundColor: 'transparent',
       color: theme.palette.secondary.dark,
@@ -356,7 +361,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
           )}
           {loading ? (
             <Typography variant="h4">
-              <CircularProgress />
+              <CircularProgress className={classes.loading} />
             </Typography>
           ) : (
             <div>
