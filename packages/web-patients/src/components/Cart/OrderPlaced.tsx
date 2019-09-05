@@ -3,6 +3,7 @@ import { Theme, Typography } from '@material-ui/core';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import { AphCheckbox } from 'components/AphCheckbox';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -104,14 +105,14 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
         <Typography variant="h2">yay!</Typography>
         <p>Your orders have been placed successfully</p>
         <div className={classes.orderPlaced}>
-          <div className={classes.orderHeader}>
+          {/* <div className={classes.orderHeader}>
             <div className={classes.medicineName}>
               <span className={classes.medicineIcon}>
                 <img src={require('images/ic_tablets.svg')} alt="" />
               </span>
               <span>Medicines</span>
             </div>
-            <div className={classes.invoiceNo}>#A2472707936</div>
+            <div className={classes.invoiceNo}>#{props.orderId}</div>
           </div>
           <div className={classes.orderBody}>Delivery By: 27 July 2019</div>
           <div className={classes.remindMe}>
@@ -119,10 +120,15 @@ export const OrderPlaced: React.FC<OrderPlacedProps> = (props) => {
             <span>
               <AphCheckbox />
             </span>
-          </div>
+          </div> */}
           <div className={classes.bottomActions}>
             <AphButton>View Invoice</AphButton>
-            <AphButton className={classes.trackBtn}>Track Order</AphButton>
+            <AphButton
+              className={classes.trackBtn}
+              onClick={() => (window.location.href = clientRoutes.yourOrders())}
+            >
+              Track Order
+            </AphButton>
           </div>
         </div>
       </div>

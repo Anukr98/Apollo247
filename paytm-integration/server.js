@@ -41,8 +41,10 @@ app.get('/paymed', (req, res) => {
 app.post('/paymed-response', (req, res) => {
   const payload = req.body;
   const token = req.session.token;
-  const date = new Date(new Date().toUTCString());
+  const date = new Date().toUTCString();
   const orderAutoId = payload.ORDERID;
+
+  // console.log('payload is....', payload);
 
   /* make success and failure response */
   const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';
@@ -72,6 +74,7 @@ app.post('/paymed-response', (req, res) => {
   axios
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
+      console.log(response);
       const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${orderAutoId}&status=${transactionStatus}`;
       res.redirect(redirectUrl);
     })
