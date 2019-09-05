@@ -9,7 +9,7 @@ export const getNotificationsTypeDefs = gql`
     messageId: String
   }
 
-  type PushNotificationSuccessMessaage {
+  type PushNotificationSuccessMessage {
     results: [PushNotificationMessage]
     canonicalRegistrationTokenCount: Int
     failureCount: Int
@@ -32,7 +32,7 @@ export const getNotificationsTypeDefs = gql`
   extend type Query {
     sendPushNotification(
       pushNotificationInput: PushNotificationInput
-    ): PushNotificationSuccessMessaage
+    ): PushNotificationSuccessMessage
   }
 `;
 
@@ -40,7 +40,7 @@ type PushNotificationMessage = {
   messageId: string;
 };
 
-type PushNotificationSuccessMessaage = {
+export type PushNotificationSuccessMessage = {
   results: PushNotificationMessage[];
   canonicalRegistrationTokenCount: number;
   failureCount: number;
@@ -62,12 +62,7 @@ type PushNotificationInput = {
 
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
 
-const sendPushNotification: Resolver<
-  null,
-  PushNotificationInputArgs,
-  {},
-  PushNotificationMessage | undefined
-> = async (parent, { pushNotificationInput }, {}) => {
+export async function sendNotification(pushNotificationInput: PushNotificationInput) {
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
     databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
@@ -100,6 +95,15 @@ const sendPushNotification: Resolver<
     });
 
   return notificationResponse;
+}
+
+const sendPushNotification: Resolver<
+  null,
+  PushNotificationInputArgs,
+  {},
+  PushNotificationSuccessMessage | undefined
+> = async (parent, { pushNotificationInput }, {}) => {
+  return sendNotification(pushNotificationInput);
 };
 export const getNotificationsResolvers = {
   Query: { sendPushNotification },
