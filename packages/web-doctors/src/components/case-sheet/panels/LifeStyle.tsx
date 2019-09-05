@@ -44,15 +44,11 @@ export const LifeStyle: React.FC = () => {
     <Typography component="div" className={classes.container}>
       {patientDetails &&
       patientDetails!.familyHistory &&
-      patientDetails!.familyHistory !== null &&
       patientDetails!.familyHistory.length > 0 &&
       patientDetails!.lifeStyle &&
-      patientDetails!.lifeStyle !== null &&
       patientDetails!.lifeStyle.length > 0 &&
       patientDetails!.allergies &&
-      patientDetails!.allergies !== null ? (
-        <div>No data available</div>
-      ) : (
+      patientDetails!.allergies.length > 0 ? (
         <div>
           {patientDetails &&
             patientDetails!.familyHistory &&
@@ -119,6 +115,8 @@ export const LifeStyle: React.FC = () => {
             </Typography>
           )}
         </div>
+      ) : (
+        <span>No data Found</span>
       )}
       {/* {data.map((item, idx) => (
         <Typography key={idx} className={classes.column} component="div">

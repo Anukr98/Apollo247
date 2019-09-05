@@ -8,6 +8,11 @@ import {
   getSearchesTypeDefs,
   getSearchesResolvers,
 } from 'notifications-service/resolvers/getSearches';
+
+import {
+  getNotificationsTypeDefs,
+  getNotificationsResolvers,
+} from 'notifications-service/resolvers/notifications';
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 //import { AppointmentPayload } from 'types/appointmentTypes';
 //import { bookAppointmentApollo } from 'notifications-service/bookAppointmentApollo';
@@ -21,6 +26,10 @@ import { connect } from 'consults-service/database/connect';
       {
         typeDefs: getSearchesTypeDefs,
         resolvers: getSearchesResolvers,
+      },
+      {
+        typeDefs: getNotificationsTypeDefs,
+        resolvers: getNotificationsResolvers,
       },
     ]),
   });
