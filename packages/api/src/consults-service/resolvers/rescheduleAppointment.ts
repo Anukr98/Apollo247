@@ -15,7 +15,7 @@ import { RescheduleAppointmentRepository } from 'consults-service/repositories/r
 import {
   sendNotification,
   NotificationPriority,
-  PushNotificationSuccessMessaage,
+  PushNotificationSuccessMessage,
 } from 'notifications-service/resolvers/notifications';
 import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 
@@ -84,7 +84,7 @@ export const rescheduleAppointmentTypeDefs = gql`
 type RescheduleAppointmentResult = {
   rescheduleAppointment: RescheduleAppointment;
   rescheduleCount: number;
-  notificationResult: PushNotificationSuccessMessaage | undefined;
+  notificationResult: PushNotificationSuccessMessage | undefined;
 };
 
 type RescheduleAppointment = {

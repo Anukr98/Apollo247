@@ -9,7 +9,7 @@ export const getNotificationsTypeDefs = gql`
     messageId: String
   }
 
-  type PushNotificationSuccessMessaage {
+  type PushNotificationSuccessMessage {
     results: [PushNotificationMessage]
     canonicalRegistrationTokenCount: Int
     failureCount: Int
@@ -32,7 +32,7 @@ export const getNotificationsTypeDefs = gql`
   extend type Query {
     sendPushNotification(
       pushNotificationInput: PushNotificationInput
-    ): PushNotificationSuccessMessaage
+    ): PushNotificationSuccessMessage
   }
 `;
 
@@ -40,7 +40,7 @@ type PushNotificationMessage = {
   messageId: string;
 };
 
-export type PushNotificationSuccessMessaage = {
+export type PushNotificationSuccessMessage = {
   results: PushNotificationMessage[];
   canonicalRegistrationTokenCount: number;
   failureCount: number;
@@ -101,7 +101,7 @@ const sendPushNotification: Resolver<
   null,
   PushNotificationInputArgs,
   {},
-  PushNotificationSuccessMessaage | undefined
+  PushNotificationSuccessMessage | undefined
 > = async (parent, { pushNotificationInput }, {}) => {
   return sendNotification(pushNotificationInput);
 };
