@@ -139,11 +139,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-type Params = { appointmentId: string };
+type Params = { appointmentId: string; consultscount: string };
 export const PatientLogDetailsPage: React.FC = () => {
   const classes = useStyles();
   const params = useParams<Params>();
   const appointmentId = params.appointmentId;
+  const consultscount = params.consultscount;
   const [expanded, setExpanded] = useState<string | boolean>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [
@@ -183,7 +184,7 @@ export const PatientLogDetailsPage: React.FC = () => {
     <div className={classes.container}>
       <div className={classes.caseSheet}>
         <section className={`${classes.column} ${classes.right}`}>
-          <PatientDetailsUserCard patientDetails={patientDetails} />
+          <PatientDetailsUserCard patientDetails={patientDetails} consultscount={consultscount} />
         </section>
         <section className={classes.column}>
           {/* Patient Health Vault Panel */}

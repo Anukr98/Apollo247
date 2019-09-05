@@ -41,7 +41,7 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.PatientLog()} component={PatientLog} />
       <AuthRouted
         exact
-        path={clientRoutes.PatientLogDetailsPage(':appointmentId')}
+        path={clientRoutes.PatientLogDetailsPage(':appointmentId', ':consultscount')}
         component={PatientLogDetailsPage}
       />
       <AuthRouted
@@ -57,7 +57,7 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.calendar()} component={Calendar} />
       <AuthRouted
         exact
-        path={clientRoutes.PatientLogDetailsPage(':appointmentId')}
+        path={clientRoutes.PatientLogDetailsPage(':appointmentId', ':consultscount')}
         component={PatientLogDetailsPage}
       />
       <AuthRouted

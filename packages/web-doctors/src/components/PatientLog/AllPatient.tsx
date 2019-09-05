@@ -163,8 +163,11 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         {/* <img src={require('images/ic_chat_circle.svg')} alt="msgicon" /> */}
                         Chat
                       </span>
+                      {console.log(patient.consultscount)}
                       <div className={classes.section2}>
-                        <Link to={`/patientlogdetailspage/${patient.appointmentids[0]}`}>
+                        <Link
+                          to={`/patientlogdetailspage/${patient.appointmentids[0]}/${patient.consultscount}`}
+                        >
                           <IconButton aria-label="Navigate next">
                             <NavigateNextIcon />
                           </IconButton>
