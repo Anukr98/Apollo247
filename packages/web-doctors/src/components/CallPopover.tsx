@@ -925,11 +925,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <Button
               className={classes.consultButton}
-              // disabled={
-              //   startAppointmentButton ||
-              //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-              //     appointmentInfo!.status !== STATUS.PENDING)
-              // }
+              disabled={
+                startAppointmentButton ||
+                (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  appointmentInfo!.status !== STATUS.PENDING)
+              }
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();
