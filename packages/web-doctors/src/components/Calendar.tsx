@@ -4,6 +4,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import ToggleButton from '@material-ui/lab/ToggleButton';
+import moment from 'moment';
 import { Week as WeekView } from 'components/Calendar/Views/Week';
 import { Month as MonthView } from 'components/Calendar/Views/Month';
 import { GET_DOCTOR_APPOINTMENTS } from 'graphql/appointments';
@@ -178,6 +179,8 @@ export const Calendar: React.FC = () => {
   const classes = useStyles();
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [viewSelection, setViewSelection] = useState<string>('day');
+  const [monthSelected, setMonthSelected] = useState<string>(moment(today).format('MMMM'));
+  //console.log(moment(today).format('MMMM'));
   const [range, setRange] = useState<{ start: string | Date; end: string | Date }>(
     viewSelection === 'day'
       ? getRange(selectedDate)
@@ -188,10 +191,10 @@ export const Calendar: React.FC = () => {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
 
-  const setStartOfMonthDate = ({ start }: { start: string | Date; end: string | Date }) => {
+  const setStartOfMonthDate = ({ start, end }: { start: string | Date; end: string | Date }) => {
+    //setMonthSelected(moment(selectedDate).format('MMMM'));
     setSelectedDate(startOfMonth(start as Date));
   };
-
   const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
     variables: {
       startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
@@ -209,10 +212,16 @@ export const Calendar: React.FC = () => {
           <Typography variant="h1">
             {currentPatient && `hello dr. ${(currentPatient!.lastName || '').toLowerCase()} :)`}
           </Typography>
-          <p>
-            here’s your schedule for {isToday(selectedDate) ? 'today, ' : ''}{' '}
-            {format(selectedDate, isToday(selectedDate) ? 'dd MMM yyyy' : 'MMM, dd')}
-          </p>
+          {viewSelection === 'day' ? (
+            <p>
+              {`here’s your schedule for ${isToday(selectedDate) ? 'today, ' : ''} ${format(
+                selectedDate,
+                isToday(selectedDate) ? 'dd MMM yyyy' : 'MMM, dd'
+              )}`}
+            </p>
+          ) : (
+            <p>here’s your schedule for {monthSelected}</p>
+          )}
         </div>
         <div>
           <div>
@@ -233,6 +242,7 @@ export const Calendar: React.FC = () => {
                 onClick={() => {
                   setViewSelection('month');
                   setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
+                  setMonthSelected(moment(selectedDate).format('MMMM'));
                 }}
               >
                 Month
@@ -254,7 +264,11 @@ export const Calendar: React.FC = () => {
             <MonthView
               data={data}
               date={selectedDate}
+              onMonthSelected={(month: string) => {
+                setMonthSelected(month);
+              }}
               onMonthChange={(range) => {
+                //console.log(range);
                 setStartOfMonthDate(range as { start: string; end: string });
                 setRange(getMonthRange(range as { start: string; end: string }));
               }}

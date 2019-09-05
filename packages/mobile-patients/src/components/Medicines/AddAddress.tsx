@@ -135,7 +135,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         <TextInputComponent
           value={phoneNumber}
           onChangeText={(phoneNumber) =>
-            /^[6-9]{1}\d{0,9}$/.test(phoneNumber) && setphoneNumber(phoneNumber)
+            (phoneNumber == '' || /^[6-9]{1}\d{0,9}$/.test(phoneNumber)) &&
+            setphoneNumber(phoneNumber)
           }
           placeholder={'Phone Number'}
           maxLength={10}

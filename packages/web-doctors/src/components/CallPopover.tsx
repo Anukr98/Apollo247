@@ -464,7 +464,7 @@ let transferObject: any = {
 };
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
-  const { loading, appointmentInfo, caseSheetId } = useContext(CaseSheetContext);
+  const { loading, appointmentInfo, caseSheetId, followUpDate } = useContext(CaseSheetContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -482,7 +482,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
-  console.log(appointmentInfo!.status);
   const [anchorElThreeDots, setAnchorElThreeDots] = React.useState(null);
   const [selectedDoctor, setSelectedDoctor] = useState<any>('');
   const [errorState, setErrorState] = React.useState<errorObject>({
@@ -617,7 +616,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     clearError();
   };
   const handleDoctorClick = (value: any) => {
-    console.log(value);
     setIsDoctorOrSpeciality(false);
     setSearchKeyword(value.firstName + ' ' + value.lastName);
     setSelectedDoctor(value.firstName + ' ' + value.lastName);
@@ -626,10 +624,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       transferDateTime: '',
       photoUrl: value.photoUrl,
       doctorId: value.id,
-      specialtyId: value.speciality.id,
+      specialtyId: value.specialty.id,
       doctorName: value.firstName + ' ' + value.lastName,
       experience: value.experience,
-      specilty: value.speciality.name,
+      specilty: value.specialty.name,
       facilityId: value!.doctorHospital[0]!.facility.id,
       transferId: '',
     };
@@ -663,6 +661,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const stopConsult = '^^#stopconsult';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
+  const followupconsult = '^^#followupconsult';
   const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
@@ -716,6 +715,31 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status, response) => {}
     );
+    if (
+      followUpDate &&
+      followUpDate.length > 0 &&
+      followUpDate[0] !== null &&
+      followUpDate[0] !== ''
+    ) {
+      const folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
+      const followupObj: any = {
+        appointmentId: props.appointmentId,
+        folloupDateTime: folloupDateTime,
+        doctorId: props.doctorId,
+      };
+      pubnub.publish(
+        {
+          message: {
+            id: props.doctorId,
+            message: followupconsult,
+            transferInfo: followupObj,
+          },
+          channel: channel,
+          storeInHistory: true,
+        },
+        (status, response) => {}
+      );
+    }
   };
   const transferConsultAction = () => {
     if (isEmpty(reason)) {

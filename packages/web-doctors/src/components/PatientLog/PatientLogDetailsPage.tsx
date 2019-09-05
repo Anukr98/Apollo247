@@ -16,6 +16,9 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
   GetCaseSheet_getCaseSheet_pastAppointments,
 } from 'graphql/types/GetCaseSheet';
+import { Link } from 'react-router-dom';
+import Grid from '@material-ui/core/Grid';
+import { Header } from 'components/Header';
 import { PatientDetailLifeStyle } from 'components/PatientLog/PatientDetailPanels/PatientDetailLifeStyle';
 import { PastConsultation } from 'components/PatientLog/PatientDetailPanels/PastConsultation';
 import { PatientDetailsUserCard } from 'components/PatientLog/PatientDetailsUserCard';
@@ -26,6 +29,10 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     container: {
       padding: 20,
+      maxWidth: 1064,
+      margin: 'auto',
+      backgroundColor: '#f7f7f7',
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
     },
     caseSheet: {
       minHeight: 'calc(100vh - 360px)',
@@ -137,6 +144,68 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 500,
     },
+    headerSticky: {
+      position: 'fixed',
+      width: '100%',
+      zIndex: 999,
+      top: 0,
+    },
+    blackArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up(1220)]: {
+        display: 'none',
+      },
+    },
+    root: {},
+    breadcrumbs: {
+      marginLeft: 20,
+      marginRight: 20,
+      fontSize: 13,
+      padding: '35px 20px',
+      fontWeight: 600,
+      color: '#02475b',
+      textTransform: 'uppercase',
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      lineHeight: 1.86,
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        zIndex: 2,
+        top: 0,
+        width: '100%',
+        backgroundColor: theme.palette.common.white,
+        margin: 0,
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingBottom: 20,
+        boxShadow: '0 2px 10px 0 rgba(0, 0, 0, 0.1)',
+      },
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    backArrow: {
+      cursor: 'pointer',
+      marginRight: 50,
+      [theme.breakpoints.up(1220)]: {
+        position: 'absolute',
+        left: -105,
+        top: 60,
+        width: 48,
+        height: 48,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
+    },
   };
 });
 type Params = { appointmentId: string; consultscount: string };
@@ -181,52 +250,80 @@ export const PatientLogDetailsPage: React.FC = () => {
   }, [appointmentId]);
 
   return (
-    <div className={classes.container}>
-      <div className={classes.caseSheet}>
-        <section className={`${classes.column} ${classes.right}`}>
-          <PatientDetailsUserCard patientDetails={patientDetails} consultscount={consultscount} />
-        </section>
-        <section className={classes.column}>
-          {/* Patient Health Vault Panel */}
-          <ExpansionPanel expanded={true} className={classes.expandIcon}>
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Past Consultations</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              {casesheetInfo &&
-                casesheetInfo.getCaseSheet &&
-                casesheetInfo.getCaseSheet.pastAppointments && (
-                  <PastConsultation
-                    pastAppointments={
-                      casesheetInfo &&
-                      casesheetInfo.getCaseSheet &&
-                      casesheetInfo.getCaseSheet.pastAppointments
-                    }
-                  />
-                )}
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
+    <div className={classes.root}>
+      <div className={classes.headerSticky}>
+        <Header />
+      </div>
 
-          {/* Patient History & Lifestyle Panel */}
-          <ExpansionPanel
-            expanded={expanded === 'lifestyle'}
-            onChange={handlePanelExpansion('lifestyle')}
-            className={classes.expandIcon}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Patient History &amp; Lifestyle</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <PatientDetailLifeStyle patientDetails={patientDetails} />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-          {/* Patient Health Vault */}
-          <ExpansionPanel className={classes.expandIcon}>
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Patient Health Vault</Typography>
-            </ExpansionPanelSummary>
-          </ExpansionPanel>
-        </section>
+      <div className={classes.container}>
+        <div className={classes.breadcrumbs}>
+          <div>
+            <Link to="/patientlog">
+              <div className={classes.backArrow}>
+                <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+              </div>
+            </Link>
+          </div>
+        </div>
+        <div className={classes.caseSheet}>
+          <Grid container alignItems="flex-start" spacing={0}>
+            <Grid item lg={4} sm={6} xs={12}>
+              <section className={`${classes.column} ${classes.right}`}>
+                <PatientDetailsUserCard
+                  patientDetails={patientDetails}
+                  consultscount={consultscount}
+                />
+              </section>
+            </Grid>
+            <Grid item lg={8} sm={6} xs={12}>
+              <section className={classes.column}>
+                {/* Patient Health Vault Panel */}
+                <ExpansionPanel expanded={true} className={classes.expandIcon}>
+                  <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography variant="h3">Past Consultations</Typography>
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails>
+                    {casesheetInfo &&
+                      casesheetInfo.getCaseSheet &&
+                      casesheetInfo.getCaseSheet.pastAppointments && (
+                        <PastConsultation
+                          pastAppointments={
+                            casesheetInfo &&
+                            casesheetInfo.getCaseSheet &&
+                            casesheetInfo.getCaseSheet.pastAppointments
+                          }
+                        />
+                      )}
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+
+                {/* Patient History & Lifestyle Panel */}
+                <ExpansionPanel
+                  expanded={expanded === 'lifestyle'}
+                  onChange={handlePanelExpansion('lifestyle')}
+                  className={classes.expandIcon}
+                >
+                  <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography variant="h3">Patient History &amp; Lifestyle</Typography>
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails>
+                    <PatientDetailLifeStyle patientDetails={patientDetails} />
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+                {/* Patient Health Vault */}
+                <ExpansionPanel className={classes.expandIcon}>
+                  <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography variant="h3">Patient Health Vault</Typography>
+                  </ExpansionPanelSummary>
+                  <ExpansionPanelDetails>
+                    <span>No data Found</span>
+                  </ExpansionPanelDetails>
+                </ExpansionPanel>
+              </section>
+            </Grid>
+          </Grid>
+        </div>
       </div>
     </div>
   );

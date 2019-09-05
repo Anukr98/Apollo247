@@ -309,8 +309,8 @@ export const Prescriptions: React.FC = (props) => {
               <span className={classes.count}>02</span>
             </div>
             <div className={classes.pastSearches}>
-              <PrescriptionCard />
-              <PrescriptionCard />
+              {/* <PrescriptionCard />
+              <PrescriptionCard /> */}
             </div>
             <div className={classes.sectionHeader}>
               <span>Prescriptions From Health Records</span>
@@ -361,7 +361,7 @@ export const Prescriptions: React.FC = (props) => {
       </AphDialog>
       <AphDialog open={isUploadPreDialogOpen} maxWidth="sm">
         <AphDialogTitle>Upload Prescription(s)</AphDialogTitle>
-        <UploadPrescription />
+        {/* <UploadPrescription /> */}
       </AphDialog>
       <AphDialog open={isScheduleCallDialogOpen} maxWidth="sm">
         <AphDialogTitle>Schedule Confirmation Call</AphDialogTitle>

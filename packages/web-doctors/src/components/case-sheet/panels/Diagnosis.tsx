@@ -214,8 +214,6 @@ export const Diagnosis: React.FC = () => {
       suggestions!.map((item, idx) => {
         selectedValues!.map((val) => {
           if (item.name === val.name) {
-            console.log(item, val);
-
             const indexDelete = suggestions.indexOf(item);
             suggestions!.splice(indexDelete, 1);
           }
@@ -244,8 +242,15 @@ export const Diagnosis: React.FC = () => {
         variables: { searchString: value },
       })
       .then((_data: any) => {
-        console.log(_data!.data!.searchDiagnosis!);
-        suggestions = _data!.data!.searchDiagnosis!;
+        let filterVal: any = _data!.data!.searchDiagnosis!;
+        filterVal.forEach((val: any, index: any) => {
+          selectedValues!.forEach((selectedval: any) => {
+            if (val.name === selectedval.name) {
+              filterVal.splice(index, 1);
+            }
+          });
+        });
+        suggestions = filterVal;
         setSearchInput(value);
       })
       .catch((e) => {
@@ -294,7 +299,7 @@ export const Diagnosis: React.FC = () => {
   };
   const handleDelete = (item: any, idx: number) => {
     console.log(item);
-    suggestions.splice(0, 0, item);
+    // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();

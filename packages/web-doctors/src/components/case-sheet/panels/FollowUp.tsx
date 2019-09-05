@@ -348,7 +348,11 @@ export const FollowUp: React.FC = () => {
                       variant="inline"
                       format="dd/MM/yyyy"
                       value={selectedDate}
-                      InputAdornmentProps={{ position: 'end' }}
+                      minDate={new Date()}
+                      onKeyPress={(e) => {
+                        if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+                      }}
+                      // InputAdornmentProps={{ position: 'end' }}
                       onChange={(date) => handleDateChange((date as unknown) as Date)}
                     />
                   </ThemeProvider>

@@ -335,8 +335,9 @@ export const ConsultTabs: React.FC = () => {
             diagnosticPrescription:
               diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
             followUp: followUp[0],
-            followUpDate: followUp[0] ? followUpDate[0] : '',
-            followUpAfterInDays: followUp[0] ? followUpAfterInDays[0] : null,
+            followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
+            followUpAfterInDays:
+              followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
             otherInstructions:
               otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
             medicinePrescription:

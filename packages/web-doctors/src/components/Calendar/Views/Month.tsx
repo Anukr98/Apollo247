@@ -205,6 +205,7 @@ const eventsAdapter = (data: GetDoctorAppointments) => {
 export interface MonthProps {
   data: GetDoctorAppointments;
   date: Date;
+  onMonthSelected(month: string): void;
   onMonthChange: (range: Date[] | { start: string | Date; end: string | Date }) => void;
 }
 
@@ -225,7 +226,7 @@ const Toolbar = (toolbar: ToolbarProps) => {
   );
 };
 
-export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
+export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange, onMonthSelected }) => {
   const classes = useStyles();
   const [events, setEvents] = useState<MonthEvent[]>(eventsAdapter(data));
   const [selectedDate, setSelectedDate] = useState(date);
@@ -241,6 +242,7 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
         onClick={() => {
           setSelectedDate(startOfToday());
           onMonthChange({ start: startOfMonth(startOfToday()), end: endOfMonth(startOfToday()) });
+          onMonthSelected(moment(startOfToday()).format('MMMM'));
         }}
       >
         <img src={require('images/ic_calendar.svg')} alt="" />
@@ -254,6 +256,7 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange }) => {
           onRangeChange={(range) => onMonthChange(range)}
           components={{ toolbar: Toolbar }}
           onNavigate={(date) => {
+            onMonthSelected(moment(date).format('MMMM'));
             setSelectedDate(moment(date).toDate());
           }}
         />

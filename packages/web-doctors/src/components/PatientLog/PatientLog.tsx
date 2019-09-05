@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Theme, MenuItem } from '@material-ui/core';
+import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
 import { makeStyles, withStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
@@ -112,6 +112,11 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
       backgroundColor: '#f7f7f7',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+    },
+    loading: {
+      position: 'absolute',
+      left: '50%',
+      top: '35%',
     },
     tabBar: {
       backgroundColor: 'transparent',
@@ -356,7 +361,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
           )}
           {loading ? (
             <Typography variant="h4">
-              <span>Loading....</span>
+              <CircularProgress className={classes.loading} />
             </Typography>
           ) : (
             <div>
