@@ -36,7 +36,7 @@ let suggestions: OptionType[] = [
 ];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
+  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
     <AphTextField
@@ -447,15 +447,15 @@ export const MedicinePrescription: React.FC = () => {
     return inputLength === 0
       ? []
       : suggestions.filter((suggestion) => {
-        const keep =
-          count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
+          const keep =
+            count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
 
-        if (keep) {
-          count += 1;
-        }
+          if (keep) {
+            count += 1;
+          }
 
-        return keep;
-      });
+          return keep;
+        });
   }
   const fetchMedicines = async (value: any) => {
     setLoading(true);
@@ -665,7 +665,11 @@ export const MedicinePrescription: React.FC = () => {
       setErrorState({ ...errorState, daySlotErr: true, tobeTakenErr: false, durationErr: false });
     } else if (isTobeTakenSelected.length === 0) {
       setErrorState({ ...errorState, tobeTakenErr: true, daySlotErr: false, durationErr: false });
-    } else if (isEmpty(trim(consumptionDuration)) || isNaN(Number(consumptionDuration)) || Number(consumptionDuration) < 1) {
+    } else if (
+      isEmpty(trim(consumptionDuration)) ||
+      isNaN(Number(consumptionDuration)) ||
+      Number(consumptionDuration) < 1
+    ) {
       setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
     } else {
       setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
@@ -868,129 +872,129 @@ export const MedicinePrescription: React.FC = () => {
                 </div>
               </div>
             ) : (
+              <div>
                 <div>
-                  <div>
-                    <div className={classes.dialogContent}>
-                      <div>
-                        <h6>Dosage</h6>
-                        <div className={classes.numberTablets}>
-                          <img
-                            src={require('images/ic_minus.svg')}
-                            alt="removeBtn"
-                            onClick={() => {
-                              if (tabletsCount > 1) {
-                                setTabletsCount(tabletsCount - 1);
-                              }
-                            }}
-                          />
-                          <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
-                          <img
-                            src={require('images/ic_plus.svg')}
-                            alt="addbtn"
-                            onClick={() => {
-                              if (tabletsCount > 0 && tabletsCount < 5) {
-                                setTabletsCount(tabletsCount + 1);
-                              }
-                            }}
-                          />
-                        </div>
+                  <div className={classes.dialogContent}>
+                    <div>
+                      <h6>Dosage</h6>
+                      <div className={classes.numberTablets}>
+                        <img
+                          src={require('images/ic_minus.svg')}
+                          alt="removeBtn"
+                          onClick={() => {
+                            if (tabletsCount > 1) {
+                              setTabletsCount(tabletsCount - 1);
+                            }
+                          }}
+                        />
+                        <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
+                        <img
+                          src={require('images/ic_plus.svg')}
+                          alt="addbtn"
+                          onClick={() => {
+                            if (tabletsCount > 0 && tabletsCount < 5) {
+                              setTabletsCount(tabletsCount + 1);
+                            }
+                          }}
+                        />
                       </div>
-                      <div>
-                        <h6>Time of the Day</h6>
-                        <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                        {errorState.daySlotErr && (
+                    </div>
+                    <div>
+                      <h6>Time of the Day</h6>
+                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                      {errorState.daySlotErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.daySlotErr}
+                        >
+                          Please select to be day slot.
+                        </FormHelperText>
+                      )}
+                    </div>
+                    <div>
+                      <h6>To be taken</h6>
+                      <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                      {errorState.tobeTakenErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.tobeTakenErr}
+                        >
+                          Please select to be taken.
+                        </FormHelperText>
+                      )}
+                    </div>
+                    <div>
+                      <h6>Duration of Consumption(In days)</h6>
+                      <div className={classes.numberTablets}>
+                        <AphTextField
+                          placeholder=""
+                          inputProps={{ maxLength: 6 }}
+                          value={consumptionDuration}
+                          onChange={(event: any) => {
+                            setConsumptionDuration(event.target.value);
+                          }}
+                          error={errorState.durationErr}
+                        />
+                        {errorState.durationErr && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
-                            error={errorState.daySlotErr}
-                          >
-                            Please select to be day slot.
-                        </FormHelperText>
-                        )}
-                      </div>
-                      <div>
-                        <h6>To be taken</h6>
-                        <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                        {errorState.tobeTakenErr && (
-                          <FormHelperText
-                            className={classes.helpText}
-                            component="div"
-                            error={errorState.tobeTakenErr}
-                          >
-                            Please select to be taken.
-                        </FormHelperText>
-                        )}
-                      </div>
-                      <div>
-                        <h6>Duration of Consumption(In days)</h6>
-                        <div className={classes.numberTablets}>
-                          <AphTextField
-                            placeholder=""
-                            inputProps={{ maxLength: 6 }}
-                            value={consumptionDuration}
-                            onChange={(event: any) => {
-                              setConsumptionDuration(event.target.value);
-                            }}
                             error={errorState.durationErr}
-                          />
-                          {errorState.durationErr && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.durationErr}
-                            >
-                              Please Enter Duration in days(Number only)
+                          >
+                            Please Enter Duration in days(Number only)
                           </FormHelperText>
-                          )}
-                        </div>
+                        )}
                       </div>
-                      <div>
-                        <h6>Instructions (if any)</h6>
-                        <div className={classes.numberTablets}>
-                          <AphTextField
-                            value={medicineInstruction}
-                            onChange={(event: any) => {
-                              setMedicineInstruction(event.target.value);
-                            }}
-                          />
-                        </div>
+                    </div>
+                    <div>
+                      <h6>Instructions (if any)</h6>
+                      <div className={classes.numberTablets}>
+                        <AphTextField
+                          value={medicineInstruction}
+                          onChange={(event: any) => {
+                            setMedicineInstruction(event.target.value);
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
-                  <div className={classes.dialogActions}>
+                </div>
+                <div className={classes.dialogActions}>
+                  <AphButton
+                    className={classes.cancelBtn}
+                    color="primary"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      setShowDosage(false);
+                    }}
+                  >
+                    Cancel
+                  </AphButton>
+                  {isUpdate ? (
                     <AphButton
-                      className={classes.cancelBtn}
                       color="primary"
                       onClick={() => {
-                        setIsDialogOpen(false);
-                        setShowDosage(false);
+                        addUpdateMedicines();
                       }}
                     >
-                      Cancel
-                  </AphButton>
-                    {isUpdate ? (
-                      <AphButton
-                        color="primary"
-                        onClick={() => {
-                          addUpdateMedicines();
-                        }}
-                      >
-                        Update Medicine
+                      Update Medicine
                     </AphButton>
-                    ) : (
-                        <AphButton
-                          color="primary"
-                          className={classes.updateBtn}
-                          onClick={() => {
-                            addUpdateMedicines();
-                          }}
-                        >
-                          Add Medicine
+                  ) : (
+                    <AphButton
+                      color="primary"
+                      className={classes.updateBtn}
+                      onClick={() => {
+                        addUpdateMedicines();
+                      }}
+                    >
+                      Add Medicine
                     </AphButton>
-                      )}
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
           </div>
         </Paper>
       </Modal>

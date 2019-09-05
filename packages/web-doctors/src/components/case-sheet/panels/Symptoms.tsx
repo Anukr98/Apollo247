@@ -266,7 +266,7 @@ export const Symptoms: React.FC = (props) => {
   };
   const addUpdateSymptom = () => {
     console.log(symptoms);
-    let duplicate = false
+    let duplicate = false;
     if (symptoms!.length > 0 && symptom.length > 0) {
       symptoms!.forEach((val: any, index: any) => {
         if (val!.symptom!.trim().toLowerCase() === symptom.trim().toLowerCase()) {
@@ -314,9 +314,7 @@ export const Symptoms: React.FC = (props) => {
         howOfftenError: false,
         severityError: false,
       });
-    }
-
-    else {
+    } else {
       setErrorState({
         ...errorState,
         symptomError: false,
@@ -406,8 +404,8 @@ export const Symptoms: React.FC = (props) => {
               ))}
           </List>
         ) : (
-            <div className={classes.nodatafound}>No data Found</div>
-          )}
+          <div className={classes.nodatafound}>No data Found</div>
+        )}
 
         <AphButton
           variant="contained"
@@ -454,7 +452,7 @@ export const Symptoms: React.FC = (props) => {
                             inputProps={{ maxLength: 30 }}
                             onChange={(event) => {
                               setSymptom(event.target.value);
-                              clearError()
+                              clearError();
                             }}
                             error={errorState.symptomError}
                           />
@@ -478,7 +476,7 @@ export const Symptoms: React.FC = (props) => {
                             inputProps={{ maxLength: 30 }}
                             onChange={(event) => {
                               setSince(event.target.value);
-                              clearError()
+                              clearError();
                             }}
                             error={errorState.sinceError}
                           />
@@ -502,7 +500,7 @@ export const Symptoms: React.FC = (props) => {
                             inputProps={{ maxLength: 30 }}
                             onChange={(event) => {
                               setHowOften(event.target.value);
-                              clearError()
+                              clearError();
                             }}
                             error={errorState.howOfftenError}
                           />
@@ -526,7 +524,7 @@ export const Symptoms: React.FC = (props) => {
                             value={severity}
                             onChange={(event) => {
                               setSeverity(event.target.value);
-                              clearError()
+                              clearError();
                             }}
                             error={errorState.severityError}
                           />

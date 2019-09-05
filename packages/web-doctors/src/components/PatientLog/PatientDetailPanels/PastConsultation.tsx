@@ -125,7 +125,7 @@ const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
   const ischild: boolean = true;
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
-      {data && data.length > 0 ?
+      {data && data.length > 0 ? (
         data.map((item, idx) => (
           <ListItem
             key={idx}
@@ -139,7 +139,10 @@ const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
           >
             <AppointmentCard data={item} />
           </ListItem>
-        )) : <span>No data Found</span>}
+        ))
+      ) : (
+        <span>No data Found</span>
+      )}
     </List>
   );
 };
@@ -170,82 +173,82 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
             </Grid>
 
             {data &&
-              data.caseSheet &&
-              (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType == 'JUNIOR')
+            data.caseSheet &&
+            (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType == 'JUNIOR')
               ? data &&
-              data.caseSheet &&
-              data.caseSheet.length > 0 &&
-              !!data.caseSheet[1]!.symptoms &&
-              !!data.caseSheet[1]!.symptoms.length && (
-                <Grid lg={6} sm={6} xs={5} key={2} item>
-                  <div className={classes.stepperHeading}>
-                    {(data.caseSheet[1]!.symptoms.length > 3
-                      ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
-                      : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
-                    ).join(', ')}
-                    {data.caseSheet[0]!.symptoms!.length > 3 && (
-                      <Typography gutterBottom variant="body1" component="span">
-                        {`, +${data.caseSheet[1]!.symptoms.length - 2}`}
-                      </Typography>
-                    )}
-                  </div>
-                </Grid>
-              )
+                data.caseSheet &&
+                data.caseSheet.length > 0 &&
+                !!data.caseSheet[1]!.symptoms &&
+                !!data.caseSheet[1]!.symptoms.length && (
+                  <Grid lg={6} sm={6} xs={5} key={2} item>
+                    <div className={classes.stepperHeading}>
+                      {(data.caseSheet[1]!.symptoms.length > 3
+                        ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                        : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
+                      ).join(', ')}
+                      {data.caseSheet[0]!.symptoms!.length > 3 && (
+                        <Typography gutterBottom variant="body1" component="span">
+                          {`, +${data.caseSheet[1]!.symptoms.length - 2}`}
+                        </Typography>
+                      )}
+                    </div>
+                  </Grid>
+                )
               : data &&
-              data.caseSheet &&
-              data.caseSheet.length > 0 &&
-              !!data.caseSheet[0]!.symptoms &&
-              !!data.caseSheet[0]!.symptoms.length && (
-                <Grid lg={6} sm={6} xs={5} key={2} item>
-                  <div className={classes.stepperHeading}>
-                    {(data.caseSheet[0]!.symptoms.length > 3
-                      ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
-                      : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
-                    ).join(', ')}
-                    {data.caseSheet[0]!.symptoms!.length > 3 && (
-                      <Typography gutterBottom variant="body1" component="span">
-                        {`, +${data.caseSheet[0]!.symptoms.length - 2}`}
-                      </Typography>
-                    )}
-                  </div>
-                </Grid>
-              )}
+                data.caseSheet &&
+                data.caseSheet.length > 0 &&
+                !!data.caseSheet[0]!.symptoms &&
+                !!data.caseSheet[0]!.symptoms.length && (
+                  <Grid lg={6} sm={6} xs={5} key={2} item>
+                    <div className={classes.stepperHeading}>
+                      {(data.caseSheet[0]!.symptoms.length > 3
+                        ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                        : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
+                      ).join(', ')}
+                      {data.caseSheet[0]!.symptoms!.length > 3 && (
+                        <Typography gutterBottom variant="body1" component="span">
+                          {`, +${data.caseSheet[0]!.symptoms.length - 2}`}
+                        </Typography>
+                      )}
+                    </div>
+                  </Grid>
+                )}
             {data &&
-              data.caseSheet &&
-              (data.caseSheet.length > 1 &&
-                data.caseSheet[1] &&
-                data.caseSheet[1]!.doctorType == 'JUNIOR') ? (
-                <Grid lg={1} sm={1} xs={3} key={3} item>
-                  <div>
-                    <IconButton aria-label="Video call" className={classes.videoIcon}>
-                      {data &&
-                        data.caseSheet &&
-                        data.caseSheet.length > 1 &&
-                        data.caseSheet[1]!.consultType === 'ONLINE' ? (
-                          <img src={require('images/ic_video.svg')} alt="" />
-                        ) : (
-                          <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
-                        )}
-                    </IconButton>
-                  </div>
-                </Grid>
-              ) : (
-                <Grid lg={1} sm={1} xs={3} key={3} item>
-                  <div>
-                    <IconButton aria-label="Video call" className={classes.videoIcon}>
-                      {data &&
-                        data.caseSheet &&
-                        data.caseSheet.length > 0 &&
-                        data.caseSheet[0] &&
-                        data.caseSheet[0]!.consultType === 'ONLINE' ? (
-                          <img src={require('images/ic_video.svg')} alt="" />
-                        ) : (
-                          <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
-                        )}
-                    </IconButton>
-                  </div>
-                </Grid>
-              )}
+            data.caseSheet &&
+            (data.caseSheet.length > 1 &&
+              data.caseSheet[1] &&
+              data.caseSheet[1]!.doctorType == 'JUNIOR') ? (
+              <Grid lg={1} sm={1} xs={3} key={3} item>
+                <div>
+                  <IconButton aria-label="Video call" className={classes.videoIcon}>
+                    {data &&
+                    data.caseSheet &&
+                    data.caseSheet.length > 1 &&
+                    data.caseSheet[1]!.consultType === 'ONLINE' ? (
+                      <img src={require('images/ic_video.svg')} alt="" />
+                    ) : (
+                      <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+                    )}
+                  </IconButton>
+                </div>
+              </Grid>
+            ) : (
+              <Grid lg={1} sm={1} xs={3} key={3} item>
+                <div>
+                  <IconButton aria-label="Video call" className={classes.videoIcon}>
+                    {data &&
+                    data.caseSheet &&
+                    data.caseSheet.length > 0 &&
+                    data.caseSheet[0] &&
+                    data.caseSheet[0]!.consultType === 'ONLINE' ? (
+                      <img src={require('images/ic_video.svg')} alt="" />
+                    ) : (
+                      <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+                    )}
+                  </IconButton>
+                </div>
+              </Grid>
+            )}
           </Grid>
         </Grid>
       </CardContent>

@@ -29,7 +29,7 @@ interface OptionType {
 let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
+  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
     <AphTextField
@@ -241,17 +241,17 @@ export const DiagnosticPrescription: React.FC = () => {
     return inputLength === 0
       ? []
       : suggestions.filter((suggestion) => {
-        const keep =
-          count < 5 &&
-          suggestion !== null &&
-          suggestion.itemname!.slice(0, inputLength).toLowerCase() === inputValue;
+          const keep =
+            count < 5 &&
+            suggestion !== null &&
+            suggestion.itemname!.slice(0, inputLength).toLowerCase() === inputValue;
 
-        if (keep) {
-          count += 1;
-        }
+          if (keep) {
+            count += 1;
+          }
 
-        return keep;
-      });
+          return keep;
+        });
   };
 
   function getSuggestionValue(suggestion: OptionType | null) {
