@@ -11,13 +11,14 @@ const useStyles = makeStyles((theme: Theme) => {
     userCard: {
       display: 'flex',
       backgroundColor: '#f0f4f5',
-      borderRadius: 10,
+      borderRadius: 5,
       '& span': {
         borderRight: '1px solid rgba(2, 71, 91, 0.1)',
         padding: '16px 8px',
         textAlign: 'center',
         fontSize: 12,
         color: '#02475b',
+        width: '32%',
         '&:last-child': {
           borderRight: 'none',
         },
