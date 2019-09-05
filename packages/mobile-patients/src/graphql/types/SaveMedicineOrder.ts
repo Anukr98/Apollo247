@@ -13,6 +13,7 @@ export interface SaveMedicineOrder_SaveMedicineOrder {
   errorCode: number | null;
   errorMessage: string | null;
   orderId: string;
+  orderAutoId: number;
 }
 
 export interface SaveMedicineOrder {

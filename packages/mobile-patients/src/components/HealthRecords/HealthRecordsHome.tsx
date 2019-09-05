@@ -23,6 +23,7 @@ import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '@aph/mobile-patients/src/graphq
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
 import { useQuery } from 'react-apollo-hooks';
+import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -195,7 +196,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               />
             </View>
           </View>
-          {selectedTab === tabs[0].title ? renderConsults() : null}
+          {selectedTab === tabs[0].title ? (
+            renderConsults()
+          ) : (
+            <MedicalRecords navigation={props.navigation} />
+          )}
         </ScrollView>
       </SafeAreaView>
       {displayFilter && (

@@ -320,14 +320,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <Text style={styles.onlineConsultAmount}>
                     Rs. {doctorDetails.onlineConsultationFees}
                   </Text>
-                  {availableInMin && !!availableTime && (
+                  {availableInMin && (
                     <CapsuleView
                       title={
                         availableInMin < 0
                           ? `${availableTime}`
                           : `AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`
                       }
-                      isActive={availableInMin >= 15 ? true : false}
+                      isActive={availableInMin <= 15 ? true : false}
                     />
                   )}
                 </View>
@@ -341,14 +341,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       <Text style={styles.onlineConsultAmount}>
                         Rs. {doctorDetails.physicalConsultationFees}
                       </Text>
-                      {availableInMin && !!availableTime && (
+                      {availableInMin && (
                         <CapsuleView
                           title={
                             availableInMin < 0
                               ? `${availableTime}`
                               : `AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`
                           }
-                          isActive={availableInMin >= 15 ? true : false}
+                          isActive={availableInMin <= 15 ? true : false}
                         />
                       )}
                     </>

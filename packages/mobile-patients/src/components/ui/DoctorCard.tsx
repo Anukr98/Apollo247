@@ -255,7 +255,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <CapsuleView
                 title={availabilityText()}
                 style={styles.availableView}
-                isActive={Number(availableInMin) >= 60 || availableInMin < 0 ? false : true}
+                isActive={Number(availableInMin) >= 15 || availableInMin < 0 ? false : true}
               />
             ) : null}
             <View style={styles.imageView}>

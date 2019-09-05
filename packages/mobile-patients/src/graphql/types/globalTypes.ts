@@ -30,6 +30,7 @@ export enum DEVICE_TYPE {
 
 export enum DoctorType {
   APOLLO = "APOLLO",
+  JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
   STAR_APOLLO = "STAR_APOLLO",
 }
@@ -42,7 +43,13 @@ export enum Gender {
 
 export enum MEDICINE_DELIVERY_TYPE {
   HOME_DELIVERY = "HOME_DELIVERY",
-  STORE_PICK_UP = "STORE_PICK_UP",
+  STORE_PICKUP = "STORE_PICKUP",
+}
+
+export enum MEDICINE_ORDER_PAYMENT_TYPE {
+  CASHLESS = "CASHLESS",
+  COD = "COD",
+  NO_PAYMENT = "NO_PAYMENT",
 }
 
 export enum MEDICINE_ORDER_STATUS {
@@ -120,6 +127,27 @@ export enum WeekDay {
   WEDNESDAY = "WEDNESDAY",
 }
 
+export interface AddMedicalRecordInput {
+  patientId: string;
+  testName: string;
+  testDate?: any | null;
+  recordType?: string | null;
+  referringDoctor?: string | null;
+  sourceName?: string | null;
+  observations?: string | null;
+  additionalNotes?: string | null;
+  documentURLs?: string | null;
+  medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
+}
+
+export interface AddMedicalRecordParametersInput {
+  parameterName: string;
+  unit?: string | null;
+  result: number;
+  minimum?: number | null;
+  maximum?: number | null;
+}
+
 export interface AppointmentHistoryInput {
   patientId: string;
   doctorId: string;
@@ -168,7 +196,7 @@ export interface MedicineCartInput {
   estimatedAmount?: number | null;
   patientId: string;
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  patientAddressId?: string | null;
+  patientAddressId: string;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
   items?: (MedicineCartItem | null)[] | null;
@@ -184,6 +212,19 @@ export interface MedicineCartItem {
   prescriptionImageUrl?: string | null;
   mou?: number | null;
   isMedicine?: string | null;
+}
+
+export interface MedicinePaymentInput {
+  orderId: string;
+  orderAutoId: number;
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  amountPaid: number;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+  responseCode?: string | null;
+  responseMessage?: string | null;
+  bankTxnId?: string | null;
 }
 
 export interface PatientAddressInput {

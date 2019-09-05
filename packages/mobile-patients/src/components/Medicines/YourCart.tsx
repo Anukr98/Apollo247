@@ -210,18 +210,20 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     return (
       <View>
         {renderLabel('ITEMS IN YOUR CART', cartItemsCount)}
-        <Text
-          style={[
-            styles.labelTextStyle,
-            {
-              margin: 20,
-              textAlign: 'center',
-              opacity: 0.3,
-            },
-          ]}
-        >
-          Your Cart is empty
-        </Text>
+        {cartItems.length == 0 && (
+          <Text
+            style={[
+              styles.labelTextStyle,
+              {
+                margin: 20,
+                textAlign: 'center',
+                opacity: 0.3,
+              },
+            ]}
+          >
+            Your Cart is empty
+          </Text>
+        )}
         {cartItems.map((medicine, index, array) => {
           const medicineCardContainerStyle = [
             { marginBottom: 8, marginHorizontal: 20 },

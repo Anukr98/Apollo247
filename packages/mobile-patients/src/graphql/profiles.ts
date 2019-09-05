@@ -616,7 +616,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             name
           }
           diagnosticPrescription {
-            name
+            itemname
           }
           doctorId
           followUp
@@ -673,6 +673,36 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           quantity
           mrp
           id
+        }
+      }
+    }
+  }
+`;
+
+export const ADD_MEDICAL_RECORD = gql`
+  mutation addPatientMedicalRecord($AddMedicalRecordInput: AddMedicalRecordInput) {
+    addPatientMedicalRecord(addMedicalRecordInput: $AddMedicalRecordInput) {
+      status
+    }
+  }
+`;
+
+export const GET_MEDICAL_RECORD = gql`
+  query getPatientMedicalRecords($patientId: ID!) {
+    getPatientMedicalRecords(patientId: $patientId) {
+      medicalRecords {
+        id
+        testName
+        testDate
+        recordType
+        referringDoctor
+        observations
+        additionalNotes
+        sourceName
+        documentURLs
+        medicalRecordParameters {
+          parameterName
+          result
         }
       }
     }

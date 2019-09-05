@@ -15,7 +15,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
-  name: string | null;
+  itemname: string | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription {
