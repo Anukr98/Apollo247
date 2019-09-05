@@ -81,13 +81,13 @@ export const buildCaseSheet = (attrs?: Partial<CaseSheet>) => {
   const caseSheet = new CaseSheet();
   const notes = faker.lorem.sentences(_random(0, 8));
   const diagnosis = _times(_random(0, 3), () => buildDiagnosis());
-  const diagnosisPrescriptions = _times(_random(0, 3), () => buildDiagnosisPrescription());
+  const diagnosisPrescription = _times(_random(0, 3), () => buildDiagnosisPrescription());
   const otherInstructions = _times(_random(0, 5), () => buildOtherInstruction());
   const medicinePrescriptions = _times(_random(2, 10), () => buildMedicinePrescription());
   const symptoms = _times(_random(0, 5), () => buildSymptom());
   caseSheet.notes = notes;
   caseSheet.diagnosis = JSON.stringify(diagnosis);
-  caseSheet.diagnosticPrescription = JSON.stringify(diagnosisPrescriptions);
+  caseSheet.diagnosticPrescription = JSON.stringify(diagnosisPrescription);
   caseSheet.followUp = faker.random.boolean();
   caseSheet.followUpAfterInDays = _random(1, 60);
   caseSheet.otherInstructions = JSON.stringify(otherInstructions);
