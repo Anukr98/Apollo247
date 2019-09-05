@@ -998,7 +998,7 @@
             ],
             "type": {
               "kind": "OBJECT",
-              "name": "PushNotificationSuccessMessaage",
+              "name": "PushNotificationSuccessMessage",
               "ofType": null
             },
             "isDeprecated": false,
@@ -9375,7 +9375,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "PushNotificationSuccessMessaage",
+        "name": "PushNotificationSuccessMessage",
         "description": null,
         "fields": [
           {
@@ -13838,7 +13838,7 @@
             "args": [],
             "type": {
               "kind": "OBJECT",
-              "name": "NotificationSuccessMessaage",
+              "name": "NotificationSuccessMessage",
               "ofType": null
             },
             "isDeprecated": false,
@@ -13971,7 +13971,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "NotificationSuccessMessaage",
+        "name": "NotificationSuccessMessage",
         "description": null,
         "fields": [
           {
