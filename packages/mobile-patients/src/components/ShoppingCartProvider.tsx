@@ -48,6 +48,7 @@ export interface ShoppingCartContextProps {
   setCoupon: ((id: Coupon) => void) | null;
 
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
+  clearCartInfo: (() => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -73,6 +74,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   storeId: '',
   setStoreId: null,
   deliveryType: null,
+  clearCartInfo: null,
 });
 
 export const ShoppingCartProvider: React.FC = (props) => {
@@ -138,7 +140,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   const setStoreId = (id: ShoppingCartContextProps['storeId']) => {
-    setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICK_UP);
+    setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICKUP);
     _setStoreId(id);
     _setDeliveryAddressId('');
   };
@@ -147,6 +149,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setDeliveryType(MEDICINE_DELIVERY_TYPE.HOME_DELIVERY);
     _setDeliveryAddressId(id);
     _setStoreId('');
+  };
+
+  const clearCartInfo = () => {
+    setCartItems([]);
+    setDeliveryAddressId('');
+    setStoreId('');
+    setCoupon(null);
   };
 
   useEffect(() => {
@@ -198,6 +207,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         setCoupon,
 
         deliveryType,
+        clearCartInfo,
       }}
     >
       {props.children}

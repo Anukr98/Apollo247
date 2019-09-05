@@ -17,7 +17,7 @@ import {
   GetPatientAddressListVariables,
 } from 'graphql/types/GetPatientAddressList';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { useAllCurrentPatients } from 'hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -107,6 +107,8 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
     false
   );
   const { currentPatient } = useAllCurrentPatients();
+  const { isSigningIn } = useAuth();
+
   const [deliveryAddressId, setDeliveryAddressId] = React.useState<string>('');
 
   const { updateDeliveryAddress } = props;
@@ -162,20 +164,28 @@ export const HomeDelivery: React.FC<HomeDeliveryProps> = (props) => {
           })}
         </ul>
       ) : (
-        <div className={classes.noAddress}>
-          Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has
-          been the industry's standard dummy text ever since the 1500s....
-        </div>
+        <>
+          {!isSigningIn ? (
+            <div className={classes.noAddress}>
+              Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum
+              has been the industry's standard dummy text ever since the 1500s....
+            </div>
+          ) : null}
+        </>
       )}
 
       <div className={classes.bottomActions}>
-        <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
-        <AphButton
-          onClick={() => setIsViewAllAddressDialogOpen(true)}
-          className={classes.viewAllBtn}
-        >
-          View All
-        </AphButton>
+        {!isSigningIn ? (
+          <AphButton onClick={() => setIsAddAddressDialogOpen(true)}>Add new address</AphButton>
+        ) : null}
+        {addressList.length > 0 ? (
+          <AphButton
+            onClick={() => setIsViewAllAddressDialogOpen(true)}
+            className={classes.viewAllBtn}
+          >
+            View All
+          </AphButton>
+        ) : null}
       </div>
 
       <AphDialog open={isAddAddressDialogOpen} maxWidth="sm">

@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
     headerSticky: {
       position: 'fixed',
       width: '100%',
-      zIndex: 9999,
+      zIndex: 999,
       top: 0,
     },
     container: {
