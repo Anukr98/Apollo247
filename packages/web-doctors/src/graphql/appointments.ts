@@ -10,6 +10,11 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
         status
         bookingDate
         appointmentType
+        caseSheet{
+          diagnosis{
+            name
+          }
+        }
         patientInfo {
           id
           firstName
