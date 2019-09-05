@@ -12,8 +12,26 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
+import {
+  sendNotification,
+  NotificationPriority,
+  PushNotificationSuccessMessaage,
+} from 'notifications-service/resolvers/notifications';
+import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 
 export const rescheduleAppointmentTypeDefs = gql`
+  type NotificationMessage {
+    messageId: String
+  }
+
+  type NotificationSuccessMessaage {
+    results: [NotificationMessage]
+    canonicalRegistrationTokenCount: Int
+    failureCount: Int
+    successCount: Int
+    multicastId: Int
+  }
+
   type RescheduleAppointment {
     id: ID!
     appointmentId: ID!
@@ -46,6 +64,7 @@ export const rescheduleAppointmentTypeDefs = gql`
   type RescheduleAppointmentResult {
     rescheduleAppointment: RescheduleAppointment
     rescheduleCount: Int
+    notificationResult: NotificationSuccessMessaage
   }
 
   type BookRescheduleAppointmentResult {
@@ -65,6 +84,7 @@ export const rescheduleAppointmentTypeDefs = gql`
 type RescheduleAppointmentResult = {
   rescheduleAppointment: RescheduleAppointment;
   rescheduleCount: number;
+  notificationResult: PushNotificationSuccessMessaage | undefined;
 };
 
 type RescheduleAppointment = {
@@ -132,9 +152,36 @@ const initiateRescheduleAppointment: Resolver<
     appointment,
   };
 
+  //get patient device tokens
+  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+  const deviceTokens = await deviceTokenRepo.getDeviceToken(appointment.patientId);
+
+  let notificationBody = <string>process.env.RESCHEDULE_INITIATION_BODY;
+  notificationBody = notificationBody.replace('{0}', appointment.displayId + '');
+
+  let notificationResult;
+
+  if (deviceTokens.length) {
+    deviceTokens.forEach((value) => {
+      if (value.deviceToken.length) {
+        const pushNotificationInput = {
+          title: <string>process.env.RESCHEDULE_INITIATION_TITLE,
+          body: notificationBody,
+          priority: NotificationPriority.high,
+          registrationToken: value.deviceToken,
+        };
+        notificationResult = sendNotification(pushNotificationInput);
+      }
+    });
+  }
+
   const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
 
-  return { rescheduleAppointment, rescheduleCount: appointment.rescheduleCount };
+  return {
+    rescheduleAppointment,
+    rescheduleCount: appointment.rescheduleCount,
+    notificationResult,
+  };
 };
 
 const bookRescheduleAppointment: Resolver<
