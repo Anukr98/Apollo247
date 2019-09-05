@@ -10,12 +10,31 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     userCard: {
       display: 'flex',
+      backgroundColor: '#f0f4f5',
+      borderRadius: 5,
+      '& span': {
+        borderRight: '1px solid rgba(2, 71, 91, 0.1)',
+        padding: '16px 8px',
+        textAlign: 'center',
+        fontSize: 12,
+        color: '#02475b',
+        width: '32%',
+        '&:last-child': {
+          borderRight: 'none',
+        },
+        '& h4': {
+          color: '#0087ba',
+          fontSize: 20,
+          fontWeight: 700,
+          marginTop: 5,
+          marginBottom: 5,
+        },
+      },
     },
     loading: {
-      color: '#fff',
       position: 'absolute',
-      left: '10%',
-      top: '10%',
+      left: '20%',
+      top: '30%',
     },
   };
 });
@@ -90,16 +109,16 @@ export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => 
         </Typography>
         <div className={classes.userCard}>
           <span>
-            <div>N/A</div>
-            <div>Revenue</div>
+            <h4>N/A</h4>
+            <div>REVENUE</div>
           </span>
           <span>
-            <div>{consultscount}</div>
-            <div>consult</div>
+            <h4>{consultscount}</h4>
+            <div>CONSULT</div>
           </span>
           <span>
-            <div>N/A</div>
-            <div>Prescriptions</div>
+            <h4>N/A</h4>
+            <div>PRESCRIPTION</div>
           </span>
         </div>
       </CardContent>

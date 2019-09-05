@@ -242,6 +242,7 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange, onMonth
         onClick={() => {
           setSelectedDate(startOfToday());
           onMonthChange({ start: startOfMonth(startOfToday()), end: endOfMonth(startOfToday()) });
+          onMonthSelected(moment(startOfToday()).format('MMMM'));
         }}
       >
         <img src={require('images/ic_calendar.svg')} alt="" />

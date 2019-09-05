@@ -348,6 +348,7 @@ export const FollowUp: React.FC = () => {
                       variant="inline"
                       format="dd/MM/yyyy"
                       value={selectedDate}
+                      minDate={new Date()}
                       onKeyPress={(e) => {
                         if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
                       }}
