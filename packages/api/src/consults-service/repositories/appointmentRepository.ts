@@ -91,6 +91,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         appointmentDateTime: Between(startDate, endDate),
         status: Not(STATUS.CANCELLED),
       },
+      relations: ['caseSheet'],
       order: { appointmentDateTime: 'DESC' },
     });
   }
