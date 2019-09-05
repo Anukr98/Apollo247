@@ -665,7 +665,11 @@ export const MedicinePrescription: React.FC = () => {
       setErrorState({ ...errorState, daySlotErr: true, tobeTakenErr: false, durationErr: false });
     } else if (isTobeTakenSelected.length === 0) {
       setErrorState({ ...errorState, tobeTakenErr: true, daySlotErr: false, durationErr: false });
-    } else if (isEmpty(trim(consumptionDuration)) || isNaN(Number(consumptionDuration))) {
+    } else if (
+      isEmpty(trim(consumptionDuration)) ||
+      isNaN(Number(consumptionDuration)) ||
+      Number(consumptionDuration) < 1
+    ) {
       setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
     } else {
       setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
@@ -926,6 +930,7 @@ export const MedicinePrescription: React.FC = () => {
                       <div className={classes.numberTablets}>
                         <AphTextField
                           placeholder=""
+                          inputProps={{ maxLength: 6 }}
                           value={consumptionDuration}
                           onChange={(event: any) => {
                             setConsumptionDuration(event.target.value);
