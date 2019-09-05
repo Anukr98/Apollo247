@@ -69,6 +69,14 @@ import {
   getPatientMedicalRecordsTypeDefs,
   getPatientMedicalRecordsResolvers,
 } from 'profiles-service/resolvers/getPatientMedicalRecords';
+import {
+  submitPrescriptionOrderTypeDefs,
+  submitPrescriptionOrderResolvers,
+} from 'profiles-service/resolvers/submitPrescriptionOrder';
+import {
+  updateOrderStatusTypeDefs,
+  updateOrderStatusResolvers,
+} from 'profiles-service/resolvers/updateOrderStatusPharma';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -177,6 +185,14 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: getPatientMedicalRecordsTypeDefs,
         resolvers: getPatientMedicalRecordsResolvers,
+      },
+      {
+        typeDefs: submitPrescriptionOrderTypeDefs,
+        resolvers: submitPrescriptionOrderResolvers,
+      },
+      {
+        typeDefs: updateOrderStatusTypeDefs,
+        resolvers: updateOrderStatusResolvers,
       },
     ]),
   });
