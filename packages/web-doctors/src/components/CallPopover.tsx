@@ -606,7 +606,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     clearError();
   };
   const handleDoctorClick = (value: any) => {
-    console.log(value);
     setIsDoctorOrSpeciality(false);
     setSearchKeyword(value.firstName + ' ' + value.lastName);
     setSelectedDoctor(value.firstName + ' ' + value.lastName);
@@ -615,10 +614,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       transferDateTime: '',
       photoUrl: value.photoUrl,
       doctorId: value.id,
-      specialtyId: value.speciality.id,
+      specialtyId: value.specialty.id,
       doctorName: value.firstName + ' ' + value.lastName,
       experience: value.experience,
-      specilty: value.speciality.name,
+      specilty: value.specialty.name,
       facilityId: value!.doctorHospital[0]!.facility.id,
       transferId: '',
     };
