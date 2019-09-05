@@ -330,17 +330,17 @@ export const Cart: React.FC = (props) => {
   const [orderAutoId, setOrderAutoId] = React.useState<number>(0);
   const [amountPaid, setAmountPaid] = React.useState<number>(0);
 
-  const codPaymentMutation = useMutation<
-    SaveMedicineOrderPayment,
-    SaveMedicineOrderPaymentVariables
-  >(SAVE_MEDICINE_ORDER_PAYMENT_RESULT, {
-    variables: {
-      medicinePaymentInput: {
-        orderAutoId: orderAutoId,
-        amountPaid: amountPaid,
-      },
-    },
-  });
+  // const codPaymentMutation = useMutation<
+  //   SaveMedicineOrderPayment,
+  //   SaveMedicineOrderPaymentVariables
+  // >(SAVE_MEDICINE_ORDER_PAYMENT_RESULT, {
+  //   variables: {
+  //     medicinePaymentInput: {
+  //       orderAutoId: orderAutoId,
+  //       amountPaid: amountPaid,
+  //     },
+  //   },
+  // });
 
   // console.log(prescriptions, '..........');
 
@@ -631,7 +631,7 @@ export const Cart: React.FC = (props) => {
                   medicineDeliveryType:
                     deliveryMode === 'HOME'
                       ? MEDICINE_DELIVERY_TYPE.HOME_DELIVERY
-                      : MEDICINE_DELIVERY_TYPE.STORE_PICK_UP,
+                      : MEDICINE_DELIVERY_TYPE.STORE_PICKUP,
                   patientId: currentPatient ? currentPatient.id : '',
                   items: cartItemsForApi,
                 },
