@@ -1,16 +1,21 @@
 import React, { useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
-import { Card, CardMedia, CardContent, Typography } from '@material-ui/core';
+import { Card, CardMedia, CardContent, Typography, CircularProgress } from '@material-ui/core';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { Gender } from 'graphql/types/globalTypes';
-
 import { GetCaseSheet_getCaseSheet_patientDetails } from 'graphql/types/GetCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     userCard: {
       display: 'flex',
+    },
+    loading: {
+      color: '#fff',
+      position: 'absolute',
+      left: '10%',
+      top: '10%',
     },
   };
 });
@@ -62,7 +67,7 @@ export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => 
       ? patientDetails!.photoUrl
       : require('images/ic_patientchat.png');
   return loading && !patientDetails ? (
-    <div>loading....</div>
+    <CircularProgress className={classes.loading} />
   ) : (
     <Card>
       <CardMedia
