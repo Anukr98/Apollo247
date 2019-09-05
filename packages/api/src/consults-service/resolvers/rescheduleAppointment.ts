@@ -24,7 +24,7 @@ export const rescheduleAppointmentTypeDefs = gql`
     messageId: String
   }
 
-  type NotificationSuccessMessaage {
+  type NotificationSuccessMessage {
     results: [NotificationMessage]
     canonicalRegistrationTokenCount: Int
     failureCount: Int
@@ -64,7 +64,7 @@ export const rescheduleAppointmentTypeDefs = gql`
   type RescheduleAppointmentResult {
     rescheduleAppointment: RescheduleAppointment
     rescheduleCount: Int
-    notificationResult: NotificationSuccessMessaage
+    notificationResult: NotificationSuccessMessage
   }
 
   type BookRescheduleAppointmentResult {
