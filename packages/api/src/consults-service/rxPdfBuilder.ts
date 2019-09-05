@@ -67,6 +67,17 @@ export const buildRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => 
     doc.font('Helvetica-Bold');
   };
 
+  const renderFooter = () => {
+    const disclaimerText =
+      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital';
+    doc
+      .font('Helvetica')
+      .fontSize(8)
+      .text(disclaimerText, margin, doc.page.height - 70, { align: 'center' });
+    drawHorizontalDivider(doc.page.height - 55);
+    return doc;
+  };
+
   const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
     const rx = loadAsset('rx-icon.png');
     doc
@@ -114,17 +125,6 @@ export const buildRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => 
       }
     });
     doc.font('Helvetica').fontSize(10);
-  };
-
-  const renderFooter = () => {
-    const disclaimerText =
-      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital';
-    doc
-      .font('Helvetica')
-      .fontSize(8)
-      .text(disclaimerText, margin, doc.page.height - 70, { align: 'center' });
-    drawHorizontalDivider(doc.page.height - 55);
-    return doc;
   };
 
   doc.on('pageAdded', () => {
