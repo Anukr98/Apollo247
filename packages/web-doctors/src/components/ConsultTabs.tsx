@@ -129,13 +129,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderTopRightRadius: '10px',
     },
     tabBody: {
-      height: 60,
+      minHeight: 60,
       marginTop: '10px',
-      paddingLeft: '15px',
-      paddingTop: '10px',
-      paddingRight: '15px',
-      /* padding: 15px; */
-
+      padding: 15,
       '& p': {
         margin: 0,
         width: 180,
@@ -143,6 +139,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 700,
         lineHeight: 1.4,
         color: '#01475b',
+        // paddingBottom: 15,
       },
     },
     tabPdfBody: {
