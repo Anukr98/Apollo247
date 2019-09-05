@@ -74,6 +74,7 @@ cp -Rv build-scripts skeleton/apollo-hospitals/ || exit 2
 
 echo -e "\ncopying paytm-paymentgateway..."
 cp -Rv paytm-integration skeleton/apollo-hospitals/ || exit 2
+cp -v .env skeleton/apollo-hospitals/paytm-integration || exit 2
 
 echo -e "\nbuilding aph-$1.tar.gz artifact..."
 tar -czf aph-$1.tar.gz -C skeleton apollo-hospitals || exit 2
