@@ -60,6 +60,7 @@ import {
   getMedicineOrdersListTypeDefs,
   getMedicineOrdersListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersList';
+import { uploadFileTypeDefs, uploadFileResolvers } from 'profiles-service/resolvers/uploadFile';
 import {
   addPatientMedicalRecordTypeDefs,
   addPatientMedicalRecordResolvers,
@@ -164,6 +165,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: getMedicineOrdersListTypeDefs,
         resolvers: getMedicineOrdersListResolvers,
+      },
+      {
+        typeDefs: uploadFileTypeDefs,
+        resolvers: uploadFileResolvers,
       },
       {
         typeDefs: addPatientMedicalRecordTypeDefs,

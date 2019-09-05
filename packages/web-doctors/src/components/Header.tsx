@@ -160,7 +160,9 @@ export const Header: React.FC = (props) => {
           </Link>
         </div>
 
-        {isSignedIn && !window.location.href.includes('/profile') && <Navigation />}
+        {isSignedIn &&
+          !window.location.href.includes('/profile') &&
+          !window.location.href.includes('/patientlogdetailspage') && <Navigation />}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (

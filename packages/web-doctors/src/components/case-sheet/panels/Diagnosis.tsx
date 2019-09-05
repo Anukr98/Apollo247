@@ -214,8 +214,6 @@ export const Diagnosis: React.FC = () => {
       suggestions!.map((item, idx) => {
         selectedValues!.map((val) => {
           if (item.name === val.name) {
-            console.log(item, val);
-
             const indexDelete = suggestions.indexOf(item);
             suggestions!.splice(indexDelete, 1);
           }

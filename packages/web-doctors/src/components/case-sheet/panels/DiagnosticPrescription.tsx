@@ -216,12 +216,12 @@ export const DiagnosticPrescription: React.FC = () => {
         variables: { searchString: value },
       })
       .then((_data: any) => {
-        // console.log(_data!.data!.searchDiagnostic!);
-        // suggestions = _data!.data!.searchDiagnostic!;
-        let filterVal: any = _data!.data!.searchDiagnostic!;
+        const filterVal: any = _data!.data!.searchDiagnostic!;
+        console.log(_data!.data!.searchDiagnostic!);
+
         filterVal.forEach((val: any, index: any) => {
           selectedValues!.forEach((selectedval: any) => {
-            if (val.name === selectedval.name) {
+            if (val.itemname === selectedval.itemname) {
               filterVal.splice(index, 1);
             }
           });
