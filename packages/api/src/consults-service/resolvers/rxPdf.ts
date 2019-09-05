@@ -16,6 +16,7 @@ import _times from 'lodash/times';
 import path from 'path';
 import uuid from 'uuid/v4';
 import faker from 'faker';
+import { buildAppointment } from 'consults-service/database/factories/appointmentFactory';
 
 export const rxPdfTypeDefs = gql`
   input RxPdfInput {
@@ -83,7 +84,8 @@ export const rxPdfResolvers = {
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-const fakeCaseSheet = buildCaseSheet();
+const appointment = buildAppointment();
+const fakeCaseSheet = buildCaseSheet({ appointment });
 const rxPdfData = caseSheetToRxPdfData(fakeCaseSheet);
 const rxPdfDoc = buildRxPdfDocument(rxPdfData);
 const assetsDir = path.resolve(`/Users/sarink/Projects/apollo-hospitals/packages/api/src/assets`);

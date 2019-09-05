@@ -3,6 +3,10 @@ import { buildAppointment } from 'consults-service/database/factories/appointmen
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { getConnection } from 'typeorm';
+import _times from 'lodash/times';
+import _random from 'lodash/random';
+import { buildCaseSheet } from 'consults-service/database/factories/caseSheetFactory';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 (async () => {
   console.log('Seeding consults-db...');
@@ -17,8 +21,9 @@ import { getConnection } from 'typeorm';
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
   console.log('Building and saving records...');
-  const appointment = buildAppointment();
-  appointmentRepo.save(appointment);
+  _times(_random(5, 20), () => appointmentRepo.save(buildAppointment()));
+  _times(_random(5, 20), () => caseSheetRepo.save(buildCaseSheet()));
 })();
