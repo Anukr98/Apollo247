@@ -2,6 +2,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { OrderPlacedIcon, OrderTrackerSmallIcon } from './Icons';
+import { OrderCardProps } from './OrderCard';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -51,28 +52,13 @@ const styles = StyleSheet.create({
   verticalProgressLine: { flex: 1, width: 4, alignSelf: 'center' },
 });
 
-type OrderStatusType =
-  | 'Order Placed'
-  | 'Order Verified'
-  | 'On Hold'
-  | 'Order Delayed'
-  | 'Out For Delivery'
-  | 'Order Ready At Store'
-  | 'Order Delivered'
-  | 'Return Requested'
-  | 'Items Returned'
-  | 'Return Rejected'
-  | 'Return Accepted'
-  | 'Cancelation Requested'
-  | 'Order Cancelled';
-
 export interface OrderProgressCardProps {
-  status: OrderStatusType;
+  status: OrderCardProps['status'];
   isStatusDone: boolean;
   nextItemStatus: 'DONE' | 'NOT_DONE' | 'NOT_EXIST';
   date?: string;
   time?: string;
-  description?: boolean; // if false it renders date & time
+  description?: string; // if falsy value it renders date & time
   style?: StyleProp<ViewStyle>;
 }
 

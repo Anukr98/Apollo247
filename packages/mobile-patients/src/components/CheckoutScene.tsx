@@ -467,7 +467,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '66.66%' }}
-          title={`PAY — RS. ${grandTotal}`}
+          title={`PAY RS. ${grandTotal}`}
           onPress={() => {
             initiateOrder();
           }}
@@ -566,8 +566,14 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               }}
             />
             <View style={styles.popupButtonStyle}>
-              <TouchableOpacity onPress={() => {}}>
-                <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+                    orderAutoId: orderInfo.orderAutoId,
+                  })
+                }
+              >
+                <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() =>

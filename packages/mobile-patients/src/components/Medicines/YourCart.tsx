@@ -676,7 +676,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
-            title={`PROCEED TO PAY — RS. ${grandTotal}`}
+            title={`PROCEED TO PAY RS. ${grandTotal}`}
             onPress={() => props.navigation.navigate(AppRoutes.CheckoutScene)}
             style={{ flex: 1, marginHorizontal: 40 }}
           />

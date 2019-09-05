@@ -556,18 +556,35 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
   }
 `;
 
-// export const GET_MEDICINE_ORDERS_RESULT = gql`
-//   query GetMedicineOrdersList($patientId: String) {
-//     MedicineOrdersList(patientId: $patientId) {
-//       id
-//       orderAutoId
-//       deliveryType
-//       medicineOrdersStatus {
+export const GET_MEDICINE_ORDERS_LIST = gql`
+  query GetMedicineOrdersList($patientId: String) {
+    getMedicineOrdersList(patientId: $patientId) {
+      MedicineOrdersList {
+        id
+        orderAutoId
+        deliveryType
+        medicineOrdersStatus {
+          id
+          orderStatus
+          statusDate
+        }
+      }
+    }
+  }
+`;
+
+// export const GET_MEDICINE_ORDER_DETAILS = gql`
+//   query GetMedicineOrderDetails($patientId: String, orderAutoId: Int) {
+//     getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+//       MedicineOrderDetails{
 //         id
+//         orderAutoId
+//         estimatedAmount
+//         medicineOrdersStatus{
 //         orderStatus
-//         statusDate
-//       }
-//     }
+//   }
+// }
+//   }
 //   }
 // `;
 export const GET_NOTIFICATION_SETTINGS = gql`

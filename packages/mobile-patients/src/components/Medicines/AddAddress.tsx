@@ -154,7 +154,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         />
         <TextInputComponent
           value={pincode}
-          onChangeText={(pincode) => setpincode(pincode)}
+          onChangeText={(pincode) =>
+            (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) && setpincode(pincode)
+          }
           placeholder={'Pincode'}
           maxLength={6}
         />

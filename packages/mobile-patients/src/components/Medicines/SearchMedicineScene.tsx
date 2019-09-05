@@ -188,7 +188,14 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       });
   };
 
-  const onAddCartItem = ({ sku, mou, name, price, is_prescription_required }: MedicineProduct) => {
+  const onAddCartItem = ({
+    sku,
+    mou,
+    name,
+    price,
+    is_prescription_required,
+    type_id,
+  }: MedicineProduct) => {
     addCartItem &&
       addCartItem({
         id: sku,
@@ -197,6 +204,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         price,
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
+        productType: type_id == 'simple' ? 'PHARMA' : 'FMCG',
       });
   };
 
