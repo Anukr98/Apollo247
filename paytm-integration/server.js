@@ -41,7 +41,7 @@ app.get('/paymed', (req, res) => {
 app.post('/paymed-response', (req, res) => {
   const payload = req.body;
   const token = req.session.token;
-  const date = new Date(new Date().toUTCString());
+  const date = new Date().toUTCString();
   const orderAutoId = payload.ORDERID;
 
   // console.log('payload is....', payload);
