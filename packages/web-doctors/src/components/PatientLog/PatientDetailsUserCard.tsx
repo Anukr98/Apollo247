@@ -1,17 +1,34 @@
 import React, { useContext } from 'react';
-import { Card, CardMedia, CardContent, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import { Theme } from '@material-ui/core';
+import { Card, CardMedia, CardContent, Typography, CircularProgress } from '@material-ui/core';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { Gender } from 'graphql/types/globalTypes';
-
 import { GetCaseSheet_getCaseSheet_patientDetails } from 'graphql/types/GetCaseSheet';
+
+const useStyles = makeStyles((theme: Theme) => {
+  return {
+    userCard: {
+      display: 'flex',
+    },
+    loading: {
+      color: '#fff',
+      position: 'absolute',
+      left: '10%',
+      top: '10%',
+    },
+  };
+});
 
 interface PatientDetailsProps {
   patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null;
+  consultscount: String;
 }
 export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => {
+  const classes = useStyles();
   const { loading } = useContext(CaseSheetContext);
   const userCardStrip = [];
-  const patientDetails = props.patientDetails;
+  const { patientDetails, consultscount } = props;
   if (
     patientDetails! &&
     patientDetails!.dateOfBirth &&
@@ -50,7 +67,7 @@ export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => 
       ? patientDetails!.photoUrl
       : require('images/ic_patientchat.png');
   return loading && !patientDetails ? (
-    <div>loading....</div>
+    <CircularProgress className={classes.loading} />
   ) : (
     <Card>
       <CardMedia
@@ -71,6 +88,20 @@ export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => 
         <Typography variant="h5" color="textSecondary" component="h5">
           {userCardStrip.join(', ')}
         </Typography>
+        <div className={classes.userCard}>
+          <span>
+            <div>N/A</div>
+            <div>Revenue</div>
+          </span>
+          <span>
+            <div>{consultscount}</div>
+            <div>consult</div>
+          </span>
+          <span>
+            <div>N/A</div>
+            <div>Prescriptions</div>
+          </span>
+        </div>
       </CardContent>
     </Card>
   );

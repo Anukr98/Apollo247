@@ -3,25 +3,38 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   Check,
+  CheckedIcon,
   CheckUnselectedIcon,
+  MedicineIcon,
   OneApollo,
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
+  UnCheck,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   MedicineCartItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { SaveMedicineOrderVariables } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrder';
+import {
+  SaveMedicineOrder,
+  SaveMedicineOrderVariables,
+  SaveMedicineOrder_SaveMedicineOrder,
+} from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrder';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { GraphQLError } from 'graphql';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { Alert, SafeAreaView, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { Slider } from 'react-native-elements';
+import firebase from 'react-native-firebase';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
+import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from '../graphql/profiles';
+import { SaveMedicineOrderPaymentVariables } from '../graphql/types/SaveMedicineOrderPayment';
+import { AppRoutes } from './NavigatorContainer';
+import { BottomPopUp } from './ui/BottomPopUp';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -123,14 +136,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  popupButtonStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  popupButtonTextStyle: {
+    ...theme.fonts.IBMPlexSansBold(13),
+    color: theme.colors.APP_YELLOW,
+    lineHeight: 24,
+  },
 });
 
 export interface CheckoutSceneProps extends NavigationScreenProps {}
 
 export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
+  const [isPayDisabled, setPayDisabled] = useState(false);
   const [isOneApolloPayment, setOneApolloPayment] = useState(false);
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
+  const [showOrderPopup, setShowOrderPopup] = useState<boolean>(false);
+  const [orderInfo, setOrderInfo] = useState({
+    pickupStoreName: '',
+    pickupStoreAddress: '',
+    orderId: '',
+    orderAutoId: 0,
+  });
+  const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
 
   const {
     deliveryAddressId,
@@ -140,28 +172,80 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     cartItems,
     deliveryType,
   } = useShoppingCart();
+
   const { currentPatient } = useAllCurrentPatients();
   const MAX_SLIDER_VALUE = grandTotal;
   const client = useApolloClient();
 
-  const placeOrder = async () => {
-    const payment: SaveMedicineOrderVariables['MedicineCartInput']['payment'] = {};
-    if (!isCashOnDelivery) {
-      payment.paymentType = MEDICINE_ORDER_PAYMENT_TYPE.ONLINE;
-      payment.amountPaid = grandTotal;
-      payment.paymentDateTime = new Date().toString();
-      payment.paymentStatus = 'PAID';
-      payment.paymentRefId = (Math.random() * 100).toString().replace('.', '');
-    } else {
-      payment.paymentType = MEDICINE_ORDER_PAYMENT_TYPE.COD;
-    }
-    const order: SaveMedicineOrderVariables = {
+  const saveOrder = (orderInfo: SaveMedicineOrderVariables) =>
+    client.mutate<SaveMedicineOrder, SaveMedicineOrderVariables>({
+      mutation: SAVE_MEDICINE_ORDER,
+      variables: orderInfo,
+    });
+
+  const savePayment = (paymentInfo: SaveMedicineOrderPaymentVariables) =>
+    client.mutate<SaveMedicineOrder, SaveMedicineOrderPaymentVariables>({
+      mutation: SAVE_MEDICINE_ORDER_PAYMENT,
+      variables: paymentInfo,
+    });
+
+  const placeOrder = (orderId: string, orderAutoId: number) => {
+    savePayment({
+      medicinePaymentInput: {
+        orderId: orderId,
+        orderAutoId: orderAutoId,
+        amountPaid: grandTotal,
+        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+      },
+    })
+      .then(({ data }) => {
+        const { errorCode, errorMessage } = ((data &&
+          data.SaveMedicineOrder &&
+          data.SaveMedicineOrder) ||
+          {}) as SaveMedicineOrder_SaveMedicineOrder;
+
+        console.log({ errorCode, errorMessage });
+        if (errorCode || errorMessage) {
+          // Order-failed
+        } else {
+          // Order-Success
+          // Show popup here
+          setOrderInfo({
+            orderId: orderId,
+            orderAutoId: orderAutoId,
+            pickupStoreAddress: '',
+            pickupStoreName: '',
+          });
+          setPayDisabled(false);
+          setShowOrderPopup(true);
+        }
+      })
+      .catch((e: GraphQLError[]) => {
+        console.log({ e });
+        Alert.alert('Error', e[0] && e[0].message);
+      });
+  };
+
+  const redirectToPaymentGateway = async (orderId: string, orderAutoId: number) => {
+    const token = await firebase.auth().currentUser!.getIdToken();
+    console.log({ token });
+    props.navigation.navigate(AppRoutes.PaymentScene, {
+      orderId,
+      orderAutoId,
+      token,
+      amount: grandTotal,
+    });
+  };
+
+  const initiateOrder = async () => {
+    console.log('initiateOrder');
+    setPayDisabled(true);
+    const orderInfo: SaveMedicineOrderVariables = {
       MedicineCartInput: {
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
         shopId: storeId || null,
-        patinetAddressId: deliveryAddressId || null,
-        payment: payment,
+        patientAddressId: deliveryAddressId!,
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
         estimatedAmount: grandTotal,
@@ -181,19 +265,30 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         ),
       },
     };
-    /*
-    client
-      .query<SaveMedicineOrder, SaveMedicineOrderVariables>({
-        query: SAVE_MEDICINE_ORDER,
-        variables: order,
+
+    saveOrder(orderInfo)
+      .then(({ data }) => {
+        const { orderId, orderAutoId } = ((data &&
+          data.SaveMedicineOrder &&
+          data.SaveMedicineOrder) ||
+          {}) as SaveMedicineOrder_SaveMedicineOrder;
+        console.log({ orderAutoId, orderId });
+        if (isCashOnDelivery) {
+          placeOrder(orderId, orderAutoId);
+        } else {
+          Alert.alert(
+            'Error',
+            'Inconvenience is regretted. Payment Gateway Integration is in-progress.'
+          );
+          console.log('redirectToPaymentGateway');
+          // redirectToPaymentGateway(orderId, orderAutoId).finally(() => setPayDisabled(false));
+        }
       })
-      .then(({ data: { SaveMedicineOrder } }) => {
-        console.log({ SaveMedicineOrder });
-      })
-      .catch((error) => {
+      .catch((error: GraphQLError) => {
+        Alert.alert('Error', error.message);
+        setPayDisabled(false);
         console.log('Error occured', { error });
       });
-    */
   };
 
   const renderHeader = () => {
@@ -373,19 +468,130 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           style={{ width: '66.66%' }}
           title={`PAY — RS. ${grandTotal}`}
           onPress={() => {
-            placeOrder();
+            initiateOrder();
           }}
+          disabled={isPayDisabled}
         />
       </StickyBottomComponent>
     );
   };
 
+  const renderOrderInfoPopup = () => {
+    if (showOrderPopup) {
+      return (
+        <BottomPopUp
+          title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
+          description={'Your order has been placed successfully'}
+        >
+          <View
+            style={{
+              margin: 20,
+              marginTop: 16,
+              padding: 16,
+              backgroundColor: '#f7f8f5',
+              borderRadius: 10,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <MedicineIcon />
+              <Text
+                style={{
+                  flex: 1,
+                  ...theme.fonts.IBMPlexSansMedium(17),
+                  lineHeight: 24,
+                  color: '#01475b',
+                }}
+              >
+                Medicines
+              </Text>
+              <Text
+                style={{
+                  flex: 1,
+                  textAlign: 'right',
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  lineHeight: 24,
+                  color: '#01475b',
+                }}
+              >
+                {`#${orderInfo.orderAutoId}`}
+              </Text>
+            </View>
+            <View
+              style={{
+                height: 1,
+                backgroundColor: '#02475b',
+                opacity: 0.1,
+                marginBottom: 7.5,
+                marginTop: 15.5,
+              }}
+            />
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <Text
+                style={{
+                  flex: 1,
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  lineHeight: 24,
+                  color: '#01475b',
+                }}
+              >
+                Remind me to take medicines
+              </Text>
+              <TouchableOpacity
+                style={{ flex: 1 }}
+                onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}
+              >
+                {isRemindMeChecked ? <CheckedIcon /> : <UnCheck />}
+              </TouchableOpacity>
+            </View>
+            <View
+              style={{
+                height: 1,
+                backgroundColor: '#02475b',
+                opacity: 0.1,
+                marginBottom: 15.5,
+                marginTop: 7.5,
+              }}
+            />
+            <View style={styles.popupButtonStyle}>
+              <TouchableOpacity onPress={() => {}}>
+                <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() =>
+                  props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+                    orderAutoId: orderInfo.orderAutoId,
+                  })
+                }
+              >
+                <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </BottomPopUp>
+      );
+    }
+  };
+
   return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      {renderHeader()}
-      {/* {renderOneApolloAndHealthCreditsCard()} */}
-      {renderPaymentModesCard()}
-      {renderPayButton()}
-    </SafeAreaView>
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={theme.viewStyles.container}>
+        {renderHeader()}
+        {/* {renderOneApolloAndHealthCreditsCard()} */}
+        {renderPaymentModesCard()}
+        {renderPayButton()}
+      </SafeAreaView>
+    </View>
   );
 };

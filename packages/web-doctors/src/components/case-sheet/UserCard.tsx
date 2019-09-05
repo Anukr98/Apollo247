@@ -1,5 +1,12 @@
 import React, { useContext } from 'react';
-import { Card, CardMedia, CardContent, Typography, Divider } from '@material-ui/core';
+import {
+  Card,
+  CardMedia,
+  CardContent,
+  Typography,
+  Divider,
+  CircularProgress,
+} from '@material-ui/core';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { Gender } from 'graphql/types/globalTypes';
 
@@ -44,7 +51,7 @@ export const UserCard: React.FC = () => {
       ? patientDetails!.photoUrl
       : require('images/ic_patientchat.png');
   return loading && !patientDetails ? (
-    <div>loading....</div>
+    <CircularProgress />
   ) : (
     <Card>
       <CardMedia

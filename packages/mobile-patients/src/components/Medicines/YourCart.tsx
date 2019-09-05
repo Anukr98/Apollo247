@@ -203,10 +203,25 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const renderItemsInCart = () => {
-    const cartItemsCount = cartItems.length > 10 ? `${cartItems.length}` : `0${cartItems.length}`;
+    const cartItemsCount =
+      cartItems.length > 10 || cartItems.length == 0
+        ? `${cartItems.length}`
+        : `0${cartItems.length}`;
     return (
       <View>
         {renderLabel('ITEMS IN YOUR CART', cartItemsCount)}
+        <Text
+          style={[
+            styles.labelTextStyle,
+            {
+              margin: 20,
+              textAlign: 'center',
+              opacity: 0.3,
+            },
+          ]}
+        >
+          Your Cart is empty
+        </Text>
         {cartItems.map((medicine, index, array) => {
           const medicineCardContainerStyle = [
             { marginBottom: 8, marginHorizontal: 20 },
@@ -503,6 +518,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       <View>
         {renderLabel('TOTAL CHARGES')}
         <TouchableOpacity
+          activeOpacity={1}
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginHorizontal: 20,
@@ -658,7 +674,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
-            title={`PROCEED TO PAY — RS. ${cartTotal}`}
+            title={`PROCEED TO PAY — RS. ${grandTotal}`}
             onPress={() => props.navigation.navigate(AppRoutes.CheckoutScene)}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
