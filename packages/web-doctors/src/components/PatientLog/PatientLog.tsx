@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Theme, MenuItem } from '@material-ui/core';
+import { Theme, MenuItem, CircularProgress } from '@material-ui/core';
 import { makeStyles, withStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
@@ -356,7 +356,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
           )}
           {loading ? (
             <Typography variant="h4">
-              <span>Loading....</span>
+              <CircularProgress />
             </Typography>
           ) : (
             <div>
