@@ -68,10 +68,11 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         title={string.orders.urOrders}
         container={{ borderBottomWidth: 0 }}
         rightComponent={
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity onPress={() => props.navigation.goBack()}>
             <More />
           </TouchableOpacity>
         }
+        onPressLeftIcon={() => props.navigation.goBack()}
       />
       <ScrollView bounces={false}>{renderOrders()}</ScrollView>
     </SafeAreaView>

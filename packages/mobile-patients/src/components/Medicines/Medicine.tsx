@@ -244,6 +244,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 }
               />
               <ListCard
+                onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
                 container={{ marginBottom: 32 }}
                 title={'Your Orders'}
                 leftIcon={<MedicineIcon />}

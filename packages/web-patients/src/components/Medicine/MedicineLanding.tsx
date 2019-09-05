@@ -5,6 +5,7 @@ import { Header } from 'components/Header';
 import { SearchMedicines } from 'components/Medicine/SearchMedicines';
 import { OrderFailed } from 'components/Cart/OrderFailed';
 import { OrderPlaced } from 'components/Cart/OrderPlaced';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -167,6 +168,7 @@ export const MedicineLanding: React.FC = (props) => {
         classes={{ paper: classes.bottomPopover }}
         onClose={() => {
           setIsPopoverOpen(false);
+          window.location.href = clientRoutes.yourOrders();
         }}
       >
         <div className={classes.successPopoverWindow}>
