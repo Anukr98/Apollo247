@@ -31,7 +31,6 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     loading: {
-      color: '#fff',
       position: 'absolute',
       left: '20%',
       top: '30%',
