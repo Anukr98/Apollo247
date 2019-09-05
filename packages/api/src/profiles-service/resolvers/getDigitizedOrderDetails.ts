@@ -1,30 +1,30 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+//import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import {
-  MedicineOrders,
-  MEDICINE_DELIVERY_TYPE,
-  MEDICINE_ORDER_TYPE,
   MedicineOrderLineItems,
+  MedicineOrdersStatus,
+  MEDICINE_ORDER_STATUS,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 
 export const getDigitizedOrderTypeDefs = gql`
   input MedicineOrderInput {
-    quoteId: String
+    quoteId: Int
     shopId: String
     estimatedAmount: Float
-    patientId: ID!
     items: [MedicineItem]
   }
 
   input MedicineItem {
-    medicineSku: String
+    medicineSKU: String
     medicineName: String
     price: Float
     quantity: Int
     mrp: Float
+    pack: Int
+    mou: Int
   }
 
   type MedicineOrderResult {
@@ -39,19 +39,20 @@ export const getDigitizedOrderTypeDefs = gql`
 `;
 
 type MedicineOrderInput = {
-  quoteId: string;
+  quoteId: number;
   shopId: string;
   estimatedAmount: number;
-  patientId: string;
   items: MedicineItem[];
 };
 
 type MedicineItem = {
-  medicineSku: string;
+  medicineSKU: string;
   medicineName: string;
   price: number;
   quantity: number;
   mrp: number;
+  pack: number;
+  mou: number;
 };
 
 type MedicineOrderResult = {
@@ -72,19 +73,15 @@ const getDigitizedPrescription: Resolver<
   let errorCode = 0,
     errorMessage = '',
     status = 'Accepted';
-  if (MedicineOrderInput.patientId === '' || MedicineOrderInput.patientId == null) {
-    errorCode = -1;
-    errorMessage = 'Missing patient Id';
-    status = 'Rejected';
-  }
+
   if (!MedicineOrderInput.items || MedicineOrderInput.items.length == 0) {
     errorCode = -1;
     errorMessage = 'Missing medicine line items';
     status = 'Rejected';
   }
-  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(MedicineOrderInput.patientId);
-  const medicineOrderattrs: Partial<MedicineOrders> = {
+  //const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  //const patientDetails = await patientRepo.findById(MedicineOrderInput.patientId);
+  /*const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,
     quoteId: MedicineOrderInput.quoteId,
     deliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
@@ -93,21 +90,31 @@ const getDigitizedPrescription: Resolver<
     shopId: MedicineOrderInput.shopId,
     quoteDateTime: new Date(),
     devliveryCharges: 0.0,
-  };
+  };*/
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
-  if (saveOrder) {
+  const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(MedicineOrderInput.quoteId);
+  //const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
+  if (orderDetails) {
     MedicineOrderInput.items.map((item) => {
       const orderItemAttrs: Partial<MedicineOrderLineItems> = {
-        medicineOrders: saveOrder,
-        medicineSKU: item.medicineSku,
+        medicineOrders: orderDetails,
         ...item,
       };
       const lineItemOrder = medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
       console.log(lineItemOrder);
     });
+    //save in order status table
+    const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      medicineOrders: orderDetails,
+      orderStatus: MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY,
+      statusDate: new Date(),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(
+      medicineOrderStatusAttrs,
+      orderDetails.orderAutoId
+    );
   }
-  console.log(saveOrder, 'save order');
+  //console.log(saveOrder, 'save order');
 
   return { status, errorCode, errorMessage };
 };
