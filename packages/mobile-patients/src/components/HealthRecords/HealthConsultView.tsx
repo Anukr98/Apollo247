@@ -133,7 +133,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       </View>
       <View style={styles.rightViewStyle}>
         <Text style={styles.labelTextStyle}>Today, 12 Aug 2019</Text>
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
           activeOpacity={1}
           style={[styles.cardContainerStyle]}
           onPress={() => {

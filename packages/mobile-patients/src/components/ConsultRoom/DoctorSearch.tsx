@@ -120,7 +120,7 @@ const pastSearches: pastSearches[] = [
   },
 ];
 
-let doctorIds = [];
+let doctorIds: (string | undefined)[] = [];
 export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
@@ -151,7 +151,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
 
-  const fetchNextSlots = (doctorIds) => {
+  const fetchNextSlots = (doctorIds: (string | undefined)[]) => {
     console.log(doctorIds, 'doctorIds fetchNextSlots');
     const todayDate = new Date().toISOString().slice(0, 10);
     const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
@@ -224,9 +224,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     ) {
       // doctorIds =
       const ids = newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
-        ? newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors.map(
-            (item) => item && item.id
-          )
+        ? newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors.map((item) => {
+            if (item) return item.id;
+          })
         : [];
       doctorIds.push(...ids);
       isNewDoctor = true;
@@ -252,7 +252,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       otherDoctors !== newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
     ) {
       const ids = newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
-        ? newData.data.SearchDoctorAndSpecialtyByName.otherDoctors.map((item) => item && item.id)
+        ? newData.data.SearchDoctorAndSpecialtyByName.otherDoctors.map((item) => {
+            if (item) return item.id;
+          })
         : [];
       doctorIds.push(...ids);
       isNewDoctor = true;
@@ -788,6 +790,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               possibleMatches &&
               renderPossibleMatches()}
             {doctorsList &&
+              searchText.length > 2 &&
               doctorsList.length === 1 &&
               otherDoctors &&
               renderOtherSUggestedDoctors()}

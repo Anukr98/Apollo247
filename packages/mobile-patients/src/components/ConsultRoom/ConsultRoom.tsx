@@ -586,7 +586,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => setShowMenu(true)}
-                activeOpacity={1}
                 style={{
                   flexDirection: 'row',
                   marginTop: 8,

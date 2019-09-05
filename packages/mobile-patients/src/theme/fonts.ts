@@ -43,10 +43,10 @@ const Fonts = {
       fontSize: s,
       ...Platform.select({
         android: {
-          fontWeight: 'normal',
+          fontWeight: 'normal' as 'normal',
         },
         ios: {
-          fontWeight: '500',
+          fontWeight: '500' as '500',
         },
       }),
     };

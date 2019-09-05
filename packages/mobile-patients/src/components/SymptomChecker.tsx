@@ -6,7 +6,7 @@ import { SafeAreaView, View, Text, Button } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
-export const CustomComponent: React.FC<> = (props) => {
+export const CustomComponent: React.FC<{}> = (props) => {
   const onSubmitClick = async () => {
     const ss = await $Generator({ type: 'showSpeciality' });
     console.log(ss, 'ssssss');

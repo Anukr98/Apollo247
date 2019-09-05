@@ -75,13 +75,15 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
     console.log(medicalRecords, 'medicalRecord');
 
     if (medicalRecords && medicalRecords.length)
-      <View>
-        {medicalRecords.map((item) => {
-          console.log('item', item);
+      return (
+        <View>
+          {medicalRecords.map((item) => {
+            console.log('item', item);
 
-          if (item) return <HealthMedicineCard data={item} />;
-        })}
-      </View>;
+            if (item) return <HealthMedicineCard data={item} />;
+          })}
+        </View>
+      );
   };
   return (
     <View>

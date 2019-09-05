@@ -1,16 +1,10 @@
-import {
-  Filter,
-  TrackerBig,
-  OnlineConsult,
-  PrescriptionSkyBlue,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import strings from '@aph/mobile-patients/src/strings/strings.json';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
+import { More, TrackerBig } from '@aph/mobile-patients/src/components/ui/Icons';
 import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -105,7 +99,7 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
       </View>
       <View style={styles.rightViewStyle}>
         <Text style={styles.labelTextStyle}>
-          {moment(props.data.testDate).format('DD MMM YYYYY')}
+          {moment(props.data.testDate).format('DD MMM YYYY')}
         </Text>
         <TouchableOpacity
           activeOpacity={1}
@@ -116,8 +110,13 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
         >
           <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.doctorNameStyles}>{props.data.testName}</Text>
-              {props.data.sourceName && (
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={styles.doctorNameStyles}>{props.data.testName}</Text>
+                <TouchableOpacity>
+                  <More />
+                </TouchableOpacity>
+              </View>
+              {!!props.data.sourceName && (
                 <Text style={styles.descriptionTextStyles}>{props.data.sourceName}</Text>
               )}
             </View>

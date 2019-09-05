@@ -71,7 +71,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     console.log('error', JSON.stringify(error));
   } else {
     console.log('getPatientPastConsultsAndPrescriptions', data);
-    const array = {};
+    const array: { [key: string]: Object[] } = {};
     if (
       data &&
       data.getPatientPastConsultsAndPrescriptions &&
