@@ -241,6 +241,8 @@ const useStyles = makeStyles((theme: Theme) => {
       listStyleType: 'none',
       textAlign: 'center',
       display: 'inline',
+      paddingBottom: 0,
+      paddingLeft: 0,
       '& li': {
         fontSize: '15px',
         fontWeight: 500,
@@ -250,19 +252,21 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: 'normal',
         letterSpacing: 'normal',
         color: '#02475b',
-        paddingBottom: '10px',
-        paddingTop: '10px',
+        paddingBottom: 15,
+        paddingTop: 15,
         textAlign: 'left',
+        cursor: 'pointer',
+        borderBottom: '1px solid rgba(2,71,91,0.5)',
         '&:hover': {
-          background: '#eeeeee',
+          background: '#f0f4f5',
         },
       },
     },
 
     dotPaper: {
       width: 180,
-      minHeight: 165,
-      padding: '0px',
+      minHeight: 50,
+      padding: 0,
       borderRadius: 10,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
@@ -277,7 +281,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalBoxTransfer: {
       maxWidth: 480,
-      height: 390,
+      minHeight: 444,
       margin: 'auto',
       marginTop: 88,
       backgroundColor: '#eeeeee',
@@ -324,19 +328,16 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     tabBody: {
       background: 'white',
-      height: 80,
-      marginTop: '10px',
-      paddingLeft: '15px',
-      paddingTop: '10px',
-      paddingRight: '15px',
-      /* padding: 15px; */
-
+      minHeight: 80,
+      marginTop: 10,
+      padding: '10px 15px 15px 15px',
       '& p': {
         margin: 0,
         fontSize: '15px',
         fontWeight: 500,
         lineHeight: 1.2,
         color: '#01475b',
+        paddingBottom: 15,
       },
     },
     menuPopover: {
@@ -404,16 +405,25 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       display: 'block',
       padding: 10,
-      height: 170,
       zIndex: 9,
-      backgroundColor: '#eeeeee',
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
+      '& h6': {
+        color: 'rgba(2,71,91,0.3)',
+        fontSize: 12,
+        marginBottom: 5,
+        marginTop: 12,
+      },
       '& ul': {
         listStyleType: 'none',
         paddingLeft: 0,
+        marginTop: 0,
         '& li': {
-          paddingLeft: 10,
+          fontSize: 18,
+          color: '#02475b',
+          fontWeight: 500,
           '&:hover': {
-            backgroundColor: '#bbbaba',
             cursor: 'pointer',
           },
         },
@@ -1007,6 +1017,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
           <Popover
             id={idThreeDots}
+            className={classes.dotPaper}
             open={openThreeDots}
             anchorEl={anchorElThreeDots}
             onClose={handleCloseThreeDots}
@@ -1019,7 +1030,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               horizontal: 'right',
             }}
           >
-            <Paper className={classes.dotPaper}>
+            <Paper>
               <ul className={classes.popOverUL}>
                 {/* <li>Share Case Sheet</li> */}
                 <li
@@ -1198,7 +1209,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             )}
             {isDoctorOrSpeciality && searchKeyWord.length > 2 && (
               <span className={classes.doctorSearch}>
-                <p>Doctor(s)</p>
+                <h6>Doctor(s)</h6>
                 {filteredStarDoctors!.length > 0 ? (
                   <ul>
                     {filteredStarDoctors!.map((item: any, idx: any) => (
@@ -1215,7 +1226,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 ) : (
                   'No Doctors found'
                 )}
-                <p> Speciality(s)</p>
+                <h6> Speciality(s)</h6>
                 {filterSpeciality!.length > 0 ? (
                   <ul>
                     {filterSpeciality!.map((item: any, idx: any) => (
