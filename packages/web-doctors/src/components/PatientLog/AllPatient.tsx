@@ -47,11 +47,21 @@ const useStyles = makeStyles((theme: Theme) =>
     mainHeading: {
       color: '#02475b',
       fontWeight: 500,
-      fontSize: 20,
+      fontSize: 18,
       lineHeight: '25px',
       [theme.breakpoints.between('sm', 'md')]: {
         fontSize: 18,
       },
+    },
+    mainHeadingmini: {
+      fontSize: 14,
+      fontWeight: 'normal',
+      color: '#02475b',
+    },
+    mainHeadingconsult: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
     },
     bigAvatar: {
       width: 60,
@@ -140,18 +150,30 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                     </Grid>
                     <Grid lg={3} sm={3} xs={3} key={2} item className={classes.valign}>
                       {lastConsult !== '' && (
-                        <Typography gutterBottom variant="body1" className={classes.mainHeading}>
+                        <Typography
+                          gutterBottom
+                          variant="body1"
+                          className={classes.mainHeadingmini}
+                        >
                           {`Last Consult: ${lastConsult.getDate()}/${lastConsult.getMonth()}/${lastConsult.getFullYear()}`}
                         </Typography>
                       )}
                       {lastConsult === '' && (
-                        <Typography gutterBottom variant="body1" className={classes.mainHeading}>
+                        <Typography
+                          gutterBottom
+                          variant="body1"
+                          className={classes.mainHeadingconsult}
+                        >
                           Last Consult: N/A
                         </Typography>
                       )}
                     </Grid>
                     <Grid lg={3} sm={3} xs={3} key={3} item className={classes.valign}>
-                      <Typography gutterBottom variant="body1" className={classes.mainHeading}>
+                      <Typography
+                        gutterBottom
+                        variant="body1"
+                        className={classes.mainHeadingconsult}
+                      >
                         {patient.appointmentids.length} Consult
                       </Typography>
                     </Grid>
