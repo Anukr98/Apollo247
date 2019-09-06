@@ -62,7 +62,7 @@ export const buildCaseSheet = (attrs?: Partial<CaseSheet>) => {
   const diagnosis = _times(_random(0, 3), () => buildDiagnosis());
   const diagnosisPrescription = _times(_random(0, 3), () => buildDiagnosisPrescription());
   const otherInstructions = _times(_random(0, 5), () => buildOtherInstruction());
-  const medicinePrescriptions = _times(_random(2, 3), () => buildMedicinePrescription());
+  const medicinePrescriptions = _times(_random(0, 8), () => buildMedicinePrescription());
   const symptoms = _times(_random(0, 5), () => buildSymptom());
   caseSheet.notes = notes;
   caseSheet.diagnosis = JSON.stringify(diagnosis);
