@@ -54,7 +54,7 @@ export interface UpdateCaseSheet_updateCaseSheet {
   doctorId: string | null;
   followUp: boolean | null;
   followUpAfterInDays: string | null;
-  followUpDate: string | null;
+  followUpDate: any | null;
   id: string | null;
   medicinePrescription: (UpdateCaseSheet_updateCaseSheet_medicinePrescription | null)[] | null;
   notes: string | null;
