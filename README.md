@@ -64,6 +64,10 @@ In local and development we use the [Azurite Storage Emulator](https://github.co
 
 ### Common issues
 
+#### Services crashing randomly
+
+Check docker disk space, if there is "0B used" (or anything less than "5GB"), increase it (recommended: 80GB).
+
 #### Module '@aph/... cannot be found'
 
 Do `npm run bootstrap:web|mobile` to rebuild the shared modules
