@@ -96,6 +96,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             leftIcon="backArrow"
             rightComponent={
               <TouchableOpacity
+                activeOpacity={1}
                 onPress={() => {
                   setCancelAppointment(true);
                 }}
@@ -230,7 +231,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               }}
             >
               <View
-                style={{ margin: 0, height: height, width: width, backgroundColor: 'transparent' }}
+                style={{
+                  margin: 0,
+                  height: height,
+                  width: width,
+                  backgroundColor: 'transparent',
+                }}
               >
                 <TouchableOpacity
                   onPress={() => {

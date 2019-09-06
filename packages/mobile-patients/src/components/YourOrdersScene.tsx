@@ -68,7 +68,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         title={string.orders.urOrders}
         container={{ borderBottomWidth: 0 }}
         rightComponent={
-          <TouchableOpacity onPress={() => props.navigation.goBack()}>
+          <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
             <More />
           </TouchableOpacity>
         }

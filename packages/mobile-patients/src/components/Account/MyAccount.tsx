@@ -108,6 +108,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       setprofileDetails(currentPatient);
       setshowSpinner(false);
     }
+    if (currentPatient === profileDetails) {
+      setshowSpinner(false);
+    }
   }, [currentPatient, profileDetails]);
 
   const renderDetails = () => {
@@ -233,7 +236,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           }}
           leftIcon="backArrow"
           rightComponent={
-            <TouchableOpacity onPress={onPressLogout}>
+            <TouchableOpacity activeOpacity={1} onPress={onPressLogout}>
               <Text>Logout</Text>
             </TouchableOpacity>
           }

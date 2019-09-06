@@ -64,6 +64,7 @@ export interface ConsultOnlineProps {
   availableInMin: Number;
   setselectedTimeSlot: (arg0: string) => void;
   selectedTimeSlot: string;
+  setshowSpinner?: (arg0: boolean) => void;
 }
 export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const timings = [
@@ -233,6 +234,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         date={date}
         onPressDate={(date) => {
           // setDate(date);
+          props.setshowSpinner && props.setshowSpinner(true);
           props.setDate(date);
           props.setselectedTimeSlot('');
         }}
