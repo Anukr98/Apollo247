@@ -19,9 +19,11 @@ import {
 import { GatewayHeaders } from 'api-gateway';
 import { getConnection } from 'typeorm';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
+import { connect } from 'notifications-service/database/connect';
 //import fetch from 'node-fetch';
 
 (async () => {
+  await connect();
   const server = new ApolloServer({
     context: async ({ req }) => {
       const headers = req.headers as GatewayHeaders;
