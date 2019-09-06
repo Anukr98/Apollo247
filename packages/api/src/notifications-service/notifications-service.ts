@@ -16,14 +16,12 @@ import {
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 //import { AppointmentPayload } from 'types/appointmentTypes';
 //import { bookAppointmentApollo } from 'notifications-service/bookAppointmentApollo';
-import { connect } from 'consults-service/database/connect';
 import { GatewayHeaders } from 'api-gateway';
 import { getConnection } from 'typeorm';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 //import fetch from 'node-fetch';
 
 (async () => {
-  await connect();
   const server = new ApolloServer({
     context: async ({ req }) => {
       const headers = req.headers as GatewayHeaders;
