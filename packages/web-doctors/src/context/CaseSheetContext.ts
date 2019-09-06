@@ -13,6 +13,8 @@ import { createContext } from 'react';
 
 export interface CaseSheetContextProps {
   loading: boolean;
+  caseSheetEdit: boolean;
+  setCaseSheetEdit: React.Dispatch<React.SetStateAction<boolean>> | (() => false);
   patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null;
   appointmentInfo: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
   caseSheetId: string | null;
@@ -68,6 +70,8 @@ export interface CaseSheetContextProps {
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
   loading: true,
+  setCaseSheetEdit: () => {},
+  caseSheetEdit: false,
   patientDetails: null,
   appointmentInfo: null,
   caseSheetId: null,

@@ -206,6 +206,7 @@ export const Diagnosis: React.FC = () => {
   const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
     CaseSheetContext
   );
+  const { caseSheetEdit } = useContext(CaseSheetContext);
   const client = useApolloClient();
 
   useEffect(() => {
@@ -333,7 +334,7 @@ export const Diagnosis: React.FC = () => {
             />
           ))}
       </Typography>
-      {!showAddCondition && (
+      {!showAddCondition && caseSheetEdit && (
         <AphButton
           variant="contained"
           color="primary"

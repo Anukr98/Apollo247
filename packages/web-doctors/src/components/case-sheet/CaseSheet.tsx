@@ -299,12 +299,12 @@ export const CaseSheet: React.FC = () => {
             fullWidth
             className={classes.textFieldColor}
             placeholder="What you enter here won’t be shown to the patient.."
-            value={notes}
             onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
-              if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
-                setNotes((e.target as HTMLInputElement).value.trim());
-
-                e.preventDefault();
+              {
+                if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                  setNotes((e.target as HTMLInputElement).value.trim());
+                  e.preventDefault();
+                }
               }
             }}
           />

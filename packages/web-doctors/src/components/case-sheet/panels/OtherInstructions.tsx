@@ -234,6 +234,7 @@ export const OtherInstructions: React.FC = () => {
   const { otherInstructions: selectedValues, setOtherInstructions: setSelectedValues } = useContext(
     CaseSheetContext
   );
+  const { caseSheetEdit } = useContext(CaseSheetContext);
   const [idx, setIdx] = React.useState();
 
   useEffect(() => {
@@ -313,13 +314,15 @@ export const OtherInstructions: React.FC = () => {
                 key={idx}
                 label={item!.instruction}
                 onDelete={() => handleDelete(item, idx)}
-                deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
+                deleteIcon={
+                  <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+                }
               />
             ))}
         </Typography>
       </Typography>
       <Typography component="div" className={classes.textFieldContainer}>
-        {!showAddCondition && (
+        {!showAddCondition && caseSheetEdit && (
           <AphButton
             className={classes.btnAddDoctor}
             variant="contained"
