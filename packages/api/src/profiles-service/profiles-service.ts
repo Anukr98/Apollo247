@@ -70,6 +70,14 @@ import {
   getPatientMedicalRecordsResolvers,
 } from 'profiles-service/resolvers/getPatientMedicalRecords';
 import { getCouponsTypeDefs, getCouponsResolvers } from 'profiles-service/resolvers/getCoupons';
+import {
+  submitPrescriptionOrderTypeDefs,
+  submitPrescriptionOrderResolvers,
+} from 'profiles-service/resolvers/submitPrescriptionOrder';
+import {
+  updateOrderStatusTypeDefs,
+  updateOrderStatusResolvers,
+} from 'profiles-service/resolvers/updateOrderStatusPharma';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -182,6 +190,14 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: getCouponsTypeDefs,
         resolvers: getCouponsResolvers,
+      },
+      {
+        typeDefs: submitPrescriptionOrderTypeDefs,
+        resolvers: submitPrescriptionOrderResolvers,
+      },
+      {
+        typeDefs: updateOrderStatusTypeDefs,
+        resolvers: updateOrderStatusResolvers,
       },
     ]),
   });
