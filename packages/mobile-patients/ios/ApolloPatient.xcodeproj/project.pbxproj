@@ -32,6 +32,8 @@
 		5F9AC04693804138B17A9196 /* FontAwesome5_Brands.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE883F4FD21349AF8E74A3F1 /* FontAwesome5_Brands.ttf */; };
 		6717258923016EF10088EE92 /* OTInstall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6717258823016EF10088EE92 /* OTInstall.swift */; };
 		671725902301707B0088EE92 /* libRNDocumentPicker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6717258F230170700088EE92 /* libRNDocumentPicker.a */; };
+		6790F2162317D9880037D908 /* RSKImageCropper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6790F2152317D9880037D908 /* RSKImageCropper.framework */; };
+		67B3ADDA2316C17200E4377B /* libRNCAsyncStorage.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 67B3ADD92316C16100E4377B /* libRNCAsyncStorage.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 		8CDD0A92F89241EBA6C55A8E /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C5E26C657DEA440AB1CCBDF7 /* Feather.ttf */; };
 		8F02ADE7665545228E84A70D /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 28828092F8724884AAABC430 /* FontAwesome.ttf */; };
@@ -299,6 +301,13 @@
 			remoteGlobalIDString = E01DD9DB1D2311A600C39062;
 			remoteInfo = RNDocumentPicker;
 		};
+		67B3ADD82316C16100E4377B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 67B3ADD22316C16100E4377B /* RNCAsyncStorage.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 134814201AA4EA6300B7C361;
+			remoteInfo = RNCAsyncStorage;
+		};
 		78C398B81ACF4ADC00677621 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */;
@@ -481,6 +490,8 @@
 		6717258723016EF00088EE92 /* ApolloPatient-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ApolloPatient-Bridging-Header.h"; sourceTree = "<group>"; };
 		6717258823016EF10088EE92 /* OTInstall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTInstall.swift; sourceTree = "<group>"; };
 		6717258A230170700088EE92 /* RNDocumentPicker.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNDocumentPicker.xcodeproj; path = "../node_modules/react-native-document-picker/ios/RNDocumentPicker.xcodeproj"; sourceTree = "<group>"; };
+		6790F2152317D9880037D908 /* RSKImageCropper.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = RSKImageCropper.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		67B3ADD22316C16100E4377B /* RNCAsyncStorage.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNCAsyncStorage.xcodeproj; path = "../node_modules/@react-native-community/async-storage/ios/RNCAsyncStorage.xcodeproj"; sourceTree = "<group>"; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		80EAA264D827BADB6794E6F4 /* Pods-ApolloPatient.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ApolloPatient.debug.xcconfig"; path = "Target Support Files/Pods-ApolloPatient/Pods-ApolloPatient.debug.xcconfig"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
@@ -545,6 +556,7 @@
 				00C302E81ABCBA2D00DB3ED1 /* libRCTImage.a in Frameworks */,
 				133E29F31AD74F7200F7D852 /* libRCTLinking.a in Frameworks */,
 				00C302E91ABCBA2D00DB3ED1 /* libRCTNetwork.a in Frameworks */,
+				6790F2162317D9880037D908 /* RSKImageCropper.framework in Frameworks */,
 				139105C61AF99C1200B5F7CC /* libRCTSettings.a in Frameworks */,
 				832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */,
 				00C302EA1ABCBA2D00DB3ED1 /* libRCTVibration.a in Frameworks */,
@@ -562,6 +574,7 @@
 				97A8D78C2316F5A00010C1EB /* libRNDeviceInfo.a in Frameworks */,
 				97A8D79D231704EF0010C1EB /* libRNInCallManager.a in Frameworks */,
 				C8E373AF83BA4045A4546C33 /* libOpenTokReactNative.a in Frameworks */,
+				67B3ADDA2316C17200E4377B /* libRNCAsyncStorage.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -888,6 +901,8 @@
 				4B973476F75B4CCF9413B39D /* libRNVectorIcons.a */,
 				919AD47576BF454F836D02CE /* libRNFirebase.a */,
 				23BD734B3EF248A78F57CBA3 /* libOpenTokReactNative.a */,
+				6790F2152317D9880037D908 /* RSKImageCropper.framework */,
+				67B3ADD92316C16100E4377B /* libRNCAsyncStorage.a */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -1318,6 +1333,13 @@
 			fileType = archive.ar;
 			path = libRNDocumentPicker.a;
 			remoteRef = 6717258E230170700088EE92 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		67B3ADD92316C16100E4377B /* libRNCAsyncStorage.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRNCAsyncStorage.a;
+			remoteRef = 67B3ADD82316C16100E4377B /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		78C398B91ACF4ADC00677621 /* libRCTLinking.a */ = {

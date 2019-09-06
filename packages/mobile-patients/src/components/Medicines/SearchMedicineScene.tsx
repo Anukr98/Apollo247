@@ -24,6 +24,7 @@ import { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Mutation } from 'react-apollo';
 import { useApolloClient } from 'react-apollo-hooks';
+import axios from 'axios';
 import {
   ActivityIndicator,
   Alert,
@@ -329,6 +330,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{ marginRight: 24 }}
               onPress={() => {
                 console.log('YourCartProps onpress');
@@ -338,7 +340,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
               <Filter />
             </TouchableOpacity>
           </View>
@@ -397,6 +399,36 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     }
   };
 
+  const fetchLocation = (text: string) => {
+    const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+    isValidPinCode(text);
+    setPinCode(text);
+    axios
+      .get(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${text}&latitude=17.3355835&longitude=78.46756239999999&key=${key}`
+      )
+      .then((obj) => {
+        console.log(obj, 'places');
+        if (obj.data.predictions) {
+          const address = obj.data.predictions.map(
+            (item: {
+              structured_formatting: {
+                main_text: string;
+              };
+            }) => {
+              return item.structured_formatting.main_text;
+            }
+          );
+          console.log(address, 'address');
+          // setlocationSearchList(address);
+          // setcurrentLocation(address.toUpperCase());
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   const renderDeliveryPinCode = () => {
     return (
       <View style={styles.deliveryPinCodeContaner}>
@@ -421,6 +453,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   ) => {
     return (
       <TouchableOpacity
+        activeOpacity={1}
         key={pastSeacrh.typeId!}
         style={[styles.pastSearchItemStyle, containerStyle]}
         onPress={() => {

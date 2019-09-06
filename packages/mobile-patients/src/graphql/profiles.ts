@@ -567,3 +567,144 @@ export const SAVE_MEDICINE_ORDER_PAYMENT = gql`
 //     }
 //   }
 // `;
+export const GET_NOTIFICATION_SETTINGS = gql`
+  query getPatientNotificationSettings($patient: ID!) {
+    getPatientNotificationSettings(patient: $patient) {
+      notificationSettings {
+        id
+        commissionNotification
+        messageFromDoctorNotification
+        playNotificationSound
+        reScheduleAndCancellationNotification
+        paymentNotification
+        upcomingAppointmentReminders
+      }
+    }
+  }
+`;
+
+export const SAVE_NOTIFICATION_SETTINGS = gql`
+  mutation savePatientNotificationSettings(
+    $notificationSettingsInput: SavePatientNotificationSettingsInput!
+  ) {
+    savePatientNotificationSettings(notificationSettingsInput: $notificationSettingsInput) {
+      status
+    }
+  }
+`;
+
+export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
+  query getPatientPastConsultsAndPrescriptions(
+    $consultsAndOrdersInput: PatientConsultsAndOrdersInput
+  ) {
+    getPatientPastConsultsAndPrescriptions(consultsAndOrdersInput: $consultsAndOrdersInput) {
+      consults {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        appointmentState
+        hospitalId
+        isFollowUp
+        followUpParentId
+        followUpTo
+        bookingDate
+        caseSheet {
+          consultType
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            itemname
+          }
+          doctorId
+          followUp
+          followUpAfterInDays
+          followUpDate
+          id
+          medicinePrescription {
+            medicineConsumptionDurationInDays
+            medicineDosage
+            medicineInstructions
+            medicineTimings
+            medicineToBeTaken
+            medicineName
+            id
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+        }
+        displayId
+        status
+        doctorInfo {
+          id
+          salutation
+          firstName
+          lastName
+          experience
+          city
+          photoUrl
+          qualification
+          specialty {
+            name
+            image
+          }
+        }
+      }
+      medicineOrders {
+        id
+        orderDateTime
+        quoteDateTime
+        deliveryType
+        currentStatus
+        orderType
+        estimatedAmount
+        prescriptionImageUrl
+        shopId
+        medicineOrderLineItems {
+          medicineSku
+          medicineName
+          price
+          quantity
+          mrp
+          id
+        }
+      }
+    }
+  }
+`;
+
+export const ADD_MEDICAL_RECORD = gql`
+  mutation addPatientMedicalRecord($AddMedicalRecordInput: AddMedicalRecordInput) {
+    addPatientMedicalRecord(addMedicalRecordInput: $AddMedicalRecordInput) {
+      status
+    }
+  }
+`;
+
+export const GET_MEDICAL_RECORD = gql`
+  query getPatientMedicalRecords($patientId: ID!) {
+    getPatientMedicalRecords(patientId: $patientId) {
+      medicalRecords {
+        id
+        testName
+        testDate
+        recordType
+        referringDoctor
+        observations
+        additionalNotes
+        sourceName
+        documentURLs
+        medicalRecordParameters {
+          parameterName
+          result
+        }
+      }
+    }
+  }
+`;

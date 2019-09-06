@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.TEXT_LIGHT_BLUE,
   },
-  profileImageStyle: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'red' },
+  profileImageStyle: { width: 40, height: 40, borderRadius: 20 },
   yellowTextStyle: {
     ...theme.fonts.IBMPlexSansBold(12),
     lineHeight: 20,

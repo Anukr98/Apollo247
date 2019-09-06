@@ -2,14 +2,14 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { SaveDeviceTokenInput, DEVICE_TYPE } from './globalTypes';
+import { SaveDeviceTokenInput, DEVICE_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: saveDeviceToken
 // ====================================================
 
 export interface saveDeviceToken_saveDeviceToken_deviceToken {
-  __typename: 'PatientDeviceTokens';
+  __typename: "PatientDeviceTokens";
   id: string;
   deviceType: DEVICE_TYPE;
   deviceOS: string;
@@ -19,7 +19,7 @@ export interface saveDeviceToken_saveDeviceToken_deviceToken {
 }
 
 export interface saveDeviceToken_saveDeviceToken {
-  __typename: 'DeviceTokenResult';
+  __typename: "DeviceTokenResult";
   deviceToken: saveDeviceToken_saveDeviceToken_deviceToken | null;
 }
 

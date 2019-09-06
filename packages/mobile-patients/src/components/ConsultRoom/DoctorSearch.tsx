@@ -8,6 +8,7 @@ import {
   GET_PATIENT_PAST_SEARCHES,
   SAVE_SEARCH,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
+  NEXT_AVAILABLE_SLOT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAllSpecialties,
@@ -44,6 +45,10 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
+} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -115,6 +120,7 @@ const pastSearches: pastSearches[] = [
   },
 ];
 
+let doctorIds: (string | undefined)[] = [];
 export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
@@ -137,23 +143,76 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [otherDoctors, setotherDoctors] = useState<
     (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors | null)[] | null
   >();
+  const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
+    (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
+  >([]);
+
+  // const [doctorIds, setdoctorIds] = useState<string[]>([]);
+
   const { currentPatient } = useAllCurrentPatients();
 
+  const fetchNextSlots = (doctorIds: (string | undefined)[]) => {
+    console.log(doctorIds, 'doctorIds fetchNextSlots');
+    const todayDate = new Date().toISOString().slice(0, 10);
+    const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
+      fetchPolicy: 'no-cache',
+      variables: {
+        DoctorNextAvailableSlotInput: {
+          doctorIds: doctorIds,
+          availableDate: todayDate,
+        },
+      },
+    });
+
+    if (availability.error) {
+      console.log('error', availability.error);
+    } else {
+      console.log('doctorIds fetchNextSlots result', availability);
+      if (
+        availability &&
+        availability.data &&
+        availability.data.getDoctorNextAvailableSlot &&
+        availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+        doctorAvailalbeSlots !== availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+      ) {
+        console.log(
+          availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots,
+          'doctorIds fetchNextSlots doctorAvailalbeSlots'
+        );
+        setdoctorAvailalbeSlots(availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
+      }
+    }
+  };
   const newData = useQuery<SearchDoctorAndSpecialtyByName>(SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME, {
+    fetchPolicy: 'no-cache',
     variables: {
       searchText: searchText,
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
     },
   });
   if (newData.error) {
-    console.log('newData.error', newData.error);
+    console.log('newData.error', JSON.stringify(newData.error));
   } else {
     console.log('newData.data doctor', newData.data);
+    // let doctorIds: (string | null)[] = [];
+    let isNewDoctor = false;
+
     if (
       newData.data &&
       newData.data.SearchDoctorAndSpecialtyByName &&
       doctorsList !== newData.data.SearchDoctorAndSpecialtyByName.doctors
     ) {
+      doctorIds = newData.data.SearchDoctorAndSpecialtyByName.doctors
+        ? newData.data.SearchDoctorAndSpecialtyByName.doctors.map((item) => {
+            if (item) return item.id;
+          })
+        : [];
+      console.log(
+        doctorIds,
+        'doctorIds doctor',
+        newData.data.SearchDoctorAndSpecialtyByName.doctors
+      );
+      isNewDoctor = true;
       setdoctorsList(newData.data.SearchDoctorAndSpecialtyByName.doctors);
       // searchText === '' && setallDoctors(newData.data.SearchDoctorAndSpecialtyByName.doctors)
     }
@@ -163,6 +222,20 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       newData.data.SearchDoctorAndSpecialtyByName.possibleMatches &&
       possibleMatches !== newData.data.SearchDoctorAndSpecialtyByName.possibleMatches
     ) {
+      // doctorIds =
+      const ids = newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
+        ? newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors.map((item) => {
+            if (item) return item.id;
+          })
+        : [];
+      doctorIds.push(...ids);
+      isNewDoctor = true;
+
+      console.log(
+        doctorIds,
+        'doctorIds possibleMatches',
+        newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
+      );
       setpossibleMatches(newData.data.SearchDoctorAndSpecialtyByName.possibleMatches);
     }
     if (
@@ -170,10 +243,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       newData.data.SearchDoctorAndSpecialtyByName &&
       searchSpecialities !== newData.data.SearchDoctorAndSpecialtyByName.specialties
     ) {
-      console.log(
-        newData.data.SearchDoctorAndSpecialtyByName.specialties,
-        'newData.data.SearchDoctorAndSpecialtyByName.specialties'
-      );
       setsearchSpecialities(newData.data.SearchDoctorAndSpecialtyByName.specialties);
     }
     if (
@@ -182,8 +251,23 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       newData.data.SearchDoctorAndSpecialtyByName.otherDoctors &&
       otherDoctors !== newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
     ) {
+      const ids = newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
+        ? newData.data.SearchDoctorAndSpecialtyByName.otherDoctors.map((item) => {
+            if (item) return item.id;
+          })
+        : [];
+      doctorIds.push(...ids);
+      isNewDoctor = true;
+
+      console.log(
+        doctorIds,
+        'doctorIds otherDoctors',
+        newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
+      );
       setotherDoctors(newData.data.SearchDoctorAndSpecialtyByName.otherDoctors);
     }
+    // if (isNewDoctor)
+    fetchNextSlots(doctorIds);
   }
 
   // const { data, error } = useQuery<SearchDoctorAndSpecialty, SearchDoctorAndSpecialtyVariables>(
@@ -226,7 +310,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const getData = useQuery<getAllSpecialties, getAllSpecialties_getAllSpecialties>(
     GET_ALL_SPECIALTIES,
-    {}
+    {
+      fetchPolicy: 'no-cache',
+    }
   );
   console.log(getData.loading, 'getData.loading');
   if (getData.error) {
@@ -242,8 +328,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       setshowSpinner(false);
     }
   }
+  console.log(currentPatient && currentPatient.id ? currentPatient.id : '', 'currentPatient');
 
   const pastData = useQuery<getPatientPastSearches>(GET_PATIENT_PAST_SEARCHES, {
+    fetchPolicy: 'no-cache',
     variables: {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
     },
@@ -455,6 +543,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <Mutation<saveSearch> mutation={SAVE_SEARCH}>
           {(mutate, { loading, data, error }) => (
             <TouchableOpacity
+              activeOpacity={1}
               onPress={() => {
                 onClickSearch(rowData.id, rowData.name);
                 const searchInput = {
@@ -479,7 +568,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 marginBottom: length === rowID + 1 || (length - 1) % 2 === 1 ? 16 : 8,
                 height: 100,
               }}
-              activeOpacity={1}
               key={rowID}
             >
               <View style={styles.listSpecialistView}>
@@ -546,6 +634,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <Mutation<saveSearch> mutation={SAVE_SEARCH}>
           {(mutate, { loading, data, error }) => (
             <DoctorCard
+              doctorAvailalbeSlots={doctorAvailalbeSlots}
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
@@ -581,6 +670,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <Mutation<saveSearch> mutation={SAVE_SEARCH}>
           {(mutate, { loading, data, error }) => (
             <DoctorCard
+              doctorAvailalbeSlots={doctorAvailalbeSlots}
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
@@ -700,6 +790,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               possibleMatches &&
               renderPossibleMatches()}
             {doctorsList &&
+              searchText.length > 2 &&
               doctorsList.length === 1 &&
               otherDoctors &&
               renderOtherSUggestedDoctors()}
