@@ -208,6 +208,7 @@ export const DiagnosticPrescription: React.FC = () => {
   } = useContext(CaseSheetContext);
   const [idx, setIdx] = React.useState();
   const client = useApolloClient();
+  const { caseSheetEdit } = useContext(CaseSheetContext);
 
   const fetchDignostic = async (value: string) => {
     client
@@ -335,13 +336,15 @@ export const DiagnosticPrescription: React.FC = () => {
                 key={idx}
                 label={item!.itemname}
                 onDelete={() => handleDelete(item, idx)}
-                deleteIcon={<img src={require('images/ic_cancel_green.svg')} alt="" />}
+                deleteIcon={
+                  <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+                }
               />
             ))}
         </Typography>
       </Typography>
       <Typography component="div" className={classes.textFieldContainer}>
-        {!showAddCondition && (
+        {!showAddCondition && caseSheetEdit && (
           <AphButton
             className={classes.btnAddDoctor}
             variant="contained"

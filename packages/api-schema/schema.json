@@ -2004,6 +2004,18 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "patient",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Patient",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -7613,6 +7625,18 @@
             "deprecationReason": null
           },
           {
+            "name": "appointmentState",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "APPOINTMENT_STATE",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "doctorInfo",
             "description": null,
             "args": [],
@@ -7628,6 +7652,35 @@
         "inputFields": null,
         "interfaces": [],
         "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "APPOINTMENT_STATE",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "NEW",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "TRANSFER",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "RESCHEDULE",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
         "possibleTypes": null
       },
       {
@@ -8919,35 +8972,6 @@
         "possibleTypes": null
       },
       {
-        "kind": "ENUM",
-        "name": "APPOINTMENT_STATE",
-        "description": null,
-        "fields": null,
-        "inputFields": null,
-        "interfaces": null,
-        "enumValues": [
-          {
-            "name": "NEW",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "TRANSFER",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "RESCHEDULE",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          }
-        ],
-        "possibleTypes": null
-      },
-      {
         "kind": "OBJECT",
         "name": "MedicineOrderRecord",
         "description": null,
@@ -9491,7 +9515,7 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "title",
+            "name": "patientId",
             "description": null,
             "type": {
               "kind": "SCALAR",
@@ -9501,27 +9525,17 @@
             "defaultValue": null
           },
           {
-            "name": "body",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "priority",
+            "name": "notificationType",
             "description": null,
             "type": {
               "kind": "ENUM",
-              "name": "NotificationPriority",
+              "name": "NotificationType",
               "ofType": null
             },
             "defaultValue": null
           },
           {
-            "name": "registrationToken",
+            "name": "appointmentId",
             "description": null,
             "type": {
               "kind": "SCALAR",
@@ -9537,20 +9551,20 @@
       },
       {
         "kind": "ENUM",
-        "name": "NotificationPriority",
+        "name": "NotificationType",
         "description": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
         "enumValues": [
           {
-            "name": "high",
+            "name": "INITIATE_RESCHEDULE",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "normal",
+            "name": "INITIATE_TRANSFER",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -10012,6 +10026,37 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "AddMedicalRecordResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "deletePatientMedicalRecord",
+            "description": null,
+            "args": [
+              {
+                "name": "recordId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "ID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "DeleteMedicalRecordResult",
                 "ofType": null
               }
             },
@@ -12508,6 +12553,29 @@
       {
         "kind": "OBJECT",
         "name": "AddMedicalRecordResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "status",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "DeleteMedicalRecordResult",
         "description": null,
         "fields": [
           {
@@ -15940,6 +16008,29 @@
           },
           {
             "name": "PDF",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "NotificationPriority",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "high",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "normal",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

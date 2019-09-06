@@ -668,6 +668,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
     ssl: true,
   };
+  const { caseSheetEdit, setCaseSheetEdit } = useContext(CaseSheetContext);
   const pubnub = new Pubnub(config);
   useEffect(() => {
     pubnub.subscribe({
@@ -916,6 +917,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   setStartAppointment(!startAppointment);
                   stopInterval();
                   props.endConsultAction();
+                  setCaseSheetEdit(false);
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -944,6 +946,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 !startAppointment ? startInterval(900) : stopInterval();
                 setStartAppointment(!startAppointment);
                 props.createSessionAction();
+                setCaseSheetEdit(true);
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -1010,6 +1013,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           <Button
             className={classes.consultIcon}
             aria-describedby={idThreeDots}
+            disabled={startAppointmentButton}
             onClick={(e) => handleClickThreeDots(e)}
           >
             <img src={require('images/ic_more.svg')} />
@@ -1035,20 +1039,29 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 {/* <li>Share Case Sheet</li> */}
                 <li
                   onClick={() => {
-                    handleCloseThreeDots();
-                    setIsTransferPopoverOpen(true);
+                    if (
+                      appointmentInfo!.status === STATUS.PENDING ||
+                      appointmentInfo!.status === STATUS.IN_PROGRESS
+                    ) {
+                      handleCloseThreeDots();
+                      setIsTransferPopoverOpen(true);
+                    } else {
+                      alert('You are not allowed to transfer the appointment');
+                    }
                   }}
                 >
                   Transfer Consult
                 </li>
-                <li
-                  onClick={() => {
-                    handleCloseThreeDots();
-                    setIsPopoverOpen(true);
-                  }}
-                >
-                  Reshedule Consult
-                </li>
+                {!startAppointment && appointmentInfo!.status === STATUS.PENDING && (
+                  <li
+                    onClick={() => {
+                      handleCloseThreeDots();
+                      setIsPopoverOpen(true);
+                    }}
+                  >
+                    Reshedule Consult
+                  </li>
+                )}
               </ul>
             </Paper>
           </Popover>
@@ -1106,7 +1119,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </AphSelect>
           </div>
           <div className={classes.tabFooter}>
-            <Button className={classes.cancelConsult}>Cancel</Button>
+            <Button
+              className={classes.cancelConsult}
+              onClick={() => {
+                setIsPopoverOpen(false);
+              }}
+            >
+              Cancel
+            </Button>
             <Button
               className={classes.ResheduleCosultButton}
               onClick={() => {

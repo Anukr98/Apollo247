@@ -92,8 +92,17 @@ const submitPrescriptionOrder: Resolver<
     if (!patientAddressDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
     }
-    deliveryCity = patientAddressDetails.city;
-    deliveryZipcode = patientAddressDetails.zipcode;
+    if (patientAddressDetails.city == '' || patientAddressDetails.city == null) {
+      deliveryCity = 'Kakinada';
+    } else {
+      deliveryCity = patientAddressDetails.city;
+    }
+
+    if (patientAddressDetails.zipcode == '' || patientAddressDetails.zipcode == null) {
+      deliveryZipcode = '500045';
+    } else {
+      deliveryZipcode = patientAddressDetails.zipcode;
+    }
   }
 
   const orderLineItems: PharmaLineItem[] = [];
