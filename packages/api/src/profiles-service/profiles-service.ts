@@ -69,6 +69,7 @@ import {
   getPatientMedicalRecordsTypeDefs,
   getPatientMedicalRecordsResolvers,
 } from 'profiles-service/resolvers/getPatientMedicalRecords';
+import { getCouponsTypeDefs, getCouponsResolvers } from 'profiles-service/resolvers/getCoupons';
 import {
   submitPrescriptionOrderTypeDefs,
   submitPrescriptionOrderResolvers,
@@ -185,6 +186,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: getPatientMedicalRecordsTypeDefs,
         resolvers: getPatientMedicalRecordsResolvers,
+      },
+      {
+        typeDefs: getCouponsTypeDefs,
+        resolvers: getCouponsResolvers,
       },
       {
         typeDefs: submitPrescriptionOrderTypeDefs,
