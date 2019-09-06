@@ -8,14 +8,14 @@ import { STATUS, APPOINTMENT_TYPE } from "./globalTypes";
 // GraphQL query operation: GetDoctorAppointments
 // ====================================================
 
-export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_diagnosis {
-  __typename: "Diagnosis";
-  name: string | null;
+export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms {
+  __typename: "SymptomList";
+  symptom: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet {
   __typename: "CaseSheet";
-  diagnosis: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_diagnosis | null)[] | null;
+  symptoms: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms | null)[] | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo {
