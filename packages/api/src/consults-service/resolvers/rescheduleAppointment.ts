@@ -14,10 +14,9 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 import {
   sendNotification,
-  NotificationPriority,
   PushNotificationSuccessMessage,
+  NotificationType,
 } from 'notifications-service/resolvers/notifications';
-import { PatientDeviceTokenRepository } from 'profiles-service/repositories/patientDeviceTokenRepository';
 
 export const rescheduleAppointmentTypeDefs = gql`
   type NotificationMessage {
@@ -152,28 +151,12 @@ const initiateRescheduleAppointment: Resolver<
     appointment,
   };
 
-  //get patient device tokens
-  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
-  const deviceTokens = await deviceTokenRepo.getDeviceToken(appointment.patientId);
-
-  let notificationBody = <string>process.env.RESCHEDULE_INITIATION_BODY;
-  notificationBody = notificationBody.replace('{0}', appointment.displayId + '');
-
-  let notificationResult;
-
-  if (deviceTokens.length) {
-    deviceTokens.forEach((value) => {
-      if (value.deviceToken.length) {
-        const pushNotificationInput = {
-          title: <string>process.env.RESCHEDULE_INITIATION_TITLE,
-          body: notificationBody,
-          priority: NotificationPriority.high,
-          registrationToken: value.deviceToken,
-        };
-        notificationResult = sendNotification(pushNotificationInput);
-      }
-    });
-  }
+  // send notification
+  const pushNotificationInput = {
+    appointmentId: appointment.id,
+    notificationType: NotificationType.INITIATE_RESCHEDULE,
+  };
+  const notificationResult = await sendNotification(pushNotificationInput, patientsDb, consultsDb);
 
   const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
 

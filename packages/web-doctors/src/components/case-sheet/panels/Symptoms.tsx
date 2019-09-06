@@ -236,6 +236,7 @@ export const Symptoms: React.FC = (props) => {
   const [howOften, setHowOften] = React.useState('');
   const [idx, setIdx] = React.useState();
   const [severity, setSeverity] = React.useState('');
+  const { caseSheetEdit } = useContext(CaseSheetContext);
   const [errorState, setErrorState] = React.useState<errorObject>({
     symptomError: false,
     sinceError: false,
@@ -359,7 +360,7 @@ export const Symptoms: React.FC = (props) => {
                     classes={{ root: classes.deleteSymptom }}
                     onClick={() => deleteSymptom(idx)}
                   >
-                    <img src={require('images/ic_cancel_green.svg')} alt="" />
+                    <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                   <Fragment>
                     <List>
@@ -407,15 +408,17 @@ export const Symptoms: React.FC = (props) => {
           <div className={classes.nodatafound}>No data Found</div>
         )}
 
-        <AphButton
-          variant="contained"
-          color="primary"
-          classes={{ root: classes.btnAddDoctor }}
-          onClick={() => setIsDialogOpen(true)}
-        >
-          <img src={require('images/ic_dark_plus.svg')} alt="" />
-          Add Symptom
-        </AphButton>
+        {caseSheetEdit && (
+          <AphButton
+            variant="contained"
+            color="primary"
+            classes={{ root: classes.btnAddDoctor }}
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <img src={require('images/ic_dark_plus.svg')} alt="" />
+            Add Symptom
+          </AphButton>
+        )}
 
         <Modal
           open={isDialogOpen}
