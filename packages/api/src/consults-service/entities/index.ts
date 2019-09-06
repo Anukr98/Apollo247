@@ -391,5 +391,9 @@ export interface RxPdfData {
     title: string;
     description: string[];
   }[];
+  diagnoses: {
+    title: string;
+    description: string;
+  }[];
 }
 ///////////////////////////////////////////////////////////

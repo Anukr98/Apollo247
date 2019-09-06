@@ -6,6 +6,7 @@ import {
   CaseSheet,
   CaseSheetMedicinePrescription,
   CaseSheetOtherInstruction,
+  CaseSheetDiagnosis,
 } from 'consults-service/entities';
 import _capitalize from 'lodash/capitalize';
 
@@ -13,6 +14,7 @@ export const convertCaseSheetToRxPdfData = (
   caseSheet: Partial<CaseSheet> & {
     medicinePrescription: CaseSheet['medicinePrescription'];
     otherInstructions: CaseSheet['otherInstructions'];
+    diagnosis: CaseSheet['diagnosis'];
   }
 ): RxPdfData => {
   const caseSheetMedicinePrescription = JSON.parse(
@@ -28,15 +30,21 @@ export const convertCaseSheetToRxPdfData = (
     return { name, ingredients, frequency, instructions };
   });
 
-  const caseSheetOtherInstructions = (caseSheet.otherInstructions
-    ? JSON.parse(caseSheet.otherInstructions)
-    : []) as CaseSheetOtherInstruction[];
+  const caseSheetOtherInstructions = JSON.parse(
+    caseSheet.otherInstructions
+  ) as CaseSheetOtherInstruction[];
   const generalAdvice = caseSheetOtherInstructions.map((otherInst) => ({
     title: otherInst.instruction,
     description: [] as string[],
   }));
 
-  return { prescriptions, generalAdvice };
+  const caseSheetDiagnoses = JSON.parse(caseSheet.diagnosis) as CaseSheetDiagnosis[];
+  const diagnoses = caseSheetDiagnoses.map((diag) => ({
+    title: diag.name,
+    description: '',
+  }));
+
+  return { prescriptions, generalAdvice, diagnoses };
 };
 
 const assetsDir = path.resolve(`/Users/sarink/Projects/apollo-hospitals/packages/api/src/assets`);
@@ -69,6 +77,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.flushPages();
     setY(doc.page.height);
     return doc;
+  };
+
+  const renderSectionTitle = (titleText: string, y?: number) => {
+    return doc
+      .fillColor('blue')
+      .font('Helvetica-Bold')
+      .fontSize(10)
+      .text(titleText, margin, y);
   };
 
   const headerEndY = 120;
@@ -108,12 +124,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
     const rx = loadAsset('rx-icon.png');
-    doc
-      .image(rx, margin, headerEndY + 40, { width: 35 })
-      .fillColor('blue')
-      .font('Helvetica-Bold')
-      .fontSize(10)
-      .text('PRESCRIPTION', margin, headerEndY + 100);
+    doc.image(rx, margin, headerEndY + 40, { width: 35 });
+
+    renderSectionTitle('PRESCRIPTION', headerEndY + 100);
 
     prescriptions.forEach((prescription, index) => {
       doc.fillColor('black').moveDown(index === 0 ? 0.4 : 1);
@@ -154,14 +167,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderGeneralAdvice = (generalAdvice: RxPdfData['generalAdvice']) => {
-    doc
-      .fillColor('blue')
-      .font('Helvetica-Bold')
-      .fontSize(10)
-      .text('GENERAL ADVICE', margin);
+    renderSectionTitle('GENERAL ADVICE');
 
-    console.log(generalAdvice);
     generalAdvice.forEach((advice, index) => {
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
       doc
         .fillColor('black')
         .font('Helvetica-Bold')
@@ -169,6 +180,27 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .moveDown(index === 0 ? 0.4 : 1);
       doc.text(`${index + 1}. ${advice.title}`, margin).moveDown(0.4);
       advice.description.forEach((descText) => doc.text(descText, indentedMargin).moveDown(0.4));
+    });
+  };
+
+  const renderDiagnoses = (diagnoses: RxPdfData['diagnoses']) => {
+    renderSectionTitle("DOCTOR'S NOTES / DIAGNOSIS");
+    diagnoses.forEach((diag, index) => {
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
+      doc
+        .fillColor('black')
+        .font('Helvetica-Bold')
+        .fontSize(10)
+        .moveDown(0.4);
+      doc.text(`${index + 1}. ${diag.title}`, margin).moveDown(0.4);
+      if (diag.description) {
+        doc
+          .fillColor('orange')
+          .text(diag.description, indentedMargin)
+          .moveDown(0.4);
+      }
     });
   };
 
@@ -181,6 +213,8 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   renderPrescriptions(rxPdfData.prescriptions);
   doc.moveDown(1.5);
   renderGeneralAdvice(rxPdfData.generalAdvice);
+  doc.moveDown(1.5);
+  renderDiagnoses(rxPdfData.diagnoses);
 
   doc.end();
 
