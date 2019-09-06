@@ -42,7 +42,7 @@ export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => 
 
   const renderRow = (rowData: prescriptions, rowID: number) => {
     return (
-      <TouchableOpacity onPress={() => {}}>
+      <TouchableOpacity activeOpacity={1} onPress={() => {}}>
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,

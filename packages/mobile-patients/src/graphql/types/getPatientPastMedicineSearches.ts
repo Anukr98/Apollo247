@@ -2,14 +2,14 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { SEARCH_TYPE } from './globalTypes';
+import { SEARCH_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientPastMedicineSearches
 // ====================================================
 
 export interface getPatientPastMedicineSearches_getPatientPastMedicineSearches {
-  __typename: 'SearchData';
+  __typename: "SearchData";
   searchType: SEARCH_TYPE | null;
   typeId: string | null;
   name: string | null;

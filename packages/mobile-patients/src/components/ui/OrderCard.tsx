@@ -233,7 +233,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   };
 
   return (
-    <TouchableOpacity
+    <TouchableOpacity activeOpacity={1}
       onPress={() => {
         props.onPress(props.orderId);
       }}
