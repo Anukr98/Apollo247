@@ -6,6 +6,8 @@ import _compact from 'lodash/compact';
 import _times from 'lodash/times';
 import _random from 'lodash/random';
 import faker from 'faker';
+import { randomEnum } from 'helpers/factoryHelpers';
+import { Salutation } from 'doctors-service/entities';
 
 export const buildRxPdfData = (): RxPdfData => {
   const caseSheet = buildCaseSheet();
@@ -26,5 +28,13 @@ export const buildRxPdfData = (): RxPdfData => {
     description: faker.random.boolean() ? _capitalize(faker.lorem.words(_random(2, 10))) : '',
   }));
 
-  return { prescriptions, generalAdvice, diagnoses };
+  const doctorInfo = {
+    salutation: _capitalize(randomEnum(Salutation)),
+    firstName: faker.name.firstName(),
+    lastName: faker.name.lastName(),
+    qualifications: _capitalize(faker.lorem.words(_random(2, 10))),
+    registrationNumber: faker.random.alphaNumeric(8).toUpperCase(),
+  };
+
+  return { prescriptions, generalAdvice, diagnoses, doctorInfo };
 };

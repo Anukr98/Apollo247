@@ -9,6 +9,7 @@ import {
   CaseSheetDiagnosis,
 } from 'consults-service/entities';
 import _capitalize from 'lodash/capitalize';
+import _isEmpty from 'lodash/isEmpty';
 
 export const convertCaseSheetToRxPdfData = (
   caseSheet: Partial<CaseSheet> & {
@@ -44,7 +45,16 @@ export const convertCaseSheetToRxPdfData = (
     description: '',
   }));
 
-  return { prescriptions, generalAdvice, diagnoses };
+  // TODO: CaseSheet needs to have a relationship with Doctor so we can get this info from it
+  const doctorInfo = {
+    salutation: '',
+    firstName: '',
+    lastName: '',
+    qualifications: '',
+    registrationNumber: '',
+  };
+
+  return { prescriptions, generalAdvice, diagnoses, doctorInfo };
 };
 
 const assetsDir = path.resolve(`/Users/sarink/Projects/apollo-hospitals/packages/api/src/assets`);
@@ -204,17 +214,56 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     });
   };
 
+  const renderDoctorInfo = (doctorInfo: RxPdfData['doctorInfo']) => {
+    const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
+    const qualificationsLine = doctorInfo.qualifications;
+    const registrationLine = `Registration No: ${doctorInfo.registrationNumber}`;
+    if (nameLine) {
+      doc
+        .fillColor('black')
+        .font('Helvetica-Bold')
+        .fontSize(14);
+      doc.text(nameLine, margin).moveDown(0.1);
+    }
+    doc.font('Helvetica').fontSize(10);
+    if (qualificationsLine) {
+      doc.text(qualificationsLine, margin).moveDown(0.4);
+    }
+    if (registrationLine) {
+      doc.text(registrationLine, margin);
+    }
+  };
+
   doc.on('pageAdded', () => {
     renderFooter();
     renderHeader();
   });
+
   renderFooter();
   renderHeader();
-  renderPrescriptions(rxPdfData.prescriptions);
-  doc.moveDown(1.5);
-  renderGeneralAdvice(rxPdfData.generalAdvice);
-  doc.moveDown(1.5);
-  renderDiagnoses(rxPdfData.diagnoses);
+
+  if (!_isEmpty(rxPdfData.prescriptions)) {
+    renderPrescriptions(rxPdfData.prescriptions);
+    doc.moveDown(1.5);
+  }
+
+  if (!_isEmpty(rxPdfData.generalAdvice)) {
+    renderGeneralAdvice(rxPdfData.generalAdvice);
+    doc.moveDown(1.5);
+  }
+
+  if (!_isEmpty(rxPdfData.diagnoses)) {
+    renderDiagnoses(rxPdfData.diagnoses);
+    doc.moveDown(1.5);
+  }
+
+  if (!_isEmpty(rxPdfData.doctorInfo)) {
+    if (doc.y > doc.page.height - 150) {
+      pageBreak();
+    }
+    renderDoctorInfo(rxPdfData.doctorInfo);
+    doc.moveDown(1.5);
+  }
 
   doc.end();
 

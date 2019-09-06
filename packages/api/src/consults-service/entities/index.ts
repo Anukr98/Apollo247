@@ -395,5 +395,12 @@ export interface RxPdfData {
     title: string;
     description: string;
   }[];
+  doctorInfo: {
+    salutation: string;
+    firstName: string;
+    lastName: string;
+    qualifications: string;
+    registrationNumber: string;
+  };
 }
 ///////////////////////////////////////////////////////////
