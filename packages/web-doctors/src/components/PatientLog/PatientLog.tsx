@@ -195,7 +195,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       position: 'absolute',
       right: '1%',
-      fontWeight: 700,
+      fontWeight: 600,
       fontSize: 16,
       paddingTop: 5,
     },
