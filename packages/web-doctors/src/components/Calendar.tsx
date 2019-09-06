@@ -144,7 +144,22 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
       } = appointment!;
       const startTime = getTime(new Date(appointmentDateTime));
       const endTime = getTime(addMinutes(startTime, 15));
-      const symptoms = caseSheet && caseSheet.length > 1 ? caseSheet[1] : [];
+      let symptoms = null;
+      if (
+        caseSheet &&
+        caseSheet.length > 0 &&
+        caseSheet[0] !== null &&
+        caseSheet[0]!.symptoms !== null
+      ) {
+        symptoms = caseSheet && caseSheet!.length > 0 && caseSheet[0] !== null ? caseSheet[0] : [];
+      } else if (
+        caseSheet &&
+        caseSheet.length > 1 &&
+        caseSheet[1] !== null &&
+        caseSheet[1]!.symptoms !== null
+      ) {
+        symptoms = caseSheet && caseSheet!.length > 0 && caseSheet[1] !== null ? caseSheet[1] : [];
+      }
       return {
         id,
         patientId,
