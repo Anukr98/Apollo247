@@ -69,6 +69,7 @@ import {
   getPatientMedicalRecordsTypeDefs,
   getPatientMedicalRecordsResolvers,
 } from 'profiles-service/resolvers/getPatientMedicalRecords';
+import { getCouponsTypeDefs, getCouponsResolvers } from 'profiles-service/resolvers/getCoupons';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -177,6 +178,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: getPatientMedicalRecordsTypeDefs,
         resolvers: getPatientMedicalRecordsResolvers,
+      },
+      {
+        typeDefs: getCouponsTypeDefs,
+        resolvers: getCouponsResolvers,
       },
     ]),
   });

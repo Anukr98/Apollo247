@@ -86,6 +86,11 @@ export enum PHARMA_CART_TYPE {
   NONCART = 'NONCART',
 }
 
+export enum DiscountType {
+  PERCENT = 'PERCENT',
+  AMOUNT = 'AMOUNT',
+}
+
 //medicine orders starts
 @Entity()
 export class MedicineOrders extends BaseEntity {
@@ -748,3 +753,43 @@ export class MedicalRecordParameters extends BaseEntity {
   }
 }
 //MedicalRecordParameters ends
+
+//Coupon starts
+@Entity()
+export class Coupon extends BaseEntity {
+  @Column()
+  createdDate: Date;
+
+  @Column({ type: 'text' })
+  code: string;
+
+  @Column({ type: 'text', nullable: true })
+  description: string;
+
+  @Column()
+  discountType: DiscountType;
+
+  @Column()
+  discount: number;
+
+  @Column({ type: 'timestamp', nullable: true })
+  expirationDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ default: false })
+  isActive: Boolean;
+
+  @Column({ nullable: true })
+  minimumOrderAmount: number;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Coupon ends
