@@ -109,7 +109,7 @@ export class MedicineOrders extends BaseEntity {
   @Column()
   deliveryType: MEDICINE_DELIVERY_TYPE;
 
-  @Column('decimal', { precision: 5, scale: 2 })
+  @Column('decimal', { precision: 7, scale: 2 })
   estimatedAmount: number;
 
   @PrimaryGeneratedColumn('uuid')
@@ -199,13 +199,13 @@ export class MedicineOrderLineItems extends BaseEntity {
   @Column()
   mou: number;
 
-  @Column('decimal', { precision: 5, scale: 2 })
+  @Column('decimal', { precision: 7, scale: 2 })
   mrp: number;
 
   @Column({ nullable: true })
   prescriptionImageUrl: string;
 
-  @Column('decimal', { precision: 5, scale: 2 })
+  @Column('decimal', { precision: 7, scale: 2 })
   price: number;
 
   @Column()
