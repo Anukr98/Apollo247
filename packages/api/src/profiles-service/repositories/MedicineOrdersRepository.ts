@@ -71,6 +71,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   getMedicineOrdersList(patient: String) {
     return this.find({
       where: { patient },
+      order: { createdDate: 'DESC' },
       relations: ['medicineOrderLineItems', 'medicineOrderPayments', 'medicineOrdersStatus'],
     });
   }

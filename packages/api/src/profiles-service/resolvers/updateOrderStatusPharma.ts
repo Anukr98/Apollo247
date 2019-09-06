@@ -5,7 +5,7 @@ import { MedicineOrdersStatus, MEDICINE_ORDER_STATUS } from 'profiles-service/en
 import { Resolver } from 'api-gateway';
 
 export const updateOrderStatusTypeDefs = gql`
-  type updateOrderStatusResult {
+  type UpdateOrderStatusResult {
     status: String
     errorCode: Int
     errorMessage: String
@@ -16,7 +16,7 @@ export const updateOrderStatusTypeDefs = gql`
   }
 `;
 
-type updateOrderStatusResult = {
+type UpdateOrderStatusResult = {
   status: string;
   errorCode: number;
   errorMessage: string;
@@ -26,7 +26,7 @@ const updateMedicineOrderStatus: Resolver<
   null,
   { orderId: number; orderStatus: string },
   ProfilesServiceContext,
-  updateOrderStatusResult
+  UpdateOrderStatusResult
 > = async (parent, args, { profilesDb }) => {
   let errorCode = 0,
     errorMessage = '',
