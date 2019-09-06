@@ -1,7 +1,6 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-//import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import {
   MedicineOrderLineItems,
   MedicineOrdersStatus,
@@ -79,21 +78,8 @@ const getDigitizedPrescription: Resolver<
     errorMessage = 'Missing medicine line items';
     status = 'Rejected';
   }
-  //const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  //const patientDetails = await patientRepo.findById(MedicineOrderInput.patientId);
-  /*const medicineOrderattrs: Partial<MedicineOrders> = {
-    patient: patientDetails,
-    quoteId: MedicineOrderInput.quoteId,
-    deliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
-    estimatedAmount: MedicineOrderInput.estimatedAmount,
-    orderType: MEDICINE_ORDER_TYPE.UPLOAD_PRESCRIPTION,
-    shopId: MedicineOrderInput.shopId,
-    quoteDateTime: new Date(),
-    devliveryCharges: 0.0,
-  };*/
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(MedicineOrderInput.quoteId);
-  //const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
   if (orderDetails) {
     MedicineOrderInput.items.map((item) => {
       const orderItemAttrs: Partial<MedicineOrderLineItems> = {
@@ -113,8 +99,11 @@ const getDigitizedPrescription: Resolver<
       medicineOrderStatusAttrs,
       orderDetails.orderAutoId
     );
+  } else {
+    errorCode = -1;
+    errorMessage = 'Invalid order id';
+    status = 'Rejected';
   }
-  //console.log(saveOrder, 'save order');
 
   return { status, errorCode, errorMessage };
 };
