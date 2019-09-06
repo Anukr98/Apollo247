@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       '& span': {
         borderRight: '1px solid rgba(2, 71, 91, 0.1)',
-        padding: '16px 5px',
+        padding: '16px 8px',
         textAlign: 'center',
         fontSize: 12,
         color: '#02475b',

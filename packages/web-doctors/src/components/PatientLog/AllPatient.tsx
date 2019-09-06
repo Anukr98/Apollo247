@@ -30,11 +30,14 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '90%',
     },
     section2: {
-      margin: '0 2px',
+      margin: '0 10px',
       color: '#02475b',
+      [theme.breakpoints.between('sm', 'md')]: {
+        margin: '0 2px',
+      },
       '& button': {
         color: '#02475b',
-        marginRight: 5,
+        marginRight: 15,
         [theme.breakpoints.between('sm', 'md')]: {
           marginRight: 5,
           padding: '10px 5px',
@@ -53,7 +56,7 @@ const useStyles = makeStyles((theme: Theme) =>
     mainHeadingmini: {
       fontSize: 14,
       fontWeight: 'normal',
-      color: 'rgba(2, 71, 91, 0.6)',
+      color: '#02475b',
     },
     mainHeadingconsult: {
       fontSize: 14,
@@ -75,25 +78,17 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     chatSpan: {
       width: 102,
-      height: 32,
-      paddingTop: 6,
+      height: 35,
+      paddingTop: 5,
       borderRadius: 16,
-      fontSize: 14,
-      fontWeight: 600,
-      color: '#fff',
       backgroundColor: '#fc9916',
-      textTransform: 'uppercase',
       textAlign: 'center',
     },
     chatIcon: {
       height: 10,
       width: 10,
-      marginTop: -16,
-      paddingRight: 16,
-      '& svg': {
-        width: 16,
-        height: 'auto',
-      },
+      marginTop: -20,
+      paddingRight: 20,
     },
   })
 );
@@ -137,7 +132,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
               <CardContent>
                 <Grid item xs={12}>
                   <Grid item container spacing={2}>
-                    <Grid item lg={4} sm={3} xs={3} key={1} container>
+                    <Grid item lg={3} sm={3} xs={3} key={1} container>
                       <Grid sm={3} xs={2} key={5} item>
                         <img
                           alt={`${patient.patientInfo!.firstName} ${patient.patientInfo!.lastName}`}
@@ -182,7 +177,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         {patient.appointmentids.length} Consult
                       </Typography>
                     </Grid>
-                    <Grid lg={2} sm={3} xs={3} key={4} className={classes.valign} item>
+                    <Grid lg={3} sm={3} xs={3} key={4} className={classes.valign} item>
                       <span className={classes.chatSpan}>
                         <IconButton aria-label="Navigate next" className={classes.chatIcon}>
                           <MessageIcon />

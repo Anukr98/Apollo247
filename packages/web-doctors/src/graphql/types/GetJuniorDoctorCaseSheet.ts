@@ -86,7 +86,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   diagnosis: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
   diagnosticPrescription: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] | null;
   followUp: boolean | null;
-  followUpDate: any | null;
+  followUpDate: string | null;
   followUpAfterInDays: string | null;
   consultType: string | null;
   notes: string | null;
