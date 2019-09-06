@@ -16,7 +16,7 @@ export const getCouponsTypeDefs = gql`
     description: String
     discountType: DiscountType!
     discount: Float!
-    minimumeOrderAmount: Float
+    minimumOrderAmount: Float
     expirationDate: Date
     isActive: Boolean
   }
