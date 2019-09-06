@@ -16,11 +16,9 @@ import {
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 //import { AppointmentPayload } from 'types/appointmentTypes';
 //import { bookAppointmentApollo } from 'notifications-service/bookAppointmentApollo';
-import { connect } from 'consults-service/database/connect';
 //import fetch from 'node-fetch';
 
 (async () => {
-  await connect();
   const server = new ApolloServer({
     schema: buildFederatedSchema([
       {
