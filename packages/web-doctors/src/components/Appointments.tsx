@@ -469,7 +469,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                                 {appointment.type === APPOINTMENT_TYPE.ONLINE ? (
                                   <img src={require('images/ic_video.svg')} alt="" />
                                 ) : (
-                                  <img src={require('images/ic_video.svg')} alt="" />
+                                  <img src={require('images/ic_physical_consult.svg')} alt="" />
                                 )}
                               </IconButton>
                               <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}`}>

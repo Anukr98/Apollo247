@@ -1013,6 +1013,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           <Button
             className={classes.consultIcon}
             aria-describedby={idThreeDots}
+            disabled={startAppointmentButton}
             onClick={(e) => handleClickThreeDots(e)}
           >
             <img src={require('images/ic_more.svg')} />
@@ -1038,20 +1039,29 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 {/* <li>Share Case Sheet</li> */}
                 <li
                   onClick={() => {
-                    handleCloseThreeDots();
-                    setIsTransferPopoverOpen(true);
+                    if (
+                      appointmentInfo!.status === STATUS.PENDING ||
+                      appointmentInfo!.status === STATUS.IN_PROGRESS
+                    ) {
+                      handleCloseThreeDots();
+                      setIsTransferPopoverOpen(true);
+                    } else {
+                      alert('You are not allowed to transfer the appointment');
+                    }
                   }}
                 >
                   Transfer Consult
                 </li>
-                <li
-                  onClick={() => {
-                    handleCloseThreeDots();
-                    setIsPopoverOpen(true);
-                  }}
-                >
-                  Reshedule Consult
-                </li>
+                {!startAppointment && appointmentInfo!.status === STATUS.PENDING && (
+                  <li
+                    onClick={() => {
+                      handleCloseThreeDots();
+                      setIsPopoverOpen(true);
+                    }}
+                  >
+                    Reshedule Consult
+                  </li>
+                )}
               </ul>
             </Paper>
           </Popover>
@@ -1109,7 +1119,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </AphSelect>
           </div>
           <div className={classes.tabFooter}>
-            <Button className={classes.cancelConsult}>Cancel</Button>
+            <Button
+              className={classes.cancelConsult}
+              onClick={() => {
+                setIsPopoverOpen(false);
+              }}
+            >
+              Cancel
+            </Button>
             <Button
               className={classes.ResheduleCosultButton}
               onClick={() => {

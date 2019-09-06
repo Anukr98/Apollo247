@@ -638,9 +638,10 @@ export const Cart: React.FC = (props) => {
               }}
               onCompleted={(apiResponse) => {
                 const orderAutoId = apiResponse.SaveMedicineOrder.orderAutoId;
+                const currentPatiendId = currentPatient ? currentPatient.id : '';
                 // redirect to payment Gateway
                 if (orderAutoId && orderAutoId > 0 && paymentMethod === 'PAYTM') {
-                  const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&orderAutoId=${orderAutoId}&token=${authToken}`;
+                  const pgUrl = `${process.env.PHARMACY_PG_URL}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=web`;
                   window.location.href = pgUrl;
                 } else if (orderAutoId && orderAutoId > 0 && paymentMethod === 'COD') {
                   setOrderAutoId(orderAutoId);
