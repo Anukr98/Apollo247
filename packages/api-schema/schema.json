@@ -1010,7 +1010,7 @@
             ],
             "type": {
               "kind": "OBJECT",
-              "name": "PushNotificationSuccessMessage",
+              "name": "PushNotificationSuccessMessaage",
               "ofType": null
             },
             "isDeprecated": false,
@@ -9560,7 +9560,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "PushNotificationSuccessMessage",
+        "name": "PushNotificationSuccessMessaage",
         "description": null,
         "fields": [
           {
