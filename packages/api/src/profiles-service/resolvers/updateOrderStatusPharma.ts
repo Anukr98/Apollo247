@@ -12,7 +12,7 @@ export const updateOrderStatusTypeDefs = gql`
   }
 
   extend type Mutation {
-    updateMedicineOrderStatus(orderId: Int, orderStatus: String): updateOrderStatusResult!
+    updateMedicineOrderStatus(orderId: Int, orderStatus: String): UpdateOrderStatusResult!
   }
 `;
 
