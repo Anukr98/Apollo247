@@ -116,8 +116,8 @@ const SaveMedicineOrderPayment: Resolver<
 
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findById(orderDetails.patient.id);
-  let deliveryCity = '',
-    deliveryZipcode = '';
+  let deliveryCity = 'Kakinada',
+    deliveryZipcode = '500045';
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -138,7 +138,7 @@ const SaveMedicineOrderPayment: Resolver<
       ItemID: item.medicineSKU,
       ItemName: item.medicineName,
       Qty: item.quantity * item.mou,
-      PackSize: item.quantity,
+      Pack: item.quantity,
       MOU: item.mou,
       Price: item.price,
       Status: true,
@@ -154,10 +154,18 @@ const SaveMedicineOrderPayment: Resolver<
       orderPrescriptionUrl.push(url);
     });
   }
+  let selShopId = '15288';
+  if (orderDetails.shopId != '' && orderDetails.shopId != null) {
+    selShopId = orderDetails.shopId;
+  }
+  let patientAge = 30;
+  if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
+    patientAge = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth));
+  }
   const medicineOrderPharma = {
     tpdetails: {
       OrderId: orderDetails.orderAutoId,
-      ShopId: orderDetails.shopId,
+      ShopId: selShopId,
       ShippingMethod: orderDetails.deliveryType.replace('_', ' '),
       RequestType: PHARMA_CART_TYPE.CART,
       PaymentMethod: medicinePaymentInput.paymentType,
@@ -177,7 +185,7 @@ const SaveMedicineOrderPayment: Resolver<
         City: deliveryCity,
         PostCode: deliveryZipcode,
         MailId: patientDetails.emailAddress,
-        Age: Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth)),
+        Age: patientAge,
         CardNo: null,
         PatientName: patientDetails.firstName,
       },
@@ -202,6 +210,10 @@ const SaveMedicineOrderPayment: Resolver<
       headers: { 'Content-Type': 'application/json', Token: '9f15bdd0fcd5423190c2e877ba0228A24' },
     }
   );
+
+  if (pharmaResp.status == 400) {
+    throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
+  }
 
   const textRes = await pharmaResp.text();
   const orderResp: PharmaResponse = JSON.parse(textRes);
