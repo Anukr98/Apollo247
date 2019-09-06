@@ -9306,7 +9306,7 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "title",
+            "name": "patientId",
             "description": null,
             "type": {
               "kind": "SCALAR",
@@ -9316,27 +9316,17 @@
             "defaultValue": null
           },
           {
-            "name": "body",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "priority",
+            "name": "notificationType",
             "description": null,
             "type": {
               "kind": "ENUM",
-              "name": "NotificationPriority",
+              "name": "NotificationType",
               "ofType": null
             },
             "defaultValue": null
           },
           {
-            "name": "registrationToken",
+            "name": "appointmentId",
             "description": null,
             "type": {
               "kind": "SCALAR",
@@ -9352,20 +9342,20 @@
       },
       {
         "kind": "ENUM",
-        "name": "NotificationPriority",
+        "name": "NotificationType",
         "description": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
         "enumValues": [
           {
-            "name": "high",
+            "name": "INITIATE_RESCHEDULE",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "normal",
+            "name": "INITIATE_TRANSFER",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -15488,6 +15478,29 @@
           },
           {
             "name": "PDF",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "NotificationPriority",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "high",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "normal",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
