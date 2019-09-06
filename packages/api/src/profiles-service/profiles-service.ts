@@ -78,7 +78,6 @@ import {
   updateOrderStatusTypeDefs,
   updateOrderStatusResolvers,
 } from 'profiles-service/resolvers/updateOrderStatusPharma';
-import { getCouponsTypeDefs, getCouponsResolvers } from 'profiles-service/resolvers/getCoupons';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -199,10 +198,6 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: updateOrderStatusTypeDefs,
         resolvers: updateOrderStatusResolvers,
-      },
-      {
-        typeDefs: getCouponsTypeDefs,
-        resolvers: getCouponsResolvers,
       },
     ]),
   });
