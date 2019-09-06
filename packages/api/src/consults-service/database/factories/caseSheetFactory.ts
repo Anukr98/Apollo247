@@ -1,39 +1,18 @@
-import { CaseSheet } from 'consults-service/entities';
+import {
+  CaseSheet,
+  CaseSheetSymptom,
+  CaseSheetMedicinePrescription,
+  MEDICINE_TIMINGS,
+  MEDICINE_TO_BE_TAKEN,
+  CaseSheetDiagnosis,
+  CaseSheetDiagnosisPrescription,
+  CaseSheetOtherInstruction,
+} from 'consults-service/entities';
 import faker from 'faker';
 import _random from 'lodash/random';
 import _sample from 'lodash/sample';
 import _times from 'lodash/times';
 import { randomEnum } from 'helpers/factoryHelpers';
-
-enum MEDICINE_TIMINGS {
-  EVENING = 'EVENING',
-  MORNING = 'MORNING',
-  NIGHT = 'NIGHT',
-  NOON = 'NOON',
-}
-enum MEDICINE_TO_BE_TAKEN {
-  AFTER_FOOD = 'AFTER_FOOD',
-  BEFORE_FOOD = 'BEFORE_FOOD',
-}
-export type CaseSheetMedicinePrescription = {
-  id: string;
-  externalId: string;
-  medicineConsumptionDurationInDays: number;
-  medicineDosage: string;
-  medicineInstructions?: string;
-  medicineTimings: MEDICINE_TIMINGS[];
-  medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
-  medicineName: string;
-};
-export type CaseSheetDiagnosis = { name: string };
-export type CaseSheetDiagnosisPrescription = { name: string };
-export type CaseSheetOtherInstruction = { instruction: string };
-export type CaseSheetSymptom = {
-  symptom: string;
-  since: string;
-  howOften: string;
-  severity: string;
-};
 
 const buildSymptom = (): CaseSheetSymptom => {
   const names = ['fever', 'cough and cold'];
@@ -83,7 +62,7 @@ export const buildCaseSheet = (attrs?: Partial<CaseSheet>) => {
   const diagnosis = _times(_random(0, 3), () => buildDiagnosis());
   const diagnosisPrescription = _times(_random(0, 3), () => buildDiagnosisPrescription());
   const otherInstructions = _times(_random(0, 5), () => buildOtherInstruction());
-  const medicinePrescriptions = _times(_random(2, 10), () => buildMedicinePrescription());
+  const medicinePrescriptions = _times(_random(2, 3), () => buildMedicinePrescription());
   const symptoms = _times(_random(0, 5), () => buildSymptom());
   caseSheet.notes = notes;
   caseSheet.diagnosis = JSON.stringify(diagnosis);

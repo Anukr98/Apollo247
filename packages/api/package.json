@@ -5,7 +5,7 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "pdf": "webpack --config webpack.config.pdf.js",
+    "rxPdf": "webpack --config webpack.config.rxPdf.js",
     "apollo:download": "apollo schema:download ./node_modules/@aph/api-schema/schema.json --endpoint=http://localhost:${API_GATEWAY_PORT}/graphql",
     "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",

@@ -6,7 +6,7 @@ module.exports = makeWebpackConfig({
   },
   webpackConfigOptions: {
     entry: {
-      rxPdf: 'consults-service/resolvers/rxPdf.ts',
+      rxPdf: 'consults-service/rxPdf.ts',
     },
   },
 });

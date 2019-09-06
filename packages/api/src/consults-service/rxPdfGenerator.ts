@@ -1,23 +1,51 @@
 import { format } from 'date-fns';
-import faker from 'faker';
 import path from 'path';
 import PDFDocument from 'pdfkit';
+import {
+  RxPdfData,
+  CaseSheet,
+  CaseSheetMedicinePrescription,
+  CaseSheetOtherInstruction,
+} from 'consults-service/entities';
+import _capitalize from 'lodash/capitalize';
 
-export interface RxPdfData {
-  prescriptions: {
-    name: string;
-    ingredients: string[];
-    frequency: string;
-    instructions?: string;
-  }[];
-}
+export const convertCaseSheetToRxPdfData = (
+  caseSheet: Partial<CaseSheet> & {
+    medicinePrescription: CaseSheet['medicinePrescription'];
+    otherInstructions: CaseSheet['otherInstructions'];
+  }
+): RxPdfData => {
+  const caseSheetMedicinePrescription = JSON.parse(
+    caseSheet.medicinePrescription
+  ) as CaseSheetMedicinePrescription[];
+
+  const prescriptions = caseSheetMedicinePrescription.map((csRx) => {
+    const name = csRx.medicineName;
+    const ingredients = [] as string[];
+    const timings = csRx.medicineTimings.map(_capitalize).join(', ');
+    const frequency = `${csRx.medicineDosage} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
+    const instructions = csRx.medicineInstructions;
+    return { name, ingredients, frequency, instructions };
+  });
+
+  const caseSheetOtherInstructions = (caseSheet.otherInstructions
+    ? JSON.parse(caseSheet.otherInstructions)
+    : []) as CaseSheetOtherInstruction[];
+  const generalAdvice = caseSheetOtherInstructions.map((otherInst) => ({
+    title: otherInst.instruction,
+    description: [] as string[],
+  }));
+
+  return { prescriptions, generalAdvice };
+};
 
 const assetsDir = path.resolve(`/Users/sarink/Projects/apollo-hospitals/packages/api/src/assets`);
 
 const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
-export const buildRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => {
+export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => {
   const margin = 35;
+  const indentedMargin = margin + 30;
 
   const doc = new PDFDocument({ margin });
 
@@ -88,7 +116,7 @@ export const buildRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => 
       .text('PRESCRIPTION', margin, headerEndY + 100);
 
     prescriptions.forEach((prescription, index) => {
-      doc.fillColor('black').moveDown();
+      doc.fillColor('black').moveDown(index === 0 ? 0.4 : 1);
 
       if (doc.y > doc.page.height - 150) {
         pageBreak();
@@ -100,31 +128,48 @@ export const buildRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => 
         .text(`${index + 1}. ${prescription.name.toUpperCase()}`, margin)
         .moveDown(0.4);
 
-      const detailIndentX = margin + 30;
-
       if (prescription.ingredients.length > 0) {
         doc
           .font('Helvetica-Oblique')
           .fontSize(8)
-          .text(prescription.ingredients.join(', '), detailIndentX)
+          .text(prescription.ingredients.join(', '), indentedMargin)
           .moveDown(0.4);
       }
 
       doc
         .font('Helvetica-Bold')
         .fontSize(9)
-        .text(prescription.frequency, detailIndentX)
+        .text(prescription.frequency, indentedMargin)
         .moveDown(0.4);
 
       if (prescription.instructions) {
         doc
           .font('Helvetica-Oblique')
           .fontSize(10)
-          .text(prescription.instructions, detailIndentX)
+          .text(prescription.instructions, indentedMargin)
           .moveDown(0.4);
       }
     });
     doc.font('Helvetica').fontSize(10);
+  };
+
+  const renderGeneralAdvice = (generalAdvice: RxPdfData['generalAdvice']) => {
+    doc
+      .fillColor('blue')
+      .font('Helvetica-Bold')
+      .fontSize(10)
+      .text('GENERAL ADVICE', margin);
+
+    console.log(generalAdvice);
+    generalAdvice.forEach((advice, index) => {
+      doc
+        .fillColor('black')
+        .font('Helvetica-Bold')
+        .fontSize(10)
+        .moveDown(index === 0 ? 0.4 : 1);
+      doc.text(`${index + 1}. ${advice.title}`, margin).moveDown(0.4);
+      advice.description.forEach((descText) => doc.text(descText, indentedMargin).moveDown(0.4));
+    });
   };
 
   doc.on('pageAdded', () => {
@@ -134,6 +179,8 @@ export const buildRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => 
   renderFooter();
   renderHeader();
   renderPrescriptions(rxPdfData.prescriptions);
+  doc.moveDown(1.5);
+  renderGeneralAdvice(rxPdfData.generalAdvice);
 
   doc.end();
 
