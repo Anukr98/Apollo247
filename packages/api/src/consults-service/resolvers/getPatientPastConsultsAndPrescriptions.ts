@@ -128,12 +128,12 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
   ConsultsAndOrdersInputArgs,
   ConsultServiceContext,
   PatientConsultsAndOrders
-> = async (parent, { consultsAndOrdersInput }, { consultsDb, doctorsDb, patientsDb }) => {
+> = async (parent, { consultsAndOrdersInput }, { consultsDb, doctorsDb, profilesDb }) => {
   const { patient, offset, limit } = consultsAndOrdersInput;
 
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const patientAppointments = await appts.getPatientPastAppointments(patient, offset, limit);
-  const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const patientMedicineOrders = await medicineOrdersRepo.findByPatientId(patient, offset, limit);
   return { consults: patientAppointments, medicineOrders: patientMedicineOrders };
 };

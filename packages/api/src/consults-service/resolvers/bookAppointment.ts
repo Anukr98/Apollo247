@@ -86,14 +86,14 @@ const bookAppointment: Resolver<
   AppointmentInputArgs,
   ConsultServiceContext,
   BookAppointmentResult
-> = async (parent, { appointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
+> = async (parent, { appointmentInput }, { consultsDb, doctorsDb, profilesDb }) => {
   console.log('current date', new Date());
   console.log(appointmentInput.appointmentDateTime, 'input date time');
   console.log(appointmentInput.appointmentDateTime.toISOString(), 'iso string');
   console.log(new Date(appointmentInput.appointmentDateTime.toISOString()), 'iso to date');
 
   //check if patient id is valid
-  const patient = patientsDb.getCustomRepository(PatientRepository);
+  const patient = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patient.findById(appointmentInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});

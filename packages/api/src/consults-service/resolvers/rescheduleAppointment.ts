@@ -130,7 +130,7 @@ const initiateRescheduleAppointment: Resolver<
   RescheduleAppointmentInputArgs,
   ConsultServiceContext,
   RescheduleAppointmentResult
-> = async (parent, { RescheduleAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
+> = async (parent, { RescheduleAppointmentInput }, { consultsDb, doctorsDb, profilesDb }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(RescheduleAppointmentInput.appointmentId);
   if (!appointment) {
@@ -153,7 +153,7 @@ const initiateRescheduleAppointment: Resolver<
   };
 
   //get patient device tokens
-  const deviceTokenRepo = patientsDb.getCustomRepository(PatientDeviceTokenRepository);
+  const deviceTokenRepo = profilesDb.getCustomRepository(PatientDeviceTokenRepository);
   const deviceTokens = await deviceTokenRepo.getDeviceToken(appointment.patientId);
 
   let notificationBody = <string>process.env.RESCHEDULE_INITIATION_BODY;
@@ -189,7 +189,7 @@ const bookRescheduleAppointment: Resolver<
   BookRescheduleAppointmentInputArgs,
   ConsultServiceContext,
   BookRescheduleAppointmentResult
-> = async (parent, { bookRescheduleAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
+> = async (parent, { bookRescheduleAppointmentInput }, { consultsDb, doctorsDb, profilesDb }) => {
   //input - appointmentid, doctorid, newslot, initiatedby-patient, initiatedid-patientid, rescheduledid
   //same doctor different slot - update datetime, and state = rescheduled
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);

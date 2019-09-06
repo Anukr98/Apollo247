@@ -72,13 +72,13 @@ import { getConnection } from 'typeorm';
       const mobileNumber = headers.mobilenumber;
       const consultsDb = getConnection();
       const doctorsDb = getConnection('doctors-db');
-      const patientsDb = getConnection('patients-db');
+      const profilesDb = getConnection('profiles-db');
       const context: ConsultServiceContext = {
         firebaseUid,
         mobileNumber,
         doctorsDb,
         consultsDb,
-        patientsDb,
+        profilesDb,
       };
       return context;
     },
