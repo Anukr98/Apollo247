@@ -13,7 +13,7 @@ app.use(session({ secret: process.env.SESSION_SECRET, cookie: { maxAge: 60000 } 
 
 const PORT = process.env.PORT || 7000;
 
-const { initPayment, responsePayment } = require('./paytm/services/index');
+const { initPayment } = require('./paytm/services/index');
 
 app.use(cors());
 
@@ -32,11 +32,15 @@ app.get('/paymed', (req, res) => {
   req.session.amount = stripTags(req.query.amount);
   req.session.source = stripTags(req.query.source);
 
+  // console.log(
+  //   'source', req.session.source
+  // );
+
   // if there is any invalid source throw error.
   if (requestedSources.indexOf(req.session.source) < 0) {
     // fake source. through error.
     res.statusCode = 401;
-    res.send({
+    return res.send({
       status: 'failed',
       reason: 'Invalid device',
     });
@@ -86,9 +90,9 @@ app.get('/paymed', (req, res) => {
     })
     .catch((error) => {
       // no need to explicitly saying details about error for clients.
-      console.log(error);
+      // console.log(error);
       res.statusCode = 401;
-      res.send({
+      return res.send({
         status: 'failed',
         reason: 'Invalid parameters',
         code: '10001',
@@ -103,8 +107,8 @@ app.get('/paymed', (req, res) => {
       });
     },
     (error) => {
-      console.log(error);
-      res.send(error);
+      // console.log(error);
+      return res.send(error);
     }
   );
 });
@@ -128,7 +132,7 @@ app.post('/paymed-response', (req, res) => {
     query:
       'mutation { SaveMedicineOrderPayment(medicinePaymentInput: { orderId: "0", orderAutoId: ' +
       payload.ORDERID +
-      ', paymentType: ONLINE, amountPaid: ' +
+      ', paymentType: CASHLESS, amountPaid: ' +
       payload.TXNAMOUNT +
       ', paymentRefId: "' +
       payload.TXNID +
@@ -142,21 +146,28 @@ app.post('/paymed-response', (req, res) => {
       payload.RESPMSG +
       '", bankTxnId: "' +
       payload.BANKTXNID +
-      '" }){ errorCode, errorMessage, paymentOrderId, orderStatus }}',
+      '" }){ errorCode, errorMessage,orderStatus }}',
   };
 
   axios
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
+      // console.log(response, 'response is....');
       if (reqSource === 'web') {
-        const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${orderAutoId}&status=${transactionStatus}`;
+        const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
         res.redirect(redirectUrl);
       } else {
-        res.redirect(`/mob?tk=${token}&status=${payload.STATUS}`);
+        res.redirect(`/mob?tk=${token}&status=${transactionStatus}`);
       }
     })
     .catch((error) => {
-      console.log('error', error);
+      // console.log('error', error);
+      if (reqSource === 'web') {
+        const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
+        res.redirect(redirectUrl);
+      } else {
+        res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
+      }
     });
 });
 
@@ -167,6 +178,24 @@ app.get('/mob', (req, res) => {
     res.statusCode = 200;
     res.send({
       status: 'success',
+    });
+  } else {
+    res.statusCode = 401;
+    res.send({
+      status: 'failed',
+      reason: 'Unauthorized',
+      code: '800',
+    });
+  }
+});
+
+app.get('/mob-error', (req, res) => {
+  const payloadToken = req.query.tk;
+  const sessionToken = req.session.token;
+  if (payloadToken === sessionToken) {
+    res.statusCode = 200;
+    res.send({
+      status: 'failed',
     });
   } else {
     res.statusCode = 401;
