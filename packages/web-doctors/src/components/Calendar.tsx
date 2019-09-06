@@ -140,10 +140,11 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
         status,
         patientId,
         patientInfo,
+        caseSheet,
       } = appointment!;
       const startTime = getTime(new Date(appointmentDateTime));
       const endTime = getTime(addMinutes(startTime, 15));
-
+      const symptoms = caseSheet && caseSheet.length > 1 ? caseSheet[1] : [];
       return {
         id,
         patientId,
@@ -154,7 +155,7 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
         isNew: !!newPatientsList && newPatientsList.includes(patientId),
         details: {
           patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,
-          checkups: ['Fever', 'Cold & Cough'],
+          checkups: symptoms,
           avatar: require('images/ic_patientchat.png'),
         },
       };

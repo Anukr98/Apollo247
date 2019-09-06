@@ -28,7 +28,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
-  name: string | null;
+  itemname: string | null;
 }
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {

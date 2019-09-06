@@ -32,6 +32,8 @@ import {
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import moment from 'moment';
+
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -58,6 +60,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     ...theme.fonts.IBMPlexSansMedium(18),
     color: theme.colors.INPUT_TEXT,
+    textTransform: 'capitalize',
   },
   textStyle: {
     color: '#01475b',
@@ -133,6 +136,9 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   }, [backPressCount]);
 
   useEffect(() => {
+    if (allCurrentPatients && allCurrentPatients.length) {
+      if (!allCurrentPatients[0].relation) allCurrentPatients[0].relation = Relation.ME;
+    }
     setProfiles(allCurrentPatients ? allCurrentPatients : []);
     AsyncStorage.setItem('multiSignUp', 'true');
   }, [allCurrentPatients]);
@@ -189,10 +195,22 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
             <Text style={styles.nameTextStyle}>
               {allCurrentPatients.firstName} {allCurrentPatients.lastName}
             </Text>
-            <Text style={styles.idTextStyle}>{allCurrentPatients.gender} | 01 January 1987</Text>
+            {allCurrentPatients.gender || allCurrentPatients.dateOfBirth ? (
+              <Text
+                style={[
+                  styles.idTextStyle,
+                  { textTransform: 'capitalize', color: theme.colors.SHERPA_BLUE },
+                ]}
+              >
+                {allCurrentPatients.gender}{' '}
+                {allCurrentPatients.dateOfBirth && allCurrentPatients.gender ? '| ' : ''}
+                {moment(allCurrentPatients.dateOfBirth).format('DD MMMM YYYY')}
+              </Text>
+            ) : null}
             <View style={{ marginTop: 10 }}>
               <View style={{ paddingTop: 5, paddingBottom: 10 }}>
                 <TouchableOpacity
+                  activeOpacity={1}
                   // style={styles.placeholderViewStyle}
                   onPress={() => {
                     setShowPopup(true);
@@ -273,6 +291,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
 
   const Popup = () => (
     <TouchableOpacity
+      activeOpacity={1}
       style={{
         paddingVertical: 9,
         position: 'absolute',
@@ -410,6 +429,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                 shadowOpacity: 0.4,
                 backgroundColor: theme.colors.WHITE,
               }}
+              headingTextStyle={{ paddingBottom: 20 }}
               heading={string.login.welcome_text}
               description={showText ? discriptionText : string.login.multi_signup_desc}
               descriptionTextStyle={{ paddingBottom: 50 }}

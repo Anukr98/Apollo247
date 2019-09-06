@@ -110,11 +110,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
         <Mutation<bookAppointment> mutation={BOOK_APPOINTMENT}>
           {(mutate, { loading, data, error }) => (
             <Button
-              title={`PAY Rs. ${
-                tabs[0].title === selectedTab
-                  ? props.doctor!.onlineConsultationFees
-                  : props.doctor!.physicalConsultationFees
-              }`}
+              title={`PAY Rs. 300`}
               disabled={
                 tabs[0].title === selectedTab &&
                 isConsultOnline &&

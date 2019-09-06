@@ -163,7 +163,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 </View>
               </View>
               <View style={styles.imageView}>
-                {data.doctorInfo.photoUrl && (
+                {data.doctorInfo.photoUrl ? (
                   <Image
                     source={{ uri: data.doctorInfo.photoUrl }}
                     style={{
@@ -171,7 +171,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                       height: 80,
                     }}
                   />
-                )}
+                ) : null}
               </View>
             </View>
           </View>
