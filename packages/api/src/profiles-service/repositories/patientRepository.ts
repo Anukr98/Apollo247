@@ -26,10 +26,4 @@ export class PatientRepository extends Repository<Patient> {
       where: { mobileNumber },
     });
   }
-
-  findByMobileNumber(mobileNumber: string) {
-    return this.find({
-      where: { mobileNumber },
-    });
-  }
 }
