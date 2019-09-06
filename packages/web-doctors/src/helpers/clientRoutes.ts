@@ -11,6 +11,7 @@ export const clientRoutes = {
   testsAndMedicine: () => '#',
   healthRecords: () => '#',
   calendar: () => '/calendar',
+  juniorDoctor: () => '/junior-doctor',
   ConsultTabs: (appointmentId: string, patientId: string) =>
     `/Consulttabs/${appointmentId}/${patientId}`,
 };
