@@ -57,7 +57,7 @@ export const convertCaseSheetToRxPdfData = (
   return { prescriptions, generalAdvice, diagnoses, doctorInfo };
 };
 
-const assetsDir = path.resolve(`/Users/sarink/Projects/apollo-hospitals/packages/api/src/assets`);
+const assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
 
 const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
