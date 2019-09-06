@@ -12,4 +12,12 @@ export class MedicalRecordParametersRepository extends Repository<MedicalRecordP
       });
     });
   }
+
+  deleteByIds(ids: string[]) {
+    return this.delete(ids).catch((deleteError) => {
+      throw new AphError(AphErrorMessages.DELETE_MEDICAL_RECORD_PARAMETERS_ERROR, undefined, {
+        deleteError,
+      });
+    });
+  }
 }

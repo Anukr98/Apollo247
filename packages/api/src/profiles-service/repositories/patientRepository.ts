@@ -13,4 +13,10 @@ export class PatientRepository extends Repository<Patient> {
       relations: ['lifeStyle', 'healthVault', 'familyHistory', 'patientAddress'],
     });
   }
+
+  findByMobileNumber(mobileNumber: string) {
+    return this.find({
+      where: { mobileNumber },
+    });
+  }
 }
