@@ -66,9 +66,22 @@ import {
   addPatientMedicalRecordResolvers,
 } from 'profiles-service/resolvers/addMedicalRecord';
 import {
+  deletePatientMedicalRecordTypeDefs,
+  deletePatientMedicalRecordResolvers,
+} from 'profiles-service/resolvers/deleteMedicalRecord';
+import {
   getPatientMedicalRecordsTypeDefs,
   getPatientMedicalRecordsResolvers,
 } from 'profiles-service/resolvers/getPatientMedicalRecords';
+import { getCouponsTypeDefs, getCouponsResolvers } from 'profiles-service/resolvers/getCoupons';
+import {
+  submitPrescriptionOrderTypeDefs,
+  submitPrescriptionOrderResolvers,
+} from 'profiles-service/resolvers/submitPrescriptionOrder';
+import {
+  updateOrderStatusTypeDefs,
+  updateOrderStatusResolvers,
+} from 'profiles-service/resolvers/updateOrderStatusPharma';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 
@@ -175,8 +188,24 @@ import { getConnection } from 'typeorm';
         resolvers: addPatientMedicalRecordResolvers,
       },
       {
+        typeDefs: deletePatientMedicalRecordTypeDefs,
+        resolvers: deletePatientMedicalRecordResolvers,
+      },
+      {
         typeDefs: getPatientMedicalRecordsTypeDefs,
         resolvers: getPatientMedicalRecordsResolvers,
+      },
+      {
+        typeDefs: getCouponsTypeDefs,
+        resolvers: getCouponsResolvers,
+      },
+      {
+        typeDefs: submitPrescriptionOrderTypeDefs,
+        resolvers: submitPrescriptionOrderResolvers,
+      },
+      {
+        typeDefs: updateOrderStatusTypeDefs,
+        resolvers: updateOrderStatusResolvers,
       },
     ]),
   });

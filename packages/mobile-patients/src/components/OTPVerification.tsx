@@ -353,6 +353,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       <SafeAreaView style={styles.container}>
         <View style={{ height: 56, justifyContent: 'center', paddingLeft: 20 }}>
           <TouchableOpacity
+            activeOpacity={1}
             style={{ height: 25, width: 25, justifyContent: 'center' }}
             onPress={() => {
               props.navigation.goBack();
@@ -420,7 +421,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               </Text>
             )}
             {
-              <TouchableOpacity onPress={onClickResend}>
+              <TouchableOpacity activeOpacity={1} onPress={onClickResend}>
                 <Text style={styles.bottomDescription}>{string.login.resend_opt}</Text>
               </TouchableOpacity>
             }

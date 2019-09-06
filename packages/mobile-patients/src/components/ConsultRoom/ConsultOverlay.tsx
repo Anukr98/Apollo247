@@ -115,6 +115,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       console.log(availableSlots, 'availableSlots1111');
 
       setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots);
+      setshowSpinner(false);
     }
   }
 
@@ -217,6 +218,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           }}
         >
           <TouchableOpacity
+            activeOpacity={1}
             onPress={() => props.setdisplayoverlay(false)}
             style={{
               marginTop: Platform.OS === 'ios' ? 38 : 14,
@@ -285,6 +287,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   availableInMin={availableInMin}
                   setselectedTimeSlot={setselectedTimeSlot}
                   selectedTimeSlot={selectedTimeSlot}
+                  setshowSpinner={setshowSpinner}
                 />
               ) : (
                 <ConsultPhysical
@@ -295,6 +298,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   selectedTimeSlot={selectedTimeSlot}
                   timeArray={timeArray}
                   date={date}
+                  setshowSpinner={setshowSpinner}
                 />
               )}
               <View style={{ height: 96 }} />
@@ -312,6 +316,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.gotItStyles}
               onPress={() => {
                 setshowSuccessPopUp(false);

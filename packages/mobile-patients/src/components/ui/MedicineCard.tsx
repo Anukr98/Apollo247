@@ -207,21 +207,21 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderTouchable = (item: Element, onPress: () => void) => {
-    return <TouchableOpacity onPress={onPress}>{item}</TouchableOpacity>;
+    return <TouchableOpacity activeOpacity={1} onPress={onPress}>{item}</TouchableOpacity>;
   };
 
   const renderUnitDropdownAndPrice = () => {
     return (
       <View style={styles.unitAndPriceView}>
         <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             style={styles.unitDropdownContainer}
             onPress={() => onChangeUnit(unit - 1)}
           >
             <Minus />
           </TouchableOpacity>
           <Text style={styles.unitAndRupeeText}>{`${unit} UNIT`}</Text>
-          <TouchableOpacity
+          <TouchableOpacity activeOpacity={1}
             style={styles.unitDropdownContainer}
             onPress={() => onChangeUnit(unit + 1)}
           >
@@ -260,7 +260,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   return (
-    <TouchableOpacity
+    <TouchableOpacity activeOpacity={1}
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >

@@ -26,13 +26,14 @@ const apiDetails = {
 
 interface OptionType {
   label: string;
+  sku: string;
 }
 
 let suggestions: OptionType[] = [
-  { label: 'Ibuprofen, 200 mg' },
-  { label: 'Ibugesic plus, 1.5% wwa' },
-  { label: 'Ibuenatal' },
-  { label: 'Ibuenatal' },
+  { label: 'Ibuprofen, 200 mg', sku: 'IB01' },
+  { label: 'Ibugesic plus, 1.5% wwa', sku: 'IB02' },
+  { label: 'Ibuenatal', sku: 'IB03' },
+  { label: 'Ibuenatal', sku: 'IB04' },
 ];
 
 function renderInputComponent(inputProps: any) {
@@ -474,8 +475,9 @@ export const MedicinePrescription: React.FC = () => {
       .then((result) => {
         const medicines = result.data.products ? result.data.products : [];
         medicines.slice(0, 10).forEach((res: any) => {
-          const data = { label: '' };
+          const data = { label: '', sku: '' };
           data.label = res.name;
+          data.sku = res.sku;
           FinalSearchdata.push(data);
         });
         suggestions = FinalSearchdata;
@@ -518,9 +520,11 @@ export const MedicinePrescription: React.FC = () => {
     setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
     setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
+    setSelectedId(selectedMedicinesArr![idx].id!);
     setIsDialogOpen(true);
     setShowDosage(true);
     setIsUpdate(true);
+    setIdx(idx);
   };
   useEffect(() => {
     if (idx >= 0) {
@@ -680,10 +684,12 @@ export const MedicinePrescription: React.FC = () => {
         medicineTimings: daySlotsArr,
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
-        id: selectedValue.trim,
+        id: selectedId,
       };
+      console.log(selectedValue);
+
       const inputParams: any = {
-        id: selectedValue.trim(),
+        id: selectedId,
         value: selectedValue,
         name: selectedValue,
         times: daySlotsSelected.length,
@@ -706,7 +712,6 @@ export const MedicinePrescription: React.FC = () => {
         x.push(inputParams);
         setSelectedMedicines(x);
       }
-
       setIsDialogOpen(false);
       setIsUpdate(false);
       setShowDosage(false);
@@ -726,6 +731,7 @@ export const MedicinePrescription: React.FC = () => {
       setConsumptionDuration('');
       setTabletsCount(1);
       setSelectedValue('');
+      setSelectedId('');
     }
   };
   const toBeTaken = (value: any) => {
@@ -758,6 +764,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
   const [selectedValue, setSelectedValue] = useState<string>('');
+  const [selectedId, setSelectedId] = useState<string>('');
 
   const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
     setSuggestions(getSuggestions(value));
@@ -845,6 +852,7 @@ export const MedicinePrescription: React.FC = () => {
                       });
                       setShowDosage(true);
                       setSelectedValue(suggestion.label);
+                      setSelectedId(suggestion.sku);
                     }}
                     {...autosuggestProps}
                     inputProps={{

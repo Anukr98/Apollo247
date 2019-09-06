@@ -108,7 +108,7 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
           alignItems: 'flex-end',
         }}
       >
-        <TouchableOpacity
+        <TouchableOpacity activeOpacity={1}
           onPress={() => props.onClickClose()}
           style={{
             marginTop: Platform.OS === 'ios' ? 38 : 14,
@@ -170,12 +170,12 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
                 marginHorizontal: 8,
               }}
             >
-              <TouchableOpacity style={styles.cardContainer} onPress={onClickTakePhoto}>
+              <TouchableOpacity activeOpacity={1} style={styles.cardContainer} onPress={onClickTakePhoto}>
                 <CameraIcon />
                 <Text style={styles.yelloTextStyle}>TAKE A PHOTO</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.cardContainer} onPress={onClickGallery}>
+              <TouchableOpacity activeOpacity={1} style={styles.cardContainer} onPress={onClickGallery}>
                 <GalleryIcon />
                 <Text style={styles.yelloTextStyle}>{`CHOOSE FROM GALLERY`}</Text>
               </TouchableOpacity>

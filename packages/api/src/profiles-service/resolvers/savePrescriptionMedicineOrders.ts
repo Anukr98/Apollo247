@@ -126,6 +126,19 @@ const SavePrescriptionMedicineOrder: Resolver<
     if (!patientAddressDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
     }
+    let deliveryCity = 'Kakinada',
+      deliveryZipcode = '500034';
+    if (patientAddressDetails.city == '' || patientAddressDetails.city == null) {
+      deliveryCity = 'Kakinada';
+    } else {
+      deliveryCity = patientAddressDetails.city;
+    }
+
+    if (patientAddressDetails.zipcode == '' || patientAddressDetails.zipcode == null) {
+      deliveryZipcode = '500045';
+    } else {
+      deliveryZipcode = patientAddressDetails.zipcode;
+    }
     const orderPrescriptionUrl: PrescriptionUrl[] = [];
     const prescriptionImages = saveOrder.prescriptionImageUrl.split(',');
     if (prescriptionImages.length > 0) {
@@ -136,10 +149,18 @@ const SavePrescriptionMedicineOrder: Resolver<
         orderPrescriptionUrl.push(url);
       });
     }
+    let selShopId = '15288';
+    if (saveOrder.shopId != '' && saveOrder.shopId != null) {
+      selShopId = saveOrder.shopId;
+    }
+    let patientAge = 30;
+    if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
+      patientAge = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth));
+    }
     const medicineOrderPharma = {
       tpdetails: {
         OrderId: saveOrder.orderAutoId,
-        ShopId: saveOrder.shopId,
+        ShopId: selShopId,
         ShippingMethod: saveOrder.deliveryType.replace('_', ' '),
         RequestType: PHARMA_CART_TYPE.NONCART,
         PaymentMethod: MEDICINE_ORDER_PAYMENT_TYPE.CASHLESS,
@@ -152,14 +173,14 @@ const SavePrescriptionMedicineOrder: Resolver<
         OrderDate: new Date(),
         CustomerDetails: {
           MobileNo: patientDetails.mobileNumber.substr(3),
-          Comm_addr: patientAddressDetails.city,
-          Del_addr: patientAddressDetails.city,
+          Comm_addr: deliveryCity,
+          Del_addr: deliveryCity,
           FirstName: patientDetails.firstName,
           LastName: patientDetails.lastName,
-          City: patientAddressDetails.city,
-          PostCode: patientAddressDetails.zipcode,
+          City: deliveryCity,
+          PostCode: deliveryZipcode,
           MailId: patientDetails.emailAddress,
-          Age: Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth)),
+          Age: patientAge,
           CardNo: null,
           PatientName: patientDetails.firstName,
         },
@@ -179,6 +200,10 @@ const SavePrescriptionMedicineOrder: Resolver<
         headers: { 'Content-Type': 'application/json', Token: '9f15bdd0fcd5423190c2e877ba0228A24' },
       }
     );
+
+    if (pharmaResp.status == 400) {
+      throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
+    }
 
     const textRes = await pharmaResp.text();
     const orderResp: PharmaResponse = JSON.parse(textRes);

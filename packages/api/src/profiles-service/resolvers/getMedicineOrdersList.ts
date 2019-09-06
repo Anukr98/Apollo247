@@ -30,6 +30,7 @@ export const getMedicineOrdersListTypeDefs = gql`
     medicineOrderLineItems: [MedicineOrderLineItems]
     medicineOrdersStatus: [MedicineOrdersStatus]
     medicineOrderPayments: [MedicineOrderPayments]
+    patient: Patient
   }
 
   type MedicineOrderLineItems {
@@ -47,7 +48,7 @@ export const getMedicineOrdersListTypeDefs = gql`
   type MedicineOrdersStatus {
     id: ID!
     orderStatus: MEDICINE_ORDER_STATUS
-    statusDate: Date
+    statusDate: DateTime
   }
 
   type MedicineOrderPayments {

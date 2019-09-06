@@ -12,7 +12,7 @@ export interface PharmaLineItem {
   ItemID: string;
   ItemName: string;
   Qty: number;
-  PackSize: number;
+  Pack: number;
   MOU: number;
   Price: number;
   Status: boolean;

@@ -128,15 +128,15 @@ const SaveMedicineOrder: Resolver<
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  //if (MedicineCartInput.medicineDeliveryType == MEDICINE_DELIVERY_TYPE.HOME_DELIVERY) {
-  const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
-  const patientAddressDetails = await patientAddressRepo.findById(
-    MedicineCartInput.patientAddressId
-  );
-  if (!patientAddressDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+  if (MedicineCartInput.patientAddressId != '' && MedicineCartInput.patientAddressId != null) {
+    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+    const patientAddressDetails = await patientAddressRepo.findById(
+      MedicineCartInput.patientAddressId
+    );
+    if (!patientAddressDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    }
   }
-  //}
 
   const medicineOrderattrs: Partial<MedicineOrders> = {
     patient: patientDetails,

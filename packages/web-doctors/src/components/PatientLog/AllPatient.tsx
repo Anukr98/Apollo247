@@ -179,13 +179,15 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                     </Grid>
                     <Grid lg={3} sm={3} xs={3} key={4} className={classes.valign} item>
                       <span className={classes.chatSpan}>
-                        <IconButton aria-label="Navigate next" className={classes.chatIcon}>
-                          <MessageIcon />
-                        </IconButton>
-                        {/* <img src={require('images/ic_chat_circle.svg')} alt="msgicon" /> */}
-                        Chat
+                        <Link to={`/consulttabs/${patient.appointmentids[0]}/${patient.patientid}`}>
+                          <IconButton aria-label="Navigate next" className={classes.chatIcon}>
+                            <MessageIcon />
+                          </IconButton>
+                          {/* <img src={require('images/ic_chat_circle.svg')} alt="msgicon" /> */}
+                          Chat
+                        </Link>
                       </span>
-                      {console.log(patient.consultscount)}
+
                       <div className={classes.section2}>
                         <Link
                           to={`/patientlogdetailspage/${patient.appointmentids[0]}/${patient.consultscount}`}

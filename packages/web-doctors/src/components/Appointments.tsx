@@ -17,7 +17,7 @@ import {
 } from '@material-ui/core';
 import { format, isToday } from 'date-fns';
 import { Link } from 'react-router-dom';
-import { STATUS } from 'graphql/types/globalTypes';
+import { STATUS, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { CircularProgress } from '@material-ui/core';
 
 export interface Appointment {
@@ -30,7 +30,7 @@ export interface Appointment {
   status: string;
   details: {
     patientName: string;
-    checkups: string[];
+    checkups: any;
     avatar: string;
   };
 }
@@ -288,7 +288,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
 }) => {
   const classes = useStyles();
   const [appointments, setAppointments] = useState<Appointment[]>(values);
-  console.log(appointments);
+  //console.log(appointments!.type);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
@@ -426,17 +426,19 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                               </div>
                             </Grid>
                           </Grid>
-                          {!!appointment.details.checkups && !!appointment.details.checkups.length && (
+                          {!!appointment.details.checkups &&
+                          !!appointment.details.checkups.symptoms &&
+                          !!appointment.details.checkups.symptoms.length ? (
                             <Grid lg={5} sm={5} xs={8} key={2} item className={classes.valign}>
                               <div className={classes.section1}>
-                                {(appointment.details.checkups.length > 3
-                                  ? appointment.details.checkups.slice(0, 2)
-                                  : appointment.details.checkups
-                                ).map((checkup, idx) => (
+                                {(appointment.details.checkups.symptoms.length > 3
+                                  ? appointment.details.checkups.symptoms.slice(0, 2)
+                                  : appointment.details.checkups.symptoms
+                                ).map((checkup: any, idx: any) => (
                                   <Chip
                                     key={idx}
                                     className={classes.chip}
-                                    label={checkup.toUpperCase()}
+                                    label={checkup.symptom.toUpperCase()}
                                   />
                                 ))}
                                 {appointment.details.checkups.length > 3 && (
@@ -445,16 +447,30 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                                     variant="caption"
                                     className={classes.bold}
                                   >
-                                    +{appointment.details.checkups.length - 2}
+                                    +{appointment.details.checkups.symptoms.length - 2}
                                   </Typography>
                                 )}
+                              </div>
+                            </Grid>
+                          ) : (
+                            <Grid lg={5} sm={5} xs={8} key={2} item className={classes.valign}>
+                              <div className={classes.section1}>
+                                <Typography
+                                  gutterBottom
+                                  variant="caption"
+                                  className={classes.bold}
+                                ></Typography>
                               </div>
                             </Grid>
                           )}
                           <Grid lg={2} sm={2} xs={3} key={3} className={classes.valign} item>
                             <div className={`${classes.section2} ${classes.videoIcomm}`}>
                               <IconButton aria-label="Video call">
-                                <img src={require('images/ic_video.svg')} alt="" />
+                                {appointment.type === APPOINTMENT_TYPE.ONLINE ? (
+                                  <img src={require('images/ic_video.svg')} alt="" />
+                                ) : (
+                                  <img src={require('images/ic_physical_consult.svg')} alt="" />
+                                )}
                               </IconButton>
                               <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}`}>
                                 <IconButton aria-label="Navigate next">

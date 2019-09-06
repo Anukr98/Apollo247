@@ -6,6 +6,12 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_STATE {
+  NEW = 'NEW',
+  RESCHEDULE = 'RESCHEDULE',
+  TRANSFER = 'TRANSFER',
+}
+
 export enum APPOINTMENT_TYPE {
   ONLINE = 'ONLINE',
   PHYSICAL = 'PHYSICAL',
@@ -24,6 +30,7 @@ export enum DEVICE_TYPE {
 
 export enum DoctorType {
   APOLLO = 'APOLLO',
+  JUNIOR = 'JUNIOR',
   PAYROLL = 'PAYROLL',
   STAR_APOLLO = 'STAR_APOLLO',
 }
@@ -32,6 +39,37 @@ export enum Gender {
   FEMALE = 'FEMALE',
   MALE = 'MALE',
   OTHER = 'OTHER',
+}
+
+export enum MEDICINE_DELIVERY_TYPE {
+  HOME_DELIVERY = 'HOME_DELIVERY',
+  STORE_PICKUP = 'STORE_PICKUP',
+}
+
+export enum MEDICINE_ORDER_PAYMENT_TYPE {
+  CASHLESS = 'CASHLESS',
+  COD = 'COD',
+  NO_PAYMENT = 'NO_PAYMENT',
+}
+
+export enum MEDICINE_ORDER_STATUS {
+  CANCELLED = 'CANCELLED',
+  DELIVERED = 'DELIVERED',
+  ITEMS_RETURNED = 'ITEMS_RETURNED',
+  ORDER_FAILED = 'ORDER_FAILED',
+  ORDER_PLACED = 'ORDER_PLACED',
+  ORDER_VERIFIED = 'ORDER_VERIFIED',
+  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
+  PICKEDUP = 'PICKEDUP',
+  PRESCRIPTION_UPLOADED = 'PRESCRIPTION_UPLOADED',
+  QUOTE = 'QUOTE',
+  RETURN_ACCEPTED = 'RETURN_ACCEPTED',
+  RETURN_INITIATED = 'RETURN_INITIATED',
+}
+
+export enum MEDICINE_ORDER_TYPE {
+  CART_ORDER = 'CART_ORDER',
+  UPLOAD_PRESCRIPTION = 'UPLOAD_PRESCRIPTION',
 }
 
 export enum MEDICINE_TIMINGS {
@@ -89,6 +127,27 @@ export enum WeekDay {
   WEDNESDAY = 'WEDNESDAY',
 }
 
+export interface AddMedicalRecordInput {
+  patientId: string;
+  testName: string;
+  testDate?: any | null;
+  recordType?: string | null;
+  referringDoctor?: string | null;
+  sourceName?: string | null;
+  observations?: string | null;
+  additionalNotes?: string | null;
+  documentURLs?: string | null;
+  medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
+}
+
+export interface AddMedicalRecordParametersInput {
+  parameterName: string;
+  unit?: string | null;
+  result: number;
+  minimum?: number | null;
+  maximum?: number | null;
+}
+
 export interface AppointmentHistoryInput {
   patientId: string;
   doctorId: string;
@@ -131,6 +190,43 @@ export interface FilterDoctorInput {
   location?: string | null;
 }
 
+export interface MedicineCartInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  estimatedAmount?: number | null;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patientAddressId: string;
+  devliveryCharges?: number | null;
+  prescriptionImageUrl?: string | null;
+  items?: (MedicineCartItem | null)[] | null;
+}
+
+export interface MedicineCartItem {
+  medicineSKU?: string | null;
+  medicineName?: string | null;
+  price?: number | null;
+  quantity?: number | null;
+  mrp?: number | null;
+  isPrescriptionNeeded?: number | null;
+  prescriptionImageUrl?: string | null;
+  mou?: number | null;
+  isMedicine?: string | null;
+}
+
+export interface MedicinePaymentInput {
+  orderId: string;
+  orderAutoId: number;
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  amountPaid: number;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+  responseCode?: string | null;
+  responseMessage?: string | null;
+  bankTxnId?: string | null;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   addressLine1: string;
@@ -147,6 +243,12 @@ export interface PatientAppointmentsInput {
   appointmentDate: any;
 }
 
+export interface PatientConsultsAndOrdersInput {
+  patient: string;
+  offset?: number | null;
+  limit?: number | null;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
@@ -157,6 +259,16 @@ export interface SaveDeviceTokenInput {
   deviceToken: string;
   deviceOS: string;
   patientId: string;
+}
+
+export interface SavePatientNotificationSettingsInput {
+  patient: string;
+  commissionNotification?: boolean | null;
+  messageFromDoctorNotification?: boolean | null;
+  playNotificationSound?: boolean | null;
+  reScheduleAndCancellationNotification?: boolean | null;
+  paymentNotification?: boolean | null;
+  upcomingAppointmentReminders?: boolean | null;
 }
 
 export interface SaveSearchInput {

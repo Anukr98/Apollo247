@@ -42,7 +42,7 @@ export const ListCard: React.FC<ListCardProps> = (props) => {
   const { title, leftIcon, rightIcon } = props;
 
   return (
-    <TouchableOpacity onPress={props.onPress}>
+    <TouchableOpacity activeOpacity={1} onPress={props.onPress}>
       <View style={[styles.container, props.container]}>
         {leftIcon}
         <Text style={styles.titleStyle}>{title}</Text>

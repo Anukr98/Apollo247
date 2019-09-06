@@ -91,6 +91,7 @@ export interface ConsultPhysicalProps {
   setDate: (arg0: Date) => void;
   setselectedTimeSlot: (arg0: string) => void;
   selectedTimeSlot: string;
+  setshowSpinner?: (arg0: boolean) => void;
 }
 export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   const timings = [
@@ -237,6 +238,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       console.log(availableSlots, 'availableSlots1111');
 
       setavailableSlots(availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots);
+      props.setshowSpinner && props.setshowSpinner(false);
     }
   }
 
@@ -248,8 +250,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           style={{
             backgroundColor: theme.colors.CARD_BG,
             // borderRadius: 10,
-            borderBottomWidth: 0.5,
-            borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+            ...theme.viewStyles.mediumSeparatorStyle,
           }}
           data={timings}
           onChange={(selectedtiming: string) => {
@@ -316,6 +317,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       <View style={{ marginTop: 10 }}>
         <View style={{ paddingTop: 5, paddingBottom: 10 }}>
           <TouchableOpacity
+            activeOpacity={1}
             onPress={() => {
               console.log('TouchableOpacity onpress');
               setShowPopup(!showPopup);
@@ -374,6 +376,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         date={date}
         minDate={new Date()}
         onPressDate={(date) => {
+          props.setshowSpinner && props.setshowSpinner(true);
           setDate(date);
           props.setDate(date);
           props.setselectedTimeSlot('');

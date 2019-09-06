@@ -154,7 +154,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                   <Text style={styles.titleStyle}>{item.title}</Text>
                   <Text style={styles.descptionText}>{item.text}</Text>
                 </View>
-                <TouchableOpacity
+                <TouchableOpacity activeOpacity={1}
                   onPress={() => {
                     if (item.index === slides.length) {
                       AsyncStorage.setItem('onboarding', 'true');
