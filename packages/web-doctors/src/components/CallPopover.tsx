@@ -668,6 +668,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
     ssl: true,
   };
+  const { caseSheetEdit, setCaseSheetEdit } = useContext(CaseSheetContext);
   const pubnub = new Pubnub(config);
   useEffect(() => {
     pubnub.subscribe({
@@ -916,6 +917,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   setStartAppointment(!startAppointment);
                   stopInterval();
                   props.endConsultAction();
+                  setCaseSheetEdit(false);
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -944,6 +946,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 !startAppointment ? startInterval(900) : stopInterval();
                 setStartAppointment(!startAppointment);
                 props.createSessionAction();
+                setCaseSheetEdit(true);
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">

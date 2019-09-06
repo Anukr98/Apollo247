@@ -233,6 +233,7 @@ export const ConsultTabs: React.FC = () => {
   const [notes, setNotes] = useState<string | null>(null);
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
+  const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
@@ -436,6 +437,8 @@ export const ConsultTabs: React.FC = () => {
             setMedicinePrescription,
             consultType,
             setConsultType,
+            caseSheetEdit,
+            setCaseSheetEdit,
             followUp,
             setFollowUp,
             followUpAfterInDays,
