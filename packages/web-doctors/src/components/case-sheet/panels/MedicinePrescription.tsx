@@ -397,6 +397,7 @@ export const MedicinePrescription: React.FC = () => {
     tobeTakenErr: false,
     durationErr: false,
   });
+  const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>(1);
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
@@ -618,7 +619,7 @@ export const MedicinePrescription: React.FC = () => {
             classes={{ root: classes.updateSymptom }}
             onClick={() => updateMedicine(index)}
           >
-            <img src={require('images/round_edit_24_px.svg')} alt="" />
+            <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
           </AphButton>
           <AphButton
             variant="contained"
@@ -627,7 +628,7 @@ export const MedicinePrescription: React.FC = () => {
             classes={{ root: classes.deleteSymptom }}
             onClick={() => deletemedicine(index)}
           >
-            <img src={require('images/ic_cancel_green.svg')} alt="" />
+            <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
           </AphButton>
         </div>
       );
@@ -796,14 +797,16 @@ export const MedicinePrescription: React.FC = () => {
       <Grid container spacing={1}>
         <Grid item xs={6}>
           {selectedMedicinesHtml}
-          <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.btnAddDoctor }}
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
-          </AphButton>
+          {caseSheetEdit && (
+            <AphButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.btnAddDoctor }}
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
+            </AphButton>
+          )}
         </Grid>
         <Grid item xs={4}></Grid>
       </Grid>
