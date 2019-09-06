@@ -66,6 +66,10 @@ import {
   addPatientMedicalRecordResolvers,
 } from 'profiles-service/resolvers/addMedicalRecord';
 import {
+  deletePatientMedicalRecordTypeDefs,
+  deletePatientMedicalRecordResolvers,
+} from 'profiles-service/resolvers/deleteMedicalRecord';
+import {
   getPatientMedicalRecordsTypeDefs,
   getPatientMedicalRecordsResolvers,
 } from 'profiles-service/resolvers/getPatientMedicalRecords';
@@ -182,6 +186,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: addPatientMedicalRecordTypeDefs,
         resolvers: addPatientMedicalRecordResolvers,
+      },
+      {
+        typeDefs: deletePatientMedicalRecordTypeDefs,
+        resolvers: deletePatientMedicalRecordResolvers,
       },
       {
         typeDefs: getPatientMedicalRecordsTypeDefs,

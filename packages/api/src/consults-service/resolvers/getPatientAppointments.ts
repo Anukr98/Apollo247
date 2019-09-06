@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE } from 'consults-service/entities';
+import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
@@ -16,6 +16,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
     bookingDate: DateTime
     rescheduleCount: Int
     isFollowUp: String!
+    appointmentState: APPOINTMENT_STATE
     doctorInfo: DoctorDetails @provides(fields: "id")
   }
 
@@ -59,6 +60,7 @@ type PatinetAppointments = {
   rescheduleCount: number;
   bookingDate: Date;
   isFollowUp: Boolean;
+  appointmentState: APPOINTMENT_STATE;
 };
 
 type Doctor = {
