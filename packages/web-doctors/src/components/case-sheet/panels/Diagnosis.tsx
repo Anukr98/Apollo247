@@ -324,15 +324,19 @@ export const Diagnosis: React.FC = () => {
       <Typography component="div">
         {selectedValues !== null &&
           selectedValues.length > 0 &&
-          selectedValues!.map((item, idx) => (
-            <Chip
-              className={classes.diagnosBtn}
-              key={idx}
-              label={item!.name}
-              onDelete={() => handleDelete(item, idx)}
-              color="primary"
-            />
-          ))}
+          selectedValues!.map((item, idx) =>
+            caseSheetEdit ? (
+              <Chip
+                className={classes.diagnosBtn}
+                key={idx}
+                label={item!.name}
+                onDelete={() => handleDelete(item, idx)}
+                color="primary"
+              />
+            ) : (
+              <Chip className={classes.diagnosBtn} key={idx} label={item!.name} color="primary" />
+            )
+          )}
       </Typography>
       {!showAddCondition && caseSheetEdit && (
         <AphButton
