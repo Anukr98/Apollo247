@@ -30,4 +30,36 @@ export class MedicalRecordsRepository extends Repository<MedicalRecords> {
         });
       });
   }
+
+  findById(recordId: string) {
+    return this.createQueryBuilder('medicalRecords')
+      .where('medicalRecords.id = :recordId', { recordId })
+      .getOne()
+      .catch((getRecordsError) => {
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR, undefined, {
+          getRecordsError,
+        });
+      });
+  }
+
+  findByIdAndPatientIds(patientIds: string[], recordId: string) {
+    return this.createQueryBuilder('medicalRecords')
+      .leftJoinAndSelect('medicalRecords.medicalRecordParameters', 'medicalRecordParameters')
+      .where('medicalRecords.id = :recordId', { recordId })
+      .andWhere('medicalRecords.patient IN (:...patientIds)', { patientIds })
+      .getOne()
+      .catch((getRecordsError) => {
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR, undefined, {
+          getRecordsError,
+        });
+      });
+  }
+
+  deleteMedicalRecord(recordId: string) {
+    return this.delete(recordId).catch((deleteError) => {
+      throw new AphError(AphErrorMessages.DELETE_MEDICAL_RECORD_ERROR, undefined, {
+        deleteError,
+      });
+    });
+  }
 }
