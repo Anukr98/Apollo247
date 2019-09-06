@@ -115,6 +115,12 @@ export async function sendNotification(
       '{0}',
       appointment.displayId + ''
     );
+  } else if (NotificationType.INITIATE_TRANSFER) {
+    notificationTitle = ApiConstants.TRANSFER_INITIATION_TITLE;
+    notificationBody = ApiConstants.TRANSFER_INITIATION_BODY.replace(
+      '{0}',
+      appointment.displayId + ''
+    );
   }
 
   //building payload
