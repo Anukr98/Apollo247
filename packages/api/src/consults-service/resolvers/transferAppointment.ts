@@ -155,9 +155,9 @@ const bookTransferAppointment: Resolver<
   BookTransferAppointmentInputInputArgs,
   ConsultServiceContext,
   BookTransferAppointmentResult
-> = async (parent, { BookTransferAppointmentInput }, { consultsDb, doctorsDb, profilesDb }) => {
+> = async (parent, { BookTransferAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   //check if patient id is valid
-  const patient = profilesDb.getCustomRepository(PatientRepository);
+  const patient = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patient.findById(BookTransferAppointmentInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
@@ -224,7 +224,7 @@ const initiateTransferAppointment: Resolver<
   TransferAppointmentInputInputArgs,
   ConsultServiceContext,
   TransferAppointmentResult
-> = async (parent, { TransferAppointmentInput }, { consultsDb, doctorsDb, profilesDb }) => {
+> = async (parent, { TransferAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(TransferAppointmentInput.appointmentId);
   if (!appointment) {

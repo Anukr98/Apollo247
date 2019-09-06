@@ -295,7 +295,7 @@ const getJuniorDoctorCaseSheet: Resolver<
     caseSheetDetails: CaseSheet;
     patientDetails: Patient;
   }
-> = async (parent, args, { consultsDb, doctorsDb, profilesDb }) => {
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   //check appointmnet id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
@@ -307,7 +307,7 @@ const getJuniorDoctorCaseSheet: Resolver<
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
   //get patient info
-  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
@@ -324,7 +324,7 @@ const getCaseSheet: Resolver<
     pastAppointments: Appointment[];
     juniorDoctorNotes: string;
   }
-> = async (parent, args, { consultsDb, doctorsDb, profilesDb }) => {
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   //check appointmnet id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
@@ -343,7 +343,7 @@ const getCaseSheet: Resolver<
   }
 
   //get patient info
-  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 

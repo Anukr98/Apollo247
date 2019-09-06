@@ -78,7 +78,7 @@ export const connect = async () => {
       logging: true,
     },
     {
-      name: 'profiles-db',
+      name: 'patients-db',
       entities: [
         Patient,
         SearchHistory,

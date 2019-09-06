@@ -82,9 +82,9 @@ const bookFollowUpAppointment: Resolver<
   FollowUpAppointmentInputArgs,
   ConsultServiceContext,
   BookFollowUpAppointmentResult
-> = async (parent, { followUpAppointmentInput }, { consultsDb, doctorsDb, profilesDb }) => {
+> = async (parent, { followUpAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   //check if patient id is valid
-  const patient = profilesDb.getCustomRepository(PatientRepository);
+  const patient = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patient.findById(followUpAppointmentInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});

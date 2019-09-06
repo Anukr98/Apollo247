@@ -43,7 +43,7 @@ const cancelAppointment: Resolver<
   CancelAppointmentInputArgs,
   ConsultServiceContext,
   CancelAppointmentResult
-> = async (parent, { cancelAppointmentInput }, { consultsDb, doctorsDb, profilesDb }) => {
+> = async (parent, { cancelAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(cancelAppointmentInput.appointmentId);
   if (!appointment) {
