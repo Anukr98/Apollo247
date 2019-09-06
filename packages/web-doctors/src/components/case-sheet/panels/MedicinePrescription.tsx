@@ -521,6 +521,7 @@ export const MedicinePrescription: React.FC = () => {
     setIsDialogOpen(true);
     setShowDosage(true);
     setIsUpdate(true);
+    setIdx(idx);
   };
   useEffect(() => {
     if (idx >= 0) {

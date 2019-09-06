@@ -278,6 +278,7 @@ export const FollowUp: React.FC = () => {
   const [followUpDays, setFollowUpDays] = useState<number>(
     parseInt(followUpAfterInDays[0], 10) || 2
   );
+  const [defaultValue, setDefaultValue] = useState(followUpDate ? 9 : 2);
   const [consultType, setConsultType] = useState<string>(consultTypeData[0]);
   const [selectedDate, handleDateChange] = useState<Date>(
     followUpDate[0] ? new Date(followUpDate[0]) : new Date()
@@ -290,7 +291,12 @@ export const FollowUp: React.FC = () => {
       setConsultType('');
     }
   }, [shouldFollowUp]);
-
+  useEffect(() => {
+    if (followUpDate) {
+      setFollowUpDays(9);
+      setDefaultValue(9);
+    }
+  }, [setFollowUpDays, setDefaultValue, followUpDate, defaultValue]);
   useEffect(() => {
     consultTypeData[0] = consultType;
     setConsultTypeData(consultTypeData);
@@ -333,6 +339,7 @@ export const FollowUp: React.FC = () => {
                 marks={marks}
                 min={2}
                 max={9}
+                defaultValue={defaultValue}
                 onChange={debounce((e, value) => setFollowUpDays(value), 200)}
               />
               {followUpDays === 9 && (

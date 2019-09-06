@@ -150,7 +150,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
       '&:focus': {
-        backgroundColor: '#fff',
+        backgroundColor: '#00b38e',
       },
     },
 
@@ -298,7 +298,6 @@ export const Diagnosis: React.FC = () => {
     });
   };
   const handleDelete = (item: any, idx: number) => {
-    console.log(item);
     // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
