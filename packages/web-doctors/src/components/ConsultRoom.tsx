@@ -173,7 +173,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
+  const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
+  const covertVideoMsg = '^^convert`video^^';
+  const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
@@ -552,6 +555,26 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     );
   };
+  // const [convertVideo, setConvertVideo] = useState<boolean>(false);
+
+  // const covertVideoMsg = '^^convert`video^^';
+  // const covertAudioMsg = '^^convert`audio^^';
+  const convertCall = () => {
+    setConvertVideo(!convertVideo);
+    setTimeout(() => {
+      pubnub.publish(
+        {
+          message: {
+            isTyping: true,
+            message: convertVideo ? covertVideoMsg : covertAudioMsg,
+          },
+          channel: channel,
+          storeInHistory: false,
+        },
+        (status, response) => {}
+      );
+    }, 10);
+  };
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
@@ -568,6 +591,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             timerSeconds={timerSeconds}
             isCallAccepted={isCallAccepted}
             isNewMsg={isNewMsg}
+            convertCall={() => convertCall()}
           />
         )}
         <div>
