@@ -3,6 +3,11 @@ import { Resolver } from 'api-gateway';
 import * as firebaseAdmin from 'firebase-admin';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
+import { Connection } from 'typeorm';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { ApiConstants } from 'ApiConstants';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -22,11 +27,14 @@ export const getNotificationsTypeDefs = gql`
     normal
   }
 
+  enum NotificationType {
+    INITIATE_RESCHEDULE
+    INITIATE_TRANSFER
+  }
+
   input PushNotificationInput {
-    title: String
-    body: String
-    priority: NotificationPriority
-    registrationToken: String
+    notificationType: NotificationType
+    appointmentId: String
   }
 
   extend type Query {
@@ -48,21 +56,49 @@ export type PushNotificationSuccessMessage = {
   multicastId: number;
 };
 
+export enum NotificationType {
+  INITIATE_RESCHEDULE = 'INITIATE_RESCHEDULE',
+  INITIATE_TRANSFER = 'INITIATE_TRANSFER',
+}
+
 export enum NotificationPriority {
   high = 'high',
   normal = 'normal',
 }
 
 type PushNotificationInput = {
-  title: string;
-  body: string;
-  priority: NotificationPriority;
-  registrationToken: string;
+  notificationType: NotificationType;
+  appointmentId: string;
 };
 
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
 
-export async function sendNotification(pushNotificationInput: PushNotificationInput) {
+export async function sendNotification(
+  pushNotificationInput: PushNotificationInput,
+  patientsDb: Connection,
+  consultsDb: Connection
+) {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
+  if (appointment == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  //check patient existence and get his details
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
+  //check for registered device tokens
+  if (patientDetails.patientDeviceTokens.length == 0) return;
+
+  //if notiifcation of type reschedule & check for reschedule notification setting
+  if (
+    pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE &&
+    !patientDetails.patientNotificationSettings.reScheduleAndCancellationNotification
+  ) {
+    return;
+  }
+
+  //initialize firebaseadmin
   const config = {
     credential: firebaseAdmin.credential.applicationDefault(),
     databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
@@ -70,23 +106,47 @@ export async function sendNotification(pushNotificationInput: PushNotificationIn
   let admin = require('firebase-admin');
   admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
 
+  let notificationTitle: string = '';
+  let notificationBody: string = '';
+
+  if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
+    notificationTitle = ApiConstants.RESCHEDULE_INITIATION_TITLE;
+    notificationBody = ApiConstants.RESCHEDULE_INITIATION_BODY.replace(
+      '{0}',
+      appointment.displayId + ''
+    );
+  } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
+    notificationTitle = ApiConstants.TRANSFER_INITIATION_TITLE;
+    notificationBody = ApiConstants.TRANSFER_INITIATION_BODY.replace(
+      '{0}',
+      appointment.displayId + ''
+    );
+  }
+
+  //building payload
   const payload = {
     notification: {
-      title: pushNotificationInput.title,
-      body: pushNotificationInput.body,
+      title: notificationTitle,
+      body: notificationBody,
     },
   };
 
+  //options
   const options = {
-    priority: pushNotificationInput.priority,
+    priority: NotificationPriority.high,
     timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
   };
   let notificationResponse;
-  const registrationToken = pushNotificationInput.registrationToken;
+  const registrationToken: string[] = [];
+
+  patientDetails.patientDeviceTokens.forEach((values) => {
+    registrationToken.push(values.deviceToken);
+  });
+
   await admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
-    .then((response: PushNotificationMessage) => {
+    .then((response: PushNotificationSuccessMessage) => {
       notificationResponse = response;
     })
     .catch((error: JSON) => {
@@ -100,10 +160,10 @@ export async function sendNotification(pushNotificationInput: PushNotificationIn
 const sendPushNotification: Resolver<
   null,
   PushNotificationInputArgs,
-  {},
+  NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, { pushNotificationInput }, {}) => {
-  return sendNotification(pushNotificationInput);
+> = async (parent, { pushNotificationInput }, { patientsDb, consultsDb }) => {
+  return sendNotification(pushNotificationInput, patientsDb, consultsDb);
 };
 export const getNotificationsResolvers = {
   Query: { sendPushNotification },

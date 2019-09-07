@@ -438,6 +438,10 @@ const useStyles = makeStyles((theme: Theme) => {
 interface errorObject {
   reasonError: boolean;
   searchError: boolean;
+  otherErrorTransfer: boolean;
+}
+interface errorObjectReshedule {
+  otherError: boolean;
 }
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
@@ -473,7 +477,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [startAppointmentButton, setStartAppointmentButton] = React.useState<boolean>(true);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isTransferPopoverOpen, setIsTransferPopoverOpen] = useState<boolean>(false);
-  const [reason, setReason] = useState<string>('Reason 01');
+  const [reason, setReason] = useState<string>('I am running late from previous consult');
+  const [transferReason, setTransferReason] = useState<string>('Not related to my specialty');
+  const [textOther, setTextOther] = useState(false);
+  const [otherTextValue, setOtherTextValue] = useState('');
+  const [textOtherTransfer, setTextOtherTransfer] = useState(false);
+  const [otherTextTransferValue, setOtherTextTansferValue] = useState('');
   const [searchKeyWord, setSearchKeyword] = React.useState('');
   const [noteKeyword, setNoteKeyword] = React.useState('');
   const [isDoctorOrSpeciality, setIsDoctorOrSpeciality] = useState(false);
@@ -487,18 +496,29 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [errorState, setErrorState] = React.useState<errorObject>({
     reasonError: false,
     searchError: false,
+    otherErrorTransfer: false,
+  });
+  const [errorStateReshedule, setErrorStateReshedule] = React.useState<errorObjectReshedule>({
+    otherError: false,
   });
   const clearError = () => {
     setErrorState({
       ...errorState,
       searchError: false,
       reasonError: false,
+      otherErrorTransfer: false,
+    });
+  };
+  const clearOtherError = () => {
+    setErrorStateReshedule({
+      ...errorStateReshedule,
+      otherError: false,
     });
   };
   const clearTransferField = () => {
     setSelectedDoctor('');
     setSearchKeyword('');
-    setReason('');
+    setTransferReason('');
     clearError();
   };
   const startInterval = (timer: number) => {
@@ -668,7 +688,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
     ssl: true,
   };
+  const { caseSheetEdit, setCaseSheetEdit } = useContext(CaseSheetContext);
+  useEffect(() => {
+    setTextOtherTransfer;
+    if (reason === 'Other') {
+      setTextOther(true);
+    } else {
+      setTextOther(false);
+    }
+    clearOtherError();
+  }, [reason]);
+  useEffect(() => {
+    if (transferReason === 'Other') {
+      setTextOtherTransfer(true);
+    } else {
+      setTextOtherTransfer(false);
+    }
+    clearError();
+  }, [transferReason]);
   const pubnub = new Pubnub(config);
+
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
@@ -742,23 +781,33 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   };
   const transferConsultAction = () => {
-    if (isEmpty(reason)) {
+    if (isEmpty(transferReason)) {
       setErrorState({
         ...errorState,
         reasonError: true,
         searchError: false,
+        otherErrorTransfer: false,
+      });
+    } else if (transferReason === 'Other' && isEmpty(otherTextTransferValue)) {
+      setErrorState({
+        ...errorState,
+        reasonError: false,
+        searchError: false,
+        otherErrorTransfer: true,
       });
     } else if (isEmpty(selectedDoctor)) {
       setErrorState({
         ...errorState,
         reasonError: false,
         searchError: true,
+        otherErrorTransfer: false,
       });
     } else {
       setErrorState({
         ...errorState,
         reasonError: false,
         searchError: false,
+        otherErrorTransfer: false,
       });
       client
         .mutate<InitiateTransferAppointment, InitiateTransferAppointmentVariables>({
@@ -770,7 +819,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               transferInitiatedId: props.doctorId,
               transferredDoctorId: transferObject.doctorId,
               transferredSpecialtyId: transferObject.specialtyId,
-              transferReason: reason,
+              transferReason: transferReason === 'Other' ? otherTextTransferValue : transferReason,
               transferNotes: noteKeyword,
             },
           },
@@ -810,58 +859,69 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const rescheduleConsultAction = () => {
     // do api call
     //setIsLoading(true);
-    client
-      .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
-        mutation: INITIATE_RESCHDULE_APPONITMENT,
-        variables: {
-          RescheduleAppointmentInput: {
-            appointmentId: props.appointmentId,
-            rescheduleReason: reason,
-            rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
-            rescheduleInitiatedId: props.doctorId,
-            rescheduledDateTime: '2019-09-09T09:00:00.000Z',
-            autoSelectSlot: 0,
-          },
-        },
-      })
-      .then((_data) => {
-        //setIsLoading(false);
-        console.log('data', _data);
-        const reschduleObject: any = {
-          appointmentId: props.appointmentId,
-          transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
-            .rescheduledDateTime,
-          doctorId: props.doctorId,
-          reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
-          reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
-        };
-        console.log('reschduleObject', reschduleObject);
-        pubnub.publish(
-          {
-            message: {
-              id: props.doctorId,
-              message: rescheduleconsult,
-              transferInfo: reschduleObject,
-            },
-            channel: channel, //chanel
-            storeInHistory: true,
-          },
-          (status, response) => {}
-        );
-        setIsPopoverOpen(false);
-      })
-      .catch((e) => {
-        //setIsLoading(false);
-        console.log('Error occured while searching for Initiate reschdule apppointment', e);
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log(
-          'Error occured while searching for Initiate reschdule apppointment',
-          errorMessage,
-          error
-        );
-        alert(errorMessage);
+    if (isEmpty(otherTextValue)) {
+      setErrorStateReshedule({
+        ...errorStateReshedule,
+        otherError: true,
       });
+    } else {
+      setErrorStateReshedule({
+        ...errorStateReshedule,
+        otherError: false,
+      });
+      client
+        .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
+          mutation: INITIATE_RESCHDULE_APPONITMENT,
+          variables: {
+            RescheduleAppointmentInput: {
+              appointmentId: props.appointmentId,
+              rescheduleReason: reason === 'Other' ? otherTextValue : reason,
+              rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+              rescheduleInitiatedId: props.doctorId,
+              rescheduledDateTime: '2019-09-09T09:00:00.000Z',
+              autoSelectSlot: 0,
+            },
+          },
+        })
+        .then((_data) => {
+          //setIsLoading(false);
+          console.log('data', _data);
+          const reschduleObject: any = {
+            appointmentId: props.appointmentId,
+            transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
+              .rescheduledDateTime,
+            doctorId: props.doctorId,
+            reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
+            reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
+          };
+          console.log('reschduleObject', reschduleObject);
+          pubnub.publish(
+            {
+              message: {
+                id: props.doctorId,
+                message: rescheduleconsult,
+                transferInfo: reschduleObject,
+              },
+              channel: channel, //chanel
+              storeInHistory: true,
+            },
+            (status, response) => {}
+          );
+          setIsPopoverOpen(false);
+        })
+        .catch((e) => {
+          //setIsLoading(false);
+          console.log('Error occured while searching for Initiate reschdule apppointment', e);
+          const error = JSON.parse(JSON.stringify(e));
+          const errorMessage = error && error.message;
+          console.log(
+            'Error occured while searching for Initiate reschdule apppointment',
+            errorMessage,
+            error
+          );
+          alert(errorMessage);
+        });
+    }
   };
   const getTimerText = () => {
     const now = new Date();
@@ -916,6 +976,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   setStartAppointment(!startAppointment);
                   stopInterval();
                   props.endConsultAction();
+                  setCaseSheetEdit(false);
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -944,6 +1005,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 !startAppointment ? startInterval(900) : stopInterval();
                 setStartAppointment(!startAppointment);
                 props.createSessionAction();
+                setCaseSheetEdit(true);
               }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -1101,19 +1163,56 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 setReason(e.target.value as string);
               }}
             >
-              <MenuItem value="Reason 01" classes={{ selected: classes.menuSelected }}>
-                Reason 01
+              <MenuItem
+                value="I am running late from previous consult"
+                classes={{ selected: classes.menuSelected }}
+              >
+                I am running late from previous consult
               </MenuItem>
-              <MenuItem value="Reason 02" classes={{ selected: classes.menuSelected }}>
-                Reason 02
+              <MenuItem
+                value="I have personal engagement"
+                classes={{ selected: classes.menuSelected }}
+              >
+                I have personal engagement
               </MenuItem>
-              <MenuItem value="Reason 03" classes={{ selected: classes.menuSelected }}>
-                Reason 03
+              <MenuItem
+                value="I have a parallel appointment/ procedure"
+                classes={{ selected: classes.menuSelected }}
+              >
+                I have a parallel appointment/ procedure
+              </MenuItem>
+              <MenuItem
+                value="Patient was not reachable"
+                classes={{ selected: classes.menuSelected }}
+              >
+                Patient was not reachable
               </MenuItem>
               <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
                 Other
               </MenuItem>
             </AphSelect>
+            {textOther && (
+              <div>
+                <AphTextField
+                  classes={{ root: classes.searchInput }}
+                  placeholder="Write here...."
+                  onChange={(e: any) => {
+                    setOtherTextValue(e.target.value);
+                  }}
+                  value={otherTextValue}
+                  error={errorStateReshedule.otherError}
+                />
+                {errorStateReshedule.otherError && (
+                  <FormHelperText
+                    className={classes.helpText}
+                    component="div"
+                    error={errorStateReshedule.otherError}
+                  >
+                    Please write other reason
+                  </FormHelperText>
+                )}
+              </div>
+            )}
           </div>
           <div className={classes.tabFooter}>
             <Button
@@ -1159,7 +1258,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <p>Why do you want to transfer this consult?</p>
 
             <AphSelect
-              value={reason}
+              value={transferReason}
               MenuProps={{
                 classes: { paper: classes.menuPopover },
                 anchorOrigin: {
@@ -1172,18 +1271,33 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 },
               }}
               onChange={(e: any) => {
-                setReason(e.target.value as string);
+                setTransferReason(e.target.value as string);
               }}
               error={errorState.reasonError}
             >
-              <MenuItem value="Reason 01" classes={{ selected: classes.menuSelected }}>
-                Reason 01
+              <MenuItem
+                value="Not related to my specialty"
+                classes={{ selected: classes.menuSelected }}
+              >
+                Not related to my specialty
               </MenuItem>
-              <MenuItem value="Reason 02" classes={{ selected: classes.menuSelected }}>
-                Reason 02
+              <MenuItem
+                value="Needs a second opinion from a senior specialist"
+                classes={{ selected: classes.menuSelected }}
+              >
+                Needs a second opinion from a senior specialist
               </MenuItem>
-              <MenuItem value="Reason 03" classes={{ selected: classes.menuSelected }}>
-                Reason 03
+              <MenuItem
+                value="Patient requested for a slot when I am not available"
+                classes={{ selected: classes.menuSelected }}
+              >
+                Patient requested for a slot when I am not available
+              </MenuItem>
+              <MenuItem
+                value="Patient needs a in person visit"
+                classes={{ selected: classes.menuSelected }}
+              >
+                Patient needs a in person visit
               </MenuItem>
               <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
                 Other
@@ -1197,6 +1311,28 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               >
                 Please select reason
               </FormHelperText>
+            )}
+            {textOtherTransfer && (
+              <div>
+                <AphTextField
+                  classes={{ root: classes.searchInput }}
+                  placeholder="Write here...."
+                  onChange={(e: any) => {
+                    setOtherTextTansferValue(e.target.value);
+                  }}
+                  value={otherTextTransferValue}
+                  error={errorState.otherErrorTransfer}
+                />
+                {errorState.otherErrorTransfer && (
+                  <FormHelperText
+                    className={classes.helpText}
+                    component="div"
+                    error={errorState.otherErrorTransfer}
+                  >
+                    Please write other reason
+                  </FormHelperText>
+                )}
+              </div>
             )}
           </div>
           <div className={classes.tabBody}>

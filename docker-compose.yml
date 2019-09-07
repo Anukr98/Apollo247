@@ -99,6 +99,7 @@ services:
       - ./:/apollo-hospitals:cached
     depends_on:
       - doctors-db
+      - consults-db
 
   doctors-db:
     image: postgres:10.8-alpine
@@ -117,6 +118,8 @@ services:
       - ./:/apollo-hospitals:cached
     depends_on:
       - consults-db
+      - doctors-db
+      - profiles-db
 
   consults-db:
     image: postgres:10.8-alpine

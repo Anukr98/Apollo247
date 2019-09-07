@@ -13,15 +13,32 @@ import {
   getNotificationsTypeDefs,
   getNotificationsResolvers,
 } from 'notifications-service/resolvers/notifications';
-import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
-import { AppointmentPayload, SampleMessage } from 'types/appointmentTypes';
-import { bookAppointmentApollo } from 'notifications-service/bookAppointmentApollo';
-import { connect } from 'consults-service/database/connect';
+//import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+//import { AppointmentPayload, SampleMessage } from 'types/appointmentTypes';
+//import { bookAppointmentApollo } from 'notifications-service/bookAppointmentApollo';
+import { GatewayHeaders } from 'api-gateway';
+import { getConnection } from 'typeorm';
+import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 //import fetch from 'node-fetch';
 
 (async () => {
-  await connect();
   const server = new ApolloServer({
+    context: async ({ req }) => {
+      const headers = req.headers as GatewayHeaders;
+      const firebaseUid = headers.firebaseuid;
+      const mobileNumber = headers.mobilenumber;
+      const consultsDb = getConnection();
+      const doctorsDb = getConnection('doctors-db');
+      const patientsDb = getConnection('patients-db');
+      const context: NotificationsServiceContext = {
+        firebaseUid,
+        mobileNumber,
+        doctorsDb,
+        consultsDb,
+        patientsDb,
+      };
+      return context;
+    },
     schema: buildFederatedSchema([
       {
         typeDefs: getSearchesTypeDefs,
@@ -38,7 +55,7 @@ import { connect } from 'consults-service/database/connect';
     console.log(`🚀 notifications-service ready`);
   });
 
-  AphMqClient.connect();
+  /*AphMqClient.connect();
 
   type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPayload>;
 
@@ -65,7 +82,7 @@ import { connect } from 'consults-service/database/connect';
     receivedMessage.accept();
   });
 
-  /*const resp = await fetch(
+  const resp = await fetch(
     'http://bulkpush.mytoday.com/BulkSms/SingleMsgApi?feedid=370454&username=7993961498&password=popcorn123$$&To=8019677178&Text=Hellocheck'
   );
   console.log(resp, 'sms resp');
