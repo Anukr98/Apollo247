@@ -1,7 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { MedicalRecords, MedicalRecordParameters } from 'profiles-service/entities';
+import {
+  MedicalRecords,
+  MedicalRecordParameters,
+  MedicalRecordType,
+  MedicalTestUnit,
+} from 'profiles-service/entities';
 import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalRecordsRepository';
 import { MedicalRecordParametersRepository } from 'profiles-service/repositories/medicalRecordParametersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
@@ -10,11 +15,24 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const addPatientMedicalRecordTypeDefs = gql`
+  enum MedicalTestUnit {
+    GM
+    _PERCENT_
+    GM_SLASH_DL
+  }
+
+  enum MedicalRecordType {
+    EHR
+    PHYSICAL_EXAMINATION
+    OPERATIVE_REPORT
+    PATHOLOGY_REPORT
+  }
+
   input AddMedicalRecordInput {
     patientId: ID!
     testName: String!
     testDate: Date
-    recordType: String
+    recordType: MedicalRecordType
     referringDoctor: String
     sourceName: String
     observations: String
@@ -25,7 +43,7 @@ export const addPatientMedicalRecordTypeDefs = gql`
 
   input AddMedicalRecordParametersInput {
     parameterName: String!
-    unit: String
+    unit: MedicalTestUnit
     result: Float!
     minimum: Float
     maximum: Float
@@ -44,7 +62,7 @@ type AddMedicalRecordInput = {
   patientId: string;
   testName: string;
   testDate: Date;
-  recordType: string;
+  recordType: MedicalRecordType;
   referringDoctor: string;
   sourceName: string;
   observations: string;
@@ -55,7 +73,7 @@ type AddMedicalRecordInput = {
 
 type AddMedicalRecordParametersInput = {
   parameterName: string;
-  unit: string;
+  unit: MedicalTestUnit;
   result: number;
   minimum: number;
   maximum: number;
