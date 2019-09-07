@@ -18,6 +18,11 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 //import { MailMessage } from 'types/notificationMessageTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { format } from 'date-fns';
+import {
+  NotificationType,
+  sendNotification,
+  PushNotificationSuccessMessage,
+} from 'notifications-service/resolvers/notifications';
 
 export const transferAppointmentTypeDefs = gql`
   enum TRANSFER_STATUS {
@@ -80,6 +85,7 @@ export const transferAppointmentTypeDefs = gql`
   type TransferAppointmentResult {
     transferAppointment: TransferAppointment
     doctorNextSlot: String
+    notificationResult: NotificationSuccessMessage
   }
 
   type BookTransferAppointmentResult {
@@ -98,6 +104,7 @@ export const transferAppointmentTypeDefs = gql`
 type TransferAppointmentResult = {
   transferAppointment: TransferAppointment;
   doctorNextSlot: string;
+  notificationResult: PushNotificationSuccessMessage | undefined;
 };
 
 type TransferAppointmentInput = {
@@ -268,7 +275,14 @@ const initiateTransferAppointment: Resolver<
   if (slot != '') {
     slot = `${curDate}T${slot}:00.000Z`;
   }
-  return { transferAppointment, doctorNextSlot: slot };
+
+  // send notification
+  const pushNotificationInput = {
+    appointmentId: appointment.id,
+    notificationType: NotificationType.INITIATE_TRANSFER,
+  };
+  const notificationResult = await sendNotification(pushNotificationInput, patientsDb, consultsDb);
+  return { transferAppointment, doctorNextSlot: slot, notificationResult };
 };
 
 export const transferAppointmentResolvers = {
