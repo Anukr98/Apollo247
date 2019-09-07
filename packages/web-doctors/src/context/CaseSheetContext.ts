@@ -66,6 +66,7 @@ export interface CaseSheetContextProps {
   setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   healthVault: GetCaseSheet_getCaseSheet_patientDetails_healthVault[] | null;
   pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
+  setCasesheetNotes: (notes: string) => void;
 }
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
@@ -97,4 +98,5 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setFollowUpDate: () => {},
   healthVault: null,
   pastAppointments: null,
+  setCasesheetNotes: (notes: string) => {},
 });
