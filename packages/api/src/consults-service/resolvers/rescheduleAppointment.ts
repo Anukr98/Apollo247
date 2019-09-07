@@ -159,7 +159,10 @@ const initiateRescheduleAppointment: Resolver<
   const notificationResult = await sendNotification(pushNotificationInput, patientsDb, consultsDb);
 
   const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
-
+  await appointmentRepo.updateTransferState(
+    RescheduleAppointmentInput.appointmentId,
+    APPOINTMENT_STATE.AWAITING_RESCHEDULE
+  );
   return {
     rescheduleAppointment,
     rescheduleCount: appointment.rescheduleCount,

@@ -51,3 +51,7 @@ export interface AppointmentResp {
   doctorGender: number;
   key: string;
 }
+
+export interface SampleMessage {
+  message: string;
+}
