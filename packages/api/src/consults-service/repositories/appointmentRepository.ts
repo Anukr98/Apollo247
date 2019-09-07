@@ -235,6 +235,8 @@ export class AppointmentRepository extends Repository<Appointment> {
               if (Math.abs(differenceInMinutes(firstAppt, appt.appointmentDateTime)) >= 30) {
                 flag = 1;
                 console.log(firstAppt, 'first appt inside');
+                console.log('cur time', new Date());
+                console.log('inside diff', Math.abs(differenceInMinutes(new Date(), firstAppt)));
                 if (Math.abs(differenceInMinutes(new Date(), firstAppt)) >= 15) {
                   finalSlot = this.getAlignedSlot(curDate);
                 } else {
