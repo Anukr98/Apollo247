@@ -27,6 +27,12 @@ const updateDelegateNumber: Resolver<
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
+  const searchMobileNumberExistence = await doctorRepository.searchDoctorByMobileNumber(
+    args.delegateNumber,
+    true
+  );
+  if (searchMobileNumberExistence != null) throw new AphError(AphErrorMessages.INVALID_ENTITY);
+
   if (doctorData.delegateNumber === args.delegateNumber)
     throw new AphError(AphErrorMessages.NO_CHANGE_IN_DELEGATE_NUMBER);
 
