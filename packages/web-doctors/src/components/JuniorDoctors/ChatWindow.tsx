@@ -2,6 +2,7 @@ import { Theme, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import Scrollbars from 'react-custom-scrollbars';
+import { AphTextField, AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -58,6 +59,20 @@ const useStyles = makeStyles((theme: Theme) => {
     patientChatWrap: {
       marginTop: 20,
     },
+    chatWindowFooter: {
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.15)',
+      padding: '10px 16px 20px 16px',
+      position: 'relative',
+    },
+    attachBtn: {
+      position: 'absolute',
+      right: 16,
+      top: 14,
+      border: 'none',
+      boxShadow: 'none',
+      padding: 0,
+      minWidth: 'auto',
+    },
   };
 });
 
@@ -67,7 +82,7 @@ export const ChatWindow: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.windowbody}>
-        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 320px' }}>
+        <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 534px' }}>
           <div className={classes.customScroll}>
             <div className={classes.chatWrap}>
               <div className={classes.doctorWindow}>That’s fine.</div>
@@ -87,6 +102,12 @@ export const ChatWindow: React.FC = (props) => {
             </div>
           </div>
         </Scrollbars>
+      </div>
+      <div className={classes.chatWindowFooter}>
+        <AphTextField placeholder="Type message…" />
+        <AphButton className={classes.attachBtn}>
+          <img src={require('images/ic_round-attach.svg')} alt="" />
+        </AphButton>
       </div>
     </div>
   );

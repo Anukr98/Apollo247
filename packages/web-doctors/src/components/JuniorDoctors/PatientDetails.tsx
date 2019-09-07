@@ -2,9 +2,9 @@ import { Theme, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
-import { PatientCard } from 'components/JuniorDoctors/PatientCard';
 import { AphButton } from '@aph/web-ui-components';
 import { ChatWindow } from 'components/JuniorDoctors/ChatWindow';
+import { CaseSheet } from 'components/JuniorDoctors/CaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -103,6 +103,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     blockBody: {
       padding: 30,
+      paddingBottom: 20,
     },
     customScroll: {
       padding: '0 20px',
@@ -199,6 +200,13 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 'bold',
       },
     },
+    caseSheetBody: {
+      paddingLeft: 74,
+      paddingRight: 15,
+    },
+    chatBody: {
+      paddingRight: 74,
+    },
   };
 });
 
@@ -268,17 +276,15 @@ export const PatientDetails: React.FC = (props) => {
             <div className={classes.leftSection}>
               <div className={classes.blockGroup}>
                 <div className={classes.blockHeader}>Case Sheet</div>
-                <div className={classes.blockBody}>
-                  <div className={classes.boxGroup}>
-                    <PatientCard />
-                  </div>
+                <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
+                  <CaseSheet />
                 </div>
               </div>
             </div>
             <div className={classes.rightSection}>
               <div className={classes.blockGroup}>
                 <div className={classes.blockHeader}>Chat</div>
-                <div className={classes.blockBody}>
+                <div className={`${classes.blockBody} ${classes.chatBody}`}>
                   <ChatWindow />
                 </div>
               </div>
