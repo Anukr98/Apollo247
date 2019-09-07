@@ -29,9 +29,6 @@ export const transferAppointmentTypeDefs = gql`
     INITIATED
     COMPLETED
     REJECTED
-    AWAITING_TRANSFER
-    AWAITING_RESCHEDULE
-    TRANSFERRED
   }
 
   enum TRANSFER_INITIATED_TYPE {
@@ -43,6 +40,9 @@ export const transferAppointmentTypeDefs = gql`
     NEW
     TRANSFER
     RESCHEDULE
+    AWAITING_TRANSFER
+    AWAITING_RESCHEDULE
+    TRANSFERRED
   }
 
   type TransferAppointment {

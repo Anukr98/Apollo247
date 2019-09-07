@@ -7,137 +7,158 @@
 //==============================================================
 
 export enum APPOINTMENT_STATE {
-  NEW = "NEW",
-  RESCHEDULE = "RESCHEDULE",
-  TRANSFER = "TRANSFER",
+  AWAITING_RESCHEDULE = 'AWAITING_RESCHEDULE',
+  AWAITING_TRANSFER = 'AWAITING_TRANSFER',
+  NEW = 'NEW',
+  RESCHEDULE = 'RESCHEDULE',
+  TRANSFER = 'TRANSFER',
+  TRANSFERRED = 'TRANSFERRED',
 }
 
 export enum APPOINTMENT_TYPE {
-  ONLINE = "ONLINE",
-  PHYSICAL = "PHYSICAL",
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
 }
 
 export enum ConsultMode {
-  BOTH = "BOTH",
-  ONLINE = "ONLINE",
-  PHYSICAL = "PHYSICAL",
+  BOTH = 'BOTH',
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
 }
 
 export enum DEVICE_TYPE {
-  ANDROID = "ANDROID",
-  IOS = "IOS",
+  ANDROID = 'ANDROID',
+  IOS = 'IOS',
+}
+
+export enum DiscountType {
+  AMOUNT = 'AMOUNT',
+  PERCENT = 'PERCENT',
 }
 
 export enum DoctorType {
-  APOLLO = "APOLLO",
-  JUNIOR = "JUNIOR",
-  PAYROLL = "PAYROLL",
-  STAR_APOLLO = "STAR_APOLLO",
+  APOLLO = 'APOLLO',
+  JUNIOR = 'JUNIOR',
+  PAYROLL = 'PAYROLL',
+  STAR_APOLLO = 'STAR_APOLLO',
 }
 
 export enum Gender {
-  FEMALE = "FEMALE",
-  MALE = "MALE",
-  OTHER = "OTHER",
+  FEMALE = 'FEMALE',
+  MALE = 'MALE',
+  OTHER = 'OTHER',
 }
 
 export enum MEDICINE_DELIVERY_TYPE {
-  HOME_DELIVERY = "HOME_DELIVERY",
-  STORE_PICKUP = "STORE_PICKUP",
+  HOME_DELIVERY = 'HOME_DELIVERY',
+  STORE_PICKUP = 'STORE_PICKUP',
 }
 
 export enum MEDICINE_ORDER_PAYMENT_TYPE {
-  CASHLESS = "CASHLESS",
-  COD = "COD",
-  NO_PAYMENT = "NO_PAYMENT",
+  CASHLESS = 'CASHLESS',
+  COD = 'COD',
+  NO_PAYMENT = 'NO_PAYMENT',
 }
 
 export enum MEDICINE_ORDER_STATUS {
-  CANCELLED = "CANCELLED",
-  DELIVERED = "DELIVERED",
-  ITEMS_RETURNED = "ITEMS_RETURNED",
-  ORDER_FAILED = "ORDER_FAILED",
-  ORDER_PLACED = "ORDER_PLACED",
-  ORDER_VERIFIED = "ORDER_VERIFIED",
-  OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
-  PICKEDUP = "PICKEDUP",
-  PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
-  PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
-  QUOTE = "QUOTE",
-  RETURN_ACCEPTED = "RETURN_ACCEPTED",
-  RETURN_INITIATED = "RETURN_INITIATED",
+  CANCELLED = 'CANCELLED',
+  DELIVERED = 'DELIVERED',
+  ITEMS_RETURNED = 'ITEMS_RETURNED',
+  ORDER_FAILED = 'ORDER_FAILED',
+  ORDER_PLACED = 'ORDER_PLACED',
+  ORDER_VERIFIED = 'ORDER_VERIFIED',
+  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
+  PICKEDUP = 'PICKEDUP',
+  PRESCRIPTION_CART_READY = 'PRESCRIPTION_CART_READY',
+  PRESCRIPTION_UPLOADED = 'PRESCRIPTION_UPLOADED',
+  QUOTE = 'QUOTE',
+  RETURN_ACCEPTED = 'RETURN_ACCEPTED',
+  RETURN_INITIATED = 'RETURN_INITIATED',
 }
 
 export enum MEDICINE_ORDER_TYPE {
-  CART_ORDER = "CART_ORDER",
-  UPLOAD_PRESCRIPTION = "UPLOAD_PRESCRIPTION",
+  CART_ORDER = 'CART_ORDER',
+  UPLOAD_PRESCRIPTION = 'UPLOAD_PRESCRIPTION',
 }
 
 export enum MEDICINE_TIMINGS {
-  EVENING = "EVENING",
-  MORNING = "MORNING",
-  NIGHT = "NIGHT",
-  NOON = "NOON",
+  EVENING = 'EVENING',
+  MORNING = 'MORNING',
+  NIGHT = 'NIGHT',
+  NOON = 'NOON',
 }
 
 export enum MEDICINE_TO_BE_TAKEN {
-  AFTER_FOOD = "AFTER_FOOD",
-  BEFORE_FOOD = "BEFORE_FOOD",
+  AFTER_FOOD = 'AFTER_FOOD',
+  BEFORE_FOOD = 'BEFORE_FOOD',
+}
+
+export enum MedicalRecordType {
+  EHR = 'EHR',
+  OPERATIVE_REPORT = 'OPERATIVE_REPORT',
+  PATHOLOGY_REPORT = 'PATHOLOGY_REPORT',
+  PHYSICAL_EXAMINATION = 'PHYSICAL_EXAMINATION',
+}
+
+export enum MedicalTestUnit {
+  GM = 'GM',
+  GM_SLASH_DL = 'GM_SLASH_DL',
+  _PERCENT_ = '_PERCENT_',
 }
 
 export enum Relation {
-  BROTHER = "BROTHER",
-  COUSIN = "COUSIN",
-  FATHER = "FATHER",
-  HUSBAND = "HUSBAND",
-  ME = "ME",
-  MOTHER = "MOTHER",
-  OTHER = "OTHER",
-  SISTER = "SISTER",
-  WIFE = "WIFE",
+  BROTHER = 'BROTHER',
+  COUSIN = 'COUSIN',
+  FATHER = 'FATHER',
+  HUSBAND = 'HUSBAND',
+  ME = 'ME',
+  MOTHER = 'MOTHER',
+  OTHER = 'OTHER',
+  SISTER = 'SISTER',
+  WIFE = 'WIFE',
 }
 
 export enum SEARCH_TYPE {
-  DOCTOR = "DOCTOR",
-  MEDICINE = "MEDICINE",
-  SPECIALTY = "SPECIALTY",
+  DOCTOR = 'DOCTOR',
+  MEDICINE = 'MEDICINE',
+  SPECIALTY = 'SPECIALTY',
 }
 
 export enum STATUS {
-  CANCELLED = "CANCELLED",
-  COMPLETED = "COMPLETED",
-  CONFIRMED = "CONFIRMED",
-  IN_PROGRESS = "IN_PROGRESS",
-  NO_SHOW = "NO_SHOW",
-  PENDING = "PENDING",
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+  CONFIRMED = 'CONFIRMED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  NO_SHOW = 'NO_SHOW',
+  PENDING = 'PENDING',
 }
 
 export enum Salutation {
-  DR = "DR",
-  MR = "MR",
-  MRS = "MRS",
+  DR = 'DR',
+  MR = 'MR',
+  MRS = 'MRS',
 }
 
 export enum TRANSFER_INITIATED_TYPE {
-  DOCTOR = "DOCTOR",
-  PATIENT = "PATIENT",
+  DOCTOR = 'DOCTOR',
+  PATIENT = 'PATIENT',
 }
 
 export enum WeekDay {
-  FRIDAY = "FRIDAY",
-  MONDAY = "MONDAY",
-  SATURDAY = "SATURDAY",
-  SUNDAY = "SUNDAY",
-  THURSDAY = "THURSDAY",
-  TUESDAY = "TUESDAY",
-  WEDNESDAY = "WEDNESDAY",
+  FRIDAY = 'FRIDAY',
+  MONDAY = 'MONDAY',
+  SATURDAY = 'SATURDAY',
+  SUNDAY = 'SUNDAY',
+  THURSDAY = 'THURSDAY',
+  TUESDAY = 'TUESDAY',
+  WEDNESDAY = 'WEDNESDAY',
 }
 
 export interface AddMedicalRecordInput {
   patientId: string;
   testName: string;
   testDate?: any | null;
-  recordType?: string | null;
+  recordType?: MedicalRecordType | null;
   referringDoctor?: string | null;
   sourceName?: string | null;
   observations?: string | null;
@@ -148,7 +169,7 @@ export interface AddMedicalRecordInput {
 
 export interface AddMedicalRecordParametersInput {
   parameterName: string;
-  unit?: string | null;
+  unit?: MedicalTestUnit | null;
   result: number;
   minimum?: number | null;
   maximum?: number | null;

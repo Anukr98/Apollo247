@@ -1,9 +1,10 @@
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, StyleProp, ViewStyle } from 'react-native';
 import { theme } from '../../theme/theme';
 
 const styles = StyleSheet.create({
+  container: {},
   placeholderTextStyle: {
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -29,25 +30,34 @@ const styles = StyleSheet.create({
     borderColor: '#dddddd',
     marginHorizontal: 16,
   },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
 });
 
 export interface InputDropdownProps {
   label?: string;
   setShowPopup: (arg0: boolean) => void;
+  containerStyle?: StyleProp<ViewStyle>;
+  placeholder?: string;
 }
 
 export const InputDropdown: React.FC<InputDropdownProps> = (props) => {
   return (
     <TouchableOpacity
       activeOpacity={1}
-      // style={styles.placeholderViewStyle}
+      style={[styles.container, props.containerStyle]}
       onPress={() => {
         props.setShowPopup(true);
         // setRelationIndex(i);
       }}
     >
       <View style={styles.placeholderViewStyle}>
-        <Text style={[styles.placeholderTextStyle]}>{props.label ? props.label : ' '}</Text>
+        <Text
+          style={[styles.placeholderTextStyle, props.label !== '' ? null : styles.placeholderStyle]}
+        >
+          {props.label ? props.label : props.placeholder}
+        </Text>
         <DropdownGreen size="sm" />
       </View>
     </TouchableOpacity>

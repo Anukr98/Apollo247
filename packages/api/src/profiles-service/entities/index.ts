@@ -91,6 +91,19 @@ export enum DiscountType {
   AMOUNT = 'AMOUNT',
 }
 
+export enum MedicalTestUnit {
+  GM = 'GM',
+  _PERCENT_ = '_PERCENT_',
+  GM_SLASH_DL = 'GM_SLASH_DL',
+}
+
+export enum MedicalRecordType {
+  EHR = 'EHR',
+  PHYSICAL_EXAMINATION = 'PHYSICAL_EXAMINATION',
+  OPERATIVE_REPORT = 'OPERATIVE_REPORT',
+  PATHOLOGY_REPORT = 'PATHOLOGY_REPORT',
+}
+
 //medicine orders starts
 @Entity()
 export class MedicineOrders extends BaseEntity {
@@ -683,7 +696,7 @@ export class MedicalRecords extends BaseEntity {
   patient: Patient;
 
   @Column()
-  recordType: string;
+  recordType: MedicalRecordType;
 
   @Column({ nullable: true })
   referringDoctor: string;
@@ -737,7 +750,7 @@ export class MedicalRecordParameters extends BaseEntity {
   result: number;
 
   @Column()
-  unit: string;
+  unit: MedicalTestUnit;
 
   @Column({ type: 'timestamp', nullable: true })
   updatedDate: Date;

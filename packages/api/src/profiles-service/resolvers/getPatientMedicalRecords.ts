@@ -12,7 +12,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     id: ID!
     testName: String!
     testDate: Date
-    recordType: String
+    recordType: MedicalRecordType
     referringDoctor: String
     observations: String
     additionalNotes: String
@@ -25,7 +25,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
   type MedicalRecordParameters {
     id: ID!
     parameterName: String!
-    unit: String
+    unit: MedicalTestUnit
     result: Float
     minimum: Float
     maximum: Float
@@ -45,7 +45,7 @@ type MedicalRecordsResult = {
 
 const getPatientMedicalRecords: Resolver<
   null,
-  { patientId: string; offset: number; limit: number },
+  { patientId: string; offset?: number; limit?: number },
   ProfilesServiceContext,
   MedicalRecordsResult
 > = async (parent, args, { profilesDb, doctorsDb }) => {

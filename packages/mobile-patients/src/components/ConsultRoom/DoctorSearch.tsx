@@ -124,7 +124,10 @@ let doctorIds: (string | undefined)[] = [];
 export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
-  const [searchText, setSearchText] = useState<string>('');
+  const params = props.navigation.state.params ? props.navigation.state.params.searchText : '';
+  console.log(params, 'params');
+
+  const [searchText, setSearchText] = useState<string>(params);
   const [pastSearch, setPastSearch] = useState<boolean>(true);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
   const [displaySpeialist, setdisplaySpeialist] = useState<boolean>(true);
@@ -386,7 +389,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 : {}
             }
             autoCorrect={false}
-            // value={searchText}
+            value={searchText}
             placeholder="Search doctors or specialities"
             underlineColorAndroid="transparent"
             onChangeText={(value) => {
@@ -781,7 +784,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             {renderPastSearch()}
             {renderDoctorSearches()}
             {renderSpecialist()}
-            {renderHelpView()}
             {searchText.length > 2 &&
               doctorsList &&
               doctorsList.length === 0 &&
@@ -794,6 +796,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               doctorsList.length === 1 &&
               otherDoctors &&
               renderOtherSUggestedDoctors()}
+            {renderHelpView()}
           </ScrollView>
         )}
       </SafeAreaView>

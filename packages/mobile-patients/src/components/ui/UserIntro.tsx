@@ -147,7 +147,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
               </Text>
             </View>
           ))}
-
+        {/* 
         <Text
           style={{
             paddingTop: 15,
@@ -158,7 +158,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
           }}
         >
           ADD MEMBER
-        </Text>
+        </Text> */}
       </View>
     </TouchableOpacity>
   );

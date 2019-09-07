@@ -115,7 +115,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         price,
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
-        productType: type_id == 'simple' ? 'PHARMA' : 'FMCG',
       });
     props.navigation.goBack();
   };
