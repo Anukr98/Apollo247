@@ -89,7 +89,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         setshowSpinner(false);
         const address = g(data, 'savePatientAddress', 'patientAddress');
         addAddress && addAddress(address!);
-        setDeliveryAddressId && setDeliveryAddressId((address && address.id) || '');
+        // setDeliveryAddressId && setDeliveryAddressId((address && address.id) || '');
         props.navigation.goBack();
       })
       .catch((e: GraphQLError[]) => {});
@@ -154,7 +154,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         />
         <TextInputComponent
           value={pincode}
-          onChangeText={(pincode) => setpincode(pincode)}
+          onChangeText={(pincode) =>
+            (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) && setpincode(pincode)
+          }
           placeholder={'Pincode'}
           maxLength={6}
         />

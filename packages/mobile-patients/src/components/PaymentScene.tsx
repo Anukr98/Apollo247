@@ -1,9 +1,19 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, WebView, View } from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  WebView,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { useAllCurrentPatients } from '../hooks/authHooks';
 import { theme } from '../theme/theme';
-import { BottomPopUp } from './ui/BottomPopUp';
+import { AppRoutes } from './NavigatorContainer';
 import { useShoppingCart } from './ShoppingCartProvider';
+import { BottomPopUp } from './ui/BottomPopUp';
 import { MedicineIcon } from './ui/Icons';
 
 const styles = StyleSheet.create({
@@ -34,13 +44,31 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const { clearCartInfo } = useShoppingCart();
   const totalAmount = props.navigation.getParam('amount');
   const orderAutoId = props.navigation.getParam('orderAutoId');
+  // const orderAutoId = Math.random();
   const orderId = props.navigation.getParam('orderId');
   const authToken = props.navigation.getParam('token');
+  const { currentPatient } = useAllCurrentPatients();
+  const currentPatiendId = currentPatient && currentPatient.id;
+
+  const getParameterByName = (name: string, url: string) => {
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+      results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+  };
 
   const renderWebView = () => {
     const baseUrl = 'http://localhost:7000';
-    const url = `${baseUrl}/paymed?amount=${totalAmount}&orderId=${orderId}&orderAutoId=${orderAutoId}&token=${authToken}`;
-    console.log({ totalAmount, orderAutoId, authToken });
+
+    // /paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile
+    // /mob?tk=<>&status=<>
+
+    const url = `${baseUrl}/paymed?amount=${totalAmount}&oid=${orderAutoId}&token=${authToken}&pid=${currentPatiendId}&source=mobile`;
+    console.log({ totalAmount, orderAutoId, authToken, url });
+    console.log({ url });
+    console.log(url);
 
     return (
       <WebView
@@ -50,9 +78,21 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
           console.log({ data });
           const redirectedUrl = data.url;
           console.log({ redirectedUrl });
-          if (redirectedUrl == 'http://localhost:7000/paymed-response') {
+          const isMatchesSuccessUrl =
+            (redirectedUrl && redirectedUrl.indexOf('/mob?') > -1) || false;
+          const isMatchesFailUrl =
+            (redirectedUrl && redirectedUrl.indexOf('/mob-error?') > -1) || false;
+
+          if (isMatchesSuccessUrl) {
+            const tk = getParameterByName('tk', redirectedUrl!);
+            const status = getParameterByName('status', redirectedUrl!);
+            console.log({ tk, status });
             setOrderSuccess(true);
             clearCartInfo && clearCartInfo();
+            props.navigation.navigate(AppRoutes.TabBar);
+          }
+          if (isMatchesFailUrl) {
+            Alert.alert('Error', 'Payment failed');
           }
         }}
       />
