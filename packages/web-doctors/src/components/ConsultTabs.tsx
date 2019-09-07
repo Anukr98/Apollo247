@@ -257,46 +257,46 @@ export const ConsultTabs: React.FC = () => {
           setError('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
+                .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
             : setDiagnosis([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.symptoms
             ? setSymptoms((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
+                .symptoms as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[])
             : setSymptoms([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.otherInstructions
             ? setOtherInstructions((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
+                .otherInstructions as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[])
             : setOtherInstructions([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosticPrescription
             ? setDiagnosticPrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
+                .diagnosticPrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[])
             : setDiagnosticPrescription([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.medicinePrescription
             ? setMedicinePrescription((_data!.data!.getCaseSheet!.caseSheetDetails!
-              .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
+                .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.notes
             ? setNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
             : setNotes('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
-              _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
-            ] as unknown) as string[])
+                _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
+              ] as unknown) as string[])
             : setConsultType([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUp
             ? setFollowUp(([
-              _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
-            ] as unknown) as boolean[])
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
+              ] as unknown) as boolean[])
             : setFollowUp([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays
             ? setFollowUpAfterInDays(([
-              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
-            ] as unknown) as string[])
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpAfterInDays,
+              ] as unknown) as string[])
             : setFollowUpAfterInDays([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
             ? setFollowUpDate(([
-              _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
-            ] as unknown) as string[])
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
+              ] as unknown) as string[])
             : setFollowUpDate([]);
           if (
             _data.data &&
@@ -383,12 +383,11 @@ export const ConsultTabs: React.FC = () => {
       .then((_data) => {
         console.log('_data', _data);
         endConsultActionFinal();
-
       })
       .catch((e) => {
         console.log('Error occured while update casesheet', e);
       });
-  }
+  };
   const endConsultActionFinal = () => {
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
@@ -412,7 +411,6 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error occured while End casesheet', errorMessage, error);
         alert(errorMessage);
       });
-
   };
   const createSessionAction = () => {
     client
