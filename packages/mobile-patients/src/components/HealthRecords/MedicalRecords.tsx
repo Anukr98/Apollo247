@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { AddFileIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AddFileIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -28,7 +28,6 @@ const styles = StyleSheet.create({
 
 export interface MedicalRecordsProps extends NavigationScreenProps {}
 export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
-  const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [medicalRecords, setmedicalRecords] = useState<
     (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[] | null | undefined
   >([]);
@@ -83,7 +82,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
                 <HealthMedicineCard
                   data={item}
                   onClickCard={() => {
-                    props.navigation.navigate();
+                    props.navigation.navigate(AppRoutes.RecordDetails, { data: item });
                   }}
                 />
               );
