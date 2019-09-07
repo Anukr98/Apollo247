@@ -7,9 +7,12 @@
 //==============================================================
 
 export enum APPOINTMENT_STATE {
+  AWAITING_RESCHEDULE = 'AWAITING_RESCHEDULE',
+  AWAITING_TRANSFER = 'AWAITING_TRANSFER',
   NEW = 'NEW',
   RESCHEDULE = 'RESCHEDULE',
   TRANSFER = 'TRANSFER',
+  TRANSFERRED = 'TRANSFERRED',
 }
 
 export enum APPOINTMENT_TYPE {
@@ -26,6 +29,11 @@ export enum ConsultMode {
 export enum DEVICE_TYPE {
   ANDROID = 'ANDROID',
   IOS = 'IOS',
+}
+
+export enum DiscountType {
+  AMOUNT = 'AMOUNT',
+  PERCENT = 'PERCENT',
 }
 
 export enum DoctorType {
@@ -61,6 +69,7 @@ export enum MEDICINE_ORDER_STATUS {
   ORDER_VERIFIED = 'ORDER_VERIFIED',
   OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
   PICKEDUP = 'PICKEDUP',
+  PRESCRIPTION_CART_READY = 'PRESCRIPTION_CART_READY',
   PRESCRIPTION_UPLOADED = 'PRESCRIPTION_UPLOADED',
   QUOTE = 'QUOTE',
   RETURN_ACCEPTED = 'RETURN_ACCEPTED',
@@ -82,6 +91,19 @@ export enum MEDICINE_TIMINGS {
 export enum MEDICINE_TO_BE_TAKEN {
   AFTER_FOOD = 'AFTER_FOOD',
   BEFORE_FOOD = 'BEFORE_FOOD',
+}
+
+export enum MedicalRecordType {
+  EHR = 'EHR',
+  OPERATIVE_REPORT = 'OPERATIVE_REPORT',
+  PATHOLOGY_REPORT = 'PATHOLOGY_REPORT',
+  PHYSICAL_EXAMINATION = 'PHYSICAL_EXAMINATION',
+}
+
+export enum MedicalTestUnit {
+  GM = 'GM',
+  GM_SLASH_DL = 'GM_SLASH_DL',
+  _PERCENT_ = '_PERCENT_',
 }
 
 export enum Relation {
@@ -136,7 +158,7 @@ export interface AddMedicalRecordInput {
   patientId: string;
   testName: string;
   testDate?: any | null;
-  recordType?: string | null;
+  recordType?: MedicalRecordType | null;
   referringDoctor?: string | null;
   sourceName?: string | null;
   observations?: string | null;
@@ -147,7 +169,7 @@ export interface AddMedicalRecordInput {
 
 export interface AddMedicalRecordParametersInput {
   parameterName: string;
-  unit?: string | null;
+  unit?: MedicalTestUnit | null;
   result: number;
   minimum?: number | null;
   maximum?: number | null;

@@ -83,6 +83,8 @@ export interface RecordDetailsProps extends NavigationScreenProps {}
 export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const [showtopLine, setshowtopLine] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
+  const data = props.navigation.state.params ? props.navigation.state.params.data : {};
+  console.log(data, 'data');
 
   const detailFinding = [
     {

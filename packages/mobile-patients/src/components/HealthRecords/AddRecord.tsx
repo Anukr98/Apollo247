@@ -145,7 +145,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     console.log('inputData', inputData);
     if (currentPatient && currentPatient.id)
       client
-        .mutate<addPatientMedicalRecord, addPatientMedicalRecordVariables>({
+        .mutate<addPatientMedicalRecord>({
           mutation: ADD_MEDICAL_RECORD,
           variables: {
             AddMedicalRecordInput: inputData,
