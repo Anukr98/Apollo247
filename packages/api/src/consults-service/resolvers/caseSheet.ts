@@ -87,6 +87,7 @@ export const caseSheetTypeDefs = gql`
     appointmentDateTime: DateTime
     appointmentState: String
     appointmentType: APPOINTMENT_TYPE
+    displayId: String
     doctorId: String
     hospitalId: String
     patientId: String
