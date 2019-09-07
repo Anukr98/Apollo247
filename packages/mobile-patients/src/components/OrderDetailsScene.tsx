@@ -1,18 +1,22 @@
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { CrossPopup, More } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   OrderProgressCard,
   OrderProgressCardProps,
 } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { More, CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
-import string from '@aph/mobile-patients/src/strings/strings.json';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '../graphql/types/GetMedicineOrdersList';
+import { useAllCurrentPatients } from '../hooks/authHooks';
+import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
+import { OrderCardProps } from './ui/OrderCard';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -33,7 +37,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const list = [
+const _list = [
   {
     status: 'Order Placed',
     date: '9 Aug 2019',
@@ -59,7 +63,8 @@ const list = [
 ] as OrderProgressCardProps[];
 
 export interface OrderDetailsSceneProps extends NavigationScreenProps {
-  orderId: string;
+  orderAutoId: string;
+  orderDetails: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[];
 }
 {
 }
@@ -67,6 +72,72 @@ export interface OrderDetailsSceneProps extends NavigationScreenProps {
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [selectedTab, setSelectedTab] = useState<string>(string.orders.trackOrder);
   const [isReturnVisible, setReturnVisible] = useState(false);
+  const orderId = props.navigation.getParam('orderAutoId');
+  const { currentPatient } = useAllCurrentPatients();
+
+  // const { data, error, loading } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(
+  //   GET_MEDICINE_ORDER_DETAILS,
+  //   { variables: { patientId: currentPatient && currentPatient.id } }
+  // );
+
+  // const orders = (!loading && data && data.getMedicineOrdersList.MedicineOrdersList!) || [];
+  // !loading && console.log({ orders });
+  // !loading && error && console.error({ error });
+
+  const list: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[] = props.navigation.getParam(
+    'orderDetails'
+  );
+
+  const getStatusType = (type: MEDICINE_ORDER_STATUS) => {
+    let status = '' as OrderCardProps['status'];
+    switch (type) {
+      case MEDICINE_ORDER_STATUS.CANCELLED:
+        status = 'Order Cancelled';
+        break;
+      case MEDICINE_ORDER_STATUS.DELIVERED:
+        status = 'Order Delivered';
+        break;
+      case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
+        status = 'Items Returned';
+        break;
+      case MEDICINE_ORDER_STATUS.ORDER_FAILED:
+        status = 'Order Failed';
+        break;
+      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+        status = 'Order Placed';
+        break;
+      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+        status = 'Order Verified';
+        break;
+      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+        status = 'Out For Delivery';
+        break;
+      case MEDICINE_ORDER_STATUS.PICKEDUP:
+        status = 'Order Picked Up';
+        break;
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+        status = 'Prescription Uploaded';
+        break;
+      case MEDICINE_ORDER_STATUS.QUOTE:
+        status = 'Quote';
+        break;
+      case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
+        status = 'Return Accepted';
+        break;
+      case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
+        status = 'Return Requested';
+        break;
+    }
+    return status;
+  };
+
+  const getFormattedDate = (time: string) => {
+    return moment(time).format('D MMM YYYY');
+  };
+
+  const getFormattedTime = (time: string) => {
+    return moment(time).format('hh:mm a');
+  };
 
   const renderOrderHistory = () => {
     return (
@@ -76,12 +147,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             <OrderProgressCard
               style={index < array.length - 1 ? { marginBottom: 8 } : {}}
               key={index}
-              description={order.description}
-              status={order.status}
-              date={order.date}
-              time={order.time}
-              isStatusDone={order.isStatusDone}
-              nextItemStatus={order.nextItemStatus}
+              description={''}
+              status={getStatusType(order!.statusDate)}
+              date={getFormattedDate(order!.statusDate)}
+              time={getFormattedTime(order!.statusDate)}
+              isStatusDone={true}
+              nextItemStatus={'NOT_EXIST'}
             />
           );
         })}
@@ -166,7 +237,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
-  const orderId = props.navigation.getParam('orderId') || '';
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       {renderReturnOrderOverlay()}
@@ -183,14 +253,24 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           onPressLeftIcon={() => props.navigation.goBack()}
         />
       </View>
-      <TabsComponent
+
+      {/* {loading && (
+        <ActivityIndicator
+          style={{ flex: 1, alignItems: 'center' }}
+          animating={loading}
+          size="large"
+          color="green"
+        />
+      )} */}
+
+      {/* <TabsComponent
         style={styles.tabsContainer}
         onChange={(title) => {
           setSelectedTab(title);
         }}
         data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
         selectedTab={selectedTab}
-      />
+      /> */}
       <ScrollView bounces={false}>{renderOrderHistory()}</ScrollView>
     </SafeAreaView>
   );

@@ -2,6 +2,8 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { MedicalRecordType } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: getPatientMedicalRecords
 // ====================================================
@@ -17,7 +19,7 @@ export interface getPatientMedicalRecords_getPatientMedicalRecords_medicalRecord
   id: string;
   testName: string;
   testDate: any | null;
-  recordType: string | null;
+  recordType: MedicalRecordType | null;
   referringDoctor: string | null;
   observations: string | null;
   additionalNotes: string | null;

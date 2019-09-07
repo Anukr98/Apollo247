@@ -153,7 +153,8 @@ export const CaseSheet: React.FC = () => {
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
   ) => setExpanded(isExpanded ? panelName : false);
-  const { notes, setNotes } = useContext(CaseSheetContext);
+
+  const { setCasesheetNotes, notes } = useContext(CaseSheetContext);
 
   return (
     <div className={classes.container}>
@@ -298,14 +299,10 @@ export const CaseSheet: React.FC = () => {
           <InputBase
             fullWidth
             className={classes.textFieldColor}
-            placeholder="What you enter here won’t be shown to the patient.."
-            onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
-              {
-                if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
-                  setNotes((e.target as HTMLInputElement).value.trim());
-                  e.preventDefault();
-                }
-              }
+            placeholder="What you enter here won't be shown to the patient.."
+            defaultValue={notes}
+            onChange={(e) => {
+              setCasesheetNotes(e.target.value);
             }}
           />
         </Typography>
