@@ -176,6 +176,8 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         status
         hospitalId
         doctorId
+        isFollowUp
+        rescheduleCount
         doctorInfo {
           id
           salutation
@@ -516,6 +518,7 @@ export const SAVE_DEVICE_TOKEN = gql`
 // export const END_APPOINTMENT_SESSION = gql`
 //   mutation endAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput!) {
 //     endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput) {
+//       status
 //     }
 //   }
 // `;
@@ -589,6 +592,147 @@ export const SAVE_NOTIFICATION_SETTINGS = gql`
   ) {
     savePatientNotificationSettings(notificationSettingsInput: $notificationSettingsInput) {
       status
+    }
+  }
+`;
+
+// export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
+//   query getPatientPastConsultsAndPrescriptions(
+//     $consultsAndOrdersInput: PatientConsultsAndOrdersInput
+//   ) {
+//     getPatientPastConsultsAndPrescriptions(consultsAndOrdersInput: $consultsAndOrdersInput) {
+//       consults {
+//         id
+//         patientId
+//         doctorId
+//         appointmentDateTime
+//         appointmentType
+//         appointmentState
+//         hospitalId
+//         isFollowUp
+//         followUpParentId
+//         followUpTo
+//         bookingDate
+//         caseSheet {
+//           consultType
+//           diagnosis {
+//             name
+//           }
+//           diagnosticPrescription {
+//             itemname
+//           }
+//           doctorId
+//           followUp
+//           followUpAfterInDays
+//           followUpDate
+//           id
+//           medicinePrescription {
+//             medicineConsumptionDurationInDays
+//             medicineDosage
+//             medicineInstructions
+//             medicineTimings
+//             medicineToBeTaken
+//             medicineName
+//             id
+//           }
+//           symptoms {
+//             symptom
+//             since
+//             howOften
+//             severity
+//           }
+//         }
+//         displayId
+//         status
+//         doctorInfo {
+//           id
+//           salutation
+//           firstName
+//           lastName
+//           experience
+//           city
+//           photoUrl
+//           qualification
+//           specialty {
+//             name
+//             image
+//           }
+//         }
+//       }
+//       medicineOrders {
+//         id
+//         orderDateTime
+//         quoteDateTime
+//         deliveryType
+//         currentStatus
+//         orderType
+//         estimatedAmount
+//         prescriptionImageUrl
+//         shopId
+//         medicineOrderLineItems {
+//           medicineSku
+//           medicineName
+//           price
+//           quantity
+//           mrp
+//           id
+//         }
+//       }
+//     }
+//   }
+// `;
+
+export const ADD_MEDICAL_RECORD = gql`
+  mutation addPatientMedicalRecord($AddMedicalRecordInput: AddMedicalRecordInput) {
+    addPatientMedicalRecord(addMedicalRecordInput: $AddMedicalRecordInput) {
+      status
+    }
+  }
+`;
+
+export const GET_MEDICAL_RECORD = gql`
+  query getPatientMedicalRecords($patientId: ID!) {
+    getPatientMedicalRecords(patientId: $patientId) {
+      medicalRecords {
+        id
+        testName
+        testDate
+        recordType
+        referringDoctor
+        observations
+        additionalNotes
+        sourceName
+        documentURLs
+        medicalRecordParameters {
+          parameterName
+          result
+        }
+      }
+    }
+  }
+`;
+
+export const CANCEL_APPOINTMENT = gql`
+  mutation cancelAppointment($cancelAppointmentInput: CancelAppointmentInput!) {
+    cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
+      status
+    }
+  }
+`;
+
+export const BOOK_FOLLOWUP_APPOINTMENT = gql`
+  mutation BookFollowUpAppointment($followUpAppointmentInput: BookFollowUpAppointmentInput!) {
+    bookFollowUpAppointment(followUpAppointmentInput: $followUpAppointmentInput) {
+      appointment {
+        id
+        isFollowUp
+        doctorId
+        appointmentType
+        appointmentState
+        appointmentDateTime
+        patientId
+        status
+      }
     }
   }
 `;
@@ -679,31 +823,51 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
   }
 `;
 
-export const ADD_MEDICAL_RECORD = gql`
-  mutation addPatientMedicalRecord($AddMedicalRecordInput: AddMedicalRecordInput) {
-    addPatientMedicalRecord(addMedicalRecordInput: $AddMedicalRecordInput) {
-      status
+export const BOOK_APPOINTMENT_TRANSFER = gql`
+  mutation bookTransferAppointment($BookTransferAppointmentInput: BookTransferAppointmentInput!) {
+    bookTransferAppointment(BookTransferAppointmentInput: $BookTransferAppointmentInput) {
+      appointment {
+        id
+        patientId
+        doctorId
+        appointmentDateTime
+        appointmentType
+        hospitalId
+        status
+        appointmentState
+        patientName
+      }
     }
   }
 `;
 
-export const GET_MEDICAL_RECORD = gql`
-  query getPatientMedicalRecords($patientId: ID!) {
-    getPatientMedicalRecords(patientId: $patientId) {
-      medicalRecords {
+export const CHOOSE_DOCTOR = gql`
+  query getAvailableDoctors($ChooseDoctorInput: ChooseDoctorInput!) {
+    getAvailableDoctors(ChooseDoctorInput: $ChooseDoctorInput) {
+      availalbeDoctors {
+        doctorId
+        doctorPhoto
+        doctorLastName
+        doctorFirstName
+        availableSlot
+      }
+    }
+  }
+`;
+
+export const BOOK_APPOINTMENT_RESCHEDULE = gql`
+  mutation bookRescheduleAppointment(
+    $bookRescheduleAppointmentInput: BookRescheduleAppointmentInput!
+  ) {
+    bookRescheduleAppointment(bookRescheduleAppointmentInput: $bookRescheduleAppointmentInput) {
+      appointmentDetails {
+        appointmentType
         id
-        testName
-        testDate
-        recordType
-        referringDoctor
-        observations
-        additionalNotes
-        sourceName
-        documentURLs
-        medicalRecordParameters {
-          parameterName
-          result
-        }
+        doctorId
+        appointmentState
+        appointmentDateTime
+        status
+        patientId
       }
     }
   }

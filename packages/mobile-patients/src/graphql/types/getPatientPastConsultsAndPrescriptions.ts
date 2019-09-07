@@ -2,35 +2,24 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import {
-  PatientConsultsAndOrdersInput,
-  APPOINTMENT_TYPE,
-  APPOINTMENT_STATE,
-  MEDICINE_TIMINGS,
-  MEDICINE_TO_BE_TAKEN,
-  STATUS,
-  Salutation,
-  MEDICINE_DELIVERY_TYPE,
-  MEDICINE_ORDER_STATUS,
-  MEDICINE_ORDER_TYPE,
-} from './globalTypes';
+import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, STATUS, Salutation, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientPastConsultsAndPrescriptions
 // ====================================================
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosis {
-  __typename: 'Diagnosis';
+  __typename: "Diagnosis";
   name: string | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription {
-  __typename: 'DiagnosticPrescription';
+  __typename: "DiagnosticPrescription";
   itemname: string | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription {
-  __typename: 'MedicinePrescription';
+  __typename: "MedicinePrescription";
   medicineConsumptionDurationInDays: string | null;
   medicineDosage: string | null;
   medicineInstructions: string | null;
@@ -41,7 +30,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_symptoms {
-  __typename: 'SymptomList';
+  __typename: "SymptomList";
   symptom: string | null;
   since: string | null;
   howOften: string | null;
@@ -49,35 +38,27 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet {
-  __typename: 'CaseSheet';
+  __typename: "CaseSheet";
   consultType: string | null;
-  diagnosis:
-    | (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosis | null)[]
-    | null;
-  diagnosticPrescription:
-    | (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription | null)[]
-    | null;
+  diagnosis: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosis | null)[] | null;
+  diagnosticPrescription: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription | null)[] | null;
   doctorId: string | null;
   followUp: boolean | null;
   followUpAfterInDays: string | null;
-  followUpDate: string | null;
+  followUpDate: any | null;
   id: string | null;
-  medicinePrescription:
-    | (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription | null)[]
-    | null;
-  symptoms:
-    | (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_symptoms | null)[]
-    | null;
+  medicinePrescription: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription | null)[] | null;
+  symptoms: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_symptoms | null)[] | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo_specialty {
-  __typename: 'DoctorSpecialties';
+  __typename: "DoctorSpecialties";
   name: string;
   image: string | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo {
-  __typename: 'DoctorDetails';
+  __typename: "DoctorDetails";
   id: string;
   salutation: Salutation | null;
   firstName: string;
@@ -90,7 +71,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults {
-  __typename: 'ConsultRecord';
+  __typename: "ConsultRecord";
   id: string;
   patientId: string;
   doctorId: string;
@@ -102,16 +83,14 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   followUpParentId: string | null;
   followUpTo: any | null;
   bookingDate: any | null;
-  caseSheet:
-    | (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet | null)[]
-    | null;
+  caseSheet: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet | null)[] | null;
   displayId: number;
   status: STATUS;
   doctorInfo: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems {
-  __typename: 'Medicine';
+  __typename: "Medicine";
   medicineSku: string | null;
   medicineName: string | null;
   price: number | null;
@@ -121,7 +100,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders {
-  __typename: 'MedicineOrderRecord';
+  __typename: "MedicineOrderRecord";
   id: string;
   orderDateTime: any | null;
   quoteDateTime: any | null;
@@ -131,19 +110,13 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   estimatedAmount: number | null;
   prescriptionImageUrl: string | null;
   shopId: string | null;
-  medicineOrderLineItems:
-    | (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
-    | null;
+  medicineOrderLineItems: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[] | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions {
-  __typename: 'PatientConsultsAndOrders';
-  consults:
-    | (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults | null)[]
-    | null;
-  medicineOrders:
-    | (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders | null)[]
-    | null;
+  __typename: "PatientConsultsAndOrders";
+  consults: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults | null)[] | null;
+  medicineOrders: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders | null)[] | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions {
