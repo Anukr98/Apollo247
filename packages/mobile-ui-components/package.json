@@ -11,7 +11,8 @@
     "typecheck": "tsc --project . --noEmit"
   },
   "peerDependencies": {
-    "react": "16.8.6"
+    "react": "16.8.6",
+    "react-native": "0.59.9"
   },
   "devDependencies": {
     "@aph/eslint-config": "file:../eslint-config",

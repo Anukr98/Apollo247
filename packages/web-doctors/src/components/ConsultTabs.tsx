@@ -349,15 +349,46 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('_data', _data);
-        setIsPopoverOpen(true);
+        // console.log('_data', _data);
+        // setIsPopoverOpen(true);
       })
       .catch((e) => {
         console.log('Error occured while update casesheet', e);
       });
   };
-
   const endConsultAction = () => {
+    client
+      .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
+        mutation: UPDATE_CASESHEET,
+        variables: {
+          UpdateCaseSheetInput: {
+            symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
+            notes,
+            diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
+            diagnosticPrescription:
+              diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
+            followUp: followUp[0],
+            followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
+            followUpAfterInDays:
+              followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
+            otherInstructions:
+              otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
+            medicinePrescription:
+              medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
+            id: caseSheetId,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        console.log('_data', _data);
+        endConsultActionFinal();
+      })
+      .catch((e) => {
+        console.log('Error occured while update casesheet', e);
+      });
+  };
+  const endConsultActionFinal = () => {
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
         mutation: END_APPOINTMENT_SESSION,
@@ -370,6 +401,7 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        setIsPopoverOpen(true);
         console.log('_data', _data);
       })
       .catch((e) => {
