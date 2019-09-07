@@ -9,6 +9,7 @@ export interface MedicineProduct {
   is_prescription_required: string; //1 for required
   name: string;
   price: number;
+  special_price: number;
   sku: string;
   small_image: string;
   status: number; // 1, 2 (1 = in-stock, 2= out-of-stock)
