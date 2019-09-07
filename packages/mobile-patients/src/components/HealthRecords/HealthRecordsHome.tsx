@@ -105,6 +105,65 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     console.log(array, 'array');
   }
 
+  const renderTopView = () => {
+    return (
+      <View
+        style={{
+          height: 280,
+          // justifyContent: 'space-between',
+        }}
+      >
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+          }}
+        >
+          <UserIntro
+            description={strings.health_records_home.description}
+            style={{
+              height: 236,
+            }}
+          >
+            <View
+              style={{
+                height: 83,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginHorizontal: 20,
+              }}
+            >
+              <View style={{ marginTop: 20 }}>
+                <ApolloLogo />
+              </View>
+              <View style={{ flexDirection: 'row', marginTop: 16 }}>
+                <NotificationIcon />
+              </View>
+            </View>
+          </UserIntro>
+        </View>
+        <View>
+          <TabsComponent
+            style={{
+              height: 43,
+              marginTop: 236,
+              backgroundColor: theme.colors.CARD_BG,
+              ...theme.viewStyles.shadowStyle,
+            }}
+            textStyle={{
+              paddingTop: 12,
+            }}
+            data={tabs}
+            onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+            selectedTab={selectedTab}
+          />
+        </View>
+      </View>
+    );
+  };
+
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
@@ -142,60 +201,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
-          <View
-            style={{
-              height: 280,
-              // justifyContent: 'space-between',
-            }}
-          >
-            <View
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-              }}
-            >
-              <UserIntro
-                description={strings.health_records_home.description}
-                style={{
-                  height: 236,
-                }}
-              >
-                <View
-                  style={{
-                    // height: 83,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    marginHorizontal: 20,
-                  }}
-                >
-                  <View style={{ marginVertical: 20 }}>
-                    <ApolloLogo />
-                  </View>
-                  <View style={{ flexDirection: 'row', marginTop: 16 }}>
-                    <NotificationIcon />
-                  </View>
-                </View>
-              </UserIntro>
-            </View>
-            <View>
-              <TabsComponent
-                style={{
-                  height: 43,
-                  marginTop: 236,
-                  backgroundColor: theme.colors.CARD_BG,
-                  ...theme.viewStyles.shadowStyle,
-                }}
-                textStyle={{
-                  paddingTop: 12,
-                }}
-                data={tabs}
-                onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-                selectedTab={selectedTab}
-              />
-            </View>
-          </View>
+          {renderTopView()}
           {selectedTab === tabs[0].title ? (
             renderConsults()
           ) : (

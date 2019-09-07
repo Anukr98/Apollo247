@@ -53,7 +53,7 @@ export const useAllCurrentPatients = () => {
   // const isSigningIn = useAuthContext().isSigningIn;
   // const hasAuthToken = useAuthContext().hasAuthToken;
   const patientsArray = useAuthContext().allPatients;
-  console.log('patientsArray', patientsArray);
+  // console.log('patientsArray', patientsArray);
 
   // const { loading, data, error } = useQuery<GetCurrentPatients>(GET_CURRENT_PATIENTS, {
   //   skip: isSigningIn || !hasAuthToken,

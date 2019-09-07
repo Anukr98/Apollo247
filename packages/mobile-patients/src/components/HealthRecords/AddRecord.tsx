@@ -16,7 +16,15 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { GraphQLError } from 'graphql';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Keyboard } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Keyboard,
+  Alert,
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import {
@@ -26,6 +34,8 @@ import {
 import { AddMedicalRecordParametersInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import Moment from 'moment';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -145,9 +155,16 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           setshowSpinner(false);
           const status = g(data, 'addPatientMedicalRecord', 'status');
           console.log(status, 'status');
+          if (status) {
+            props.navigation.goBack();
+          }
         })
         .catch((e) => {
+          setshowSpinner(false);
           console.log(JSON.stringify(e), 'eeeee');
+          Alert.alert('Alert', 'Please fill all the details', [
+            { text: 'OK', onPress: () => console.log('OK Pressed') },
+          ]);
         });
   };
 
@@ -226,7 +243,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
               onPress={() => setdisplayOrderPopup(true)}
             >
-              ADD IMAGE
+              ADD DOCUMENT
             </Text>
           </View>
         </CollapseCard>
@@ -248,14 +265,25 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               value={typeofRecord}
               onChangeText={(typeofRecord) => settypeofRecord(typeofRecord)}
             /> */}
-            <TextInputComponent label={'Type Of Record'} noInput={true} />
+            <TextInputComponent
+              label={'Type Of Record'}
+              noInput={true}
+              conatinerstyles={{
+                paddingBottom: 0,
+              }}
+            />
             <InputDropdown
               setShowPopup={(showpopup) => setshowRecordTypePopup(showpopup)}
               label={typeofRecord}
+              containerStyle={{
+                paddingBottom: 10,
+              }}
+              placeholder={'Select type of record'}
             />
             <TextInputComponent
               label={'Name Of Test'}
               value={testName}
+              placeholder={'Enter name of test'}
               onChangeText={(testName) => settestName(testName)}
             />
             <TextInputComponent
@@ -491,17 +519,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           </KeyboardAwareScrollView>
         </SafeAreaView>
         {renderBottomButton()}
-        {/* {displayOrderPopup && (
+        {displayOrderPopup && (
           <AddFilePopup
             onClickClose={() => {
               setdisplayOrderPopup(false);
             }}
             getData={(data: (PickerImage | PickerImage[])[]) => {
               console.log(data);
-              setImages(data);
+              // setImages(data);
             }}
           />
-        )} */}
+        )}
         {showRecordTypePopup && (
           <InputDropdownMenu
             Options={RecordType}
@@ -509,6 +537,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setSelectedOption={(value) => settypeofRecord(value)}
           />
         )}
+        {showSpinner && <Spinner />}
       </View>
     );
   return null;

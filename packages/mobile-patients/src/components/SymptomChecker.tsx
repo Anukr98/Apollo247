@@ -5,14 +5,22 @@ import { NavigationScreenProps } from 'react-navigation';
 import { SafeAreaView, View, Text, Button } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
-export const CustomComponent: React.FC<{}> = (props) => {
+export interface CustomComponentProps extends NavigationScreenProps {}
+
+export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   const onSubmitClick = async () => {
     const ss = await $Generator({ type: 'showSpeciality' });
     console.log(ss, 'ssssss');
-    // ss.then((e) => {
-    //   console.log(e);
-    // });
+    let speciality = '';
+    if (ss && ss.specialists && ss.specialists.length) {
+      console.log(ss.specialists[0].speciality);
+      speciality = ss.specialists[0].speciality;
+    }
+    props.navigation.navigate(AppRoutes.DoctorSearch, {
+      searchText: speciality,
+    });
   };
   return <Button title={'show speciality'} onPress={onSubmitClick} />;
 };
@@ -24,29 +32,11 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
   const [userName, setuserName] = useState<string>('');
 
   useEffect(() => {
-    currentPatient && setuserName(currentPatient.firstName ? currentPatient.firstName : '');
+    if (currentPatient && currentPatient.firstName) {
+      setuserName(currentPatient.firstName);
+    }
     console.log('consult room', currentPatient);
   }, [currentPatient, userName, props.navigation.state.params]);
-
-  // const onSubmitClick = async () => {
-  //   const ss = await $Generator({ type: 'showSpeciality' });
-  //   console.log(ss, 'ssssss');
-  //   ss.then((e) => {
-  //     console.log(e, 'eeee');
-  //   });
-  // };
-
-  // const CustomShowDocComponent = $Generator({
-  //   type: 'showSpeciality',
-  //   componentProps: [
-  //     {
-  //       style: { fontFamily: 'IBMPlexSans-Medium', color: '#02475b', fontSize: 14 },
-  //       onPress: () => {
-  //         console.log('showSpeciality');
-  //       },
-  //     },
-  //   ],
-  // });
 
   return (
     <View style={{ flex: 1 }}>
@@ -56,13 +46,12 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
           leftIcon="backArrow"
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        {/* <Button title="click" onPress={onSubmitClick} /> */}
 
         <NavigatorSDK
           clientId="4A8C9CCC-C5A3-11E9-9A19-8C85900A8328"
-          // categoryComponent={CategoryComponent}
-          // showDocComponent={CustomComponent}
-          showDocBtn={CustomComponent}
+          showDocBtn={() => <CustomComponent navigation={props.navigation} />}
+          patientGender="female"
+          patientAge={23}
         />
       </SafeAreaView>
     </View>

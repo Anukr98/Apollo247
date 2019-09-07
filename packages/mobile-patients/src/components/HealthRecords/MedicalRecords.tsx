@@ -65,12 +65,10 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
         >
           <AddFileIcon />
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
-          <Filter />
-        </TouchableOpacity>
       </View>
     );
   };
+
   const renderCards = () => {
     console.log(medicalRecords, 'medicalRecord');
 
@@ -80,7 +78,15 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
           {medicalRecords.map((item) => {
             console.log('item', item);
 
-            if (item) return <HealthMedicineCard data={item} />;
+            if (item)
+              return (
+                <HealthMedicineCard
+                  data={item}
+                  onClickCard={() => {
+                    props.navigation.navigate();
+                  }}
+                />
+              );
           })}
         </View>
       );
