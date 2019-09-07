@@ -61,6 +61,8 @@ import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
+import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+import { SampleMessage } from 'types/appointmentTypes';
 
 (async () => {
   await connect();
@@ -156,5 +158,22 @@ import { getConnection } from 'typeorm';
 
   server.listen({ port: process.env.CONSULTS_SERVICE_PORT }).then(({ url }) => {
     console.log(`🚀 consults-service ready`);
+  });
+
+  AphMqClient.connect();
+  const message = new Date().toISOString();
+  const payload: SampleMessage = { message };
+  type TestMessage = AphMqMessage<AphMqMessageTypes.TESTRECEIVER, SampleMessage>;
+  const testMessage: TestMessage = {
+    type: AphMqMessageTypes.TESTRECEIVER,
+    payload,
+  };
+  AphMqClient.send(testMessage);
+  type TestMessage1 = AphMqMessage<AphMqMessageTypes.TESTRECEIVER, SampleMessage>;
+  AphMqClient.onReceive<TestMessage1>(AphMqMessageTypes.TESTRECEIVER, (receivedMessage) => {
+    console.log('received message!', receivedMessage.message);
+    console.log('accepting message hello');
+    AphMqClient.send(testMessage);
+    receivedMessage.accept();
   });
 })();

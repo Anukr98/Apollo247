@@ -24,6 +24,9 @@ export const transferAppointmentTypeDefs = gql`
     INITIATED
     COMPLETED
     REJECTED
+    AWAITING_TRANSFER
+    AWAITING_RESCHEDULE
+    TRANSFERRED
   }
 
   enum TRANSFER_INITIATED_TYPE {
@@ -191,11 +194,11 @@ const bookTransferAppointment: Resolver<
     throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
   }
 
-  //update exisiting appt status to cancel, state to transfer
-  /*await appointmentRepo.updateTransferState(
+  //update exisiting appt, state to transferred
+  await appointmentRepo.updateTransferState(
     BookTransferAppointmentInput.existingAppointmentId,
-    APPOINTMENT_STATE.TRANSFER
-  );*/
+    APPOINTMENT_STATE.TRANSFERRED
+  );
 
   //insert new appt booking
   const appointmentAttrs: Omit<TransferAppointmentBooking, 'id'> = {
@@ -262,6 +265,10 @@ const initiateTransferAppointment: Resolver<
   };
 
   const transferAppointment = await transferApptRepo.saveTransfer(transferAppointmentAttrs);
+  await appointmentRepo.updateTransferState(
+    TransferAppointmentInput.appointmentId,
+    APPOINTMENT_STATE.AWAITING_TRANSFER
+  );
   let slot = '';
   slot = await appointmentRepo.getDoctorNextAvailSlot(TransferAppointmentInput.transferredDoctorId);
   const curDate = format(new Date(), 'yyyy-MM-dd');
