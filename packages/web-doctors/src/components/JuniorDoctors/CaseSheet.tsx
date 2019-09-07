@@ -3,10 +3,14 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
-import { AphButton } from '@aph/web-ui-components';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -113,11 +117,89 @@ const useStyles = makeStyles((theme: Theme) => {
         marginLeft: 16,
       },
     },
+    dialogRoot: {
+      margin: 0,
+    },
+    dialogContainer: {
+      display: 'block',
+    },
+    dialogPaper: {
+      position: 'relative',
+      backgroundColor: theme.palette.common.white,
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.3)',
+      overflowY: 'visible',
+      margin: '88px auto 0 auto',
+      maxWidth: 480,
+    },
+    dialogTitle: {
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.2)',
+      padding: 20,
+      textAlign: 'center',
+      position: 'relative',
+      '& h6': {
+        fontSize: 13,
+        fontWeight: 500,
+        color: '#01475b',
+        textTransform: 'uppercase',
+      },
+    },
+    dialogActions: {
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
+      padding: '16px 20px',
+    },
+    cancelBtn: {
+      fontSize: 14,
+      backgroundColor: theme.palette.common.white,
+      color: '#fc9916',
+      minWidth: 100,
+      borderRadius: 10,
+      padding: '8px 13px 8px 13px',
+    },
+    addBtn: {
+      minWidth: 200,
+      borderRadius: 10,
+      fontSize: 14,
+      padding: '8px 13px 8px 13px',
+      marginLeft: 20,
+    },
+    dialogClose: {
+      position: 'absolute',
+      boxShadow: 'none',
+      backgroundColor: 'transparent',
+      top: 18,
+      right: 18,
+      minWidth: 'auto',
+      borderRadius: 0,
+      padding: 0,
+    },
+    dialogContent: {
+      padding: 20,
+    },
+    formGroup: {
+      paddingBottom: 20,
+      '& label': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.6)',
+      },
+    },
+    formSubGroup: {
+      paddingLeft: 20,
+      paddingRight: 20,
+      paddingTop: 4,
+    },
+    formHead: {
+      '& input': {
+        fontWeight: 'bold',
+      },
+    },
   };
 });
 
 export const CaseSheet: React.FC = (props) => {
   const classes = useStyles();
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
   return (
     <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 430px' }}>
@@ -137,7 +219,6 @@ export const CaseSheet: React.FC = (props) => {
                   <AphButton>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                   </AphButton>
-
                   <AphButton>
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
@@ -152,7 +233,7 @@ export const CaseSheet: React.FC = (props) => {
               </div>
             </div>
             <div className={classes.addButton}>
-              <AphButton>
+              <AphButton onClick={() => setIsDialogOpen(true)}>
                 <img src={require('images/ic_round-add.svg')} alt="" />
                 Add Symptom
               </AphButton>
@@ -182,6 +263,48 @@ export const CaseSheet: React.FC = (props) => {
           </ExpansionPanelDetails>
         </ExpansionPanel>
       </div>
+      <Dialog
+        classes={{
+          root: classes.dialogRoot,
+          paper: classes.dialogPaper,
+          container: classes.dialogContainer,
+        }}
+        onClose={() => setIsDialogOpen(false)}
+        open={isDialogOpen}
+      >
+        <DialogTitle className={classes.dialogTitle}>
+          Add Symptom
+          <AphButton onClick={() => setIsDialogOpen(false)} className={classes.dialogClose}>
+            <img src={require('images/ic_cross.svg')} alt="" />
+          </AphButton>
+        </DialogTitle>
+        <DialogContent className={classes.dialogContent}>
+          <div className={`${classes.formGroup} ${classes.formHead}`}>
+            <label>Symptom</label>
+            <AphTextField placeholder="Cough and Cold" value="Cough and Cold" />
+          </div>
+          <div className={classes.formSubGroup}>
+            <div className={classes.formGroup}>
+              <label>Since?</label>
+              <AphTextField placeholder="Last 1 week" />
+            </div>
+            <div className={classes.formGroup}>
+              <label>How often?</label>
+              <AphTextField placeholder="All day, especially at nights" />
+            </div>
+            <div className={classes.formGroup}>
+              <label>Severity?</label>
+              <AphTextField placeholder="Very runny nose and wet cough" />
+            </div>
+          </div>
+        </DialogContent>
+        <DialogActions className={classes.dialogActions}>
+          <AphButton className={classes.cancelBtn}>Cancel</AphButton>
+          <AphButton className={classes.addBtn} color="primary">
+            Add Symptom
+          </AphButton>
+        </DialogActions>
+      </Dialog>
     </Scrollbars>
   );
 };
