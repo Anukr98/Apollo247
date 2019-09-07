@@ -7,11 +7,11 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
-import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
-import { AppointmentPayload } from 'types/appointmentTypes';
+//import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+//import { AppointmentPayload } from 'types/appointmentTypes';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { addMinutes, format, addMilliseconds } from 'date-fns';
+//import { addMinutes, format, addMilliseconds } from 'date-fns';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -148,7 +148,7 @@ const bookAppointment: Resolver<
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
   //message queue starts
-  const doctorName = docDetails.firstName + '' + docDetails.lastName;
+  /*const doctorName = docDetails.firstName + '' + docDetails.lastName;
   const speciality = docDetails.specialty.name;
   const istDateTime = addMilliseconds(appointmentInput.appointmentDateTime, 19800000);
   const aptEndTime = addMinutes(istDateTime, 15);
@@ -196,7 +196,7 @@ const bookAppointment: Resolver<
     payload,
   };
 
-  AphMqClient.send(testMessage);
+  AphMqClient.send(testMessage);*/
   //message queue ends
 
   //TODO after junior doctor flow.. casesheet creation should be changed.

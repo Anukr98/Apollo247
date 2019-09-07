@@ -160,7 +160,7 @@ import { SampleMessage } from 'types/appointmentTypes';
     console.log(`🚀 consults-service ready`);
   });
 
-  AphMqClient.connect();
+  /*AphMqClient.connect();
   const message = new Date().toISOString();
   const payload: SampleMessage = { message };
   type TestMessage = AphMqMessage<AphMqMessageTypes.TESTRECEIVER, SampleMessage>;
@@ -175,5 +175,5 @@ import { SampleMessage } from 'types/appointmentTypes';
     console.log('accepting message hello');
     AphMqClient.send(testMessage);
     receivedMessage.accept();
-  });
+  });*/
 })();
