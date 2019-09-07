@@ -219,6 +219,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   }
 
   const todayDate = new Date().toISOString().slice(0, 10);
+  console.log('todayDate', todayDate);
+
   const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
     fetchPolicy: 'no-cache',
     variables: {
@@ -691,7 +693,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           doctor={doctorDetails ? doctorDetails : null}
           patientId={currentPatient ? currentPatient.id : ''}
           clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
-          doctorId={doctorId}
+          doctorId={props.navigation.state.params!.doctorId}
+          FollowUp={props.navigation.state.params!.FollowUp}
+          appointmentType={props.navigation.state.params!.appointmentType}
+          appointmentId={props.navigation.state.params!.appointmentId}
           // availableSlots={availableSlots}
         />
       )}
@@ -721,14 +726,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           }}
         >
           {doctorDetails &&
-            doctorDetails &&
-            doctorDetails.photoUrl &&
-            doctorDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
-              <Animated.Image
-                source={{ uri: doctorDetails.photoUrl }}
-                style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
-              />
-            )}
+          doctorDetails &&
+          doctorDetails.photoUrl &&
+          doctorDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
+            <Animated.Image
+              source={{ uri: doctorDetails.photoUrl }}
+              style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
+            />
+          ) : null}
         </View>
       </Animated.View>
       <Header

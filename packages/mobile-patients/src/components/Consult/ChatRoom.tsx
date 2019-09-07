@@ -21,6 +21,7 @@ import {
   UnMuteIcon,
   VideoOffIcon,
   VideoOnIcon,
+  Mascot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
@@ -187,6 +188,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const transferConsultMsg = '^^#transferconsult';
+  const rescheduleConsultMsg = '^^#rescheduleconsult';
+  const followupconsult = '^^#followupconsult';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -646,6 +649,645 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let leftComponent = 0;
   let rightComponent = 0;
 
+  const transferReschedule = (rowData: any, index: number) => {
+    //console.log('row', rowData);
+    return (
+      <>
+        {rowData.message === transferConsultMsg ? (
+          <View
+            style={{
+              backgroundColor: 'transparent',
+              width: 282,
+              borderRadius: 10,
+              marginVertical: 2,
+              alignSelf: 'flex-start',
+            }}
+          >
+            {leftComponent === 1 && (
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  bottom: 0,
+                  position: 'absolute',
+                  left: 0,
+                }}
+              >
+                <Mascot
+                  style={{
+                    width: 32,
+                    height: 32,
+                    bottom: 0,
+                    position: 'absolute',
+                    left: 0,
+                  }}
+                />
+              </View>
+            )}
+            <View
+              style={{
+                backgroundColor: '#0087ba',
+                width: 244,
+                height: 354,
+                borderRadius: 10,
+                marginLeft: 38,
+                ...theme.viewStyles.shadowStyle,
+              }}
+            >
+              <Text
+                style={{
+                  color: 'white',
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  lineHeight: 22,
+                  paddingHorizontal: 16,
+                  paddingTop: 12,
+                }}
+              >
+                Your appointment has been transferred to —
+              </Text>
+              <View style={{ marginVertical: 12, marginHorizontal: 16 }}>
+                <View
+                  style={{
+                    backgroundColor: 'white',
+                    marginTop: 24,
+                    marginHorizontal: 0,
+                    borderRadius: 5,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: '#02475b',
+                      ...theme.fonts.IBMPlexSansMedium(18),
+                      marginLeft: 12,
+                      marginTop: 28,
+                    }}
+                  >
+                    Dr. {rowData.transferInfo.doctorName}
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#0087ba',
+                      ...theme.fonts.IBMPlexSansSemiBold(12),
+                      marginLeft: 12,
+                      marginTop: 4,
+                      letterSpacing: 0.3,
+                    }}
+                  >
+                    {rowData.transferInfo.specilty} | {rowData.transferInfo.experience}
+                  </Text>
+                  <View
+                    style={{
+                      marginHorizontal: 12,
+                      marginTop: 12,
+                      backgroundColor: '#02475b',
+                      opacity: 0.3,
+                      height: 1,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      marginHorizontal: 12,
+                      marginTop: 11,
+                      ...theme.fonts.IBMPlexSansMedium(14),
+                      lineHeight: 20,
+                      color: '#02475b',
+                    }}
+                  >
+                    {moment
+                      .utc(rowData.transferInfo.transferDateTime)
+                      .local()
+                      .format('Do MMMM, dddd \nhh:mm a')}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      props.navigation.navigate(AppRoutes.ChooseDoctor, {
+                        data: rowData.transferInfo,
+                        patientId: patientId,
+                      });
+                    }}
+                  >
+                    <Text
+                      style={{
+                        textAlign: 'right',
+                        color: '#fc9916',
+                        ...theme.fonts.IBMPlexSansBold(13),
+                        lineHeight: 24,
+                        marginHorizontal: 12,
+                        marginTop: 16,
+                        marginBottom: 12,
+                      }}
+                    >
+                      CHOOSE ANOTHER DOCTOR
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                {rowData.transferInfo.photoUrl &&
+                rowData.transferInfo.photoUrl.match(
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
+                ) ? (
+                  <Image
+                    source={{ uri: rowData.transferInfo.photoUrl }}
+                    style={{
+                      position: 'absolute',
+                      width: 48,
+                      height: 48,
+                      top: 0,
+                      right: 12,
+                    }}
+                  />
+                ) : (
+                  <DoctorImage
+                    style={{
+                      position: 'absolute',
+                      width: 48,
+                      height: 48,
+                      top: 0,
+                      right: 12,
+                    }}
+                  />
+                )}
+              </View>
+              <StickyBottomComponent
+                style={{
+                  paddingHorizontal: 0,
+                  backgroundColor: 'transparent',
+                  shadowColor: 'transparent',
+                }}
+              >
+                <Button
+                  title={'RESCHEDULE'}
+                  style={{
+                    flex: 0.5,
+                    marginLeft: 16,
+                    marginRight: 5,
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderColor: '#fcb715',
+                  }}
+                  titleTextStyle={{ color: 'white' }}
+                  onPress={() => {
+                    props.navigation.navigate(AppRoutes.DoctorDetails, {
+                      doctorId: rowData.transferInfo.doctorId,
+
+                      showBookAppointment: true,
+                    });
+                  }}
+                />
+
+                <Button
+                  title={'ACCEPT'}
+                  style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                  onPress={() => {
+                    transferAppointmentAPI(rowData);
+                  }}
+                />
+              </StickyBottomComponent>
+            </View>
+          </View>
+        ) : (
+          <View
+            style={{
+              backgroundColor: 'transparent',
+              width: 282,
+              borderRadius: 10,
+              marginVertical: 2,
+              alignSelf: 'flex-start',
+            }}
+          >
+            {leftComponent === 1 && (
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  bottom: 0,
+                  position: 'absolute',
+                  left: 0,
+                }}
+              >
+                <Mascot
+                  style={{
+                    width: 32,
+                    height: 32,
+                    bottom: 0,
+                    position: 'absolute',
+                    left: 0,
+                  }}
+                />
+              </View>
+            )}
+            <View
+              style={{
+                width: 244,
+                height: 176,
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+                marginTop: 16,
+                marginBottom: 4,
+              }}
+            >
+              <Text
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 12,
+                  color: 'white',
+                  lineHeight: 22,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                }}
+              >
+                {`Hello ${userName},\nHope your consultation went well… Here is your prescription.`}
+              </Text>
+              <StickyBottomComponent
+                style={{
+                  paddingHorizontal: 0,
+                  backgroundColor: 'transparent',
+                  shadowColor: 'transparent',
+                }}
+              >
+                <Button
+                  title={'DOWNLOAD'}
+                  style={{
+                    flex: 0.5,
+                    marginLeft: 16,
+                    marginRight: 5,
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderColor: '#fcb715',
+                  }}
+                  titleTextStyle={{ color: 'white' }}
+                  onPress={() => {}}
+                />
+
+                <Button
+                  title={'VIEW'}
+                  style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                  onPress={() => {}}
+                />
+              </StickyBottomComponent>
+            </View>
+            <View
+              style={{
+                width: 244,
+                height: 206,
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+                marginBottom: 4,
+              }}
+            >
+              <Text
+                style={{
+                  color: 'white',
+                  lineHeight: 22,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  textAlign: 'left',
+                  marginHorizontal: 16,
+                  marginTop: 12,
+                }}
+              >
+                I’ve also scheduled a{' '}
+                <Text
+                  style={{
+                    color: 'white',
+                    lineHeight: 22,
+                    ...theme.fonts.IBMPlexSansBold(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  free follow-up{' '}
+                </Text>
+                <Text
+                  style={{
+                    color: 'white',
+                    lineHeight: 22,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  for you —
+                </Text>
+              </Text>
+              <View
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 9,
+                  opacity: 0.5,
+                  height: 2,
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderRadius: 1,
+                  borderColor: '#ffffff',
+                  overflow: 'hidden',
+                }}
+              />
+              <Text
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 9,
+                  lineHeight: 22,
+                  ...theme.fonts.IBMPlexSansSemiBold(15),
+                  color: 'white',
+                }}
+              >
+                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
+              </Text>
+              <View
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 10,
+                  opacity: 0.5,
+                  height: 2,
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderRadius: 1,
+                  borderColor: '#ffffff',
+                  overflow: 'hidden',
+                }}
+              />
+              <StickyBottomComponent
+                style={{
+                  paddingHorizontal: 0,
+                  backgroundColor: 'transparent',
+                  shadowColor: 'transparent',
+                  paddingTop: 13,
+                }}
+              >
+                <Button
+                  title={'RESCHEDULE'}
+                  style={{
+                    flex: 0.5,
+                    marginLeft: 16,
+                    marginRight: 5,
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderColor: '#fcb715',
+                  }}
+                  titleTextStyle={{ color: 'white' }}
+                  onPress={() => {
+                    props.navigation.goBack();
+                  }}
+                />
+              </StickyBottomComponent>
+            </View>
+          </View>
+        )}
+      </>
+    );
+  };
+
+  const messageView = (rowData: any, index: number) => {
+    return (
+      <View
+        style={{
+          backgroundColor: 'transparent',
+          width: 282,
+          borderRadius: 10,
+          marginVertical: 2,
+          alignSelf: 'flex-start',
+        }}
+      >
+        {leftComponent === 1 && (
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              bottom: 0,
+              position: 'absolute',
+              left: 0,
+            }}
+          >
+            {appointmentData.doctorInfo.photoUrl ? (
+              <Image
+                source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                style={{
+                  width: 32,
+                  height: 32,
+                }}
+              />
+            ) : (
+              <DoctorImage
+                style={{
+                  width: 32,
+                  height: 32,
+                  bottom: 0,
+                  position: 'absolute',
+                  left: 0,
+                }}
+              />
+            )}
+          </View>
+        )}
+        <View
+          style={{
+            backgroundColor: 'white',
+            marginLeft: 38,
+            borderRadius: 10,
+          }}
+        >
+          <Text
+            style={{
+              color: '#0087ba',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              textAlign: 'left',
+            }}
+          >
+            {rowData.message}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const audioVideo = (rowData: any, index: number) => {
+    return (
+      <>
+        {rowData.duration === '00 : 00' ? (
+          <View
+            style={{
+              backgroundColor: 'transparent',
+              width: 282,
+              borderRadius: 10,
+              marginVertical: 2,
+              alignSelf: 'flex-start',
+              paddingVertical: 17,
+            }}
+          >
+            {leftComponent === 1 && (
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  bottom: 0,
+                  position: 'absolute',
+                  left: 0,
+                }}
+              >
+                {appointmentData.doctorInfo.photoUrl ? (
+                  <Image
+                    source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                    style={{
+                      width: 32,
+                      height: 32,
+                    }}
+                  />
+                ) : (
+                  <DoctorImage
+                    style={{
+                      width: 32,
+                      height: 32,
+                      bottom: 0,
+                      position: 'absolute',
+                      left: 0,
+                    }}
+                  />
+                )}
+              </View>
+            )}
+            <View
+              style={{
+                marginLeft: 40,
+                borderRadius: 10,
+                height: 29,
+                width: 244,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: '#e50000',
+                  opacity: 0.04,
+                  width: 244,
+                  borderRadius: 10,
+                  height: 29,
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                }}
+              />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  backgroundColor: 'transparent',
+                  alignItems: 'center',
+                }}
+              >
+                <MissedCallIcon style={{ width: 16, height: 16, marginLeft: 16, marginTop: 3 }} />
+                {rowData.message === 'Audio call ended' ? (
+                  <Text
+                    style={{
+                      color: '#890000',
+                      marginLeft: 27,
+                      textAlign: 'left',
+                      ...theme.fonts.IBMPlexSansMedium(12),
+                      lineHeight: 24,
+                      letterSpacing: 0.04,
+                      marginTop: 2,
+                    }}
+                  >
+                    You missed a voice call
+                  </Text>
+                ) : (
+                  <Text
+                    style={{
+                      color: '#890000',
+                      marginLeft: 27,
+                      textAlign: 'left',
+                      ...theme.fonts.IBMPlexSansMedium(12),
+                      lineHeight: 24,
+                      letterSpacing: 0.04,
+                      marginTop: 2,
+                    }}
+                  >
+                    You missed a video call
+                  </Text>
+                )}
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View
+            style={{
+              backgroundColor: 'transparent',
+              width: 282,
+              borderRadius: 10,
+              marginVertical: 2,
+              alignSelf: 'flex-start',
+            }}
+          >
+            {leftComponent === 1 && (
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  bottom: 0,
+                  position: 'absolute',
+                  left: 0,
+                }}
+              >
+                {appointmentData.doctorInfo.photoUrl ? (
+                  <Image
+                    source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                    style={{
+                      width: 32,
+                      height: 32,
+                    }}
+                  />
+                ) : (
+                  <DoctorImage
+                    style={{
+                      width: 32,
+                      height: 32,
+                      bottom: 0,
+                      position: 'absolute',
+                      left: 0,
+                    }}
+                  />
+                )}
+              </View>
+            )}
+            <View
+              style={{
+                borderRadius: 10,
+                marginVertical: 2,
+                alignSelf: 'flex-start',
+                flexDirection: 'row',
+                marginLeft: 40,
+              }}
+            >
+              <ChatCallIcon style={{ width: 20, height: 20 }} />
+              <View style={{ marginLeft: 12 }}>
+                <Text
+                  style={{
+                    color: '#01475b',
+                    marginLeft: 0,
+                    textAlign: 'left',
+                    ...theme.fonts.IBMPlexSansMedium(14),
+                  }}
+                >
+                  {rowData.message}
+                </Text>
+                <Text
+                  style={{
+                    color: '#01475b',
+                    marginTop: 2,
+                    marginLeft: 0,
+                    textAlign: 'left',
+                    ...theme.fonts.IBMPlexSansMedium(10),
+                  }}
+                >
+                  Duration - {rowData.duration}
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+      </>
+    );
+  };
+
   const renderChatRow = (
     rowData: { id: string; message: string; duration: string; transferInfo: any },
     index: number
@@ -676,436 +1318,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             />
           )}
           {rowData.message === 'Audio call ended' || rowData.message === 'Video call ended' ? (
-            <>
-              {rowData.duration === '00 : 00' ? (
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    width: 282,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-start',
-                    paddingVertical: 17,
-                  }}
-                >
-                  {leftComponent === 1 && (
-                    <View
-                      style={{
-                        width: 32,
-                        height: 32,
-                        bottom: 0,
-                        position: 'absolute',
-                        left: 0,
-                      }}
-                    >
-                      {appointmentData.doctorInfo.photoUrl ? (
-                        <Image
-                          source={{ uri: appointmentData.doctorInfo.photoUrl }}
-                          style={{
-                            width: 32,
-                            height: 32,
-                          }}
-                        />
-                      ) : (
-                        <DoctorImage
-                          style={{
-                            width: 32,
-                            height: 32,
-                            bottom: 0,
-                            position: 'absolute',
-                            left: 0,
-                          }}
-                        />
-                      )}
-                    </View>
-                  )}
-                  <View
-                    style={{
-                      marginLeft: 40,
-                      borderRadius: 10,
-                      height: 29,
-                      width: 244,
-                    }}
-                  >
-                    <View
-                      style={{
-                        backgroundColor: '#e50000',
-                        opacity: 0.04,
-                        width: 244,
-                        borderRadius: 10,
-                        height: 29,
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                      }}
-                    />
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        backgroundColor: 'transparent',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <MissedCallIcon
-                        style={{ width: 16, height: 16, marginLeft: 16, marginTop: 3 }}
-                      />
-                      {rowData.message === 'Audio call ended' ? (
-                        <Text
-                          style={{
-                            color: '#890000',
-                            marginLeft: 27,
-                            textAlign: 'left',
-                            ...theme.fonts.IBMPlexSansMedium(12),
-                            lineHeight: 24,
-                            letterSpacing: 0.04,
-                            marginTop: 2,
-                          }}
-                        >
-                          You missed a voice call
-                        </Text>
-                      ) : (
-                        <Text
-                          style={{
-                            color: '#890000',
-                            marginLeft: 27,
-                            textAlign: 'left',
-                            ...theme.fonts.IBMPlexSansMedium(12),
-                            lineHeight: 24,
-                            letterSpacing: 0.04,
-                            marginTop: 2,
-                          }}
-                        >
-                          You missed a video call
-                        </Text>
-                      )}
-                    </View>
-                  </View>
-                </View>
-              ) : (
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    width: 282,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-start',
-                  }}
-                >
-                  {leftComponent === 1 && (
-                    <View
-                      style={{
-                        width: 32,
-                        height: 32,
-                        bottom: 0,
-                        position: 'absolute',
-                        left: 0,
-                      }}
-                    >
-                      {appointmentData.doctorInfo.photoUrl ? (
-                        <Image
-                          source={{ uri: appointmentData.doctorInfo.photoUrl }}
-                          style={{
-                            width: 32,
-                            height: 32,
-                          }}
-                        />
-                      ) : (
-                        <DoctorImage
-                          style={{
-                            width: 32,
-                            height: 32,
-                            bottom: 0,
-                            position: 'absolute',
-                            left: 0,
-                          }}
-                        />
-                      )}
-                    </View>
-                  )}
-                  <View
-                    style={{
-                      borderRadius: 10,
-                      marginVertical: 2,
-                      alignSelf: 'flex-start',
-                      flexDirection: 'row',
-                      marginLeft: 40,
-                    }}
-                  >
-                    <ChatCallIcon style={{ width: 20, height: 20 }} />
-                    <View style={{ marginLeft: 12 }}>
-                      <Text
-                        style={{
-                          color: '#01475b',
-                          marginLeft: 0,
-                          textAlign: 'left',
-                          ...theme.fonts.IBMPlexSansMedium(14),
-                        }}
-                      >
-                        {rowData.message}
-                      </Text>
-                      <Text
-                        style={{
-                          color: '#01475b',
-                          marginTop: 2,
-                          marginLeft: 0,
-                          textAlign: 'left',
-                          ...theme.fonts.IBMPlexSansMedium(10),
-                        }}
-                      >
-                        Duration - {rowData.duration}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              )}
-            </>
+            <>{audioVideo(rowData, index)}</>
           ) : (
             <>
-              {rowData.message === transferConsultMsg ? (
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    width: 282,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-start',
-                  }}
-                >
-                  {leftComponent === 1 && (
-                    <View
-                      style={{
-                        width: 32,
-                        height: 32,
-                        bottom: 0,
-                        position: 'absolute',
-                        left: 0,
-                      }}
-                    >
-                      {appointmentData.doctorInfo.photoUrl ? (
-                        <Image
-                          source={{ uri: appointmentData.doctorInfo.photoUrl }}
-                          style={{
-                            width: 32,
-                            height: 32,
-                          }}
-                        />
-                      ) : (
-                        <DoctorImage
-                          style={{
-                            width: 32,
-                            height: 32,
-                            bottom: 0,
-                            position: 'absolute',
-                            left: 0,
-                          }}
-                        />
-                      )}
-                    </View>
-                  )}
-                  <View
-                    style={{
-                      backgroundColor: '#0087ba',
-                      width: 244,
-                      height: 354,
-                      borderRadius: 10,
-                      marginLeft: 38,
-                      ...theme.viewStyles.shadowStyle,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: 'white',
-                        ...theme.fonts.IBMPlexSansMedium(15),
-                        lineHeight: 22,
-                        paddingHorizontal: 16,
-                        paddingTop: 12,
-                      }}
-                    >
-                      Your appointment has been transferred to —
-                    </Text>
-                    <View style={{ marginVertical: 12, marginHorizontal: 16 }}>
-                      <View
-                        style={{
-                          backgroundColor: 'white',
-                          marginTop: 24,
-                          marginHorizontal: 0,
-                          borderRadius: 5,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: '#02475b',
-                            ...theme.fonts.IBMPlexSansMedium(18),
-                            marginLeft: 12,
-                            marginTop: 28,
-                          }}
-                        >
-                          Dr. {rowData.transferInfo.doctorName}
-                        </Text>
-                        <Text
-                          style={{
-                            color: '#0087ba',
-                            ...theme.fonts.IBMPlexSansSemiBold(12),
-                            marginLeft: 12,
-                            marginTop: 4,
-                            letterSpacing: 0.3,
-                          }}
-                        >
-                          {rowData.transferInfo.specilty} | {rowData.transferInfo.experience}
-                        </Text>
-                        <View
-                          style={{
-                            marginHorizontal: 12,
-                            marginTop: 12,
-                            backgroundColor: '#02475b',
-                            opacity: 0.3,
-                            height: 1,
-                          }}
-                        />
-                        <Text
-                          style={{
-                            marginHorizontal: 12,
-                            marginTop: 11,
-                            ...theme.fonts.IBMPlexSansMedium(14),
-                            lineHeight: 20,
-                            color: '#02475b',
-                          }}
-                        >
-                          {moment
-                            .utc(rowData.transferInfo.transferDateTime)
-                            .local()
-                            .format('Do MMMM, dddd \nhh:mm a')}
-                        </Text>
-                        <TouchableOpacity
-                          onPress={() => {
-                            props.navigation.navigate(AppRoutes.ChooseDoctor, {
-                              data: rowData.transferInfo,
-                            });
-                          }}
-                        >
-                          <Text
-                            style={{
-                              textAlign: 'right',
-                              color: '#fc9916',
-                              ...theme.fonts.IBMPlexSansBold(13),
-                              lineHeight: 24,
-                              marginHorizontal: 12,
-                              marginTop: 16,
-                              marginBottom: 12,
-                            }}
-                          >
-                            CHOOSE ANOTHER DOCTOR
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                      {rowData.transferInfo.photoUrl &&
-                      rowData.transferInfo.photoUrl.match(
-                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
-                      ) ? (
-                        <Image
-                          source={{ uri: rowData.transferInfo.photoUrl }}
-                          style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
-                        />
-                      ) : (
-                        <DoctorImage
-                          style={{ position: 'absolute', width: 48, height: 48, top: 0, right: 12 }}
-                        />
-                      )}
-                    </View>
-                    <StickyBottomComponent
-                      style={{
-                        paddingHorizontal: 0,
-                        backgroundColor: 'transparent',
-                        shadowColor: 'transparent',
-                      }}
-                    >
-                      <Button
-                        title={'RESCHEDULE'}
-                        style={{
-                          flex: 0.5,
-                          marginLeft: 16,
-                          marginRight: 5,
-                          backgroundColor: 'transparent',
-                          borderWidth: 2,
-                          borderColor: '#fcb715',
-                        }}
-                        titleTextStyle={{ color: 'white' }}
-                        onPress={() => {}}
-                      />
-
-                      <Button
-                        title={'ACCEPT'}
-                        style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
-                        onPress={() => {
-                          transferAppointmentAPI(rowData);
-                        }}
-                      />
-                    </StickyBottomComponent>
-                  </View>
-                </View>
+              {rowData.message === transferConsultMsg ||
+              rowData.message === followupconsult ||
+              rowData.message === rescheduleConsultMsg ? (
+                <>{transferReschedule(rowData, index)}</>
               ) : (
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    width: 282,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-start',
-                  }}
-                >
-                  {leftComponent === 1 && (
-                    <View
-                      style={{
-                        width: 32,
-                        height: 32,
-                        bottom: 0,
-                        position: 'absolute',
-                        left: 0,
-                      }}
-                    >
-                      {appointmentData.doctorInfo.photoUrl ? (
-                        <Image
-                          source={{ uri: appointmentData.doctorInfo.photoUrl }}
-                          style={{
-                            width: 32,
-                            height: 32,
-                          }}
-                        />
-                      ) : (
-                        <DoctorImage
-                          style={{
-                            width: 32,
-                            height: 32,
-                            bottom: 0,
-                            position: 'absolute',
-                            left: 0,
-                          }}
-                        />
-                      )}
-                    </View>
-                  )}
-                  <View
-                    style={{
-                      backgroundColor: 'white',
-                      marginLeft: 38,
-                      borderRadius: 10,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: '#0087ba',
-                        paddingHorizontal: 16,
-                        paddingVertical: 12,
-                        ...theme.fonts.IBMPlexSansMedium(16),
-                        textAlign: 'left',
-                      }}
-                    >
-                      {rowData.message}
-                    </Text>
-                  </View>
-                </View>
+                <>{messageView(rowData, index)}</>
               )}
             </>
           )}
@@ -1186,7 +1407,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const transferAppointmentAPI = (rowData) => {
+  const transferAppointmentAPI = (rowData: any) => {
     Keyboard.dismiss();
     const appointmentTransferInput: BookTransferAppointmentInput = {
       patientId: patientId,
@@ -1195,7 +1416,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       existingAppointmentId: channel,
       transferId: rowData.transferInfo.transferId,
     };
-    console.log(appointmentTransferInput, 'appointmentTransferInput');
+    console.log(appointmentTransferInput, 'AcceptApi called');
 
     client
       .mutate<bookTransferAppointment, bookTransferAppointmentVariables>({
@@ -1206,14 +1427,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data: any) => {
+        console.log('Accept Api', data);
         setTransferAccept(true),
           setTransferDcotorName(rowData.transferInfo.doctorName),
           setTimeout(() => {
             setTransferAccept(false);
           }, 1000);
+        props.navigation.push(AppRoutes.Consult);
       })
       .catch((e: string) => {
-        console.log('Error occured while adding Doctor', e);
+        console.log('Error occured while accept appid', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while accept appid', errorMessage, error);
+        Alert.alert('Error', errorMessage);
       });
   };
 
@@ -1445,7 +1672,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           backgroundColor: 'transparent',
         }}
       >
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
+          activeOpacity={1}
           onPress={() => {
             changeAudioStyles();
           }}
@@ -1527,7 +1755,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             left: 20,
           }}
         >
-          <TouchableOpacity activeOpacity={1}
+          <TouchableOpacity
+            activeOpacity={1}
             onPress={() => {
               setChatReceived(false);
 
@@ -1592,7 +1821,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           {/* <TouchableOpacity activeOpacity={1} onPress={() => {}}>
             <SpeakerOn style={{ width: 60, height: 60 }} />
           </TouchableOpacity> */}
-          <TouchableOpacity activeOpacity={1}
+          <TouchableOpacity
+            activeOpacity={1}
             onPress={() => {
               mute === true ? setMute(false) : setMute(true);
             }}
@@ -1603,7 +1833,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <MuteIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={1}
+          <TouchableOpacity
+            activeOpacity={1}
             onPress={() => {
               setIsAudioCall(false);
               stopTimer();
@@ -1667,14 +1898,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           justifyContent: 'space-between',
         }}
       >
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
+          activeOpacity={1}
           onPress={() => {
             changeVideoStyles();
           }}
         >
           <FullScreenIcon style={{ width: 40, height: 40 }} />
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
+          activeOpacity={1}
           onPress={() => {
             setIsCall(false);
             setMute(true);
@@ -1775,7 +2008,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           zIndex: 1000,
         }}
       >
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
+          activeOpacity={1}
           onPress={() => {
             setTalkStyles({
               flex: 1,
@@ -1857,7 +2091,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             justifyContent: 'space-between',
           }}
         >
-          <TouchableOpacity activeOpacity={1}
+          <TouchableOpacity
+            activeOpacity={1}
             onPress={() => {
               cameraPosition === 'front' ? setCameraPosition('back') : setCameraPosition('front');
             }}
@@ -1868,7 +2103,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <FrontCameraIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={1}
+          <TouchableOpacity
+            activeOpacity={1}
             onPress={() => {
               showVideo === true ? setShowVideo(false) : setShowVideo(true);
             }}
@@ -1879,7 +2115,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <VideoOffIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={1}
+          <TouchableOpacity
+            activeOpacity={1}
             onPress={() => {
               mute === true ? setMute(false) : setMute(true);
             }}
@@ -1890,7 +2127,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <MuteIcon style={{ height: 60, width: 60 }} />
             )}
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={1}
+          <TouchableOpacity
+            activeOpacity={1}
             onPress={() => {
               setIsCall(false);
               setMute(true);
@@ -1991,7 +2229,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         >
           Incoming Call
         </Text>
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
+          activeOpacity={1}
           style={{
             width: 40,
             height: 40,
@@ -2210,7 +2449,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   send();
                 }}
               />
-              <TouchableOpacity activeOpacity={1}
+              <TouchableOpacity
+                activeOpacity={1}
                 onPress={async () => {
                   if (messageText.length == 0) {
                     //Alert.alert('Apollo', 'Please write something to send');

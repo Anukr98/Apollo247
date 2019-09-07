@@ -5,13 +5,19 @@ import {
   RadioButtonUnselectedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { CHOOSE_DOCTOR } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  CHOOSE_DOCTOR,
+  BOOK_APPOINTMENT_TRANSFER,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAvailableDoctors,
   getAvailableDoctorsVariables,
   getAvailableDoctors_getAvailableDoctors_availalbeDoctors,
 } from '@aph/mobile-patients/src/graphql/types/getAvailableDoctors';
-import { ChooseDoctorInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  ChooseDoctorInput,
+  BookTransferAppointmentInput,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { string } from '@aph/mobile-patients/src/strings/string';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -27,6 +33,12 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import {
+  bookTransferAppointment,
+  bookTransferAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   headerText: {
@@ -74,14 +86,17 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface ChooseDoctorProps extends NavigationScreenProps {}
+export interface ChooseDoctorProps extends NavigationScreenProps {
+  data: any;
+}
 export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
   const [rowSelected, setRowSelected] = useState<number>(0);
   const [chooseDoctorResult, setChooseDoctorResult] = useState([]);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
   const appointmentData = props.navigation.state.params!.data;
-
+  console.log(appointmentData, 'appointmentData');
+  console.log(props.navigation.state.params!.patientId, 'pppp');
   useEffect(() => {
     chooseDoctor();
   });
@@ -106,7 +121,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((data: any) => {
-          console.log('data', data);
+          console.log('getAvailableDoctors', data);
           data &&
             data.data &&
             data.data.getAvailableDoctors &&
@@ -117,6 +132,33 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
           console.log('Error occured while adding Doctor', e);
         });
     }
+  };
+
+  const transferAppointmentAPI = () => {
+    const appointmentTransferInput: BookTransferAppointmentInput = {
+      patientId: props.navigation.state.params!.patientId,
+      doctorId: appointmentData.doctorId,
+      appointmentDateTime: appointmentData.transferDateTime, //appointmentDate,
+      existingAppointmentId: appointmentData.appointmentId,
+      transferId: appointmentData.transferId,
+    };
+    console.log(appointmentTransferInput, 'transferAppointmentAPI');
+
+    client
+      .mutate<bookTransferAppointment, bookTransferAppointmentVariables>({
+        mutation: BOOK_APPOINTMENT_TRANSFER,
+        variables: {
+          BookTransferAppointmentInput: appointmentTransferInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        console.log('transfersppointment', data);
+        props.navigation.push(AppRoutes.Consult);
+      })
+      .catch((e: string) => {
+        console.log('Error occured while adding Doctor', e);
+      });
   };
 
   const renderRow = (
@@ -143,7 +185,9 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
               )}
               <View>
                 <Text style={styles.nameStyles}>{rowData.doctorFirstName}</Text>
-                <Text style={styles.qualificationStyles}>Physician | 7 Yrs</Text>
+                <Text style={styles.qualificationStyles}>
+                  {(rowData as any).specialityName} | {(rowData as any).experience} Yrs
+                </Text>
               </View>
               {rowData.doctorPhoto &&
               rowData.doctorPhoto.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
@@ -206,7 +250,13 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
         <Text style={styles.headerText}>{string.LocalStrings.chooseDoctorHeaderText}</Text>
         {renderList()}
         <StickyBottomComponent defaultBG style={{ paddingHorizontal: 0 }}>
-          <Button title={'CONFIRM'} style={{ flex: 1, marginHorizontal: 60 }} onPress={() => {}} />
+          <Button
+            title={'CONFIRM'}
+            style={{ flex: 1, marginHorizontal: 60 }}
+            onPress={() => {
+              transferAppointmentAPI();
+            }}
+          />
         </StickyBottomComponent>
       </SafeAreaView>
     </View>

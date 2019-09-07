@@ -64,7 +64,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails {
   doctorId: string | null;
   followUp: boolean | null;
   followUpAfterInDays: string | null;
-  followUpDate: string | null;
+  followUpDate: any | null;
   id: string | null;
   medicinePrescription: (getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
   notes: string | null;

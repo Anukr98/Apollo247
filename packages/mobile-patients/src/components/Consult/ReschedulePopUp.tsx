@@ -8,6 +8,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import moment from 'moment';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,10 +21,16 @@ export interface ReschedulePopUpProps extends NavigationScreenProps {
   isbelowthree: boolean;
   setdisplayoverlay: () => void;
   acceptChange: () => void;
+  appadatetime: string;
+  reschduleDateTime: any;
 }
 export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-
+  console.log('doctor', props.doctor);
+  console.log(
+    'reschduleDateTime',
+    props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
+  );
   return (
     <View
       style={{
@@ -147,7 +154,10 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                   paddingHorizontal: 16,
                 }}
               >
-                {`18th May, Monday\n12:00 pm`}
+                {moment(
+                  props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                    .availableSlot
+                ).format(' DD MMMM YYYY HH:mm')}
               </Text>
               <View
                 style={{

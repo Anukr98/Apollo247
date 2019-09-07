@@ -6,10 +6,17 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { CANCEL_APPOINTMENT, NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  cancelAppointment,
+  cancelAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/cancelAppointment';
+import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   AsyncStorage,
   Dimensions,
@@ -21,6 +28,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const { width, height } = Dimensions.get('window');
 
@@ -75,19 +83,17 @@ export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
   const data = props.navigation.state.params!.data;
   const doctorDetails = data.doctorInfo;
-  console.log('doctorDetails', data);
+  console.log('doctorDetails', data.appointmentDateTime);
 
-  // console.log(
-  //   props.navigation.state.params!.data,
-  //   data.doctorInfo.doctorHospital[0].facility.streetLine1
-  // );
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
   const [appointmentTime, setAppointmentTime] = useState<string>('');
-
+  const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
+  const [rescheduleApICalled, setRescheduleApICalled] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
 
   useEffect(() => {
     const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
@@ -108,7 +114,59 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         .format('DD MMM h:mm A')}`;
       setAppointmentTime(time);
     }
+
+    // availabilitySlots();
   }, []);
+
+  const todayDate = moment
+    .utc(data.appointmentDateTime)
+    .local()
+    .format('YYYY-MM-DD'); //data.appointmentDateTime; //
+  console.log('todayDate', todayDate);
+
+  const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
+    fetchPolicy: 'no-cache',
+    variables: {
+      DoctorNextAvailableSlotInput: {
+        doctorIds: doctorDetails ? [doctorDetails.id] : [],
+        availableDate: todayDate,
+      },
+    },
+  });
+  if (availability.error) {
+    console.log('error', availability.error);
+  } else {
+    console.log(availability.data!, 'availabilityData', 'availableSlots');
+  }
+
+  const cancelAppointmentApi = () => {
+    const appointmentTransferInput = {
+      appointmentId: data.id,
+      cancelReason: '',
+      cancelledBy: TRANSFER_INITIATED_TYPE.PATIENT, //appointmentDate,
+      cancelledById: data.patientId,
+    };
+
+    console.log(appointmentTransferInput, 'appointmentTransferInput');
+    if (!deviceTokenApICalled) {
+      setDeviceTokenApICalled(true);
+      client
+        .mutate<cancelAppointment, cancelAppointmentVariables>({
+          mutation: CANCEL_APPOINTMENT,
+          variables: {
+            cancelAppointmentInput: appointmentTransferInput,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data: any) => {
+          console.log(data, 'data');
+          props.navigation.replace(AppRoutes.Consult);
+        })
+        .catch((e: string) => {
+          console.log('Error occured while adding Doctor', e);
+        });
+    }
+  };
 
   const acceptChange = () => {
     console.log('acceptChange');
@@ -120,6 +178,31 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const reshedulePopUpMethod = () => {
     setdisplayoverlay(true), setResheduleoverlay(false);
   };
+
+  // const checkingAppointmentDates = () => {
+  //   const currentTime = moment(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(
+  //     'YYYY-MM-DD HH:mm:ss'
+  //   );
+
+  //   const appointmentTime = moment.utc(data.appointmentDateTime).format('YYYY-MM-DD HH:mm:ss');
+
+  //   const diff = moment.duration(moment(appointmentTime).diff(currentTime));
+  //   let diffInHours = diff.asMinutes();
+  //   console.log('duration', diffInHours);
+  //   console.log('appointmentTime', appointmentTime);
+
+  //   if (diffInHours > 0) {
+  //   } else {
+  //     diffInHours = diffInHours * 60;
+  //     console.log('duration', diffInHours);
+
+  //     const startingTime = 900 + diffInHours;
+  //     console.log('startingTime', startingTime);
+
+  //     if (startingTime > 0) {
+  //     }
+  //   }
+  // };
 
   if (data.doctorInfo)
     return (
@@ -310,6 +393,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   style={styles.gotItStyles}
                   onPress={() => {
                     setShowCancelPopup(false);
+                    // checkingAppointmentDates();
+                    cancelAppointmentApi();
                   }}
                 >
                   <Text style={styles.gotItTextStyles}>{'CANCEL CONSULT'}</Text>
@@ -327,6 +412,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
             doctorId={doctorDetails && doctorDetails.id}
             renderTab={'Consult Online'}
+            rescheduleCount={data.rescheduleCount}
+            appointmentId={data.id}
           />
         )}
         {resheduleoverlay && doctorDetails && (
@@ -337,9 +424,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             patientId={currentPatient ? currentPatient.id : ''}
             clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
             doctorId={doctorDetails && doctorDetails.id}
-            isbelowthree={true}
+            isbelowthree={false}
             setdisplayoverlay={() => reshedulePopUpMethod()}
             acceptChange={() => acceptChange()}
+            appadatetime={props.navigation.state.params!.data.appointmentDateTime}
+            reschduleDateTime={availability.data}
           />
         )}
       </View>

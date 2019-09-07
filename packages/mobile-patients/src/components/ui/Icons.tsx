@@ -608,3 +608,11 @@ export const Loader: React.FC<IconProps> = (props) => (
     source={require('./icons/ic_loader.png')}
   />
 );
+
+export const MedicalIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 23, width: 23 }}
+    {...props}
+    source={require('@aph/mobile-patients/src/images/medicine/medicalicon.png')}
+  />
+);
