@@ -715,8 +715,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       withPresence: true,
     });
     pubnub.addListener({
-      status: (statusEvent) => { },
-      message: (message) => { },
+      status: (statusEvent) => {},
+      message: (message) => {},
       // presence: (presenceEvent) => {
       //   console.log('presenceEvent', presenceEvent);
       // },
@@ -738,7 +738,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
   };
   const onStopConsult = () => {
@@ -753,7 +753,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
     if (
       followUpDate &&
@@ -777,7 +777,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           channel: channel,
           storeInHistory: true,
         },
-        (status, response) => { }
+        (status, response) => {}
       );
     }
   };
@@ -839,7 +839,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               channel: channel,
               storeInHistory: true,
             },
-            (status, response) => { }
+            (status, response) => {}
           );
           clearTransferField();
           setIsTransferPopoverOpen(false);
@@ -907,7 +907,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               channel: channel, //chanel
               storeInHistory: true,
             },
-            (status, response) => { }
+            (status, response) => {}
           );
           setIsPopoverOpen(false);
           setDisableOnTransfer(true);
@@ -938,7 +938,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       if (diff.hours() <= 0) {
         return `| Time to consult ${
           diff.minutes().toString().length < 2 ? '0' + diff.minutes() : diff.minutes()
-          } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
+        } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
       }
     return '';
   };
@@ -956,8 +956,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       <span className={classes.timeLeft}>
         {startAppointment
           ? `| Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
-          seconds.toString().length < 2 ? '0' + seconds : seconds
-          }`
+              seconds.toString().length < 2 ? '0' + seconds : seconds
+            }`
           : getTimerText()}
       </span>
       <div className={classes.consultButtonContainer}>
@@ -980,7 +980,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   stopInterval();
                   props.endConsultAction();
                   setCaseSheetEdit(false);
-                  setDisableOnTransfer(true)
+                  setDisableOnTransfer(true);
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -997,28 +997,28 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </Button>
             </span>
           ) : (
-              <Button
-                className={classes.consultButton}
-                disabled={
-                  startAppointmentButton ||
-                  disableOnTransfer ||
-                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                    appointmentInfo!.status !== STATUS.PENDING)
-                }
-                onClick={() => {
-                  !startAppointment ? onStartConsult() : onStopConsult();
-                  !startAppointment ? startInterval(900) : stopInterval();
-                  setStartAppointment(!startAppointment);
-                  props.createSessionAction();
-                  setCaseSheetEdit(true);
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                  <path fill="#fff" d="M8 5v14l11-7z" />
-                </svg>
-                {startAppointment ? 'End Consult' : 'Start Consult'}
-              </Button>
-            )}
+            <Button
+              className={classes.consultButton}
+              disabled={
+                startAppointmentButton ||
+                disableOnTransfer ||
+                (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  appointmentInfo!.status !== STATUS.PENDING)
+              }
+              onClick={() => {
+                !startAppointment ? onStartConsult() : onStopConsult();
+                !startAppointment ? startInterval(900) : stopInterval();
+                setStartAppointment(!startAppointment);
+                props.createSessionAction();
+                setCaseSheetEdit(true);
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path fill="#fff" d="M8 5v14l11-7z" />
+              </svg>
+              {startAppointment ? 'End Consult' : 'Start Consult'}
+            </Button>
+          )}
           <Button
             className={classes.consultIcon}
             aria-describedby={id}
@@ -1077,8 +1077,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           <Button
             className={classes.consultIcon}
             aria-describedby={idThreeDots}
-            disabled={startAppointmentButton || disableOnTransfer || (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-              appointmentInfo!.status !== STATUS.PENDING)
+            disabled={
+              startAppointmentButton ||
+              disableOnTransfer ||
+              (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                appointmentInfo!.status !== STATUS.PENDING)
             }
             onClick={(e) => handleClickThreeDots(e)}
           >
@@ -1124,7 +1127,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       handleCloseThreeDots();
                       setIsPopoverOpen(true);
                     }}
-
                   >
                     Reshedule Consult
                   </li>
@@ -1385,8 +1387,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     ))}
                   </ul>
                 ) : (
-                    'No Doctors found'
-                  )}
+                  'No Doctors found'
+                )}
                 <h6> Speciality(s)</h6>
                 {filterSpeciality!.length > 0 ? (
                   <ul>
@@ -1402,8 +1404,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     ))}
                   </ul>
                 ) : (
-                    'No Speciality found'
-                  )}
+                  'No Speciality found'
+                )}
               </span>
             )}
           </div>
@@ -1442,6 +1444,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           </div>
         </Paper>
       </Modal>
-    </div >
+    </div>
   );
 };
