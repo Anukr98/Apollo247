@@ -12,7 +12,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_PATIENT_ADDRESS_LIST, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
@@ -38,8 +38,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import RNFS from 'react-native-fs';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-
+import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
+import { UploadPrescriprionPopup } from './UploadPrescriprionPopup';
+import resizebase64 from 'resize-base64';
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -105,7 +108,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   } = useShoppingCart();
 
   useEffect(() => {
-    currentPatientId &&
+    (currentPatientId &&
       client
         .query<getPatientAddressList, getPatientAddressListVariables>({
           query: GET_PATIENT_ADDRESS_LIST,
@@ -119,7 +122,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         .catch((e: GraphQLError[]) => {
           setshowSpinner(false);
           console.log({ e });
-        });
+          Alert.alert('Error', (e && e[0] && e[0].message) || 'Unable to fetch user address');
+        })) ||
+      setshowSpinner(false);
   }, [currentPatientId]);
 
   /*  useEffect(() => {
@@ -268,18 +273,62 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
+  const [showPopup, setShowPopup] = useState(false);
+  const uploadPrescriptionPopup = () => {
+    return (
+      showPopup && (
+        <UploadPrescriprionPopup
+          onClickClose={() => setShowPopup(false)}
+          getData={async (images) => {
+            console.log({ images });
+            setShowPopup(false);
+            // console.log(images[0].path);
+            // console.log(images[0].sourceURL);
+            // RNFS.readFile(images[0].sourceURL, 'base64').then(async (res) => {
+            //   console.log(res);
+
+            //   client
+            //     .mutate<uploadFile, uploadFileVariables>({
+            //       mutation: UPLOAD_FILE,
+            //       variables: { fileType: 'jpeg', base64FileInput: res },
+            //       fetchPolicy: 'no-cache',
+            //     })
+            //     .then(({ data }) => {
+            //       console.log({ data });
+            //     })
+            //     .catch((e: GraphQLError[]) => {
+            //       console.log({ e });
+            //     });
+
+            //   try {
+            //     const img = await resizebase64(res, 200, 200);
+            //     console.log('img', img);
+            //   } catch (error) {
+            //     console.log({ error });
+            //   }
+            // });
+            // props.navigation.navigate(AppRoutes.UploadPrescription, { images });
+          }}
+          navigation={props.navigation}
+        />
+      )
+    );
+  };
+
   const renderUploadPrescription = () => {
     if (uploadPrescriptionRequired) {
       return (
         <View>
           {renderLabel('UPLOAD PRESCRIPTION')}
-          <View
+          <TouchableOpacity
+            activeOpacity={1}
             style={{
               ...theme.viewStyles.cardViewStyle,
               marginHorizontal: 20,
               marginTop: 15,
               marginBottom: 24,
             }}
+            onPress={() => setShowPopup(true)}
           >
             <Text
               style={{
@@ -300,7 +349,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             >
               UPLOAD
             </Text>
-          </View>
+          </TouchableOpacity>
         </View>
       );
     }
@@ -676,12 +725,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
-            title={`PROCEED TO PAY — RS. ${grandTotal}`}
+            title={`PROCEED TO PAY RS. ${grandTotal}`}
             onPress={() => props.navigation.navigate(AppRoutes.CheckoutScene)}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>
       </SafeAreaView>
+      {uploadPrescriptionPopup()}
       {showSpinner && <Spinner />}
     </View>
   );

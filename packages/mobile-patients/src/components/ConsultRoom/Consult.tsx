@@ -2,7 +2,12 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
-import { DoctorPlaceholder, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DoctorPlaceholder,
+  DropdownGreen,
+  PhysicalConsult,
+  OnlineConsult,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -150,6 +155,14 @@ const styles = StyleSheet.create({
   gotItTextStyles: {
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
+  },
+  prepareForConsult: {
+    ...theme.viewStyles.yellowTextStyle,
+    ...theme.fonts.IBMPlexSansBold(13),
+    textAlign: 'right',
+    paddingHorizontal: 15,
+    paddingTop: 11,
+    paddingBottom: 16,
   },
 });
 
@@ -456,7 +469,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     {/* {(rowData.availableForPhysicalConsultation || rowData.availableForVirtualConsultation) &&
                             props.displayButton &&
                             rowData.availableIn ? ( */}
-                    <CapsuleView title={title} style={styles.availableView} isActive={isActive} />
+                    {item.isFollowUp == 'true' ? (
+                      <CapsuleView
+                        title={item.appointmentType}
+                        style={styles.availableView}
+                        isActive={isActive}
+                      />
+                    ) : (
+                      <CapsuleView title={title} style={styles.availableView} isActive={isActive} />
+                    )}
+
                     <View style={styles.imageView}>
                       {item.doctorInfo && item.doctorInfo.photoUrl && (
                         <Image
@@ -480,16 +502,48 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           ? `${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
                           : ''}
                       </Text>
-                      <Text style={styles.doctorSpecializationStyles}>
-                        {item.doctorInfo && item.doctorInfo.specialty
-                          ? item.doctorInfo.specialty.name
-                          : ''}
-                        {item.doctorInfo ? ` | ${item.doctorInfo.experience} YRS` : ''}
-                      </Text>
+                      {item.isFollowUp == 'true' ? (
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansMedium(12),
+                            color: '#02475b',
+                            opacity: 0.6,
+                            marginBottom: 12,
+                            marginTop: 4,
+                            letterSpacing: 0.02,
+                          }}
+                        >
+                          {moment(appointmentDateTime).format('DD MMM YYYY')}
+                        </Text>
+                      ) : (
+                        <Text style={styles.doctorSpecializationStyles}>
+                          {item.doctorInfo && item.doctorInfo.specialty
+                            ? item.doctorInfo.specialty.name
+                            : ''}
+                          {item.doctorInfo ? ` | ${item.doctorInfo.experience} YRS` : ''}
+                        </Text>
+                      )}
+
                       <View style={styles.separatorStyle} />
-                      <Text style={styles.consultTextStyles}>
-                        {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
-                      </Text>
+                      {item.isFollowUp == 'true' ? null : (
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                          }}
+                        >
+                          <Text style={styles.consultTextStyles}>
+                            {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
+                          </Text>
+                          {item.appointmentType === 'ONLINE' ? (
+                            <OnlineConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                          ) : (
+                            <PhysicalConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                          )}
+                        </View>
+                      )}
+
                       <View style={styles.separatorStyle} />
                       <View
                         style={{
@@ -509,6 +563,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       </View>
                     </View>
                   </View>
+                  <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
+                  {item.isFollowUp == 'true' ? (
+                    <Text style={styles.prepareForConsult}>BOOK FOLLOW-UP</Text>
+                  ) : (
+                    <Text style={styles.prepareForConsult}>{string.common.prepareForConsult}</Text>
+                  )}
                 </View>
               </TouchableOpacity>
             </View>
@@ -614,8 +674,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               marginTop:
                 consultations.length > 0
                   ? Platform.OS === 'ios'
-                    ? 116
-                    : 126
+                    ? 170
+                    : 180
                   : Platform.OS === 'ios'
                   ? 16
                   : 26,
@@ -629,7 +689,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       {showSchdulesView && (
         <BottomPopUp
           title={'Hi! :)'}
-          description={`Your appointment with Dr. Simran \nhas been rescheduled for — 18th May, Monday, 12:00 pm\n\nYou have 2 free reschedules left.`}
+          description={`Your appointment with  \nhas been rescheduled for — 18th May, Monday, 12:00 pm\n\nYou have 2 free reschedules left.`}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity

@@ -105,7 +105,7 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
+        versionCode 3
         versionName "1.0"
         multiDexEnabled true
     }
@@ -147,9 +147,13 @@ android {
             }
         }
     }
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
 }
 
 dependencies {
+    implementation project(':react-native-image-picker')
     implementation project(':react-native-fs')
     implementation project(':@react-native-community_async-storage')
     implementation project(':react-native-device-info')
