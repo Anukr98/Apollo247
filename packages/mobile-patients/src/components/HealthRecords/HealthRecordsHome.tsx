@@ -79,12 +79,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .then((_data) => {
         console.log('getPatientPastConsultsAndPrescriptions', _data!);
 
-        interface consultsAndMedOrdersType
-          extends getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults,
-            getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders {
-          // __typename: string
-        }
-
         const formatDate = (date: string) =>
           moment(date)
             .clone()
@@ -92,7 +86,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
         const consults = _data.data.getPatientPastConsultsAndPrescriptions!.consults || [];
         const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
-        const consultsAndMedOrders: { [key: string]: consultsAndMedOrdersType } = {};
+        const consultsAndMedOrders: { [key: string]: any } = {};
 
         consults.forEach((c) => {
           consultsAndMedOrders[c!.appointmentDateTime] = {
@@ -269,64 +263,64 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
-  const renderTopView = () => {
-    return (
-      <View
-        style={{
-          height: 280,
-          // justifyContent: 'space-between',
-        }}
-      >
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-          }}
-        >
-          <UserIntro
-            description={strings.health_records_home.description}
-            style={{
-              height: 236,
-            }}
-          >
-            <View
-              style={{
-                height: 83,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginHorizontal: 20,
-              }}
-            >
-              <View style={{ marginTop: 20 }}>
-                <ApolloLogo />
-              </View>
-              <View style={{ flexDirection: 'row', marginTop: 16 }}>
-                <NotificationIcon />
-              </View>
-            </View>
-          </UserIntro>
-        </View>
-        <View>
-          <TabsComponent
-            style={{
-              height: 43,
-              marginTop: 236,
-              backgroundColor: theme.colors.CARD_BG,
-              ...theme.viewStyles.shadowStyle,
-            }}
-            textStyle={{
-              paddingTop: 12,
-            }}
-            data={tabs}
-            onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-            selectedTab={selectedTab}
-          />
-        </View>
-      </View>
-    );
-  };
+  // const renderTopView = () => {
+  //   return (
+  //     <View
+  //       style={{
+  //         height: 280,
+  //         // justifyContent: 'space-between',
+  //       }}
+  //     >
+  //       <View
+  //         style={{
+  //           position: 'absolute',
+  //           top: 0,
+  //           left: 0,
+  //           right: 0,
+  //         }}
+  //       >
+  //         <UserIntro
+  //           description={strings.health_records_home.description}
+  //           style={{
+  //             height: 236,
+  //           }}
+  //         >
+  //           <View
+  //             style={{
+  //               height: 83,
+  //               flexDirection: 'row',
+  //               justifyContent: 'space-between',
+  //               marginHorizontal: 20,
+  //             }}
+  //           >
+  //             <View style={{ marginTop: 20 }}>
+  //               <ApolloLogo />
+  //             </View>
+  //             <View style={{ flexDirection: 'row', marginTop: 16 }}>
+  //               <NotificationIcon />
+  //             </View>
+  //           </View>
+  //         </UserIntro>
+  //       </View>
+  //       <View>
+  //         <TabsComponent
+  //           style={{
+  //             height: 43,
+  //             marginTop: 236,
+  //             backgroundColor: theme.colors.CARD_BG,
+  //             ...theme.viewStyles.shadowStyle,
+  //           }}
+  //           textStyle={{
+  //             paddingTop: 12,
+  //           }}
+  //           data={tabs}
+  //           onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+  //           selectedTab={selectedTab}
+  //         />
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   const renderFilter = () => {
     return (

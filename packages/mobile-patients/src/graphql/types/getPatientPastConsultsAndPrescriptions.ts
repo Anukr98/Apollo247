@@ -71,7 +71,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults {
-  // __typename: "ConsultRecord";
+  __typename: "ConsultRecord";
   id: string;
   patientId: string;
   doctorId: string;
@@ -100,7 +100,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders {
-  // __typename: "MedicineOrderRecord";
+  __typename: "MedicineOrderRecord";
   id: string;
   orderDateTime: any | null;
   quoteDateTime: any | null;
