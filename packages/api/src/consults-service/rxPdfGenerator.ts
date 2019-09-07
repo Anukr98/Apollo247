@@ -10,6 +10,8 @@ import {
 } from 'consults-service/entities';
 import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import fs from 'fs';
 
 export const convertCaseSheetToRxPdfData = (
   caseSheet: Partial<CaseSheet> & {
@@ -268,4 +270,17 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   doc.end();
 
   return doc;
+};
+
+export const uploadRxPdf = async (
+  client: AphStorageClient,
+  caseSheetId: string,
+  pdfDoc: PDFKit.PDFDocument
+) => {
+  const name = `${caseSheetId}.pdf`;
+  const filePath = loadAsset(name);
+  pdfDoc.pipe(fs.createWriteStream(filePath));
+  const blob = await client.uploadFile({ name, filePath });
+  fs.unlink(filePath, (error) => console.log(error));
+  return blob;
 };
