@@ -25,6 +25,12 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
+  searchDoctorByMobileNumber(mobileNumber: string, isActive: Boolean) {
+    return this.findOne({
+      where: [{ mobileNumber, isActive }],
+    });
+  }
+
   findByMobileNumber(mobileNumber: string, isActive: Boolean) {
     return this.findOne({
       where: [{ mobileNumber, isActive }, { delegateNumber: mobileNumber, isActive: isActive }],
