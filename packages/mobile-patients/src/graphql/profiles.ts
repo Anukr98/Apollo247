@@ -573,20 +573,46 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
   }
 `;
 
-// export const GET_MEDICINE_ORDER_DETAILS = gql`
-//   query GetMedicineOrderDetails($patientId: String, orderAutoId: Int) {
-//     getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
-//       MedicineOrderDetails{
-//         id
-//         orderAutoId
-//         estimatedAmount
-//         medicineOrdersStatus{
-//         orderStatus
-//   }
-// }
-//   }
-//   }
-// `;
+export const UPLOAD_FILE = gql`
+  mutation uploadFile($fileType: String, $base64FileInput: String) {
+    uploadFile(fileType: $fileType, base64FileInput: $base64FileInput) {
+      filePath
+    }
+  }
+`;
+
+export const GET_COUPONS = gql`
+  query getCoupons {
+    getCoupons {
+      coupons {
+        id
+        code
+        description
+        discountType
+        discount
+        minimumOrderAmount
+        expirationDate
+        isActive
+      }
+    }
+  }
+`;
+
+export const GET_MEDICINE_ORDER_DETAILS = gql`
+  query GetMedicineOrderDetails($patientId: String, $orderAutoId: Int) {
+    getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+      MedicineOrderDetails {
+        id
+        orderAutoId
+        estimatedAmount
+        medicineOrdersStatus {
+          orderStatus
+        }
+      }
+    }
+  }
+`;
+
 export const GET_NOTIFICATION_SETTINGS = gql`
   query getPatientNotificationSettings($patient: ID!) {
     getPatientNotificationSettings(patient: $patient) {

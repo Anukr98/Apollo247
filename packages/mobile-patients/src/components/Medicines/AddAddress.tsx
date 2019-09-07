@@ -89,7 +89,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         setshowSpinner(false);
         const address = g(data, 'savePatientAddress', 'patientAddress');
         addAddress && addAddress(address!);
-        setDeliveryAddressId && setDeliveryAddressId((address && address.id) || '');
+        // setDeliveryAddressId && setDeliveryAddressId((address && address.id) || '');
         props.navigation.goBack();
       })
       .catch((e: GraphQLError[]) => {});

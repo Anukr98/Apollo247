@@ -276,12 +276,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         if (isCashOnDelivery) {
           placeOrder(orderId, orderAutoId);
         } else {
-          Alert.alert(
-            'Error',
-            'Inconvenience is regretted. Payment Gateway Integration is in-progress.'
-          );
           console.log('redirectToPaymentGateway');
-          // redirectToPaymentGateway(orderId, orderAutoId).finally(() => setPayDisabled(false));
+          redirectToPaymentGateway(orderId, orderAutoId).finally(() => setPayDisabled(false));
         }
       })
       .catch((error: GraphQLError) => {
