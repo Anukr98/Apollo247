@@ -36,7 +36,6 @@ import {
 } from 'graphql/types/GetCaseSheet';
 import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
-import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
@@ -192,21 +191,26 @@ type Params = { id: string; patientId: string };
 
 export const ConsultTabs: React.FC = () => {
   const classes = useStyles();
-  const {
-    currentPatient,
-  }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
+  const params = useParams<Params>();
+  const paramId = params.id;
+
+  const { currentPatient, isSignedIn } = useAuth();
+
+  //     setAppointmentId(paramId);
+  //     setpatientId(params.patientId);
+  //     setdoctorId(currentPatient.id);
+
   const [tabValue, setTabValue] = useState<number>(0);
   const [startConsult, setStartConsult] = useState<string>('');
-  const [appointmentId, setAppointmentId] = useState<string>('');
+  const [appointmentId, setAppointmentId] = useState<string>(paramId);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
-  const [doctorId, setdoctorId] = useState<string>('');
-  const [patientId, setpatientId] = useState<string>('');
+  const [doctorId, setdoctorId] = useState<string>(currentPatient ? currentPatient.id : '');
+  const [patientId, setpatientId] = useState<string>(params.patientId);
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
-  const params = useParams<Params>();
-  const paramId = params.id;
+
   const [loaded, setLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const TabContainer: React.FC = (props) => {
@@ -230,7 +234,9 @@ export const ConsultTabs: React.FC = () => {
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
+
   const [notes, setNotes] = useState<string | null>(null);
+
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
@@ -240,17 +246,19 @@ export const ConsultTabs: React.FC = () => {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   /* case sheet data*/
 
-  useEffect(() => {
-    if (appointmentId !== paramId && paramId !== '' && currentPatient && currentPatient.id !== '') {
-      setAppointmentId(paramId);
-      setpatientId(params.patientId);
-      setdoctorId(currentPatient.id);
+  /* need to be worked later */
+  let customNotes = '';
+  const setCasesheetNotes = (notes: string) => {
+    customNotes = notes; // this will be used in saving case sheet.
+  };
 
+  useEffect(() => {
+    if (isSignedIn) {
       client
         .query<GetCaseSheet>({
           query: GET_CASESHEET,
           fetchPolicy: 'no-cache',
-          variables: { appointmentId: paramId },
+          variables: { appointmentId: appointmentId },
         })
         .then((_data) => {
           setCasesheetInfo(_data.data);
@@ -318,12 +326,28 @@ export const ConsultTabs: React.FC = () => {
         .finally(() => {
           setLoaded(true);
         });
+      return () => {
+        console.log('in return...');
+        const cookieStr = `action=`;
+        document.cookie = cookieStr + ';path=/;';
+      };
     }
-    return () => {
-      const cookieStr = `action=`;
-      document.cookie = cookieStr + ';path=/;';
-    };
-  }, [paramId, appointmentId]);
+  }, []);
+
+  // useEffect(() => {
+  //   if (appointmentId !== paramId && paramId !== '' && currentPatient && currentPatient.id !== '') {
+  //     setAppointmentId(paramId);
+  //     setpatientId(params.patientId);
+  //     setdoctorId(currentPatient.id);
+
+  //   }
+  //   return () => {
+  //     console.log('in return...');
+  //     const cookieStr = `action=`;
+  //     document.cookie = cookieStr + ';path=/;';
+  //   };
+  // }, [paramId, appointmentId]);
+
   const saveCasesheetAction = (flag: boolean) => {
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
@@ -331,7 +355,7 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           UpdateCaseSheetInput: {
             symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-            notes,
+            notes: customNotes,
             diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
             diagnosticPrescription:
               diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
@@ -360,6 +384,7 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error occured while update casesheet', e);
       });
   };
+
   const endConsultAction = () => {
     saveCasesheetAction(false);
     // client
@@ -393,6 +418,7 @@ export const ConsultTabs: React.FC = () => {
     //     console.log('Error occured while update casesheet', e);
     //   });
   };
+
   const endConsultActionFinal = () => {
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
@@ -418,6 +444,7 @@ export const ConsultTabs: React.FC = () => {
         alert(errorMessage);
       });
   };
+
   const createSessionAction = () => {
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
@@ -440,6 +467,7 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error occured creating session', e);
       });
   };
+
   const setStartConsultAction = (flag: boolean) => {
     setStartConsult('');
     const cookieStr = `action=${flag ? 'videocall' : 'audiocall'}`;
@@ -448,6 +476,7 @@ export const ConsultTabs: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
+
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -485,6 +514,7 @@ export const ConsultTabs: React.FC = () => {
             setFollowUpDate,
             healthVault: casesheetInfo!.getCaseSheet!.patientDetails!.healthVault,
             pastAppointments: casesheetInfo!.getCaseSheet!.pastAppointments,
+            setCasesheetNotes,
           }}
         >
           <div className={classes.container}>
