@@ -192,6 +192,36 @@ export class AppointmentSessions extends BaseEntity {
 //AppointmentSessions ends
 
 //case sheet starts
+export enum MEDICINE_TIMINGS {
+  EVENING = 'EVENING',
+  MORNING = 'MORNING',
+  NIGHT = 'NIGHT',
+  NOON = 'NOON',
+}
+export enum MEDICINE_TO_BE_TAKEN {
+  AFTER_FOOD = 'AFTER_FOOD',
+  BEFORE_FOOD = 'BEFORE_FOOD',
+}
+export type CaseSheetMedicinePrescription = {
+  id: string;
+  externalId: string;
+  medicineConsumptionDurationInDays: number;
+  medicineDosage: string;
+  medicineInstructions?: string;
+  medicineTimings: MEDICINE_TIMINGS[];
+  medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
+  medicineName: string;
+};
+export type CaseSheetDiagnosis = { name: string };
+export type CaseSheetDiagnosisPrescription = { name: string };
+export type CaseSheetOtherInstruction = { instruction: string };
+export type CaseSheetSymptom = {
+  symptom: string;
+  since: string;
+  howOften: string;
+  severity: string;
+};
+
 @Entity()
 export class CaseSheet extends BaseEntity {
   @ManyToOne((type) => Appointment, (appointment) => appointment.caseSheet)
@@ -349,3 +379,31 @@ export class RescheduleAppointmentDetails extends BaseEntity {
   }
 }
 //Reschedule apppointment ends
+
+///////////////////////////////////////////////////////////
+// RxPdf
+///////////////////////////////////////////////////////////
+export interface RxPdfData {
+  prescriptions: {
+    name: string;
+    ingredients: string[];
+    frequency: string;
+    instructions?: string;
+  }[];
+  generalAdvice: {
+    title: string;
+    description: string[];
+  }[];
+  diagnoses: {
+    title: string;
+    description: string;
+  }[];
+  doctorInfo: {
+    salutation: string;
+    firstName: string;
+    lastName: string;
+    qualifications: string;
+    registrationNumber: string;
+  };
+}
+///////////////////////////////////////////////////////////
