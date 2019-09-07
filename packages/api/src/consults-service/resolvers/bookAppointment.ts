@@ -1,6 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Appointment, STATUS, APPOINTMENT_TYPE, CaseSheet } from 'consults-service/entities';
+import {
+  Appointment,
+  STATUS,
+  APPOINTMENT_TYPE,
+  CaseSheet,
+  APPOINTMENT_STATE,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -37,6 +43,7 @@ export const bookAppointmentTypeDefs = gql`
     hospitalId: ID
     status: STATUS!
     patientName: String!
+    appointmentState: APPOINTMENT_STATE!
   }
 
   input BookAppointmentInput {
@@ -77,6 +84,7 @@ type AppointmentBooking = {
   hospitalId?: string;
   status: STATUS;
   patientName: string;
+  appointmentState: APPOINTMENT_STATE;
 };
 
 type AppointmentInputArgs = { appointmentInput: BookAppointmentInput };
@@ -145,6 +153,7 @@ const bookAppointment: Resolver<
     status: STATUS.PENDING,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
+    appointmentState: APPOINTMENT_STATE.NEW,
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
   //message queue starts
