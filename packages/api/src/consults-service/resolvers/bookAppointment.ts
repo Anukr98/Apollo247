@@ -1,6 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Appointment, STATUS, APPOINTMENT_TYPE, CaseSheet } from 'consults-service/entities';
+import {
+  Appointment,
+  STATUS,
+  APPOINTMENT_TYPE,
+  CaseSheet,
+  APPOINTMENT_STATE,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -9,9 +15,9 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 //import { AppointmentPayload } from 'types/appointmentTypes';
-//import { addMinutes, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+//import { addMinutes, format, addMilliseconds } from 'date-fns';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -37,6 +43,7 @@ export const bookAppointmentTypeDefs = gql`
     hospitalId: ID
     status: STATUS!
     patientName: String!
+    appointmentState: APPOINTMENT_STATE!
   }
 
   input BookAppointmentInput {
@@ -77,6 +84,7 @@ type AppointmentBooking = {
   hospitalId?: string;
   status: STATUS;
   patientName: string;
+  appointmentState: APPOINTMENT_STATE;
 };
 
 type AppointmentInputArgs = { appointmentInput: BookAppointmentInput };
@@ -145,14 +153,16 @@ const bookAppointment: Resolver<
     status: STATUS.PENDING,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
+    appointmentState: APPOINTMENT_STATE.NEW,
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
   //message queue starts
   /*const doctorName = docDetails.firstName + '' + docDetails.lastName;
   const speciality = docDetails.specialty.name;
-  const aptEndTime = addMinutes(appointmentInput.appointmentDateTime, 15);
-  const slotTime =
-    format(appointmentInput.appointmentDateTime, 'HH:mm') + '-' + format(aptEndTime, 'HH:mm');
+  const istDateTime = addMilliseconds(appointmentInput.appointmentDateTime, 19800000);
+  const aptEndTime = addMinutes(istDateTime, 15);
+  console.log(istDateTime, aptEndTime);
+  const slotTime = format(istDateTime, 'HH:mm') + '-' + format(aptEndTime, 'HH:mm');
   let patientDob: string = '01/08/1996';
   if (patientDetails.dateOfBirth !== null) {
     console.log(patientDetails.dateOfBirth.toString(), 'dob');

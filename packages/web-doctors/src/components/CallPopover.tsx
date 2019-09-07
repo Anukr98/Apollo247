@@ -475,6 +475,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
   const [startAppointmentButton, setStartAppointmentButton] = React.useState<boolean>(true);
+  const [disableOnTransfer, setDisableOnTransfer] = React.useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isTransferPopoverOpen, setIsTransferPopoverOpen] = useState<boolean>(false);
   const [reason, setReason] = useState<string>('I am running late from previous consult');
@@ -842,6 +843,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           );
           clearTransferField();
           setIsTransferPopoverOpen(false);
+          setDisableOnTransfer(true);
         })
         .catch((e: any) => {
           console.log('Error occured while searching for Initiate transfer apppointment', e);
@@ -859,7 +861,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const rescheduleConsultAction = () => {
     // do api call
     //setIsLoading(true);
-    if (isEmpty(otherTextValue)) {
+    if (reason === 'Other' && isEmpty(otherTextValue)) {
       setErrorStateReshedule({
         ...errorStateReshedule,
         otherError: true,
@@ -908,6 +910,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             (status, response) => {}
           );
           setIsPopoverOpen(false);
+          setDisableOnTransfer(true);
         })
         .catch((e) => {
           //setIsLoading(false);
@@ -977,6 +980,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   stopInterval();
                   props.endConsultAction();
                   setCaseSheetEdit(false);
+                  setDisableOnTransfer(true);
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -997,6 +1001,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.consultButton}
               disabled={
                 startAppointmentButton ||
+                disableOnTransfer ||
                 (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                   appointmentInfo!.status !== STATUS.PENDING)
               }
@@ -1072,7 +1077,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           <Button
             className={classes.consultIcon}
             aria-describedby={idThreeDots}
-            disabled={startAppointmentButton}
+            disabled={
+              startAppointmentButton ||
+              disableOnTransfer ||
+              (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                appointmentInfo!.status !== STATUS.PENDING)
+            }
             onClick={(e) => handleClickThreeDots(e)}
           >
             <img src={require('images/ic_more.svg')} />
