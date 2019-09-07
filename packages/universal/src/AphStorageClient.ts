@@ -132,4 +132,7 @@ export class AphStorageClient {
     const aphBlob: AphBlob = { ...blob, url, name };
     return aphBlob;
   };
+
+  getBlobUrl = (blobName: string) =>
+    BlockBlobURL.fromBlobURL(BlobURL.fromContainerURL(this.containerUrl, blobName)).url;
 }
