@@ -88,7 +88,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <View style={styles.separatorStyle}>
         {arrayTest.map((serviceTitle, i) => (
           <View key={i} style={{}}>
-            <TouchableOpacity activeOpacity={1}
+            <TouchableOpacity
+              activeOpacity={1}
               key={i}
               onPress={() => {
                 if (i === 0) {
@@ -154,67 +155,76 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderTests = () => {
     return null;
   };
+  const renderTopView = () => {
+    return (
+      <View
+        style={{
+          height: 225,
+          justifyContent: 'space-between',
+        }}
+      >
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+          }}
+        >
+          <UserIntro
+            style={{
+              height: 109,
+            }}
+            description={string.home.description}
+          >
+            <View
+              style={{
+                height: 83,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginHorizontal: 20,
+              }}
+            >
+              <View style={{ marginTop: 20 }}>
+                <ApolloLogo />
+              </View>
+              <View style={{ flexDirection: 'row', marginTop: 16 }}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => props.navigation.navigate(AppRoutes.YourCart)}
+                >
+                  <CartIcon style={{ right: 20 }} />
+                </TouchableOpacity>
+                <NotificationIcon />
+              </View>
+            </View>
+          </UserIntro>
+        </View>
+        <TabsComponent
+          textStyle={{
+            paddingTop: 12,
+          }}
+          style={{
+            height: 43,
+            marginTop: 181,
+            backgroundColor: colors.CARD_BG,
+            ...viewStyles.shadowStyle,
+          }}
+          data={tabs}
+          onChange={(selectedTab: string) => {
+            // setselectedTab(selectedTab)
+          }}
+          selectedTab={selectedTab}
+        />
+      </View>
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
         <ScrollView style={{ flex: 1 }}>
-          <View
-            style={{
-              height: 225,
-              justifyContent: 'space-between',
-            }}
-          >
-            <View
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-              }}
-            >
-              <UserIntro
-                style={{
-                  height: 109,
-                }}
-                description={string.home.description}
-              >
-                <View
-                  style={{
-                    height: 83,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    marginHorizontal: 20,
-                  }}
-                >
-                  <View style={{ marginTop: 20 }}>
-                    <ApolloLogo />
-                  </View>
-                  <View style={{ flexDirection: 'row', marginTop: 16 }}>
-                    <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.navigate(AppRoutes.YourCart)}>
-                      <CartIcon style={{ right: 20 }} />
-                    </TouchableOpacity>
-                    <NotificationIcon />
-                  </View>
-                </View>
-              </UserIntro>
-            </View>
-            <TabsComponent
-              textStyle={{
-                paddingTop: 12,
-              }}
-              style={{
-                height: 43,
-                marginTop: 181,
-                backgroundColor: colors.CARD_BG,
-                ...viewStyles.shadowStyle,
-              }}
-              data={tabs}
-              onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-              selectedTab={selectedTab}
-            />
-          </View>
-
+          {renderTopView()}
           {tabs[0].title === selectedTab ? (
             <View>
               {renderMedicines()}
