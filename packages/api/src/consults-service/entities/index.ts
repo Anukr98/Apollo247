@@ -33,6 +33,7 @@ export enum APPOINTMENT_TYPE {
 
 export enum STATUS {
   PENDING = 'PENDING',
+  PAYMENT_PENDING = 'PAYMENT_PENDING',
   IN_PROGRESS = 'IN_PROGRESS',
   CONFIRMED = 'CONFIRMED',
   CANCELLED = 'CANCELLED',
@@ -145,8 +146,60 @@ export class Appointment extends BaseEntity {
     (rescheduleAppointmentDetails) => rescheduleAppointmentDetails.appointment
   )
   rescheduleAppointmentDetails: RescheduleAppointmentDetails[];
+
+  @OneToMany(
+    (type) => AppointmentPayments,
+    (appointmentPayments) => appointmentPayments.appointment
+  )
+  appointmentPayments: AppointmentPayments[];
 }
 //Appointment ends
+
+//AppointmentPayments starts
+@Entity()
+export class AppointmentPayments extends BaseEntity {
+  @Column('decimal', { precision: 5, scale: 2, nullable: true })
+  amountPaid: number;
+
+  @Column({ nullable: true })
+  bankTxnId: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  paymentDateTime: Date;
+
+  @Column({ nullable: true })
+  paymentRefId: string;
+
+  @Column()
+  paymentStatus: string;
+
+  @Column()
+  paymentType: string;
+
+  @Column({ nullable: true, type: 'text' })
+  responseCode: string;
+
+  @Column({ type: 'text' })
+  responseMessage: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
+  appointment: Appointment;
+}
+//AppointmentPayments ends
 
 //AppointmentSessions starts
 @Entity()

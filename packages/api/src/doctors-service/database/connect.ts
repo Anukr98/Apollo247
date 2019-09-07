@@ -1,6 +1,7 @@
 import '@aph/universal/dist/global';
 import {
   Appointment,
+  AppointmentPayments,
   AppointmentSessions,
   CaseSheet,
   TransferAppointmentDetails,
@@ -47,6 +48,7 @@ export const connect = async () => {
       name: 'consults-db',
       entities: [
         Appointment,
+        AppointmentPayments,
         AppointmentSessions,
         CaseSheet,
         TransferAppointmentDetails,

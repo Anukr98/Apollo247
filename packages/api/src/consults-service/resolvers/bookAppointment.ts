@@ -26,6 +26,7 @@ export const bookAppointmentTypeDefs = gql`
     CANCELLED
     COMPLETED
     PENDING
+    PAYMENT_PENDING
     NO_SHOW
   }
 
@@ -150,7 +151,7 @@ const bookAppointment: Resolver<
   }
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
-    status: STATUS.PENDING,
+    status: STATUS.PAYMENT_PENDING,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
     appointmentState: APPOINTMENT_STATE.NEW,
