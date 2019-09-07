@@ -14,6 +14,7 @@ import moment from 'moment';
 
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
+import { g } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -143,7 +144,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       {props.PastData.patientId != null ? (
         <View style={styles.rightViewStyle}>
           <Text style={styles.labelTextStyle}>
-            {moment(props.PastData.appointmentDateTime).format('DD MMMM YYYY')}
+            {moment(props.PastData.appointmentDateTime).format('DD MMM YYYY')}
           </Text>
           <TouchableOpacity
             activeOpacity={1}
@@ -189,9 +190,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                   </View>
                   <View style={styles.separatorStyles} />
                   <View>
-                    {props.PastData.caseSheet[0].symptoms == null ? (
-                      <Text style={styles.descriptionTextStyles}>No Symptoms</Text>
-                    ) : (
+                    {g(props.PastData, 'caseSheet', '0', 'symptoms') ? (
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <Text style={styles.descriptionTextStyles}>
                           {props.PastData.caseSheet[0].symptoms[0].symptom},
@@ -201,6 +200,8 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                         </Text>
                         <PrescriptionSkyBlue />
                       </View>
+                    ) : (
+                      <Text style={styles.descriptionTextStyles}>No Symptoms</Text>
                     )}
                   </View>
                 </View>
@@ -247,7 +248,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       ) : (
         <View style={{ marginRight: 60 }}>
           <Text style={styles.labelTextStyle}>
-            {moment(props.PastData.quoteDateTime).format('DD MMMM YYYY')}
+            {moment(props.PastData.quoteDateTime).format('DD MMM YYYY')}
           </Text>
           <TouchableOpacity
             activeOpacity={1}
