@@ -92,6 +92,7 @@ export async function sendNotification(
 
   //if notiifcation of type reschedule & check for reschedule notification setting
   if (
+    patientDetails.patientNotificationSettings &&
     pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE &&
     !patientDetails.patientNotificationSettings.reScheduleAndCancellationNotification
   ) {
