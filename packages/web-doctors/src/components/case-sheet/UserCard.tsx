@@ -22,7 +22,7 @@ export const UserCard: React.FC = () => {
     userCardStrip.push(
       Math.abs(
         new Date(Date.now()).getUTCFullYear() -
-          new Date(patientDetails!.dateOfBirth).getUTCFullYear()
+        new Date(patientDetails!.dateOfBirth).getUTCFullYear()
       ).toString()
     );
   }
@@ -53,36 +53,36 @@ export const UserCard: React.FC = () => {
   return loading && !patientDetails ? (
     <CircularProgress />
   ) : (
-    <Card>
-      <CardMedia
-        component="img"
-        image={photoUrl}
-        title={`${patientDetails!.firstName} ${patientDetails!.lastName}`}
-      />
-      <CardContent>
-        {patientDetails!.firstName &&
-          patientDetails!.firstName !== '' &&
-          patientDetails!.lastName &&
-          patientDetails!.lastName !== '' && (
-            <Typography gutterBottom variant="h4" component="h2">
-              {patientDetails!.firstName + ' ' + patientDetails!.lastName}
+      <Card>
+        <CardMedia
+          component="img"
+          image={photoUrl}
+          title={`${patientDetails!.firstName} ${patientDetails!.lastName}`}
+        />
+        <CardContent>
+          {patientDetails!.firstName &&
+            patientDetails!.firstName !== '' &&
+            patientDetails!.lastName &&
+            patientDetails!.lastName !== '' && (
+              <Typography gutterBottom variant="h4" component="h2">
+                {patientDetails!.firstName + ' ' + patientDetails!.lastName}
+              </Typography>
+            )}
+          <Typography variant="h5" color="textSecondary" component="h5">
+            {userCardStrip.join(', ')}
+          </Typography>
+          <Divider />
+          {patientDetails!.uhid && patientDetails!.uhid !== '' && (
+            <Typography variant="h6" color="textSecondary" component="h6">
+              UHID:{patientDetails!.uhid}
             </Typography>
           )}
-        <Typography variant="h5" color="textSecondary" component="h5">
-          {userCardStrip.join(', ')}
-        </Typography>
-        <Divider />
-        {patientDetails!.uhid && patientDetails!.uhid !== '' && (
-          <Typography variant="h6" color="textSecondary" component="h6">
-            UHID:{patientDetails!.uhid}
-          </Typography>
-        )}
 
-        <Typography variant="h6" color="textSecondary" component="h6">
-          Appt ID:
+          <Typography variant="h6" color="textSecondary" component="h6">
+            Appt ID:
           {caseSheetId && caseSheetId !== '' && caseSheetId.slice(-5)}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
+          </Typography>
+        </CardContent>
+      </Card>
+    );
 };
