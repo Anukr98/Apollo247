@@ -310,9 +310,23 @@ interface ConsultationHoursProps {
 export const ConsultationHours: React.FC<ConsultationHoursProps> = ({ values }) => {
   const classes = useStyles();
   const data = values;
-  function convertTime(time: string) {
-    return format(new Date('1970-01-01T' + time), 'p');
-  }
+  // console.log('conult hours are....', data);
+  // function convertTime(time: string) {
+  //   return format(new Date('1970-01-01T' + time), 'p');
+  // }
+
+  // converts utc to ist time.
+  const convertTime = (slotTime: string) => {
+    const currentDay = new Date().getDate();
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    const utcDate =
+      new Date(
+        new Date(`${currentYear}-${currentMonth}-${currentDay} ${slotTime}`).toUTCString()
+      ).getTime() + +(5.5 * 60 * 60 * 1000);
+    return format(utcDate, 'p');
+  };
+
   const AvailabilityHtml =
     data && data.consultHours
       ? data.consultHours.map(
