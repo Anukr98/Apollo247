@@ -980,6 +980,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   stopInterval();
                   props.endConsultAction();
                   setCaseSheetEdit(false);
+                  setDisableOnTransfer(true);
                 }}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
@@ -1076,7 +1077,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           <Button
             className={classes.consultIcon}
             aria-describedby={idThreeDots}
-            disabled={startAppointmentButton || disableOnTransfer}
+            disabled={
+              startAppointmentButton ||
+              disableOnTransfer ||
+              (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                appointmentInfo!.status !== STATUS.PENDING)
+            }
             onClick={(e) => handleClickThreeDots(e)}
           >
             <img src={require('images/ic_more.svg')} />
