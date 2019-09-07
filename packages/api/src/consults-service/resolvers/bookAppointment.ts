@@ -151,7 +151,7 @@ const bookAppointment: Resolver<
   }
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
-    status: STATUS.PAYMENT_PENDING,
+    status: STATUS.PENDING,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     appointmentDateTime: new Date(appointmentInput.appointmentDateTime.toISOString()),
     appointmentState: APPOINTMENT_STATE.NEW,

@@ -53,7 +53,7 @@ const makeAppointmentPayment: Resolver<
   const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const processingAppointment = await apptsRepo.findByIdAndStatus(
     paymentInput.appointmentId,
-    STATUS.PAYMENT_PENDING
+    STATUS.PENDING
   );
   if (!processingAppointment) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
