@@ -446,7 +446,7 @@ interface errorObjectReshedule {
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
-  saveCasesheetAction: () => void;
+  saveCasesheetAction: (onlySave: boolean) => void;
   endConsultAction: () => void;
   appointmentId: string;
   appointmentDateTime: string;
@@ -967,7 +967,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.backButton}
                 onClick={() => {
-                  props.saveCasesheetAction();
+                  props.saveCasesheetAction(true);
                 }}
               >
                 Save
@@ -999,12 +999,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <Button
               className={classes.consultButton}
-              disabled={
-                startAppointmentButton ||
-                disableOnTransfer ||
-                (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                  appointmentInfo!.status !== STATUS.PENDING)
-              }
+              // disabled={
+              //   startAppointmentButton ||
+              //   disableOnTransfer ||
+              //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+              //     appointmentInfo!.status !== STATUS.PENDING)
+              // }
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();
