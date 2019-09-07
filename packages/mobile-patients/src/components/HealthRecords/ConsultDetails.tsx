@@ -12,6 +12,7 @@ import {
   getCaseSheet_getCaseSheet_caseSheetDetails,
 } from '@aph/mobile-patients/src/graphql/types/getCaseSheet';
 import { GET_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -68,9 +69,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface ConsultDetailsProps extends NavigationScreenProps {}
+export interface ConsultDetailsProps extends NavigationScreenProps {
+  CaseSheet: string;
+}
 
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
+  console.log('consulcasesheetid', props.navigation.state.params!.CaseSheet);
+  console.log('DoctorInfo', props.navigation.state.params!.DoctorInfo);
+  console.log('FollowUp', props.navigation.state.params!.FollowUp);
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [caseSheetDetails, setcaseSheetDetails] = useState<
@@ -80,7 +86,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const getData = useQuery<getCaseSheet>(GET_CASESHEET_DETAILS, {
     fetchPolicy: 'no-cache',
     variables: {
-      appointmentId: 'c2d9a989-5763-4eb3-8923-0a3700441eef',
+      appointmentId: props.navigation.state.params!.CaseSheet,
     },
   });
   console.log(getData, 'getData');
@@ -134,17 +140,21 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 paddingBottom: 4,
               }}
             >
-              #{data.id}
+              #{props.navigation.state.params!.DoctorInfo.id}
             </Text>
             <View style={theme.viewStyles.lightSeparatorStyle} />
-            <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>
-            <Text style={styles.timeStyle}>{data.consult_info}</Text>
+            <Text style={styles.doctorNameStyle}>
+              Dr. {props.navigation.state.params!.DoctorInfo.firstName}
+            </Text>
+            <Text style={styles.timeStyle}>
+              {props.navigation.state.params!.appointmentType} Consult
+            </Text>
             <View style={theme.viewStyles.lightSeparatorStyle} />
           </View>
           <View style={styles.imageView}>
-            {data.doctorInfo.photoUrl && (
+            {props.navigation.state.params!.DoctorInfo.photoUrl && (
               <Image
-                source={{ uri: data.doctorInfo.photoUrl }}
+                source={{ uri: props.navigation.state.params!.DoctorInfo.photoUrl }}
                 style={{
                   width: 80,
                   height: 80,
@@ -154,11 +164,20 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             )}
           </View>
         </View>
-
-        <Text style={styles.descriptionStyle}>{data.description}</Text>
-        <Text style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}>
-          {strings.health_records_home.view_consult}
-        </Text>
+        {caseSheetDetails && caseSheetDetails.followUp ? (
+          <View>
+            <Text style={styles.descriptionStyle}>
+              This is a follow-up consult to the {props.navigation.state.params!.appointmentType}{' '}
+              Visit on{' '}
+              {caseSheetDetails && moment(caseSheetDetails.followUpDate).format('DD MMM YYYY')}
+            </Text>
+            <Text
+              style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
+            >
+              {strings.health_records_home.view_consult}
+            </Text>
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -326,9 +345,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       : 'Online Consult '}
                   </Text>
                 </View>
-                <Text style={styles.dataTextStyle}>
-                  Recommended after {caseSheetDetails.followUpAfterInDays} days
-                </Text>
+                {caseSheetDetails.followUpAfterInDays == null ? (
+                  <Text style={styles.dataTextStyle}>
+                    Recommended after {moment(caseSheetDetails.followUpDate).format('DD MMM YYYY')}{' '}
+                  </Text>
+                ) : (
+                  <Text style={styles.dataTextStyle}>
+                    Recommended after {caseSheetDetails.followUpAfterInDays} days
+                  </Text>
+                )}
               </View>
               <Text
                 style={[

@@ -4,8 +4,12 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { BOOK_APPOINTMENT, GET_AVAILABLE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
-import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+import {
+  BOOK_APPOINTMENT,
+  GET_AVAILABLE_SLOTS,
+  BOOK_APPOINTMENT_RESCHEDULE,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { bookRescheduleAppointment } from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 import {
   getDoctorDetailsById_getDoctorDetailsById,
@@ -14,6 +18,8 @@ import {
 import {
   APPOINTMENT_TYPE,
   BookAppointmentInput,
+  BookRescheduleAppointmentInput,
+  TRANSFER_INITIATED_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -23,6 +29,7 @@ import { useQuery } from 'react-apollo-hooks';
 import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,6 +45,8 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   doctorId: string;
+  rescheduleCount: number;
+  appointmentId: string;
   // availableSlots: string[] | null;
 }
 export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (props) => {
@@ -63,12 +72,12 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
 
   const setTimeArrayData = (availableSlots: string[]) => {
     const array = divideSlots(availableSlots, date);
-    console.log(array, 'array', timeArray, 'timeArray.......');
+    // console.log(array, 'array', timeArray, 'timeArray.......');
     if (array !== timeArray) settimeArray(array);
   };
 
   const availableDate = date.toISOString().split('T')[0];
-  console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
+  // console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
   const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
     fetchPolicy: 'no-cache',
     variables: {
@@ -82,7 +91,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
   if (availabilityData.error) {
     console.log('error', availabilityData.error);
   } else {
-    console.log(availabilityData.data, 'availableSlots');
+    // console.log(availabilityData.data, 'availableSlots');
     if (
       availabilityData &&
       availabilityData.data &&
@@ -91,11 +100,43 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
       availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots
     ) {
       setTimeArrayData(availabilityData.data.getDoctorAvailableSlots.availableSlots);
-      console.log(availableSlots, 'availableSlots1111');
+      // console.log(availableSlots, 'availableSlots1111');
 
       setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots);
     }
   }
+
+  // const rescheduleAPI = () => {
+  //   const appointmentTransferInput = {
+  //     appointmentId: data.id,
+  //     doctorId: doctorDetails.id,
+  //     newDateTimeslot: '',
+  //     initiatedBy: 'PATIENT',
+  //     initiatedId: data.patientId,
+  //     patientId: data.patientId,
+  //     rescheduledId: '',
+  //   };
+
+  //   console.log(appointmentTransferInput, 'appointmentTransferInput');
+  //   if (!rescheduleApICalled) {
+  //     setRescheduleApICalled(true);
+  //     client
+  //       .mutate<bookTransferAppointment, bookTransferAppointmentVariables>({
+  //         mutation: BOOK_APPOINTMENT_RESCHEDULE,
+  //         variables: {
+  //           bookRescheduleAppointmentInput: appointmentTransferInput,
+  //         },
+  //         fetchPolicy: 'no-cache',
+  //       })
+  //       .then((data: any) => {
+  //         console.log(data, 'data');
+  //         props.navigation.replace(AppRoutes.Consult);
+  //       })
+  //       .catch((e: string) => {
+  //         console.log('Error occured while adding Doctor', e);
+  //       });
+  //   }
+  // };
 
   const renderBottomButton = () => {
     return (
@@ -107,7 +148,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
           marginTop: 10,
         }}
       >
-        <Mutation<bookAppointment> mutation={BOOK_APPOINTMENT}>
+        <Mutation<bookRescheduleAppointment> mutation={BOOK_APPOINTMENT_RESCHEDULE}>
           {(mutate, { loading, data, error }) => (
             <Button
               title={`PAY Rs. 300`}
@@ -130,37 +171,30 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   0 < availableInMin!
                     ? nextAvailableSlot
                     : selectedTimeSlot;
-                // const formatDate = date.toISOString().split('T')[0];
-                // const appointmentDate = moment
-                //   .utc(moment(`${formatDate} ${timeSlot}`, 'DD-MM-YYYY HH:mm'))
-                //   .utc()
-                //   .toISOString();
-                const appointmentInput: BookAppointmentInput = {
+
+                const appointmentInput: BookRescheduleAppointmentInput = {
+                  appointmentId: props.appointmentId,
+                  doctorId: props.doctorId,
+                  newDateTimeslot: timeSlot,
+                  initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                  initiatedId: props.patientId,
                   patientId: props.patientId,
-                  doctorId: props.doctor ? props.doctor.id : '',
-                  appointmentDateTime: timeSlot, //appointmentDate,
-                  appointmentType:
-                    selectedTab === tabs[0].title
-                      ? APPOINTMENT_TYPE.ONLINE
-                      : APPOINTMENT_TYPE.PHYSICAL,
-                  hospitalId:
-                    props.clinics && props.clinics.length > 0 && props.clinics[0].facility
-                      ? props.clinics[0].facility.id
-                      : '',
+                  rescheduledId: '',
                 };
                 console.log(appointmentInput, 'appointmentInput');
                 mutate({
                   variables: {
-                    bookAppointment: appointmentInput,
+                    bookRescheduleAppointmentInput: appointmentInput,
                   },
                 });
               }}
             >
               {data
                 ? (console.log('bookAppointment data', data),
-                  // props.setdisplayoverlay(false),
+                  props.setdisplayoverlay(false),
                   setshowSpinner(false),
-                  setshowSuccessPopUp(true))
+                  setshowSuccessPopUp(true),
+                  props.navigation.replace(AppRoutes.Consult))
                 : null}
               {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
               {error ? console.log('bookAppointment error', error, setshowSpinner(false)) : null}
