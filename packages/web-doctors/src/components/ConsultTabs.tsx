@@ -324,7 +324,7 @@ export const ConsultTabs: React.FC = () => {
       document.cookie = cookieStr + ';path=/;';
     };
   }, [paramId, appointmentId]);
-  const saveCasesheetAction = () => {
+  const saveCasesheetAction = (flag: boolean) => {
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
         mutation: UPDATE_CASESHEET,
@@ -349,44 +349,49 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        // console.log('_data', _data);
-        // setIsPopoverOpen(true);
+        if (!flag) {
+          setIsPopoverOpen(true);
+        }
       })
       .catch((e) => {
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        alert(errorMessage);
         console.log('Error occured while update casesheet', e);
       });
   };
   const endConsultAction = () => {
-    client
-      .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-        mutation: UPDATE_CASESHEET,
-        variables: {
-          UpdateCaseSheetInput: {
-            symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-            notes,
-            diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
-            diagnosticPrescription:
-              diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
-            followUp: followUp[0],
-            followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
-            followUpAfterInDays:
-              followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
-            otherInstructions:
-              otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
-            medicinePrescription:
-              medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
-            id: caseSheetId,
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        console.log('_data', _data);
-        endConsultActionFinal();
-      })
-      .catch((e) => {
-        console.log('Error occured while update casesheet', e);
-      });
+    saveCasesheetAction(false);
+    // client
+    //   .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
+    //     mutation: UPDATE_CASESHEET,
+    //     variables: {
+    //       UpdateCaseSheetInput: {
+    //         symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
+    //         notes,
+    //         diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
+    //         diagnosticPrescription:
+    //           diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
+    //         followUp: followUp[0],
+    //         followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
+    //         followUpAfterInDays:
+    //           followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
+    //         otherInstructions:
+    //           otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
+    //         medicinePrescription:
+    //           medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
+    //         id: caseSheetId,
+    //       },
+    //     },
+    //     fetchPolicy: 'no-cache',
+    //   })
+    //   .then((_data) => {
+    //     console.log('_data', _data);
+    //     endConsultActionFinal();
+    //   })
+    //   .catch((e) => {
+    //     console.log('Error occured while update casesheet', e);
+    //   });
   };
   const endConsultActionFinal = () => {
     client
@@ -401,7 +406,8 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        setIsPopoverOpen(true);
+        // setIsPopoverOpen(true);
+        setIsPdfPopoverOpen(true);
         console.log('_data', _data);
       })
       .catch((e) => {
@@ -485,7 +491,7 @@ export const ConsultTabs: React.FC = () => {
             <CallPopover
               setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
               createSessionAction={createSessionAction}
-              saveCasesheetAction={saveCasesheetAction}
+              saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
               endConsultAction={endConsultAction}
               appointmentId={appointmentId}
               appointmentDateTime={appointmentDateTime}
@@ -562,7 +568,7 @@ export const ConsultTabs: React.FC = () => {
               //disabled={startAppointmentButton}
               onClick={() => {
                 setIsPopoverOpen(false);
-                setIsPdfPopoverOpen(true);
+                endConsultActionFinal();
               }}
             >
               PREVIEW PRESCRIPTION

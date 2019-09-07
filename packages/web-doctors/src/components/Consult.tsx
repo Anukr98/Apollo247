@@ -126,6 +126,7 @@ interface ConsultProps {
   timerSeconds: number;
   isCallAccepted: boolean;
   isNewMsg: boolean;
+  convertCall: () => void;
 }
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
@@ -286,7 +287,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         {isCall && subscribeToVideo && (
                           <button
                             className={classes.muteBtn}
-                            onClick={() => setSubscribeToVideo(!subscribeToVideo)}
+                            onClick={() => {
+                              setSubscribeToVideo(!subscribeToVideo);
+                              props.convertCall();
+                            }}
                           >
                             <img
                               className={classes.whiteArrow}
@@ -298,7 +302,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         {isCall && !subscribeToVideo && (
                           <button
                             className={classes.muteBtn}
-                            onClick={() => setSubscribeToVideo(!subscribeToVideo)}
+                            onClick={() => {
+                              setSubscribeToVideo(!subscribeToVideo);
+                              props.convertCall();
+                            }}
                           >
                             <img
                               className={classes.whiteArrow}
