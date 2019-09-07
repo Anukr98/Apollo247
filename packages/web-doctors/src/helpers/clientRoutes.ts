@@ -12,6 +12,7 @@ export const clientRoutes = {
   healthRecords: () => '#',
   calendar: () => '/calendar',
   juniorDoctor: () => '/junior-doctor',
+  patientDetails: () => '/patient-details',
   ConsultTabs: (appointmentId: string, patientId: string) =>
     `/Consulttabs/${appointmentId}/${patientId}`,
 };

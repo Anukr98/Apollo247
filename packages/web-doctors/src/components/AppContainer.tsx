@@ -18,6 +18,7 @@ import { AuthProvider } from 'components/AuthProvider';
 import { useAuth } from 'hooks/authHooks';
 import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
 import { JuniorDoctor } from 'components/JuniorDoctors/JuniorDoctor';
+import { PatientDetails } from 'components/JuniorDoctors/PatientDetails';
 
 const App: React.FC = () => {
   const classes = useStyles();
@@ -51,6 +52,7 @@ const App: React.FC = () => {
         component={ConsultTabs}
       />
       <AuthRouted exact path={clientRoutes.juniorDoctor()} component={JuniorDoctor} />
+      <AuthRouted exact path={clientRoutes.patientDetails()} component={PatientDetails} />
     </div>
   ) : (
     <div className={classes.app}>
