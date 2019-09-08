@@ -201,6 +201,14 @@ const bookTransferAppointment: Resolver<
     throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
   }
 
+  const apptCount = await appointmentRepo.checkIfAppointmentExist(
+    BookTransferAppointmentInput.doctorId,
+    BookTransferAppointmentInput.appointmentDateTime
+  );
+  if (apptCount > 0) {
+    throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
+  }
+
   //update exisiting appt, state to transferred
   await appointmentRepo.updateTransferState(
     BookTransferAppointmentInput.existingAppointmentId,
