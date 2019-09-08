@@ -42,7 +42,7 @@ const uploadFile: Resolver<
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
 
-  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'dev') {
     console.log('deleting container...');
     await client
       .deleteContainer()
