@@ -915,3 +915,11 @@ export const BOOK_APPOINTMENT_RESCHEDULE = gql`
     }
   }
 `;
+
+export const DELETE_PATIENT_MEDICAL_RECORD = gql`
+  mutation deletePatientMedicalRecord($recordId: ID!) {
+    deletePatientMedicalRecord(recordId: $recordId) {
+      status
+    }
+  }
+`;
