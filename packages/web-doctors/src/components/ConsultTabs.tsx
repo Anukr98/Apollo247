@@ -210,6 +210,7 @@ export const ConsultTabs: React.FC = () => {
   //     setdoctorId(currentPatient.id);
 
   const [tabValue, setTabValue] = useState<number>(0);
+  const [isEnded, setIsEnded] = useState<boolean>(false);
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
   const [sessionId, setsessionId] = useState<string>('');
@@ -443,6 +444,8 @@ export const ConsultTabs: React.FC = () => {
       .then((_data) => {
         // setIsPopoverOpen(true);
         setIsPdfPopoverOpen(true);
+        setIsEnded(true);
+        //isEnded, setIsEnded
         console.log('_data', _data);
       })
       .catch((e) => {
@@ -535,6 +538,7 @@ export const ConsultTabs: React.FC = () => {
               appointmentId={appointmentId}
               appointmentDateTime={appointmentDateTime}
               doctorId={doctorId}
+              isEnded={isEnded}
             />
             <div>
               <div>

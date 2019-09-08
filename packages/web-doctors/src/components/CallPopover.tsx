@@ -469,6 +469,7 @@ interface CallPopoverProps {
   appointmentId: string;
   appointmentDateTime: string;
   doctorId: string;
+  isEnded: boolean;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -708,6 +709,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     ssl: true,
   };
   const { caseSheetEdit, setCaseSheetEdit } = useContext(CaseSheetContext);
+  useEffect(() => {
+    if (props.isEnded) {
+      onStopConsult();
+    }
+  }, [props.isEnded]);
   useEffect(() => {
     setTextOtherTransfer;
     if (reason === 'Other') {
@@ -993,7 +999,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.endconsultButton}
                 onClick={() => {
-                  onStopConsult();
+                  //onStopConsult();
                   setStartAppointment(!startAppointment);
                   stopInterval();
                   props.endConsultAction();
