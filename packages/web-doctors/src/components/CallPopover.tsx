@@ -1019,6 +1019,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               disabled={
                 startAppointmentButton ||
                 disableOnTransfer ||
+                appointmentInfo!.appointmentState !== 'NEW' ||
                 (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                   appointmentInfo!.status !== STATUS.PENDING)
               }
@@ -1097,6 +1098,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             disabled={
               startAppointmentButton ||
               disableOnTransfer ||
+              appointmentInfo!.appointmentState !== 'NEW' ||
               (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                 appointmentInfo!.status !== STATUS.PENDING)
             }
