@@ -1164,7 +1164,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       >
         <Paper className={classes.modalBox}>
           <div className={classes.tabHeader}>
-            <h4>RESHEDULE CONSULT</h4>
+            <h4>RESCHEDULE CONSULT</h4>
             <Button className={classes.cross}>
               <img
                 src={require('images/ic_cross.svg')}

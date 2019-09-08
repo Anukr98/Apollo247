@@ -235,6 +235,7 @@ const useStyles = makeStyles((theme: Theme) =>
         color: 'rgba(2, 71, 91, 0.6)',
         marginBottom: 10,
         marginTop: 0,
+        lineHeight: 'normal',
       },
     },
     popupHeading: {
