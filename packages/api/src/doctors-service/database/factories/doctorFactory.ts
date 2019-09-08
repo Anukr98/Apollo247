@@ -1,10 +1,9 @@
+import { Doctor, DoctorType, Salutation } from 'doctors-service/entities';
 import faker from 'faker';
-import { Doctor, Salutation, DoctorSpecialty, DoctorType } from 'doctors-service/entities';
-import { randomEnum, randomValues, randomValue } from 'helpers/factoryHelpers';
-import { Gender } from 'profiles-service/entities';
+import { randomEnum, randomValue, randomValues } from 'helpers/factoryHelpers';
 import _random from 'lodash/random';
 import _sample from 'lodash/sample';
-import { buildDoctorSpecialty } from 'doctors-service/database/factories/doctorSpecialtyFactory';
+import { Gender } from 'profiles-service/entities';
 
 const allSpecializations = ['Gynecologist'];
 const allQualifications = ['MD', 'DGO', 'OBS', 'GYN', 'Trained In Endoscopic Surgery And Robotics'];
@@ -13,11 +12,6 @@ const allPhotoUrls = [
   'http://dev.popcornapps.com/apolloImages/doctors/doctor_c_3.png',
   'http://dev.popcornapps.com/apolloImages/doctors/doctor_c_1.png',
 ];
-
-// "awards", "city", "country", "createdDate", "dateOfBirth", "delegateNumber", "doctorType", "emailAddress",
-// "experience", "firstName", "gender", "isActive", "languages", "lastName", "mobileNumber",
-// "onlineConsultationFees", "photoUrl", "physicalConsultationFees", "qualification",
-// "registrationNumber", "state", "streetLine1", "zip"
 
 export const buildDoctor = (attrs: Partial<Doctor> = {}) => {
   const doctor = new Doctor();
