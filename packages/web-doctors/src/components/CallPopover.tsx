@@ -428,6 +428,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 12,
         marginBottom: 5,
         marginTop: 12,
+        fontWeight: 500,
       },
       '& ul': {
         listStyleType: 'none',
