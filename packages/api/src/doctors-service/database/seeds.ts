@@ -11,7 +11,7 @@ import _reject from 'lodash/reject';
 import _sample from 'lodash/sample';
 import { buildFacility } from 'doctors-service/database/factories/facilityFactory';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { Facility, Doctor } from 'doctors-service/entities';
+import { Facility, Doctor, DoctorType } from 'doctors-service/entities';
 import { buildDoctorAndHospital } from 'doctors-service/database/factories/doctorAndHospitalFactory';
 import {
   buildDoctorSpecialty,
@@ -20,7 +20,7 @@ import {
 import { DoctorBankAccountsRepository } from 'doctors-service/repositories/doctorBankAccountsRepository';
 import { buildDoctorBankAccount } from 'doctors-service/database/factories/doctorBankAccountsFactory';
 import { PackagesRepository } from 'doctors-service/repositories/packagesRepository';
-import { buildPackage } from 'doctors-service/database/factories/packagesFactory';
+import { buildPackage, allPackageNames } from 'doctors-service/database/factories/packagesFactory';
 import { buildStarTeam } from 'doctors-service/database/factories/starTeamFactory';
 
 (async () => {
@@ -53,12 +53,23 @@ import { buildStarTeam } from 'doctors-service/database/factories/starTeamFactor
   const doctorSpecialties = await Promise.all(
     allSpecialties.map((name) => doctorSpecialtyRepo.save(buildDoctorSpecialty({ name })))
   );
-  console.log(doctorSpecialties);
 
   console.log('Building doctors...');
-  const doctors = await Promise.all(
+  const staticDoctorObjs = [
+    buildDoctor({
+      firstName: 'Kabir',
+      lastName: 'Sarin',
+      specialty: _sample(doctorSpecialties),
+      doctorType: DoctorType.JUNIOR,
+      mobileNumber: '+919999999999',
+      isActive: true, // Don't forget to set this to true or you won't be able to log in!
+    }),
+  ];
+  const staticDoctors = await Promise.all(staticDoctorObjs.map((doc) => doctorRepo.save(doc)));
+  const randomDoctors = await Promise.all(
     _times(20, () => doctorRepo.save(buildDoctor({ specialty: _sample(doctorSpecialties) })))
   );
+  const doctors = [...staticDoctors, ...randomDoctors];
   console.log(doctors);
 
   console.log('Building doctorAndHospitals...');
