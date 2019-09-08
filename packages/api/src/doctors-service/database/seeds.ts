@@ -23,6 +23,11 @@ import { buildDoctorBankAccount } from 'doctors-service/database/factories/docto
 import { PackagesRepository } from 'doctors-service/repositories/packagesRepository';
 import { buildPackage, allPackageNames } from 'doctors-service/database/factories/packagesFactory';
 import { buildStarTeam } from 'doctors-service/database/factories/starTeamFactory';
+import { buildAppointment } from 'consults-service/database/factories/appointmentFactory';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import faker from 'faker';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { buildPatient } from 'profiles-service/database/factories/patientFactory';
 
 (async () => {
   console.log('Seeding doctors-db...');
@@ -30,6 +35,8 @@ import { buildStarTeam } from 'doctors-service/database/factories/starTeamFactor
   console.log('Establishing connection...');
   await connect();
   const doctorsDb = getConnection();
+  const consultsDb = getConnection('consults-db');
+  const patientsDb = getConnection('patients-db');
 
   console.log('Clearing all data...');
   await doctorsDb.dropDatabase();
@@ -44,6 +51,10 @@ import { buildStarTeam } from 'doctors-service/database/factories/starTeamFactor
   const starTeamRepo = doctorsDb.getCustomRepository(StarTeamRepository);
   const packagesRepo = doctorsDb.getCustomRepository(PackagesRepository);
 
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+
   console.log('Building and saving records...');
 
   console.log('Building facilities...');
@@ -56,16 +67,15 @@ import { buildStarTeam } from 'doctors-service/database/factories/starTeamFactor
   );
 
   console.log('Building doctors...');
-  const staticDoctorObjs = [
-    buildDoctor({
-      firstName: 'Kabir',
-      lastName: 'Sarin',
-      specialty: _sample(doctorSpecialties),
-      doctorType: DoctorType.JUNIOR,
-      mobileNumber: '+919999999999',
-      isActive: true, // Don't forget to set this to true or you won't be able to log in!
-    }),
-  ];
+  const kabir = buildDoctor({
+    firstName: 'Kabir',
+    lastName: 'Sarin',
+    specialty: _sample(doctorSpecialties),
+    doctorType: DoctorType.JUNIOR,
+    mobileNumber: '+919999999999',
+    isActive: true, // Don't forget to set this to true or you won't be able to log in!
+  });
+  const staticDoctorObjs = [kabir];
   const staticDoctors = await Promise.all(staticDoctorObjs.map((doc) => doctorRepo.save(doc)));
   const randomDoctors = await Promise.all(
     _times(20, () => doctorRepo.save(buildDoctor({ specialty: _sample(doctorSpecialties) })))
@@ -111,6 +121,24 @@ import { buildStarTeam } from 'doctors-service/database/factories/starTeamFactor
     })
   );
   console.log(starTeams);
+
+  console.log('Building patients...');
+  const patients = Promise.all(
+    _times(20, () => (
+      buildPatient({})
+    ))
+  )
+
+  console.log('Building appointments...');
+  const kabirAppointments = Promise.all(
+    _times(20, () =>
+      buildAppointment({
+        doctorId: kabir.id,
+        patientId
+        appointmentDateTime: faker.random.boolean() ? faker.date.past() : faker.date.future(),
+      })
+    )
+  );
 
   console.log('Seeding doctors-db complete!');
 })();

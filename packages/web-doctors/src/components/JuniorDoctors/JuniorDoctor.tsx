@@ -1,10 +1,14 @@
-import { Theme } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import { PatientCard } from 'components/JuniorDoctors/PatientCard';
 import { PastConsults } from 'components/JuniorDoctors/PastConsults';
+import { useQuery } from 'react-apollo-hooks';
+import { GetDoctorConsults } from 'graphql/types/GetDoctorConsults';
+import { GET_DOCTOR_CONSULTS } from 'graphql/consults';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -87,50 +91,65 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
+  const { data, loading, error } = useQuery<GetDoctorConsults>(GET_DOCTOR_CONSULTS);
+  console.log(data);
+  if (error) return <div>An error occurred :(</div>;
+  if (loading) return <CircularProgress />;
+  if (data && data.getDoctorConsults && data.getDoctorConsults.doctorConsults) {
+    const { doctorConsults } = data.getDoctorConsults;
+    const pastConsults = doctorConsults;
+    const activeConsults = doctorConsults;
+    return (
+      <div className={classes.root}>
+        <div className={classes.headerSticky}>
+          <Header />
+        </div>
+        <div className={classes.container}>
+          <div className={classes.pageContainer}>
+            <div className={classes.pageHeader}>
+              <h2>hello doc :)</h2>
+              <p>manage your new and old patients easily here</p>
+            </div>
+            {/* {activeConsults.map(({ patient, appointment }) => (
 
-  return (
-    <div className={classes.root}>
-      <div className={classes.headerSticky}>
-        <Header />
-      </div>
-      <div className={classes.container}>
-        <div className={classes.pageContainer}>
-          <div className={classes.pageHeader}>
-            <h2>hello doc :)</h2>
-            <p>manage your new and old patients easily here</p>
-          </div>
-          <div className={classes.contentGroup}>
-            <div className={classes.leftSection}>
-              <div className={classes.blockGroup}>
-                <div className={classes.blockHeader}>Active Patients</div>
-                <div className={classes.blockBody}>
-                  <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
-                    <div className={classes.customScroll}>
-                      <div className={classes.boxGroup}>
-                        <PatientCard />
+            ))} */}
+            <div className={classes.contentGroup}>
+              <div className={classes.leftSection}>
+                <div className={classes.blockGroup}>
+                  <div className={classes.blockHeader}>Active Patients</div>
+                  <div className={classes.blockBody}>
+                    <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
+                      <div className={classes.customScroll}>
+                        <div className={classes.boxGroup}>
+                          <PatientCard />
+                          <PatientCard />
+                          <PatientCard />
+                          <PatientCard />
+                        </div>
                       </div>
-                    </div>
-                  </Scrollbars>
+                    </Scrollbars>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className={classes.rightSection}>
-              <div className={classes.blockGroup}>
-                <div className={classes.blockHeader}>Past Consults</div>
-                <div className={classes.blockBody}>
-                  <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
-                    <div className={classes.customScroll}>
-                      <div className={classes.boxGroup}>
-                        <PastConsults />
+              <div className={classes.rightSection}>
+                <div className={classes.blockGroup}>
+                  <div className={classes.blockHeader}>Past Consults</div>
+                  <div className={classes.blockBody}>
+                    <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
+                      <div className={classes.customScroll}>
+                        <div className={classes.boxGroup}>
+                          <PastConsults />
+                        </div>
                       </div>
-                    </div>
-                  </Scrollbars>
+                    </Scrollbars>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+  return null;
 };
