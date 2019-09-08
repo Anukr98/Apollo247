@@ -9,6 +9,7 @@ import { getConnection } from 'typeorm';
 import _times from 'lodash/times';
 import _reject from 'lodash/reject';
 import _sample from 'lodash/sample';
+import _sampleSize from 'lodash/sampleSize';
 import { buildFacility } from 'doctors-service/database/factories/facilityFactory';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { Facility, Doctor, DoctorType } from 'doctors-service/entities';
@@ -97,12 +98,14 @@ import { buildStarTeam } from 'doctors-service/database/factories/starTeamFactor
   console.log(packages);
 
   console.log('Building starTeams...');
+  const numStarTeams = 5;
+  const starCandidates = _sampleSize(doctors, numStarTeams);
+  const possibleAssociatedCandidates = _reject(doctors, (doc) => starCandidates.includes(doc));
+  const associatedCandidates = _sampleSize(possibleAssociatedCandidates, numStarTeams);
   const starTeams = await Promise.all(
-    _times(3, () => {
-      const starDoctor = _sample(doctors) as Doctor;
-      const associatedDoctor = _sample(
-        _reject(doctors, (doc) => doc.id === starDoctor.id)
-      ) as Doctor;
+    _times(numStarTeams, (index) => {
+      const starDoctor = starCandidates[index];
+      const associatedDoctor = associatedCandidates[index];
       const starTeam = buildStarTeam({ associatedDoctor, starDoctor });
       return starTeamRepo.save(starTeam);
     })
