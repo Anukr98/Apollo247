@@ -14,9 +14,8 @@ import {
 import uuid from 'uuid/v4';
 import { webDoctorsBaseUrl, webPatientsBaseUrl } from './aphRoutes';
 
-// For some reason blobs don't have their name or url, build our own AphBlob for convenience.
+// For some reason blobs don't have their name, build our own AphBlob for convenience.
 interface AphBlob extends BlobUploadCommonResponse {
-  url: string;
   name: string;
 }
 
@@ -112,8 +111,7 @@ export class AphStorageClient {
       BlobURL.fromContainerURL(this.containerUrl, name)
     );
     const blob = await uploadBrowserDataToBlockBlob(Aborter.none, file, blockBlobUrl);
-    const url = blockBlobUrl.url;
-    const aphBlob: AphBlob = { ...blob, url, name };
+    const aphBlob: AphBlob = { ...blob, name };
     return aphBlob;
   };
 
@@ -128,8 +126,10 @@ export class AphStorageClient {
       BlobURL.fromContainerURL(this.containerUrl, name)
     );
     const blob = await uploadFileToBlockBlob(Aborter.none, filePath, blockBlobUrl);
-    const url = blockBlobUrl.url;
-    const aphBlob: AphBlob = { ...blob, url, name };
+    const aphBlob: AphBlob = { ...blob, name };
     return aphBlob;
   };
+
+  getBlobUrl = (blobName: string) =>
+    BlockBlobURL.fromBlobURL(BlobURL.fromContainerURL(this.containerUrl, blobName)).url;
 }
