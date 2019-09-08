@@ -4,7 +4,15 @@ import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  deletePatientMedicalRecord,
+  deletePatientMedicalRecordVariables,
+} from '../../graphql/types/deletePatientMedicalRecord';
+import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
+import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -84,7 +92,9 @@ type rowData = {
   status: string;
   desease: string;
 };
+
 export interface HealthMedicineCardProps {
+  onPressDelete?: () => void;
   onPressOrder?: () => void;
   onClickCard?: () => void;
   data: getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords;
@@ -112,7 +122,7 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <Text style={styles.doctorNameStyles}>{props.data.testName}</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={props.onPressDelete}>
                   <More />
                 </TouchableOpacity>
               </View>
