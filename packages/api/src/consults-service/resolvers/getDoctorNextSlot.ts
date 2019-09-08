@@ -18,6 +18,7 @@ export const getNextAvailableSlotTypeDefs = gql`
   type SlotAvailability {
     doctorId: ID!
     availableSlot: String!
+    currentDateTime: DateTime!
   }
 
   extend type Query {
@@ -30,6 +31,7 @@ export const getNextAvailableSlotTypeDefs = gql`
 type SlotAvailability = {
   doctorId: string;
   availableSlot: string;
+  currentDateTime: Date;
 };
 
 type SlotAvailabilityResult = {
@@ -75,7 +77,7 @@ const getDoctorNextAvailableSlot: Resolver<
       if (availableSlot != '') {
         availableSlot = `${curDate}T${availableSlot}:00.000Z`;
       }
-      const doctorSlot: SlotAvailability = { doctorId, availableSlot };
+      const doctorSlot: SlotAvailability = { doctorId, availableSlot, currentDateTime: new Date() };
       doctorAvailalbeSlots.push(doctorSlot);
       resolve(doctorSlot);
     });

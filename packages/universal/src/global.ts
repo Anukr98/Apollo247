@@ -3,7 +3,7 @@ declare interface Window {
 }
 declare namespace NodeJS {
   interface ProcessEnv {
-    NODE_ENV: 'local' | 'development' | 'staging' | 'production';
+    NODE_ENV: 'local' | 'development' | 'staging' | 'production' | 'dev';
 
     USE_SSL: 'true' | 'false';
 
