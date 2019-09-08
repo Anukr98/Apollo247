@@ -26,6 +26,7 @@ export const bookAppointmentTypeDefs = gql`
     CANCELLED
     COMPLETED
     PENDING
+    PAYMENT_PENDING
     NO_SHOW
   }
 
