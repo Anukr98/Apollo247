@@ -87,11 +87,25 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getPatientAppointments(doctorId: string, patientId: string) {
+    const curDate = new Date();
+    let curMin = curDate.getUTCMinutes();
+    if (curMin >= 0 && curMin < 15) {
+      curMin = 0;
+    } else if (curMin >= 15 && curMin < 30) {
+      curMin = 15;
+    } else if (curMin >= 30 && curMin < 45) {
+      curMin = 30;
+    } else if (curMin > 45) {
+      curMin = 45;
+    }
+    const inputStartDate =
+      format(curDate, 'yyyy-MM-dd') + 'T' + curDate.getUTCHours() + ':' + curMin;
+    console.log('past appts', inputStartDate);
     return this.find({
       where: {
         doctorId,
         patientId,
-        appointmentDateTime: LessThan(new Date()),
+        appointmentDateTime: LessThan(inputStartDate),
         status: Not(STATUS.CANCELLED),
       },
     });
@@ -203,7 +217,9 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getPatinetUpcomingAppointments(patientId: string) {
-    const startDate = new Date();
+    //const startDate = new Date();
+    const inputStartDate = format(addDays(new Date(), -1), 'yyyy-MM-dd');
+    const startDate = new Date(inputStartDate + 'T18:30');
     return this.find({
       where: { patientId, appointmentDateTime: MoreThan(startDate), status: Not(STATUS.CANCELLED) },
     });
@@ -236,9 +252,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       },
       order: { appointmentDateTime: 'ASC' },
     }).then((appts) => {
+      console.log(appts.length, 'appt length');
+      console.log('cur date', new Date());
       if (appts && appts.length > 0) {
         //if there is only one appointment, then add 15 mins to that appt time and return the slot
         if (appts.length === 1) {
+          console.log('entered here');
           if (Math.abs(differenceInMinutes(curDate, appts[0].appointmentDateTime)) >= 15) {
             if (curDate < appts[0].appointmentDateTime) {
               return this.getAlignedSlot(curDate);
@@ -246,7 +265,8 @@ export class AppointmentRepository extends Repository<Appointment> {
               return this.getAddAlignedSlot(appts[0].appointmentDateTime, 15);
             }
           } else {
-            return this.getAddAlignedSlot(appts[0].appointmentDateTime, 30);
+            console.log('came here1111', this.getAddAlignedSlot(appts[0].appointmentDateTime, 15));
+            return this.getAddAlignedSlot(appts[0].appointmentDateTime, 15);
           }
         } else {
           //if there are more than 1 appointment, now check the difference between appointments
@@ -261,14 +281,20 @@ export class AppointmentRepository extends Repository<Appointment> {
                 Math.abs(differenceInMinutes(firstAppt, appt.appointmentDateTime)),
                 'diff'
               );
-              if (Math.abs(differenceInMinutes(firstAppt, appt.appointmentDateTime)) >= 30) {
+              if (
+                Math.abs(differenceInMinutes(firstAppt, appt.appointmentDateTime)) >= 30 &&
+                Math.abs(differenceInMinutes(new Date(), appt.appointmentDateTime)) >= 15
+              ) {
                 flag = 1;
                 console.log(firstAppt, 'first appt inside');
-                if (Math.abs(differenceInMinutes(new Date(), firstAppt)) >= 15) {
+                console.log('cur time', new Date());
+                console.log('inside diff', Math.abs(differenceInMinutes(new Date(), firstAppt)));
+                finalSlot = this.getAddAlignedSlot(firstAppt, 15);
+                /*if (Math.abs(differenceInMinutes(new Date(), firstAppt)) >= 15) {
                   finalSlot = this.getAlignedSlot(curDate);
                 } else {
                   finalSlot = this.getAddAlignedSlot(firstAppt, 15);
-                }
+                }*/
                 console.log(finalSlot, 'final slot');
               }
             }
@@ -280,7 +306,14 @@ export class AppointmentRepository extends Repository<Appointment> {
           console.log(flag, 'flag');
           if (flag === 0) {
             console.log(appts[appts.length - 1].appointmentDateTime, 'last apt');
-            if (new Date() < appts[appts.length - 1].appointmentDateTime) {
+            if (
+              new Date() > appts[0].appointmentDateTime &&
+              new Date() < appts[appts.length - 1].appointmentDateTime
+            ) {
+              finalSlot = this.getAddAlignedSlot(appts[appts.length - 1].appointmentDateTime, 15);
+            } else if (
+              Math.abs(differenceInMinutes(new Date(), appts[0].appointmentDateTime)) >= 15
+            ) {
               finalSlot = this.getAlignedSlot(curDate);
             } else {
               finalSlot = this.getAddAlignedSlot(appts[appts.length - 1].appointmentDateTime, 15);

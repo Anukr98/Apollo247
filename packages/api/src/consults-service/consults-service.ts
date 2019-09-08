@@ -65,8 +65,8 @@ import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
-// import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
-// import { SampleMessage } from 'types/appointmentTypes';
+//import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+//import { SampleMessage } from 'types/appointmentTypes';
 
 (async () => {
   await connect();

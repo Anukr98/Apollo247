@@ -88,6 +88,7 @@ const useStyles = makeStyles(() => ({
     alignItems: 'start',
     width: '100%',
     borderLeft: '1px solid #02475b',
+    padding: 0,
   },
   childListStyle: {
     display: 'flex',

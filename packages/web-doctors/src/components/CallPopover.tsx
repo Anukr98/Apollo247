@@ -97,6 +97,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#e28913',
       },
+      '&:disabled': {
+        backgroundColor: '#fdd49c',
+      },
       '& svg': {
         marginRight: 5,
       },
@@ -120,8 +123,8 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     ResheduleCosultButton: {
-      fontSize: 13,
-      fontWeight: theme.typography.fontWeightBold,
+      fontSize: 14,
+      fontWeight: 600,
       color: '#fff',
       padding: '8px 16px',
       backgroundColor: '#fc9916',
@@ -134,9 +137,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cancelConsult: {
       minWidth: 120,
-      fontSize: 13,
+      fontSize: 14,
       padding: '8px 16px',
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: 600,
       color: '#fc9916',
       backgroundColor: '#fff',
       margin: theme.spacing(0, 1, 0, 1),
@@ -223,6 +226,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: 'transparent',
       },
+      '&:disabled': {
+        opacity: 0.7,
+      },
     },
     backButton: {
       minWidth: 120,
@@ -253,23 +259,30 @@ const useStyles = makeStyles((theme: Theme) => {
         letterSpacing: 'normal',
         color: '#02475b',
         paddingBottom: 15,
+        paddingRight: 20,
         paddingTop: 15,
         textAlign: 'left',
         cursor: 'pointer',
-        borderBottom: '1px solid rgba(2,71,91,0.5)',
+        borderBottom: '1px solid rgba(2,71,91,0.2)',
         '&:hover': {
           background: '#f0f4f5',
+        },
+        '&:last-child': {
+          borderBottom: 'none',
         },
       },
     },
 
     dotPaper: {
-      width: 180,
-      minHeight: 50,
+      // width: 300,
+      // minHeight: 50,
       padding: 0,
-      borderRadius: 10,
+      borderRadius: 0,
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
-      backgroundColor: theme.palette.common.white,
+      // backgroundColor: theme.palette.common.white,
+      '& .MuiPaper-rounded': {
+        borderRadius: 10,
+      },
     },
     modalBox: {
       maxWidth: 480,
@@ -281,7 +294,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalBoxTransfer: {
       maxWidth: 480,
-      minHeight: 444,
+      minHeight: 480,
       margin: 'auto',
       marginTop: 88,
       backgroundColor: '#eeeeee',
@@ -337,7 +350,8 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 500,
         lineHeight: 1.2,
         color: '#01475b',
-        paddingBottom: 15,
+        paddingBottom: 5,
+        paddingTop: 10,
       },
     },
     menuPopover: {
@@ -350,7 +364,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& ul': {
         padding: '10px 0px',
         '& li': {
-          fontSize: 16,
+          fontSize: 18,
           width: 480,
           fontWeight: 500,
           color: '#02475b',
@@ -358,7 +372,6 @@ const useStyles = makeStyles((theme: Theme) => {
           paddingLeft: 10,
           paddingRight: 10,
           // borderBottom: '1px solid rgba(1,71,91,0.2)',
-          textTransform: 'capitalize',
           '&:last-child': {
             borderBottom: 'none',
           },
@@ -388,6 +401,7 @@ const useStyles = makeStyles((theme: Theme) => {
     searchInput: {
       paddingLeft: 0,
       paddingRight: 0,
+      marginTop: 10,
     },
     textFieldColor: {
       '& input': {
@@ -414,6 +428,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 12,
         marginBottom: 5,
         marginTop: 12,
+        fontWeight: 500,
       },
       '& ul': {
         listStyleType: 'none',
@@ -432,6 +447,9 @@ const useStyles = makeStyles((theme: Theme) => {
         borderBottom: '1px solid #01475b',
       },
     },
+    othercases: {
+      marginTop: 10,
+    },
   };
 });
 
@@ -446,7 +464,7 @@ interface errorObjectReshedule {
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
-  saveCasesheetAction: () => void;
+  saveCasesheetAction: (onlySave: boolean) => void;
   endConsultAction: () => void;
   appointmentId: string;
   appointmentDateTime: string;
@@ -967,7 +985,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.backButton}
                 onClick={() => {
-                  props.saveCasesheetAction();
+                  props.saveCasesheetAction(true);
                 }}
               >
                 Save
@@ -1002,6 +1020,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               disabled={
                 startAppointmentButton ||
                 disableOnTransfer ||
+                appointmentInfo!.appointmentState !== 'NEW' ||
                 (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                   appointmentInfo!.status !== STATUS.PENDING)
               }
@@ -1080,6 +1099,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             disabled={
               startAppointmentButton ||
               disableOnTransfer ||
+              appointmentInfo!.appointmentState !== 'NEW' ||
               (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                 appointmentInfo!.status !== STATUS.PENDING)
             }
@@ -1103,7 +1123,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               horizontal: 'right',
             }}
           >
-            <Paper>
+            <div>
               <ul className={classes.popOverUL}>
                 {/* <li>Share Case Sheet</li> */}
                 <li
@@ -1128,11 +1148,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       setIsPopoverOpen(true);
                     }}
                   >
-                    Reshedule Consult
+                    Reschedule Consult
                   </li>
                 )}
               </ul>
-            </Paper>
+            </div>
           </Popover>
         </span>
       </div>
@@ -1154,7 +1174,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </Button>
           </div>
           <div className={classes.tabBody}>
-            <p>Why do you want to resshedule this consult?</p>
+            <p>Why do you want to reschedule this consult?</p>
 
             <AphSelect
               value={reason}
@@ -1202,10 +1222,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </MenuItem>
             </AphSelect>
             {textOther && (
-              <div>
+              <div className={classes.othercases}>
                 <AphTextField
                   classes={{ root: classes.searchInput }}
-                  placeholder="Write here...."
+                  placeholder="Enter here...."
                   onChange={(e: any) => {
                     setOtherTextValue(e.target.value);
                   }}
@@ -1239,7 +1259,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 rescheduleConsultAction();
               }}
             >
-              Reshedule Consult
+              Reschedule Consult
             </Button>
           </div>
         </Paper>
@@ -1269,6 +1289,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
             <AphSelect
               value={transferReason}
+              placeholder="Select a reason"
               MenuProps={{
                 classes: { paper: classes.menuPopover },
                 anchorOrigin: {
@@ -1309,7 +1330,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               >
                 Patient needs a in person visit
               </MenuItem>
-              <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Others" classes={{ selected: classes.menuSelected }}>
                 Other
               </MenuItem>
             </AphSelect>
@@ -1326,7 +1347,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <div>
                 <AphTextField
                   classes={{ root: classes.searchInput }}
-                  placeholder="Write here...."
+                  placeholder="Enter here...."
                   onChange={(e: any) => {
                     setOtherTextTansferValue(e.target.value);
                   }}
@@ -1349,7 +1370,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             <p>Whom do you want to transfer this consult to?</p>
             <AphTextField
               classes={{ root: classes.searchInput }}
-              placeholder="Search doctors or specialities"
+              placeholder="Search for Doctor/Speciality"
               onChange={(e: any) => {
                 setSearchKeyword(e.target.value);
                 if (e.target.value.length > 2) {
@@ -1410,7 +1431,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             )}
           </div>
           <div className={classes.tabBody}>
-            <p>Add a Note (Optional)</p>
+            <p>Add a Note (optional)</p>
             <InputBase
               fullWidth
               className={classes.textFieldColor}
