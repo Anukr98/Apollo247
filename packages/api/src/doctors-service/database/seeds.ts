@@ -12,7 +12,7 @@ import _sample from 'lodash/sample';
 import _sampleSize from 'lodash/sampleSize';
 import { buildFacility } from 'doctors-service/database/factories/facilityFactory';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { Facility, Doctor, DoctorType } from 'doctors-service/entities';
+import { Facility, Doctor, DoctorType, Gender } from 'doctors-service/entities';
 import { buildDoctorAndHospital } from 'doctors-service/database/factories/doctorAndHospitalFactory';
 import {
   buildDoctorSpecialty,
@@ -67,15 +67,17 @@ import { buildPatient } from 'profiles-service/database/factories/patientFactory
   );
 
   console.log('Building doctors...');
-  const kabir = buildDoctor({
+  const jrKabir = buildDoctor({
     firstName: 'Kabir',
     lastName: 'Sarin',
+    gender: Gender.MALE,
+    emailAddress: 'kabir@sarink.net',
     specialty: _sample(doctorSpecialties),
     doctorType: DoctorType.JUNIOR,
     mobileNumber: '+919999999999',
     isActive: true, // Don't forget to set this to true or you won't be able to log in!
   });
-  const staticDoctorObjs = [kabir];
+  const staticDoctorObjs = [jrKabir];
   const staticDoctors = await Promise.all(staticDoctorObjs.map((doc) => doctorRepo.save(doc)));
   const randomDoctors = await Promise.all(
     _times(20, () => doctorRepo.save(buildDoctor({ specialty: _sample(doctorSpecialties) })))
@@ -123,22 +125,25 @@ import { buildPatient } from 'profiles-service/database/factories/patientFactory
   console.log(starTeams);
 
   console.log('Building patients...');
-  const patients = Promise.all(
-    _times(20, () => (
-      buildPatient({})
-    ))
-  )
+  const patients = await Promise.all(_times(50, () => patientRepo.save(buildPatient())));
+  console.log(patients);
 
   console.log('Building appointments...');
-  const kabirAppointments = Promise.all(
-    _times(20, () =>
-      buildAppointment({
-        doctorId: kabir.id,
-        patientId
-        appointmentDateTime: faker.random.boolean() ? faker.date.past() : faker.date.future(),
-      })
-    )
+  const jrKabirAppointments = await Promise.all(
+    _times(15, () => {
+      const patient = _sample(patients)!;
+      return appointmentRepo.save(
+        buildAppointment({
+          doctorId: jrKabir.id,
+          patientId: patient.id,
+          hospitalId: _sample(facilities)!.id,
+          patientName: `${patient.firstName} ${patient.lastName}`,
+          appointmentDateTime: faker.random.boolean() ? faker.date.past() : faker.date.future(),
+        })
+      );
+    })
   );
+  console.log(jrKabirAppointments);
 
   console.log('Seeding doctors-db complete!');
 })();

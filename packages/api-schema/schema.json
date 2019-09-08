@@ -1025,7 +1025,22 @@
           {
             "name": "getDoctorConsults",
             "description": null,
-            "args": [],
+            "args": [
+              {
+                "name": "getDoctorConsultsInput",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "GetDoctorConsultsInput",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              }
+            ],
             "type": {
               "kind": "NON_NULL",
               "name": null,
@@ -9798,6 +9813,41 @@
         ],
         "inputFields": null,
         "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "GetDoctorConsultsInput",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "doctorId",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "limit",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "Int",
+              "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
         "enumValues": null,
         "possibleTypes": null
       },

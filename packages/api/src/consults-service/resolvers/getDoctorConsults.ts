@@ -10,6 +10,11 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const getDoctorConsultsTypeDefs = gql`
+  input GetDoctorConsultsInput {
+    doctorId: String!
+    limit: Int
+  }
+
   type DoctorConsult {
     patient: Patient
     appointment: Appointment
@@ -20,7 +25,7 @@ export const getDoctorConsultsTypeDefs = gql`
   }
 
   extend type Query {
-    getDoctorConsults: GetDoctorConsultsResult!
+    getDoctorConsults(getDoctorConsultsInput: GetDoctorConsultsInput!): GetDoctorConsultsResult!
   }
 `;
 
@@ -31,30 +36,38 @@ type GetDoctorConsultsResult = {
   }[];
 };
 
+type GetDoctorConsultsInput = {
+  doctorId: string;
+  limit?: number;
+};
+
 const getDoctorConsults: Resolver<
   null,
-  {},
+  GetDoctorConsultsInput,
   ConsultServiceContext,
   GetDoctorConsultsResult
-> = async (parent, args, { firebaseUid, doctorsDb, consultsDb, patientsDb }) => {
+> = async (parent, { doctorId, limit }, { firebaseUid, doctorsDb, consultsDb, patientsDb }) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const patRepo = patientsDb.getCustomRepository(PatientRepository);
+
   const currentDoctor = await docRepo.getDoctorDetails(firebaseUid);
-  if (!currentDoctor) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-  const doctorId = currentDoctor.id;
-  // TODO Just return the most recent 20 for now, add this is an input arg later
+  const authorized = currentDoctor && currentDoctor.id === doctorId;
+  if (!authorized) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
   const appointments = await apptRepo.find({
     where: { doctorId },
     order: { appointmentDateTime: 'DESC' },
-    take: 20,
+    take: limit || 20,
   });
+
   const doctorConsults = await Promise.all(
     appointments.map(async (appointment) => {
       const patient = (await patRepo.findById(appointment.patientId)) as Patient;
       return { appointment, patient };
     })
   );
+
   return { doctorConsults };
 };
 
