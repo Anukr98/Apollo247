@@ -107,12 +107,21 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
     },
     modalBox: {
-      maxWidth: 280,
-      height: 250,
+      maxWidth: 320,
+      // height: 250,
       margin: 'auto',
-      marginTop: 88,
-      backgroundColor: '#eeeeee',
+      marginTop: 50,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      padding: '0 40px 20px 40px',
       position: 'relative',
+      '& h3': {
+        fontSize: 20,
+        fontWeight: 600,
+        marginBottom: 50,
+        marginTop: 0,
+        color: '#02475b',
+      },
     },
     modalPdfBox: {
       maxWidth: '90%',
@@ -158,13 +167,13 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
     },
     consultButton: {
-      fontSize: 13,
-      fontWeight: theme.typography.fontWeightBold,
+      fontSize: 14,
+      fontWeight: 600,
       color: '#fff',
       padding: '8px 16px',
       backgroundColor: '#fc9916',
       marginTop: 15,
-      marginBottom: 15,
+      marginBottom: 25,
       width: '100%',
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
@@ -174,9 +183,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cancelConsult: {
       width: '100%',
-      fontSize: 13,
+      fontSize: 14,
       padding: '8px 16px',
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: 600,
       color: '#fc9916',
       backgroundColor: '#fff',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
@@ -596,7 +605,7 @@ export const ConsultTabs: React.FC = () => {
             </Button>
           </div>
           <div className={classes.tabBody}>
-            <p>You,re ending your consult with Seema.</p>
+            <h3>You,re ending your consult with Seema.</h3>
             <Button
               className={classes.consultButton}
               //disabled={startAppointmentButton}

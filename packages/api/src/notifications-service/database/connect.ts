@@ -1,6 +1,7 @@
 import '@aph/universal/dist/global';
 import {
   Appointment,
+  AppointmentPayments,
   AppointmentSessions,
   CaseSheet,
   TransferAppointmentDetails,
@@ -41,6 +42,7 @@ export const connect = async () => {
     {
       entities: [
         Appointment,
+        AppointmentPayments,
         AppointmentSessions,
         CaseSheet,
         TransferAppointmentDetails,

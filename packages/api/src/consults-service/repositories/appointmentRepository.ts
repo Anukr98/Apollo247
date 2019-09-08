@@ -1,6 +1,7 @@
 import { EntityRepository, Repository, Between, MoreThan, LessThan, Brackets, Not } from 'typeorm';
 import {
   Appointment,
+  AppointmentPayments,
   AppointmentSessions,
   STATUS,
   patientLogSort,
@@ -17,12 +18,30 @@ import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
   findById(id: string) {
-    return this.findOne({ id });
+    return this.findOne({ id }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
   }
 
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
+  findByIdAndStatus(id: string, status: STATUS) {
+    return this.findOne({
+      where: { id, status },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
     });
   }
 
@@ -46,6 +65,16 @@ export class AppointmentRepository extends Repository<Appointment> {
       .save()
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      });
+  }
+
+  saveAppointmentPayment(appointmentPaymentAttrs: Partial<AppointmentPayments>) {
+    return AppointmentPayments.create(appointmentPaymentAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.ADD_APPOINTMENT_PAYMENT_ERROR, undefined, {
+          createErrors,
+        });
       });
   }
 
@@ -328,7 +357,9 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   updateAppointmentStatus(id: string, status: STATUS) {
-    this.update(id, { status });
+    this.update(id, { status }).catch((createErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
+    });
   }
 
   confirmAppointment(id: string, status: STATUS, apolloAppointmentId: number) {
