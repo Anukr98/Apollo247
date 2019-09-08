@@ -1,19 +1,28 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { Appointment, AppointmentPayments, STATUS } from 'consults-service/entities';
+import {
+  Appointment,
+  AppointmentPayments,
+  STATUS,
+  APPOINTMENT_PAYMENT_TYPE,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const makeAppointmentPaymentTypeDefs = gql`
+  enum APPOINTMENT_PAYMENT_TYPE {
+    ONLINE
+  }
+
   input AppointmentPaymentInput {
     appointmentId: ID!
     amountPaid: Float!
     paymentRefId: String
     paymentStatus: String!
-    paymentDateTime: DateTime
-    responseCode: String
+    paymentDateTime: DateTime!
+    responseCode: String!
     responseMessage: String!
     bankTxnId: String
   }
@@ -62,7 +71,7 @@ const makeAppointmentPayment: Resolver<
   //insert payment details
   const apptPaymentAttrs: Partial<AppointmentPayments> = paymentInput;
   apptPaymentAttrs.appointment = processingAppointment;
-  apptPaymentAttrs.paymentType = 'ONLINE';
+  apptPaymentAttrs.paymentType = APPOINTMENT_PAYMENT_TYPE.ONLINE;
   await apptsRepo.saveAppointmentPayment(apptPaymentAttrs);
 
   //update appointment status to PENDING

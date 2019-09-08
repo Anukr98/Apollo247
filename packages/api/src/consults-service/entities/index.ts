@@ -66,6 +66,10 @@ export enum TRANSFER_INITIATED_TYPE {
   PATIENT = 'PATIENT',
 }
 
+export enum APPOINTMENT_PAYMENT_TYPE {
+  ONLINE = 'ONLINE',
+}
+
 //Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
@@ -170,7 +174,7 @@ export class AppointmentPayments extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamp' })
   paymentDateTime: Date;
 
   @Column({ nullable: true })
@@ -180,7 +184,7 @@ export class AppointmentPayments extends BaseEntity {
   paymentStatus: string;
 
   @Column()
-  paymentType: string;
+  paymentType: APPOINTMENT_PAYMENT_TYPE;
 
   @Column({ nullable: true, type: 'text' })
   responseCode: string;
