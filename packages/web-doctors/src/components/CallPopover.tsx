@@ -1174,7 +1174,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             </Button>
           </div>
           <div className={classes.tabBody}>
-            <p>Why do you want to resshedule this consult?</p>
+            <p>Why do you want to reschedule this consult?</p>
 
             <AphSelect
               value={reason}
@@ -1259,7 +1259,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 rescheduleConsultAction();
               }}
             >
-              Reshedule Consult
+              Reschedule Consult
             </Button>
           </div>
         </Paper>
