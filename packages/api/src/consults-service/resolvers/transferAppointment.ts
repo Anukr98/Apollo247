@@ -18,6 +18,11 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 //import { MailMessage } from 'types/notificationMessageTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { format } from 'date-fns';
+import {
+  NotificationType,
+  sendNotification,
+  PushNotificationSuccessMessage,
+} from 'notifications-service/resolvers/notifications';
 
 export const transferAppointmentTypeDefs = gql`
   enum TRANSFER_STATUS {
@@ -35,6 +40,9 @@ export const transferAppointmentTypeDefs = gql`
     NEW
     TRANSFER
     RESCHEDULE
+    AWAITING_TRANSFER
+    AWAITING_RESCHEDULE
+    TRANSFERRED
   }
 
   type TransferAppointment {
@@ -80,6 +88,7 @@ export const transferAppointmentTypeDefs = gql`
   type TransferAppointmentResult {
     transferAppointment: TransferAppointment
     doctorNextSlot: String
+    notificationResult: NotificationSuccessMessage
   }
 
   type BookTransferAppointmentResult {
@@ -98,6 +107,7 @@ export const transferAppointmentTypeDefs = gql`
 type TransferAppointmentResult = {
   transferAppointment: TransferAppointment;
   doctorNextSlot: string;
+  notificationResult: PushNotificationSuccessMessage | undefined;
 };
 
 type TransferAppointmentInput = {
@@ -191,11 +201,11 @@ const bookTransferAppointment: Resolver<
     throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
   }
 
-  //update exisiting appt status to cancel, state to transfer
-  /*await appointmentRepo.updateTransferState(
+  //update exisiting appt, state to transferred
+  await appointmentRepo.updateTransferState(
     BookTransferAppointmentInput.existingAppointmentId,
-    APPOINTMENT_STATE.TRANSFER
-  );*/
+    APPOINTMENT_STATE.TRANSFERRED
+  );
 
   //insert new appt booking
   const appointmentAttrs: Omit<TransferAppointmentBooking, 'id'> = {
@@ -262,13 +272,24 @@ const initiateTransferAppointment: Resolver<
   };
 
   const transferAppointment = await transferApptRepo.saveTransfer(transferAppointmentAttrs);
+  await appointmentRepo.updateTransferState(
+    TransferAppointmentInput.appointmentId,
+    APPOINTMENT_STATE.AWAITING_TRANSFER
+  );
   let slot = '';
   slot = await appointmentRepo.getDoctorNextAvailSlot(TransferAppointmentInput.transferredDoctorId);
   const curDate = format(new Date(), 'yyyy-MM-dd');
   if (slot != '') {
     slot = `${curDate}T${slot}:00.000Z`;
   }
-  return { transferAppointment, doctorNextSlot: slot };
+
+  // send notification
+  const pushNotificationInput = {
+    appointmentId: appointment.id,
+    notificationType: NotificationType.INITIATE_TRANSFER,
+  };
+  const notificationResult = await sendNotification(pushNotificationInput, patientsDb, consultsDb);
+  return { transferAppointment, doctorNextSlot: slot, notificationResult };
 };
 
 export const transferAppointmentResolvers = {

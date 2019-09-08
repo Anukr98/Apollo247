@@ -24,6 +24,7 @@ import { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Mutation } from 'react-apollo';
 import { useApolloClient } from 'react-apollo-hooks';
+import axios from 'axios';
 import {
   ActivityIndicator,
   Alert,
@@ -36,6 +37,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Keyboard,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 
@@ -45,7 +47,15 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
   headerStyle: {},
-  headerSearchInputShadow: {},
+  headerSearchInputShadow: {
+    zIndex: 1,
+    backgroundColor: theme.colors.WHITE,
+    shadowColor: theme.colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
   labelView: {
     position: 'absolute',
     top: -3,
@@ -66,11 +76,13 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
   },
   deliveryPinCodeContaner: {
+    ...theme.viewStyles.cardContainer,
     paddingHorizontal: 20,
-    paddingTop: 13,
+    paddingTop: 7,
     paddingBottom: 7,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     backgroundColor: '#f7f8f5',
   },
   pinCodeStyle: {
@@ -144,6 +156,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       .catch(() => {});
   }, []);
   */
+
   useEffect(() => {
     client
       .query<getPatientPastMedicineSearches, getPatientPastMedicineSearchesVariables>({
@@ -173,6 +186,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       setMedicineList([]);
       return;
     }
+    setShowMatchingMedicines(true);
     setIsLoading(true);
     searchMedicineApi(searchText)
       .then(async ({ data }) => {
@@ -187,15 +201,23 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       });
   };
 
-  const onAddCartItem = ({ sku, mou, name, price, is_prescription_required }: MedicineProduct) => {
+  const onAddCartItem = ({
+    sku,
+    mou,
+    name,
+    price,
+    special_price,
+    is_prescription_required,
+  }: MedicineProduct) => {
     addCartItem &&
       addCartItem({
         id: sku,
         mou,
         name,
-        price,
+        price: special_price || price,
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
+        // productType: type_id == 'simple' ? 'PHARMA' : 'FMCG',
       });
   };
 
@@ -329,6 +351,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={{ marginRight: 24 }}
               onPress={() => {
                 console.log('YourCartProps onpress');
@@ -338,7 +361,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
               <Filter />
             </TouchableOpacity>
           </View>
@@ -377,7 +400,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           onChangeText={(value) => {
             onSearchMedicine(value);
           }}
-          onFocus={() => performTextInputEvent('focus')}
+          // onFocus={() => performTextInputEvent('focus')}
           // onBlur={() => { performTextInputEvent('blur')}
         />
         {renderSorryMessage}
@@ -395,6 +418,36 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     if (text.length == 6) {
       // call api here
     }
+  };
+
+  const fetchLocation = (text: string) => {
+    const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+    isValidPinCode(text);
+    setPinCode(text);
+    axios
+      .get(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${text}&latitude=17.3355835&longitude=78.46756239999999&key=${key}`
+      )
+      .then((obj) => {
+        console.log(obj, 'places');
+        if (obj.data.predictions) {
+          const address = obj.data.predictions.map(
+            (item: {
+              structured_formatting: {
+                main_text: string;
+              };
+            }) => {
+              return item.structured_formatting.main_text;
+            }
+          );
+          console.log(address, 'address');
+          // setlocationSearchList(address);
+          // setcurrentLocation(address.toUpperCase());
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const renderDeliveryPinCode = () => {
@@ -421,6 +474,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   ) => {
     return (
       <TouchableOpacity
+        activeOpacity={1}
         key={pastSeacrh.typeId!}
         style={[styles.pastSearchItemStyle, containerStyle]}
         onPress={() => {
@@ -437,14 +491,16 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const renderPastSearches = () => {
     return (
-      <ScrollView bounces={false}>
-        <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 0 }} />
+      <ScrollView bounces={false} onScroll={() => Keyboard.dismiss()}>
+        {pastSearches.length > 0 && (
+          <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 0 }} />
+        )}
         <View style={styles.pastSearchContainerStyle}>
           {pastSearches.map((pastSearch, i, array) =>
             renderPastSearchItem(pastSearch!, i == array.length - 1 ? { marginRight: 0 } : {})
           )}
         </View>
-        <NeedHelpAssistant containerStyle={{ marginTop: 84, marginBottom: 20 }} />
+        <NeedHelpAssistant containerStyle={{ marginTop: 84, marginBottom: 50 }} />
       </ScrollView>
     );
   };
@@ -464,7 +520,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       <Mutation<saveSearch, saveSearchVariables> mutation={SAVE_SEARCH}>
         {(mutate, { loading, data, error }) => (
           <MedicineCard
-            containerStyle={medicineCardContainerStyle}
+            containerStyle={[medicineCardContainerStyle, {}]}
             onPress={() => {
               console.log('currentPatient', currentPatient && currentPatient.id);
               mutate({
@@ -487,7 +543,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               });
             }}
             medicineName={medicine.name}
-            price={medicine.price}
+            price={medicine.special_price || medicine.price}
             unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
             onPressAdd={() => {
               onAddCartItem(medicine);
@@ -520,23 +576,26 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       <>
         {isLoading ? (
           <ActivityIndicator
-            style={{ flex: 1, alignItems: 'center' }}
+            style={{ marginTop: 20 }}
             animating={isLoading}
             size="large"
             color="green"
           />
         ) : (
           <FlatList
-            keyboardDismissMode="on-drag"
+            onScroll={() => Keyboard.dismiss()}
             data={medicineList}
             renderItem={({ item, index }) => renderMedicineCard(item, index, medicineList)}
             keyExtractor={(_, index) => `${index}`}
             bounces={false}
             ListHeaderComponent={
-              <SectionHeaderComponent
-                sectionTitle={`Matching Medicines — ${medicineList.length}`}
-                style={{ marginBottom: 0 }}
-              />
+              (medicineList.length > 0 && (
+                <SectionHeaderComponent
+                  sectionTitle={`Matching Medicines — ${medicineList.length}`}
+                  style={{ marginBottom: 0 }}
+                />
+              )) ||
+              null
             }
           />
         )}
@@ -551,9 +610,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         {renderSearchInput()}
       </View>
       {renderDeliveryPinCode()}
-      <ScrollView bounces={false} keyboardDismissMode="on-drag" contentContainerStyle={{ flex: 1 }}>
-        {showMatchingMedicines ? renderMatchingMedicines() : renderPastSearches()}
-      </ScrollView>
+      {showMatchingMedicines ? renderMatchingMedicines() : renderPastSearches()}
     </SafeAreaView>
   );
 };

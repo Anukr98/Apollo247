@@ -140,10 +140,26 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
         status,
         patientId,
         patientInfo,
+        caseSheet,
       } = appointment!;
       const startTime = getTime(new Date(appointmentDateTime));
       const endTime = getTime(addMinutes(startTime, 15));
-
+      let symptoms = null;
+      if (
+        caseSheet &&
+        caseSheet.length > 0 &&
+        caseSheet[0] !== null &&
+        caseSheet[0]!.symptoms !== null
+      ) {
+        symptoms = caseSheet && caseSheet!.length > 0 && caseSheet[0] !== null ? caseSheet[0] : [];
+      } else if (
+        caseSheet &&
+        caseSheet.length > 1 &&
+        caseSheet[1] !== null &&
+        caseSheet[1]!.symptoms !== null
+      ) {
+        symptoms = caseSheet && caseSheet!.length > 0 && caseSheet[1] !== null ? caseSheet[1] : [];
+      }
       return {
         id,
         patientId,
@@ -154,7 +170,7 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
         isNew: !!newPatientsList && newPatientsList.includes(patientId),
         details: {
           patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,
-          checkups: ['Fever', 'Cold & Cough'],
+          checkups: symptoms,
           avatar: require('images/ic_patientchat.png'),
         },
       };

@@ -1,4 +1,4 @@
-import { Coupon, useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -7,9 +7,17 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  getCoupons_getCoupons_coupons,
+  getCoupons_getCoupons,
+  getCoupons,
+} from '../../graphql/types/getCoupons';
+import { Spinner } from '../ui/Spinner';
+import { GET_COUPONS } from '../../graphql/profiles';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -75,19 +83,19 @@ const styles = StyleSheet.create({
   },
 });
 
-interface CouponExtension extends Coupon {
-  description: string;
-}
+// interface CouponExtension extends Coupon {
+//   description: string;
+// }
 
-const couponsArray: CouponExtension[] = [
-  {
-    code: 'MED10',
-    description: 'Get 10% off on total bill by shopping for Rs. 500 or more',
-    type: 'unlimited',
-    discountPercentage: 10,
-    minCartValue: 500,
-  },
-];
+// const couponsArray: CouponExtension[] = [
+//   {
+//     code: 'MED10',
+//     description: 'Get 10% off on total bill by shopping for Rs. 500 or more',
+//     type: 'unlimited',
+//     discountPercentage: 10,
+//     minCartValue: 500,
+//   },
+// ];
 
 export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 
@@ -95,9 +103,22 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const [couponText, setCouponText] = useState<string>('');
   const [isValidCoupon, setValidCoupon] = useState<boolean>(false);
   const { setCoupon, coupon: cartCoupon, cartTotal } = useShoppingCart();
+  const [couponList, setCouponList] = useState<(getCoupons_getCoupons_coupons | null)[]>([]);
+  const client = useApolloClient();
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const applyCoupon = ({ code, minCartValue, discountPercentage, type }: CouponExtension) => {
-    setCoupon && setCoupon({ code, discountPercentage, minCartValue, type });
+  // useEffect(() => {
+  //   client.query<getCoupons>(GET_COUPONS, {});
+  // });
+
+  // const { data, error, loading } = useQuery<getCoupons>(GET_COUPONS);
+  // if (!loading && !error) {
+  //   console.log({ data });
+  //   setCouponList(g(data, 'getCoupons', 'coupons') || []);
+  // }
+
+  const applyCoupon = (coupon: getCoupons_getCoupons_coupons) => {
+    setCoupon && setCoupon(coupon);
     props.navigation.goBack();
   };
 
@@ -108,7 +129,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           disabled={!(couponText.length > 3)}
           title="APPLY COUPON"
           onPress={() => {
-            const foundCoupon = couponsArray.find((coupon) => coupon.code == couponText);
+            const foundCoupon = couponList.find((coupon) => coupon!.code == couponText);
             if (foundCoupon) {
               applyCoupon(foundCoupon);
             } else {
@@ -166,24 +187,26 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   };
 
   const renderRadioButtonList = () => {
-    return couponsArray.map((coupon, i) => (
+    return couponList.map((coupon, i) => (
       <TouchableOpacity
+        activeOpacity={1}
         style={styles.radioButtonContainer}
         key={i}
         onPress={() => {
-          if (cartTotal < coupon.minCartValue)
-            Alert.alert('Error', `Minimum cart value must be ${coupon.minCartValue} or more.`);
-          else applyCoupon(coupon);
+          const minimumOrderAmount = coupon!.minimumOrderAmount;
+          if (minimumOrderAmount && cartTotal < minimumOrderAmount)
+            Alert.alert('Error', `Minimum cart value must be ${minimumOrderAmount} or more.`);
+          else applyCoupon(coupon!);
         }}
       >
-        {coupon.code == (cartCoupon && cartCoupon.code) ? (
+        {coupon!.code == (cartCoupon && cartCoupon.code) ? (
           <RadioButtonIcon />
         ) : (
           <RadioButtonUnselectedIcon />
         )}
         <View style={styles.radioButtonTitleDescContainer}>
-          <Text style={styles.radioButtonTitle}>{coupon.code}</Text>
-          <Text style={styles.radioButtonDesc}>{coupon.description}</Text>
+          <Text style={styles.radioButtonTitle}>{coupon!.code}</Text>
+          <Text style={styles.radioButtonDesc}>{coupon!.description}</Text>
           <View style={styles.separator} />
         </View>
       </TouchableOpacity>
@@ -201,15 +224,18 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   };
 
   return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      <Header
-        leftIcon="backArrow"
-        title={'APPLY COUPON'}
-        container={{ borderBottomWidth: 0 }}
-        onPressLeftIcon={() => props.navigation.goBack()}
-      />
-      <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
-      {renderBottomButtons()}
-    </SafeAreaView>
+    <View style={{ flex: 1 }}>
+      {loading && <Spinner />}
+      <SafeAreaView style={theme.viewStyles.container}>
+        <Header
+          leftIcon="backArrow"
+          title={'APPLY COUPON'}
+          container={{ borderBottomWidth: 0 }}
+          onPressLeftIcon={() => props.navigation.goBack()}
+        />
+        <ScrollView bounces={false}>{renderCouponCard()}</ScrollView>
+        {renderBottomButtons()}
+      </SafeAreaView>
+    </View>
   );
 };

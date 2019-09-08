@@ -7,8 +7,10 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
-//import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+// import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
+
+console.log('gateway starting');
 
 export interface GatewayContext {
   firebaseUid: string;
@@ -70,7 +72,9 @@ export type Resolver<Parent, Args, Context, Result> = (
     },
   });
 
-  const config = await gateway.load();
+  const config = await gateway.load().catch((error) => {
+    throw error;
+  });
   const schema = config.schema;
   const executor = config.executor as GraphQLExecutor;
 
@@ -130,10 +134,15 @@ export type Resolver<Parent, Args, Context, Result> = (
     },
   });
 
-  server.listen(process.env.API_GATEWAY_PORT).then(({ url }) => {
-    console.log(`🚀 api gateway ready at ${url}`);
-    console.log('allowed cors origins:', corsOrigins.join(','));
-  });
+  server
+    .listen(process.env.API_GATEWAY_PORT)
+    .then(({ url }) => {
+      console.log(`🚀 api gateway ready at ${url}`);
+      console.log('allowed cors origins:', corsOrigins.join(','));
+    })
+    .catch((error) => {
+      throw error;
+    });
 })();
 
 //(async () => {

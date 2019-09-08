@@ -3,12 +3,18 @@ import {
   TrackerBig,
   OnlineConsult,
   PrescriptionSkyBlue,
+  MedicalIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
 import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import moment from 'moment';
+
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { NavigationScreenProps } from 'react-navigation';
+import { g } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -52,7 +58,7 @@ const styles = StyleSheet.create({
   },
   separatorStyles: {
     borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
     marginVertical: 7,
   },
   descriptionTextStyles: {
@@ -60,7 +66,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.TEXT_LIGHT_BLUE,
   },
-  profileImageStyle: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'red' },
+  profileImageStyle: { width: 40, height: 40, borderRadius: 20 },
   yellowTextStyle: {
     ...theme.fonts.IBMPlexSansBold(12),
     lineHeight: 20,
@@ -105,15 +111,19 @@ const data: rowData = {
   registrationNumber: '',
   onlineConsultationFees: '',
   physicalConsultationFees: '',
-  status: 'Follow-up to 20 Apr 2019',
-  desease: 'Cold, Cough, Fever, Nausea',
+  status: 'Follow-up to 20 Apr 2019',
+  desease: 'Cold, Cough, Fever, Nausea',
 };
-export interface HealthConsultViewProps {
+export interface HealthConsultViewProps extends NavigationScreenProps {
+  PastData?: any;
   onPressOrder?: () => void;
   onClickCard?: () => void;
+  //PastData?: any;
 }
 
 export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
+  console.log('PastData', props.PastData);
+  //console.log('Symptons', props.PastData.caseSheet[0].symptoms);
   const tabs = strings.health_records_home.tabs;
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
@@ -131,56 +141,149 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
         <TrackerBig />
         <View style={styles.trackerLineStyle} />
       </View>
-      <View style={styles.rightViewStyle}>
-        <Text style={styles.labelTextStyle}>Today, 12 Aug 2019</Text>
-        <TouchableOpacity
-          activeOpacity={1}
-          style={[styles.cardContainerStyle]}
-          onPress={() => {
-            props.onClickCard ? props.onClickCard() : null;
-          }}
-        >
-          <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
-            <View style={{ flexDirection: 'row' }}>
-              <View style={styles.imageView}>
-                {/* {data.image} */}
-                {data.photoUrl &&
-                  data.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
-                    <Image style={styles.profileImageStyle} source={{ uri: data.photoUrl }} />
-                  )}
+      {props.PastData.patientId != null ? (
+        <View style={styles.rightViewStyle}>
+          <Text style={styles.labelTextStyle}>
+            {moment(props.PastData.appointmentDateTime).format('DD MMM YYYY')}
+          </Text>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={[styles.cardContainerStyle]}
+            // onPress={() => {
+            //   props.onClickCard ? props.onClickCard() : null;
+            // }}
+          >
+            <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
+              <View style={{ flexDirection: 'row' }}>
+                <View style={styles.imageView}>
+                  {/* {data.image} */}
+                  {data.photoUrl &&
+                    data.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
+                      <Image style={styles.profileImageStyle} source={{ uri: data.photoUrl }} />
+                    )}
+                </View>
+                <View style={{ flex: 1 }}>
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    onPress={() => {
+                      props.onClickCard ? props.onClickCard() : null;
+                    }}
+                  >
+                    <Text style={styles.doctorNameStyles}>
+                      Dr. {props.PastData.doctorInfo.firstName} {props.PastData.doctorInfo.lastName}
+                    </Text>
+                  </TouchableOpacity>
+                  <View>
+                    {props.PastData.isFollowUp ? (
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.descriptionTextStyles}>
+                          Follow-up to {props.PastData.followUpTo}
+                        </Text>
+                        <OnlineConsult />
+                      </View>
+                    ) : (
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.descriptionTextStyles}>New Consult</Text>
+                        <OnlineConsult />
+                      </View>
+                    )}
+                  </View>
+                  <View style={styles.separatorStyles} />
+                  <View>
+                    {g(props.PastData, 'caseSheet', '0', 'symptoms') ? (
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Text style={styles.descriptionTextStyles}>
+                          {props.PastData.caseSheet[0].symptoms[0].symptom},
+                          {props.PastData.caseSheet[0].symptoms[0].since},
+                          {props.PastData.caseSheet[0].symptoms[0].howOften},
+                          {props.PastData.caseSheet[0].symptoms[0].severity}
+                        </Text>
+                        <PrescriptionSkyBlue />
+                      </View>
+                    ) : (
+                      <Text style={styles.descriptionTextStyles}>No Symptoms</Text>
+                    )}
+                  </View>
+                </View>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.doctorNameStyles}>
-                  Dr. {data.firstName} {data.lastName}
+              <View
+                style={[theme.viewStyles.darkSeparatorStyle, { marginTop: 8, marginBottom: 15 }]}
+              />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}
+              >
+                {props.PastData.isFollowUp ? (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    //style={[styles.cardContainerStyle]}
+                    onPress={() => {
+                      console.log('doctorid', props.PastData.doctorInfo.id);
+                      console.log('patientid', props.PastData.patientId);
+                      console.log('appointmentid', props.PastData.id);
+                      props.navigation.navigate(AppRoutes.DoctorDetails, {
+                        doctorId: props.PastData.doctorInfo.id,
+                        PatientId: props.PastData.patientId,
+                        FollowUp: props.PastData.isFollowUp,
+                        appointmentType: props.PastData.appointmentType,
+                        appointmentId: props.PastData.id,
+                        showBookAppointment: true,
+                      });
+                    }}
+                  >
+                    <Text style={styles.yellowTextStyle}>BOOK FOLLOW-UP</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <Text></Text>
+                )}
+                <Text style={styles.yellowTextStyle} onPress={props.onPressOrder}>
+                  ORDER MEDS & TESTS
                 </Text>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.descriptionTextStyles}>{data.status}</Text>
-                  <OnlineConsult />
-                </View>
-                <View style={styles.separatorStyles} />
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.descriptionTextStyles}>{data.desease}</Text>
-                  <PrescriptionSkyBlue />
-                </View>
               </View>
             </View>
-            <View
-              style={[theme.viewStyles.darkSeparatorStyle, { marginTop: 8, marginBottom: 15 }]}
-            />
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Text style={styles.yellowTextStyle}>BOOK FOLLOW-UP</Text>
-              <Text style={styles.yellowTextStyle} onPress={props.onPressOrder}>
-                ORDER MEDS & TESTS
-              </Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={{ marginRight: 60 }}>
+          <Text style={styles.labelTextStyle}>
+            {moment(props.PastData.quoteDateTime).format('DD MMM YYYY')}
+          </Text>
+          <TouchableOpacity
+            activeOpacity={1}
+            style={[styles.cardContainerStyle]}
+            // onPress={() => {
+            //   props.onClickCard ? props.onClickCard() : null;
+            // }}
+          >
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ marginTop: 10 }}>
+                <MedicalIcon />
+              </View>
+
+              <View style={{ marginLeft: 30 }}>
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    color: '#01475b',
+                    marginBottom: 7,
+                    marginRight: 20,
+                  }}
+                >
+                  {props.PastData.medicineOrderLineItems[0].medicineName}
+                </Text>
+                <Text
+                  style={{ ...theme.fonts.IBMPlexSansMedium(12), color: '#02475b', opacity: 0.6 }}
+                >
+                  {moment(props.PastData.quoteDateTime).format('MM/DD/YYYY')}
+                </Text>
+              </View>
             </View>
-          </View>
-        </TouchableOpacity>
-      </View>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

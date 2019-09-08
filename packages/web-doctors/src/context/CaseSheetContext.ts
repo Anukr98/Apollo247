@@ -13,6 +13,8 @@ import { createContext } from 'react';
 
 export interface CaseSheetContextProps {
   loading: boolean;
+  caseSheetEdit: boolean;
+  setCaseSheetEdit: React.Dispatch<React.SetStateAction<boolean>> | (() => false);
   patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null;
   appointmentInfo: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
   caseSheetId: string | null;
@@ -64,10 +66,13 @@ export interface CaseSheetContextProps {
   setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   healthVault: GetCaseSheet_getCaseSheet_patientDetails_healthVault[] | null;
   pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
+  setCasesheetNotes: (notes: string) => void;
 }
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
   loading: true,
+  setCaseSheetEdit: () => {},
+  caseSheetEdit: false,
   patientDetails: null,
   appointmentInfo: null,
   caseSheetId: null,
@@ -93,4 +98,5 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setFollowUpDate: () => {},
   healthVault: null,
   pastAppointments: null,
+  setCasesheetNotes: (notes: string) => {},
 });

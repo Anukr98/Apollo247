@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert, AsyncStorage } from 'react-native';
-import { MEDICINE_DELIVERY_TYPE } from '../graphql/types/globalTypes';
+import { MEDICINE_DELIVERY_TYPE, DiscountType } from '../graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../graphql/types/savePatientAddress';
+import { getCoupons_getCoupons_coupons } from '../graphql/types/getCoupons';
 
 export interface ShoppingCartItem {
   id: string;
@@ -10,15 +11,16 @@ export interface ShoppingCartItem {
   quantity: number;
   price: number;
   prescriptionRequired: boolean;
+  // productType: 'PHARMA' | 'FMCG';
 }
 
-export interface Coupon {
-  type: 'limited' | 'unlimited';
-  code: string;
-  discountPercentage: number;
-  discountLimit?: number;
-  minCartValue: number;
-}
+// export interface Coupon {
+//   type: 'limited' | 'unlimited';
+//   code: string;
+//   discountPercentage: number;
+//   discountLimit?: number;
+//   minCartValue: number;
+// }
 
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
@@ -28,6 +30,7 @@ export interface ShoppingCartContextProps {
     | ((itemUpdates: Partial<ShoppingCartItem> & { id: ShoppingCartItem['id'] }) => void)
     | null;
   cartTotal: number;
+  cartTotalOfPharmaProducts: number;
   couponDiscount: number;
   deliveryCharges: number;
   grandTotal: number;
@@ -44,8 +47,8 @@ export interface ShoppingCartContextProps {
   storeId: string;
   setStoreId: ((id: string) => void) | null;
 
-  coupon: Coupon | null;
-  setCoupon: ((id: Coupon) => void) | null;
+  coupon: getCoupons_getCoupons_coupons | null;
+  setCoupon: ((id: getCoupons_getCoupons_coupons) => void) | null;
 
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
   clearCartInfo: (() => void) | null;
@@ -57,6 +60,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   removeCartItem: null,
   updateCartItem: null,
   cartTotal: 0,
+  cartTotalOfPharmaProducts: 0,
   couponDiscount: 0,
   deliveryCharges: 0,
   grandTotal: 0,
@@ -80,7 +84,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 export const ShoppingCartProvider: React.FC = (props) => {
   const config = {
     MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
-    DELIVERY_CHARGES: 20,
+    DELIVERY_CHARGES: 25,
   };
   const [cartItems, setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -124,6 +128,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const cartTotal: ShoppingCartContextProps['cartTotal'] = parseFloat(
     cartItems
+      .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
+      .toFixed(2)
+  );
+
+  const cartTotalOfPharmaProducts: ShoppingCartContextProps['cartTotalOfPharmaProducts'] = parseFloat(
+    cartItems
+      .filter((currItem) => currItem.prescriptionRequired == true)
       .reduce((currTotal, currItem) => currTotal + currItem.quantity * currItem.price, 0)
       .toFixed(2)
   );
@@ -172,14 +183,30 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   useEffect(() => {
     // updating coupon discount here on update in cart or new coupon code applied
-    if (!coupon || cartTotal < coupon.minCartValue) {
+    // if (!coupon || cartTotalOfPharmaProducts < coupon.minCartValue) {
+    //   setCoupon(null);
+    //   setCouponDiscount(0);
+    // } else {
+    //   const discount = parseFloat(
+    //     ((coupon.discountPercentage / 100) * cartTotalOfPharmaProducts).toFixed(2)
+    //   );
+
+    const minimumOrderAmount = coupon && coupon.minimumOrderAmount;
+    if (!coupon || (minimumOrderAmount && cartTotalOfPharmaProducts < minimumOrderAmount)) {
       setCoupon(null);
       setCouponDiscount(0);
     } else {
-      const discount = parseFloat(((coupon.discountPercentage / 100) * cartTotal).toFixed(2));
-      setCouponDiscount(discount);
+      let discountAmount = 0;
+      if (coupon.discountType == DiscountType.PERCENT) {
+        discountAmount = parseFloat(
+          ((coupon.discount / 100) * cartTotalOfPharmaProducts).toFixed(2)
+        );
+      } else {
+        discountAmount = parseFloat((cartTotalOfPharmaProducts - coupon.discount).toFixed(2));
+      }
+      setCouponDiscount(discountAmount);
     }
-  }, [cartTotal, coupon]);
+  }, [cartTotalOfPharmaProducts, coupon]);
 
   return (
     <ShoppingCartContext.Provider
@@ -189,6 +216,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         removeCartItem,
         updateCartItem,
         cartTotal,
+        cartTotalOfPharmaProducts,
         grandTotal,
         couponDiscount,
         deliveryCharges,

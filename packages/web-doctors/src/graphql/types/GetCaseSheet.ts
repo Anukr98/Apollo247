@@ -54,6 +54,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   id: string | null;
   appointmentDateTime: any | null;
   status: STATUS | null;
+  appointmentState: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {
@@ -100,7 +101,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   diagnosis: (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
   diagnosticPrescription: (GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] | null;
   followUp: boolean | null;
-  followUpDate: string | null;
+  followUpDate: any | null;
   followUpAfterInDays: string | null;
   consultType: string | null;
   notes: string | null;
@@ -144,7 +145,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
   diagnosis: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosis | null)[] | null;
   diagnosticPrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] | null;
   symptoms: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_symptoms | null)[] | null;
-  followUpDate: string | null;
+  followUpDate: any | null;
   followUpAfterInDays: string | null;
   followUp: boolean | null;
   medicinePrescription: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_medicinePrescription | null)[] | null;

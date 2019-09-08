@@ -26,13 +26,14 @@ const apiDetails = {
 
 interface OptionType {
   label: string;
+  sku: string;
 }
 
 let suggestions: OptionType[] = [
-  { label: 'Ibuprofen, 200 mg' },
-  { label: 'Ibugesic plus, 1.5% wwa' },
-  { label: 'Ibuenatal' },
-  { label: 'Ibuenatal' },
+  { label: 'Ibuprofen, 200 mg', sku: 'IB01' },
+  { label: 'Ibugesic plus, 1.5% wwa', sku: 'IB02' },
+  { label: 'Ibuenatal', sku: 'IB03' },
+  { label: 'Ibuenatal', sku: 'IB04' },
 ];
 
 function renderInputComponent(inputProps: any) {
@@ -397,6 +398,7 @@ export const MedicinePrescription: React.FC = () => {
     tobeTakenErr: false,
     durationErr: false,
   });
+  const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>(1);
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
@@ -474,8 +476,9 @@ export const MedicinePrescription: React.FC = () => {
       .then((result) => {
         const medicines = result.data.products ? result.data.products : [];
         medicines.slice(0, 10).forEach((res: any) => {
-          const data = { label: '' };
+          const data = { label: '', sku: '' };
           data.label = res.name;
+          data.sku = res.sku;
           FinalSearchdata.push(data);
         });
         suggestions = FinalSearchdata;
@@ -518,9 +521,11 @@ export const MedicinePrescription: React.FC = () => {
     setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
     setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
+    setSelectedId(selectedMedicinesArr![idx].id!);
     setIsDialogOpen(true);
     setShowDosage(true);
     setIsUpdate(true);
+    setIdx(idx);
   };
   useEffect(() => {
     if (idx >= 0) {
@@ -617,7 +622,7 @@ export const MedicinePrescription: React.FC = () => {
             classes={{ root: classes.updateSymptom }}
             onClick={() => updateMedicine(index)}
           >
-            <img src={require('images/round_edit_24_px.svg')} alt="" />
+            <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
           </AphButton>
           <AphButton
             variant="contained"
@@ -626,7 +631,7 @@ export const MedicinePrescription: React.FC = () => {
             classes={{ root: classes.deleteSymptom }}
             onClick={() => deletemedicine(index)}
           >
-            <img src={require('images/ic_cancel_green.svg')} alt="" />
+            <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
           </AphButton>
         </div>
       );
@@ -680,10 +685,12 @@ export const MedicinePrescription: React.FC = () => {
         medicineTimings: daySlotsArr,
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
-        id: selectedValue.trim,
+        id: selectedId,
       };
+      console.log(selectedValue);
+
       const inputParams: any = {
-        id: selectedValue.trim(),
+        id: selectedId,
         value: selectedValue,
         name: selectedValue,
         times: daySlotsSelected.length,
@@ -706,7 +713,6 @@ export const MedicinePrescription: React.FC = () => {
         x.push(inputParams);
         setSelectedMedicines(x);
       }
-
       setIsDialogOpen(false);
       setIsUpdate(false);
       setShowDosage(false);
@@ -726,6 +732,7 @@ export const MedicinePrescription: React.FC = () => {
       setConsumptionDuration('');
       setTabletsCount(1);
       setSelectedValue('');
+      setSelectedId('');
     }
   };
   const toBeTaken = (value: any) => {
@@ -758,6 +765,7 @@ export const MedicinePrescription: React.FC = () => {
   });
   const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
   const [selectedValue, setSelectedValue] = useState<string>('');
+  const [selectedId, setSelectedId] = useState<string>('');
 
   const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
     setSuggestions(getSuggestions(value));
@@ -795,14 +803,16 @@ export const MedicinePrescription: React.FC = () => {
       <Grid container spacing={1}>
         <Grid item xs={6}>
           {selectedMedicinesHtml}
-          <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.btnAddDoctor }}
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
-          </AphButton>
+          {caseSheetEdit && (
+            <AphButton
+              variant="contained"
+              color="primary"
+              classes={{ root: classes.btnAddDoctor }}
+              onClick={() => setIsDialogOpen(true)}
+            >
+              <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
+            </AphButton>
+          )}
         </Grid>
         <Grid item xs={4}></Grid>
       </Grid>
@@ -845,6 +855,7 @@ export const MedicinePrescription: React.FC = () => {
                       });
                       setShowDosage(true);
                       setSelectedValue(suggestion.label);
+                      setSelectedId(suggestion.sku);
                     }}
                     {...autosuggestProps}
                     inputProps={{

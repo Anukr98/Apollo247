@@ -28,7 +28,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription {
   __typename: "DiagnosticPrescription";
-  name: string | null;
+  itemname: string | null;
 }
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {
@@ -64,7 +64,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails {
   doctorId: string | null;
   followUp: boolean | null;
   followUpAfterInDays: string | null;
-  followUpDate: string | null;
+  followUpDate: any | null;
   id: string | null;
   medicinePrescription: (getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
   notes: string | null;

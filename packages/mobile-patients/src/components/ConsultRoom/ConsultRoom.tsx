@@ -257,6 +257,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 variables: {
                   SaveDeviceTokenInput: input,
                 },
+                fetchPolicy: 'no-cache',
               })
               .then((data: any) => {
                 console.log('APICALLED', data.data.saveDeviceToken.deviceToken);
@@ -275,6 +276,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const Popup = () => (
     <TouchableOpacity
+      activeOpacity={1}
       style={{
         paddingVertical: 9,
         position: 'absolute',
@@ -507,6 +509,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         {tabBarOptions.map((tabBarOptions, i) => (
           <View key={i}>
             <TouchableOpacity
+              activeOpacity={1}
               key={i}
               onPress={() => {
                 if (i === 0) {
@@ -574,13 +577,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <View style={{ width: '100%', height: Platform.OS === 'ios' ? 436 : 446 }}>
             <View style={styles.viewName}>
               <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
-                <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.TabBar)}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => props.navigation.replace(AppRoutes.TabBar)}
+                >
                   <ApolloLogo style={{ right: 20 }} />
                 </TouchableOpacity>
               </View>
               <TouchableOpacity
-                onPress={() => setShowMenu(true)}
                 activeOpacity={1}
+                onPress={() => setShowMenu(true)}
                 style={{
                   flexDirection: 'row',
                   marginTop: 8,
@@ -610,6 +616,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             {arrayTest.map((serviceTitle, i) => (
               <View key={i} style={{}}>
                 <TouchableOpacity
+                  activeOpacity={1}
                   key={i}
                   onPress={() => {
                     if (i === 0) {
@@ -681,6 +688,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.gotItStyles}
               onPress={() => {
                 AsyncStorage.setItem('gotIt', 'true');

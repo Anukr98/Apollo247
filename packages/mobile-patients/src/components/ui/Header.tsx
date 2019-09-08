@@ -71,7 +71,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
   return (
     <View style={[styles.container, props.container]}>
       <View style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
-        <TouchableOpacity onPress={props.onPressLeftIcon} style={{}}>
+        <TouchableOpacity activeOpacity={1} onPress={props.onPressLeftIcon} style={{}}>
           {leftIcon === 'backArrow' && <BackArrow />}
           {leftIcon === 'close' && <Remove />}
           {leftIcon === 'backArrowWhite' && <BackArrowWhite />}

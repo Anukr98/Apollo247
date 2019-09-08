@@ -83,17 +83,8 @@ export interface RecordDetailsProps extends NavigationScreenProps {}
 export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const [showtopLine, setshowtopLine] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
-
-  const data = {
-    doctorInfo: {
-      firstName: 'Mamatha',
-      photoUrl:
-        'https://image.shutterstock.com/image-photo/smiling-doctor-posing-arms-crossed-600w-519507367.jpg',
-    },
-    id: '34567890987654',
-    consult_info: '03 Aug 2019, Online Consult',
-    description: 'This is a follow-up consult to the Clinic Visit on 27 Jul 2019',
-  };
+  const data = props.navigation.state.params ? props.navigation.state.params.data : {};
+  console.log(data, 'data');
 
   const detailFinding = [
     {
@@ -227,36 +218,34 @@ WBC: Within normal limits. No atypical WBCs/blasts seen`}</Text>
     );
   };
 
-  if (data.doctorInfo)
-    return (
-      <View
-        style={{
-          ...theme.viewStyles.container,
-        }}
-      >
-        <SafeAreaView style={{ flex: 1 }}>
-          <Header
-            title="RECORD DETAILS"
-            leftIcon="backArrow"
-            rightComponent={
-              <View style={{ flexDirection: 'row' }}>
-                <TouchableOpacity style={{ marginRight: 20 }} onPress={() => {}}>
-                  <ShareGreen />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => {}}>
-                  <Download />
-                </TouchableOpacity>
-              </View>
-            }
-            onPressLeftIcon={() => props.navigation.goBack()}
-          />
-          <ScrollView bounces={false}>
-            {renderDoctorDetails()}
-            {renderData()}
-            {false && renderRecordDetails()}
-          </ScrollView>
-        </SafeAreaView>
-      </View>
-    );
-  return null;
+  return (
+    <View
+      style={{
+        ...theme.viewStyles.container,
+      }}
+    >
+      <SafeAreaView style={{ flex: 1 }}>
+        <Header
+          title="RECORD DETAILS"
+          leftIcon="backArrow"
+          rightComponent={
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
+                <ShareGreen />
+              </TouchableOpacity>
+              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+                <Download />
+              </TouchableOpacity>
+            </View>
+          }
+          onPressLeftIcon={() => props.navigation.goBack()}
+        />
+        <ScrollView bounces={false}>
+          {renderDoctorDetails()}
+          {renderData()}
+          {false && renderRecordDetails()}
+        </ScrollView>
+      </SafeAreaView>
+    </View>
+  );
 };

@@ -6,87 +6,173 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_STATE {
+  AWAITING_RESCHEDULE = "AWAITING_RESCHEDULE",
+  AWAITING_TRANSFER = "AWAITING_TRANSFER",
+  NEW = "NEW",
+  RESCHEDULE = "RESCHEDULE",
+  TRANSFER = "TRANSFER",
+  TRANSFERRED = "TRANSFERRED",
+}
+
 export enum APPOINTMENT_TYPE {
-  ONLINE = 'ONLINE',
-  PHYSICAL = 'PHYSICAL',
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
 }
 
 export enum ConsultMode {
-  BOTH = 'BOTH',
-  ONLINE = 'ONLINE',
-  PHYSICAL = 'PHYSICAL',
+  BOTH = "BOTH",
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
 }
 
 export enum DEVICE_TYPE {
-  ANDROID = 'ANDROID',
-  IOS = 'IOS',
+  ANDROID = "ANDROID",
+  IOS = "IOS",
+}
+
+export enum DiscountType {
+  AMOUNT = "AMOUNT",
+  PERCENT = "PERCENT",
 }
 
 export enum DoctorType {
-  APOLLO = 'APOLLO',
-  PAYROLL = 'PAYROLL',
-  STAR_APOLLO = 'STAR_APOLLO',
+  APOLLO = "APOLLO",
+  JUNIOR = "JUNIOR",
+  PAYROLL = "PAYROLL",
+  STAR_APOLLO = "STAR_APOLLO",
 }
 
 export enum Gender {
-  FEMALE = 'FEMALE',
-  MALE = 'MALE',
-  OTHER = 'OTHER',
+  FEMALE = "FEMALE",
+  MALE = "MALE",
+  OTHER = "OTHER",
+}
+
+export enum MEDICINE_DELIVERY_TYPE {
+  HOME_DELIVERY = "HOME_DELIVERY",
+  STORE_PICKUP = "STORE_PICKUP",
+}
+
+export enum MEDICINE_ORDER_PAYMENT_TYPE {
+  CASHLESS = "CASHLESS",
+  COD = "COD",
+  NO_PAYMENT = "NO_PAYMENT",
+}
+
+export enum MEDICINE_ORDER_STATUS {
+  CANCELLED = "CANCELLED",
+  DELIVERED = "DELIVERED",
+  ITEMS_RETURNED = "ITEMS_RETURNED",
+  ORDER_FAILED = "ORDER_FAILED",
+  ORDER_PLACED = "ORDER_PLACED",
+  ORDER_VERIFIED = "ORDER_VERIFIED",
+  OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY",
+  PICKEDUP = "PICKEDUP",
+  PRESCRIPTION_CART_READY = "PRESCRIPTION_CART_READY",
+  PRESCRIPTION_UPLOADED = "PRESCRIPTION_UPLOADED",
+  QUOTE = "QUOTE",
+  RETURN_ACCEPTED = "RETURN_ACCEPTED",
+  RETURN_INITIATED = "RETURN_INITIATED",
+}
+
+export enum MEDICINE_ORDER_TYPE {
+  CART_ORDER = "CART_ORDER",
+  UPLOAD_PRESCRIPTION = "UPLOAD_PRESCRIPTION",
 }
 
 export enum MEDICINE_TIMINGS {
-  EVENING = 'EVENING',
-  MORNING = 'MORNING',
-  NIGHT = 'NIGHT',
-  NOON = 'NOON',
+  EVENING = "EVENING",
+  MORNING = "MORNING",
+  NIGHT = "NIGHT",
+  NOON = "NOON",
 }
 
 export enum MEDICINE_TO_BE_TAKEN {
-  AFTER_FOOD = 'AFTER_FOOD',
-  BEFORE_FOOD = 'BEFORE_FOOD',
+  AFTER_FOOD = "AFTER_FOOD",
+  BEFORE_FOOD = "BEFORE_FOOD",
+}
+
+export enum MedicalRecordType {
+  EHR = "EHR",
+  OPERATIVE_REPORT = "OPERATIVE_REPORT",
+  PATHOLOGY_REPORT = "PATHOLOGY_REPORT",
+  PHYSICAL_EXAMINATION = "PHYSICAL_EXAMINATION",
+}
+
+export enum MedicalTestUnit {
+  GM = "GM",
+  GM_SLASH_DL = "GM_SLASH_DL",
+  _PERCENT_ = "_PERCENT_",
 }
 
 export enum Relation {
-  BROTHER = 'BROTHER',
-  COUSIN = 'COUSIN',
-  FATHER = 'FATHER',
-  HUSBAND = 'HUSBAND',
-  ME = 'ME',
-  MOTHER = 'MOTHER',
-  OTHER = 'OTHER',
-  SISTER = 'SISTER',
-  WIFE = 'WIFE',
+  BROTHER = "BROTHER",
+  COUSIN = "COUSIN",
+  FATHER = "FATHER",
+  HUSBAND = "HUSBAND",
+  ME = "ME",
+  MOTHER = "MOTHER",
+  OTHER = "OTHER",
+  SISTER = "SISTER",
+  WIFE = "WIFE",
 }
 
 export enum SEARCH_TYPE {
-  DOCTOR = 'DOCTOR',
-  MEDICINE = 'MEDICINE',
-  SPECIALTY = 'SPECIALTY',
+  DOCTOR = "DOCTOR",
+  MEDICINE = "MEDICINE",
+  SPECIALTY = "SPECIALTY",
 }
 
 export enum STATUS {
-  CANCELLED = 'CANCELLED',
-  COMPLETED = 'COMPLETED',
-  CONFIRMED = 'CONFIRMED',
-  IN_PROGRESS = 'IN_PROGRESS',
-  NO_SHOW = 'NO_SHOW',
-  PENDING = 'PENDING',
+  CANCELLED = "CANCELLED",
+  COMPLETED = "COMPLETED",
+  CONFIRMED = "CONFIRMED",
+  IN_PROGRESS = "IN_PROGRESS",
+  NO_SHOW = "NO_SHOW",
+  PENDING = "PENDING",
 }
 
 export enum Salutation {
-  DR = 'DR',
-  MR = 'MR',
-  MRS = 'MRS',
+  DR = "DR",
+  MR = "MR",
+  MRS = "MRS",
+}
+
+export enum TRANSFER_INITIATED_TYPE {
+  DOCTOR = "DOCTOR",
+  PATIENT = "PATIENT",
 }
 
 export enum WeekDay {
-  FRIDAY = 'FRIDAY',
-  MONDAY = 'MONDAY',
-  SATURDAY = 'SATURDAY',
-  SUNDAY = 'SUNDAY',
-  THURSDAY = 'THURSDAY',
-  TUESDAY = 'TUESDAY',
-  WEDNESDAY = 'WEDNESDAY',
+  FRIDAY = "FRIDAY",
+  MONDAY = "MONDAY",
+  SATURDAY = "SATURDAY",
+  SUNDAY = "SUNDAY",
+  THURSDAY = "THURSDAY",
+  TUESDAY = "TUESDAY",
+  WEDNESDAY = "WEDNESDAY",
+}
+
+export interface AddMedicalRecordInput {
+  patientId: string;
+  testName: string;
+  testDate?: any | null;
+  recordType?: MedicalRecordType | null;
+  referringDoctor?: string | null;
+  sourceName?: string | null;
+  observations?: string | null;
+  additionalNotes?: string | null;
+  documentURLs?: string | null;
+  medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
+}
+
+export interface AddMedicalRecordParametersInput {
+  parameterName: string;
+  unit?: MedicalTestUnit | null;
+  result: number;
+  minimum?: number | null;
+  maximum?: number | null;
 }
 
 export interface AppointmentHistoryInput {
@@ -100,6 +186,45 @@ export interface BookAppointmentInput {
   appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string | null;
+}
+
+export interface BookFollowUpAppointmentInput {
+  patientId: string;
+  doctorId: string;
+  appointmentDateTime: any;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId?: string | null;
+  followUpParentId: string;
+}
+
+export interface BookRescheduleAppointmentInput {
+  appointmentId: string;
+  doctorId: string;
+  newDateTimeslot: any;
+  initiatedBy: TRANSFER_INITIATED_TYPE;
+  initiatedId: string;
+  patientId: string;
+  rescheduledId?: string | null;
+}
+
+export interface BookTransferAppointmentInput {
+  existingAppointmentId: string;
+  doctorId: string;
+  appointmentDateTime: any;
+  patientId: string;
+  transferId: string;
+}
+
+export interface CancelAppointmentInput {
+  appointmentId: string;
+  cancelReason?: string | null;
+  cancelledBy: TRANSFER_INITIATED_TYPE;
+  cancelledById: string;
+}
+
+export interface ChooseDoctorInput {
+  slotDateTime: any;
+  specialityId: string;
 }
 
 export interface DoctorAvailabilityInput {
@@ -131,6 +256,43 @@ export interface FilterDoctorInput {
   location?: string | null;
 }
 
+export interface MedicineCartInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  estimatedAmount?: number | null;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patientAddressId: string;
+  devliveryCharges?: number | null;
+  prescriptionImageUrl?: string | null;
+  items?: (MedicineCartItem | null)[] | null;
+}
+
+export interface MedicineCartItem {
+  medicineSKU?: string | null;
+  medicineName?: string | null;
+  price?: number | null;
+  quantity?: number | null;
+  mrp?: number | null;
+  isPrescriptionNeeded?: number | null;
+  prescriptionImageUrl?: string | null;
+  mou?: number | null;
+  isMedicine?: string | null;
+}
+
+export interface MedicinePaymentInput {
+  orderId: string;
+  orderAutoId: number;
+  paymentType: MEDICINE_ORDER_PAYMENT_TYPE;
+  amountPaid: number;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+  responseCode?: string | null;
+  responseMessage?: string | null;
+  bankTxnId?: string | null;
+}
+
 export interface PatientAddressInput {
   patientId: string;
   addressLine1: string;
@@ -147,6 +309,12 @@ export interface PatientAppointmentsInput {
   appointmentDate: any;
 }
 
+export interface PatientConsultsAndOrdersInput {
+  patient: string;
+  offset?: number | null;
+  limit?: number | null;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;
@@ -157,6 +325,16 @@ export interface SaveDeviceTokenInput {
   deviceToken: string;
   deviceOS: string;
   patientId: string;
+}
+
+export interface SavePatientNotificationSettingsInput {
+  patient: string;
+  commissionNotification?: boolean | null;
+  messageFromDoctorNotification?: boolean | null;
+  playNotificationSound?: boolean | null;
+  reScheduleAndCancellationNotification?: boolean | null;
+  paymentNotification?: boolean | null;
+  upcomingAppointmentReminders?: boolean | null;
 }
 
 export interface SaveSearchInput {

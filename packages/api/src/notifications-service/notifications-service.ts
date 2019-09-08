@@ -14,14 +14,33 @@ import {
   getNotificationsResolvers,
 } from 'notifications-service/resolvers/notifications';
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
-//import { AppointmentPayload } from 'types/appointmentTypes';
+//import { AppointmentPayload, SampleMessage } from 'types/appointmentTypes';
 //import { bookAppointmentApollo } from 'notifications-service/bookAppointmentApollo';
-import { connect } from 'consults-service/database/connect';
+import { GatewayHeaders } from 'api-gateway';
+import { getConnection } from 'typeorm';
+import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
+import { connect } from 'notifications-service/database/connect';
 //import fetch from 'node-fetch';
 
 (async () => {
   await connect();
   const server = new ApolloServer({
+    context: async ({ req }) => {
+      const headers = req.headers as GatewayHeaders;
+      const firebaseUid = headers.firebaseuid;
+      const mobileNumber = headers.mobilenumber;
+      const consultsDb = getConnection();
+      const doctorsDb = getConnection('doctors-db');
+      const patientsDb = getConnection('patients-db');
+      const context: NotificationsServiceContext = {
+        firebaseUid,
+        mobileNumber,
+        doctorsDb,
+        consultsDb,
+        patientsDb,
+      };
+      return context;
+    },
     schema: buildFederatedSchema([
       {
         typeDefs: getSearchesTypeDefs,
@@ -42,15 +61,30 @@ import { connect } from 'consults-service/database/connect';
 
   type TestMessage = AphMqMessage<AphMqMessageTypes.BOOKAPPOINTMENT, AppointmentPayload>;
 
+  AphMqClient.onReceive<TestMessage>(AphMqMessageTypes.TESTRECEIVER, (receivedMessage) => {
+    console.log('received message!', receivedMessage.message);
+    console.log('accepting message hello');
+    const message = new Date().toISOString();
+    const payload: SampleMessage = { message };
+    type TestMessage1 = AphMqMessage<AphMqMessageTypes.TESTRECEIVER, SampleMessage>;
+    const testMessage: TestMessage1 = {
+      type: AphMqMessageTypes.TESTRECEIVER,
+      payload,
+    };
+    AphMqClient.send(testMessage);
+    console.log('send test reciver');
+    receivedMessage.accept();
+  });
+
   AphMqClient.onReceive<TestMessage>(AphMqMessageTypes.BOOKAPPOINTMENT, (receivedMessage) => {
     console.log('received message!', receivedMessage.message);
     console.log('accepting message');
     //SendMail.send(receivedMessage.message);
     bookAppointmentApollo.book(receivedMessage.message);
     receivedMessage.accept();
-  });*/
+  });
 
-  /*const resp = await fetch(
+  const resp = await fetch(
     'http://bulkpush.mytoday.com/BulkSms/SingleMsgApi?feedid=370454&username=7993961498&password=popcorn123$$&To=8019677178&Text=Hellocheck'
   );
   console.log(resp, 'sms resp');

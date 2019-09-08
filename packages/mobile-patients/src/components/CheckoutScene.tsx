@@ -276,12 +276,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         if (isCashOnDelivery) {
           placeOrder(orderId, orderAutoId);
         } else {
-          Alert.alert(
-            'Error',
-            'Inconvenience is regretted. Payment Gateway Integration is in-progress.'
-          );
           console.log('redirectToPaymentGateway');
-          // redirectToPaymentGateway(orderId, orderAutoId).finally(() => setPayDisabled(false));
+          redirectToPaymentGateway(orderId, orderAutoId).finally(() => setPayDisabled(false));
         }
       })
       .catch((error: GraphQLError) => {
@@ -319,6 +315,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const renderOneApollo = (
     <View style={styles.healthCreditsRowStyle}>
       <TouchableOpacity
+        activeOpacity={1}
         style={{ marginRight: 16 }}
         onPress={() => setOneApolloPayment(!isOneApolloPayment)}
       >
@@ -421,7 +418,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const renderPaymentModesCard = () => {
     const payUsingPaytmOption = (
       <View style={[styles.paymentModeRowStyle, { marginBottom: 16 }]}>
-        <TouchableOpacity onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+        <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
           {isCashOnDelivery ? <RadioButtonUnselectedIcon /> : <RadioButtonIcon />}
         </TouchableOpacity>
         <Text style={styles.paymentModeTextStyle}>Pay Using paytm</Text>
@@ -430,7 +427,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
     const cashOnDeliveryOption = (
       <View style={[styles.paymentModeRowStyle]}>
-        <TouchableOpacity onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+        <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
           {!isCashOnDelivery ? <RadioButtonUnselectedIcon /> : <RadioButtonIcon />}
         </TouchableOpacity>
         <Text style={styles.paymentModeTextStyle}>Cash On Delivery</Text>
@@ -466,7 +463,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '66.66%' }}
-          title={`PAY — RS. ${grandTotal}`}
+          title={`PAY RS. ${grandTotal}`}
           onPress={() => {
             initiateOrder();
           }}
@@ -565,8 +562,14 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               }}
             />
             <View style={styles.popupButtonStyle}>
-              <TouchableOpacity onPress={() => {}}>
-                <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+                    orderAutoId: orderInfo.orderAutoId,
+                  })
+                }
+              >
+                <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() =>

@@ -126,6 +126,19 @@ const SavePrescriptionMedicineOrder: Resolver<
     if (!patientAddressDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
     }
+    let deliveryCity = 'Kakinada',
+      deliveryZipcode = '500034';
+    if (patientAddressDetails.city == '' || patientAddressDetails.city == null) {
+      deliveryCity = 'Kakinada';
+    } else {
+      deliveryCity = patientAddressDetails.city;
+    }
+
+    if (patientAddressDetails.zipcode == '' || patientAddressDetails.zipcode == null) {
+      deliveryZipcode = '500045';
+    } else {
+      deliveryZipcode = patientAddressDetails.zipcode;
+    }
     const orderPrescriptionUrl: PrescriptionUrl[] = [];
     const prescriptionImages = saveOrder.prescriptionImageUrl.split(',');
     if (prescriptionImages.length > 0) {
@@ -160,12 +173,12 @@ const SavePrescriptionMedicineOrder: Resolver<
         OrderDate: new Date(),
         CustomerDetails: {
           MobileNo: patientDetails.mobileNumber.substr(3),
-          Comm_addr: patientAddressDetails.city,
-          Del_addr: patientAddressDetails.city,
+          Comm_addr: deliveryCity,
+          Del_addr: deliveryCity,
           FirstName: patientDetails.firstName,
           LastName: patientDetails.lastName,
-          City: patientAddressDetails.city,
-          PostCode: patientAddressDetails.zipcode,
+          City: deliveryCity,
+          PostCode: deliveryZipcode,
           MailId: patientDetails.emailAddress,
           Age: patientAge,
           CardNo: null,

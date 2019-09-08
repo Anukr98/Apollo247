@@ -150,7 +150,7 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
       '&:focus': {
-        backgroundColor: '#fff',
+        backgroundColor: '#00b38e',
       },
     },
 
@@ -206,6 +206,7 @@ export const Diagnosis: React.FC = () => {
   const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
     CaseSheetContext
   );
+  const { caseSheetEdit } = useContext(CaseSheetContext);
   const client = useApolloClient();
 
   useEffect(() => {
@@ -298,7 +299,6 @@ export const Diagnosis: React.FC = () => {
     });
   };
   const handleDelete = (item: any, idx: number) => {
-    console.log(item);
     // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
@@ -324,17 +324,21 @@ export const Diagnosis: React.FC = () => {
       <Typography component="div">
         {selectedValues !== null &&
           selectedValues.length > 0 &&
-          selectedValues!.map((item, idx) => (
-            <Chip
-              className={classes.diagnosBtn}
-              key={idx}
-              label={item!.name}
-              onDelete={() => handleDelete(item, idx)}
-              color="primary"
-            />
-          ))}
+          selectedValues!.map((item, idx) =>
+            caseSheetEdit ? (
+              <Chip
+                className={classes.diagnosBtn}
+                key={idx}
+                label={item!.name}
+                onDelete={() => handleDelete(item, idx)}
+                color="primary"
+              />
+            ) : (
+              <Chip className={classes.diagnosBtn} key={idx} label={item!.name} color="primary" />
+            )
+          )}
       </Typography>
-      {!showAddCondition && (
+      {!showAddCondition && caseSheetEdit && (
         <AphButton
           variant="contained"
           color="primary"

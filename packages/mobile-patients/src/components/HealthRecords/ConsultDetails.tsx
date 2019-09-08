@@ -6,12 +6,13 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   getCaseSheet,
   getCaseSheet_getCaseSheet_caseSheetDetails,
 } from '@aph/mobile-patients/src/graphql/types/getCaseSheet';
 import { GET_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -68,46 +69,42 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface ConsultDetailsProps extends NavigationScreenProps {}
+export interface ConsultDetailsProps extends NavigationScreenProps {
+  CaseSheet: string;
+}
 
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
+  console.log('consulcasesheetid', props.navigation.state.params!.CaseSheet);
+  console.log('DoctorInfo', props.navigation.state.params!.DoctorInfo);
+  console.log('FollowUp', props.navigation.state.params!.FollowUp);
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [caseSheetDetails, setcaseSheetDetails] = useState<
     getCaseSheet_getCaseSheet_caseSheetDetails
   >();
 
-  const client = useApolloClient();
+  const getData = useQuery<getCaseSheet>(GET_CASESHEET_DETAILS, {
+    fetchPolicy: 'no-cache',
+    variables: {
+      appointmentId: props.navigation.state.params!.CaseSheet,
+    },
+  });
+  console.log(getData, 'getData');
 
-  const fetchData = useCallback(() => {
-    client
-      .query<getCaseSheet>({
-        query: GET_CASESHEET_DETAILS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          appointmentId: '5a4d4359-8f93-49ec-bd4b-45dab149543c',
-        },
-      })
-      .then(({ data: { getCaseSheet } }) => {
-        // set to context
-        console.log('getPatientAddressList qqq', getCaseSheet);
-        if (
-          getCaseSheet &&
-          getCaseSheet.caseSheetDetails &&
-          caseSheetDetails !== getCaseSheet.caseSheetDetails
-        ) {
-          setcaseSheetDetails(getCaseSheet.caseSheetDetails);
-        }
-      })
-      .catch((e) => {
-        const error = JSON.parse(JSON.stringify(e));
-        console.log(e, error);
-      });
-  }, [client, caseSheetDetails]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  if (getData.data) {
+    if (
+      getData &&
+      getData.data &&
+      getData.data.getCaseSheet &&
+      getData.data.getCaseSheet.caseSheetDetails &&
+      caseSheetDetails !== getData.data.getCaseSheet.caseSheetDetails
+    ) {
+      console.log(getData.data.getCaseSheet.caseSheetDetails, 'caseSheetDetails');
+      setcaseSheetDetails(getData.data.getCaseSheet.caseSheetDetails);
+    }
+  } else {
+    console.log(getData.error, 'getData error');
+  }
 
   const data = {
     doctorInfo: {
@@ -119,31 +116,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     consult_info: '03 Aug 2019, Online Consult',
     description: 'This is a follow-up consult to the Clinic Visit on 27 Jul 2019',
   };
-
-  const symptoms = [
-    {
-      label: 'Cold & Cough',
-      data: 'Since: Last 4 days\nHow Often: Throughout the day\nSeverity: Moderate',
-    },
-    {
-      label: 'Fever',
-      data: 'Since: Last 2 days\nHow Often: In the evening\nSeverity: High',
-    },
-    {
-      label: 'Nausea',
-      data: 'Since: Last 2 days\nHow Often: In the evening\nSeverity: High',
-    },
-  ];
-  const prescriptions = [
-    {
-      label: 'Sompraz-D Cap',
-      data: '1 Tab\n1 times a day(morning) for 7 days\nBefore food',
-    },
-    {
-      label: 'Redixin Plus Mouthwash',
-      data: 'Throat Gargles\n3 times a day(morning) for 5 days',
-    },
-  ];
 
   const followUp = [
     {
@@ -168,17 +140,21 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 paddingBottom: 4,
               }}
             >
-              #{data.id}
+              #{props.navigation.state.params!.DoctorInfo.id}
             </Text>
             <View style={theme.viewStyles.lightSeparatorStyle} />
-            <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>
-            <Text style={styles.timeStyle}>{data.consult_info}</Text>
+            <Text style={styles.doctorNameStyle}>
+              Dr. {props.navigation.state.params!.DoctorInfo.firstName}
+            </Text>
+            <Text style={styles.timeStyle}>
+              {props.navigation.state.params!.appointmentType} Consult
+            </Text>
             <View style={theme.viewStyles.lightSeparatorStyle} />
           </View>
           <View style={styles.imageView}>
-            {data.doctorInfo.photoUrl && (
+            {props.navigation.state.params!.DoctorInfo.photoUrl && (
               <Image
-                source={{ uri: data.doctorInfo.photoUrl }}
+                source={{ uri: props.navigation.state.params!.DoctorInfo.photoUrl }}
                 style={{
                   width: 80,
                   height: 80,
@@ -188,151 +164,223 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             )}
           </View>
         </View>
-
-        <Text style={styles.descriptionStyle}>{data.description}</Text>
-        <Text style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}>
-          {strings.health_records_home.view_consult}
-        </Text>
+        {caseSheetDetails && caseSheetDetails.followUp ? (
+          <View>
+            <Text style={styles.descriptionStyle}>
+              This is a follow-up consult to the {props.navigation.state.params!.appointmentType}{' '}
+              Visit on{' '}
+              {caseSheetDetails && moment(caseSheetDetails.followUpDate).format('DD MMM YYYY')}
+            </Text>
+            <Text
+              style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
+            >
+              {strings.health_records_home.view_consult}
+            </Text>
+          </View>
+        ) : null}
       </View>
     );
   };
 
   const renderSymptoms = () => {
-    return (
-      <View
-        style={{
-          marginTop: 24,
-        }}
-      >
-        <CollapseCard
-          heading="SYMPTOMS"
-          collapse={showsymptoms}
-          onPress={() => setshowsymptoms(!showsymptoms)}
+    if (caseSheetDetails && caseSheetDetails.symptoms && caseSheetDetails.symptoms.length > 0)
+      return (
+        <View
+          style={{
+            marginTop: 24,
+          }}
         >
-          <View style={styles.cardViewStyle}>
-            {symptoms.map((item) => {
-              return (
-                <View>
-                  <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>{item.label}</Text>
-                  </View>
-                  <Text style={styles.dataTextStyle}>{item.data}</Text>
-                </View>
-              );
-            })}
-          </View>
-        </CollapseCard>
-      </View>
-    );
+          <CollapseCard
+            heading="SYMPTOMS"
+            collapse={showsymptoms}
+            onPress={() => setshowsymptoms(!showsymptoms)}
+          >
+            <View style={styles.cardViewStyle}>
+              {caseSheetDetails.symptoms.map((item) => {
+                if (item && item.symptom)
+                  return (
+                    <View>
+                      <View style={styles.labelViewStyle}>
+                        <Text style={styles.labelStyle}>{item.symptom}</Text>
+                      </View>
+                      <Text style={styles.dataTextStyle}>
+                        {`Since: ${item.since}\nHow Often: ${item.howOften}\nSeverity: ${item.severity}`}
+                      </Text>
+                    </View>
+                  );
+              })}
+            </View>
+          </CollapseCard>
+        </View>
+      );
   };
 
   const renderPrescriptions = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="PRESCRIPTION"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
-        >
-          <View style={styles.cardViewStyle}>
-            {prescriptions.map((item) => {
-              return (
-                <View>
-                  <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>{item.label}</Text>
-                  </View>
-                  <Text style={styles.dataTextStyle}>{item.data}</Text>
-                </View>
-              );
-            })}
-          </View>
-          <Text
-            style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
+    if (
+      caseSheetDetails &&
+      caseSheetDetails.medicinePrescription &&
+      caseSheetDetails.medicinePrescription.length > 0
+    )
+      return (
+        <View>
+          <CollapseCard
+            heading="PRESCRIPTION"
+            collapse={showPrescription}
+            onPress={() => setshowPrescription(!showPrescription)}
           >
-            {strings.health_records_home.order_medicine}
-          </Text>
-        </CollapseCard>
-      </View>
-    );
+            <View style={styles.cardViewStyle}>
+              {caseSheetDetails.medicinePrescription.map((item) => {
+                if (item)
+                  return (
+                    <View>
+                      <View style={styles.labelViewStyle}>
+                        <Text style={styles.labelStyle}>{item.medicineName}</Text>
+                      </View>
+                      <Text style={styles.dataTextStyle}>
+                        {item.medicineDosage}
+                        {item.medicineTimings
+                          ? `\n${
+                              item.medicineTimings.length
+                            } times a day (${item.medicineTimings.join(', ').toLowerCase()}) for ${
+                              item.medicineConsumptionDurationInDays
+                            } days\n`
+                          : ''}
+
+                        {item.medicineToBeTaken
+                          ? item.medicineToBeTaken
+                              .map(
+                                (item) =>
+                                  item &&
+                                  item
+                                    .split('_')
+                                    .join(' ')
+                                    .toLowerCase()
+                              )
+                              .join(', ')
+                          : ''}
+                      </Text>
+                    </View>
+                  );
+              })}
+              <Text
+                style={[
+                  theme.viewStyles.yellowTextStyle,
+                  { textAlign: 'right', paddingBottom: 16 },
+                ]}
+              >
+                {strings.health_records_home.order_medicine}
+              </Text>
+            </View>
+          </CollapseCard>
+        </View>
+      );
   };
 
   const renderDiagnosis = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="DIAGNOSIS"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            <View>
-              <Text style={styles.labelStyle}>Acute Pharyngitis (unspecified)</Text>
+    if (caseSheetDetails && caseSheetDetails.diagnosis && caseSheetDetails.diagnosis.length > 0)
+      return (
+        <View>
+          <CollapseCard
+            heading="DIAGNOSIS"
+            collapse={showPrescription}
+            onPress={() => setshowPrescription(!showPrescription)}
+          >
+            <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+              <View>
+                <Text style={styles.labelStyle}>
+                  {caseSheetDetails.diagnosis.map((item) => item && item.name).join(', ')}
+                </Text>
+              </View>
             </View>
-          </View>
-        </CollapseCard>
-      </View>
-    );
+          </CollapseCard>
+        </View>
+      );
   };
   const renderGenerealAdvice = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="GENERAL ADVICE"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
-        >
-          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            <View>
-              <Text style={styles.labelStyle}>
-                {`1. Take adequate rest\n2. Take warm fluids / soft food, more frequently in small quantities\n3. Avoid cold / refrigerated food 4. Follow Prescription`}
-              </Text>
+    if (
+      caseSheetDetails &&
+      caseSheetDetails.otherInstructions &&
+      caseSheetDetails.otherInstructions.length > 0
+    )
+      return (
+        <View>
+          <CollapseCard
+            heading="GENERAL ADVICE"
+            collapse={showPrescription}
+            onPress={() => setshowPrescription(!showPrescription)}
+          >
+            <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+              <View>
+                <Text style={styles.labelStyle}>
+                  {caseSheetDetails.otherInstructions
+                    .map((item, i) => {
+                      if (item && item.instruction !== '') {
+                        return `${i + 1}. ${item.instruction}`;
+                      }
+                    })
+                    .join('\n')}
+                </Text>
+              </View>
             </View>
-          </View>
-        </CollapseCard>
-      </View>
-    );
+          </CollapseCard>
+        </View>
+      );
   };
 
   const renderFollowUp = () => {
-    return (
-      <View>
-        <CollapseCard
-          heading="FOLLOW-UP"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
-        >
-          <View style={styles.cardViewStyle}>
-            {followUp.map((item) => {
-              return (
-                <View>
-                  <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>{item.label}</Text>
-                  </View>
-                  <Text style={styles.dataTextStyle}>{item.data}</Text>
-                </View>
-              );
-            })}
-          </View>
-          <Text
-            style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
+    if (caseSheetDetails && caseSheetDetails.followUp)
+      return (
+        <View>
+          <CollapseCard
+            heading="FOLLOW-UP"
+            collapse={showPrescription}
+            onPress={() => setshowPrescription(!showPrescription)}
           >
-            {strings.health_records_home.book_follow_up}
-          </Text>
-        </CollapseCard>
-      </View>
-    );
+            <View style={styles.cardViewStyle}>
+              <View>
+                <View style={styles.labelViewStyle}>
+                  <Text style={styles.labelStyle}>
+                    {caseSheetDetails.consultType === 'PHYSICAL'
+                      ? 'Clinic Visit'
+                      : 'Online Consult '}
+                  </Text>
+                </View>
+                {caseSheetDetails.followUpAfterInDays == null ? (
+                  <Text style={styles.dataTextStyle}>
+                    Recommended after {moment(caseSheetDetails.followUpDate).format('DD MMM YYYY')}{' '}
+                  </Text>
+                ) : (
+                  <Text style={styles.dataTextStyle}>
+                    Recommended after {caseSheetDetails.followUpAfterInDays} days
+                  </Text>
+                )}
+              </View>
+              <Text
+                style={[
+                  theme.viewStyles.yellowTextStyle,
+                  { textAlign: 'right', paddingBottom: 16 },
+                ]}
+              >
+                {strings.health_records_home.book_follow_up}
+              </Text>
+            </View>
+          </CollapseCard>
+        </View>
+      );
   };
 
   const renderData = () => {
-    return (
-      <View>
-        {renderSymptoms()}
-        {renderPrescriptions()}
-        {renderDiagnosis()}
-        {renderGenerealAdvice()}
-        {renderFollowUp()}
-      </View>
-    );
+    if (caseSheetDetails)
+      return (
+        <View>
+          {renderSymptoms()}
+          {renderPrescriptions()}
+          {renderDiagnosis()}
+          {renderGenerealAdvice()}
+          {renderFollowUp()}
+        </View>
+      );
+    return null;
   };
 
   if (data.doctorInfo)
@@ -347,7 +395,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             title="PRESCRIPTION"
             leftIcon="backArrow"
             rightComponent={
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
                 <ShareGreen />
               </TouchableOpacity>
             }

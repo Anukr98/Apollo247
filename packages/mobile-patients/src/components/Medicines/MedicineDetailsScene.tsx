@@ -99,7 +99,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       });
   }, []);
 
-  const onAddCartItem = ({ sku, mou, name, price, is_prescription_required }: MedicineProduct) => {
+  const onAddCartItem = ({
+    sku,
+    mou,
+    name,
+    price,
+    is_prescription_required,
+    type_id,
+  }: MedicineProduct) => {
     addCartItem &&
       addCartItem({
         id: sku,

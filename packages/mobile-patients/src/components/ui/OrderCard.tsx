@@ -109,7 +109,11 @@ type OrderStatusType =
   | 'Return Rejected'
   | 'Return Accepted'
   | 'Cancelation Requested'
-  | 'Order Cancelled';
+  | 'Order Cancelled'
+  | 'Order Failed'
+  | 'Order Picked Up'
+  | 'Prescription Uploaded'
+  | 'Quote';
 
 export interface OrderCardProps {
   orderId: string;
@@ -117,7 +121,7 @@ export interface OrderCardProps {
   description: string;
   dateTime: string;
   status: OrderStatusType;
-  onPress: (orderId: string) => void;
+  onPress: () => void;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -234,8 +238,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
 
   return (
     <TouchableOpacity
+      activeOpacity={1}
       onPress={() => {
-        props.onPress(props.orderId);
+        props.onPress();
       }}
       style={[
         styles.containerStyle,

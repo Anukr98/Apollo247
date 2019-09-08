@@ -7,7 +7,11 @@ import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { BOOK_APPOINTMENT, GET_AVAILABLE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  BOOK_APPOINTMENT,
+  GET_AVAILABLE_SLOTS,
+  BOOK_FOLLOWUP_APPOINTMENT,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 import {
@@ -23,11 +27,24 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useState } from 'react';
 import { Mutation } from 'react-apollo';
-import { useQuery } from 'react-apollo-hooks';
-import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+import {
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import {
+  BookFollowUpAppointment,
+  BookFollowUpAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/BookFollowUpAppointment';
 
 const { width, height } = Dimensions.get('window');
 
@@ -56,9 +73,19 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   doctorId: string;
+  FollowUp: boolean;
+  appointmentType: string;
+  appointmentId: string;
   // availableSlots: string[] | null;
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
+  const client = useApolloClient();
+  console.log('FollowUp', props.FollowUp);
+  console.log('appointmentType', props.appointmentType);
+  console.log('patientId', props.patientId);
+  console.log('appointmentType', props.appointmentType);
+  console.log('appointmentId', props.appointmentId);
+  console.log('doctorId', props.doctorId);
   const tabs =
     props.doctor!.doctorType !== DoctorType.PAYROLL
       ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
@@ -115,6 +142,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       console.log(availableSlots, 'availableSlots1111');
 
       setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots);
+      setshowSpinner(false);
     }
   }
 
@@ -147,38 +175,87 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   : false
               }
               onPress={() => {
-                setshowSpinner(true);
-                const timeSlot =
-                  tabs[0].title === selectedTab &&
-                  isConsultOnline &&
-                  availableInMin! <= 15 &&
-                  0 < availableInMin!
-                    ? nextAvailableSlot
-                    : selectedTimeSlot;
-                // const formatDate = date.toISOString().split('T')[0];
-                // const appointmentDate = moment
-                //   .utc(moment(`${formatDate} ${timeSlot}`, 'DD-MM-YYYY HH:mm'))
-                //   .utc()
-                //   .toISOString();
-                const appointmentInput: BookAppointmentInput = {
-                  patientId: props.patientId,
-                  doctorId: props.doctor ? props.doctor.id : '',
-                  appointmentDateTime: timeSlot, //appointmentDate,
-                  appointmentType:
-                    selectedTab === tabs[0].title
-                      ? APPOINTMENT_TYPE.ONLINE
-                      : APPOINTMENT_TYPE.PHYSICAL,
-                  hospitalId:
-                    props.clinics && props.clinics.length > 0 && props.clinics[0].facility
-                      ? props.clinics[0].facility.id
-                      : '',
-                };
-                console.log(appointmentInput, 'appointmentInput');
-                mutate({
-                  variables: {
-                    bookAppointment: appointmentInput,
-                  },
-                });
+                if (props.FollowUp == false) {
+                  console.log('BookfollowupAppointment flow');
+                  const timeSlot =
+                    tabs[0].title === selectedTab &&
+                    isConsultOnline &&
+                    availableInMin! <= 15 &&
+                    0 < availableInMin!
+                      ? nextAvailableSlot
+                      : selectedTimeSlot;
+                  console.log('time', timeSlot);
+                  console.log('FollowUp', props.FollowUp);
+                  console.log('appointmentType', props.appointmentType);
+                  console.log('patientId', props.patientId);
+                  console.log('appointmentType', props.appointmentType);
+                  console.log('appointmentId', props.appointmentId);
+                  console.log('doctorId', props.doctorId);
+                  const input = {
+                    patientId: props.patientId,
+                    doctorId: props.doctorId,
+                    appointmentDateTime: timeSlot,
+                    appointmentType: APPOINTMENT_TYPE.ONLINE,
+                    hospitalId: '',
+                    followUpParentId: props.appointmentId,
+                  };
+                  client
+                    .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
+                      mutation: BOOK_FOLLOWUP_APPOINTMENT,
+                      variables: {
+                        followUpAppointmentInput: input,
+                      },
+                      fetchPolicy: 'no-cache',
+                    })
+                    .then((_data: any) => {
+                      console.log('BookFollowUpAppointment', _data);
+                      props.navigation.navigate(AppRoutes.Consult);
+                    })
+                    .catch((e: any) => {
+                      const error = JSON.parse(JSON.stringify(e));
+                      const errorMessage = error && error.message;
+                      console.log(
+                        'Error occured while BookFollowUpAppointment ',
+                        errorMessage,
+                        error
+                      );
+                      Alert.alert('Error', errorMessage);
+                    });
+                } else {
+                  console.log('BookAppointment flow');
+                  setshowSpinner(true);
+                  const timeSlot =
+                    tabs[0].title === selectedTab &&
+                    isConsultOnline &&
+                    availableInMin! <= 15 &&
+                    0 < availableInMin!
+                      ? nextAvailableSlot
+                      : selectedTimeSlot;
+                  // const formatDate = date.toISOString().split('T')[0];
+                  // const appointmentDate = moment
+                  //   .utc(moment(`${formatDate} ${timeSlot}`, 'DD-MM-YYYY HH:mm'))
+                  //   .utc()
+                  //   .toISOString();
+                  const appointmentInput: BookAppointmentInput = {
+                    patientId: props.patientId,
+                    doctorId: props.doctor ? props.doctor.id : '',
+                    appointmentDateTime: timeSlot, //appointmentDate,
+                    appointmentType:
+                      selectedTab === tabs[0].title
+                        ? APPOINTMENT_TYPE.ONLINE
+                        : APPOINTMENT_TYPE.PHYSICAL,
+                    hospitalId:
+                      props.clinics && props.clinics.length > 0 && props.clinics[0].facility
+                        ? props.clinics[0].facility.id
+                        : '',
+                  };
+                  console.log(appointmentInput, 'appointmentInput');
+                  mutate({
+                    variables: {
+                      bookAppointment: appointmentInput,
+                    },
+                  });
+                }
               }}
             >
               {data
@@ -217,6 +294,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           }}
         >
           <TouchableOpacity
+            activeOpacity={1}
             onPress={() => props.setdisplayoverlay(false)}
             style={{
               marginTop: Platform.OS === 'ios' ? 38 : 14,
@@ -285,6 +363,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   availableInMin={availableInMin}
                   setselectedTimeSlot={setselectedTimeSlot}
                   selectedTimeSlot={selectedTimeSlot}
+                  setshowSpinner={setshowSpinner}
                 />
               ) : (
                 <ConsultPhysical
@@ -295,6 +374,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   selectedTimeSlot={selectedTimeSlot}
                   timeArray={timeArray}
                   date={date}
+                  setshowSpinner={setshowSpinner}
                 />
               )}
               <View style={{ height: 96 }} />
@@ -312,6 +392,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
+              activeOpacity={1}
               style={styles.gotItStyles}
               onPress={() => {
                 setshowSuccessPopUp(false);
