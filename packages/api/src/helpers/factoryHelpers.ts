@@ -1,5 +1,6 @@
+import _random from 'lodash/random';
 import _sample from 'lodash/sample';
-import _times from 'lodash/times';
+import _sampleSize from 'lodash/sampleSize';
 
 export function randomEnum<T>(anEnum: T): T[keyof T] {
   const enumValues = (Object.values(anEnum) as unknown) as T[keyof T][];
@@ -12,6 +13,6 @@ export function randomValue<T>(array: T[]) {
   return _sample(array) as T;
 }
 
-export function randomValues<T>(array: T[], count: number) {
-  return _times(count, () => randomValue(array));
+export function randomValues<T>(array: T[], count?: number) {
+  return _sampleSize(array, count != null ? count : _random(0, array.length - 1));
 }

@@ -3,7 +3,7 @@ import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 
 export const getNextAvailableSlotTypeDefs = gql`
   input DoctorNextAvailableSlotInput {
@@ -53,15 +53,15 @@ const getDoctorNextAvailableSlot: Resolver<
   ConsultServiceContext,
   SlotAvailabilityResult
 > = async (parent, { DoctorNextAvailableSlotInput }, { doctorsDb, consultsDb }) => {
-  const docConsultRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+  //const docConsultRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  const weekDay = format(new Date(), 'EEEE').toUpperCase();
+  //const weekDay = format(new Date(), 'EEEE').toUpperCase();
   const doctorAvailalbeSlots: SlotAvailability[] = [];
   function slots(doctorId: string) {
     return new Promise<SlotAvailability>(async (resolve) => {
       let availableSlot: string = '';
-      const docConsultHrs = await docConsultRep.getConsultHours(doctorId, weekDay);
-      if (docConsultHrs.length === 0) {
+      //const docConsultHrs = await docConsultRep.getConsultHours(doctorId, weekDay);
+      /*if (docConsultHrs.length === 0) {
         availableSlot = '';
       } else {
         const slot = await appts.getDoctorNextAvailSlot(doctorId);
@@ -72,11 +72,24 @@ const getDoctorNextAvailableSlot: Resolver<
             availableSlot = '';
           }
         }
-      }
-      const curDate = format(new Date(), 'yyyy-MM-dd');
+      }*/
+      //availableSlot = await appts.getDoctorNextSlotDate(doctorId, new Date(), doctorsDb);
+      /*const curDate = format(new Date(), 'yyyy-MM-dd');
       if (availableSlot != '') {
         availableSlot = `${curDate}T${availableSlot}:00.000Z`;
+      }*/
+
+      //if the slot is empty check for next day
+      let nextDate = new Date();
+      while (true) {
+        const nextSlot = await appts.getDoctorNextSlotDate(doctorId, nextDate, doctorsDb);
+        if (nextSlot != '' && nextSlot != undefined) {
+          availableSlot = nextSlot;
+          break;
+        }
+        nextDate = addDays(nextDate, 1);
       }
+
       const doctorSlot: SlotAvailability = { doctorId, availableSlot, currentDateTime: new Date() };
       doctorAvailalbeSlots.push(doctorSlot);
       resolve(doctorSlot);
