@@ -537,6 +537,7 @@ export const ConsultTabs: React.FC = () => {
               appointmentDateTime={appointmentDateTime}
               doctorId={doctorId}
               isEnded={isEnded}
+              caseSheetId={caseSheetId}
             />
             <div>
               <div>
@@ -605,7 +606,7 @@ export const ConsultTabs: React.FC = () => {
           <div className={classes.tabBody}>
             {}
             <h3>
-              You're ending your consult with
+              You're ending your consult with{' '}
               {casesheetInfo &&
                 casesheetInfo !== null &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&

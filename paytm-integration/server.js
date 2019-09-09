@@ -116,7 +116,7 @@ app.get('/paymed', (req, res) => {
 app.post('/paymed-response', (req, res) => {
   const payload = req.body;
   const token = req.session.token;
-  const date = new Date().toUTCString();
+  const date = new Date(new Date().toUTCString()).toISOString();
   const reqSource = req.session.source;
 
   // console.log('payload is....', payload);
@@ -152,7 +152,7 @@ app.post('/paymed-response', (req, res) => {
   axios
     .post(process.env.API_URL, requestJSON)
     .then((response) => {
-      // console.log(response, 'response is....');
+      console.log(response, 'response is....');
       if (reqSource === 'web') {
         const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
         res.redirect(redirectUrl);
@@ -161,7 +161,7 @@ app.post('/paymed-response', (req, res) => {
       }
     })
     .catch((error) => {
-      // console.log('error', error);
+      console.log('error', error);
       if (reqSource === 'web') {
         const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
         res.redirect(redirectUrl);
