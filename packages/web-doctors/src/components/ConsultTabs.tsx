@@ -613,7 +613,7 @@ export const ConsultTabs: React.FC = () => {
                 casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
                   <span>
-                    {`${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
+                    {` ${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
                       casesheetInfo!.getCaseSheet!.patientDetails!.lastName
                     }.`}
                   </span>
@@ -625,6 +625,7 @@ export const ConsultTabs: React.FC = () => {
               onClick={() => {
                 setIsPopoverOpen(false);
                 endConsultActionFinal();
+                setCaseSheetEdit(false);
               }}
             >
               PREVIEW PRESCRIPTION
