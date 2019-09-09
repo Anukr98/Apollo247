@@ -293,6 +293,9 @@ export class CaseSheet extends BaseEntity {
   @ManyToOne((type) => Appointment, (appointment) => appointment.caseSheet)
   appointment: Appointment;
 
+  @Column({ nullable: true, type: 'text' })
+  blobName: string;
+
   @Column()
   consultType: APPOINTMENT_TYPE;
 
