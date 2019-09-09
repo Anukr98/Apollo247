@@ -13,7 +13,7 @@ import {
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
-import { isEmpty } from 'lodash';
+import { isEmpty, debounce, trim } from 'lodash';
 import { AphSelect, AphTextField } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -487,9 +487,7 @@ let transferObject: any = {
 };
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
-  const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
-    CaseSheetContext
-  );
+  const { loading, appointmentInfo, caseSheetId, followUpDate } = useContext(CaseSheetContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -710,12 +708,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
     ssl: true,
   };
-  const { setCaseSheetEdit } = useContext(CaseSheetContext);
+  const { caseSheetEdit, setCaseSheetEdit } = useContext(CaseSheetContext);
   useEffect(() => {
     if (props.isEnded) {
       onStopConsult();
-      setStartAppointment(!startAppointment);
-      setStartAppointmentButton(true);
     }
   }, [props.isEnded]);
   useEffect(() => {
@@ -783,41 +779,30 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status, response) => {}
     );
-
-    let folloupDateTime = '';
     if (
       followUpDate &&
       followUpDate.length > 0 &&
       followUpDate[0] !== null &&
       followUpDate[0] !== ''
     ) {
-      folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
-    } else if (followUp[0] && followUpAfterInDays[0] !== 'Custom') {
-      const apptdateTime = new Date(props.appointmentDateTime);
-      folloupDateTime = new Date(
-        apptdateTime.getTime() + parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
-      ).toISOString();
-    }
-    const followupObj: any = {
-      appointmentId: props.appointmentId,
-      folloupDateTime: folloupDateTime,
-      doctorId: props.doctorId,
-    };
-    if (folloupDateTime !== '') {
-      setTimeout(() => {
-        pubnub.publish(
-          {
-            message: {
-              id: props.doctorId,
-              message: followupconsult,
-              transferInfo: followupObj,
-            },
-            channel: channel,
-            storeInHistory: true,
+      const folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
+      const followupObj: any = {
+        appointmentId: props.appointmentId,
+        folloupDateTime: folloupDateTime,
+        doctorId: props.doctorId,
+      };
+      pubnub.publish(
+        {
+          message: {
+            id: props.doctorId,
+            message: followupconsult,
+            transferInfo: followupObj,
           },
-          (status, response) => {}
-        );
-      }, 100);
+          channel: channel,
+          storeInHistory: true,
+        },
+        (status, response) => {}
+      );
     }
   };
   const transferConsultAction = () => {
@@ -865,7 +850,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           },
         })
         .then((_data: any) => {
-          alert('transfer done');
           transferObject.transferDateTime = _data!.data!.initiateTransferAppointment!.doctorNextSlot;
           transferObject.transferId = _data!.data!.initiateTransferAppointment!.transferAppointment!.id;
           console.log(transferObject);
@@ -927,7 +911,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         })
         .then((_data) => {
           //setIsLoading(false);
-          alert('Reschedule done');
           console.log('data', _data);
           const reschduleObject: any = {
             appointmentId: props.appointmentId,
@@ -1017,10 +1000,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.endconsultButton}
                 onClick={() => {
                   //onStopConsult();
-                  //setStartAppointment(!startAppointment);
+                  setStartAppointment(!startAppointment);
                   stopInterval();
                   props.endConsultAction();
-                  //setCaseSheetEdit(false);
+                  setCaseSheetEdit(false);
                   setDisableOnTransfer(true);
                 }}
               >

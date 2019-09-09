@@ -726,6 +726,8 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   useEffect(() => {
     const mobNumber = sessionStorage.getItem('mobileNumberSession')
       ? sessionStorage.getItem('mobileNumberSession')
+      : doctor.delegateNumber!.includes('+91')
+      ? doctor.delegateNumber!.slice(3)
       : doctor.delegateNumber;
     if (mobNumber) {
       setMobileNumber(mobNumber);

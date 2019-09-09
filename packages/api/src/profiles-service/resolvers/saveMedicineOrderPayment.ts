@@ -154,10 +154,7 @@ const SaveMedicineOrderPayment: Resolver<
     };
     orderLineItems.push(lineItem);
   });
-  let prescriptionImages: string[] = [];
-  if (orderDetails.prescriptionImageUrl != '' && orderDetails.prescriptionImageUrl != null) {
-    prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
-  }
+  const prescriptionImages = orderDetails.prescriptionImageUrl.split(',');
   if (prescriptionImages.length > 0) {
     prescriptionImages.map((imageUrl) => {
       const url = {

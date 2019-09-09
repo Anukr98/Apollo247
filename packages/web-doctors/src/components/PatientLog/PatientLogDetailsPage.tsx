@@ -268,7 +268,7 @@ export const PatientLogDetailsPage: React.FC = () => {
         </div>
         <div className={classes.caseSheet}>
           <Grid container alignItems="flex-start" spacing={0}>
-            <Grid item lg={4} sm={4} xs={12}>
+            <Grid item lg={4} sm={6} xs={12}>
               <section className={`${classes.column} ${classes.right}`}>
                 <PatientDetailsUserCard
                   patientDetails={patientDetails}
@@ -276,7 +276,7 @@ export const PatientLogDetailsPage: React.FC = () => {
                 />
               </section>
             </Grid>
-            <Grid item lg={8} sm={8} xs={12}>
+            <Grid item lg={8} sm={6} xs={12}>
               <section className={classes.column}>
                 {/* Patient Health Vault Panel */}
                 <ExpansionPanel expanded={true} className={classes.expandIcon}>

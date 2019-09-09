@@ -15,8 +15,6 @@ export interface getAvailableDoctors_getAvailableDoctors_availalbeDoctors {
   doctorLastName: string;
   doctorFirstName: string;
   availableSlot: any;
-  specialityName: string;
-  experience: number;
 }
 
 export interface getAvailableDoctors_getAvailableDoctors {

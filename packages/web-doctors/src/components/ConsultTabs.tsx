@@ -605,7 +605,7 @@ export const ConsultTabs: React.FC = () => {
           <div className={classes.tabBody}>
             {}
             <h3>
-              You're ending your consult with
+              You,re ending your consult with{' '}
               {casesheetInfo &&
                 casesheetInfo !== null &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
@@ -613,7 +613,7 @@ export const ConsultTabs: React.FC = () => {
                 casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
                   <span>
-                    {` ${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
+                    {`${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
                       casesheetInfo!.getCaseSheet!.patientDetails!.lastName
                     }.`}
                   </span>
@@ -625,7 +625,6 @@ export const ConsultTabs: React.FC = () => {
               onClick={() => {
                 setIsPopoverOpen(false);
                 endConsultActionFinal();
-                setCaseSheetEdit(false);
               }}
             >
               PREVIEW PRESCRIPTION

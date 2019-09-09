@@ -58,11 +58,10 @@ const AntTabs = withStyles({
     },
   },
   indicator: {
-    backgroundColor: '#00b38e',
+    backgroundColor: '#02475b',
     minWidth: 120,
     width: 120,
     maxWidth: 120,
-    height: 4,
   },
 })(Tabs);
 export interface TabContainerProps {
@@ -86,7 +85,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
     },
     highlightActive: {
-      borderBottom: 'none',
+      borderBottom: '3px solid #02475b',
       opacity: 1,
       fontWeight: theme.typography.fontWeightBold,
     },
@@ -132,8 +131,6 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'capitalize',
         fontSize: 16,
         padding: '16px 0',
-        color: '#02475b',
-        fontWeight: 600,
       },
     },
     none: {
@@ -185,15 +182,12 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sortByTitle: {
       width: 100,
-      height: 25,
-      padding: '1px 0 2px 15px',
+      height: 63,
+      padding: 17,
       position: 'absolute',
       right: '85%',
-      top: 20,
-      borderLeft: '2px solid rgba(0, 0, 0, 0.1)',
-      fontWeight: 600,
+      fontWeight: 700,
       fontSize: 16,
-      color: '#02475b',
     },
     sortByDropdown: {
       width: '22%',
@@ -214,7 +208,6 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 180,
       color: '#00b38e !important',
       display: 'inline-block',
-
       '& ul': {
         padding: '10px 0px',
         '& li': {
@@ -244,21 +237,6 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: 16,
       top: 16,
-    },
-    filterSelect: {
-      marginTop: 12,
-      '& svg': {
-        color: '#00b38e',
-      },
-      '& div': {
-        color: '#00b38e',
-      },
-      '&:before': {
-        borderBottom: 'none !important',
-      },
-      '&:after': {
-        borderBottom: 'none !important',
-      },
     },
   };
 });
@@ -346,7 +324,6 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                 <AphSelect
                   value={sortBy}
                   fullWidth
-                  className={classes.filterSelect}
                   MenuProps={{
                     classes: { paper: classes.menuPopover },
                     anchorOrigin: {

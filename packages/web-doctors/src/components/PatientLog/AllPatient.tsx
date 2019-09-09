@@ -25,7 +25,6 @@ const useStyles = makeStyles((theme: Theme) =>
       height: 90,
       backgroundColor: '#fff',
       boxShadow: 'none',
-      marginBottom: 16,
     },
     cardContent: {
       width: '90%',
@@ -57,7 +56,7 @@ const useStyles = makeStyles((theme: Theme) =>
     mainHeadingmini: {
       fontSize: 14,
       fontWeight: 'normal',
-      color: 'rgba(2,71,91,0.6)',
+      color: '#02475b',
     },
     mainHeadingconsult: {
       fontSize: 14,
@@ -78,29 +77,18 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 700,
     },
     chatSpan: {
-      '& a': {
-        width: 102,
-        height: 32,
-        paddingTop: 6,
-        borderRadius: 16,
-        backgroundColor: '#fc9916',
-        textAlign: 'center',
-        textTransform: 'uppercase',
-        fontWeight: 600,
-        fontSize: 14,
-        display: 'inline-block',
-        color: '#fff',
-        '& svg': {
-          width: 16,
-          marginTop: -3,
-        },
-      },
+      width: 102,
+      height: 35,
+      paddingTop: 5,
+      borderRadius: 16,
+      backgroundColor: '#fc9916',
+      textAlign: 'center',
     },
     chatIcon: {
       height: 10,
       width: 10,
-      marginTop: -18,
-      paddingRight: 15,
+      marginTop: -20,
+      paddingRight: 20,
     },
   })
 );
@@ -144,7 +132,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
               <CardContent>
                 <Grid item xs={12}>
                   <Grid item container spacing={2}>
-                    <Grid item lg={4} sm={3} xs={3} key={1} container>
+                    <Grid item lg={3} sm={3} xs={3} key={1} container>
                       <Grid sm={3} xs={2} key={5} item>
                         <img
                           alt={`${patient.patientInfo!.firstName} ${patient.patientInfo!.lastName}`}
@@ -187,12 +175,10 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         variant="body1"
                         className={classes.mainHeadingconsult}
                       >
-                        {patient.appointmentids.length > 1
-                          ? `${patient.appointmentids.length} Consults`
-                          : `${patient.appointmentids.length} Consult`}
+                        {patient.appointmentids.length} Consult
                       </Typography>
                     </Grid>
-                    <Grid lg={2} sm={3} xs={3} key={4} className={classes.valign} item>
+                    <Grid lg={3} sm={3} xs={3} key={4} className={classes.valign} item>
                       <span className={classes.chatSpan}>
                         <Link to={`/consulttabs/${patient.appointmentids[0]}/${patient.patientid}`}>
                           <IconButton aria-label="Navigate next" className={classes.chatIcon}>

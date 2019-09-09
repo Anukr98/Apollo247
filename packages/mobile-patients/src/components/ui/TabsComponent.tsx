@@ -16,7 +16,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 4,
     borderBottomColor: theme.colors.CLEAR,
-    marginTop: -5,
   },
   textStyle: {
     color: 'rgba(2, 71, 91, 0.5)',
@@ -53,8 +52,7 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
     return props.data.map((item, index) => {
       // const title = props.showIcons ? item.title : item;
       return (
-        <TouchableOpacity
-          activeOpacity={1}
+        <TouchableOpacity activeOpacity={1}
           key={index}
           style={[
             styles.tabView,
