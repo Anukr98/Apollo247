@@ -27,7 +27,7 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
   ];
   if (isLocal) plugins.push(new NodemonPlugin(nodemonPluginArgs));
 
-  const tsLoader = { loader: 'awesome-typescript-loader' };
+  const tsLoader = { loader: 'ts-loader' };
 
   return {
     target: 'node',
