@@ -93,6 +93,11 @@ export const caseSheetTypeDefs = gql`
     patientId: String
     parentId: String
     status: STATUS
+    rescheduleCount: Int
+    isFollowUp: Int
+    followUpParentId: String
+    isTransfer: Int
+    transferParentId: String
     caseSheet: [CaseSheet]
   }
 

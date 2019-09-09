@@ -116,6 +116,12 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true, default: false })
   isFollowUp: Boolean;
 
+  @Column({ nullable: true, default: false })
+  isFollowPaid: Boolean;
+
+  @Column({ nullable: true, default: false })
+  isTransfer: Boolean;
+
   @Column()
   patientId: string;
 
@@ -130,6 +136,9 @@ export class Appointment extends BaseEntity {
 
   @Column()
   status: STATUS;
+
+  @Column({ nullable: true })
+  transferParentId: string;
 
   @Column({ nullable: true })
   updatedDate: Date;
