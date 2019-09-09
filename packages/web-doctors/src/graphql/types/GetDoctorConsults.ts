@@ -24,8 +24,8 @@ export interface GetDoctorConsults_getDoctorConsults_doctorConsults_appointment 
 
 export interface GetDoctorConsults_getDoctorConsults_doctorConsults {
   __typename: "DoctorConsult";
-  patient: GetDoctorConsults_getDoctorConsults_doctorConsults_patient | null;
-  appointment: GetDoctorConsults_getDoctorConsults_doctorConsults_appointment | null;
+  patient: GetDoctorConsults_getDoctorConsults_doctorConsults_patient;
+  appointment: GetDoctorConsults_getDoctorConsults_doctorConsults_appointment;
 }
 
 export interface GetDoctorConsults_getDoctorConsults {

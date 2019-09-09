@@ -92,8 +92,20 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const PatientCard: React.FC = (props) => {
+export interface PatientCardProps {
+  patient: {
+    firstName: string;
+    lastName: string;
+    uhid: string;
+    queueNumber: number;
+  };
+  appointment: {
+    appointmentDateTime: Date;
+  };
+}
+export const PatientCard: React.FC<PatientCardProps> = (props) => {
   const classes = useStyles();
+  const { patient } = props;
 
   return (
     <div className={classes.root}>
@@ -104,30 +116,31 @@ export const PatientCard: React.FC = (props) => {
         </div>
         <div className={classes.cardContent}>
           <div className={classes.nameGroup}>
-            <div className={classes.name}>Rahul Mehta</div>
             <div className={classes.consultType}>
               <img src={require('images/ic_round-video.svg')} alt="" />
             </div>
           </div>
-          <div className={classes.userId}>UHID: 98765</div>
         </div>
       </div>
+
       <div className={`${classes.title} ${classes.upnextTitle}`}>APPT DATE: 22/08/2019, 10 AM</div>
       <div className={`${classes.cardGroup} ${classes.upNextCardGroup}`}>
-        <div className={classes.queueText}>Queued</div>
+        {patient.queueNumber > 1 && <div className={classes.queueText}>Queued</div>}
         <div className={classes.cardImg}>
           <Avatar src={require('images/patient_01.png')} alt="" className={classes.avatar} />
         </div>
         <div className={classes.cardContent}>
           <div className={classes.nameGroup}>
-            <div className={classes.name}>Seema Singh</div>
+            <div className={classes.name}>
+              {patient.firstName} {patient.lastName}
+            </div>
             <div className={classes.consultType}>
               <img src={require('images/ic_round-video.svg')} alt="" />
             </div>
           </div>
-          <div className={classes.userId}>UHID: 98765</div>
+          <div className={classes.userId}>UHID: {patient.uhid}</div>
         </div>
-        <div className={classes.queueCount}>2</div>
+        {patient.queueNumber > 1 && <div className={classes.queueCount}>{patient.queueNumber}</div>}
       </div>
     </div>
   );

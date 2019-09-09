@@ -6,9 +6,9 @@ import Scrollbars from 'react-custom-scrollbars';
 import { PatientCard } from 'components/JuniorDoctors/PatientCard';
 import { PastConsults } from 'components/JuniorDoctors/PastConsults';
 import { useQuery } from 'react-apollo-hooks';
-import { GetDoctorConsults } from 'graphql/types/GetDoctorConsults';
+import { GetDoctorConsults, GetDoctorConsultsVariables } from 'graphql/types/GetDoctorConsults';
 import { GET_DOCTOR_CONSULTS } from 'graphql/consults';
-import { useAuth } from 'hooks/authHooks';
+import { useCurrentPatient } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -91,14 +91,29 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
-  const { data, loading, error } = useQuery<GetDoctorConsults>(GET_DOCTOR_CONSULTS);
+  const currentDoctor = useCurrentPatient();
+  const { data, loading, error } = useQuery<GetDoctorConsults, GetDoctorConsultsVariables>(
+    GET_DOCTOR_CONSULTS,
+    {
+      skip: !currentDoctor,
+      variables: {
+        getDoctorConsultsInput: {
+          doctorId: currentDoctor!.id,
+        },
+      },
+    }
+  );
   console.log(data);
   if (error) return <div>An error occurred :(</div>;
   if (loading) return <CircularProgress />;
   if (data && data.getDoctorConsults && data.getDoctorConsults.doctorConsults) {
     const { doctorConsults } = data.getDoctorConsults;
-    const pastConsults = doctorConsults;
-    const activeConsults = doctorConsults;
+    const pastConsults = doctorConsults.filter(
+      (dc) => new Date(dc.appointment.appointmentDateTime) < new Date()
+    );
+    const futureConsults = doctorConsults.filter(
+      (dc) => new Date(dc.appointment.appointmentDateTime) > new Date()
+    );
     return (
       <div className={classes.root}>
         <div className={classes.headerSticky}>
@@ -110,9 +125,6 @@ export const JuniorDoctor: React.FC = (props) => {
               <h2>hello doc :)</h2>
               <p>manage your new and old patients easily here</p>
             </div>
-            {/* {activeConsults.map(({ patient, appointment }) => (
-
-            ))} */}
             <div className={classes.contentGroup}>
               <div className={classes.leftSection}>
                 <div className={classes.blockGroup}>
@@ -121,10 +133,12 @@ export const JuniorDoctor: React.FC = (props) => {
                     <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
                       <div className={classes.customScroll}>
                         <div className={classes.boxGroup}>
-                          <PatientCard />
-                          <PatientCard />
-                          <PatientCard />
-                          <PatientCard />
+                          {futureConsults.map(({ patient, appointment }, index) => (
+                            <PatientCard
+                              patient={{ ...patient, queueNumber: index + 1 }}
+                              appointment={appointment}
+                            />
+                          ))}
                         </div>
                       </div>
                     </Scrollbars>
