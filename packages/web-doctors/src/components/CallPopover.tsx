@@ -714,6 +714,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   useEffect(() => {
     if (props.isEnded) {
       onStopConsult();
+      setStartAppointment(!startAppointment);
+      setStartAppointmentButton(true);
     }
   }, [props.isEnded]);
   useEffect(() => {
@@ -1013,10 +1015,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.endconsultButton}
                 onClick={() => {
                   //onStopConsult();
-                  setStartAppointment(!startAppointment);
+                  //setStartAppointment(!startAppointment);
                   stopInterval();
                   props.endConsultAction();
-                  setCaseSheetEdit(false);
+                  //setCaseSheetEdit(false);
                   setDisableOnTransfer(true);
                 }}
               >
