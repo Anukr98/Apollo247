@@ -638,7 +638,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               activeOpacity={1}
               onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
             >
-              <ApolloLogo style={{}} />
+              <ApolloLogo />
             </TouchableOpacity>
           </View>
           <TouchableOpacity
@@ -651,8 +651,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             }}
           >
             <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
-              <View>
+              <Text style={styles.hiTextStyle}>
+                {string.home.hi} {userName}!
+              </Text>
+              {/* <View>
                 <View
                   style={{
                     flexDirection: 'row',
@@ -663,7 +665,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   <DropdownGreen style={{ marginTop: 8 }} />
                 </View>
                 <View style={styles.seperatorStyle} />
-              </View>
+              </View> */}
             </View>
           </TouchableOpacity>
           <Text style={styles.descriptionTextStyle}>

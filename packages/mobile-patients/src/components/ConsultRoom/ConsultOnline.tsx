@@ -276,7 +276,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             }}
           >
             {`${props.doctor ? `Dr. ${props.doctor.firstName}` : 'Doctor'} is available ${
-              availableInMin <= 60
+              availableInMin <= 60 && availableInMin > 0
                 ? `in ${availableInMin} mins`
                 : `on ${Moment(new Date(NextAvailableSlot), 'HH:mm:ss.SSSz').format(
                     'DD MMM, h:mm a'

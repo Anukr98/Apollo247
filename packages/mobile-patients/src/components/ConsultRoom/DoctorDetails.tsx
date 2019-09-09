@@ -322,7 +322,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <Text style={styles.onlineConsultAmount}>
                     Rs. {doctorDetails.onlineConsultationFees}
                   </Text>
-                  {availableInMin && availableInMin < 60 && (
+                  {availableInMin && availableInMin < 60 && availableInMin > 0 && (
                     <CapsuleView
                       title={`AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`}
                       isActive={availableInMin <= 15 ? true : false}
@@ -339,7 +339,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       <Text style={styles.onlineConsultAmount}>
                         Rs. {doctorDetails.physicalConsultationFees}
                       </Text>
-                      {availableInMin && availableInMin < 60 && (
+                      {availableInMin && availableInMin < 60 && availableInMin > 0 && (
                         <CapsuleView
                           title={`AVAILABLE IN ${availableInMin} MIN${
                             availableInMin > 1 ? 'S' : ''
@@ -413,7 +413,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         >
                           {/* {clinic.image && ( */}
                           <Image
-                            source={{ uri: 'https://via.placeholder.com/328x136' }}
+                            source={{
+                              uri: 'https://via.placeholder.com/328x136',
+                            }}
                             style={{
                               height: 136,
                               width: '100%',

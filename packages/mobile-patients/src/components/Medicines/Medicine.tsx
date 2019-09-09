@@ -26,6 +26,7 @@ import {
   View,
   StyleProp,
   ViewStyle,
+  Platform,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useShoppingCart } from '../ShoppingCartProvider';
@@ -215,9 +216,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 marginHorizontal: 20,
               }}
             >
-              <View style={{ marginTop: 20 }}>
+              <TouchableOpacity
+                style={{ marginTop: 20 }}
+                onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+              >
                 <ApolloLogo />
-              </View>
+              </TouchableOpacity>
               <View style={{ flexDirection: 'row', marginTop: 16 }}>
                 <TouchableOpacity
                   activeOpacity={1}
@@ -233,13 +237,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </UserIntro>
         </View>
         <TabsComponent
-          textStyle={{
-            paddingTop: 12,
-            paddingBottom: 8,
-          }}
+          height={44}
           style={{
-            height: 44,
-            marginTop: 191,
+            marginTop: Platform.OS === 'ios' ? 181 : 191,
             backgroundColor: colors.CARD_BG,
             ...viewStyles.shadowStyle,
           }}
