@@ -5,8 +5,10 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Alert } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { Spinner } from '../ui/Spinner';
+import { pinCodeServiceabilityApi } from '../../helpers/apiCalls';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -26,6 +28,8 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
     setDeliveryAddressId: setSelectedAddressId,
   } = useShoppingCart();
   const [selectedId, setselectedId] = useState<string>(selectedAddressId);
+  const [selectedPinCode, setselectedPinCode] = useState<string>(selectedAddressId);
+  const [loading, setLoading] = useState<boolean>(false);
   const renderBottomButtons = () => {
     return (
       <StickyBottomComponent defaultBG>
@@ -33,8 +37,25 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
           title="DONE"
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={() => {
-            setSelectedAddressId && setSelectedAddressId(selectedId);
-            props.navigation.pop();
+            setLoading(true);
+            pinCodeServiceabilityApi(selectedPinCode, 'PHARMA')
+              .then(({ data: { Availability } }) => {
+                setLoading(false);
+                if (Availability) {
+                  setSelectedAddressId && setSelectedAddressId(selectedId);
+                  props.navigation.goBack();
+                } else {
+                  Alert.alert(
+                    'Alert',
+                    'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
+                  );
+                  setSelectedAddressId && setSelectedAddressId('');
+                }
+              })
+              .catch((e) => {
+                setLoading(false);
+                Alert.alert('Alert', 'Unable to check if the address is serviceable or not.');
+              });
           }}
         />
       </StickyBottomComponent>
@@ -46,7 +67,10 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
       <RadioSelectionItem
         title={`${address.addressLine1}, ${address.addressLine2}\n${address.landmark}\n${address.city}, ${address.state} - ${address.zipcode}`}
         isSelected={selectedId === address.id}
-        onPress={() => setselectedId(address.id)}
+        onPress={() => {
+          setselectedPinCode(address.zipcode!);
+          setselectedId(address.id);
+        }}
         key={i}
         containerStyle={{
           paddingTop: 15,
@@ -61,21 +85,24 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
   };
 
   return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      <Header
-        leftIcon="backArrow"
-        title={'SELECT DELIVERY ADDRESS'}
-        container={{
-          ...theme.viewStyles.cardViewStyle,
-          borderRadius: 0,
-        }}
-        onPressLeftIcon={() => props.navigation.goBack()}
-      />
-      <ScrollView bounces={false}>
-        {renderAddresses()}
-        <View style={{ height: 80 }} />
-      </ScrollView>
-      {renderBottomButtons()}
-    </SafeAreaView>
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={theme.viewStyles.container}>
+        <Header
+          leftIcon="backArrow"
+          title={'SELECT DELIVERY ADDRESS'}
+          container={{
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
+          }}
+          onPressLeftIcon={() => props.navigation.goBack()}
+        />
+        <ScrollView bounces={false}>
+          {renderAddresses()}
+          <View style={{ height: 80 }} />
+        </ScrollView>
+        {renderBottomButtons()}
+      </SafeAreaView>
+      {loading && <Spinner />}
+    </View>
   );
 };

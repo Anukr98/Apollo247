@@ -115,6 +115,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         setDeliveryAddressId && setDeliveryAddressId(address.id || '');
         props.navigation.goBack();
       } else {
+        setDeliveryAddressId && setDeliveryAddressId('');
         Alert.alert(
           'Alert',
           'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
@@ -240,8 +241,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             disabled={!isAddressValid}
           ></Button>
         </StickyBottomComponent>
-        {showSpinner && <Spinner />}
       </SafeAreaView>
+      {showSpinner && <Spinner />}
     </View>
   );
 };
