@@ -97,40 +97,50 @@ export type Resolver<Parent, Args, Context, Result> = (
     context: async ({ req }) => {
       const isNotProduction = process.env.NODE_ENV !== 'production';
       const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';
-
       if (isNotProduction && isSchemaIntrospectionQuery) {
         const gatewayContext: GatewayContext = { firebaseUid: '', mobileNumber: '' };
         return gatewayContext;
       }
 
       const jwt = req.headers.authorization || '';
+
       if (jwt.indexOf('Bearer 3d1833da7020e0602165529446587434') == 0) {
         const gatewayContext: GatewayContext = {
           firebaseUid: '',
           mobileNumber: '',
         };
         return gatewayContext;
-      } else {
-        const firebaseIdToken = await firebase
-          .auth()
-          .verifyIdToken(jwt)
-          .catch((firebaseError: firebaseAdmin.FirebaseError) => {
-            throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
-          });
+      }
 
-        const firebaseUser = await firebase
-          .auth()
-          .getUser(firebaseIdToken.uid)
-          .catch((firebaseError: firebaseAdmin.FirebaseError) => {
-            throw new AphAuthenticationError(AphErrorMessages.FIREBASE_GET_USER_ERROR);
-          });
-
+      const isLocal = process.env.NODE_ENV === 'local';
+      const isFromLocalPlayground = jwt === 'FromLocalPlayground';
+      if (isLocal && isFromLocalPlayground) {
         const gatewayContext: GatewayContext = {
-          firebaseUid: firebaseUser.uid,
-          mobileNumber: firebaseUser.phoneNumber || '',
+          firebaseUid: (req.headers.firebaseuid as string) || '',
+          mobileNumber: (req.headers.mobilenumber as string) || '',
         };
         return gatewayContext;
       }
+
+      const firebaseIdToken = await firebase
+        .auth()
+        .verifyIdToken(jwt)
+        .catch((firebaseError: firebaseAdmin.FirebaseError) => {
+          throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
+        });
+
+      const firebaseUser = await firebase
+        .auth()
+        .getUser(firebaseIdToken.uid)
+        .catch((firebaseError: firebaseAdmin.FirebaseError) => {
+          throw new AphAuthenticationError(AphErrorMessages.FIREBASE_GET_USER_ERROR);
+        });
+
+      const gatewayContext: GatewayContext = {
+        firebaseUid: firebaseUser.uid,
+        mobileNumber: firebaseUser.phoneNumber || '',
+      };
+      return gatewayContext;
     },
   });
 
