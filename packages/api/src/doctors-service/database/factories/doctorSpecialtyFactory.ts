@@ -1,7 +1,7 @@
 import { DoctorSpecialty } from 'doctors-service/entities';
 import _sample from 'lodash/sample';
 
-const allDoctorSpecialties = [
+export const allSpecialties = [
   'Anesthesiologist',
   'Cardiologist',
   'Dermatologist',
@@ -29,10 +29,9 @@ const allDoctorSpecialties = [
   'Rheumatologist',
   'Urologist',
 ];
-export const randomDoctorSpecialty = () => _sample(allDoctorSpecialties) as string;
 
 export const buildDoctorSpecialty = (attrs: Partial<DoctorSpecialty> = {}) => {
   const specialty = new DoctorSpecialty();
-  specialty.name = randomDoctorSpecialty();
+  specialty.name = _sample(allSpecialties) as string;
   return Object.assign(specialty, attrs);
 };
