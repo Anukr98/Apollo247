@@ -177,7 +177,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [transferAccept, setTransferAccept] = useState<boolean>(false);
   const [transferDcotorName, setTransferDcotorName] = useState<string>('');
-
+  const [bottompopup, setBottompopup] = useState<boolean>(false);
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -820,7 +820,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     flex: 0.5,
                     marginLeft: 16,
                     marginRight: 5,
-                    backgroundColor: 'transparent',
+                    backgroundColor: '#0087ba',
                     borderWidth: 2,
                     borderColor: '#fcb715',
                   }}
@@ -828,7 +828,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onPress={() => {
                     props.navigation.navigate(AppRoutes.DoctorDetails, {
                       doctorId: rowData.transferInfo.doctorId,
-
                       showBookAppointment: true,
                     });
                   }}
@@ -1408,6 +1407,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const transferAppointmentAPI = (rowData: any) => {
+    console.log(rowData, 'rowData');
     Keyboard.dismiss();
     const appointmentTransferInput: BookTransferAppointmentInput = {
       patientId: patientId,
@@ -1428,22 +1428,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       })
       .then((data: any) => {
         console.log('Accept Api', data);
+        console.log('time', data.data.bookTransferAppointment.appointment.appointmentDateTime);
         setTransferAccept(true),
           setTransferDcotorName(rowData.transferInfo.doctorName),
           setTimeout(() => {
             setTransferAccept(false);
           }, 1000);
-        props.navigation.push(AppRoutes.ConsultRoom);
+        AsyncStorage.setItem('showTransferPopup', 'true');
+        props.navigation.replace(AppRoutes.TabBar, {
+          TransferData: rowData.transferInfo,
+          TranferDateTime: data.data.bookTransferAppointment.appointment.appointmentDateTime,
+        });
       })
       .catch((e: string) => {
-        console.log('Error occured while accept appid', e);
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while accept appid', errorMessage, error);
-        Alert.alert(
-          'Error',
-          'Opps ! The selected slot is unavailable. Please choose a different one'
-        );
+        setBottompopup(true);
+        // console.log('Error occured while accept appid', e);
+        // const error = JSON.parse(JSON.stringify(e));
+        // const errorMessage = error && error.message;
+        // console.log('Error occured while accept appid', errorMessage, error);
+        // Alert.alert(
+        //   'Error',
+        //   'Opps ! The selected slot is unavailable. Please choose a different one'
+        // );
+        // <BottomPopUp
+        //   title="Error"
+        //   description="Opps ! The selected slot is unavailable. Please choose a different one"
+        // />;
       });
   };
 
@@ -2541,6 +2551,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               resizeMode: 'contain',
             }}
           />
+        </BottomPopUp>
+      )}
+      {bottompopup && (
+        <BottomPopUp
+          title={'Hi:)'}
+          description="Opps ! The selected slot is unavailable. Please choose a different one"
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottompopup(false);
+                props.navigation.replace(AppRoutes.TabBar);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
         </BottomPopUp>
       )}
     </View>

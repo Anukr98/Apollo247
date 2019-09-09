@@ -96,8 +96,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const doctorDetails = data.doctorInfo;
   // console.log('doctorDetails', moment(data.appointmentDateTime).format('DD-MM-YYYY hh:mm:ss A'));
   // console.log('today time', moment(new Date()).format('DD-MM-YYYY hh:mm:ss A'));
+  console.log('doctorDetails', moment(data.appointmentDateTime));
+  console.log('today time', moment(new Date()));
   console.log('TextApp', data);
-
+  const dateIsAfter = moment(data.appointmentDateTime).isAfter(moment(new Date()));
+  console.log('dateIsAfter', dateIsAfter);
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
@@ -109,6 +112,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
   const [belowThree, setBelowThree] = useState<boolean>(false);
 
+  const [bottompopup, setBottompopup] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
 
@@ -292,7 +296,13 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           ...theme.viewStyles.container,
         }}
       >
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView
+          style={{
+            flex: 1,
+            zIndex: -1,
+            //elevation: 100,
+          }}
+        >
           <Header
             title="UPCOMING ONLINE VISIT"
             leftIcon="backArrow"
@@ -363,21 +373,24 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             </View>
           </View>
           <StickyBottomComponent defaultBG style={{ paddingHorizontal: 0 }}>
+            {dateIsAfter ? (
+              <Button
+                title={'RESCHEDULE'}
+                style={{
+                  flex: 0.5,
+                  marginLeft: 20,
+                  marginRight: 8,
+                  backgroundColor: 'white',
+                }}
+                titleTextStyle={{ color: '#fc9916' }}
+                onPress={() => {
+                  setResheduleoverlay(true);
+                }}
+              />
+            ) : null}
+
             <Button
-              title={'RESCHEDULE'}
-              style={{
-                flex: 0.5,
-                marginLeft: 20,
-                marginRight: 8,
-                backgroundColor: 'white',
-              }}
-              titleTextStyle={{ color: '#fc9916' }}
-              onPress={() => {
-                setResheduleoverlay(true);
-              }}
-            />
-            <Button
-              title={'START CONSULT'}
+              title={'START CONSULTATION'}
               style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.ChatRoom, {
@@ -387,6 +400,34 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             />
           </StickyBottomComponent>
         </SafeAreaView>
+        {bottompopup && (
+          <BottomPopUp
+            title={'Hi:)'}
+            description="Opps ! The selected slot is unavailable. Please choose a different one"
+          >
+            <View style={{ height: 60, alignItems: 'flex-end' }}>
+              <TouchableOpacity
+                style={{
+                  height: 60,
+                  paddingRight: 25,
+                  backgroundColor: 'transparent',
+                }}
+                onPress={() => {
+                  setBottompopup(false);
+                }}
+              >
+                <Text
+                  style={{
+                    paddingTop: 16,
+                    ...theme.viewStyles.yellowTextStyle,
+                  }}
+                >
+                  OK, GOT IT
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </BottomPopUp>
+        )}
         {cancelAppointment && (
           <View
             style={{
@@ -484,6 +525,13 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             </View>
           </BottomPopUp>
         )}
+        <View
+          style={{
+            zIndex: 1,
+            elevation: 100,
+          }}
+        ></View>
+
         {displayoverlay && doctorDetails && (
           <OverlayRescheduleView
             setdisplayoverlay={() => setdisplayoverlay(false)}
@@ -497,6 +545,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             appointmentId={data.id}
           />
         )}
+
         {resheduleoverlay && doctorDetails && (
           <ReschedulePopUp
             setResheduleoverlay={() => setResheduleoverlay(false)}
