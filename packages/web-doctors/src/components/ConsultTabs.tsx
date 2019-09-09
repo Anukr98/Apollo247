@@ -445,7 +445,6 @@ export const ConsultTabs: React.FC = () => {
         // setIsPopoverOpen(true);
         setIsPdfPopoverOpen(true);
         setIsEnded(true);
-        //isEnded, setIsEnded
         console.log('_data', _data);
       })
       .catch((e) => {
