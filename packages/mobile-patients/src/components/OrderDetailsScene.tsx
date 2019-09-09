@@ -152,7 +152,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               date={getFormattedDate(order!.statusDate)}
               time={getFormattedTime(order!.statusDate)}
               isStatusDone={true}
-              nextItemStatus={'NOT_EXIST'}
+              nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
             />
           );
         })}
