@@ -16,8 +16,8 @@ export const getDoctorConsultsTypeDefs = gql`
   }
 
   type DoctorConsult {
-    patient: Patient
-    appointment: Appointment
+    patient: Patient!
+    appointment: Appointment!
   }
 
   type GetDoctorConsultsResult {
