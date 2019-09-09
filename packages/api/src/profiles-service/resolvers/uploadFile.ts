@@ -4,8 +4,6 @@ import { Resolver } from 'api-gateway';
 import fs from 'fs';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { format } from 'date-fns';
-import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const uploadFileTypeDefs = gql`
   enum UPLOAD_FILE_TYPES {
@@ -34,6 +32,10 @@ const uploadFile: Resolver<
   UploadFileResult
 > = async (parent, args, { profilesDb }) => {
   const fileName = format(new Date(), 'ddmmyyyy-HHmmss') + '.' + args.fileType.toLowerCase();
+  const uploadPath = '../../' + fileName;
+  fs.writeFile(uploadPath, args.base64FileInput, { encoding: 'base64' }, (err) => {
+    console.log(err);
+  });
   fs.writeFile(fileName, args.base64FileInput, { encoding: 'base64' }, (err) => {
     console.log(err);
   });
@@ -76,13 +78,13 @@ const uploadFile: Resolver<
       console.log('error final', error);
       throw error;
     });
-  console.log('file saved!', readmeBlob.url);
+  /*console.log('file saved!', readmeBlob.url);
   if (!readmeBlob.url) {
     throw new AphError(AphErrorMessages.FILE_SAVE_ERROR, undefined, {});
-  }
+  }*/
   fs.unlinkSync(localFilePath);
   console.log(readmeBlob.name, readmeBlob, 'readme blob');
-  return { filePath: readmeBlob.url };
+  return { filePath: fileName };
 };
 
 export const uploadFileResolvers = {

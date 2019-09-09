@@ -18,6 +18,7 @@ import {
   NotificationType,
 } from 'notifications-service/resolvers/notifications';
 import { differenceInDays } from 'date-fns';
+import { ApiConstants } from 'ApiConstants';
 
 export const rescheduleAppointmentTypeDefs = gql`
   type NotificationMessage {
@@ -182,7 +183,8 @@ const checkIfReschedule: Resolver<
       isCancel = 1;
     } else {
       if (
-        Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) > 7 &&
+        Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) >
+          ApiConstants.APPOINTMENT_RESCHEDULE_DAYS_LIMIT &&
         apptDetails.isFollowPaid === false
       ) {
         isPaid = 1;

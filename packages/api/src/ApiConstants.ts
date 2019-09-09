@@ -6,4 +6,6 @@ export enum ApiConstants {
   //push-notification messages
   TRANSFER_INITIATION_TITLE = 'Appointment Transfer Initiation',
   TRANSFER_INITIATION_BODY = 'For your appointment {0}, transfer is initiated.',
+
+  APPOINTMENT_RESCHEDULE_DAYS_LIMIT = 7,
 }

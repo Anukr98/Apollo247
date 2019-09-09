@@ -17,7 +17,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 //import { SendNotification } from 'consults-service/sendNotifications';
 //import { MailMessage } from 'types/notificationMessageTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { format, addDays } from 'date-fns';
+import { addDays } from 'date-fns';
 import {
   NotificationType,
   sendNotification,
