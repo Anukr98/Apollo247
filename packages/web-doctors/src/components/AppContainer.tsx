@@ -35,15 +35,7 @@ const App: React.FC = () => {
       <AuthRouted
         exact
         path={clientRoutes.welcome()}
-        render={() => (
-          <Redirect
-            to={
-              isSignedIn.firebaseToken === null || isSignedIn.firebaseToken == ''
-                ? '/profile'
-                : '/Calendar'
-            }
-          />
-        )}
+        render={() => <Redirect to={isSignedIn.firebaseToken == '' ? '/profile' : '/Calendar'} />}
       />
       <AuthRouted exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />

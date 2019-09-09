@@ -6,7 +6,6 @@ import {
   createMuiTheme,
   Grid,
   IconButton,
-  Icon,
   Card,
   CardContent,
 } from '@material-ui/core';
@@ -221,7 +220,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
               data.caseSheet[1]!.doctorType !== 'JUNIOR') ? (
               <Grid lg={1} sm={1} xs={3} key={3} item>
                 <div>
-                  <Icon aria-label="Video call" className={classes.videoIcon}>
+                  <IconButton aria-label="Video call" className={classes.videoIcon}>
                     {data &&
                     data.caseSheet &&
                     data.caseSheet.length > 1 &&
@@ -230,13 +229,13 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                     ) : (
                       <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
                     )}
-                  </Icon>
+                  </IconButton>
                 </div>
               </Grid>
             ) : (
               <Grid lg={1} sm={1} xs={3} key={3} item>
                 <div>
-                  <Icon aria-label="Video call" className={classes.videoIcon}>
+                  <IconButton aria-label="Video call" className={classes.videoIcon}>
                     {data &&
                     data.caseSheet &&
                     data.caseSheet.length > 0 &&
@@ -246,7 +245,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
                     ) : (
                       <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
                     )}
-                  </Icon>
+                  </IconButton>
                 </div>
               </Grid>
             )}
