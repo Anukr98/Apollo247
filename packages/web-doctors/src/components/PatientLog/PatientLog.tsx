@@ -58,10 +58,11 @@ const AntTabs = withStyles({
     },
   },
   indicator: {
-    backgroundColor: '#02475b',
+    backgroundColor: '#00b38e',
     minWidth: 120,
     width: 120,
     maxWidth: 120,
+    height: 4,
   },
 })(Tabs);
 export interface TabContainerProps {
@@ -85,7 +86,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
     },
     highlightActive: {
-      borderBottom: '3px solid #02475b',
+      borderBottom: 'none',
       opacity: 1,
       fontWeight: theme.typography.fontWeightBold,
     },
@@ -131,6 +132,8 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'capitalize',
         fontSize: 16,
         padding: '16px 0',
+        color: '#02475b',
+        fontWeight: 600,
       },
     },
     none: {

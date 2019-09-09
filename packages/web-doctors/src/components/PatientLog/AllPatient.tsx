@@ -56,7 +56,7 @@ const useStyles = makeStyles((theme: Theme) =>
     mainHeadingmini: {
       fontSize: 14,
       fontWeight: 'normal',
-      color: '#02475b',
+      color: 'rgba(2,71,91,0.6)',
     },
     mainHeadingconsult: {
       fontSize: 14,
@@ -77,18 +77,23 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: 700,
     },
     chatSpan: {
-      width: 102,
+      width: 130,
       height: 35,
-      paddingTop: 5,
+      paddingTop: 7,
       borderRadius: 16,
       backgroundColor: '#fc9916',
       textAlign: 'center',
+      textTransform: 'uppercase',
+      fontWeight: 600,
+      fontSize: 14,
+      paddingRight: 15,
+      paddingLeft: 15,
     },
     chatIcon: {
-      height: 10,
-      width: 10,
-      marginTop: -20,
-      paddingRight: 20,
+      // height: 10,
+      // width: 10,
+      // marginTop: -20,
+      // paddingRight: 20,
     },
   })
 );
@@ -132,7 +137,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
               <CardContent>
                 <Grid item xs={12}>
                   <Grid item container spacing={2}>
-                    <Grid item lg={3} sm={3} xs={3} key={1} container>
+                    <Grid item lg={4} sm={3} xs={3} key={1} container>
                       <Grid sm={3} xs={2} key={5} item>
                         <img
                           alt={`${patient.patientInfo!.firstName} ${patient.patientInfo!.lastName}`}
@@ -177,7 +182,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         {patient.appointmentids.length} Consult
                       </Typography>
                     </Grid>
-                    <Grid lg={3} sm={3} xs={3} key={4} className={classes.valign} item>
+                    <Grid lg={2} sm={3} xs={3} key={4} className={classes.valign} item>
                       <span className={classes.chatSpan}>
                         <Link to={`/consulttabs/${patient.appointmentids[0]}/${patient.patientid}`}>
                           <IconButton aria-label="Navigate next" className={classes.chatIcon}>
