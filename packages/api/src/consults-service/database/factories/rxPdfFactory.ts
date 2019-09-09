@@ -1,6 +1,6 @@
 import { RxPdfData } from 'consults-service/entities/index';
-import { convertCaseSheetToRxPdfData } from 'consults-service/rxPdfGenerator';
-import { buildCaseSheet } from 'consults-service/database/factories/caseSheetFactory';
+//import { convertCaseSheetToRxPdfData } from 'consults-service/rxPdfGenerator';
+//import { buildCaseSheet } from 'consults-service/database/factories/caseSheetFactory';
 import _capitalize from 'lodash/capitalize';
 import _compact from 'lodash/compact';
 import _times from 'lodash/times';
@@ -10,8 +10,8 @@ import { randomEnum } from 'helpers/factoryHelpers';
 import { Salutation } from 'doctors-service/entities';
 
 export const buildRxPdfData = (): RxPdfData => {
-  const caseSheet = buildCaseSheet();
-  const { prescriptions } = convertCaseSheetToRxPdfData(caseSheet);
+  //const caseSheet = buildCaseSheet();
+  const prescriptions = [{ name: '', ingredients: [], frequency: '', instructions: '' }];
 
   const generalAdvice = _times(_random(0, 5), () => ({
     title: faker.commerce.productName(),
