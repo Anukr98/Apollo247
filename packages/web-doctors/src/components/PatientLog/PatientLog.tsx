@@ -185,12 +185,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sortByTitle: {
       width: 100,
-      height: 63,
-      padding: 17,
+      height: 25,
+      padding: '1px 0 2px 15px',
       position: 'absolute',
       right: '85%',
-      fontWeight: 700,
+      top: 20,
+      borderLeft: '2px solid rgba(0, 0, 0, 0.1)',
+      fontWeight: 600,
       fontSize: 16,
+      color: '#02475b',
     },
     sortByDropdown: {
       width: '22%',
@@ -211,6 +214,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 180,
       color: '#00b38e !important',
       display: 'inline-block',
+
       '& ul': {
         padding: '10px 0px',
         '& li': {
@@ -240,6 +244,21 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: 16,
       top: 16,
+    },
+    filterSelect: {
+      marginTop: 12,
+      '& svg': {
+        color: '#00b38e',
+      },
+      '& div': {
+        color: '#00b38e',
+      },
+      '&:before': {
+        borderBottom: 'none !important',
+      },
+      '&:after': {
+        borderBottom: 'none !important',
+      },
     },
   };
 });
@@ -327,6 +346,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                 <AphSelect
                   value={sortBy}
                   fullWidth
+                  className={classes.filterSelect}
                   MenuProps={{
                     classes: { paper: classes.menuPopover },
                     anchorOrigin: {
