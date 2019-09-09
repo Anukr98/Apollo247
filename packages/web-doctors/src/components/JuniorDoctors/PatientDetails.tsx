@@ -1,4 +1,4 @@
-import { Theme, Avatar } from '@material-ui/core';
+import { Theme, Avatar, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
@@ -207,11 +207,44 @@ const useStyles = makeStyles((theme: Theme) => {
     chatBody: {
       paddingRight: 74,
     },
+    menuPopover: {
+      minWidth: 160,
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.4)',
+      backgroundColor: theme.palette.common.white,
+      marginTop: 14,
+    },
+    menuBtnGroup: {
+      padding: '5px 16px',
+      '& button': {
+        boxShadow: 'none',
+        borderRadius: 0,
+        backgroundColor: 'transparent',
+        fontSize: 18,
+        fontWeight: 500,
+        color: '#01475b',
+        padding: '5px 0',
+        display: 'block',
+        textTransform: 'none',
+        borderBottom: '0.5px solid rgba(1,71,91,0.3)',
+        width: '100%',
+        textAlign: 'left',
+        '&:last-child': {
+          borderBottom: 0,
+        },
+      },
+    },
   };
 });
 
 export const PatientDetails: React.FC = (props) => {
   const classes = useStyles();
+  const [moreActionsDialog, setMoreActionsDialog] = React.useState<null | HTMLElement>(null);
+  const moreActionsopen = Boolean(moreActionsDialog);
+
+  function handleClick(event: React.MouseEvent<HTMLElement>) {
+    setMoreActionsDialog(event.currentTarget);
+  }
 
   return (
     <div className={classes.root}>
@@ -267,7 +300,7 @@ export const PatientDetails: React.FC = (props) => {
               <div className={classes.callIcon}>
                 <img src={require('images/ic_round-call.svg')} alt="" />
               </div>
-              <div className={classes.moreAction}>
+              <div className={classes.moreAction} onClick={handleClick}>
                 <img src={require('images/ic_more.svg')} alt="" />
               </div>
             </div>
@@ -292,6 +325,25 @@ export const PatientDetails: React.FC = (props) => {
           </div>
         </div>
       </div>
+      <Popover
+        anchorEl={moreActionsDialog}
+        keepMounted
+        open={moreActionsopen}
+        onClick={() => setMoreActionsDialog(null)}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.menuPopover }}
+      >
+        <div className={classes.menuBtnGroup}>
+          <AphButton>Transfer Consult</AphButton>
+        </div>
+      </Popover>
     </div>
   );
 };
