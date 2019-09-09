@@ -869,7 +869,8 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                 error={
                   mobileNumber.trim() !== '' &&
                   ((showErrorMessage && !isMobileNumberValid(mobileNumber)) ||
-                    (showErrorMessage && `+91${mobileNumber}` === doctorProfile.mobileNumber))
+                    (showErrorMessage && `+91${mobileNumber}` === doctorProfile.mobileNumber) ||
+                    delegateNumberStatus === `Secretary Number can't be same as Star Doctor Number`)
                 }
                 onKeyPress={(e) => {
                   if (isNaN(parseInt(e.key, 10))) {
@@ -952,11 +953,30 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                           variables: {
                             delegateNumber: `+91${mobileNumber}`,
                           },
-                        });
+                        })
+                          .then((result) => {
+                            setShowErrorMessage(false);
+                            setDelegateNumberStatus('Secretary Number has updated successfully');
+                            sessionStorage.setItem('mobileNumberSession', mobileNumber);
+                          })
+                          .catch((error) => {
+                            if (error.toString().includes('INVALID_ENTITY')) {
+                              setPhoneMessage('');
+                              setShowErrorMessage(true);
+                              setDelegateNumberStatus(
+                                `Secretary Number can't be same as Star Doctor Number`
+                              );
+                            } else {
+                              setShowErrorMessage(false);
+                              setDelegateNumberStatus('Secretary Number has updated successfully');
+                              sessionStorage.setItem('mobileNumberSession', mobileNumber);
+                            }
+                          });
+                      } else {
+                        setShowErrorMessage(false);
+                        setDelegateNumberStatus('Secretary Number has updated successfully');
+                        sessionStorage.setItem('mobileNumberSession', mobileNumber);
                       }
-                      setShowErrorMessage(false);
-                      setDelegateNumberStatus('Secretary Number has updated successfully');
-                      sessionStorage.setItem('mobileNumberSession', mobileNumber);
                     } else {
                       setPhoneMessage('');
                       setShowErrorMessage(true);
