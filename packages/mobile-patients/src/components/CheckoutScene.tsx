@@ -437,21 +437,21 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const renderPaymentModesCard = () => {
     const payUsingPaytmOption = (
-      <View style={[styles.paymentModeRowStyle, { marginBottom: 16 }]}>
-        <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+      <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+        <View style={[styles.paymentModeRowStyle, { marginBottom: 16 }]}>
           {isCashOnDelivery ? <RadioButtonUnselectedIcon /> : <RadioButtonIcon />}
-        </TouchableOpacity>
-        <Text style={styles.paymentModeTextStyle}>Pay Using paytm</Text>
-      </View>
+          <Text style={styles.paymentModeTextStyle}>Pay Using paytm</Text>
+        </View>
+      </TouchableOpacity>
     );
 
     const cashOnDeliveryOption = (
-      <View style={[styles.paymentModeRowStyle]}>
-        <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+      <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+        <View style={[styles.paymentModeRowStyle]}>
           {!isCashOnDelivery ? <RadioButtonUnselectedIcon /> : <RadioButtonIcon />}
-        </TouchableOpacity>
-        <Text style={styles.paymentModeTextStyle}>Cash On Delivery</Text>
-      </View>
+          <Text style={styles.paymentModeTextStyle}>Cash On Delivery</Text>
+        </View>
+      </TouchableOpacity>
     );
 
     const content = (
