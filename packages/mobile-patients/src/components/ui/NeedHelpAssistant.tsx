@@ -3,6 +3,9 @@ import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { NavigationScreenProp } from 'react-navigation';
+import { NavigationRoute } from 'react-navigation';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   helpView: {
@@ -31,6 +34,7 @@ const styles = StyleSheet.create({
 
 export interface NeedHelpAssistantProps {
   containerStyle?: StyleProp<ViewStyle>;
+  navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
 }
 
 export const NeedHelpAssistant: React.FC<NeedHelpAssistantProps> = (props) => {
@@ -38,6 +42,7 @@ export const NeedHelpAssistant: React.FC<NeedHelpAssistantProps> = (props) => {
     <View style={[styles.helpView, props.containerStyle]}>
       <Mascot style={styles.mascotImageStyle} />
       <Button
+        onPress={() => props.navigation && props.navigation.navigate(AppRoutes.MobileHelp)}
         title="Need Help?"
         style={styles.needhelpbuttonStyles}
         titleTextStyle={styles.titleBtnStyles}

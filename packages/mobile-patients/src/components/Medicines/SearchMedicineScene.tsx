@@ -16,7 +16,11 @@ import {
   getPatientPastMedicineSearches_getPatientPastMedicineSearches,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { MedicineProduct, searchMedicineApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  MedicineProduct,
+  searchMedicineApi,
+  pinCodeServiceabilityApi,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios, { AxiosResponse } from 'axios';
@@ -423,6 +427,16 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     isValidPinCode(text) && setPinCode(text);
     if (text.length == 6) {
       // call api here
+      pinCodeServiceabilityApi(text, 'PHARMA')
+        .then(({ data: { Availability } }) => {
+          const isAndroid = Platform.OS == 'android';
+          if (!isAndroid && !Availability) {
+            Alert.alert('Alert', 'Sorry! This pincode is not serviceable.');
+          }
+        })
+        .catch((e) => {
+          // handleGraphQlError(e);
+        });
     }
   };
 
@@ -508,7 +522,10 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               renderPastSearchItem(pastSearch!, i == array.length - 1 ? { marginRight: 0 } : {})
             )}
         </View>
-        <NeedHelpAssistant containerStyle={{ marginTop: 84, marginBottom: 50 }} />
+        <NeedHelpAssistant
+          navigation={props.navigation}
+          containerStyle={{ marginTop: 84, marginBottom: 50 }}
+        />
       </ScrollView>
     );
   };
