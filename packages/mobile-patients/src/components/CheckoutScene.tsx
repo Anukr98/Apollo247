@@ -23,18 +23,27 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrder';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { GraphQLError } from 'graphql';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, SafeAreaView, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Slider } from 'react-native-elements';
 import firebase from 'react-native-firebase';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from '../graphql/profiles';
 import { SaveMedicineOrderPaymentVariables } from '../graphql/types/SaveMedicineOrderPayment';
+import { handleGraphQlError } from '../helpers/helperFunctions';
 import { AppRoutes } from './NavigatorContainer';
 import { BottomPopUp } from './ui/BottomPopUp';
+import { Spinner } from './ui/Spinner';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -139,7 +148,6 @@ const styles = StyleSheet.create({
   popupButtonStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
   popupButtonTextStyle: {
     ...theme.fonts.IBMPlexSansBold(13),
@@ -151,11 +159,11 @@ const styles = StyleSheet.create({
 export interface CheckoutSceneProps extends NavigationScreenProps {}
 
 export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
-  const [isPayDisabled, setPayDisabled] = useState(false);
   const [isOneApolloPayment, setOneApolloPayment] = useState(false);
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(false);
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [orderInfo, setOrderInfo] = useState({
     pickupStoreName: '',
     pickupStoreAddress: '',
@@ -196,6 +204,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         orderAutoId: orderAutoId,
         amountPaid: grandTotal,
         paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        paymentStatus: 'success',
+        responseCode: '',
+        responseMessage: '',
       },
     })
       .then(({ data }) => {
@@ -205,7 +216,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           {}) as SaveMedicineOrder_SaveMedicineOrder;
 
         console.log({ errorCode, errorMessage });
+        setShowSpinner(false);
         if (errorCode || errorMessage) {
+          Alert.alert('Alert', `Order Failed, ${errorMessage}`);
           // Order-failed
         } else {
           // Order-Success
@@ -216,13 +229,14 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
             pickupStoreAddress: '',
             pickupStoreName: '',
           });
-          setPayDisabled(false);
           setShowOrderPopup(true);
         }
       })
-      .catch((e: GraphQLError[]) => {
+      .catch((e) => {
+        setShowSpinner(false);
+        console.error('Came to catch  ');
         console.log({ e });
-        Alert.alert('Error', e[0] && e[0].message);
+        handleGraphQlError(e);
       });
   };
 
@@ -239,7 +253,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const initiateOrder = async () => {
     console.log('initiateOrder');
-    setPayDisabled(true);
+    setShowSpinner(true);
     const orderInfo: SaveMedicineOrderVariables = {
       MedicineCartInput: {
         quoteId: null,
@@ -266,6 +280,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       },
     };
 
+    console.log(JSON.stringify(orderInfo));
     saveOrder(orderInfo)
       .then(({ data }) => {
         const { orderId, orderAutoId } = ((data &&
@@ -277,13 +292,14 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           placeOrder(orderId, orderAutoId);
         } else {
           console.log('redirectToPaymentGateway');
-          redirectToPaymentGateway(orderId, orderAutoId).finally(() => setPayDisabled(false));
+          redirectToPaymentGateway(orderId, orderAutoId).finally(() => {
+            setShowSpinner(false);
+          });
         }
       })
-      .catch((error: GraphQLError) => {
-        Alert.alert('Error', error.message);
-        setPayDisabled(false);
-        console.log('Error occured', { error });
+      .catch((error) => {
+        setShowSpinner(false);
+        handleGraphQlError(error);
       });
   };
 
@@ -467,7 +483,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           onPress={() => {
             initiateOrder();
           }}
-          disabled={isPayDisabled}
+          // disabled={isPayDisabled}
         />
       </StickyBottomComponent>
     );
@@ -478,7 +494,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       return (
         <BottomPopUp
           title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-          description={'Your order has been placed successfully'}
+          description={'Your order has been placed successfully.'}
         >
           <View
             style={{
@@ -510,10 +526,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               <Text
                 style={{
                   flex: 1,
-                  textAlign: 'right',
                   ...theme.fonts.IBMPlexSansMedium(14),
                   lineHeight: 24,
                   color: '#01475b',
+                  textAlign: 'right',
                 }}
               >
                 {`#${orderInfo.orderAutoId}`}
@@ -537,7 +553,6 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
             >
               <Text
                 style={{
-                  flex: 1,
                   ...theme.fonts.IBMPlexSansMedium(14),
                   lineHeight: 24,
                   color: '#01475b',
@@ -545,10 +560,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               >
                 Remind me to take medicines
               </Text>
-              <TouchableOpacity
-                style={{ flex: 1 }}
-                onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}
-              >
+              <TouchableOpacity style={{}} onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}>
                 {isRemindMeChecked ? <CheckedIcon /> : <UnCheck />}
               </TouchableOpacity>
             </View>
@@ -556,13 +568,14 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               style={{
                 height: 1,
                 backgroundColor: '#02475b',
-                opacity: 0.1,
+                opacity: 0.3,
                 marginBottom: 15.5,
                 marginTop: 7.5,
               }}
             />
             <View style={styles.popupButtonStyle}>
               <TouchableOpacity
+                style={{ flex: 1 }}
                 onPress={() =>
                   props.navigation.navigate(AppRoutes.OrderDetailsScene, {
                     orderAutoId: orderInfo.orderAutoId,
@@ -572,6 +585,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                 <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                style={{ flex: 1, alignItems: 'flex-end' }}
                 onPress={() =>
                   props.navigation.navigate(AppRoutes.OrderDetailsScene, {
                     orderAutoId: orderInfo.orderAutoId,
@@ -595,6 +609,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         {renderPaymentModesCard()}
         {renderPayButton()}
       </SafeAreaView>
+      {renderOrderInfoPopup()}
+      {showSpinner && <Spinner />}
     </View>
   );
 };

@@ -1,4 +1,6 @@
 import moment from 'moment';
+import { GraphQLError } from 'graphql';
+import { Alert } from 'react-native';
 
 export const getDateFormat = (_date: string /*"2019-08-08T20:30:00.000Z"*/) => {
   const dateTime = _date.split('T');
@@ -81,6 +83,26 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
     }
   });
   return array;
+};
+
+export const handleGraphQlError = (
+  error: any,
+  message: string = 'Uh oh! An Unknown Error Occurred.'
+) => {
+  console.log({ error });
+
+  let formattedError = message;
+  if (typeof error == 'string') {
+    formattedError = error;
+  } else if (typeof error == 'object') {
+    try {
+      const graphqlErr = (error as GraphQLError).message;
+      formattedError = graphqlErr;
+    } catch (e) {
+      console.log({ e });
+    }
+  }
+  Alert.alert('Alert', formattedError);
 };
 
 export const timeTo12HrFormat = (time: string) => {
