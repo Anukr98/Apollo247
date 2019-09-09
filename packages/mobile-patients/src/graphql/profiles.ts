@@ -184,6 +184,8 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           firstName
           lastName
           experience
+          onlineConsultationFees
+          physicalConsultationFees
           specialty {
             name
           }

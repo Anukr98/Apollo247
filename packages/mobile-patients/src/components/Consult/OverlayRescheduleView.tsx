@@ -47,6 +47,7 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   doctorId: string;
   rescheduleCount: number;
   appointmentId: string;
+  data: any;
   // availableSlots: string[] | null;
 }
 export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (props) => {
@@ -151,7 +152,13 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
         <Mutation<bookRescheduleAppointment> mutation={BOOK_APPOINTMENT_RESCHEDULE}>
           {(mutate, { loading, data, error }) => (
             <Button
-              title={props.rescheduleCount === 3 ? `PAY Rs. 300` : `CONFIRM RESCHEDULE`}
+              title={
+                props.rescheduleCount === 3
+                  ? `PAY Rs. ${props.data.doctorInfo &&
+                      props.data.doctorInfo.onlineConsultationFees &&
+                      props.data.doctorInfo.onlineConsultationFees}`
+                  : `CONFIRM RESCHEDULE`
+              }
               disabled={
                 tabs[0].title === selectedTab &&
                 isConsultOnline &&

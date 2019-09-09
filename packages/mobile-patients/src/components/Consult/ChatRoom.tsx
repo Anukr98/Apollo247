@@ -1539,6 +1539,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   publishAudio: mute,
                   audioVolume: 100,
                 }}
+                resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
               />
               <OTSubscriber
@@ -1655,6 +1656,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               publishAudio: mute,
               audioVolume: 100,
             }}
+            resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
           />
           <OTSubscriber
