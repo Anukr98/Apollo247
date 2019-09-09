@@ -1336,7 +1336,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               >
                 Patient needs a in person visit
               </MenuItem>
-              <MenuItem value="Others" classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
                 Other
               </MenuItem>
             </AphSelect>

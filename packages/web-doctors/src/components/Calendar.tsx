@@ -217,6 +217,7 @@ export const Calendar: React.FC = () => {
       startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
       endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
     },
+    fetchPolicy: 'no-cache',
   });
 
   return (

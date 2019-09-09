@@ -55,6 +55,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   appointmentDateTime: any | null;
   status: STATUS | null;
   appointmentState: string | null;
+  displayId: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {
