@@ -470,6 +470,7 @@ interface CallPopoverProps {
   appointmentDateTime: string;
   doctorId: string;
   isEnded: boolean;
+  caseSheetId: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -802,6 +803,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       appointmentId: props.appointmentId,
       folloupDateTime: folloupDateTime,
       doctorId: props.doctorId,
+      caseSheetId: props.caseSheetId,
     };
     if (folloupDateTime !== '') {
       setTimeout(() => {
