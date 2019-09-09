@@ -613,12 +613,11 @@ export const ConsultTabs: React.FC = () => {
                 casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
                   <span>
-                    {casesheetInfo!.getCaseSheet!.patientDetails!.firstName +
-                      ' ' +
-                      casesheetInfo!.getCaseSheet!.patientDetails!.lastName}
+                    {`${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
+                      casesheetInfo!.getCaseSheet!.patientDetails!.lastName
+                    }.`}
                   </span>
                 )}
-              .
             </h3>
             <Button
               className={classes.consultButton}
