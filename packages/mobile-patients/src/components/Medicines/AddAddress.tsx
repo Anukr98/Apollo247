@@ -160,15 +160,15 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       >
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => {
-            console.log('clicked');
-            setShowPopup(true);
-          }}
+          // onPress={() => {
+          //   console.log('clicked');
+          //   setShowPopup(true);
+          // }}
           style={{ marginBottom: 8 }}
         >
           <View style={styles.placeholderViewStyle}>
             <Text style={[styles.placeholderTextStyle]}>{userName}</Text>
-            <DropdownGreen size="sm" />
+            {/* <DropdownGreen size="sm" /> */}
           </View>
         </TouchableOpacity>
         {showPopup && (

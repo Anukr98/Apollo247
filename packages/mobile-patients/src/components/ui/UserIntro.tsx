@@ -170,7 +170,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
         {props.children}
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => setShowMenu(true)}
+          // onPress={() => setShowMenu(true)}
           style={{
             flexDirection: 'row',
             // marginTop: 18,
@@ -179,8 +179,10 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
           }}
         >
           <View style={{ flexDirection: 'row' }}>
-            <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
-            <View>
+            <Text style={styles.hiTextStyle}>
+              {string.home.hi} {userName}!
+            </Text>
+            {/* <View>
               <View
                 style={{
                   flexDirection: 'row',
@@ -191,7 +193,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
                 <DropdownGreen style={{ marginTop: 8 }} />
               </View>
               <View style={styles.seperatorStyle} />
-            </View>
+            </View> */}
           </View>
         </TouchableOpacity>
         <Text style={styles.descriptionTextStyle}>{props.description}</Text>

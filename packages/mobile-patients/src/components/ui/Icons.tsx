@@ -616,3 +616,11 @@ export const MedicalIcon: React.FC<IconProps> = (props) => (
     source={require('@aph/mobile-patients/src/images/medicine/medicalicon.png')}
   />
 );
+
+export const DoctorPlaceholderImage: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 80, width: 80 }}
+    {...props}
+    source={require('./icons/doctorPlaceholder.jpg')}
+  />
+);

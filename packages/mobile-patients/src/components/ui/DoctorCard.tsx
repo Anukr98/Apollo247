@@ -25,6 +25,7 @@ import Moment from 'moment';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -296,7 +297,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   style={{ width: 80, height: 80, borderRadius: 40 }}
                   source={{ uri: rowData.photoUrl }}
                 />
-              ) : null}
+              ) : (
+                <DoctorPlaceholderImage />
+              )}
 
               {/* {rowData.isStarDoctor ? (
               <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
