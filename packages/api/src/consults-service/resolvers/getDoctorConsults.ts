@@ -37,8 +37,10 @@ type GetDoctorConsultsResult = {
 };
 
 type GetDoctorConsultsInput = {
-  doctorId: string;
-  limit?: number;
+  getDoctorConsultsInput: {
+    doctorId: string;
+    limit?: number;
+  };
 };
 
 const getDoctorConsults: Resolver<
@@ -46,18 +48,24 @@ const getDoctorConsults: Resolver<
   GetDoctorConsultsInput,
   ConsultServiceContext,
   GetDoctorConsultsResult
-> = async (parent, { doctorId, limit }, { firebaseUid, doctorsDb, consultsDb, patientsDb }) => {
+> = async (
+  parent,
+  { getDoctorConsultsInput },
+  { firebaseUid, doctorsDb, consultsDb, patientsDb }
+) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const patRepo = patientsDb.getCustomRepository(PatientRepository);
 
+  const { doctorId, limit } = getDoctorConsultsInput;
   const currentDoctor = await docRepo.getDoctorDetails(firebaseUid);
-  const authorized = currentDoctor && currentDoctor.id === doctorId;
+  const authorized = currentDoctor && currentDoctor.id && currentDoctor.id === doctorId;
   if (!authorized) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const appointments = await apptRepo.find({
     where: { doctorId },
     order: { appointmentDateTime: 'DESC' },
+
     take: limit || 20,
   });
 

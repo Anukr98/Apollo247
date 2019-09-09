@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 
 export const GET_DOCTOR_CONSULTS = gql`
   query GetDoctorConsults($getDoctorConsultsInput: GetDoctorConsultsInput!) {
-    getDoctorConsults(getDoctorConsultsInput: $getDooctorConsultsInput) {
+    getDoctorConsults(getDoctorConsultsInput: $getDoctorConsultsInput) {
       doctorConsults {
         patient {
           id

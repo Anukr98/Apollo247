@@ -2,6 +2,8 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { GetDoctorConsultsInput } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: GetDoctorConsults
 // ====================================================
@@ -33,4 +35,8 @@ export interface GetDoctorConsults_getDoctorConsults {
 
 export interface GetDoctorConsults {
   getDoctorConsults: GetDoctorConsults_getDoctorConsults;
+}
+
+export interface GetDoctorConsultsVariables {
+  getDoctorConsultsInput: GetDoctorConsultsInput;
 }

@@ -136,6 +136,11 @@ export interface EndAppointmentSessionInput {
   status: STATUS;
 }
 
+export interface GetDoctorConsultsInput {
+  doctorId: string;
+  limit?: number | null;
+}
+
 export interface RescheduleAppointmentInput {
   appointmentId: string;
   rescheduleReason: string;
