@@ -168,7 +168,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     console.log('creating container...');
     await client
       .createContainer()
-      .then((res) => console.log(res))
+      .then((res) => console.log('Storage test succeeded!', res))
       .catch((error) => console.log('error creating', error));
   }
 
