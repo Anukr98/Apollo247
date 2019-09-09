@@ -3,6 +3,11 @@ import { DoctorSpecialty } from 'doctors-service/entities';
 
 @EntityRepository(DoctorSpecialty)
 export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
+  findAll() {
+    return this.createQueryBuilder('specialty')
+      .orderBy('specialty.name', 'ASC')
+      .getMany();
+  }
   searchByName(searchString: string) {
     return this.createQueryBuilder('specialty')
       .where('LOWER(name) LIKE :searchString', {
