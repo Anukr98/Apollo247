@@ -116,7 +116,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     return (
       <View style={styles.bottonButtonContainer}>
         <Button
-          title="CALL US"
+          title="NEED HELP"
           style={styles.bottomButtonStyle}
           titleTextStyle={{ color: '#fc9916' }}
         />
