@@ -212,6 +212,8 @@ export const Calendar: React.FC = () => {
     //setMonthSelected(moment(selectedDate).format('MMMM'));
     setSelectedDate(startOfMonth(start as Date));
   };
+  console.log(format(range.start as number | Date, 'yyyy-MM-dd'));
+  console.log(format(range.end as number | Date, 'yyyy-MM-dd'));
   const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
     variables: {
       startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
@@ -225,7 +227,7 @@ export const Calendar: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 85px' }}>
+      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
         <div className={classes.container}>
           <div className={classes.tabHeading}>
             <Typography variant="h1">

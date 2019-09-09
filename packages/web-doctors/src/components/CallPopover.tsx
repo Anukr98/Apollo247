@@ -804,6 +804,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       folloupDateTime: folloupDateTime,
       doctorId: props.doctorId,
       caseSheetId: props.caseSheetId,
+      doctorInfo: currentPatient,
     };
     if (folloupDateTime !== '') {
       setTimeout(() => {
