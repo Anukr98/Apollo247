@@ -1,12 +1,11 @@
-import React from 'react';
-import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { Text } from 'react-native-elements';
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
 import {
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React from 'react';
+import { StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { Text } from 'react-native-elements';
 
 const styles = StyleSheet.create({
   radioButtonContainer: {
@@ -40,7 +39,8 @@ export interface RadioSelectionItemProps {
 
 export const RadioSelectionItem: React.FC<RadioSelectionItemProps> = (props) => {
   return (
-    <TouchableOpacity activeOpacity={1}
+    <TouchableOpacity
+      activeOpacity={1}
       onPress={() => props.onPress(!props.isSelected)}
       style={[styles.radioButtonContainer, props.containerStyle]}
     >

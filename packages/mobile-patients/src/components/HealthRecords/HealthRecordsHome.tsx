@@ -27,7 +27,7 @@ import {
 import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '@aph/mobile-patients/src/graphql/profiles';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
 import { Button } from '../ui/Button';
@@ -251,13 +251,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         <View>
           <TabsComponent
             style={{
-              height: 43,
+              height: 44,
               marginTop: 236,
               backgroundColor: theme.colors.CARD_BG,
               ...theme.viewStyles.shadowStyle,
             }}
             textStyle={{
               paddingTop: 12,
+              paddingBottom: 8,
             }}
             data={tabs}
             onChange={(selectedTab: string) => setselectedTab(selectedTab)}
@@ -343,9 +344,36 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  // const consultionType = (id: string, filter: ConsultMode) => {
+  //   doctorsAvailability;
+  //   let filterType = false;
+  //   doctorsAvailability &&
+  //     doctorsAvailability.forEach((element) => {
+  //       if (
+  //         element &&
+  //         element.doctorId === id &&
+  //         element.availableModes &&
+  //         element.availableModes.includes(filter)
+  //       ) {
+  //         filterType = true;
+  //       }
+  //     });
+  //   return filterType;
+  // };
+
   const renderConsults = () => {
     console.log('arrayValues', arrayValues);
 
+    // const arrayValuesFilter =
+    //   filterData[0].selectedOptions && filterData[0].selectedOptions.length
+    //     ? arrayValues.filter(
+    //         (item: any) => {
+    //           return consultionType(item.appointmentType);
+    //         }
+    //         // item && item.appointmentType && filterData[0].selectedOptions.split(' ') ===
+    //       )
+    //     : arrayValues;
+    // console.log(arrayValuesFilter, 'arrayValues', arrayValues);
     return (
       <View>
         {renderFilter()}

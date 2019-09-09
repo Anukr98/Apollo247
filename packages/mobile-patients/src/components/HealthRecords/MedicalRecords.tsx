@@ -103,14 +103,10 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   };
 
   const renderCards = () => {
-    console.log(medicalRecords, 'medicalRecord');
-
     if (medicalRecords && medicalRecords.length)
       return (
         <View>
           {medicalRecords.map((item) => {
-            console.log('item', item);
-
             if (item)
               return (
                 <HealthMedicineCard

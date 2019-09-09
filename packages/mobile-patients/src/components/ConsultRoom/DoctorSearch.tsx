@@ -575,7 +575,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             >
               <View style={styles.listSpecialistView}>
                 {rowData.image && (
-                  <Image source={{ uri: rowData.image }} style={{ height: 44, width: 44 }} />
+                  <Image
+                    source={{
+                      uri:
+                        // 'https://apollouatstg.blob.core.windows.net/specialties/drawable-xxxhdpi/ic_cardiology.png',
+                        rowData.image,
+                    }}
+                    resizeMode={'contain'}
+                    style={{ height: 36, width: 36 }}
+                  />
                 )}
                 {/* {SpecialityImages[rowID % 4]} */}
                 <Text style={styles.rowSpecialistStyles}>{rowData.name!.toUpperCase()}</Text>
@@ -637,6 +645,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         <Mutation<saveSearch> mutation={SAVE_SEARCH}>
           {(mutate, { loading, data, error }) => (
             <DoctorCard
+              saveSearch={true}
               doctorAvailalbeSlots={doctorAvailalbeSlots}
               rowData={rowData}
               navigation={props.navigation}
