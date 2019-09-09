@@ -15,6 +15,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { GET_PATIENT_LOG } from 'graphql/profiles';
 import { GetPatientLog } from 'graphql/types/getPatientLog';
 import { patientLogSort, patientLogType } from 'graphql/types/globalTypes';
+import Scrollbars from 'react-custom-scrollbars';
 
 const tabsArray: any = [
   {
@@ -321,92 +322,94 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <div className={classes.container}>
-        <div>
-          <div className={classes.tabHeading}>
-            <Typography variant="h1">
-              <span>
-                {currentPatient && `hello dr. ${currentPatient.lastName.toLowerCase()} :)`}
-              </span>
-            </Typography>
-            <p>here are all your patients</p>
-          </div>
-          {selectedTabIndex < 3 && (
-            <AppBar position="static" color="default" className={classes.tabBarHeading}>
-              <AntTabs
-                value={selectedTabIndex}
-                indicatorColor="secondary"
-                className={classes.tabBar}
-              >
-                {tabsHtml}
-              </AntTabs>
-
-              <span className={classes.sortByDropdown}>
-                <span className={classes.sortByTitle}>Sort by:</span>
-                <AphSelect
-                  value={sortBy}
-                  fullWidth
-                  className={classes.filterSelect}
-                  MenuProps={{
-                    classes: { paper: classes.menuPopover },
-                    anchorOrigin: {
-                      vertical: 'top',
-                      horizontal: 'right',
-                    },
-                    transformOrigin: {
-                      vertical: 'top',
-                      horizontal: 'right',
-                    },
-                  }}
-                  onChange={(e) => {
-                    setSortBy(e.target.value as string);
-                  }}
+      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 85px' }}>
+        <div className={classes.container}>
+          <div>
+            <div className={classes.tabHeading}>
+              <Typography variant="h1">
+                <span>
+                  {currentPatient && `hello dr. ${currentPatient.lastName.toLowerCase()} :)`}
+                </span>
+              </Typography>
+              <p>here are all your patients</p>
+            </div>
+            {selectedTabIndex < 3 && (
+              <AppBar position="static" color="default" className={classes.tabBarHeading}>
+                <AntTabs
+                  value={selectedTabIndex}
+                  indicatorColor="secondary"
+                  className={classes.tabBar}
                 >
-                  {sortByArray.map((item: any, index: number) => {
-                    return (
-                      <MenuItem
-                        key={item.key}
-                        value={item.key}
-                        classes={{ selected: classes.menuSelected }}
-                      >
-                        {/* <img
+                  {tabsHtml}
+                </AntTabs>
+
+                <span className={classes.sortByDropdown}>
+                  <span className={classes.sortByTitle}>Sort by:</span>
+                  <AphSelect
+                    value={sortBy}
+                    fullWidth
+                    className={classes.filterSelect}
+                    MenuProps={{
+                      classes: { paper: classes.menuPopover },
+                      anchorOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                      transformOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                    }}
+                    onChange={(e) => {
+                      setSortBy(e.target.value as string);
+                    }}
+                  >
+                    {sortByArray.map((item: any, index: number) => {
+                      return (
+                        <MenuItem
+                          key={item.key}
+                          value={item.key}
+                          classes={{ selected: classes.menuSelected }}
+                        >
+                          {/* <img
                         className={classes.checkImg}
                         src={require('images/ic_unselected.svg')}
                         alt="chkUncheck"
                       /> */}
-                        {item.value}
-                      </MenuItem>
-                    );
-                  })}
-                </AphSelect>
-              </span>
-            </AppBar>
-          )}
-          {loading ? (
-            <Typography variant="h4">
-              <CircularProgress className={classes.loading} />
-            </Typography>
-          ) : (
-            <div>
-              {selectedTabIndex === 0 && (
-                <TabContainer>
-                  <AllPatient patientData={patientList} />
-                </TabContainer>
-              )}
-              {selectedTabIndex === 1 && (
-                <TabContainer>
-                  <AllPatient patientData={patientList} />
-                </TabContainer>
-              )}
-              {selectedTabIndex === 2 && (
-                <TabContainer>
-                  <AllPatient patientData={patientList} />
-                </TabContainer>
-              )}
-            </div>
-          )}
+                          {item.value}
+                        </MenuItem>
+                      );
+                    })}
+                  </AphSelect>
+                </span>
+              </AppBar>
+            )}
+            {loading ? (
+              <Typography variant="h4">
+                <CircularProgress className={classes.loading} />
+              </Typography>
+            ) : (
+              <div>
+                {selectedTabIndex === 0 && (
+                  <TabContainer>
+                    <AllPatient patientData={patientList} />
+                  </TabContainer>
+                )}
+                {selectedTabIndex === 1 && (
+                  <TabContainer>
+                    <AllPatient patientData={patientList} />
+                  </TabContainer>
+                )}
+                {selectedTabIndex === 2 && (
+                  <TabContainer>
+                    <AllPatient patientData={patientList} />
+                  </TabContainer>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </Scrollbars>
     </div>
   );
 };
