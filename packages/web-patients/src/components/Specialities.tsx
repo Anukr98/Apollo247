@@ -82,9 +82,18 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
       marginTop: -20,
       marginBottom: 5,
+      padding: 8,
+      backgroundColor: '#dcdfcf',
       [theme.breakpoints.down('xs')]: {
         marginTop: 0,
         marginBottom: 10,
+      },
+      '& img': {
+        verticalAlign: 'middle',
+        height: 'auto',
+        width: 'auto',
+        maxWidth: '100%',
+        maxHeight: '100%',
       },
     },
   });
