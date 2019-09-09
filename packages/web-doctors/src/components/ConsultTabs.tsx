@@ -605,7 +605,7 @@ export const ConsultTabs: React.FC = () => {
           <div className={classes.tabBody}>
             {}
             <h3>
-              You,re ending your consult with
+              You,re ending your consult with{' '}
               {casesheetInfo &&
                 casesheetInfo !== null &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
