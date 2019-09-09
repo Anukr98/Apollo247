@@ -138,10 +138,12 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
+    const newStartDate = new Date(addDays(startDate, -1) + 'T18:30');
+    const newEndDate = new Date(startDate + 'T18:30');
     return this.find({
       where: {
         doctorId,
-        appointmentDateTime: Between(startDate, endDate),
+        appointmentDateTime: Between(newStartDate, newEndDate),
         status: Not(STATUS.CANCELLED),
       },
       relations: ['caseSheet'],
