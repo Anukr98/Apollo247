@@ -151,7 +151,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
         <Mutation<bookRescheduleAppointment> mutation={BOOK_APPOINTMENT_RESCHEDULE}>
           {(mutate, { loading, data, error }) => (
             <Button
-              title={`PAY Rs. 300`}
+              title={props.rescheduleCount === 3 ? `PAY Rs. 300` : `CONFIRM RESCHEDULE`}
               disabled={
                 tabs[0].title === selectedTab &&
                 isConsultOnline &&

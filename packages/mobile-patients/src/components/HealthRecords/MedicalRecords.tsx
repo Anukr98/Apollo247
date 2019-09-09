@@ -34,7 +34,9 @@ const styles = StyleSheet.create({
 });
 
 export interface MedicalRecordsProps extends NavigationScreenProps {}
+
 export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
+  const [countTab, setCountTab] = useState<any>();
   const [medicalRecords, setmedicalRecords] = useState<
     (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[] | null | undefined
   >([]);
@@ -53,6 +55,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
       .then(({ data }) => {
         const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
         console.log('getPatientMedicalRecords', data, records);
+        setCountTab(data.getPatientMedicalRecords!.medicalRecords!.length);
         if (records !== medicalRecords) {
           setmedicalRecords(records);
         }

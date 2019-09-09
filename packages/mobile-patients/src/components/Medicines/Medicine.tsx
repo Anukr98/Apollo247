@@ -24,13 +24,31 @@ import {
   Text,
   TouchableOpacity,
   View,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   separatorStyle: {
     borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
+  labelView: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#ff748e',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
   },
 });
 
@@ -82,6 +100,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
+
+  const { cartItems } = useShoppingCart();
+  const cartItemsCount = cartItems.length;
+
+  const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
+    return (
+      <View style={[styles.labelView, containerStyle]}>
+        <Text style={styles.labelText}>{count}</Text>
+      </View>
+    );
+  };
 
   const renderMedicines = () => {
     return (
@@ -192,8 +221,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => props.navigation.navigate(AppRoutes.YourCart)}
+                  style={{ right: 20 }}
                 >
-                  <CartIcon style={{ right: 20 }} />
+                  <CartIcon style={{}} />
+                  {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
                 </TouchableOpacity>
                 <NotificationIcon />
               </View>
