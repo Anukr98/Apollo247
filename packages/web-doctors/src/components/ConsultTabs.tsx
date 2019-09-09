@@ -542,7 +542,7 @@ export const ConsultTabs: React.FC = () => {
             setCasesheetNotes,
           }}
         >
-          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 85px' }}>
+          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
             <div className={classes.container}>
               <CallPopover
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
@@ -660,27 +660,11 @@ export const ConsultTabs: React.FC = () => {
         </Paper>
       </Modal>
 
-      <Modal
-        open={isPdfPopoverOpen}
-        onClose={() => setIsPdfPopoverOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <Paper className={classes.modalPdfBox}>
-          <div className={classes.tabHeader}>
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => setIsPdfPopoverOpen(false)}
-              />
-            </Button>
-          </div>
-          <div className={classes.tabPdfBody}>
-            <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
-          </div>
-        </Paper>
-      </Modal>
+      {isEnded && (
+        <div className={classes.tabPdfBody}>
+          <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
+        </div>
+      )}
     </div>
   );
 };

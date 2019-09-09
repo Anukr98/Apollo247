@@ -211,7 +211,7 @@ export const MyAccount: React.FC = (props) => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 85px' }}>
+      <Scrollbars autoHide={true} style={{ height: '100vh' }}>
         <div className={classes.container}>
           <div className={classes.ProfileContainer}>
             <div>
