@@ -6,6 +6,7 @@ import {
   patientLogSort,
   patientLogType,
   CaseSheet,
+  APPOINTMENT_STATE,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -38,6 +39,7 @@ export const getAppointmentHistoryTypeDefs = gql`
     id: ID!
     patientId: ID!
     doctorId: ID!
+    appointmentState: APPOINTMENT_STATE
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID
@@ -97,6 +99,7 @@ type AppointmentHistory = {
   id: string;
   patientId: string;
   doctorId: string;
+  appointmentState: APPOINTMENT_STATE;
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId?: string;
