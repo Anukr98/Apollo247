@@ -10,6 +10,7 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
 import { useApolloClient } from 'react-apollo-hooks';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -152,6 +153,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     tabPdfBody: {
+      display: 'none',
       height: '100%',
       marginTop: '10px',
       paddingLeft: '15px',
@@ -198,6 +200,10 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type Params = { id: string; patientId: string };
+const storageClient = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
 
 export const ConsultTabs: React.FC = () => {
   const classes = useStyles();
@@ -212,6 +218,7 @@ export const ConsultTabs: React.FC = () => {
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isEnded, setIsEnded] = useState<boolean>(false);
+  const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
   const [sessionId, setsessionId] = useState<string>('');
@@ -384,6 +391,13 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
+          console.log(_data!.data!.updateCaseSheet!.blobName);
+          const url =
+            'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
+            _data!.data!.updateCaseSheet!.blobName;
+          setPrescriptionPdf(url);
+        }
         if (!flag) {
           setIsPopoverOpen(true);
         }
@@ -663,11 +677,7 @@ export const ConsultTabs: React.FC = () => {
             </Button>
           </div>
           <div className={classes.tabPdfBody}>
-            <iframe
-              src="http://www.africau.edu/images/default/sample.pdf"
-              width="80%"
-              height="450"
-            ></iframe>
+            <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
           </div>
         </Paper>
       </Modal>
