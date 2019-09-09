@@ -145,7 +145,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         status: Not(STATUS.CANCELLED),
       },
       relations: ['caseSheet'],
-      order: { appointmentDateTime: 'DESC' },
+      order: { appointmentDateTime: 'ASC' },
     });
   }
 

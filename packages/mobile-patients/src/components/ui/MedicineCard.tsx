@@ -11,8 +11,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { StyleProp, StyleSheet, Text, View, ViewStyle, TouchableOpacity } from 'react-native';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -207,22 +206,28 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderTouchable = (item: Element, onPress: () => void) => {
-    return <TouchableOpacity activeOpacity={1} onPress={onPress}>{item}</TouchableOpacity>;
+    return (
+      <TouchableOpacity activeOpacity={1} onPress={onPress}>
+        {item}
+      </TouchableOpacity>
+    );
   };
 
   const renderUnitDropdownAndPrice = () => {
     return (
       <View style={styles.unitAndPriceView}>
         <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
-          <TouchableOpacity activeOpacity={1}
-            style={styles.unitDropdownContainer}
+          <TouchableOpacity
+            activeOpacity={1}
+            style={[{ flex: 1, alignSelf: 'flex-start' }]}
             onPress={() => onChangeUnit(unit - 1)}
           >
             <Minus />
           </TouchableOpacity>
           <Text style={styles.unitAndRupeeText}>{`${unit} UNIT`}</Text>
-          <TouchableOpacity activeOpacity={1}
-            style={styles.unitDropdownContainer}
+          <TouchableOpacity
+            activeOpacity={1}
+            style={[{ flex: 1, alignItems: 'flex-end' }]}
             onPress={() => onChangeUnit(unit + 1)}
           >
             <Plus />
@@ -260,7 +265,8 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   return (
-    <TouchableOpacity activeOpacity={1}
+    <TouchableOpacity
+      activeOpacity={1}
       style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >

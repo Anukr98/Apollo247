@@ -39,6 +39,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Spinner } from '../ui/Spinner';
 
 const styles = StyleSheet.create({
   headerText: {
@@ -93,10 +94,11 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
   const [rowSelected, setRowSelected] = useState<number>(0);
   const [chooseDoctorResult, setChooseDoctorResult] = useState([]);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   const appointmentData = props.navigation.state.params!.data;
-  console.log(appointmentData, 'appointmentData');
-  console.log(props.navigation.state.params!.patientId, 'pppp');
+  // console.log(appointmentData, 'appointmentData');
+  // console.log(props.navigation.state.params!.patientId, 'pppp');
   useEffect(() => {
     chooseDoctor();
   });
@@ -108,7 +110,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
       slotDateTime: appointmentData.transferDateTime,
       specialityId: appointmentData.specialtyId,
     };
-    console.log(appointmentTransferInput, 'appointmentTransferInput');
+    // console.log(appointmentTransferInput, 'appointmentTransferInput');
     if (!deviceTokenApICalled) {
       setDeviceTokenApICalled(true);
 
@@ -121,7 +123,8 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then((data: any) => {
-          console.log('getAvailableDoctors', data);
+          // console.log('getAvailableDoctors', data);
+          setshowSpinner(false);
           data &&
             data.data &&
             data.data.getAvailableDoctors &&
@@ -129,6 +132,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
             setChooseDoctorResult(data.data.getAvailableDoctors.availalbeDoctors);
         })
         .catch((e: string) => {
+          setshowSpinner(false);
           console.log('Error occured while adding Doctor', e);
         });
     }
@@ -142,7 +146,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
       existingAppointmentId: appointmentData.appointmentId,
       transferId: appointmentData.transferId,
     };
-    console.log(appointmentTransferInput, 'transferAppointmentAPI');
+    // console.log(appointmentTransferInput, 'transferAppointmentAPI');
 
     client
       .mutate<bookTransferAppointment, bookTransferAppointmentVariables>({
@@ -154,7 +158,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
       })
       .then((data: any) => {
         console.log('transfersppointment', data);
-        props.navigation.push(AppRoutes.Consult);
+        props.navigation.push(AppRoutes.TabBar);
       })
       .catch((e: string) => {
         console.log('Error occured while adding Doctor', e);
@@ -259,6 +263,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
+      {showSpinner && <Spinner />}
     </View>
   );
 };

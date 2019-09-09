@@ -747,8 +747,12 @@ export const GET_MEDICAL_RECORD = gql`
         sourceName
         documentURLs
         medicalRecordParameters {
+          id
           parameterName
+          unit
           result
+          minimum
+          maximum
         }
       }
     }
@@ -893,6 +897,8 @@ export const CHOOSE_DOCTOR = gql`
         doctorLastName
         doctorFirstName
         availableSlot
+        specialityName
+        experience
       }
     }
   }

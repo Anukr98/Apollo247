@@ -21,7 +21,7 @@ export const convertCaseSheetToRxPdfData = (
   }
 ): RxPdfData => {
   const caseSheetMedicinePrescription = JSON.parse(
-    caseSheet.medicinePrescription
+    JSON.stringify(caseSheet.medicinePrescription)
   ) as CaseSheetMedicinePrescription[];
 
   const prescriptions = caseSheetMedicinePrescription.map((csRx) => {
@@ -34,14 +34,16 @@ export const convertCaseSheetToRxPdfData = (
   });
 
   const caseSheetOtherInstructions = JSON.parse(
-    caseSheet.otherInstructions
+    JSON.stringify(caseSheet.otherInstructions)
   ) as CaseSheetOtherInstruction[];
   const generalAdvice = caseSheetOtherInstructions.map((otherInst) => ({
     title: otherInst.instruction,
     description: [] as string[],
   }));
 
-  const caseSheetDiagnoses = JSON.parse(caseSheet.diagnosis) as CaseSheetDiagnosis[];
+  const caseSheetDiagnoses = JSON.parse(
+    JSON.stringify(caseSheet.diagnosis)
+  ) as CaseSheetDiagnosis[];
   const diagnoses = caseSheetDiagnoses.map((diag) => ({
     title: diag.name,
     description: '',
@@ -59,7 +61,10 @@ export const convertCaseSheetToRxPdfData = (
   return { prescriptions, generalAdvice, diagnoses, doctorInfo };
 };
 
-const assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+if (process.env.NODE_ENV != 'local') {
+  assetsDir = path.resolve('/home/devdeploy/apollo-hospitals/packages/api/src/assets');
+}
 
 const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
@@ -280,7 +285,12 @@ export const uploadRxPdf = async (
   const name = `${caseSheetId}.pdf`;
   const filePath = loadAsset(name);
   pdfDoc.pipe(fs.createWriteStream(filePath));
+  await delay(300);
   const blob = await client.uploadFile({ name, filePath });
   fs.unlink(filePath, (error) => console.log(error));
   return blob;
+
+  function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 };

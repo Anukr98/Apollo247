@@ -9,6 +9,7 @@ import {
   TouchableOpacityProps,
   View,
   ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { theme } from '../../theme/theme';
 
@@ -42,6 +43,7 @@ const styles = StyleSheet.create({
 });
 
 type leftText = {
+  style?: StyleProp<TextStyle>;
   isBack?: boolean;
   title?: string;
   onPress?: TextProps['onPress'];
@@ -71,11 +73,19 @@ export const Header: React.FC<HeaderProps> = (props) => {
   return (
     <View style={[styles.container, props.container]}>
       <View style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
-        <TouchableOpacity activeOpacity={1} onPress={props.onPressLeftIcon} style={{}}>
-          {leftIcon === 'backArrow' && <BackArrow />}
-          {leftIcon === 'close' && <Remove />}
-          {leftIcon === 'backArrowWhite' && <BackArrowWhite />}
-        </TouchableOpacity>
+        {props.leftText ? (
+          <TouchableOpacity activeOpacity={1} onPress={props.leftText.onPress} style={{}}>
+            <Text style={styles.titleTextStyle} numberOfLines={1}>
+              {props.leftText.title}
+            </Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity activeOpacity={1} onPress={props.onPressLeftIcon} style={{}}>
+            {leftIcon === 'backArrow' && <BackArrow />}
+            {leftIcon === 'close' && <Remove />}
+            {leftIcon === 'backArrowWhite' && <BackArrowWhite />}
+          </TouchableOpacity>
+        )}
       </View>
       <View>
         {title && (

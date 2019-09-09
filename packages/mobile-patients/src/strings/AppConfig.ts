@@ -1,4 +1,17 @@
-const Specialities = {
+const Configuration = {
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  DELIVERY_CHARGES: 25,
+};
+
+type SpecialitiesType = {
+  [key: string]: string[];
+};
+
+const Specialities: SpecialitiesType = {
   Cardiology: ['Cardiologist', 'Cardiologists'],
   Neurology: ['Neurologist', 'Neurologists'],
   Orthopaedics: ['Orthopaedician', 'Orthopaedicians'],
@@ -20,8 +33,10 @@ const Specialities = {
   Podiatry: ['Podiatrician', 'Podiatricians'],
   'General Surgeon': ['General Surgeon', 'General Surgeons'],
   'Vascular Surgery': ['Vascular Surgeon', 'Vascular Surgeons'],
+  Gynaecology: ['Gynaecologist', 'Gynaecologists'],
 };
 
 export const AppConfig = {
+  Configuration,
   Specialities,
 };

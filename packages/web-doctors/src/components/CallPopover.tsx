@@ -470,6 +470,7 @@ interface CallPopoverProps {
   appointmentDateTime: string;
   doctorId: string;
   isEnded: boolean;
+  caseSheetId: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -714,6 +715,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   useEffect(() => {
     if (props.isEnded) {
       onStopConsult();
+      setStartAppointment(!startAppointment);
+      setStartAppointmentButton(true);
     }
   }, [props.isEnded]);
   useEffect(() => {
@@ -800,6 +803,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       appointmentId: props.appointmentId,
       folloupDateTime: folloupDateTime,
       doctorId: props.doctorId,
+      caseSheetId: props.caseSheetId,
     };
     if (folloupDateTime !== '') {
       setTimeout(() => {
@@ -863,6 +867,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           },
         })
         .then((_data: any) => {
+          alert('transfer done');
           transferObject.transferDateTime = _data!.data!.initiateTransferAppointment!.doctorNextSlot;
           transferObject.transferId = _data!.data!.initiateTransferAppointment!.transferAppointment!.id;
           console.log(transferObject);
@@ -924,6 +929,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         })
         .then((_data) => {
           //setIsLoading(false);
+          alert('Reschedule done');
           console.log('data', _data);
           const reschduleObject: any = {
             appointmentId: props.appointmentId,
@@ -1013,10 +1019,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.endconsultButton}
                 onClick={() => {
                   //onStopConsult();
-                  setStartAppointment(!startAppointment);
+                  //setStartAppointment(!startAppointment);
                   stopInterval();
                   props.endConsultAction();
-                  setCaseSheetEdit(false);
+                  //setCaseSheetEdit(false);
                   setDisableOnTransfer(true);
                 }}
               >

@@ -11,6 +11,8 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -86,33 +88,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   console.log(data, 'data');
 
-  const detailFinding = [
-    {
-      label: 'Lymphocytes',
-      result: '15',
-      units: '%',
-      normal_range: '20 - 40',
-    },
-    {
-      label: 'Haemoglobin (Optical Light Scatter / Cyanmethaemoglobin)',
-      result: '11.4',
-      units: 'gm/dl',
-      normal_range: '13.0 - 18.0',
-    },
-    {
-      label: 'Lymphocytes',
-      result: '15',
-      units: '%',
-      normal_range: '20 - 40',
-    },
-    {
-      label: 'Haemoglobin (Optical Light Scatter / Cyanmethaemoglobin)',
-      result: '11.4',
-      units: 'gm/dl',
-      normal_range: '13.0 - 18.0',
-    },
-  ];
-
   const renderRecordDetails = () => {
     return (
       <View>
@@ -137,9 +112,11 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           }}
         >
           <View style={{ flex: 1 }}>
-            <Text style={styles.doctorNameStyle}>CBC Details</Text>
+            <Text style={styles.doctorNameStyle}>{data.testName}</Text>
             <Text style={styles.timeStyle}>
-              {`Check-up Date: 03 May 2019\nSource: Apollo Hospital, Jubilee Hills\nReferring Doctor: Dr. Simran Rai`}
+              {`Check-up Date: ${moment(data.testDate).format('DD MMM YYYY')}\nSource: ${
+                !!data.sourceName ? data.sourceName : '-'
+              }\nReferring Doctor: Dr. ${!!data.referringDoctor ? data.referringDoctor : '-'}`}
             </Text>
           </View>
           <View style={styles.imageView}>
@@ -164,10 +141,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             <View>
-              <Text style={styles.descriptionStyle}>{`RBC: Predominantly normocytic normochromic
-RBCs: Few microcytic hypochromic RBCs are also noted. No nRBCs or haemoparasites seen
-Platelets: Moderate thrombocytopenia noted
-WBC: Within normal limits. No atypical WBCs/blasts seen`}</Text>
+              <Text style={styles.descriptionStyle}>{data.observations}</Text>
             </View>
           </View>
         </CollapseCard>
@@ -184,21 +158,27 @@ WBC: Within normal limits. No atypical WBCs/blasts seen`}</Text>
           onPress={() => setshowPrescription(!showPrescription)}
         >
           <View style={{ marginTop: 11, marginBottom: 20 }}>
-            {detailFinding.map((item) => {
+            {data.medicalRecordParameters.map((item: any) => {
               return (
                 <View style={[styles.cardViewStyle, { marginTop: 4, marginBottom: 4 }]}>
                   <View style={styles.labelViewStyle}>
-                    <Text style={styles.labelStyle}>{item.label}</Text>
+                    <Text style={styles.labelStyle}>{item.parameterName}</Text>
                   </View>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={styles.labelTextStyle}>Result</Text>
-                    <Text style={styles.labelTextStyle}>Units</Text>
-                    <Text style={styles.labelTextStyle}>Normal Range</Text>
-                  </View>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text style={styles.valuesTextStyle}>{item.result}</Text>
-                    <Text style={styles.valuesTextStyle}>{item.units}</Text>
-                    <Text style={styles.valuesTextStyle}>{item.normal_range}</Text>
+                    <View>
+                      <Text style={styles.labelTextStyle}>Result</Text>
+                      <Text style={styles.valuesTextStyle}>{item.result}</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.labelTextStyle}>Units</Text>
+                      <Text style={styles.valuesTextStyle}>{item.unit}</Text>
+                    </View>
+                    <View>
+                      <Text style={styles.labelTextStyle}>Normal Range</Text>
+                      <Text style={styles.valuesTextStyle}>
+                        {item.minimum} - {item.maximum}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               );
@@ -212,40 +192,44 @@ WBC: Within normal limits. No atypical WBCs/blasts seen`}</Text>
   const renderData = () => {
     return (
       <View>
-        {renderTopLineReport()}
-        {renderDetailsFinding()}
+        {!!data.observations && renderTopLineReport()}
+        {data.medicalRecordParameters &&
+          data.medicalRecordParameters.length &&
+          renderDetailsFinding()}
       </View>
     );
   };
 
-  return (
-    <View
-      style={{
-        ...theme.viewStyles.container,
-      }}
-    >
-      <SafeAreaView style={{ flex: 1 }}>
-        <Header
-          title="RECORD DETAILS"
-          leftIcon="backArrow"
-          rightComponent={
-            <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
-                <ShareGreen />
-              </TouchableOpacity>
-              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-                <Download />
-              </TouchableOpacity>
-            </View>
-          }
-          onPressLeftIcon={() => props.navigation.goBack()}
-        />
-        <ScrollView bounces={false}>
-          {renderDoctorDetails()}
-          {renderData()}
-          {false && renderRecordDetails()}
-        </ScrollView>
-      </SafeAreaView>
-    </View>
-  );
+  if (data)
+    return (
+      <View
+        style={{
+          ...theme.viewStyles.container,
+        }}
+      >
+        <SafeAreaView style={{ flex: 1 }}>
+          <Header
+            title="RECORD DETAILS"
+            leftIcon="backArrow"
+            rightComponent={
+              <View style={{ flexDirection: 'row' }}>
+                <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
+                  <ShareGreen />
+                </TouchableOpacity>
+                <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+                  <Download />
+                </TouchableOpacity>
+              </View>
+            }
+            onPressLeftIcon={() => props.navigation.goBack()}
+          />
+          <ScrollView bounces={false}>
+            {renderDoctorDetails()}
+            {renderData()}
+            {false && renderRecordDetails()}
+          </ScrollView>
+        </SafeAreaView>
+      </View>
+    );
+  return <Spinner />;
 };

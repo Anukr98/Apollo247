@@ -84,7 +84,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   // !loading && console.log({ orders });
   // !loading && error && console.error({ error });
 
-  const list: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[] = props.navigation.getParam(
+  const orderDetails: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[] = props.navigation.getParam(
     'orderDetails'
   );
 
@@ -142,17 +142,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const renderOrderHistory = () => {
     return (
       <View style={{ margin: 20 }}>
-        {list.map((order, index, array) => {
+        {(orderDetails || []).map((order, index, array) => {
           return (
             <OrderProgressCard
               style={index < array.length - 1 ? { marginBottom: 8 } : {}}
               key={index}
               description={''}
-              status={getStatusType(order!.statusDate)}
+              status={getStatusType(order!.orderStatus!)}
               date={getFormattedDate(order!.statusDate)}
               time={getFormattedTime(order!.statusDate)}
               isStatusDone={true}
-              nextItemStatus={'NOT_EXIST'}
+              nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
             />
           );
         })}

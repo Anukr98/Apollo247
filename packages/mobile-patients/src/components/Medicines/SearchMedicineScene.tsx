@@ -16,18 +16,16 @@ import {
   getPatientPastMedicineSearches_getPatientPastMedicineSearches,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { saveSearch, saveSearchVariables } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import { MedicineProduct, searchMedicineApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
-import { Mutation } from 'react-apollo';
 import { useApolloClient } from 'react-apollo-hooks';
-import axios from 'axios';
 import {
   ActivityIndicator,
   Alert,
+  Keyboard,
   Platform,
   SafeAreaView,
   StyleProp,
@@ -37,9 +35,9 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Keyboard,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { handleGraphQlError } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -78,8 +76,7 @@ const styles = StyleSheet.create({
   deliveryPinCodeContaner: {
     ...theme.viewStyles.cardContainer,
     paddingHorizontal: 20,
-    paddingTop: 7,
-    paddingBottom: 7,
+    paddingVertical: Platform.OS == 'ios' ? 12 : 7,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -177,7 +174,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
     console.log({ errorResponse: e.response, error }); //remove this line later
-    Alert.alert('Error', error || 'Unknown error occurred.');
+    Alert.alert('Alert', error || 'Unknown error occurred.');
   };
 
   const onSearchMedicine = (searchText: string) => {
@@ -201,6 +198,19 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       });
   };
 
+  const savePastSeacrh = (sku: string, name: string) =>
+    client.mutate({
+      mutation: SAVE_SEARCH,
+      variables: {
+        saveSearchInput: {
+          type: SEARCH_TYPE.MEDICINE,
+          typeId: sku,
+          typeName: name,
+          patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+      },
+    });
+
   const onAddCartItem = ({
     sku,
     mou,
@@ -209,6 +219,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     special_price,
     is_prescription_required,
   }: MedicineProduct) => {
+    savePastSeacrh(sku, name).catch((e) => {
+      handleGraphQlError(e);
+    });
     addCartItem &&
       addCartItem({
         id: sku,
@@ -217,7 +230,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         price: special_price || price,
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
-        // productType: type_id == 'simple' ? 'PHARMA' : 'FMCG',
       });
   };
 
@@ -379,10 +391,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     <View style={{ paddingBottom: 19 }} />
   );
 
-  const performTextInputEvent = (event: 'focus' | 'blur') => {
-    searchText.length < 3 && setShowMatchingMedicines(event == 'focus');
-  };
-
   const renderSearchInput = () => {
     return (
       <View style={{ paddingHorizontal: 20, backgroundColor: theme.colors.WHITE }}>
@@ -400,8 +408,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           onChangeText={(value) => {
             onSearchMedicine(value);
           }}
-          // onFocus={() => performTextInputEvent('focus')}
-          // onBlur={() => { performTextInputEvent('blur')}
         />
         {renderSorryMessage}
       </View>
@@ -496,9 +502,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           <SectionHeaderComponent sectionTitle={'Past Searches'} style={{ marginBottom: 0 }} />
         )}
         <View style={styles.pastSearchContainerStyle}>
-          {pastSearches.map((pastSearch, i, array) =>
-            renderPastSearchItem(pastSearch!, i == array.length - 1 ? { marginRight: 0 } : {})
-          )}
+          {pastSearches
+            .slice(0, 5)
+            .map((pastSearch, i, array) =>
+              renderPastSearchItem(pastSearch!, i == array.length - 1 ? { marginRight: 0 } : {})
+            )}
         </View>
         <NeedHelpAssistant containerStyle={{ marginTop: 84, marginBottom: 50 }} />
       </ScrollView>
@@ -517,57 +525,38 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     ];
     const foundMedicineInCart = cartItems.find((item) => item.id == medicine.sku);
     return (
-      <Mutation<saveSearch, saveSearchVariables> mutation={SAVE_SEARCH}>
-        {(mutate, { loading, data, error }) => (
-          <MedicineCard
-            containerStyle={[medicineCardContainerStyle, {}]}
-            onPress={() => {
-              console.log('currentPatient', currentPatient && currentPatient.id);
-              mutate({
-                variables: {
-                  saveSearchInput: {
-                    type: SEARCH_TYPE.MEDICINE,
-                    typeId: medicine.sku,
-                    typeName: medicine.name,
-                    patient: currentPatient && currentPatient.id ? currentPatient.id : '',
-                  },
-                },
-              });
-              console.log({
-                sku: medicine.sku,
-                title: medicine.name,
-              });
-              props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-                sku: medicine.sku,
-                title: medicine.name,
-              });
-            }}
-            medicineName={medicine.name}
-            price={medicine.special_price || medicine.price}
-            unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
-            onPressAdd={() => {
-              onAddCartItem(medicine);
-            }}
-            onPressRemove={() => {
-              onRemoveCartItem(medicine);
-            }}
-            onChangeUnit={(unit) => {
-              onUpdateCartItem(medicine, unit);
-            }}
-            isCardExpanded={!!foundMedicineInCart}
-            isInStock={medicine.status == 1}
-            packOfCount={(medicine.mou && parseInt(medicine.mou)) || undefined}
-            isPrescriptionRequired={medicine.is_prescription_required == '1'}
-            subscriptionStatus={'unsubscribed'}
-            onChangeSubscription={() => {}}
-            onEditPress={() => {}}
-            onAddSubscriptionPress={() => {}}
-          >
-            {data ? console.log(data, 'savesearch data') : null}
-            {error ? console.log(error, 'savesearch error') : null}
-          </MedicineCard>
-        )}
-      </Mutation>
+      <MedicineCard
+        containerStyle={[medicineCardContainerStyle, {}]}
+        onPress={() => {
+          savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
+            handleGraphQlError(e);
+          });
+          props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+            sku: medicine.sku,
+            title: medicine.name,
+          });
+        }}
+        medicineName={medicine.name}
+        price={medicine.special_price || medicine.price}
+        unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
+        onPressAdd={() => {
+          onAddCartItem(medicine);
+        }}
+        onPressRemove={() => {
+          onRemoveCartItem(medicine);
+        }}
+        onChangeUnit={(unit) => {
+          onUpdateCartItem(medicine, unit);
+        }}
+        isCardExpanded={!!foundMedicineInCart}
+        isInStock={medicine.status == 1}
+        packOfCount={(medicine.mou && parseInt(medicine.mou)) || undefined}
+        isPrescriptionRequired={medicine.is_prescription_required == '1'}
+        subscriptionStatus={'unsubscribed'}
+        onChangeSubscription={() => {}}
+        onEditPress={() => {}}
+        onAddSubscriptionPress={() => {}}
+      />
     );
   };
 

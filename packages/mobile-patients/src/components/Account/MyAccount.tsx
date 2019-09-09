@@ -82,10 +82,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY] = useState(new Animated.Value(0));
-  const [
-    profileDetails,
-    setprofileDetails,
-  ] = useState<GetCurrentPatients_getCurrentPatients_patients | null>(currentPatient);
+  const [profileDetails, setprofileDetails] = useState<
+    GetCurrentPatients_getCurrentPatients_patients | null | undefined
+  >(currentPatient);
   const { signOut } = useAuth();
 
   console.log(currentPatient, 'currentPatient');

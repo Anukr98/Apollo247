@@ -304,10 +304,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           paddingBottom: 16,
           ...Platform.select({
             android: {
-              marginTop: 124,
+              marginTop: 94,
             },
             ios: {
-              marginTop: 134,
+              marginTop: 114,
             },
           }),
         }}
@@ -335,7 +335,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
             </View>
           ))}
-
+        {/* 
         <Text
           style={{
             paddingTop: 15,
@@ -346,7 +346,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }}
         >
           ADD MEMBER
-        </Text>
+        </Text> */}
       </View>
     </TouchableOpacity>
   );

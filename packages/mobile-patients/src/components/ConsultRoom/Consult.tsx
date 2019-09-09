@@ -7,6 +7,8 @@ import {
   DropdownGreen,
   PhysicalConsult,
   OnlineConsult,
+  DoctorImage,
+  Mascot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
@@ -30,8 +32,9 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TouchableHighlight,
+  ScrollView,
 } from 'react-native';
-import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
@@ -110,7 +113,7 @@ const styles = StyleSheet.create({
   doctorView: {
     marginHorizontal: 8,
     ...theme.viewStyles.cardViewStyle,
-    marginVertical: 16,
+    marginVertical: 6, //16,
     borderRadius: 10,
   },
   availableView: {
@@ -166,7 +169,11 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface ConsultProps extends NavigationScreenProps {}
+export interface ConsultProps extends NavigationScreenProps {
+  Data: any;
+  TransferData: any;
+  TranferDateTime: any;
+}
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
@@ -179,7 +186,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
+  const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
+  const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
 
+  console.log('Backdata', props.navigation.getParam('Data'));
+
+  const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
   const locationPermission = () => {
     console.log('123456789');
     Permissions.checkMultiple([
@@ -204,11 +216,33 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   useEffect(() => {
+    setNewAppointmentTime(
+      props.navigation.getParam('Data')
+        ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
+            'Do MMMM, dddd \nhh:mm a'
+          )
+        : ''
+    );
+
+    // let calculateCount = props.navigation.getParam('Data')
+    //   ? props.navigation.getParam('Data').rescheduleCount
+    //   : '';
+
+    let calculateCount: number = 5;
+
+    if (calculateCount > 3) {
+      calculateCount = Math.floor(calculateCount / 3);
+    }
+
+    setNewRescheduleCount(calculateCount);
+  });
+
+  useEffect(() => {
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
-    console.log('consult room', currentPatient);
+    // console.log('consult room', currentPatient);
     analytics.setCurrentScreen(AppRoutes.Consult);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
@@ -217,6 +251,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       const showSchduledPopup = await AsyncStorage.getItem('showSchduledPopup');
       if (showSchduledPopup == 'true') {
         setShowSchdulesView(true);
+      }
+      console.log(props.navigation.getParam('TransferData'), 'TransferData');
+      console.log(props.navigation.getParam('TranferDateTime'), 'TranferDateTime');
+      const showTransferPopup = await AsyncStorage.getItem('showTransferPopup');
+      console.log(showTransferPopup, 'showTransferPopup');
+      if (showTransferPopup == 'true') {
+        setTransferfollowup(true);
       }
     }
     fetchData();
@@ -263,6 +304,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         flex: 1,
         alignItems: 'flex-end',
         zIndex: 3,
+        elevation: 5,
         backgroundColor: 'transparent',
       }}
       onPress={() => setShowMenu(false)}
@@ -282,7 +324,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           paddingBottom: 16,
           ...Platform.select({
             android: {
-              marginTop: 84,
+              marginTop: 94,
             },
             ios: {
               marginTop: 94,
@@ -300,12 +342,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     setShowMenu(false);
                   }}
                 >
-                  {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : ''}
+                  {profile.firstName
+                    ? profile.firstName
+                        .split(' ')[0]
+                        .replace(/\w+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+                    : ''}
                 </Text>
               </View>
             )
           )}
-
+        {/* 
         <Text
           style={{
             paddingTop: 20,
@@ -316,7 +362,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           }}
         >
           ADD MEMBER
-        </Text>
+        </Text> */}
       </View>
     </TouchableOpacity>
   );
@@ -428,8 +474,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return (
       <FlatList
         keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={{ padding: 12, paddingTop: 0 }}
-        horizontal={true}
+        contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
+        // horizontal={true}
         data={consultations}
         bounces={false}
         showsHorizontalScrollIndicator={false}
@@ -450,7 +496,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
 
           return (
-            <View style={{ width: 312 }}>
+            <View style={{}}>
+              {/* <View style={{ width: 312 }}> */}
               <TouchableOpacity
                 activeOpacity={1}
                 style={[styles.doctorView]}
@@ -631,8 +678,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               height:
                 consultations.length > 0
                   ? Platform.OS === 'ios'
-                    ? 84
-                    : 94
+                    ? 0 //84
+                    : 10 //94
                   : Platform.OS === 'ios'
                   ? 48
                   : 58,
@@ -640,9 +687,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           />
         </View>
         <View style={styles.cardContainerStyle}>
-          {consultations.length > 0 ? (
-            renderConsultations()
-          ) : (
+          {consultations.length > 0 ? null : ( // renderConsultations()
             <View
               style={{
                 marginLeft: 20,
@@ -670,26 +715,29 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           {showMenu && Popup()}
           {renderTopView()}
           <View
-            style={{
-              marginTop:
-                consultations.length > 0
-                  ? Platform.OS === 'ios'
-                    ? 170
-                    : 180
-                  : Platform.OS === 'ios'
-                  ? 16
-                  : 26,
-            }}
+            style={
+              {
+                // marginTop:
+                //   consultations.length > 0
+                //     ? Platform.OS === 'ios'
+                //       ? 170
+                //       : 180
+                //     : Platform.OS === 'ios'
+                //     ? 16
+                //     : 26,
+              }
+            }
           >
-            {renderThingsToDo()}
-            {renderArticles()}
+            {renderConsultations()}
+            {/* {renderThingsToDo()} */}
+            {/* {renderArticles()} */}
           </View>
         </ScrollView>
       </SafeAreaView>
       {showSchdulesView && (
         <BottomPopUp
           title={'Hi! :)'}
-          description={`Your appointment with  \nhas been rescheduled for — 18th May, Monday, 12:00 pm\n\nYou have 2 free reschedules left.`}
+          description={`Your appointment with  \nhas been rescheduled for — ${newAppointmentTime}\n\nYou have ${newRescheduleCount} free reschedules left.`}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
@@ -704,6 +752,93 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
+      {transferfollowup && (
+        <BottomPopUp
+          title={'Hi! :)'}
+          description={`Your appointment with ${props.navigation.getParam('TransferData') &&
+            props.navigation.getParam('TransferData').doctorName}} has been transferred to —`}
+        >
+          <View
+            style={{
+              backgroundColor: '#f7f8f5',
+              marginLeft: 20,
+              marginRight: 20,
+              marginTop: 20,
+              height: 188,
+              borderRadius: 10,
+            }}
+          >
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ marginLeft: 20, marginTop: 20, marginRight: 20 }}>
+                <Mascot />
+              </View>
+              <View style={{ flexDirection: 'column', marginTop: 20, marginBottom: 5 }}>
+                <Text style={{ color: '#02475b', ...theme.fonts.IBMPlexSansMedium(18) }}>
+                  {props.navigation.getParam('TransferData') &&
+                    props.navigation.getParam('TransferData').doctorName}
+                </Text>
+                <Text
+                  style={{
+                    color: '#0087ba',
+                    ...theme.fonts.IBMPlexSansSemiBold(12),
+                    marginBottom: 12,
+                  }}
+                >
+                  {props.navigation.getParam('TransferData') &&
+                    props.navigation.getParam('TransferData').specilty}{' '}
+                  {props.navigation.getParam('TransferData') &&
+                    props.navigation.getParam('TransferData').experience}{' '}
+                  YRS
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                height: 2,
+                backgroundColor: '#02475b',
+                marginTop: -15,
+                marginHorizontal: 5,
+                opacity: 0.1,
+                marginLeft: 105,
+              }}
+            ></View>
+            <View style={{ marginTop: 12, marginLeft: 100 }}>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  color: '#02475b',
+                  lineHeight: 20,
+                  marginLeft: 5,
+                }}
+              >
+                {moment(props.navigation.getParam('TranferDateTime')).format('DD MMM YYYY')}
+              </Text>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  color: '#02475b',
+                  lineHeight: 20,
+                  marginLeft: 5,
+                }}
+              >
+                {moment(props.navigation.getParam('TranferDateTime')).format('hh:mm A')}
+              </Text>
+            </View>
+            <View style={{ height: 60, alignItems: 'flex-end' }}>
+              <TouchableOpacity
+                style={styles.gotItStyles}
+                onPress={() => {
+                  setTransferfollowup(false);
+                  AsyncStorage.setItem('showTransferPopup', 'false');
+                }}
+              >
+                <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </BottomPopUp>
+      )}
+
       {showSpinner && <Spinner />}
     </View>
   );

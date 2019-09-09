@@ -2,6 +2,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { SAVE_PATIENT_ADDRESS } from '@aph/mobile-patients/src/graphql/profiles';
@@ -9,17 +10,16 @@ import {
   savePatientAddress,
   savePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { GraphQLError } from 'graphql';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Dimensions, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-const { width, height } = Dimensions.get('window');
+import { PatientAddressInput } from '../../graphql/types/globalTypes';
+import { pinCodeServiceabilityApi } from '../../helpers/apiCalls';
+import { DropDown, DropDownProps } from '../ui/DropDown';
 
 const styles = StyleSheet.create({
   placeholderTextStyle: {
@@ -36,7 +36,6 @@ const styles = StyleSheet.create({
     paddingBottom: 3,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
   },
-
   textStyle: {
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -67,8 +66,29 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
   const client = useApolloClient();
+  const isAddressValid =
+    userName &&
+    userName.length > 1 &&
+    phoneNumber &&
+    phoneNumber.length == 10 &&
+    addressLine1 &&
+    addressLine1.length > 1 &&
+    pincode &&
+    pincode.length == 6 &&
+    city &&
+    city.length > 1 &&
+    landMark &&
+    landMark.length > 1 &&
+    state &&
+    state.length > 1;
 
-  const onSavePress = () => {
+  const saveAddress = (addressInput: PatientAddressInput) =>
+    client.mutate<savePatientAddress, savePatientAddressVariables>({
+      mutation: SAVE_PATIENT_ADDRESS,
+      variables: { PatientAddressInput: addressInput },
+    });
+
+  const onSavePress = async () => {
     setshowSpinner(true);
     const addressInput = {
       patientId: userId,
@@ -80,19 +100,32 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       landmark: landMark,
       mobileNumber: phoneNumber,
     };
-    client
-      .mutate<savePatientAddress, savePatientAddressVariables>({
-        mutation: SAVE_PATIENT_ADDRESS,
-        variables: { PatientAddressInput: addressInput },
-      })
-      .then(({ data }) => {
-        setshowSpinner(false);
-        const address = g(data, 'savePatientAddress', 'patientAddress');
-        addAddress && addAddress(address!);
-        // setDeliveryAddressId && setDeliveryAddressId((address && address.id) || '');
+
+    try {
+      const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
+        saveAddress(addressInput),
+        pinCodeServiceabilityApi(pincode, 'PHARMA'),
+      ]);
+
+      setshowSpinner(false);
+      const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
+      addAddress && addAddress(address);
+
+      if (pinAvailabilityResult.data.Availability) {
+        setDeliveryAddressId && setDeliveryAddressId(address.id || '');
         props.navigation.goBack();
-      })
-      .catch((e: GraphQLError[]) => {});
+      } else {
+        setDeliveryAddressId && setDeliveryAddressId('');
+        Alert.alert(
+          'Alert',
+          'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+          [{ text: 'Ok', onPress: () => props.navigation.goBack() }]
+        );
+      }
+    } catch (error) {
+      setshowSpinner(false);
+      handleGraphQlError(error);
+    }
   };
 
   useEffect(() => {
@@ -100,7 +133,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       setuserName(currentPatient.firstName!);
       setuserId(currentPatient.id);
     }
-    console.log('currentPatient', currentPatient);
   }, [currentPatient]);
 
   const renderHeader = () => {
@@ -129,6 +161,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
+            console.log('clicked');
             setShowPopup(true);
           }}
           style={{ marginBottom: 8 }}
@@ -138,6 +171,22 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             <DropdownGreen size="sm" />
           </View>
         </TouchableOpacity>
+        {showPopup && (
+          <DropDown
+            cardContainer={{ position: 'absolute', top: 10, zIndex: 1, width: '100%' }}
+            options={(allCurrentPatients || []).map(
+              (item) =>
+                ({
+                  optionText: item.firstName,
+                  onPress: () => {
+                    setuserName(item.firstName!);
+                    setuserId(item.id);
+                    setShowPopup(false);
+                  },
+                } as DropDownProps['options'][0])
+            )}
+          />
+        )}
         <TextInputComponent
           value={phoneNumber}
           onChangeText={(phoneNumber) =>
@@ -179,56 +228,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     );
   };
 
-  const Popup = () => (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={{
-        paddingVertical: 9,
-        position: 'absolute',
-        width: width,
-        height: height,
-        flex: 1,
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        zIndex: 3,
-        backgroundColor: 'transparent',
-      }}
-      onPress={() => setShowPopup(true)}
-    >
-      <View
-        style={{
-          width: 160,
-          borderRadius: 10,
-          backgroundColor: 'white',
-          marginRight: 20,
-          shadowColor: '#808080',
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.8,
-          shadowRadius: 10,
-          elevation: 5,
-          paddingTop: 8,
-          paddingBottom: 16,
-        }}
-      >
-        {allCurrentPatients &&
-          allCurrentPatients.map((item) => (
-            <View key={item.id} style={styles.textViewStyle}>
-              <Text
-                style={styles.textStyle}
-                onPress={() => {
-                  setuserName(item.firstName!);
-                  setuserId(item.id);
-                  setShowPopup(true);
-                }}
-              >
-                {item.firstName}
-              </Text>
-            </View>
-          ))}
-      </View>
-    </TouchableOpacity>
-  );
-
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -239,12 +238,11 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             title={'SAVE & USE'}
             style={{ flex: 1, marginHorizontal: 40 }}
             onPress={onSavePress}
-            disabled={addressLine1.length === 0 && pincode.length !== 6}
+            disabled={!isAddressValid}
           ></Button>
         </StickyBottomComponent>
-        {showPopup && Popup()}
-        {showSpinner && <Spinner />}
       </SafeAreaView>
+      {showSpinner && <Spinner />}
     </View>
   );
 };

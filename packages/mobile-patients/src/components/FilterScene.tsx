@@ -4,11 +4,19 @@ import { CalendarClose, CalendarShow, Reload } from '@aph/mobile-patients/src/co
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
-import { ScrollView } from 'react-native-gesture-handler';
 import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/DoctorSearchListing';
 import { CalendarView } from '@aph/mobile-patients/src/components/ui/CalendarView';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   container: {
@@ -123,7 +131,20 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                   <View style={{ flex: 1, alignItems: 'flex-end', marginRight: 20 }}>
                     <TouchableOpacity
                       activeOpacity={1}
-                      onPress={() => setshowCalander(!showCalander)}
+                      onPress={() => {
+                        setshowCalander(!showCalander);
+                        if (!showCalander) {
+                          const selectedDate = moment(date).format('YYYY-MM-DD');
+                          const selectedData = [];
+                          const dataCopy = [...data];
+                          selectedData.push(selectedDate);
+                          dataCopy[index] = {
+                            ...dataCopy[index],
+                            selectedOptions: selectedData,
+                          };
+                          setData(dataCopy);
+                        }
+                      }}
                     >
                       {showCalander ? <CalendarClose /> : <CalendarShow />}
                     </TouchableOpacity>
@@ -150,6 +171,18 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                   date={date}
                   onPressDate={(date) => {
                     // setDate(date);
+                    console.log(date, 'selected date ');
+                    const selectedDate = moment(date).format('YYYY-MM-DD');
+                    const selectedData = [...data][index]['selectedOptions'] || [];
+                    const dataCopy = [...data];
+                    selectedData.push(selectedDate);
+                    dataCopy[index] = {
+                      ...dataCopy[index],
+                      selectedOptions: selectedData,
+                    };
+
+                    setData(dataCopy);
+
                     setDate(date);
                   }}
                   showWeekView={false}
@@ -222,23 +255,18 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                           selectedOptions.includes(name) ? { color: theme.colors.WHITE } : null,
                         ]}
                         onPress={() => {
-                          console.log('onpress');
                           let selectedData = [...data][index]['selectedOptions'] || [];
                           const dataCopy = [...data];
 
                           if (selectedData.includes(name)) {
                             selectedData = selectedData.filter((item: string) => item !== name);
-                            console.log(name, 'name', selectedData, 'selectedData');
                           } else {
-                            console.log(selectedData, 'selectedDataselectedData1');
                             selectedData.push(name);
                           }
-                          console.log(selectedData, 'selectedDataselectedData');
                           dataCopy[index] = {
                             ...dataCopy[index],
                             selectedOptions: selectedData,
                           };
-                          console.log(dataCopy, 'dataCopy');
                           setData(dataCopy);
                         }}
                       />

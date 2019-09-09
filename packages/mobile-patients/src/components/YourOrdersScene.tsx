@@ -151,11 +151,11 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         leftIcon="backArrow"
         title={string.orders.urOrders}
         container={{ borderBottomWidth: 0 }}
-        rightComponent={
-          <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
-            <More />
-          </TouchableOpacity>
-        }
+        // rightComponent={
+        //   <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
+        //     <More />
+        //   </TouchableOpacity>
+        // }
         onPressLeftIcon={() => props.navigation.goBack()}
       />
       {loading && (

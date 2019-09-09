@@ -66,7 +66,7 @@ export const OrderProgressCard: React.FC<OrderProgressCardProps> = (props) => {
   const renderGraphicalStatus = () => {
     return (
       <View style={styles.graphicalStatusViewStyle}>
-        {props.nextItemStatus == 'DONE' ? (
+        {props.isStatusDone ? (
           <OrderPlacedIcon style={styles.statusIconStyle} />
         ) : (
           <OrderTrackerSmallIcon style={styles.statusIconSmallStyle} />

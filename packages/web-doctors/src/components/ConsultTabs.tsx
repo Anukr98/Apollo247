@@ -38,7 +38,7 @@ import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import Scrollbars from 'react-custom-scrollbars';
+
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -529,19 +529,6 @@ export const ConsultTabs: React.FC = () => {
             setCasesheetNotes,
           }}
         >
-          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 85px' }}>
-            <div className={classes.container}>
-              <CallPopover
-                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-                createSessionAction={createSessionAction}
-                saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
-                endConsultAction={endConsultAction}
-                appointmentId={appointmentId}
-                appointmentDateTime={appointmentDateTime}
-                doctorId={doctorId}
-                isEnded={isEnded}
-              />
-              <div>
                 <div>
                   <div>
                     <Tabs
@@ -555,7 +542,6 @@ export const ConsultTabs: React.FC = () => {
                         setTabValue(newValue);
                       }}
                     >
-                      <Tab
                         classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
                         label="Case Sheet"
                       />
@@ -587,7 +573,6 @@ export const ConsultTabs: React.FC = () => {
                 </div>
               </div>
             </div>
-          </Scrollbars>
         </CaseSheetContext.Provider>
       )}
       <Modal
@@ -609,7 +594,7 @@ export const ConsultTabs: React.FC = () => {
           <div className={classes.tabBody}>
             {}
             <h3>
-              You're ending your consult with
+              You're ending your consult with{' '}
               {casesheetInfo &&
                 casesheetInfo !== null &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
@@ -617,7 +602,7 @@ export const ConsultTabs: React.FC = () => {
                 casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
                   <span>
-                    {`${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
+                    {` ${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
                       casesheetInfo!.getCaseSheet!.patientDetails!.lastName
                     }.`}
                   </span>
@@ -629,6 +614,7 @@ export const ConsultTabs: React.FC = () => {
               onClick={() => {
                 setIsPopoverOpen(false);
                 endConsultActionFinal();
+                setCaseSheetEdit(false);
               }}
             >
               PREVIEW PRESCRIPTION
