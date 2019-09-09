@@ -2,6 +2,7 @@ import { Theme, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { format } from 'date-fns';
+import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -103,12 +104,12 @@ export interface PatientCardProps {
   };
   appointment: {
     appointmentDateTime: Date;
+    appointmentType?: APPOINTMENT_TYPE | null;
   };
 }
 export const PatientCard: React.FC<PatientCardProps> = (props) => {
   const classes = useStyles();
   const { patient, appointment } = props;
-  console.log(patient.photoUrl, 'images/patient_01.png');
 
   return (
     <div className={classes.root}>
@@ -133,7 +134,12 @@ export const PatientCard: React.FC<PatientCardProps> = (props) => {
               {patient.firstName} {patient.lastName}
             </div>
             <div className={classes.consultType}>
-              <img src={require('images/ic_round-video.svg')} alt="" />
+              {appointment.appointmentType === APPOINTMENT_TYPE.ONLINE && (
+                <img src={require('images/ic_round-video.svg')} alt="" />
+              )}
+              {appointment.appointmentType === APPOINTMENT_TYPE.PHYSICAL && (
+                <img src={require('images/ic_round-clinic.svg')} alt="" />
+              )}
             </div>
           </div>
           <div className={classes.userId}>UHID: {patient.uhid}</div>

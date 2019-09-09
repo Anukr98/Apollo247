@@ -137,6 +137,7 @@ export const JuniorDoctor: React.FC = (props) => {
                 }}
                 appointment={{
                   appointmentDateTime: new Date(appointment.appointmentDateTime),
+                  appointmentType: appointment.appointmentType,
                 }}
               />
             ))}

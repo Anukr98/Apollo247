@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { GetDoctorConsultsInput } from "./globalTypes";
+import { GetDoctorConsultsInput, APPOINTMENT_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorConsults
@@ -20,6 +20,7 @@ export interface GetDoctorConsults_getDoctorConsults_doctorConsults_patient {
 export interface GetDoctorConsults_getDoctorConsults_doctorConsults_appointment {
   __typename: "Appointment";
   appointmentDateTime: any | null;
+  appointmentType: APPOINTMENT_TYPE | null;
 }
 
 export interface GetDoctorConsults_getDoctorConsults_doctorConsults {

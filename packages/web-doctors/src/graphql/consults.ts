@@ -13,6 +13,7 @@ export const GET_DOCTOR_CONSULTS = gql`
         }
         appointment {
           appointmentDateTime
+          appointmentType
         }
       }
     }
