@@ -159,12 +159,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     });
   };
 
+  const _title = props.navigation.getParam('title');
+  const shouldTrim = _title.length > 18 ? '...' : '';
+  const formattedTile = `${_title}${shouldTrim}`.substr(0, 25).toUpperCase();
+
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       <Header
         leftIcon="backArrow"
         onPressLeftIcon={() => props.navigation.goBack()}
-        title={(props.navigation.getParam('title') || '').toUpperCase()}
+        title={formattedTile}
         container={{ borderBottomWidth: 0 }}
       />
 

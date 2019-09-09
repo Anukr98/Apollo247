@@ -35,6 +35,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& input': {
         fontSize: 18,
         color: '#02475b',
+        paddingTop: 8,
       },
     },
     helpWrap: {

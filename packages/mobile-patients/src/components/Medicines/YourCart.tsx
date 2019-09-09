@@ -476,6 +476,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         }
       })
       .catch((e) => {
+        console.log({ e });
         setCheckingServicability(false);
         handleGraphQlError(e);
       });
@@ -710,23 +711,23 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         >
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
-            <Text style={styles.blueTextStyle}>Rs. {cartTotal}</Text>
+            <Text style={styles.blueTextStyle}>Rs. {cartTotal.toFixed(2)}</Text>
           </View>
           {couponDiscount > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
               <Text style={styles.blueTextStyle}>Coupon Discount</Text>
-              <Text style={styles.blueTextStyle}>- Rs. {couponDiscount}</Text>
+              <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
             </View>
           )}
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Delivery Charges</Text>
-            <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges}</Text>
+            <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges.toFixed(2)}</Text>
           </View>
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>To Pay </Text>
             <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold }]}>
-              Rs. {grandTotal}
+              Rs. {grandTotal.toFixed(2)}
             </Text>
           </View>
         </View>
@@ -831,7 +832,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
-            title={`PROCEED TO PAY RS. ${grandTotal}`}
+            title={`PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
             onPress={() => props.navigation.navigate(AppRoutes.CheckoutScene)}
             style={{ flex: 1, marginHorizontal: 40 }}
           />

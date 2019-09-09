@@ -254,7 +254,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           leftIcon={<Location />}
           onPress={() => props.navigation.navigate(AppRoutes.AddressBook)}
         />
-        <ListCard title={'Invoices'} leftIcon={<Invoice />} />
+        {/* <ListCard title={'Invoices'} leftIcon={<Invoice />} /> */}
         <ListCard
           container={{ marginBottom: 32 }}
           title={'Notification Settings'}

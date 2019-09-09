@@ -3,33 +3,29 @@ import { filterDataType } from '@aph/mobile-patients/src/components/ConsultRoom/
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
 import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRecords/HealthConsultView';
+import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
 import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   AddFileIcon,
+  FileBig,
   Filter,
   NotificationIcon,
-  FileBig,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { UserIntro } from '@aph/mobile-patients/src/components/ui/UserIntro';
+import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '@aph/mobile-patients/src/graphql/profiles';
+import { getPatientPastConsultsAndPrescriptions } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import {
-  getPatientPastConsultsAndPrescriptions,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders,
-} from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
-import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '@aph/mobile-patients/src/graphql/profiles';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import moment from 'moment';
-import { useApolloClient } from 'react-apollo-hooks';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
 import { Button } from '../ui/Button';
 
 const styles = StyleSheet.create({
@@ -239,9 +235,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 marginHorizontal: 20,
               }}
             >
-              <View style={{ marginTop: 20 }}>
+              <TouchableOpacity
+                style={{ marginTop: 20 }}
+                onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+              >
                 <ApolloLogo />
-              </View>
+              </TouchableOpacity>
               <View style={{ flexDirection: 'row', marginTop: 16 }}>
                 <NotificationIcon />
               </View>
@@ -251,15 +250,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         <View>
           <TabsComponent
             style={{
-              height: 44,
-              marginTop: 236,
+              marginTop: 226,
               backgroundColor: theme.colors.CARD_BG,
               ...theme.viewStyles.shadowStyle,
             }}
-            textStyle={{
-              paddingTop: 12,
-              paddingBottom: 8,
-            }}
+            height={44}
             data={tabs}
             onChange={(selectedTab: string) => setselectedTab(selectedTab)}
             selectedTab={selectedTab}

@@ -435,6 +435,8 @@ const updateCaseSheet: Resolver<
   if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
   caseSheetRepo.updateCaseSheet(getUpdatedCaseSheet.id, { blobName: blob.name });
 
+  getUpdatedCaseSheet.blobName = blob.name;
+
   return getUpdatedCaseSheet;
 };
 
