@@ -29,6 +29,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');
       const multiSignUp = await AsyncStorage.getItem('multiSignUp');
+      AsyncStorage.setItem('showSchduledPopup', 'false');
 
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);

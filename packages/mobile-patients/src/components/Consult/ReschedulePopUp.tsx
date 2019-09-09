@@ -24,6 +24,7 @@ export interface ReschedulePopUpProps extends NavigationScreenProps {
   appadatetime: string;
   reschduleDateTime: any;
   data: any;
+  rescheduleCount: number;
 }
 export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
@@ -32,7 +33,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
     'reschduleDateTime',
     props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
   );
-  console.log('isbelowthree', props.isbelowthree);
+  // console.log('isbelowthree', props.isbelowthree);
 
   return (
     <View
@@ -147,7 +148,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     paddingHorizontal: 16,
                   }}
                 >
-                  {`We’re sorry that you have to reschedule.\nYou can reschedule up to ${props.data.rescheduleCount}  times for free.`}
+                  {`We’re sorry that you have to reschedule.\nYou can reschedule up to ${props.rescheduleCount}  times for free.`}
                 </Text>
               ) : (
                 <Text

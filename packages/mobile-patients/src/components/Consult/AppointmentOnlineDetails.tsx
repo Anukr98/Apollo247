@@ -38,6 +38,8 @@ import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
 } from '../../graphql/types/bookRescheduleAppointment';
+import { Spinner } from '../ui/Spinner';
+import { getDoctorAvailableSlots_getDoctorAvailableSlots } from '../../graphql/types/getDoctorAvailableSlots';
 
 const { width, height } = Dimensions.get('window');
 
@@ -92,8 +94,8 @@ export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
   const data = props.navigation.state.params!.data;
   const doctorDetails = data.doctorInfo;
-  console.log('doctorDetails', moment(data.appointmentDateTime).format('DD-MM-YYYY hh:mm:ss A'));
-  console.log('today time', moment(new Date()).format('DD-MM-YYYY hh:mm:ss A'));
+  // console.log('doctorDetails', moment(data.appointmentDateTime).format('DD-MM-YYYY hh:mm:ss A'));
+  // console.log('today time', moment(new Date()).format('DD-MM-YYYY hh:mm:ss A'));
   console.log('TextApp', data);
 
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
@@ -103,6 +105,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [appointmentTime, setAppointmentTime] = useState<string>('');
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const [rescheduleApICalled, setRescheduleApICalled] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
+  const [belowThree, setBelowThree] = useState<boolean>(false);
+
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
 
@@ -110,7 +116,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
       moment(data.appointmentDateTime).format('YYYY-MM-DD')
     );
-    console.log('dateValidate', dateValidate);
+    // console.log('dateValidate', dateValidate);
 
     if (dateValidate == 0) {
       const time = `Today, ${moment
@@ -129,11 +135,26 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     // availabilitySlots();
   }, []);
 
+  useEffect(() => {
+    let calculateCount = data.rescheduleCount ? data.rescheduleCount : '';
+    console.log('calculateCount', calculateCount);
+
+    if (calculateCount >= 3) {
+      calculateCount = Math.floor(calculateCount / 3);
+      setBelowThree(true);
+      console.log('calculateCount', calculateCount);
+    } else {
+      setBelowThree(false);
+    }
+
+    setNewRescheduleCount(calculateCount);
+  });
+
   const todayDate = moment
     .utc(data.appointmentDateTime)
     .local()
     .format('YYYY-MM-DD'); //data.appointmentDateTime; //
-  console.log('todayDate', todayDate);
+  // console.log('todayDate', todayDate);
 
   const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
     fetchPolicy: 'no-cache',
@@ -158,7 +179,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       cancelledById: data.patientId,
     };
 
-    console.log(appointmentTransferInput, 'appointmentTransferInput');
+    // console.log(appointmentTransferInput, 'appointmentTransferInput');
     if (!deviceTokenApICalled) {
       setDeviceTokenApICalled(true);
       client
@@ -170,16 +191,18 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           fetchPolicy: 'no-cache',
         })
         .then((data: any) => {
+          setshowSpinner(false);
           console.log(data, 'data');
-          props.navigation.replace(AppRoutes.Consult);
+          props.navigation.replace(AppRoutes.TabBar);
         })
         .catch((e: string) => {
+          setshowSpinner(false);
           console.log('Error occured while adding Doctor', e);
         });
     }
   };
 
-  const rescheduleAPI = () => {
+  const rescheduleAPI = (availability: any) => {
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
@@ -204,9 +227,16 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         })
         .then((data: any) => {
           console.log(data, 'data');
-          props.navigation.replace(AppRoutes.Consult, { Data: data });
+          setshowSpinner(false);
+          props.navigation.replace(AppRoutes.TabBar, {
+            Data:
+              data.data &&
+              data.data.bookRescheduleAppointment &&
+              data.data.bookRescheduleAppointment.appointmentDetails,
+          });
         })
         .catch((e: string) => {
+          setshowSpinner(false);
           console.log('Error occured while accept appid', e);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
@@ -222,8 +252,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     console.log('acceptChange');
     setResheduleoverlay(false);
     AsyncStorage.setItem('showSchduledPopup', 'true');
-    rescheduleAPI();
-    //props.navigation.goBack();
+    setshowSpinner(true);
+    rescheduleAPI(availability);
   };
 
   const reshedulePopUpMethod = () => {
@@ -444,7 +474,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   style={styles.gotItStyles}
                   onPress={() => {
                     setShowCancelPopup(false);
-                    // checkingAppointmentDates();
+                    setshowSpinner(true);
                     cancelAppointmentApi();
                   }}
                 >
@@ -463,7 +493,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
             doctorId={doctorDetails && doctorDetails.id}
             renderTab={'Consult Online'}
-            rescheduleCount={data.rescheduleCount}
+            rescheduleCount={newRescheduleCount}
             appointmentId={data.id}
           />
         )}
@@ -475,14 +505,16 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             patientId={currentPatient ? currentPatient.id : ''}
             clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
             doctorId={doctorDetails && doctorDetails.id}
-            isbelowthree={false}
+            isbelowthree={belowThree}
             setdisplayoverlay={() => reshedulePopUpMethod()}
             acceptChange={() => acceptChange()}
             appadatetime={props.navigation.state.params!.data.appointmentDateTime}
             reschduleDateTime={availability.data}
+            rescheduleCount={newRescheduleCount}
             data={data}
           />
         )}
+        {showSpinner && <Spinner />}
       </View>
     );
   return null;

@@ -78,7 +78,7 @@ export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const appointmentData = props.navigation.state.params!.data;
-  // console.log('appointmentData', appointmentData);
+  console.log('appointmentData', appointmentData);
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -205,7 +205,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
-    console.log('consult room', currentPatient);
     analytics.setCurrentScreen(AppRoutes.ChatRoom);
   }, []);
 
@@ -371,7 +370,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
-    console.log('isIphoneX', isIphoneX());
 
     pubnub.subscribe({
       channels: [channel],
@@ -462,37 +460,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       (status, res) => {
         // const start = res.startTimeToken;
-        const msgs = res.messages;
-        console.log('msgs', msgs);
+        try {
+          const msgs = res.messages;
+          console.log('msgs', msgs);
 
-        const newmessage: { message: string }[] = [];
+          const newmessage: { message: string }[] = [];
 
-        res.messages.forEach((element, index) => {
-          newmessage[index] = element.entry;
-        });
-        console.log('res', res);
+          res.messages.forEach((element, index) => {
+            newmessage[index] = element.entry;
+          });
+          console.log('res', res);
 
-        if (messages.length !== newmessage.length) {
-          try {
+          if (messages.length !== newmessage.length) {
             if (newmessage[newmessage.length - 1].message === startConsultMsg) {
               updateSessionAPI();
               checkingAppointmentDates();
             }
-          } catch (error) {
-            console.log('error', error);
-          }
 
-          insertText = newmessage;
-          setMessages(newmessage as []);
-          console.log('newmessage', newmessage);
-          if (msgs.length == 100) {
-            console.log('hihihihihi');
-            // getHistory(start);
-          }
+            insertText = newmessage;
+            setMessages(newmessage as []);
+            console.log('newmessage', newmessage);
+            if (msgs.length == 100) {
+              console.log('hihihihihi');
+              // getHistory(start);
+            }
 
-          setTimeout(() => {
-            flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
-          }, 1000);
+            setTimeout(() => {
+              flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
+            }, 1000);
+          }
+        } catch (error) {
+          console.log('error', error);
         }
       }
     );
@@ -692,8 +690,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 borderRadius: 10,
                 //marginLeft: 38,
                 ...theme.viewStyles.shadowStyle,
-                
-                alignSelf:'center'
+
+                alignSelf: 'center',
               }}
             >
               <Text
@@ -1442,7 +1440,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while accept appid', errorMessage, error);
-        Alert.alert('Error', 'Opps ! The selected slot is unavailable. Please choose a different one');
+        Alert.alert(
+          'Error',
+          'Opps ! The selected slot is unavailable. Please choose a different one'
+        );
       });
   };
 

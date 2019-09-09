@@ -181,7 +181,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
-  console.log('Backdata', props.Data);
+  const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
+  const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
+
+  console.log('Backdata', props.navigation.getParam('Data'));
+
   const locationPermission = () => {
     console.log('123456789');
     Permissions.checkMultiple([
@@ -206,11 +210,33 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   useEffect(() => {
+    setNewAppointmentTime(
+      props.navigation.getParam('Data')
+        ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
+            'Do MMMM, dddd \nhh:mm a'
+          )
+        : ''
+    );
+
+    // let calculateCount = props.navigation.getParam('Data')
+    //   ? props.navigation.getParam('Data').rescheduleCount
+    //   : '';
+
+    let calculateCount: number = 5;
+
+    if (calculateCount > 3) {
+      calculateCount = Math.floor(calculateCount / 3);
+    }
+
+    setNewRescheduleCount(calculateCount);
+  });
+
+  useEffect(() => {
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
-    console.log('consult room', currentPatient);
+    // console.log('consult room', currentPatient);
     analytics.setCurrentScreen(AppRoutes.Consult);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
@@ -691,7 +717,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       {showSchdulesView && (
         <BottomPopUp
           title={'Hi! :)'}
-          description={`Your appointment with  \nhas been rescheduled for — 18th May, Monday, 12:00 pm\n\nYou have 2 free reschedules left.`}
+          description={`Your appointment with  \nhas been rescheduled for — ${newAppointmentTime}\n\nYou have ${newRescheduleCount} free reschedules left.`}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
