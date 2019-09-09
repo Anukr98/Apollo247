@@ -868,7 +868,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           },
         })
         .then((_data: any) => {
-          alert('transfer done');
           transferObject.transferDateTime = _data!.data!.initiateTransferAppointment!.doctorNextSlot;
           transferObject.transferId = _data!.data!.initiateTransferAppointment!.transferAppointment!.id;
           console.log(transferObject);
@@ -930,7 +929,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         })
         .then((_data) => {
           //setIsLoading(false);
-          alert('Reschedule done');
           console.log('data', _data);
           const reschduleObject: any = {
             appointmentId: props.appointmentId,
@@ -1043,13 +1041,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <Button
               className={classes.consultButton}
-              // disabled={
-              //   startAppointmentButton ||
-              //   disableOnTransfer ||
-              //   appointmentInfo!.appointmentState !== 'NEW' ||
-              //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-              //     appointmentInfo!.status !== STATUS.PENDING)
-              // }
+              disabled={
+                startAppointmentButton ||
+                disableOnTransfer ||
+                appointmentInfo!.appointmentState !== 'NEW' ||
+                (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  appointmentInfo!.status !== STATUS.PENDING)
+              }
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();
