@@ -747,8 +747,12 @@ export const GET_MEDICAL_RECORD = gql`
         sourceName
         documentURLs
         medicalRecordParameters {
+          id
           parameterName
+          unit
           result
+          minimum
+          maximum
         }
       }
     }

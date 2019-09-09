@@ -96,7 +96,8 @@ const arrayTest: ArrayTest[] = [
 export interface MedicineProps extends NavigationScreenProps {}
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
-  const tabs = [{ title: 'Medicines' }, { title: 'Tests' }];
+  // const tabs = [{ title: 'Medicines' }, { title: 'Tests' }];
+  const tabs = [{ title: 'Medicines' }];
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
@@ -234,16 +235,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <TabsComponent
           textStyle={{
             paddingTop: 12,
+            paddingBottom: 8,
           }}
           style={{
-            height: 43,
-            marginTop: 181,
+            height: 44,
+            marginTop: 191,
             backgroundColor: colors.CARD_BG,
             ...viewStyles.shadowStyle,
           }}
           data={tabs}
           onChange={(selectedTab: string) => {
-            // setselectedTab(selectedTab)
+            setselectedTab(selectedTab);
           }}
           selectedTab={selectedTab}
         />
@@ -274,7 +276,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 source={require('@aph/mobile-patients/src/images/medicine/img_adbanner.png')}
                 style={{ width: '100%' }}
               />
-              <ListCard
+              {/* <ListCard
                 container={{ marginTop: 32 }}
                 title={'Your Med Subscriptions'}
                 leftIcon={
@@ -283,10 +285,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     source={require('@aph/mobile-patients/src/images/medicine/ic_schedule.png')}
                   />
                 }
-              />
+              /> */}
               <ListCard
                 onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
-                container={{ marginBottom: 32 }}
+                container={{ marginTop: 32, marginBottom: 32 }}
                 title={'Your Orders'}
                 leftIcon={<MedicineIcon />}
               />

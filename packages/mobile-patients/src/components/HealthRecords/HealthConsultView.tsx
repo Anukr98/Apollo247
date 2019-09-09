@@ -123,18 +123,6 @@ export interface HealthConsultViewProps extends NavigationScreenProps {
 
 export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   console.log('PastData', props.PastData);
-
-  const tabs = strings.health_records_home.tabs;
-
-  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-
-  const renderConsults = () => {
-    return (
-      <View style={{}}>
-        <Filter />
-      </View>
-    );
-  };
   return (
     <View style={styles.viewStyle}>
       <View style={styles.trackerViewStyle}>

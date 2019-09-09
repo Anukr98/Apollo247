@@ -97,6 +97,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
 
   const [date, setDate] = useState<Date>(props.date);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
+  const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
 
   //   const [availableSlot, setavailableSlot] = useState<string>('');
 
@@ -104,11 +105,11 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     if (date !== props.date) {
       setDate(props.date);
     }
-  }, [props.date]);
+  }, [props.date, date]);
 
   const todayDate = new Date().toISOString().slice(0, 10);
   const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-    // fetchPolicy: 'no-cache',
+    fetchPolicy: 'no-cache',
     variables: {
       DoctorNextAvailableSlotInput: {
         doctorIds: props.doctor ? [props.doctor.id] : [],
@@ -155,6 +156,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       props.setNextAvailableSlot(nextSlot);
       props.setavailableInMin(timeDiff);
       setavailableInMin(timeDiff);
+      setNextAvailableSlot(nextSlot);
     }
   }
 
@@ -215,7 +217,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
                         }}
                       >
                         {`Dr. ${
-                          props.doctor!.firstName
+                          props.doctor ? props.doctor.firstName : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
                     );
@@ -232,10 +234,16 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     return (
       <CalendarView
         date={date}
-        onPressDate={(date) => {
+        onPressDate={(selectedDate) => {
           // setDate(date);
-          props.setshowSpinner && props.setshowSpinner(true);
-          props.setDate(date);
+          console.log('selectedDate', selectedDate !== date, selectedDate, date);
+
+          if (
+            Moment(selectedDate).format('YYYY-MM-DD') !== Moment(date).format('YYYY-MM-DD') &&
+            props.setshowSpinner
+          )
+            props.setshowSpinner(true);
+          props.setDate(selectedDate);
           props.setselectedTimeSlot('');
         }}
         calendarType={type}
@@ -260,16 +268,23 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
           marginBottom: 16,
         }}
       >
-        <Text
-          style={{
-            color: theme.colors.SHERPA_BLUE,
-            ...theme.fonts.IBMPlexSansMedium(14),
-          }}
-        >
-          {`${props.doctor ? `Dr. ${props.doctor.firstName}` : 'Doctor'} is available in ${
-            availableInMin < 0 ? '15' : availableInMin
-          } mins!\nWould you like to consult now or schedule for later?`}
-        </Text>
+        {availableInMin ? (
+          <Text
+            style={{
+              color: theme.colors.SHERPA_BLUE,
+              ...theme.fonts.IBMPlexSansMedium(14),
+            }}
+          >
+            {`${props.doctor ? `Dr. ${props.doctor.firstName}` : 'Doctor'} is available ${
+              availableInMin <= 60
+                ? `in ${availableInMin} mins`
+                : `on ${Moment(new Date(NextAvailableSlot), 'HH:mm:ss.SSSz').format(
+                    'DD MMM, h:mm a'
+                  )}`
+            }!\nWould you like to consult now or schedule for later?`}
+          </Text>
+        ) : null}
+
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
           <Button
             title="Consult Now"
