@@ -865,6 +865,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           },
         })
         .then((_data: any) => {
+          alert('transfer done');
           transferObject.transferDateTime = _data!.data!.initiateTransferAppointment!.doctorNextSlot;
           transferObject.transferId = _data!.data!.initiateTransferAppointment!.transferAppointment!.id;
           console.log(transferObject);
@@ -926,6 +927,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         })
         .then((_data) => {
           //setIsLoading(false);
+          alert('Reschedule done');
           console.log('data', _data);
           const reschduleObject: any = {
             appointmentId: props.appointmentId,
