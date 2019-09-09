@@ -394,11 +394,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <Header
             title="PRESCRIPTION"
             leftIcon="backArrow"
-            rightComponent={
-              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-                <ShareGreen />
-              </TouchableOpacity>
-            }
+            // rightComponent={
+            //   <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            //     <ShareGreen />
+            //   </TouchableOpacity>
+            // }
             onPressLeftIcon={() => props.navigation.goBack()}
           />
           <ScrollView bounces={false}>

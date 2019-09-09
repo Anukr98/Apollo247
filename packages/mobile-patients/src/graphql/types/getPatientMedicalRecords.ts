@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { MedicalRecordType } from "./globalTypes";
+import { MedicalRecordType, MedicalTestUnit } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientMedicalRecords
@@ -10,8 +10,12 @@ import { MedicalRecordType } from "./globalTypes";
 
 export interface getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords_medicalRecordParameters {
   __typename: "MedicalRecordParameters";
+  id: string;
   parameterName: string;
+  unit: MedicalTestUnit | null;
   result: number | null;
+  minimum: number | null;
+  maximum: number | null;
 }
 
 export interface getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords {

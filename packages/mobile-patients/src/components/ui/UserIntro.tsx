@@ -96,6 +96,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
         flex: 1,
         alignItems: 'flex-end',
         zIndex: 999,
+        elevation: 5,
         // backgroundColor: 'red',
         backgroundColor: 'transparent',
       }}
@@ -116,7 +117,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
           paddingBottom: 16,
           ...Platform.select({
             android: {
-              marginTop: 124,
+              marginTop: 94,
             },
             ios: {
               marginTop: 134,

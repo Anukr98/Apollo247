@@ -1,9 +1,8 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CalendarClose, CalendarShow } from '@aph/mobile-patients/src/components/ui/Icons';
 import React, { useEffect, useState } from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, Text, View, ViewStyle, TouchableOpacity } from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
 

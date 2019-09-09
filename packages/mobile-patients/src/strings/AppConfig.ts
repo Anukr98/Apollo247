@@ -7,7 +7,11 @@ const Configuration = {
   DELIVERY_CHARGES: 25,
 };
 
-const Specialities = {
+type SpecialitiesType = {
+  [key: string]: string[];
+};
+
+const Specialities: SpecialitiesType = {
   Cardiology: ['Cardiologist', 'Cardiologists'],
   Neurology: ['Neurologist', 'Neurologists'],
   Orthopaedics: ['Orthopaedician', 'Orthopaedicians'],
@@ -29,6 +33,7 @@ const Specialities = {
   Podiatry: ['Podiatrician', 'Podiatricians'],
   'General Surgeon': ['General Surgeon', 'General Surgeons'],
   'Vascular Surgery': ['Vascular Surgeon', 'Vascular Surgeons'],
+  Gynaecology: ['Gynaecologist', 'Gynaecologists'],
 };
 
 export const AppConfig = {
