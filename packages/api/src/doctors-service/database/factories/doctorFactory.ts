@@ -21,10 +21,9 @@ export const buildDoctor = (attrs: Partial<Doctor> = {}) => {
   doctor.city = faker.address.city();
   doctor.country = faker.address.country();
   doctor.dateOfBirth = faker.date.past();
-  doctor.delegateNumber = faker.random.alphaNumeric(8).toUpperCase();
   doctor.doctorType = randomEnum(DoctorType);
   doctor.emailAddress = faker.internet.email();
-  doctor.experience = faker.random.number(20);
+  doctor.experience = _random(0, 40);
   doctor.firstName = faker.name.firstName();
   doctor.gender = randomEnum(Gender);
   doctor.isActive = faker.random.boolean();
