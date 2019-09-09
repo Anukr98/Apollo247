@@ -175,7 +175,9 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         variant="body1"
                         className={classes.mainHeadingconsult}
                       >
-                        {patient.appointmentids.length} Consult
+                        {patient.appointmentids.length > 1
+                          ? `${patient.appointmentids.length} Consults`
+                          : `${patient.appointmentids.length} Consult`}
                       </Typography>
                     </Grid>
                     <Grid lg={3} sm={3} xs={3} key={4} className={classes.valign} item>
