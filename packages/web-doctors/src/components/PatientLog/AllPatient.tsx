@@ -89,6 +89,7 @@ const useStyles = makeStyles((theme: Theme) =>
         fontWeight: 600,
         fontSize: 14,
         display: 'inline-block',
+        color: '#fff',
         '& svg': {
           width: 16,
           marginTop: -3,
