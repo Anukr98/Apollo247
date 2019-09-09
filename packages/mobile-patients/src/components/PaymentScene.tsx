@@ -17,6 +17,8 @@ import { BottomPopUp } from './ui/BottomPopUp';
 import { Header } from './ui/Header';
 import { CheckedIcon, MedicineIcon, UnCheck } from './ui/Icons';
 import { AppConfig } from '../strings/AppConfig';
+import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '../graphql/types/GetMedicineOrdersList';
+import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -74,6 +76,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
 
     return (
       <WebView
+        bounces={false}
         useWebKit={true}
         source={{ uri: url }}
         onNavigationStateChange={(data) => {
@@ -106,6 +109,20 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   };
 
   const renderOrderInfoPopup = () => {
+    const navigateOnSuccess = () => {
+      props.navigation.replace(AppRoutes.OrderDetailsScene, {
+        goToHomeOnBack: true,
+        orderAutoId,
+        orderDetails: [
+          {
+            id: orderAutoId,
+            orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
+            statusDate: new Date().toString(),
+          },
+        ] as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[],
+      });
+    };
+
     if (isOrderSuccess) {
       return (
         <BottomPopUp
@@ -160,7 +177,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
                 marginTop: 15.5,
               }}
             />
-            <View
+            {/* <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
@@ -180,30 +197,23 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
               <TouchableOpacity style={{}} onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}>
                 {isRemindMeChecked ? <CheckedIcon /> : <UnCheck />}
               </TouchableOpacity>
-            </View>
+            </View> 
             <View
               style={{
                 height: 1,
                 backgroundColor: '#02475b',
-                opacity: 0.3,
+                opacity: 0.1,
                 marginBottom: 15.5,
                 marginTop: 7.5,
               }}
-            />
+            /> */}
             <View style={styles.popupButtonStyle}>
-              <TouchableOpacity
-                style={{ flex: 1 }}
-                onPress={() =>
-                  props.navigation.replace(AppRoutes.OrderDetailsScene, { orderAutoId })
-                }
-              >
+              <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateOnSuccess()}>
                 <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ flex: 1, alignItems: 'flex-end' }}
-                onPress={() =>
-                  props.navigation.replace(AppRoutes.OrderDetailsScene, { orderAutoId })
-                }
+                onPress={() => navigateOnSuccess()}
               >
                 <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
               </TouchableOpacity>

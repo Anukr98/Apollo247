@@ -726,9 +726,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           onClickClose={() => {
             setDisplayFilter(false);
           }}
-          setData={(data) => {
-            setshowSpinner(true);
-            setFilterData(data);
+          setData={(selecteddata) => {
+            // if (selecteddata !== data) setshowSpinner(true);
+            setFilterData(selecteddata);
           }}
           data={[...FilterData]}
         />

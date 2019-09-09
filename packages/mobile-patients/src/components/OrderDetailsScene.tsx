@@ -17,6 +17,9 @@ import { useAllCurrentPatients } from '../hooks/authHooks';
 import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
 import { OrderCardProps } from './ui/OrderCard';
 import moment from 'moment';
+import { StackActions } from 'react-navigation';
+import { NavigationActions } from 'react-navigation';
+import { AppRoutes } from './NavigatorContainer';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -65,6 +68,7 @@ const _list = [
 export interface OrderDetailsSceneProps extends NavigationScreenProps {
   orderAutoId: string;
   orderDetails: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[];
+  goToHomeOnBack: boolean;
 }
 {
 }
@@ -74,6 +78,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [isReturnVisible, setReturnVisible] = useState(false);
   const orderId = props.navigation.getParam('orderAutoId');
   const { currentPatient } = useAllCurrentPatients();
+  const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
 
   // const { data, error, loading } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(
   //   GET_MEDICINE_ORDER_DETAILS,
@@ -250,7 +255,19 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               <More />
             </TouchableOpacity>
           }
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => {
+            if (goToHomeOnBack) {
+              props.navigation.dispatch(
+                StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+                })
+              );
+            } else {
+              props.navigation.goBack();
+            }
+          }}
         />
       </View>
 

@@ -10,6 +10,7 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
 import { useApolloClient } from 'react-apollo-hooks';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -38,6 +39,7 @@ import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -151,6 +153,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     tabPdfBody: {
+      display: 'none',
       height: '100%',
       marginTop: '10px',
       paddingLeft: '15px',
@@ -197,6 +200,10 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type Params = { id: string; patientId: string };
+const storageClient = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
 
 export const ConsultTabs: React.FC = () => {
   const classes = useStyles();
@@ -211,6 +218,7 @@ export const ConsultTabs: React.FC = () => {
 
   const [tabValue, setTabValue] = useState<number>(0);
   const [isEnded, setIsEnded] = useState<boolean>(false);
+  const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
   const [sessionId, setsessionId] = useState<string>('');
@@ -383,6 +391,13 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
+          console.log(_data!.data!.updateCaseSheet!.blobName);
+          const url =
+            'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
+            _data!.data!.updateCaseSheet!.blobName;
+          setPrescriptionPdf(url);
+        }
         if (!flag) {
           setIsPopoverOpen(true);
         }
@@ -527,64 +542,66 @@ export const ConsultTabs: React.FC = () => {
             setCasesheetNotes,
           }}
         >
-          <div className={classes.container}>
-            <CallPopover
-              setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-              createSessionAction={createSessionAction}
-              saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
-              endConsultAction={endConsultAction}
-              appointmentId={appointmentId}
-              appointmentDateTime={appointmentDateTime}
-              doctorId={doctorId}
-              isEnded={isEnded}
-              caseSheetId={caseSheetId}
-            />
-            <div>
+          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 85px' }}>
+            <div className={classes.container}>
+              <CallPopover
+                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+                createSessionAction={createSessionAction}
+                saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
+                endConsultAction={endConsultAction}
+                appointmentId={appointmentId}
+                appointmentDateTime={appointmentDateTime}
+                doctorId={doctorId}
+                isEnded={isEnded}
+                caseSheetId={caseSheetId}
+              />
               <div>
                 <div>
-                  <Tabs
-                    value={tabValue}
-                    variant="fullWidth"
-                    classes={{
-                      root: classes.tabsRoot,
-                      indicator: classes.tabsIndicator,
-                    }}
-                    onChange={(e, newValue) => {
-                      setTabValue(newValue);
-                    }}
-                  >
-                    <Tab
-                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                      label="Case Sheet"
-                    />
-                    <Tab
-                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                      label="Chat"
-                    />
-                  </Tabs>
-                </div>
-                <TabContainer>
-                  <div className={tabValue !== 0 ? classes.none : classes.block}>
-                    {casesheetInfo ? <CaseSheet /> : ''}
-                  </div>
-                </TabContainer>
-                <TabContainer>
-                  <div className={tabValue !== 1 ? classes.none : classes.block}>
-                    <div className={classes.chatContainer}>
-                      <ConsultRoom
-                        startConsult={startConsult}
-                        sessionId={sessionId}
-                        token={token}
-                        appointmentId={paramId}
-                        doctorId={doctorId}
-                        patientId={patientId}
+                  <div>
+                    <Tabs
+                      value={tabValue}
+                      variant="fullWidth"
+                      classes={{
+                        root: classes.tabsRoot,
+                        indicator: classes.tabsIndicator,
+                      }}
+                      onChange={(e, newValue) => {
+                        setTabValue(newValue);
+                      }}
+                    >
+                      <Tab
+                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                        label="Case Sheet"
                       />
-                    </div>
+                      <Tab
+                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                        label="Chat"
+                      />
+                    </Tabs>
                   </div>
-                </TabContainer>
+                  <TabContainer>
+                    <div className={tabValue !== 0 ? classes.none : classes.block}>
+                      {casesheetInfo ? <CaseSheet /> : ''}
+                    </div>
+                  </TabContainer>
+                  <TabContainer>
+                    <div className={tabValue !== 1 ? classes.none : classes.block}>
+                      <div className={classes.chatContainer}>
+                        <ConsultRoom
+                          startConsult={startConsult}
+                          sessionId={sessionId}
+                          token={token}
+                          appointmentId={paramId}
+                          doctorId={doctorId}
+                          patientId={patientId}
+                        />
+                      </div>
+                    </div>
+                  </TabContainer>
+                </div>
               </div>
             </div>
-          </div>
+          </Scrollbars>
         </CaseSheetContext.Provider>
       )}
       <Modal
@@ -660,11 +677,7 @@ export const ConsultTabs: React.FC = () => {
             </Button>
           </div>
           <div className={classes.tabPdfBody}>
-            <iframe
-              src="http://www.africau.edu/images/default/sample.pdf"
-              width="80%"
-              height="450"
-            ></iframe>
+            <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
           </div>
         </Paper>
       </Modal>

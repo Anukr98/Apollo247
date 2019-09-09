@@ -15,6 +15,7 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import {
   MedicineCartItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveMedicineOrder,
@@ -44,6 +45,7 @@ import { handleGraphQlError } from '../helpers/helperFunctions';
 import { AppRoutes } from './NavigatorContainer';
 import { BottomPopUp } from './ui/BottomPopUp';
 import { Spinner } from './ui/Spinner';
+import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '../graphql/types/GetMedicineOrdersList';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -179,6 +181,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     deliveryCharges,
     cartItems,
     deliveryType,
+    clearCartInfo,
   } = useShoppingCart();
 
   const { currentPatient } = useAllCurrentPatients();
@@ -222,7 +225,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           // Order-failed
         } else {
           // Order-Success
-          // Show popup here
+          // Show popup here & clear info
+          clearCartInfo && clearCartInfo();
           setOrderInfo({
             orderId: orderId,
             orderAutoId: orderAutoId,
@@ -479,7 +483,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '66.66%' }}
-          title={`PAY RS. ${grandTotal}`}
+          title={`PAY RS. ${grandTotal.toPrecision()}`}
           onPress={() => {
             initiateOrder();
           }}
@@ -490,6 +494,20 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   };
 
   const renderOrderInfoPopup = () => {
+    const navigateOnSuccess = () => {
+      props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+        goToHomeOnBack: true,
+        orderAutoId: orderInfo.orderAutoId,
+        orderDetails: [
+          {
+            id: `${orderInfo.orderAutoId}`,
+            orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
+            statusDate: new Date().toString(),
+          },
+        ] as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[],
+      });
+    };
+
     if (showOrderPopup) {
       return (
         <BottomPopUp
@@ -544,7 +562,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                 marginTop: 15.5,
               }}
             />
-            <View
+            {/* <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
@@ -568,29 +586,18 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               style={{
                 height: 1,
                 backgroundColor: '#02475b',
-                opacity: 0.3,
+                opacity: 0.1,
                 marginBottom: 15.5,
                 marginTop: 7.5,
               }}
-            />
+            /> */}
             <View style={styles.popupButtonStyle}>
-              <TouchableOpacity
-                style={{ flex: 1 }}
-                onPress={() =>
-                  props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-                    orderAutoId: orderInfo.orderAutoId,
-                  })
-                }
-              >
+              <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateOnSuccess()}>
                 <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ flex: 1, alignItems: 'flex-end' }}
-                onPress={() =>
-                  props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-                    orderAutoId: orderInfo.orderAutoId,
-                  })
-                }
+                onPress={() => navigateOnSuccess()}
               >
                 <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
               </TouchableOpacity>
