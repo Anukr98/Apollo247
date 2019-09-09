@@ -8,4 +8,5 @@ export enum ApiConstants {
   TRANSFER_INITIATION_BODY = 'For your appointment {0}, transfer is initiated.',
 
   APPOINTMENT_RESCHEDULE_DAYS_LIMIT = 7,
+  PATIENT_INITIATE_REASON = 'initiated by patient',
 }

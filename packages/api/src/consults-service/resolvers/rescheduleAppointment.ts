@@ -288,7 +288,7 @@ const bookRescheduleAppointment: Resolver<
       rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
       rescheduleInitiatedId: bookRescheduleAppointmentInput.patientId,
       rescheduleStatus: TRANSFER_STATUS.COMPLETED,
-      rescheduleReason: 'initiated by patient',
+      rescheduleReason: ApiConstants.PATIENT_INITIATE_REASON.toString(),
       appointment: apptDetails,
     };
     await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
