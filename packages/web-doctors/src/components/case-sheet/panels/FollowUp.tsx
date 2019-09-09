@@ -32,10 +32,26 @@ const useStyles = makeStyles(() => ({
       // color: '#f00',
     },
   },
+  KeyboardDatePicker: {
+    width: '100%',
+    '& div': {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+    },
+    '& input': {
+      fontSize: 18,
+      color: '##01475b',
+      borderBottom: '2px solid #00b38e',
+      fontWeight: 500,
+    },
+  },
   switchBtn: {
     position: 'absolute',
     right: 10,
-    // backgroundColor: 'red',
   },
   followupTxt: {
     fontSize: 14,
@@ -123,16 +139,16 @@ const useStyles = makeStyles(() => ({
       fontWeight: 500,
 
       '&:hover': {
-        // borderBottom: 'none',
+        borderBottom: 'none',
         '&:before': {
-          // borderBottom: 'none',
+          borderBottom: 'none',
         },
       },
       '&:before': {
-        // borderBottom: 'none',
+        borderBottom: 'none',
       },
       '&:after': {
-        // borderBottom: 'none',
+        borderBottom: 'none',
       },
     },
   },
@@ -351,20 +367,24 @@ export const FollowUp: React.FC = () => {
                     Follow Up On
                   </Typography>
                   <ThemeProvider theme={defaultMaterialTheme}>
-                    <KeyboardDatePicker
-                      disableToolbar
-                      autoOk
-                      placeholder="dd/mm/yyyy"
-                      variant="inline"
-                      format="dd/MM/yyyy"
-                      value={selectedDate}
-                      minDate={new Date()}
-                      onKeyPress={(e) => {
-                        if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
-                      }}
-                      // InputAdornmentProps={{ position: 'end' }}
-                      onChange={(date) => handleDateChange((date as unknown) as Date)}
-                    />
+                    <span>
+                      <KeyboardDatePicker
+                        className={classes.KeyboardDatePicker}
+                        inputVariant="standard"
+                        disableToolbar
+                        autoOk
+                        placeholder="dd/mm/yyyy"
+                        variant="inline"
+                        format="dd/MM/yyyy"
+                        value={selectedDate}
+                        minDate={new Date()}
+                        onKeyPress={(e) => {
+                          if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+                        }}
+                        // InputAdornmentProps={{ position: 'end' }}
+                        onChange={(date) => handleDateChange((date as unknown) as Date)}
+                      />
+                    </span>
                   </ThemeProvider>
                 </div>
               )}
