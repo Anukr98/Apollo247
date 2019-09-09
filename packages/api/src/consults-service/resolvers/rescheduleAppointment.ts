@@ -17,6 +17,7 @@ import {
   PushNotificationSuccessMessage,
   NotificationType,
 } from 'notifications-service/resolvers/notifications';
+import { differenceInDays } from 'date-fns';
 
 export const rescheduleAppointmentTypeDefs = gql`
   type NotificationMessage {
@@ -70,6 +71,14 @@ export const rescheduleAppointmentTypeDefs = gql`
     appointmentDetails: Appointment
   }
 
+  type CheckRescheduleResult {
+    isPaid: Int!
+    isCancel: Int!
+    rescheduleCount: Int!
+    appointmentState: APPOINTMENT_STATE!
+    isFollowUp: Int!
+  }
+
   extend type Mutation {
     initiateRescheduleAppointment(
       RescheduleAppointmentInput: RescheduleAppointmentInput
@@ -77,6 +86,13 @@ export const rescheduleAppointmentTypeDefs = gql`
     bookRescheduleAppointment(
       bookRescheduleAppointmentInput: BookRescheduleAppointmentInput
     ): BookRescheduleAppointmentResult!
+  }
+
+  extend type Query {
+    checkIfReschedule(
+      existAppointmentId: String!
+      rescheduleDate: DateTime!
+    ): CheckRescheduleResult!
   }
 `;
 
@@ -119,9 +135,72 @@ type BookRescheduleAppointmentResult = {
   appointmentDetails: Appointment;
 };
 
+type CheckRescheduleResult = {
+  isPaid: number;
+  isCancel: number;
+  rescheduleCount: number;
+  appointmentState: APPOINTMENT_STATE;
+  isFollowUp: Boolean;
+};
+
 type RescheduleAppointmentInputArgs = { RescheduleAppointmentInput: RescheduleAppointmentInput };
 type BookRescheduleAppointmentInputArgs = {
   bookRescheduleAppointmentInput: BookRescheduleAppointmentInput;
+};
+
+const checkIfReschedule: Resolver<
+  null,
+  { existAppointmentId: string; rescheduleDate: Date },
+  ConsultServiceContext,
+  CheckRescheduleResult
+> = async (parent, args, { consultsDb }) => {
+  let isPaid = 0,
+    isCancel = 0,
+    rescheduleCount = 0,
+    isFollowUp: Boolean = false;
+
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptDetails = await appointmentRepo.findById(args.existAppointmentId);
+  if (!apptDetails) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+  rescheduleCount = apptDetails.rescheduleCount;
+  isFollowUp = apptDetails.isFollowUp;
+  if (apptDetails && apptDetails.isFollowUp == false) {
+    if (apptDetails.rescheduleCount > 3) {
+      isPaid = 1;
+      isCancel = 1;
+    } else {
+      isPaid = 0;
+      isCancel = 0;
+    }
+  }
+
+  if (apptDetails && apptDetails.isFollowUp == true) {
+    if (apptDetails.rescheduleCount > 3) {
+      isPaid = 1;
+      isCancel = 1;
+    } else {
+      if (
+        Math.abs(differenceInDays(apptDetails.appointmentDateTime, args.rescheduleDate)) > 7 &&
+        apptDetails.isFollowPaid === false
+      ) {
+        isPaid = 1;
+        isCancel = 0;
+      } else {
+        isPaid = 0;
+        isCancel = 0;
+      }
+    }
+  }
+
+  return {
+    isPaid,
+    isCancel,
+    rescheduleCount,
+    appointmentState: apptDetails.appointmentState,
+    isFollowUp,
+  };
 };
 
 const initiateRescheduleAppointment: Resolver<
@@ -234,5 +313,9 @@ export const rescheduleAppointmentResolvers = {
   Mutation: {
     initiateRescheduleAppointment,
     bookRescheduleAppointment,
+  },
+
+  Query: {
+    checkIfReschedule,
   },
 };

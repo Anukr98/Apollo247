@@ -83,6 +83,8 @@ export const transferAppointmentTypeDefs = gql`
     status: STATUS!
     appointmentState: APPOINTMENT_STATE
     patientName: String!
+    isTransfer: Int!
+    transferParentId: String!
   }
 
   type TransferAppointmentResult {
@@ -149,6 +151,8 @@ type TransferAppointmentBooking = {
   appointmentState: APPOINTMENT_STATE;
   parentId: string;
   patientName: string;
+  isTransfer: Boolean;
+  transferParentId: string;
 };
 
 type BookTransferAppointmentResult = {
@@ -224,6 +228,8 @@ const bookTransferAppointment: Resolver<
     appointmentState: APPOINTMENT_STATE.TRANSFER,
     parentId: apptDetails.id,
     appointmentDateTime: new Date(BookTransferAppointmentInput.appointmentDateTime.toISOString()),
+    isTransfer: true,
+    transferParentId: BookTransferAppointmentInput.existingAppointmentId,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
   };
   const appointment = await appointmentRepo.saveAppointment(appointmentAttrs);
