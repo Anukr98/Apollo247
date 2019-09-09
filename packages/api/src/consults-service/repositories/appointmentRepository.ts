@@ -138,8 +138,10 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
-    const newStartDate = new Date(addDays(startDate, -1) + 'T18:30');
-    const newEndDate = new Date(startDate + 'T18:30');
+    //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
+    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+
     return this.find({
       where: {
         doctorId,
