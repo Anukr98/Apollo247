@@ -537,6 +537,7 @@ export const ConsultTabs: React.FC = () => {
               appointmentDateTime={appointmentDateTime}
               doctorId={doctorId}
               isEnded={isEnded}
+              caseSheetId={caseSheetId}
             />
             <div>
               <div>
