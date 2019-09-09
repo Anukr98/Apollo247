@@ -13,6 +13,7 @@ import {
   View,
   Dimensions,
   AsyncStorage,
+  Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -22,13 +23,21 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import moment from 'moment';
 import { ReschedulePopUp } from '@aph/mobile-patients/src/components/Consult/ReschedulePopUp';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { CANCEL_APPOINTMENT, NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  CANCEL_APPOINTMENT,
+  NEXT_AVAILABLE_SLOT,
+  BOOK_APPOINTMENT_RESCHEDULE,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelAppointment';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  bookRescheduleAppointment,
+  bookRescheduleAppointmentVariables,
+} from '../../graphql/types/bookRescheduleAppointment';
 
 const { width, height } = Dimensions.get('window');
 
@@ -96,7 +105,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [appointmentTime, setAppointmentTime] = useState<string>('');
   const [resheduleoverlay, setResheduleoverlay] = useState<boolean>(false);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
-
+  const [rescheduleApICalled, setRescheduleApICalled] = useState<boolean>(false);
   const client = useApolloClient();
 
   useEffect(() => {
@@ -140,12 +149,50 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     console.log(availability.data!, 'availabilityData', 'availableSlots');
     //setNexttime(availability.data.getDoctorAvailableSlots)
   }
+  const rescheduleAPI = () => {
+    const bookRescheduleInput = {
+      appointmentId: data.id,
+      doctorId: doctorDetails.id,
+      newDateTimeslot: availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0]
+        .availableSlot,
+      initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+      initiatedId: data.patientId,
+      patientId: data.patientId,
+      rescheduledId: '',
+    };
 
+    console.log(bookRescheduleInput, 'bookRescheduleInput');
+    if (!rescheduleApICalled) {
+      setRescheduleApICalled(true);
+      client
+        .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
+          mutation: BOOK_APPOINTMENT_RESCHEDULE,
+          variables: {
+            bookRescheduleAppointmentInput: bookRescheduleInput,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((data: any) => {
+          console.log(data, 'data');
+          props.navigation.replace(AppRoutes.Consult);
+        })
+        .catch((e: string) => {
+          console.log('Error occured while accept appid', e);
+          const error = JSON.parse(JSON.stringify(e));
+          const errorMessage = error && error.message;
+          console.log('Error occured while accept appid', errorMessage, error);
+          Alert.alert(
+            'Error',
+            'Opps ! The selected slot is unavailable. Please choose a different one'
+          );
+        });
+    }
+  };
   const acceptChange = () => {
     console.log('acceptChange');
     setResheduleoverlay(false);
     AsyncStorage.setItem('showSchduledPopup', 'true');
-    props.navigation.goBack();
+    rescheduleAPI();
   };
 
   const reshedulePopUpMethod = () => {
@@ -300,7 +347,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               }}
             />
             <Button
-              title={'FILL CASE SHEET'}
+              title={'START CONSULT'}
               style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.ChatRoom, {
@@ -437,6 +484,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             acceptChange={() => acceptChange()}
             appadatetime={props.navigation.state.params!.data.appointmentDateTime}
             reschduleDateTime={availability.data}
+            data={data}
           />
         )}
       </View>

@@ -660,10 +660,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               width: 282,
               borderRadius: 10,
               marginVertical: 2,
-              alignSelf: 'flex-start',
+              alignSelf: 'center',
             }}
           >
-            {leftComponent === 1 && (
+            {/* {leftComponent === 1 && (
               <View
                 style={{
                   width: 32,
@@ -683,15 +683,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 />
               </View>
-            )}
+            )} */}
             <View
               style={{
                 backgroundColor: '#0087ba',
                 width: 244,
                 height: 354,
                 borderRadius: 10,
-                marginLeft: 38,
+                //marginLeft: 38,
                 ...theme.viewStyles.shadowStyle,
+                
+                alignSelf:'center'
               }}
             >
               <Text
@@ -733,7 +735,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       letterSpacing: 0.3,
                     }}
                   >
-                    {rowData.transferInfo.specilty} | {rowData.transferInfo.experience}
+                    {rowData.transferInfo.specilty} | {rowData.transferInfo.experience} YRS
                   </Text>
                   <View
                     style={{
@@ -1433,14 +1435,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setTimeout(() => {
             setTransferAccept(false);
           }, 1000);
-        props.navigation.push(AppRoutes.Consult);
+        props.navigation.push(AppRoutes.ConsultRoom);
       })
       .catch((e: string) => {
         console.log('Error occured while accept appid', e);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while accept appid', errorMessage, error);
-        Alert.alert('Error', errorMessage);
+        Alert.alert('Error', 'Opps ! The selected slot is unavailable. Please choose a different one');
       });
   };
 

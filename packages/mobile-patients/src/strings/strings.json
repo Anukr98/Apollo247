@@ -223,10 +223,12 @@
     "book_follow_up": "BOOK FOLLOW-UP",
     "tabs": [
       {
-        "title": "Consults & Rx"
+        "title": "Consults & Rx",
+        "count": "2"
       },
       {
-        "title": "Medical Records"
+        "title": "Medical Records",
+        "count": ""
       }
     ]
   }

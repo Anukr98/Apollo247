@@ -9,13 +9,14 @@ import {
   AddFileIcon,
   Filter,
   NotificationIcon,
+  FileBig,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { UserIntro } from '@aph/mobile-patients/src/components/ui/UserIntro';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, TouchableOpacity, View, Text } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import {
@@ -29,6 +30,7 @@ import moment from 'moment';
 import { useQuery, useApolloClient } from 'react-apollo-hooks';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
+import { Button } from '../ui/Button';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -53,6 +55,8 @@ export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const tabs = strings.health_records_home.tabs;
+
+  const [countTab, setCountTab] = useState<any>();
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
@@ -88,13 +92,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         const medOrders = _data.data.getPatientPastConsultsAndPrescriptions!.medicineOrders || [];
         const consultsAndMedOrders: { [key: string]: any } = {};
 
-        consults.forEach((c) => {
+        const ok = consults.forEach((c) => {
           consultsAndMedOrders[c!.appointmentDateTime] = {
             ...consultsAndMedOrders[c!.appointmentDateTime],
             ...c,
           };
         });
-        console.log({ consultsAndMedOrders });
+        console.log(consults.length + medOrders.length, 'ok');
+        setCountTab(consults.length + medOrders.length);
 
         medOrders.forEach((c) => {
           consultsAndMedOrders[c!.quoteDateTime] = {
@@ -340,32 +345,68 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const renderConsults = () => {
     console.log('arrayValues', arrayValues);
+
     return (
       <View>
         {renderFilter()}
 
-        {arrayValues &&
-          arrayValues.map((item: any) => {
-            // console.log('item', item);
+        {arrayValues == 0 ? (
+          <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
+            <View
+              style={{
+                marginTop: 38,
+                height: 60,
+                width: 60,
+                justifyContent: 'center',
+                alignItems: 'center',
+                marginLeft: 150,
+                marginRight: 100,
+              }}
+            >
+              <FileBig />
+            </View>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansMedium(12),
+                color: '#02475b',
+                marginLeft: 38,
+                marginRight: 38,
+                marginBottom: 25,
+              }}
+            >
+              You don’t have any records with us right now. {'\n'}Add a record to keep everything
+              handy in one place!
+            </Text>
+            <View style={{ marginLeft: 60, marginRight: 60 }}>
+              <Button title="ADD RECORD" />
+            </View>
+          </View>
+        ) : (
+          <View>
+            {arrayValues &&
+              arrayValues.map((item: any) => {
+                // console.log('item', item);
 
-            return (
-              <HealthConsultView
-                onPressOrder={() => {
-                  setdisplayOrderPopup(true);
-                }}
-                onClickCard={() => {
-                  props.navigation.navigate(AppRoutes.ConsultDetails, {
-                    CaseSheet: item.id,
-                    DoctorInfo: item.doctorInfo,
-                    FollowUp: item.isFollowUp,
-                    appointmentType: item.appointmentType,
-                  });
-                }}
-                PastData={item}
-                navigation={props.navigation}
-              />
-            );
-          })}
+                return (
+                  <HealthConsultView
+                    onPressOrder={() => {
+                      setdisplayOrderPopup(true);
+                    }}
+                    onClickCard={() => {
+                      props.navigation.navigate(AppRoutes.ConsultDetails, {
+                        CaseSheet: item.id,
+                        DoctorInfo: item.doctorInfo,
+                        FollowUp: item.isFollowUp,
+                        appointmentType: item.appointmentType,
+                      });
+                    }}
+                    PastData={item}
+                    navigation={props.navigation}
+                  />
+                );
+              })}
+          </View>
+        )}
       </View>
     );
   };

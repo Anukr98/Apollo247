@@ -23,14 +23,17 @@ export interface ReschedulePopUpProps extends NavigationScreenProps {
   acceptChange: () => void;
   appadatetime: string;
   reschduleDateTime: any;
+  data: any;
 }
 export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  console.log('doctor', props.doctor);
+  console.log('doctorreschdule', props.doctor);
   console.log(
     'reschduleDateTime',
     props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
   );
+  console.log('isbelowthree', props.isbelowthree);
+
   return (
     <View
       style={{
@@ -103,7 +106,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
               </Text>
             </View>
             <View>
-              {props.isbelowthree ? (
+              {/* {props.data.rescheduleCount >= 3 ? (
                 <Text
                   style={{
                     color: '#01475b',
@@ -114,7 +117,10 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     paddingHorizontal: 16,
                   }}
                 >
-                  {`We’re sorry that you have to reschedule.\nYou can reschedule up to 3 times for free.`}
+                  {`Since you hace already rescheduled ${
+                    props.data.rescheduleCount
+                  } times with Dr. ${props.doctor &&
+                    props.doctor.firstName}, we will consider this a new paid appointment.`}
                 </Text>
               ) : (
                 <Text
@@ -127,7 +133,36 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     paddingHorizontal: 16,
                   }}
                 >
-                  {`Since you hace already rescheduled 3 times with Dr. ${props.doctor &&
+                  {`We’re sorry that you have to reschedule.\nYou can reschedule up to ${props.data.rescheduleCount}  times for free.`}
+                </Text>
+              )} */}
+              {props.isbelowthree ? (
+                <Text
+                  style={{
+                    color: '#01475b',
+                    ...theme.fonts.IBMPlexSansMedium(14),
+                    lineHeight: 20,
+                    letterSpacing: 0.35,
+                    paddingTop: 20,
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  {`We’re sorry that you have to reschedule.\nYou can reschedule up to ${props.data.rescheduleCount}  times for free.`}
+                </Text>
+              ) : (
+                <Text
+                  style={{
+                    color: '#01475b',
+                    ...theme.fonts.IBMPlexSansMedium(14),
+                    lineHeight: 20,
+                    letterSpacing: 0.35,
+                    paddingTop: 20,
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  {`Since you hace already rescheduled ${
+                    props.data.rescheduleCount
+                  } times with Dr. ${props.doctor &&
                     props.doctor.firstName}, we will consider this a new paid appointment.`}
                 </Text>
               )}
@@ -144,21 +179,38 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
               >
                 {`Next slot for Dr. ${props.doctor && props.doctor.firstName} is available on —`}
               </Text>
-              <Text
-                style={{
-                  color: '#0087ba',
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                  lineHeight: 24,
-                  letterSpacing: 0.4,
-                  paddingTop: 16,
-                  paddingHorizontal: 16,
-                }}
-              >
-                {moment(
-                  props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                    .availableSlot
-                ).format(' DD MMMM YYYY HH:mm')}
-              </Text>
+              {props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                .availableSlot ? (
+                <Text
+                  style={{
+                    color: '#0087ba',
+                    ...theme.fonts.IBMPlexSansMedium(14),
+                    lineHeight: 24,
+                    letterSpacing: 0.4,
+                    paddingTop: 16,
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  {moment(
+                    props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                      .availableSlot
+                  ).format(' DD MMMM YYYY HH:mm A')}
+                </Text>
+              ) : (
+                <Text
+                  style={{
+                    color: '#01475b',
+                    ...theme.fonts.IBMPlexSansMedium(14),
+                    lineHeight: 20,
+                    letterSpacing: 0.35,
+                    paddingTop: 20,
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  No Slot Available
+                </Text>
+              )}
+
               <View
                 style={{
                   paddingHorizontal: 0,

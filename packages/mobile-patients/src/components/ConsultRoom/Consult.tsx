@@ -166,7 +166,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface ConsultProps extends NavigationScreenProps {}
+export interface ConsultProps extends NavigationScreenProps {
+  Data: any;
+}
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
@@ -179,7 +181,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
-
+  console.log('Backdata', props.Data);
   const locationPermission = () => {
     console.log('123456789');
     Permissions.checkMultiple([
