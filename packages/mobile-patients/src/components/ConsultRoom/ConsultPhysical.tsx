@@ -20,8 +20,15 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
 import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, Text, View, Platform, PermissionsAndroid, AsyncStorage } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Platform,
+  PermissionsAndroid,
+  AsyncStorage,
+  TouchableOpacity,
+} from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
 import { useQuery } from 'react-apollo-hooks';
 import { getDoctorPhysicalAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorPhysicalAvailableSlots';

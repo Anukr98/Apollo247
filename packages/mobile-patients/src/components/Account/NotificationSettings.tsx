@@ -42,6 +42,11 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
   },
+  separatorStyles: {
+    ...theme.viewStyles.lightSeparatorStyle,
+    opacity: 0.5,
+    marginHorizontal: 20,
+  },
 });
 
 type NotificationArray = {
@@ -176,30 +181,22 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
 
   useEffect(() => {
     saveData();
-  }, [saveData]);
+  }, [saveData, upcomingAppointmentReminders]);
 
   const renderNotificationView = () => {
     return (
       <View style={styles.containerStyle}>
         {NotificationArray.map((serviceTitle, i) => (
           <View key={i} style={{}}>
-            <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
+            <View>
               <>
-                <View style={styles.viewRowStyle} key={i}>
+                <View style={styles.viewRowStyle}>
                   <Text style={styles.textStyle}>{serviceTitle.title}</Text>
-                  <Switch value={false} onValueChange={(value) => console.log(value)} />
+                  <Switch value={false} onValueChange={(value) => {}} />
                 </View>
-                {i + 1 !== NotificationArray.length && (
-                  <View
-                    style={{
-                      ...theme.viewStyles.lightSeparatorStyle,
-                      opacity: 0.5,
-                      marginHorizontal: 20,
-                    }}
-                  />
-                )}
+                <View style={styles.separatorStyles} />
               </>
-            </TouchableOpacity>
+            </View>
           </View>
         ))}
       </View>
