@@ -81,11 +81,11 @@ const NotificationArray: NotificationArray[] = [
     title: 'Messages from Doctors',
     status: false,
   },
-  {
-    id: 6,
-    title: 'Chats from Patients',
-    status: false,
-  },
+  // {
+  //   id: 6,
+  //   title: 'Chats from Patients',
+  //   status: false,
+  // },
   {
     id: 7,
     title: 'Play sounds for notifications',
@@ -96,11 +96,11 @@ const NotificationArray: NotificationArray[] = [
     title: 'Vibrate on notifications',
     status: false,
   },
-  {
-    id: 9,
-    title: 'Do Not Disturb Mode',
-    status: false,
-  },
+  // {
+  //   id: 9,
+  //   title: 'Do Not Disturb Mode',
+  //   status: false,
+  // },
 ];
 
 export interface NotificationSettingsProps extends NavigationScreenProps {}

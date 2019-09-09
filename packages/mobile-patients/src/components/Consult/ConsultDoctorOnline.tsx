@@ -251,9 +251,9 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
       <View
         style={{
           ...theme.viewStyles.cardContainer,
-          paddingHorizontal: 16,
-          paddingTop: 15,
-          paddingBottom: 20,
+          paddingHorizontal: 0,
+          paddingTop: 0,
+          paddingBottom: 0,
           marginTop: 20,
           marginBottom: 16,
         }}

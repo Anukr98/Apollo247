@@ -38,6 +38,7 @@
 		8CDD0A92F89241EBA6C55A8E /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C5E26C657DEA440AB1CCBDF7 /* Feather.ttf */; };
 		8F02ADE7665545228E84A70D /* FontAwesome.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 28828092F8724884AAABC430 /* FontAwesome.ttf */; };
 		9512C594C0244A0CB891C971 /* MaterialCommunityIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 92A9BEAAC3E648F6A7F57360 /* MaterialCommunityIcons.ttf */; };
+		97001C342326B71000EC38D0 /* libRNFetchBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 97001C2C2326B70300EC38D0 /* libRNFetchBlob.a */; };
 		975AB59722C33D6F00BDD18D /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 975AB59622C33D6E00BDD18D /* GoogleService-Info.plist */; };
 		9762A0C722CF1214006AF3E8 /* libSplashScreen.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9762A0C622CF11FB006AF3E8 /* libSplashScreen.a */; };
 		97A8D7802316F5620010C1EB /* libReactNativePermissions.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 97A8D77F2316F5560010C1EB /* libReactNativePermissions.a */; };
@@ -322,6 +323,13 @@
 			remoteGlobalIDString = 58B5119B1A9E6C1200147676;
 			remoteInfo = RCTText;
 		};
+		97001C2B2326B70300EC38D0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97001BFB2326B70300EC38D0 /* RNFetchBlob.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A15C300E1CD25C330074CB35;
+			remoteInfo = RNFetchBlob;
+		};
 		9762A0C522CF11FB006AF3E8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 9762A0C122CF11FB006AF3E8 /* SplashScreen.xcodeproj */;
@@ -499,6 +507,7 @@
 		919AD47576BF454F836D02CE /* libRNFirebase.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNFirebase.a; sourceTree = "<group>"; };
 		92A9BEAAC3E648F6A7F57360 /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
 		9560FCA35A49459F840DED43 /* RNVectorIcons.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNVectorIcons.xcodeproj; path = "../node_modules/react-native-vector-icons/RNVectorIcons.xcodeproj"; sourceTree = "<group>"; };
+		97001BFB2326B70300EC38D0 /* RNFetchBlob.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RNFetchBlob.xcodeproj; path = "../node_modules/react-native-fetch-blob/ios/RNFetchBlob.xcodeproj"; sourceTree = "<group>"; };
 		97362EC173AC41188EA489C7 /* libRNGestureHandler.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNGestureHandler.a; sourceTree = "<group>"; };
 		97381B2F22CA08CE001BA50A /* ApolloPatient.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = ApolloPatient.entitlements; path = ApolloPatient/ApolloPatient.entitlements; sourceTree = "<group>"; };
 		975AB59622C33D6E00BDD18D /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -574,6 +583,7 @@
 				97A8D78C2316F5A00010C1EB /* libRNDeviceInfo.a in Frameworks */,
 				97A8D79D231704EF0010C1EB /* libRNInCallManager.a in Frameworks */,
 				C8E373AF83BA4045A4546C33 /* libOpenTokReactNative.a in Frameworks */,
+				97001C342326B71000EC38D0 /* libRNFetchBlob.a in Frameworks */,
 				67B3ADDA2316C17200E4377B /* libRNCAsyncStorage.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -733,6 +743,7 @@
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				97001BFB2326B70300EC38D0 /* RNFetchBlob.xcodeproj */,
 				97A8D797231704DF0010C1EB /* RNInCallManager.xcodeproj */,
 				97A8D7832316F59B0010C1EB /* RNDeviceInfo.xcodeproj */,
 				97A8D77A2316F5560010C1EB /* ReactNativePermissions.xcodeproj */,
@@ -817,6 +828,14 @@
 				2126FFB853DD4C55A1279E67 /* Zocial.ttf */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		97001BFC2326B70300EC38D0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				97001C2C2326B70300EC38D0 /* libRNFetchBlob.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		9762A0C222CF11FB006AF3E8 /* Products */ = {
@@ -1081,6 +1100,10 @@
 				{
 					ProductGroup = 6717258B230170700088EE92 /* Products */;
 					ProjectRef = 6717258A230170700088EE92 /* RNDocumentPicker.xcodeproj */;
+				},
+				{
+					ProductGroup = 97001BFC2326B70300EC38D0 /* Products */;
+					ProjectRef = 97001BFB2326B70300EC38D0 /* RNFetchBlob.xcodeproj */;
 				},
 				{
 					ProductGroup = 97A8E8FE22CB9B8B00DD57E4 /* Products */;
@@ -1356,6 +1379,13 @@
 			remoteRef = 832341B41AAA6A8300B99B32 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		97001C2C2326B70300EC38D0 /* libRNFetchBlob.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRNFetchBlob.a;
+			remoteRef = 97001C2B2326B70300EC38D0 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		9762A0C622CF11FB006AF3E8 /* libSplashScreen.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -1532,7 +1562,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
+			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
 		97A95E0DB007A8E9E14718ED /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1592,7 +1622,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
@@ -1622,7 +1652,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.patient;
 				PRODUCT_NAME = ApolloPatient;
-				PROVISIONING_PROFILE_SPECIFIER = Apollo_Dev;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo_InHouse;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloPatient-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -1637,7 +1667,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = ApolloPatient/ApolloPatient.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Y9EKYK4YZ4;
@@ -1666,7 +1696,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.apollo.patient;
 				PRODUCT_NAME = ApolloPatient;
-				PROVISIONING_PROFILE_SPECIFIER = Apollo_Dev;
+				PROVISIONING_PROFILE_SPECIFIER = Apollo_InHouse;
 				SWIFT_OBJC_BRIDGING_HEADER = "ApolloPatient-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
