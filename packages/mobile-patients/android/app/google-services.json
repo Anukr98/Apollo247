@@ -59,6 +59,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "537093214409-d2nmmqb354o154utgvuijqrv7abtq9c0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.apollo.patientapp",
+            "certificate_hash": "0b7851eaa2d549936a0521703906c39636be16d9"
+          }
+        },
+        {
           "client_id": "537093214409-0dnpvcm6pmha3187cd4irevdt17c296v.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

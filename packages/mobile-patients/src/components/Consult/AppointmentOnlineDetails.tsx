@@ -143,7 +143,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     let calculateCount = data.rescheduleCount ? data.rescheduleCount : '';
     console.log('calculateCount', calculateCount);
 
-    if (calculateCount >= 3) {
+    if (calculateCount > 3) {
       calculateCount = Math.floor(calculateCount / 3);
       setBelowThree(true);
       console.log('calculateCount', calculateCount);
@@ -373,21 +373,19 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             </View>
           </View>
           <StickyBottomComponent defaultBG style={{ paddingHorizontal: 0 }}>
-            {dateIsAfter ? (
-              <Button
-                title={'RESCHEDULE'}
-                style={{
-                  flex: 0.5,
-                  marginLeft: 20,
-                  marginRight: 8,
-                  backgroundColor: 'white',
-                }}
-                titleTextStyle={{ color: '#fc9916' }}
-                onPress={() => {
-                  setResheduleoverlay(true);
-                }}
-              />
-            ) : null}
+            <Button
+              title={'RESCHEDULE'}
+              style={{
+                flex: 0.5,
+                marginLeft: 20,
+                marginRight: 8,
+                backgroundColor: 'white',
+              }}
+              titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
+              onPress={() => {
+                dateIsAfter ? setResheduleoverlay(true) : null;
+              }}
+            />
 
             <Button
               title={'START CONSULTATION'}
@@ -543,6 +541,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             renderTab={'Consult Online'}
             rescheduleCount={newRescheduleCount}
             appointmentId={data.id}
+            data={data}
           />
         )}
 
