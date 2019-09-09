@@ -68,6 +68,7 @@ import { buildPatient } from 'profiles-service/database/factories/patientFactory
 
   console.log('Building doctors...');
   const jrKabir = buildDoctor({
+    // The firebaseuid for this record is: dJYFTV7MJGWK2EdziTtr5zUPm243
     firstName: 'Kabir',
     lastName: 'Sarin',
     gender: Gender.MALE,
