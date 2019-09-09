@@ -370,6 +370,7 @@ export const GET_CASESHEET = gql`
           appointmentDateTime
           status
           appointmentState
+          displayId
         }
         medicinePrescription {
           id

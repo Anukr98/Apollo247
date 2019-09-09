@@ -11,9 +11,13 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 import { Gender } from 'graphql/types/globalTypes';
 
 export const UserCard: React.FC = () => {
-  const { loading, patientDetails, caseSheetId } = useContext(CaseSheetContext);
+  const { loading, patientDetails, caseSheetId, appointmentInfo } = useContext(CaseSheetContext);
   const userCardStrip = [];
-
+  const displayId =
+    appointmentInfo && appointmentInfo !== null && appointmentInfo.displayId !== null
+      ? appointmentInfo!.displayId
+      : '';
+  console.log(displayId);
   if (
     patientDetails!.dateOfBirth &&
     patientDetails!.dateOfBirth !== null &&
@@ -74,13 +78,12 @@ export const UserCard: React.FC = () => {
         <Divider />
         {patientDetails!.uhid && patientDetails!.uhid !== '' && (
           <Typography variant="h6" color="textSecondary" component="h6">
-            UHID:{patientDetails!.uhid}
+            UHID: {patientDetails!.uhid}
           </Typography>
         )}
 
         <Typography variant="h6" color="textSecondary" component="h6">
-          Appt ID:
-          {caseSheetId && caseSheetId !== '' && caseSheetId.slice(-5)}
+          Appt ID: {displayId}
         </Typography>
       </CardContent>
     </Card>

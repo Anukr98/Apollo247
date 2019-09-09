@@ -445,7 +445,6 @@ export const ConsultTabs: React.FC = () => {
         // setIsPopoverOpen(true);
         setIsPdfPopoverOpen(true);
         setIsEnded(true);
-        //isEnded, setIsEnded
         console.log('_data', _data);
       })
       .catch((e) => {
@@ -488,7 +487,6 @@ export const ConsultTabs: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
-
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -605,7 +603,22 @@ export const ConsultTabs: React.FC = () => {
             </Button>
           </div>
           <div className={classes.tabBody}>
-            <h3>You,re ending your consult with Seema.</h3>
+            {}
+            <h3>
+              You,re ending your consult with
+              {casesheetInfo &&
+                casesheetInfo !== null &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.firstName !== '' &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
+                  <span>
+                    {`${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
+                      casesheetInfo!.getCaseSheet!.patientDetails!.lastName
+                    }.`}
+                  </span>
+                )}
+            </h3>
             <Button
               className={classes.consultButton}
               //disabled={startAppointmentButton}
