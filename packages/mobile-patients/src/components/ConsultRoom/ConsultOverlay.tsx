@@ -108,6 +108,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [showSuccessPopUp, setshowSuccessPopUp] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
+  const [AppointmentExistAlert, setAppointmentExistAlert] = useState<boolean>(false);
 
   const setTimeArrayData = (availableSlots: string[]) => {
     const array = divideSlots(availableSlots, date);
@@ -196,11 +197,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           setshowSpinner(false)
         ),
           error.message.split(':')[1].trim() == 'APPOINTMENT_EXIST_ERROR' &&
-            Alert.alert(
-              'Alert',
-              'Opps ! The selected slot is unavailable. Please choose a different one',
-              [{ text: 'OK', onPress: () => console.log('OK Pressed') }]
-            );
+            setAppointmentExistAlert(true);
+        // Alert.alert(
+        //   'Alert',
+        //   'Opps ! The selected slot is unavailable. Please choose a different one',
+        //   [{ text: 'OK', onPress: () => console.log('OK Pressed') }]
+        // );
       });
   };
 
@@ -409,6 +411,24 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               }}
             >
               <Text style={styles.gotItTextStyles}>GO TO CONSULT ROOM</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {AppointmentExistAlert && (
+        <BottomPopUp
+          title={'Alert!'}
+          description={`Oops ! The selected slot is unavailable. Please choose a different one`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.gotItStyles}
+              onPress={() => {
+                setAppointmentExistAlert(false);
+              }}
+            >
+              <Text style={styles.gotItTextStyles}>Okay</Text>
             </TouchableOpacity>
           </View>
         </BottomPopUp>

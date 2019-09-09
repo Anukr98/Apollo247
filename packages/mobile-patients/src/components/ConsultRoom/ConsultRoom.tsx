@@ -586,7 +586,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </View>
               <TouchableOpacity
                 activeOpacity={1}
-                onPress={() => setShowMenu(true)}
+                // onPress={() => setShowMenu(true)}
                 style={{
                   flexDirection: 'row',
                   marginTop: 8,
@@ -594,8 +594,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
-                  <View>
+                  <Text style={styles.hiTextStyle}>
+                    {string.home.hi} {userName}!
+                  </Text>
+                  {/* <View>
                     <View
                       style={{
                         flexDirection: 'row',
@@ -606,7 +608,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       <DropdownGreen style={{ marginTop: 8 }} />
                     </View>
                     <View style={styles.seperatorStyle} />
-                  </View>
+                  </View> */}
                 </View>
               </TouchableOpacity>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
