@@ -1,12 +1,12 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import { OrderCard, OrderCardProps } from '@aph/mobile-patients/src/components/ui/OrderCard';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { ActivityIndicator, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { GET_MEDICINE_ORDERS_LIST } from '../graphql/profiles';
 import {
@@ -16,7 +16,6 @@ import {
 import { MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
 import { g } from '../helpers/helperFunctions';
 import { useAllCurrentPatients } from '../hooks/authHooks';
-import moment from 'moment';
 
 const styles = StyleSheet.create({});
 
@@ -51,7 +50,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
 
   const { data, error, loading } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(
     GET_MEDICINE_ORDERS_LIST,
-    { variables: { patientId: currentPatient && currentPatient.id } }
+    { variables: { patientId: currentPatient && currentPatient.id }, fetchPolicy: 'no-cache' }
   );
 
   const orders = (!loading && data && data.getMedicineOrdersList.MedicineOrdersList!) || [];

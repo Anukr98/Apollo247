@@ -153,7 +153,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    cartTotal < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
+    cartTotal > 0 && cartTotal < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
       ? AppConfig.Configuration.DELIVERY_CHARGES
       : 0;
 
@@ -202,6 +202,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     AsyncStorage.setItem('cartItems', '').catch(() => {
       Alert.alert('Alert', 'Failed to clear cart items from local storage.');
     });
+    setPhysicalPrescriptions([]);
     setCartItems([]);
     setDeliveryAddressId('');
     setStoreId('');
