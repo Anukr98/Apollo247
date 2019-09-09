@@ -17,7 +17,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 //import { SendNotification } from 'consults-service/sendNotifications';
 //import { MailMessage } from 'types/notificationMessageTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import {
   NotificationType,
   sendNotification,
@@ -285,10 +285,18 @@ const initiateTransferAppointment: Resolver<
     APPOINTMENT_STATE.AWAITING_TRANSFER
   );
   let slot = '';
-  slot = await appointmentRepo.getDoctorNextAvailSlot(TransferAppointmentInput.transferredDoctorId);
-  const curDate = format(new Date(), 'yyyy-MM-dd');
-  if (slot != '') {
-    slot = `${curDate}T${slot}:00.000Z`;
+  let nextDate = new Date();
+  while (true) {
+    const nextSlot = await appointmentRepo.getDoctorNextSlotDate(
+      TransferAppointmentInput.transferredDoctorId,
+      nextDate,
+      doctorsDb
+    );
+    if (nextSlot != '' && nextSlot != undefined) {
+      slot = nextSlot;
+      break;
+    }
+    nextDate = addDays(nextDate, 1);
   }
 
   // send notification

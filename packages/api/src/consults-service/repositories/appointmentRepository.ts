@@ -1,4 +1,13 @@
-import { EntityRepository, Repository, Between, MoreThan, LessThan, Brackets, Not } from 'typeorm';
+import {
+  EntityRepository,
+  Repository,
+  Between,
+  MoreThan,
+  LessThan,
+  Brackets,
+  Not,
+  Connection,
+} from 'typeorm';
 import {
   Appointment,
   AppointmentSessions,
@@ -13,6 +22,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, differenceInMinutes, addDays, subDays } from 'date-fns';
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
+import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -298,6 +308,95 @@ export class AppointmentRepository extends Repository<Appointment> {
         return this.getAlignedSlot(curDate);
       }
     });
+  }
+
+  async getDoctorNextSlotDate(doctorId: string, selDate: Date, doctorsDb: Connection) {
+    const weekDay = format(selDate, 'EEEE').toUpperCase();
+    //console.log('entered here', selDate, weekDay);
+    const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+    const docConsultHrs = await consultHoursRepo.getConsultHours(doctorId, weekDay);
+    let availableSlots: string[] = [];
+    const inputStartDate = format(addDays(selDate, -1), 'yyyy-MM-dd');
+    const curStartDate = new Date(inputStartDate + 'T18:30');
+    const curEndDate = new Date(format(selDate, 'yyyy-MM-dd').toString() + 'T18:29');
+    if (docConsultHrs && docConsultHrs.length > 0) {
+      //get the slots of the day first
+      let st = `${selDate.toDateString()} ${docConsultHrs[0].startTime.toString()}`;
+      const ed = `${selDate.toDateString()} ${docConsultHrs[0].endTime.toString()}`;
+      let consultStartTime = new Date(st);
+      const consultEndTime = new Date(ed);
+      console.log(consultStartTime, consultEndTime);
+      let previousDate: Date = selDate;
+      if (consultEndTime < consultStartTime) {
+        previousDate = addDays(selDate, -1);
+        st = `${previousDate.toDateString()} ${docConsultHrs[0].startTime.toString()}`;
+        consultStartTime = new Date(st);
+      }
+      const slotsCount =
+        Math.ceil(Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
+      //check if all slots are booked or not
+      const appts = await this.find({
+        where: {
+          doctorId,
+          appointmentDateTime: Between(curStartDate, curEndDate),
+          status: Not(STATUS.CANCELLED),
+        },
+        order: { appointmentDateTime: 'ASC' },
+      });
+      if (appts.length == slotsCount) {
+        return '';
+      }
+      const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
+      let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
+      //console.log(slotsCount, 'slots count');
+      //console.log(startTime, 'slot start time');
+      availableSlots = Array(slotsCount)
+        .fill(0)
+        .map(() => {
+          const stTime = startTime;
+          startTime = addMinutes(startTime, 15);
+          const stTimeHours = stTime
+            .getUTCHours()
+            .toString()
+            .padStart(2, '0');
+          const stTimeMins = stTime
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0');
+          const startDateStr = format(stTime, 'yyyy-MM-dd');
+          const endStr = ':00.000Z';
+          return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
+        });
+
+      if (appts && appts.length > 0) {
+        appts.map((appt) => {
+          const apptDt = format(appt.appointmentDateTime, 'yyyy-MM-dd');
+          const sl = `${apptDt}T${appt.appointmentDateTime
+            .getUTCHours()
+            .toString()
+            .padStart(2, '0')}:${appt.appointmentDateTime
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
+          if (availableSlots.indexOf(sl) >= 0) {
+            availableSlots.splice(availableSlots.indexOf(sl), 1);
+          }
+        });
+      }
+      //console.log('avaialblse slots in repo', availableSlots);
+      let finalSlot = '';
+      let foundFlag = 0;
+      availableSlots.map((slot) => {
+        const slotDate = new Date(slot);
+        if (slotDate >= new Date() && foundFlag == 0) {
+          finalSlot = slot;
+          foundFlag = 1;
+        }
+      });
+      return finalSlot;
+    } else {
+      return '';
+    }
   }
 
   getAddAlignedSlot(apptDate: Date, mins: number) {
