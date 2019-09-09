@@ -7,17 +7,14 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import {
-  getCoupons_getCoupons_coupons,
-  getCoupons_getCoupons,
-  getCoupons,
-} from '../../graphql/types/getCoupons';
-import { Spinner } from '../ui/Spinner';
 import { GET_COUPONS } from '../../graphql/profiles';
+import { getCoupons, getCoupons_getCoupons_coupons } from '../../graphql/types/getCoupons';
+import { g, handleGraphQlError } from '../../helpers/helperFunctions';
+import { Spinner } from '../ui/Spinner';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -83,20 +80,6 @@ const styles = StyleSheet.create({
   },
 });
 
-// interface CouponExtension extends Coupon {
-//   description: string;
-// }
-
-// const couponsArray: CouponExtension[] = [
-//   {
-//     code: 'MED10',
-//     description: 'Get 10% off on total bill by shopping for Rs. 500 or more',
-//     type: 'unlimited',
-//     discountPercentage: 10,
-//     minCartValue: 500,
-//   },
-// ];
-
 export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 
 export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
@@ -105,17 +88,20 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
   const { setCoupon, coupon: cartCoupon, cartTotal } = useShoppingCart();
   const [couponList, setCouponList] = useState<(getCoupons_getCoupons_coupons | null)[]>([]);
   const client = useApolloClient();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // useEffect(() => {
-  //   client.query<getCoupons>(GET_COUPONS, {});
-  // });
-
-  // const { data, error, loading } = useQuery<getCoupons>(GET_COUPONS);
-  // if (!loading && !error) {
-  //   console.log({ data });
-  //   setCouponList(g(data, 'getCoupons', 'coupons') || []);
-  // }
+  useEffect(() => {
+    client
+      .query<getCoupons>({ query: GET_COUPONS, fetchPolicy: 'no-cache' })
+      .then(({ data: { getCoupons } }) => {
+        setLoading(false);
+        setCouponList(g(getCoupons, 'coupons') || []);
+      })
+      .catch((e) => {
+        setLoading(false);
+        handleGraphQlError(e, 'Unable to fetch coupons');
+      });
+  }, []);
 
   const applyCoupon = (coupon: getCoupons_getCoupons_coupons) => {
     setCoupon && setCoupon(coupon);
@@ -182,6 +168,19 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
       <>
         <Text style={styles.heading}>{'Coupons For You'}</Text>
         <View style={styles.separator} />
+        {!loading && couponList.length == 0 && (
+          <Text
+            style={{
+              color: theme.colors.FILTER_CARD_LABEL,
+              ...theme.fonts.IBMPlexSansMedium(13),
+              margin: 20,
+              textAlign: 'center',
+              opacity: 0.3,
+            }}
+          >
+            No coupons available
+          </Text>
+        )}
       </>
     );
   };
