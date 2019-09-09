@@ -155,7 +155,8 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                           variant="body1"
                           className={classes.mainHeadingmini}
                         >
-                          {`Last Consult: ${lastConsult.getDate()}/${lastConsult.getMonth()}/${lastConsult.getFullYear()}`}
+                          {`Last Consult: ${lastConsult.getDate()}/${lastConsult.getMonth() +
+                            1}/${lastConsult.getFullYear()}`}
                         </Typography>
                       )}
                       {lastConsult === '' && (
