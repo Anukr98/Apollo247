@@ -166,7 +166,8 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                           variant="body1"
                           className={classes.mainHeadingmini}
                         >
-                          {`Last Consult: ${lastConsult.getDate()}/${lastConsult.getMonth()}/${lastConsult.getFullYear()}`}
+                          {`Last Consult: ${lastConsult.getDate()}/${lastConsult.getMonth() +
+                            1}/${lastConsult.getFullYear()}`}
                         </Typography>
                       )}
                       {lastConsult === '' && (
@@ -185,7 +186,9 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                         variant="body1"
                         className={classes.mainHeadingconsult}
                       >
-                        {patient.appointmentids.length} Consult
+                        {patient.appointmentids.length > 1
+                          ? `${patient.appointmentids.length} Consults`
+                          : `${patient.appointmentids.length} Consult`}
                       </Typography>
                     </Grid>
                     <Grid lg={2} sm={3} xs={3} key={4} className={classes.valign} item>

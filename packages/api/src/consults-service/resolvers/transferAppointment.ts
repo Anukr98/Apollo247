@@ -17,7 +17,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 //import { SendNotification } from 'consults-service/sendNotifications';
 //import { MailMessage } from 'types/notificationMessageTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { format } from 'date-fns';
+import { addDays } from 'date-fns';
 import {
   NotificationType,
   sendNotification,
@@ -83,6 +83,8 @@ export const transferAppointmentTypeDefs = gql`
     status: STATUS!
     appointmentState: APPOINTMENT_STATE
     patientName: String!
+    isTransfer: Int!
+    transferParentId: String!
   }
 
   type TransferAppointmentResult {
@@ -149,6 +151,8 @@ type TransferAppointmentBooking = {
   appointmentState: APPOINTMENT_STATE;
   parentId: string;
   patientName: string;
+  isTransfer: Boolean;
+  transferParentId: string;
 };
 
 type BookTransferAppointmentResult = {
@@ -224,6 +228,8 @@ const bookTransferAppointment: Resolver<
     appointmentState: APPOINTMENT_STATE.TRANSFER,
     parentId: apptDetails.id,
     appointmentDateTime: new Date(BookTransferAppointmentInput.appointmentDateTime.toISOString()),
+    isTransfer: true,
+    transferParentId: BookTransferAppointmentInput.existingAppointmentId,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
   };
   const appointment = await appointmentRepo.saveAppointment(appointmentAttrs);
@@ -285,10 +291,18 @@ const initiateTransferAppointment: Resolver<
     APPOINTMENT_STATE.AWAITING_TRANSFER
   );
   let slot = '';
-  slot = await appointmentRepo.getDoctorNextAvailSlot(TransferAppointmentInput.transferredDoctorId);
-  const curDate = format(new Date(), 'yyyy-MM-dd');
-  if (slot != '') {
-    slot = `${curDate}T${slot}:00.000Z`;
+  let nextDate = new Date();
+  while (true) {
+    const nextSlot = await appointmentRepo.getDoctorNextSlotDate(
+      TransferAppointmentInput.transferredDoctorId,
+      nextDate,
+      doctorsDb
+    );
+    if (nextSlot != '' && nextSlot != undefined) {
+      slot = nextSlot;
+      break;
+    }
+    nextDate = addDays(nextDate, 1);
   }
 
   // send notification
