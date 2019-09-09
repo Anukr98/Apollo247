@@ -448,6 +448,7 @@ export const UPDATE_CASESHEET = gql`
   mutation UpdateCaseSheet($UpdateCaseSheetInput: UpdateCaseSheetInput) {
     updateCaseSheet(UpdateCaseSheetInput: $UpdateCaseSheetInput) {
       consultType
+      blobName
       appointment {
         id
       }

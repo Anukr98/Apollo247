@@ -48,6 +48,7 @@ export interface UpdateCaseSheet_updateCaseSheet_otherInstructions {
 export interface UpdateCaseSheet_updateCaseSheet {
   __typename: "CaseSheet";
   consultType: string | null;
+  blobName: string | null;
   appointment: UpdateCaseSheet_updateCaseSheet_appointment | null;
   diagnosis: (UpdateCaseSheet_updateCaseSheet_diagnosis | null)[] | null;
   diagnosticPrescription: (UpdateCaseSheet_updateCaseSheet_diagnosticPrescription | null)[] | null;
