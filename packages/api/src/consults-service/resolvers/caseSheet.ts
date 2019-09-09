@@ -389,7 +389,7 @@ const updateCaseSheet: Resolver<
   UpdateCaseSheetInputArgs,
   ConsultServiceContext,
   CaseSheet
-> = async (parent, { UpdateCaseSheetInput }, { consultsDb }) => {
+> = async (parent, { UpdateCaseSheetInput }, { consultsDb, doctorsDb }) => {
   const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
 
   //validate date
@@ -429,7 +429,7 @@ const updateCaseSheet: Resolver<
     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
-  const rxPdfData = convertCaseSheetToRxPdfData(getUpdatedCaseSheet);
+  const rxPdfData = await convertCaseSheetToRxPdfData(getUpdatedCaseSheet, doctorsDb);
   const pdfDocument = generateRxPdfDocument(rxPdfData);
   const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
   if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
