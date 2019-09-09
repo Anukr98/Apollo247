@@ -496,6 +496,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const renderOrderInfoPopup = () => {
     const navigateOnSuccess = () => {
       props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+        goToHomeOnBack: true,
         orderAutoId: orderInfo.orderAutoId,
         orderDetails: [
           {
