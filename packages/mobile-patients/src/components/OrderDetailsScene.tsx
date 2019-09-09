@@ -8,15 +8,22 @@ import {
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Overlay } from 'react-native-elements';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '../graphql/types/GetMedicineOrdersList';
-import { useAllCurrentPatients } from '../hooks/authHooks';
-import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
-import { OrderCardProps } from './ui/OrderCard';
 import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Overlay } from 'react-native-elements';
+import {
+  NavigationActions,
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+} from 'react-navigation';
+import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '../graphql/types/GetMedicineOrdersList';
+import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
+import { useAllCurrentPatients } from '../hooks/authHooks';
+import { AppRoutes } from './NavigatorContainer';
+import { OrderCardProps } from './ui/OrderCard';
+import { TabsComponent } from './ui/TabsComponent';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -65,6 +72,7 @@ const _list = [
 export interface OrderDetailsSceneProps extends NavigationScreenProps {
   orderAutoId: string;
   orderDetails: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[];
+  goToHomeOnBack: boolean;
 }
 {
 }
@@ -74,6 +82,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [isReturnVisible, setReturnVisible] = useState(false);
   const orderId = props.navigation.getParam('orderAutoId');
   const { currentPatient } = useAllCurrentPatients();
+  const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
 
   // const { data, error, loading } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(
   //   GET_MEDICINE_ORDER_DETAILS,
@@ -87,6 +96,29 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderDetails: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[] = props.navigation.getParam(
     'orderDetails'
   );
+
+  const handleBack = () => {
+    if (goToHomeOnBack) {
+      props.navigation.dispatch(
+        StackActions.reset({
+          index: 0,
+          key: null,
+          actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+        })
+      );
+    } else {
+      props.navigation.goBack();
+    }
+  };
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      handleBack();
+    });
+    return function cleanup() {
+      backHandler.remove();
+    };
+  }, []);
 
   const getStatusType = (type: MEDICINE_ORDER_STATUS) => {
     let status = '' as OrderCardProps['status'];
@@ -250,7 +282,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               <More />
             </TouchableOpacity>
           }
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => {
+            handleBack();
+          }}
         />
       </View>
 
@@ -263,14 +297,14 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         />
       )} */}
 
-      {/* <TabsComponent
+      <TabsComponent
         style={styles.tabsContainer}
         onChange={(title) => {
           setSelectedTab(title);
         }}
         data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
         selectedTab={selectedTab}
-      /> */}
+      />
       <ScrollView bounces={false}>{renderOrderHistory()}</ScrollView>
     </SafeAreaView>
   );

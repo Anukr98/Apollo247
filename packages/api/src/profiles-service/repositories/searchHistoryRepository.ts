@@ -15,6 +15,7 @@ export class SearchHistoryRepository extends Repository<SearchHistory> {
   }
 
   saveSearch(saveSearchAttrs: Partial<SearchHistory>) {
+    saveSearchAttrs.updatedDate = new Date();
     return this.create(saveSearchAttrs)
       .save()
       .catch((saveSearchError) => {

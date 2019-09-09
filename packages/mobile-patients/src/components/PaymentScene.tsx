@@ -111,6 +111,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const renderOrderInfoPopup = () => {
     const navigateOnSuccess = () => {
       props.navigation.replace(AppRoutes.OrderDetailsScene, {
+        goToHomeOnBack: true,
         orderAutoId,
         orderDetails: [
           {

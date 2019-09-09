@@ -320,7 +320,7 @@ export class DoctorRepository extends Repository<Doctor> {
     const dayEndTime = `${format(new Date(), 'yyyy-MM-dd')} ${endTime.toString()}`;
     const startDateTime = new Date(dayStartTime);
     const endDateTime = new Date(dayEndTime);
-    const slotsCount = Math.ceil(differenceInMinutes(endDateTime, startDateTime) / 15);
+    const slotsCount = Math.ceil(Math.abs(differenceInMinutes(endDateTime, startDateTime)) / 15);
     return slotsCount;
   }
 
@@ -331,7 +331,7 @@ export class DoctorRepository extends Repository<Doctor> {
     const startDateTime = new Date(startDateTimeString);
     const endDateTime = new Date(endDateTimeString);
 
-    const slotsCount = Math.ceil(differenceInHours(endDateTime, startDateTime)) * 4;
+    const slotsCount = Math.ceil(Math.abs(differenceInHours(endDateTime, startDateTime))) * 4;
 
     const slotTime = startDateTime.getHours() + ':' + startDateTime.getMinutes();
     let slotDateTime = new Date(format(startDateTime, 'yyyy-MM-dd') + ' ' + slotTime);

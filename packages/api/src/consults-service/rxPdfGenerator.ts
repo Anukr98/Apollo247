@@ -12,51 +12,83 @@ import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import fs from 'fs';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { Connection } from 'typeorm';
 
-export const convertCaseSheetToRxPdfData = (
+export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet> & {
     medicinePrescription: CaseSheet['medicinePrescription'];
     otherInstructions: CaseSheet['otherInstructions'];
     diagnosis: CaseSheet['diagnosis'];
-  }
-): RxPdfData => {
+  },
+  doctorsDb: Connection
+): Promise<RxPdfData> => {
   const caseSheetMedicinePrescription = JSON.parse(
     JSON.stringify(caseSheet.medicinePrescription)
   ) as CaseSheetMedicinePrescription[];
 
-  const prescriptions = caseSheetMedicinePrescription.map((csRx) => {
-    const name = csRx.medicineName;
-    const ingredients = [] as string[];
-    const timings = csRx.medicineTimings.map(_capitalize).join(', ');
-    const frequency = `${csRx.medicineDosage} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
-    const instructions = csRx.medicineInstructions;
-    return { name, ingredients, frequency, instructions };
-  });
+  let prescriptions;
+  if (caseSheet.medicinePrescription == null || caseSheet.medicinePrescription == '') {
+    prescriptions = [{ name: '', ingredients: [], frequency: '', instructions: '' }];
+  } else {
+    prescriptions = caseSheetMedicinePrescription.map((csRx) => {
+      const name = csRx.medicineName;
+      const ingredients = [] as string[];
+      const timings = csRx.medicineTimings.map(_capitalize).join(', ');
+      const frequency = `${csRx.medicineDosage} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
+      const instructions = csRx.medicineInstructions;
+      return { name, ingredients, frequency, instructions };
+    });
+  }
 
   const caseSheetOtherInstructions = JSON.parse(
     JSON.stringify(caseSheet.otherInstructions)
   ) as CaseSheetOtherInstruction[];
-  const generalAdvice = caseSheetOtherInstructions.map((otherInst) => ({
-    title: otherInst.instruction,
-    description: [] as string[],
-  }));
+  let generalAdvice;
+
+  if (caseSheet.otherInstructions == null || caseSheet.otherInstructions == '') {
+    generalAdvice = [{ title: '', description: [] }];
+  } else {
+    generalAdvice = caseSheetOtherInstructions.map((otherInst) => ({
+      title: otherInst.instruction,
+      description: [] as string[],
+    }));
+  }
 
   const caseSheetDiagnoses = JSON.parse(
     JSON.stringify(caseSheet.diagnosis)
   ) as CaseSheetDiagnosis[];
-  const diagnoses = caseSheetDiagnoses.map((diag) => ({
-    title: diag.name,
-    description: '',
-  }));
+  let diagnoses;
+  if (caseSheet.diagnosis == null || caseSheet.diagnosis == '') {
+    diagnoses = [{ title: '', description: '' }];
+  } else {
+    diagnoses = caseSheetDiagnoses.map((diag) => ({
+      title: diag.name,
+      description: '',
+    }));
+  }
 
   // TODO: CaseSheet needs to have a relationship with Doctor so we can get this info from it
-  const doctorInfo = {
+  let doctorInfo = {
     salutation: '',
     firstName: '',
     lastName: '',
     qualifications: '',
     registrationNumber: '',
   };
+
+  if (caseSheet.doctorId) {
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctordata = await doctorRepository.getDoctorProfileData(caseSheet.doctorId);
+    if (doctordata != null)
+      doctorInfo = {
+        salutation: doctordata.salutation,
+        firstName: doctordata.firstName,
+        lastName: doctordata.lastName,
+        qualifications: doctordata.qualification,
+        registrationNumber: doctordata.registrationNumber,
+      };
+  }
 
   return { prescriptions, generalAdvice, diagnoses, doctorInfo };
 };

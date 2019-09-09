@@ -46,6 +46,7 @@ import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomCheck
 import { CheckoutScene } from '@aph/mobile-patients/src/components/CheckoutScene';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
+import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
 export enum AppRoutes {
   Onboarding = 'Onboarding',
   Login = 'Login',
@@ -60,6 +61,7 @@ export enum AppRoutes {
   Medicine = 'Medicine',
   MyAccount = 'MyAccount',
   SplashScreen = 'SplashScreen',
+  MobileHelp = 'MobileHelp',
   Consult = 'Consult',
   FilterScene = 'FilterScene',
   DoctorDetails = 'DoctorDetails',
@@ -149,6 +151,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SplashScreen]: {
     screen: SplashScreen,
+  },
+  [AppRoutes.MobileHelp]: {
+    screen: MobileHelp,
   },
   [AppRoutes.Consult]: {
     screen: Consult,

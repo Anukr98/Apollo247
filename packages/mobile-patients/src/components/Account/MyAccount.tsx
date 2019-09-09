@@ -1,10 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  Invoice,
-  Location,
-  NotificaitonAccounts,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { Location, NotificaitonAccounts } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -27,7 +23,7 @@ import {
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
-const { height } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   topView: {
@@ -212,12 +208,13 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               // profileDetails.photoUrl &&
               // profileDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
               <Animated.Image
-                source={{
-                  uri:
-                    'https://image.shutterstock.com/image-photo/smiling-doctor-posing-arms-crossed-600w-519507367.jpg',
-                }}
+                source={require('../ui/icons/PatientImage.png')}
                 style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
+                resizeMode={'contain'}
               />
+              // <PatientPlaceholderImage
+              //   style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
+              // />
               // )
             }
           </View>
@@ -233,13 +230,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             backgroundColor: 'transparent',
             borderBottomWidth: 0,
           }}
-          leftIcon="backArrow"
           rightComponent={
             <TouchableOpacity activeOpacity={1} onPress={onPressLogout}>
               <Text>Logout</Text>
             </TouchableOpacity>
           }
-          onPressLeftIcon={() => props.navigation.goBack()}
         />
       </>
     );
@@ -289,7 +284,21 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         >
           {profileDetails && renderDetails()}
           {renderRows()}
-          <NeedHelpAssistant />
+          <View style={{ height: 92 }}>
+            <Text
+              style={{
+                ...theme.fonts.IBMPlexSansBold(13),
+                color: '#00b38e',
+                textAlign: 'center',
+                height: 92,
+                width: width,
+                paddingTop: 10,
+              }}
+            >
+              V 1.0(5)
+            </Text>
+          </View>
+          <NeedHelpAssistant navigation={props.navigation} />
           <View style={{ height: 92 }} />
         </Animated.ScrollView>
       </SafeAreaView>

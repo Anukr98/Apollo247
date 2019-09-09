@@ -66,6 +66,7 @@ import {
 import DocumentPicker from 'react-native-document-picker';
 import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps } from 'react-navigation';
+import RNFetchBlob from 'react-native-fetch-blob';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -77,6 +78,22 @@ let diffInHours: number;
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
+
+  useEffect(() => {
+    RNFetchBlob.config({
+      // add this option that makes response data to be stored as a file,
+      // this is much more performant.
+      fileCache: true,
+    })
+      .fetch('GET', 'http://samples.leanpub.com/thereactnativebook-sample.pdf', {
+        //some headers ..
+      })
+      .then((res) => {
+        // the temp file path
+        console.log('The file saved to res ', res);
+        console.log('The file saved to ', res.path());
+      });
+  }, []);
   const appointmentData = props.navigation.state.params!.data;
   console.log('appointmentData', appointmentData);
 
@@ -921,7 +938,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <Button
                   title={'VIEW'}
                   style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
-                  onPress={() => {}}
+                  onPress={() => {
+                    console.log('Followupdata', rowData.transferInfo.caseSheetId);
+                    props.navigation.navigate(AppRoutes.ConsultDetails, {
+                      CaseSheet: rowData.transferInfo.caseSheetId,
+                      DoctorInfo: rowData.transferInfo.doctorInfo,
+                    });
+                  }}
                 />
               </StickyBottomComponent>
             </View>
@@ -1025,6 +1048,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
                     props.navigation.goBack();
+                  }}
+                />
+                <Button
+                  title={'ACCEPT'}
+                  style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                  onPress={() => {
+                    transferAppointmentAPI(rowData);
                   }}
                 />
               </StickyBottomComponent>
@@ -1510,6 +1540,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   publishAudio: mute,
                   audioVolume: 100,
                 }}
+                resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
               />
               <OTSubscriber
@@ -1626,6 +1657,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               publishAudio: mute,
               audioVolume: 100,
             }}
+            resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
           />
           <OTSubscriber
