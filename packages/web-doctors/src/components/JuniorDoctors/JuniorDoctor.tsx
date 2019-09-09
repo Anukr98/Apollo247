@@ -92,6 +92,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
   const currentDoctor = useCurrentPatient();
+  console.log('currentDoctor', currentDoctor);
   const { data, loading, error } = useQuery<GetDoctorConsults, GetDoctorConsultsVariables>(
     GET_DOCTOR_CONSULTS,
     {
@@ -104,8 +105,13 @@ export const JuniorDoctor: React.FC = (props) => {
     }
   );
   console.log(data);
-  if (error) return <div>An error occurred :(</div>;
-  if (loading) return <CircularProgress />;
+
+  let content: [React.ReactNode, React.ReactNode] = [null, null];
+
+  if (error) content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
+
+  if (loading) content = [<CircularProgress />, <CircularProgress />];
+
   if (data && data.getDoctorConsults && data.getDoctorConsults.doctorConsults) {
     const { doctorConsults } = data.getDoctorConsults;
     const pastConsults = doctorConsults.filter(
@@ -114,56 +120,67 @@ export const JuniorDoctor: React.FC = (props) => {
     const futureConsults = doctorConsults.filter(
       (dc) => new Date(dc.appointment.appointmentDateTime) > new Date()
     );
-    return (
-      <div className={classes.root}>
-        <div className={classes.headerSticky}>
-          <Header />
+    console.log(doctorConsults, pastConsults, futureConsults);
+    content = [
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
+        <div className={classes.customScroll}>
+          <div className={classes.boxGroup}>
+            {futureConsults.map(({ patient, appointment }, index) => (
+              <PatientCard
+                key={patient.id}
+                patient={{
+                  firstName: patient.firstName || '',
+                  lastName: patient.lastName || '',
+                  uhid: patient.uhid,
+                  photoUrl: patient.photoUrl,
+                  queueNumber: index + 1,
+                }}
+                appointment={{
+                  appointmentDateTime: new Date(appointment.appointmentDateTime),
+                }}
+              />
+            ))}
+          </div>
         </div>
-        <div className={classes.container}>
-          <div className={classes.pageContainer}>
-            <div className={classes.pageHeader}>
-              <h2>hello doc :)</h2>
-              <p>manage your new and old patients easily here</p>
-            </div>
-            <div className={classes.contentGroup}>
-              <div className={classes.leftSection}>
-                <div className={classes.blockGroup}>
-                  <div className={classes.blockHeader}>Active Patients</div>
-                  <div className={classes.blockBody}>
-                    <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
-                      <div className={classes.customScroll}>
-                        <div className={classes.boxGroup}>
-                          {futureConsults.map(({ patient, appointment }, index) => (
-                            <PatientCard
-                              patient={{ ...patient, queueNumber: index + 1 }}
-                              appointment={appointment}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </Scrollbars>
-                  </div>
-                </div>
+      </Scrollbars>,
+
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
+        <div className={classes.customScroll}>
+          <div className={classes.boxGroup}>
+            <PastConsults />
+          </div>
+        </div>
+      </Scrollbars>,
+    ];
+  }
+
+  return (
+    <div className={classes.root}>
+      <div className={classes.headerSticky}>
+        <Header />
+      </div>
+      <div className={classes.container}>
+        <div className={classes.pageContainer}>
+          <div className={classes.pageHeader}>
+            <h2>hello doc :)</h2>
+            <p>manage your new and old patients easily here</p>
+          </div>
+          <div className={classes.contentGroup}>
+            <div className={classes.leftSection}>
+              <div className={classes.blockGroup}>
+                <div className={classes.blockHeader}>Active Patients</div>
+                <div className={classes.blockBody}>{content[0]}</div>
               </div>
-              <div className={classes.rightSection}>
-                <div className={classes.blockGroup}>
-                  <div className={classes.blockHeader}>Past Consults</div>
-                  <div className={classes.blockBody}>
-                    <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
-                      <div className={classes.customScroll}>
-                        <div className={classes.boxGroup}>
-                          <PastConsults />
-                        </div>
-                      </div>
-                    </Scrollbars>
-                  </div>
-                </div>
+            </div>
+            <div className={classes.rightSection}>
+              <div className={classes.blockGroup}>
+                <div className={classes.blockHeader}>Past Consults</div>
+                <div className={classes.blockBody}>{content[1]}</div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    );
-  }
-  return null;
+    </div>
+  );
 };

@@ -1,6 +1,7 @@
 import { Theme, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
+import { format } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -96,7 +97,8 @@ export interface PatientCardProps {
   patient: {
     firstName: string;
     lastName: string;
-    uhid: string;
+    uhid?: string | null;
+    photoUrl?: string | null;
     queueNumber: number;
   };
   appointment: {
@@ -105,29 +107,25 @@ export interface PatientCardProps {
 }
 export const PatientCard: React.FC<PatientCardProps> = (props) => {
   const classes = useStyles();
-  const { patient } = props;
+  const { patient, appointment } = props;
+  console.log(patient.photoUrl, 'images/patient_01.png');
 
   return (
     <div className={classes.root}>
-      <div className={classes.title}>APPT DATE: 22/08/2019, 10 AM</div>
-      <div className={classes.cardGroup}>
-        <div className={classes.cardImg}>
-          <Avatar src={require('images/patient_01.png')} alt="" className={classes.avatar} />
-        </div>
-        <div className={classes.cardContent}>
-          <div className={classes.nameGroup}>
-            <div className={classes.consultType}>
-              <img src={require('images/ic_round-video.svg')} alt="" />
-            </div>
-          </div>
-        </div>
+      <div className={`${classes.title} ${classes.upnextTitle}`}>
+        APPT DATE: {format(appointment.appointmentDateTime, 'Pp')}
       </div>
-
-      <div className={`${classes.title} ${classes.upnextTitle}`}>APPT DATE: 22/08/2019, 10 AM</div>
       <div className={`${classes.cardGroup} ${classes.upNextCardGroup}`}>
         {patient.queueNumber > 1 && <div className={classes.queueText}>Queued</div>}
         <div className={classes.cardImg}>
-          <Avatar src={require('images/patient_01.png')} alt="" className={classes.avatar} />
+          {patient.photoUrl ? (
+            <Avatar src={patient.photoUrl} className={classes.avatar} />
+          ) : (
+            <Avatar className={classes.avatar}>
+              {patient.firstName.charAt(0)}
+              {patient.lastName.charAt(0)}
+            </Avatar>
+          )}
         </div>
         <div className={classes.cardContent}>
           <div className={classes.nameGroup}>
