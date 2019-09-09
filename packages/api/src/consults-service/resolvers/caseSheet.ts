@@ -116,6 +116,7 @@ export const caseSheetTypeDefs = gql`
 
   type CaseSheet {
     appointment: Appointment
+    blobName: String
     consultType: String
     diagnosis: [Diagnosis]
     diagnosticPrescription: [DiagnosticPrescription]
