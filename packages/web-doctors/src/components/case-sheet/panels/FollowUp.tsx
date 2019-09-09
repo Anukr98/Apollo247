@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Switch, Divider, Slider, createMuiTheme, withStyles } from '@material-ui/core';
+import { Typography, Divider, Slider, createMuiTheme, withStyles } from '@material-ui/core';
+// import { AphToggleSwitch } from '@aph/web-ui-components';
+import { AphToggleSwitch } from 'components/case-sheet/panels/AphToggleSwitch';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { debounce } from 'lodash';
 import ToggleButton from '@material-ui/lab/ToggleButton';
@@ -33,6 +35,7 @@ const useStyles = makeStyles(() => ({
   switchBtn: {
     position: 'absolute',
     right: 10,
+    // backgroundColor: 'red',
   },
   followupTxt: {
     fontSize: 14,
@@ -318,7 +321,7 @@ export const FollowUp: React.FC = () => {
           <Typography component="span" className={classes.followupTxt}>
             Do you recommend a follow up?
           </Typography>
-          <Switch
+          <AphToggleSwitch
             checked={shouldFollowUp}
             onChange={(e) => setShouldFollowUp(e.target.checked)}
             value="followup"

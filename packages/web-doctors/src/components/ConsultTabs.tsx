@@ -38,6 +38,7 @@ import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -492,6 +493,7 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
+
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
       {loaded && error === '' && (
         <CaseSheetContext.Provider
@@ -527,63 +529,65 @@ export const ConsultTabs: React.FC = () => {
             setCasesheetNotes,
           }}
         >
-          <div className={classes.container}>
-            <CallPopover
-              setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-              createSessionAction={createSessionAction}
-              saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
-              endConsultAction={endConsultAction}
-              appointmentId={appointmentId}
-              appointmentDateTime={appointmentDateTime}
-              doctorId={doctorId}
-              isEnded={isEnded}
-            />
-            <div>
+          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 85px' }}>
+            <div className={classes.container}>
+              <CallPopover
+                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+                createSessionAction={createSessionAction}
+                saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
+                endConsultAction={endConsultAction}
+                appointmentId={appointmentId}
+                appointmentDateTime={appointmentDateTime}
+                doctorId={doctorId}
+                isEnded={isEnded}
+              />
               <div>
                 <div>
-                  <Tabs
-                    value={tabValue}
-                    variant="fullWidth"
-                    classes={{
-                      root: classes.tabsRoot,
-                      indicator: classes.tabsIndicator,
-                    }}
-                    onChange={(e, newValue) => {
-                      setTabValue(newValue);
-                    }}
-                  >
-                    <Tab
-                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                      label="Case Sheet"
-                    />
-                    <Tab
-                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                      label="Chat"
-                    />
-                  </Tabs>
-                </div>
-                <TabContainer>
-                  <div className={tabValue !== 0 ? classes.none : classes.block}>
-                    {casesheetInfo ? <CaseSheet /> : ''}
-                  </div>
-                </TabContainer>
-                <TabContainer>
-                  <div className={tabValue !== 1 ? classes.none : classes.block}>
-                    <div className={classes.chatContainer}>
-                      <ConsultRoom
-                        startConsult={startConsult}
-                        sessionId={sessionId}
-                        token={token}
-                        appointmentId={paramId}
-                        doctorId={doctorId}
-                        patientId={patientId}
+                  <div>
+                    <Tabs
+                      value={tabValue}
+                      variant="fullWidth"
+                      classes={{
+                        root: classes.tabsRoot,
+                        indicator: classes.tabsIndicator,
+                      }}
+                      onChange={(e, newValue) => {
+                        setTabValue(newValue);
+                      }}
+                    >
+                      <Tab
+                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                        label="Case Sheet"
                       />
-                    </div>
+                      <Tab
+                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                        label="Chat"
+                      />
+                    </Tabs>
                   </div>
-                </TabContainer>
+                  <TabContainer>
+                    <div className={tabValue !== 0 ? classes.none : classes.block}>
+                      {casesheetInfo ? <CaseSheet /> : ''}
+                    </div>
+                  </TabContainer>
+                  <TabContainer>
+                    <div className={tabValue !== 1 ? classes.none : classes.block}>
+                      <div className={classes.chatContainer}>
+                        <ConsultRoom
+                          startConsult={startConsult}
+                          sessionId={sessionId}
+                          token={token}
+                          appointmentId={paramId}
+                          doctorId={doctorId}
+                          patientId={patientId}
+                        />
+                      </div>
+                    </div>
+                  </TabContainer>
+                </div>
               </div>
             </div>
-          </div>
+          </Scrollbars>
         </CaseSheetContext.Provider>
       )}
       <Modal

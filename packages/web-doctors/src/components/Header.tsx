@@ -15,7 +15,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
+// import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -196,7 +196,7 @@ export const Header: React.FC = (props) => {
           !window.location.href.includes('/profile') &&
           !window.location.href.includes('/patientlogdetailspage') && <Navigation />}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
-          <ToggleButtonGroup className={classes.toggleBtnGroup}>
+          {/* <ToggleButtonGroup className={classes.toggleBtnGroup}>
             <ToggleButton
               className={`${classes.toggleBtn} ${classes.toggleBtnActive}`}
               key={1}
@@ -207,7 +207,7 @@ export const Header: React.FC = (props) => {
             <ToggleButton className={`${classes.toggleBtn}`} key={2} value="right">
               Away
             </ToggleButton>
-          </ToggleButtonGroup>
+          </ToggleButtonGroup> */}
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (
               <div className={`${!isSignedIn ? classes.userCircle : ''}`} ref={avatarRef}>
