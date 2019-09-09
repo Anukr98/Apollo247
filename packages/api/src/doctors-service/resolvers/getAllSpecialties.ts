@@ -2,10 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorSpecialty } from 'doctors-service/entities/';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { getRepository } from 'typeorm';
-
-import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 
 export const getAllSpecialtiesTypeDefs = gql`
   type DoctorSpecialty {
@@ -20,17 +17,11 @@ export const getAllSpecialtiesTypeDefs = gql`
 
 const getAllSpecialties: Resolver<null, {}, DoctorsServiceContext, DoctorSpecialty[]> = async (
   parent,
-  args
+  args,
+  { doctorsDb }
 ) => {
-  let allSpecialties: DoctorSpecialty[] = [];
-  try {
-    allSpecialties = await getRepository(DoctorSpecialty)
-      .createQueryBuilder()
-      .getMany();
-    return allSpecialties;
-  } catch (getSpecialtiesError) {
-    throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, { getSpecialtiesError });
-  }
+  const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
+  const allSpecialties = await specialtiesRepo.findAll();
   return allSpecialties;
 };
 
