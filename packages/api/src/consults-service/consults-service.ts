@@ -12,6 +12,10 @@ import {
   bookAppointmentResolvers,
   bookAppointmentTypeDefs,
 } from 'consults-service/resolvers/bookAppointment';
+import {
+  makeAppointmentPaymentTypeDefs,
+  makeAppointmentPaymentResolvers,
+} from 'consults-service/resolvers/makeAppointmentPayment';
 import { caseSheetResolvers, caseSheetTypeDefs } from 'consults-service/resolvers/caseSheet';
 import {
   getAppointmentHistoryResolvers,
@@ -104,6 +108,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: bookAppointmentTypeDefs,
         resolvers: bookAppointmentResolvers,
+      },
+      {
+        typeDefs: makeAppointmentPaymentTypeDefs,
+        resolvers: makeAppointmentPaymentResolvers,
       },
       {
         typeDefs: getAppointmentHistoryTypeDefs,
