@@ -893,6 +893,8 @@ export const CHOOSE_DOCTOR = gql`
         doctorLastName
         doctorFirstName
         availableSlot
+        specialityName
+        experience
       }
     }
   }

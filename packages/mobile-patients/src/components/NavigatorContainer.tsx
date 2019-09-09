@@ -45,7 +45,7 @@ import { RecordDetails } from '@aph/mobile-patients/src/components/HealthRecords
 import { SymptomChecker } from '@aph/mobile-patients/src/components/SymptomChecker';
 import { CheckoutScene } from '@aph/mobile-patients/src/components/CheckoutScene';
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
-
+import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
 export enum AppRoutes {
   Onboarding = 'Onboarding',
   Login = 'Login',
@@ -89,6 +89,7 @@ export enum AppRoutes {
   AzureUpload = 'AzureUpload',
   AppointmentOnlineDetails = 'AppointmentOnlineDetails',
   ChooseDoctor = 'ChooseDoctor',
+  MedicineConsultDetails = 'MedicineConsultDetails',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -235,6 +236,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ChooseDoctor]: {
     screen: ChooseDoctor,
+  },
+  [AppRoutes.MedicineConsultDetails]: {
+    screen: MedicineConsultDetails,
   },
 };
 
