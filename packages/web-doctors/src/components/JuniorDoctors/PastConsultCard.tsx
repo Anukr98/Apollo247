@@ -1,8 +1,8 @@
 import { Theme, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
-import { format } from 'date-fns';
 import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+import { format } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -17,8 +17,8 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 5,
     },
     cardGroup: {
-      backgroundColor: theme.palette.common.white,
-      border: 'solid 1px #0087ba',
+      backgroundColor: '#f7f7f7',
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
       boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.3)',
       borderRadius: 10,
       padding: 12,
@@ -63,38 +63,10 @@ const useStyles = makeStyles((theme: Theme) => {
     upNextCardGroup: {
       border: 'solid 1px rgba(2, 71, 91, 0.15)',
     },
-    queueText: {
-      position: 'absolute',
-      left: -1,
-      top: 10,
-      backgroundColor: '#ff748e',
-      fontSize: 10,
-      fontWeight: 'bold',
-      textTransform: 'uppercase',
-      padding: '3px 8px',
-      borderRadius: '0px 10px 10px 0px',
-      letterSpacing: 'normal',
-      zIndex: 1,
-    },
-    queueCount: {
-      position: 'absolute',
-      right: -11,
-      top: '50%',
-      width: 22,
-      height: 22,
-      color: theme.palette.common.white,
-      backgroundColor: '#ff748e',
-      borderRadius: '50%',
-      textAlign: 'center',
-      fontWeight: 'bold',
-      lineHeight: '22px',
-      fontSize: 14,
-      marginTop: -11,
-    },
   };
 });
 
-export interface PatientCardProps {
+export interface PastConsultCardProps {
   patient: {
     firstName: string;
     lastName: string;
@@ -107,17 +79,16 @@ export interface PatientCardProps {
     appointmentType?: APPOINTMENT_TYPE | null;
   };
 }
-export const PatientCard: React.FC<PatientCardProps> = (props) => {
+export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
   const classes = useStyles();
   const { patient, appointment } = props;
 
   return (
     <div className={classes.root}>
-      <div className={`${classes.title} ${classes.upnextTitle}`}>
+      <div className={classes.title}>
         APPT DATE: {format(appointment.appointmentDateTime, 'Pp')}
       </div>
-      <div className={`${classes.cardGroup} ${classes.upNextCardGroup}`}>
-        {patient.queueNumber > 1 && <div className={classes.queueText}>Queued</div>}
+      <div className={classes.cardGroup}>
         <div className={classes.cardImg}>
           {patient.photoUrl ? (
             <Avatar src={patient.photoUrl} className={classes.avatar} />
@@ -144,7 +115,6 @@ export const PatientCard: React.FC<PatientCardProps> = (props) => {
           </div>
           <div className={classes.userId}>UHID: {patient.uhid}</div>
         </div>
-        {patient.queueNumber > 1 && <div className={classes.queueCount}>{patient.queueNumber}</div>}
       </div>
     </div>
   );
