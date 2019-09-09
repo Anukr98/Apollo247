@@ -53,9 +53,7 @@ export const InputDropdown: React.FC<InputDropdownProps> = (props) => {
       }}
     >
       <View style={styles.placeholderViewStyle}>
-        <Text
-          style={[styles.placeholderTextStyle, props.label !== '' ? null : styles.placeholderStyle]}
-        >
+        <Text style={[styles.placeholderTextStyle, !!props.label ? null : styles.placeholderStyle]}>
           {props.label ? props.label : props.placeholder}
         </Text>
         <DropdownGreen size="sm" />
@@ -67,10 +65,11 @@ export const InputDropdown: React.FC<InputDropdownProps> = (props) => {
 export interface InputDropdownMenuProps {
   Options: {
     name: string;
-    value: string;
+    value: any;
   }[];
   setShowPopup: (arg0: boolean) => void;
-  setSelectedOption: (arg0: string) => void;
+  setSelectedOption: (arg0: any) => void;
+  width?: number;
 }
 
 export const InputDropdownMenu: React.FC<InputDropdownMenuProps> = (props) => {
@@ -92,7 +91,7 @@ export const InputDropdownMenu: React.FC<InputDropdownMenuProps> = (props) => {
     >
       <View
         style={{
-          width: 160,
+          width: props.width ? props.width : 160,
           borderRadius: 10,
           backgroundColor: 'white',
           marginRight: 20,

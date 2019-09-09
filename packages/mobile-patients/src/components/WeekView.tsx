@@ -79,7 +79,9 @@ export const WeekView: ForwardRefExoticComponent<
       props.date.getMonth() == item.getMonth() &&
       props.date.getFullYear() == item.getFullYear();
 
-    const isDiabled = props.minDate ? props.minDate > new Date(item) : false;
+    const isDiabled = props.minDate
+      ? moment(props.minDate).format('YYYY-MM-DD') > moment(new Date(item)).format('YYYY-MM-DD')
+      : false;
 
     return (
       <TouchableOpacity

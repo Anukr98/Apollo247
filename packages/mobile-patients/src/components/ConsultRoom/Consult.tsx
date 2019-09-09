@@ -32,8 +32,9 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TouchableHighlight,
+  ScrollView,
 } from 'react-native';
-import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
   doctorView: {
     marginHorizontal: 8,
     ...theme.viewStyles.cardViewStyle,
-    marginVertical: 16,
+    marginVertical: 6, //16,
     borderRadius: 10,
   },
   availableView: {
@@ -303,6 +304,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         flex: 1,
         alignItems: 'flex-end',
         zIndex: 3,
+        elevation: 5,
         backgroundColor: 'transparent',
       }}
       onPress={() => setShowMenu(false)}
@@ -322,7 +324,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           paddingBottom: 16,
           ...Platform.select({
             android: {
-              marginTop: 84,
+              marginTop: 94,
             },
             ios: {
               marginTop: 94,
@@ -340,12 +342,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     setShowMenu(false);
                   }}
                 >
-                  {profile.firstName ? profile.firstName.split(' ')[0].toLowerCase() : ''}
+                  {profile.firstName
+                    ? profile.firstName
+                        .split(' ')[0]
+                        .replace(/\w+/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase())
+                    : ''}
                 </Text>
               </View>
             )
           )}
-
+        {/* 
         <Text
           style={{
             paddingTop: 20,
@@ -356,7 +362,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           }}
         >
           ADD MEMBER
-        </Text>
+        </Text> */}
       </View>
     </TouchableOpacity>
   );
@@ -468,8 +474,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return (
       <FlatList
         keyExtractor={(_, index) => index.toString()}
-        contentContainerStyle={{ padding: 12, paddingTop: 0 }}
-        horizontal={true}
+        contentContainerStyle={{ padding: 12, paddingTop: 0, marginTop: 14 }}
+        // horizontal={true}
         data={consultations}
         bounces={false}
         showsHorizontalScrollIndicator={false}
@@ -490,7 +496,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
 
           return (
-            <View style={{ width: 312 }}>
+            <View style={{}}>
+              {/* <View style={{ width: 312 }}> */}
               <TouchableOpacity
                 activeOpacity={1}
                 style={[styles.doctorView]}
@@ -671,8 +678,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               height:
                 consultations.length > 0
                   ? Platform.OS === 'ios'
-                    ? 84
-                    : 94
+                    ? 0 //84
+                    : 10 //94
                   : Platform.OS === 'ios'
                   ? 48
                   : 58,
@@ -680,9 +687,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           />
         </View>
         <View style={styles.cardContainerStyle}>
-          {consultations.length > 0 ? (
-            renderConsultations()
-          ) : (
+          {consultations.length > 0 ? null : ( // renderConsultations()
             <View
               style={{
                 marginLeft: 20,
@@ -710,19 +715,22 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           {showMenu && Popup()}
           {renderTopView()}
           <View
-            style={{
-              marginTop:
-                consultations.length > 0
-                  ? Platform.OS === 'ios'
-                    ? 170
-                    : 180
-                  : Platform.OS === 'ios'
-                  ? 16
-                  : 26,
-            }}
+            style={
+              {
+                // marginTop:
+                //   consultations.length > 0
+                //     ? Platform.OS === 'ios'
+                //       ? 170
+                //       : 180
+                //     : Platform.OS === 'ios'
+                //     ? 16
+                //     : 26,
+              }
+            }
           >
-            {renderThingsToDo()}
-            {renderArticles()}
+            {renderConsultations()}
+            {/* {renderThingsToDo()} */}
+            {/* {renderArticles()} */}
           </View>
         </ScrollView>
       </SafeAreaView>

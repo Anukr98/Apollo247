@@ -37,8 +37,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ScrollView,
 } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -322,13 +322,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <Text style={styles.onlineConsultAmount}>
                     Rs. {doctorDetails.onlineConsultationFees}
                   </Text>
-                  {availableInMin && !!availableTime && (
+                  {availableInMin && availableInMin < 60 && (
                     <CapsuleView
-                      title={
-                        availableInMin < 0
-                          ? `${availableTime}`
-                          : `AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`
-                      }
+                      title={`AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`}
                       isActive={availableInMin <= 15 ? true : false}
                     />
                   )}
@@ -343,13 +339,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       <Text style={styles.onlineConsultAmount}>
                         Rs. {doctorDetails.physicalConsultationFees}
                       </Text>
-                      {availableInMin && !!availableTime && (
+                      {availableInMin && availableInMin < 60 && (
                         <CapsuleView
-                          title={
-                            availableInMin < 0
-                              ? `${availableTime}`
-                              : `AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`
-                          }
+                          title={`AVAILABLE IN ${availableInMin} MIN${
+                            availableInMin > 1 ? 'S' : ''
+                          }`}
                           isActive={availableInMin <= 15 ? true : false}
                         />
                       )}
@@ -366,16 +360,19 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const renderDoctorClinic = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
-      const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
-        console.log(item, item.facility);
-        return item.facility.facilityType === 'CLINIC';
-      });
+      const doctorClinics = doctorDetails.doctorHospital;
+      // doctorDetails.doctorHospital.filter((item) => {
+      //   console.log(item, item.facility);
+      //   return item.facility.facilityType === 'CLINIC';
+      // });
       console.log(doctorClinics, 'doctorClinics');
       if (doctorClinics.length > 0)
         return (
           <View style={styles.cardView}>
             <View style={styles.labelView}>
-              <Text style={styles.labelStyle}>Dr. {doctorDetails.firstName}’s Clinic</Text>
+              <Text style={styles.labelStyle}>
+                Dr. {doctorDetails.firstName}’s location for physical visits
+              </Text>
             </View>
             <FlatList
               keyExtractor={(_, index) => index.toString()}
@@ -748,11 +745,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           borderBottomWidth: 0,
         }}
         leftIcon="backArrow"
-        rightComponent={
-          <TouchableOpacity activeOpacity={1} onPress={onShare}>
-            <ShareGreen />
-          </TouchableOpacity>
-        }
+        // rightComponent={
+        //   <TouchableOpacity activeOpacity={1} onPress={onShare}>
+        //     <ShareGreen />
+        //   </TouchableOpacity>
+        // }
         onPressLeftIcon={() => props.navigation.goBack()}
       />
     </View>

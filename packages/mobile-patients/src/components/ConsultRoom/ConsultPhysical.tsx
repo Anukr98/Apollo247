@@ -27,6 +27,7 @@ import { getDoctorPhysicalAvailableSlots } from '@aph/mobile-patients/src/graphq
 import { GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { divideSlots, timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import Permissions from 'react-native-permissions';
+import Moment from 'moment';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -67,7 +68,7 @@ const styles = StyleSheet.create({
   },
   textStyle: {
     color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
+    ...theme.fonts.IBMPlexSansMedium(13),
     paddingVertical: 8,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
   },
@@ -225,6 +226,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
 
   if (availabilityData.error) {
     console.log('error', availabilityData.error);
+    props.setshowSpinner && props.setshowSpinner(false);
   } else {
     console.log(availabilityData.data, 'availableSlots');
     if (
@@ -234,11 +236,10 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots &&
       availableSlots !== availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots
     ) {
+      props.setshowSpinner && props.setshowSpinner(false);
       setTimeArrayData(availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots);
       console.log(availableSlots, 'availableSlots1111');
-
       setavailableSlots(availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots);
-      props.setshowSpinner && props.setshowSpinner(false);
     }
   }
 
@@ -375,11 +376,16 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       <CalendarView
         date={date}
         minDate={new Date()}
-        onPressDate={(date) => {
-          props.setshowSpinner && props.setshowSpinner(true);
-          setDate(date);
-          props.setDate(date);
+        onPressDate={(selectedDate) => {
+          setDate(selectedDate);
+          props.setDate(selectedDate);
           props.setselectedTimeSlot('');
+
+          if (
+            Moment(selectedDate).format('YYYY-MM-DD') !== Moment(date).format('YYYY-MM-DD') &&
+            props.setshowSpinner
+          )
+            props.setshowSpinner(true);
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {
