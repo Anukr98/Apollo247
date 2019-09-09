@@ -116,13 +116,13 @@ const replaceStringWithChar = (str: string) => {
 };
 
 const MedicalTest: RecordTypeType[] = [
-  { name: replaceStringWithChar(MedicalTestUnit.GM), value: MedicalTestUnit.GM },
+  { name: 'gm', value: MedicalTestUnit.GM },
   {
-    name: replaceStringWithChar(MedicalTestUnit.GM_SLASH_DL),
+    name: 'gm/dl',
     value: MedicalTestUnit.GM_SLASH_DL,
   },
   {
-    name: replaceStringWithChar(MedicalTestUnit._PERCENT_),
+    name: '%', //replaceStringWithChar(MedicalTestUnit._PERCENT_),
     value: MedicalTestUnit._PERCENT_,
   },
 ];

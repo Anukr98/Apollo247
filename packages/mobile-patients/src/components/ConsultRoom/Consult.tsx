@@ -567,7 +567,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           {item.doctorInfo && item.doctorInfo.specialty
                             ? item.doctorInfo.specialty.name
                             : ''}
-                          {item.doctorInfo ? ` | ${item.doctorInfo.experience} YRS` : ''}
+                          {item.doctorInfo
+                            ? ` | ${item.doctorInfo.experience} YR${
+                                Number(item.doctorInfo.experience) > 1 ? 'S' : ''
+                              }`
+                            : ''}
                         </Text>
                       )}
 
@@ -643,7 +647,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => setShowMenu(true)}
+            // onPress={() => setShowMenu(true)}
             style={{
               flexDirection: 'row',
               marginTop: 8,
@@ -790,7 +794,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     props.navigation.getParam('TransferData').specilty}{' '}
                   {props.navigation.getParam('TransferData') &&
                     props.navigation.getParam('TransferData').experience}{' '}
-                  YRS
+                  YR{Number(props.navigation.getParam('TransferData').experience) > 1 ? 'S' : ''}
                 </Text>
               </View>
             </View>

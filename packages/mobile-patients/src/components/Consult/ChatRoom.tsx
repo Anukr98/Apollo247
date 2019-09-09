@@ -733,7 +733,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       letterSpacing: 0.3,
                     }}
                   >
-                    {rowData.transferInfo.specilty} | {rowData.transferInfo.experience} YRS
+                    {rowData.transferInfo.specilty} | {rowData.transferInfo.experience} YR
+                    {Number(rowData.transferInfo.experience) > 1 ? 'S' : ''}
                   </Text>
                   <View
                     style={{
