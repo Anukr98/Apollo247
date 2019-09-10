@@ -29,6 +29,7 @@ import { OTPVerification } from '@aph/mobile-patients/src/components/OTPVerifica
 import { SignUp } from '@aph/mobile-patients/src/components/SignUp';
 import { SplashScreen } from '@aph/mobile-patients/src/components/SplashScreen';
 import { TabBar } from '@aph/mobile-patients/src/components/TabBar';
+import { MobileHelp } from '@aph/mobile-patients/src/components/MobileHelp';
 import { YourOrdersScene } from '@aph/mobile-patients/src/components/YourOrdersScene';
 import { AzureUpload } from '@aph/mobile-patients/src/components/AzureUpload';
 import { AppointmentOnlineDetails } from '@aph/mobile-patients/src/components/Consult/AppointmentOnlineDetails';
@@ -90,6 +91,7 @@ export enum AppRoutes {
   AppointmentOnlineDetails = 'AppointmentOnlineDetails',
   ChooseDoctor = 'ChooseDoctor',
   MedicineConsultDetails = 'MedicineConsultDetails',
+  MobileHelp = 'MobileHelp',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -239,6 +241,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineConsultDetails]: {
     screen: MedicineConsultDetails,
+  },
+  [AppRoutes.MobileHelp]: {
+    screen: MobileHelp,
   },
 };
 

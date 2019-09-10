@@ -408,7 +408,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           <View>
             {arrayValues &&
               arrayValues.map((item: any) => {
-                // console.log('item', item);
+                console.log('item', item);
 
                 return (
                   <HealthConsultView
