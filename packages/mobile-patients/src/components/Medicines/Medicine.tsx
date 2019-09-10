@@ -24,13 +24,32 @@ import {
   Text,
   TouchableOpacity,
   View,
+  StyleProp,
+  ViewStyle,
+  Platform,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { useShoppingCart } from '../ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   separatorStyle: {
     borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
+  labelView: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#ff748e',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
   },
 });
 
@@ -78,10 +97,22 @@ const arrayTest: ArrayTest[] = [
 export interface MedicineProps extends NavigationScreenProps {}
 
 export const Medicine: React.FC<MedicineProps> = (props) => {
-  const tabs = [{ title: 'Medicines' }, { title: 'Tests' }];
+  // const tabs = [{ title: 'Medicines' }, { title: 'Tests' }];
+  const tabs = [{ title: 'Medicines' }];
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
+
+  const { cartItems } = useShoppingCart();
+  const cartItemsCount = cartItems.length;
+
+  const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
+    return (
+      <View style={[styles.labelView, containerStyle]}>
+        <Text style={styles.labelText}>{count}</Text>
+      </View>
+    );
+  };
 
   const renderMedicines = () => {
     return (
@@ -185,15 +216,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 marginHorizontal: 20,
               }}
             >
-              <View style={{ marginTop: 20 }}>
+              <TouchableOpacity
+                style={{ marginTop: 20 }}
+                onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+              >
                 <ApolloLogo />
-              </View>
+              </TouchableOpacity>
               <View style={{ flexDirection: 'row', marginTop: 16 }}>
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => props.navigation.navigate(AppRoutes.YourCart)}
+                  style={{ right: 20 }}
                 >
-                  <CartIcon style={{ right: 20 }} />
+                  <CartIcon style={{}} />
+                  {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
                 </TouchableOpacity>
                 <NotificationIcon />
               </View>
@@ -201,18 +237,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </UserIntro>
         </View>
         <TabsComponent
-          textStyle={{
-            paddingTop: 12,
-          }}
+          height={44}
           style={{
-            height: 43,
-            marginTop: 181,
+            marginTop: Platform.OS === 'ios' ? 181 : 191,
             backgroundColor: colors.CARD_BG,
             ...viewStyles.shadowStyle,
           }}
           data={tabs}
           onChange={(selectedTab: string) => {
-            // setselectedTab(selectedTab)
+            setselectedTab(selectedTab);
           }}
           selectedTab={selectedTab}
         />
@@ -243,7 +276,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 source={require('@aph/mobile-patients/src/images/medicine/img_adbanner.png')}
                 style={{ width: '100%' }}
               />
-              <ListCard
+              {/* <ListCard
                 container={{ marginTop: 32 }}
                 title={'Your Med Subscriptions'}
                 leftIcon={
@@ -252,10 +285,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     source={require('@aph/mobile-patients/src/images/medicine/ic_schedule.png')}
                   />
                 }
-              />
+              /> */}
               <ListCard
                 onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
-                container={{ marginBottom: 32 }}
+                container={{ marginTop: 32, marginBottom: 32 }}
                 title={'Your Orders'}
                 leftIcon={<MedicineIcon />}
               />

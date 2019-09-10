@@ -123,18 +123,6 @@ export interface HealthConsultViewProps extends NavigationScreenProps {
 
 export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   console.log('PastData', props.PastData);
-  //console.log('Symptons', props.PastData.caseSheet[0].symptoms);
-  const tabs = strings.health_records_home.tabs;
-
-  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-
-  const renderConsults = () => {
-    return (
-      <View style={{}}>
-        <Filter />
-      </View>
-    );
-  };
   return (
     <View style={styles.viewStyle}>
       <View style={styles.trackerViewStyle}>
@@ -143,9 +131,17 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       </View>
       {props.PastData.patientId != null ? (
         <View style={styles.rightViewStyle}>
-          <Text style={styles.labelTextStyle}>
-            {moment(props.PastData.appointmentDateTime).format('DD MMM YYYY')}
-          </Text>
+          {moment(new Date()).format('DD/MM/YYYY') ===
+          moment(props.PastData.appointmentDateTime).format('DD/MM/YYYY') ? (
+            <Text style={styles.labelTextStyle}>
+              Today , {moment(props.PastData.appointmentDateTime).format('DD MMM YYYY')}
+            </Text>
+          ) : (
+            <Text style={styles.labelTextStyle}>
+              {moment(props.PastData.appointmentDateTime).format('DD MMM YYYY')}
+            </Text>
+          )}
+
           <TouchableOpacity
             activeOpacity={1}
             style={[styles.cardContainerStyle]}
@@ -247,15 +243,28 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
         </View>
       ) : (
         <View style={{ marginRight: 60 }}>
-          <Text style={styles.labelTextStyle}>
-            {moment(props.PastData.quoteDateTime).format('DD MMM YYYY')}
-          </Text>
+          {moment(new Date()).format('DD/MM/YYYY') ===
+          moment(props.PastData.quoteDateTime).format('DD/MM/YYYY') ? (
+            <Text style={styles.labelTextStyle}>
+              Today , {moment(props.PastData.quoteDateTime).format('DD MMM YYYY')}
+            </Text>
+          ) : (
+            <Text style={styles.labelTextStyle}>
+              {moment(props.PastData.quoteDateTime).format('DD MMM YYYY')}
+            </Text>
+          )}
+
           <TouchableOpacity
             activeOpacity={1}
             style={[styles.cardContainerStyle]}
-            // onPress={() => {
-            //   props.onClickCard ? props.onClickCard() : null;
-            // }}
+            onPress={() => {
+              console.log('medicnedeial', props.PastData.medicineOrderLineItems[0]);
+
+              props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
+                data: props.PastData.medicineOrderLineItems[0],
+                medicineDate: moment(props.PastData.quoteDateTime).format('DD MMM YYYY'),
+              });
+            }}
           >
             <View style={{ flexDirection: 'row' }}>
               <View style={{ marginTop: 10 }}>

@@ -35,6 +35,8 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
   firstName: string;
   lastName: string;
   experience: string | null;
+  onlineConsultationFees: string;
+  physicalConsultationFees: string;
   specialty: getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty;
   specialization: string | null;
   qualification: string | null;

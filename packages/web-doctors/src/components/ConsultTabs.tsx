@@ -10,6 +10,7 @@ import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
 import { useApolloClient } from 'react-apollo-hooks';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -38,6 +39,7 @@ import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -107,12 +109,21 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
     },
     modalBox: {
-      maxWidth: 280,
-      height: 250,
+      maxWidth: 320,
+      // height: 250,
       margin: 'auto',
-      marginTop: 88,
-      backgroundColor: '#eeeeee',
+      marginTop: 50,
+      backgroundColor: '#fff',
+      borderRadius: 10,
+      padding: '0 40px 20px 40px',
       position: 'relative',
+      '& h3': {
+        fontSize: 20,
+        fontWeight: 600,
+        marginBottom: 50,
+        marginTop: 0,
+        color: '#02475b',
+      },
     },
     modalPdfBox: {
       maxWidth: '90%',
@@ -142,6 +153,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     tabPdfBody: {
+      display: 'none',
       height: '100%',
       marginTop: '10px',
       paddingLeft: '15px',
@@ -158,13 +170,13 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
     },
     consultButton: {
-      fontSize: 13,
-      fontWeight: theme.typography.fontWeightBold,
+      fontSize: 14,
+      fontWeight: 600,
       color: '#fff',
       padding: '8px 16px',
       backgroundColor: '#fc9916',
       marginTop: 15,
-      marginBottom: 15,
+      marginBottom: 25,
       width: '100%',
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
@@ -174,9 +186,9 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     cancelConsult: {
       width: '100%',
-      fontSize: 13,
+      fontSize: 14,
       padding: '8px 16px',
-      fontWeight: theme.typography.fontWeightBold,
+      fontWeight: 600,
       color: '#fc9916',
       backgroundColor: '#fff',
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
@@ -188,6 +200,10 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 type Params = { id: string; patientId: string };
+const storageClient = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
 
 export const ConsultTabs: React.FC = () => {
   const classes = useStyles();
@@ -201,6 +217,8 @@ export const ConsultTabs: React.FC = () => {
   //     setdoctorId(currentPatient.id);
 
   const [tabValue, setTabValue] = useState<number>(0);
+  const [isEnded, setIsEnded] = useState<boolean>(false);
+  const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
   const [sessionId, setsessionId] = useState<string>('');
@@ -373,6 +391,13 @@ export const ConsultTabs: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
+          console.log(_data!.data!.updateCaseSheet!.blobName);
+          const url =
+            'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
+            _data!.data!.updateCaseSheet!.blobName;
+          setPrescriptionPdf(url);
+        }
         if (!flag) {
           setIsPopoverOpen(true);
         }
@@ -434,6 +459,7 @@ export const ConsultTabs: React.FC = () => {
       .then((_data) => {
         // setIsPopoverOpen(true);
         setIsPdfPopoverOpen(true);
+        setIsEnded(true);
         console.log('_data', _data);
       })
       .catch((e) => {
@@ -476,7 +502,6 @@ export const ConsultTabs: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
-
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -517,62 +542,66 @@ export const ConsultTabs: React.FC = () => {
             setCasesheetNotes,
           }}
         >
-          <div className={classes.container}>
-            <CallPopover
-              setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-              createSessionAction={createSessionAction}
-              saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
-              endConsultAction={endConsultAction}
-              appointmentId={appointmentId}
-              appointmentDateTime={appointmentDateTime}
-              doctorId={doctorId}
-            />
-            <div>
+          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+            <div className={classes.container}>
+              <CallPopover
+                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+                createSessionAction={createSessionAction}
+                saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
+                endConsultAction={endConsultAction}
+                appointmentId={appointmentId}
+                appointmentDateTime={appointmentDateTime}
+                doctorId={doctorId}
+                isEnded={isEnded}
+                caseSheetId={caseSheetId}
+              />
               <div>
                 <div>
-                  <Tabs
-                    value={tabValue}
-                    variant="fullWidth"
-                    classes={{
-                      root: classes.tabsRoot,
-                      indicator: classes.tabsIndicator,
-                    }}
-                    onChange={(e, newValue) => {
-                      setTabValue(newValue);
-                    }}
-                  >
-                    <Tab
-                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                      label="Case Sheet"
-                    />
-                    <Tab
-                      classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                      label="Chat"
-                    />
-                  </Tabs>
-                </div>
-                <TabContainer>
-                  <div className={tabValue !== 0 ? classes.none : classes.block}>
-                    {casesheetInfo ? <CaseSheet /> : ''}
-                  </div>
-                </TabContainer>
-                <TabContainer>
-                  <div className={tabValue !== 1 ? classes.none : classes.block}>
-                    <div className={classes.chatContainer}>
-                      <ConsultRoom
-                        startConsult={startConsult}
-                        sessionId={sessionId}
-                        token={token}
-                        appointmentId={paramId}
-                        doctorId={doctorId}
-                        patientId={patientId}
+                  <div>
+                    <Tabs
+                      value={tabValue}
+                      variant="fullWidth"
+                      classes={{
+                        root: classes.tabsRoot,
+                        indicator: classes.tabsIndicator,
+                      }}
+                      onChange={(e, newValue) => {
+                        setTabValue(newValue);
+                      }}
+                    >
+                      <Tab
+                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                        label="Case Sheet"
                       />
-                    </div>
+                      <Tab
+                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                        label="Chat"
+                      />
+                    </Tabs>
                   </div>
-                </TabContainer>
+                  <TabContainer>
+                    <div className={tabValue !== 0 ? classes.none : classes.block}>
+                      {casesheetInfo ? <CaseSheet /> : ''}
+                    </div>
+                  </TabContainer>
+                  <TabContainer>
+                    <div className={tabValue !== 1 ? classes.none : classes.block}>
+                      <div className={classes.chatContainer}>
+                        <ConsultRoom
+                          startConsult={startConsult}
+                          sessionId={sessionId}
+                          token={token}
+                          appointmentId={paramId}
+                          doctorId={doctorId}
+                          patientId={patientId}
+                        />
+                      </div>
+                    </div>
+                  </TabContainer>
+                </div>
               </div>
             </div>
-          </div>
+          </Scrollbars>
         </CaseSheetContext.Provider>
       )}
       <Modal
@@ -592,13 +621,29 @@ export const ConsultTabs: React.FC = () => {
             </Button>
           </div>
           <div className={classes.tabBody}>
-            <p>You,re ending your consult with Seema.</p>
+            {}
+            <h3>
+              You're ending your consult with{' '}
+              {casesheetInfo &&
+                casesheetInfo !== null &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.firstName !== '' &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
+                  <span>
+                    {` ${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
+                      casesheetInfo!.getCaseSheet!.patientDetails!.lastName
+                    }.`}
+                  </span>
+                )}
+            </h3>
             <Button
               className={classes.consultButton}
               //disabled={startAppointmentButton}
               onClick={() => {
                 setIsPopoverOpen(false);
                 endConsultActionFinal();
+                setCaseSheetEdit(false);
               }}
             >
               PREVIEW PRESCRIPTION
@@ -615,31 +660,11 @@ export const ConsultTabs: React.FC = () => {
         </Paper>
       </Modal>
 
-      <Modal
-        open={isPdfPopoverOpen}
-        onClose={() => setIsPdfPopoverOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <Paper className={classes.modalPdfBox}>
-          <div className={classes.tabHeader}>
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => setIsPdfPopoverOpen(false)}
-              />
-            </Button>
-          </div>
-          <div className={classes.tabPdfBody}>
-            <iframe
-              src="http://www.africau.edu/images/default/sample.pdf"
-              width="80%"
-              height="450"
-            ></iframe>
-          </div>
-        </Paper>
-      </Modal>
+      {isEnded && (
+        <div className={classes.tabPdfBody}>
+          <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
+        </div>
+      )}
     </div>
   );
 };

@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
 
 export interface ConsultDetailsProps extends NavigationScreenProps {
   CaseSheet: string;
+  DoctorInfo: any;
 }
 
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
@@ -140,11 +141,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 paddingBottom: 4,
               }}
             >
-              #{props.navigation.state.params!.DoctorInfo.id}
+              #
+              {props.navigation.state.params!.DoctorInfo &&
+                props.navigation.state.params!.DoctorInfo.id}
             </Text>
             <View style={theme.viewStyles.lightSeparatorStyle} />
             <Text style={styles.doctorNameStyle}>
-              Dr. {props.navigation.state.params!.DoctorInfo.firstName}
+              Dr.{' '}
+              {props.navigation.state.params!.DoctorInfo &&
+                props.navigation.state.params!.DoctorInfo.firstName}
             </Text>
             <Text style={styles.timeStyle}>
               {props.navigation.state.params!.appointmentType} Consult
@@ -154,7 +159,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <View style={styles.imageView}>
             {props.navigation.state.params!.DoctorInfo.photoUrl && (
               <Image
-                source={{ uri: props.navigation.state.params!.DoctorInfo.photoUrl }}
+                source={{
+                  uri:
+                    props.navigation.state.params!.DoctorInfo &&
+                    props.navigation.state.params!.DoctorInfo.photoUrl,
+                }}
                 style={{
                   width: 80,
                   height: 80,
@@ -394,11 +403,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <Header
             title="PRESCRIPTION"
             leftIcon="backArrow"
-            rightComponent={
-              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-                <ShareGreen />
-              </TouchableOpacity>
-            }
+            // rightComponent={
+            //   <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            //     <ShareGreen />
+            //   </TouchableOpacity>
+            // }
             onPressLeftIcon={() => props.navigation.goBack()}
           />
           <ScrollView bounces={false}>

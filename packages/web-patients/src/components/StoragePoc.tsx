@@ -25,8 +25,9 @@ export const StoragePoc: React.FC = () => {
             const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
               throw error;
             });
-            console.log(aphBlob);
-            setUploadedFileUrl(aphBlob.url);
+            const url = client.getBlobUrl(aphBlob.name);
+            console.log(aphBlob, url);
+            setUploadedFileUrl(url);
             setIsUploading(false);
           }
         }}

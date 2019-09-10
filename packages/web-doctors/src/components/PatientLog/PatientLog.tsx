@@ -15,6 +15,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { GET_PATIENT_LOG } from 'graphql/profiles';
 import { GetPatientLog } from 'graphql/types/getPatientLog';
 import { patientLogSort, patientLogType } from 'graphql/types/globalTypes';
+import Scrollbars from 'react-custom-scrollbars';
 
 const tabsArray: any = [
   {
@@ -58,10 +59,11 @@ const AntTabs = withStyles({
     },
   },
   indicator: {
-    backgroundColor: '#02475b',
+    backgroundColor: '#00b38e',
     minWidth: 120,
     width: 120,
     maxWidth: 120,
+    height: 4,
   },
 })(Tabs);
 export interface TabContainerProps {
@@ -85,7 +87,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightMedium,
     },
     highlightActive: {
-      borderBottom: '3px solid #02475b',
+      borderBottom: 'none',
       opacity: 1,
       fontWeight: theme.typography.fontWeightBold,
     },
@@ -131,6 +133,8 @@ const useStyles = makeStyles((theme: Theme) => {
         textTransform: 'capitalize',
         fontSize: 16,
         padding: '16px 0',
+        color: '#02475b',
+        fontWeight: 600,
       },
     },
     none: {
@@ -182,12 +186,15 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sortByTitle: {
       width: 100,
-      height: 63,
-      padding: 17,
+      height: 25,
+      padding: '1px 0 2px 15px',
       position: 'absolute',
       right: '85%',
-      fontWeight: 700,
+      top: 20,
+      borderLeft: '2px solid rgba(0, 0, 0, 0.1)',
+      fontWeight: 600,
       fontSize: 16,
+      color: '#02475b',
     },
     sortByDropdown: {
       width: '22%',
@@ -208,6 +215,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 180,
       color: '#00b38e !important',
       display: 'inline-block',
+
       '& ul': {
         padding: '10px 0px',
         '& li': {
@@ -237,6 +245,21 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: 16,
       top: 16,
+    },
+    filterSelect: {
+      marginTop: 12,
+      '& svg': {
+        color: '#00b38e',
+      },
+      '& div': {
+        color: '#00b38e',
+      },
+      '&:before': {
+        borderBottom: 'none !important',
+      },
+      '&:after': {
+        borderBottom: 'none !important',
+      },
     },
   };
 });
@@ -299,91 +322,94 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <div className={classes.container}>
-        <div>
-          <div className={classes.tabHeading}>
-            <Typography variant="h1">
-              <span>
-                {currentPatient && `hello dr. ${currentPatient.lastName.toLowerCase()} :)`}
-              </span>
-            </Typography>
-            <p>here are all your patients</p>
-          </div>
-          {selectedTabIndex < 3 && (
-            <AppBar position="static" color="default" className={classes.tabBarHeading}>
-              <AntTabs
-                value={selectedTabIndex}
-                indicatorColor="secondary"
-                className={classes.tabBar}
-              >
-                {tabsHtml}
-              </AntTabs>
-
-              <span className={classes.sortByDropdown}>
-                <span className={classes.sortByTitle}>Sort by:</span>
-                <AphSelect
-                  value={sortBy}
-                  fullWidth
-                  MenuProps={{
-                    classes: { paper: classes.menuPopover },
-                    anchorOrigin: {
-                      vertical: 'top',
-                      horizontal: 'right',
-                    },
-                    transformOrigin: {
-                      vertical: 'top',
-                      horizontal: 'right',
-                    },
-                  }}
-                  onChange={(e) => {
-                    setSortBy(e.target.value as string);
-                  }}
+      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+        <div className={classes.container}>
+          <div>
+            <div className={classes.tabHeading}>
+              <Typography variant="h1">
+                <span>
+                  {currentPatient && `hello dr. ${currentPatient.lastName.toLowerCase()} :)`}
+                </span>
+              </Typography>
+              <p>here are all your patients</p>
+            </div>
+            {selectedTabIndex < 3 && (
+              <AppBar position="static" color="default" className={classes.tabBarHeading}>
+                <AntTabs
+                  value={selectedTabIndex}
+                  indicatorColor="secondary"
+                  className={classes.tabBar}
                 >
-                  {sortByArray.map((item: any, index: number) => {
-                    return (
-                      <MenuItem
-                        key={item.key}
-                        value={item.key}
-                        classes={{ selected: classes.menuSelected }}
-                      >
-                        {/* <img
+                  {tabsHtml}
+                </AntTabs>
+
+                <span className={classes.sortByDropdown}>
+                  <span className={classes.sortByTitle}>Sort by:</span>
+                  <AphSelect
+                    value={sortBy}
+                    fullWidth
+                    className={classes.filterSelect}
+                    MenuProps={{
+                      classes: { paper: classes.menuPopover },
+                      anchorOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                      transformOrigin: {
+                        vertical: 'top',
+                        horizontal: 'right',
+                      },
+                    }}
+                    onChange={(e) => {
+                      setSortBy(e.target.value as string);
+                    }}
+                  >
+                    {sortByArray.map((item: any, index: number) => {
+                      return (
+                        <MenuItem
+                          key={item.key}
+                          value={item.key}
+                          classes={{ selected: classes.menuSelected }}
+                        >
+                          {/* <img
                         className={classes.checkImg}
                         src={require('images/ic_unselected.svg')}
                         alt="chkUncheck"
                       /> */}
-                        {item.value}
-                      </MenuItem>
-                    );
-                  })}
-                </AphSelect>
-              </span>
-            </AppBar>
-          )}
-          {loading ? (
-            <Typography variant="h4">
-              <CircularProgress className={classes.loading} />
-            </Typography>
-          ) : (
-            <div>
-              {selectedTabIndex === 0 && (
-                <TabContainer>
-                  <AllPatient patientData={patientList} />
-                </TabContainer>
-              )}
-              {selectedTabIndex === 1 && (
-                <TabContainer>
-                  <AllPatient patientData={patientList} />
-                </TabContainer>
-              )}
-              {selectedTabIndex === 2 && (
-                <TabContainer>
-                  <AllPatient patientData={patientList} />
-                </TabContainer>
-              )}
-            </div>
-          )}
+                          {item.value}
+                        </MenuItem>
+                      );
+                    })}
+                  </AphSelect>
+                </span>
+              </AppBar>
+            )}
+            {loading ? (
+              <Typography variant="h4">
+                <CircularProgress className={classes.loading} />
+              </Typography>
+            ) : (
+              <div>
+                {selectedTabIndex === 0 && (
+                  <TabContainer>
+                    <AllPatient patientData={patientList} />
+                  </TabContainer>
+                )}
+                {selectedTabIndex === 1 && (
+                  <TabContainer>
+                    <AllPatient patientData={patientList} />
+                  </TabContainer>
+                )}
+                {selectedTabIndex === 2 && (
+                  <TabContainer>
+                    <AllPatient patientData={patientList} />
+                  </TabContainer>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </Scrollbars>
     </div>
   );
 };

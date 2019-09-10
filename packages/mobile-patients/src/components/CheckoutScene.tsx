@@ -15,6 +15,7 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import {
   MedicineCartItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
+  MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveMedicineOrder,
@@ -23,18 +24,28 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrder';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { GraphQLError } from 'graphql';
 import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, SafeAreaView, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Slider } from 'react-native-elements';
 import firebase from 'react-native-firebase';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from '../graphql/profiles';
 import { SaveMedicineOrderPaymentVariables } from '../graphql/types/SaveMedicineOrderPayment';
+import { handleGraphQlError } from '../helpers/helperFunctions';
 import { AppRoutes } from './NavigatorContainer';
 import { BottomPopUp } from './ui/BottomPopUp';
+import { Spinner } from './ui/Spinner';
+import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '../graphql/types/GetMedicineOrdersList';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -139,7 +150,6 @@ const styles = StyleSheet.create({
   popupButtonStyle: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
   },
   popupButtonTextStyle: {
     ...theme.fonts.IBMPlexSansBold(13),
@@ -151,11 +161,11 @@ const styles = StyleSheet.create({
 export interface CheckoutSceneProps extends NavigationScreenProps {}
 
 export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
-  const [isPayDisabled, setPayDisabled] = useState(false);
   const [isOneApolloPayment, setOneApolloPayment] = useState(false);
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
   const [isCashOnDelivery, setCashOnDelivery] = useState(false);
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(false);
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [orderInfo, setOrderInfo] = useState({
     pickupStoreName: '',
     pickupStoreAddress: '',
@@ -171,6 +181,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     deliveryCharges,
     cartItems,
     deliveryType,
+    clearCartInfo,
   } = useShoppingCart();
 
   const { currentPatient } = useAllCurrentPatients();
@@ -196,6 +207,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         orderAutoId: orderAutoId,
         amountPaid: grandTotal,
         paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+        paymentStatus: 'success',
+        responseCode: '',
+        responseMessage: '',
       },
     })
       .then(({ data }) => {
@@ -205,24 +219,28 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           {}) as SaveMedicineOrder_SaveMedicineOrder;
 
         console.log({ errorCode, errorMessage });
+        setShowSpinner(false);
         if (errorCode || errorMessage) {
+          Alert.alert('Alert', `Order Failed, ${errorMessage}`);
           // Order-failed
         } else {
           // Order-Success
-          // Show popup here
+          // Show popup here & clear info
+          clearCartInfo && clearCartInfo();
           setOrderInfo({
             orderId: orderId,
             orderAutoId: orderAutoId,
             pickupStoreAddress: '',
             pickupStoreName: '',
           });
-          setPayDisabled(false);
           setShowOrderPopup(true);
         }
       })
-      .catch((e: GraphQLError[]) => {
+      .catch((e) => {
+        setShowSpinner(false);
+        console.error('Came to catch  ');
         console.log({ e });
-        Alert.alert('Error', e[0] && e[0].message);
+        handleGraphQlError(e);
       });
   };
 
@@ -239,7 +257,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const initiateOrder = async () => {
     console.log('initiateOrder');
-    setPayDisabled(true);
+    setShowSpinner(true);
     const orderInfo: SaveMedicineOrderVariables = {
       MedicineCartInput: {
         quoteId: null,
@@ -266,6 +284,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       },
     };
 
+    console.log(JSON.stringify(orderInfo));
     saveOrder(orderInfo)
       .then(({ data }) => {
         const { orderId, orderAutoId } = ((data &&
@@ -277,13 +296,14 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           placeOrder(orderId, orderAutoId);
         } else {
           console.log('redirectToPaymentGateway');
-          redirectToPaymentGateway(orderId, orderAutoId).finally(() => setPayDisabled(false));
+          redirectToPaymentGateway(orderId, orderAutoId).finally(() => {
+            setShowSpinner(false);
+          });
         }
       })
-      .catch((error: GraphQLError) => {
-        Alert.alert('Error', error.message);
-        setPayDisabled(false);
-        console.log('Error occured', { error });
+      .catch((error) => {
+        setShowSpinner(false);
+        handleGraphQlError(error);
       });
   };
 
@@ -417,21 +437,21 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const renderPaymentModesCard = () => {
     const payUsingPaytmOption = (
-      <View style={[styles.paymentModeRowStyle, { marginBottom: 16 }]}>
-        <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+      <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+        <View style={[styles.paymentModeRowStyle, { marginBottom: 16 }]}>
           {isCashOnDelivery ? <RadioButtonUnselectedIcon /> : <RadioButtonIcon />}
-        </TouchableOpacity>
-        <Text style={styles.paymentModeTextStyle}>Pay Using paytm</Text>
-      </View>
+          <Text style={styles.paymentModeTextStyle}>Pay Using paytm</Text>
+        </View>
+      </TouchableOpacity>
     );
 
     const cashOnDeliveryOption = (
-      <View style={[styles.paymentModeRowStyle]}>
-        <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+      <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+        <View style={[styles.paymentModeRowStyle]}>
           {!isCashOnDelivery ? <RadioButtonUnselectedIcon /> : <RadioButtonIcon />}
-        </TouchableOpacity>
-        <Text style={styles.paymentModeTextStyle}>Cash On Delivery</Text>
-      </View>
+          <Text style={styles.paymentModeTextStyle}>Cash On Delivery</Text>
+        </View>
+      </TouchableOpacity>
     );
 
     const content = (
@@ -463,22 +483,36 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '66.66%' }}
-          title={`PAY RS. ${grandTotal}`}
+          title={`PAY RS. ${grandTotal.toPrecision()}`}
           onPress={() => {
             initiateOrder();
           }}
-          disabled={isPayDisabled}
+          // disabled={isPayDisabled}
         />
       </StickyBottomComponent>
     );
   };
 
   const renderOrderInfoPopup = () => {
+    const navigateOnSuccess = () => {
+      props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+        goToHomeOnBack: true,
+        orderAutoId: orderInfo.orderAutoId,
+        orderDetails: [
+          {
+            id: `${orderInfo.orderAutoId}`,
+            orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
+            statusDate: new Date().toString(),
+          },
+        ] as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[],
+      });
+    };
+
     if (showOrderPopup) {
       return (
         <BottomPopUp
           title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-          description={'Your order has been placed successfully'}
+          description={'Your order has been placed successfully.'}
         >
           <View
             style={{
@@ -510,10 +544,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               <Text
                 style={{
                   flex: 1,
-                  textAlign: 'right',
                   ...theme.fonts.IBMPlexSansMedium(14),
                   lineHeight: 24,
                   color: '#01475b',
+                  textAlign: 'right',
                 }}
               >
                 {`#${orderInfo.orderAutoId}`}
@@ -528,7 +562,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                 marginTop: 15.5,
               }}
             />
-            <View
+            {/* <View
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
@@ -537,7 +571,6 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
             >
               <Text
                 style={{
-                  flex: 1,
                   ...theme.fonts.IBMPlexSansMedium(14),
                   lineHeight: 24,
                   color: '#01475b',
@@ -545,10 +578,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               >
                 Remind me to take medicines
               </Text>
-              <TouchableOpacity
-                style={{ flex: 1 }}
-                onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}
-              >
+              <TouchableOpacity style={{}} onPress={() => setIsRemindMeChecked(!isRemindMeChecked)}>
                 {isRemindMeChecked ? <CheckedIcon /> : <UnCheck />}
               </TouchableOpacity>
             </View>
@@ -560,23 +590,14 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                 marginBottom: 15.5,
                 marginTop: 7.5,
               }}
-            />
+            /> */}
             <View style={styles.popupButtonStyle}>
-              <TouchableOpacity
-                onPress={() =>
-                  props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-                    orderAutoId: orderInfo.orderAutoId,
-                  })
-                }
-              >
+              <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateOnSuccess()}>
                 <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() =>
-                  props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-                    orderAutoId: orderInfo.orderAutoId,
-                  })
-                }
+                style={{ flex: 1, alignItems: 'flex-end' }}
+                onPress={() => navigateOnSuccess()}
               >
                 <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
               </TouchableOpacity>
@@ -595,6 +616,8 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         {renderPaymentModesCard()}
         {renderPayButton()}
       </SafeAreaView>
+      {renderOrderInfoPopup()}
+      {showSpinner && <Spinner />}
     </View>
   );
 };

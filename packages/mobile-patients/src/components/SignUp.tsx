@@ -20,6 +20,7 @@ import {
   ActivityIndicator,
   AsyncStorage,
   BackHandler,
+  Platform,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
@@ -156,7 +157,15 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAwareScrollView style={styles.container} extraScrollHeight={50} bounces={false}>
+        <KeyboardAwareScrollView
+          style={styles.container} //extraScrollHeight={50}
+          scrollEnabled={true}
+          enableAutomaticScroll={Platform.OS === 'ios'}
+          extraScrollHeight={50}
+          enableOnAndroid={true}
+          bounces={false}
+          extraHeight={130}
+        >
           <View style={{ justifyContent: 'center', marginTop: 20, marginLeft: 20 }}>
             <ApolloLogo />
           </View>

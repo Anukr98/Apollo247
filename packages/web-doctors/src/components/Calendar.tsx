@@ -18,6 +18,7 @@ import {
 import { useQuery } from 'react-apollo-hooks';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useAuth } from 'hooks/authHooks';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -211,11 +212,14 @@ export const Calendar: React.FC = () => {
     //setMonthSelected(moment(selectedDate).format('MMMM'));
     setSelectedDate(startOfMonth(start as Date));
   };
+  console.log(format(range.start as number | Date, 'yyyy-MM-dd'));
+  console.log(format(range.end as number | Date, 'yyyy-MM-dd'));
   const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
     variables: {
       startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
       endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
     },
+    fetchPolicy: 'no-cache',
   });
 
   return (
@@ -223,75 +227,77 @@ export const Calendar: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <div className={classes.container}>
-        <div className={classes.tabHeading}>
-          <Typography variant="h1">
-            {currentPatient && `hello dr. ${(currentPatient!.lastName || '').toLowerCase()} :)`}
-          </Typography>
-          {viewSelection === 'day' ? (
-            <p>
-              {`here’s your schedule for ${isToday(selectedDate) ? 'today, ' : ''} ${format(
-                selectedDate,
-                isToday(selectedDate) ? 'dd MMM yyyy' : 'MMM, dd'
-              )}`}
-            </p>
-          ) : (
-            <p>here’s your schedule for {monthSelected}</p>
-          )}
-        </div>
-        <div>
-          <div>
-            <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
-              <ToggleButton
-                className={`${viewSelection === 'day' ? classes.customeSelect : ''}`}
-                value="day"
-                onClick={() => {
-                  setViewSelection('day');
-                  setRange(getRange(selectedDate));
-                }}
-              >
-                Day
-              </ToggleButton>
-              <ToggleButton
-                className={`${viewSelection === 'month' ? classes.customeSelect : ''}`}
-                value="month"
-                onClick={() => {
-                  setViewSelection('month');
-                  setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
-                  setMonthSelected(moment(selectedDate).format('MMMM'));
-                }}
-              >
-                Month
-              </ToggleButton>
-            </ToggleButtonGroup>
+      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+        <div className={classes.container}>
+          <div className={classes.tabHeading}>
+            <Typography variant="h1">
+              {currentPatient && `hello dr. ${(currentPatient!.lastName || '').toLowerCase()} :)`}
+            </Typography>
+            {viewSelection === 'day' ? (
+              <p>
+                {`here’s your schedule for ${isToday(selectedDate) ? 'today, ' : ''} ${format(
+                  selectedDate,
+                  isToday(selectedDate) ? 'dd MMM yyyy' : 'MMM, dd'
+                )}`}
+              </p>
+            ) : (
+              <p>here’s your schedule for {monthSelected}</p>
+            )}
           </div>
-          {viewSelection === 'day' && (
-            <WeekView
-              data={dataAdapter(data)}
-              date={selectedDate}
-              onDaySelection={(date) => {
-                setSelectedDate(date);
-                setRange(getRange(date));
-              }}
-              loading={loading}
-            />
-          )}
-          {viewSelection === 'month' && (
-            <MonthView
-              data={data}
-              date={selectedDate}
-              onMonthSelected={(month: string) => {
-                setMonthSelected(month);
-              }}
-              onMonthChange={(range) => {
-                //console.log(range);
-                setStartOfMonthDate(range as { start: string; end: string });
-                setRange(getMonthRange(range as { start: string; end: string }));
-              }}
-            />
-          )}
+          <div>
+            <div>
+              <ToggleButtonGroup exclusive value={viewSelection} className={classes.toggleBtn}>
+                <ToggleButton
+                  className={`${viewSelection === 'day' ? classes.customeSelect : ''}`}
+                  value="day"
+                  onClick={() => {
+                    setViewSelection('day');
+                    setRange(getRange(selectedDate));
+                  }}
+                >
+                  Day
+                </ToggleButton>
+                <ToggleButton
+                  className={`${viewSelection === 'month' ? classes.customeSelect : ''}`}
+                  value="month"
+                  onClick={() => {
+                    setViewSelection('month');
+                    setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
+                    setMonthSelected(moment(selectedDate).format('MMMM'));
+                  }}
+                >
+                  Month
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </div>
+            {viewSelection === 'day' && (
+              <WeekView
+                data={dataAdapter(data)}
+                date={selectedDate}
+                onDaySelection={(date) => {
+                  setSelectedDate(date);
+                  setRange(getRange(date));
+                }}
+                loading={loading}
+              />
+            )}
+            {viewSelection === 'month' && (
+              <MonthView
+                data={data}
+                date={selectedDate}
+                onMonthSelected={(month: string) => {
+                  setMonthSelected(month);
+                }}
+                onMonthChange={(range) => {
+                  //console.log(range);
+                  setStartOfMonthDate(range as { start: string; end: string });
+                  setRange(getMonthRange(range as { start: string; end: string }));
+                }}
+              />
+            )}
+          </div>
         </div>
-      </div>
+      </Scrollbars>
     </div>
   );
 };

@@ -1,12 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import {
-  Appointment,
-  STATUS,
-  APPOINTMENT_TYPE,
-  CaseSheet,
-  APPOINTMENT_STATE,
-} from 'consults-service/entities';
+import { STATUS, APPOINTMENT_TYPE, CaseSheet, APPOINTMENT_STATE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -26,6 +20,7 @@ export const bookAppointmentTypeDefs = gql`
     CANCELLED
     COMPLETED
     PENDING
+    PAYMENT_PENDING
     NO_SHOW
   }
 
@@ -46,6 +41,19 @@ export const bookAppointmentTypeDefs = gql`
     appointmentState: APPOINTMENT_STATE!
   }
 
+  type AppointmentBookingResult {
+    id: ID!
+    patientId: ID!
+    doctorId: ID!
+    appointmentDateTime: DateTime!
+    appointmentType: APPOINTMENT_TYPE!
+    hospitalId: ID
+    status: STATUS!
+    patientName: String!
+    appointmentState: APPOINTMENT_STATE!
+    displayId: Int!
+  }
+
   input BookAppointmentInput {
     patientId: ID!
     doctorId: ID!
@@ -55,7 +63,7 @@ export const bookAppointmentTypeDefs = gql`
   }
 
   type BookAppointmentResult {
-    appointment: AppointmentBooking
+    appointment: AppointmentBookingResult
   }
 
   extend type Mutation {
@@ -64,7 +72,7 @@ export const bookAppointmentTypeDefs = gql`
 `;
 
 type BookAppointmentResult = {
-  appointment: Appointment;
+  appointment: AppointmentBookingResult;
 };
 
 type BookAppointmentInput = {
@@ -85,6 +93,19 @@ type AppointmentBooking = {
   status: STATUS;
   patientName: string;
   appointmentState: APPOINTMENT_STATE;
+};
+
+type AppointmentBookingResult = {
+  id: string;
+  patientId: string;
+  doctorId: string;
+  appointmentDateTime: Date;
+  appointmentType: APPOINTMENT_TYPE;
+  hospitalId?: string;
+  status: STATUS;
+  patientName: string;
+  appointmentState: APPOINTMENT_STATE;
+  displayId: number;
 };
 
 type AppointmentInputArgs = { appointmentInput: BookAppointmentInput };

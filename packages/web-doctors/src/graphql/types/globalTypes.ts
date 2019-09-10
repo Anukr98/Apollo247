@@ -82,6 +82,7 @@ export enum STATUS {
   CONFIRMED = "CONFIRMED",
   IN_PROGRESS = "IN_PROGRESS",
   NO_SHOW = "NO_SHOW",
+  PAYMENT_PENDING = "PAYMENT_PENDING",
   PENDING = "PENDING",
 }
 
@@ -133,6 +134,11 @@ export interface CreateAppointmentSessionInput {
 export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
+}
+
+export interface GetDoctorConsultsInput {
+  doctorId: string;
+  limit?: number | null;
 }
 
 export interface RescheduleAppointmentInput {

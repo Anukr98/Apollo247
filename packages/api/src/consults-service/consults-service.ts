@@ -12,6 +12,10 @@ import {
   bookAppointmentResolvers,
   bookAppointmentTypeDefs,
 } from 'consults-service/resolvers/bookAppointment';
+import {
+  makeAppointmentPaymentTypeDefs,
+  makeAppointmentPaymentResolvers,
+} from 'consults-service/resolvers/makeAppointmentPayment';
 import { caseSheetResolvers, caseSheetTypeDefs } from 'consults-service/resolvers/caseSheet';
 import {
   getAppointmentHistoryResolvers,
@@ -61,6 +65,10 @@ import { GraphQLDate, GraphQLDateTime, GraphQLTime } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
+import {
+  getDoctorConsultsTypeDefs,
+  getDoctorConsultsResolvers,
+} from 'consults-service/resolvers/getDoctorConsults';
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 //import { SampleMessage } from 'types/appointmentTypes';
 
@@ -104,6 +112,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: bookAppointmentTypeDefs,
         resolvers: bookAppointmentResolvers,
+      },
+      {
+        typeDefs: makeAppointmentPaymentTypeDefs,
+        resolvers: makeAppointmentPaymentResolvers,
       },
       {
         typeDefs: getAppointmentHistoryTypeDefs,
@@ -152,6 +164,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: bookFollowUpAppointmentTypeDefs,
         resolvers: bookFollowUpAppointmentResolvers,
+      },
+      {
+        typeDefs: getDoctorConsultsTypeDefs,
+        resolvers: getDoctorConsultsResolvers,
       },
     ]),
   });

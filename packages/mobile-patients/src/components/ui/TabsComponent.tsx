@@ -4,24 +4,28 @@ import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from '
 
 const styles = StyleSheet.create({
   container: {
-    height: 56,
     backgroundColor: 'white',
   },
   tabContainerView: {
     flexDirection: 'row',
     overflow: 'hidden',
+    alignItems: 'center',
+    // marginTop: -5,
   },
   tabView: {
     flex: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -5,
+    height: 54,
     borderBottomWidth: 4,
     borderBottomColor: theme.colors.CLEAR,
   },
   textStyle: {
     color: 'rgba(2, 71, 91, 0.5)',
     ...theme.fonts.IBMPlexSansMedium(16),
-    paddingTop: 18,
-    paddingBottom: 14,
+    paddingTop: 4,
+    // paddingBottom: 14,
   },
 });
 
@@ -36,6 +40,7 @@ export interface TabsComponentProps {
   style?: StyleProp<ViewStyle>;
   showIcons?: boolean;
   textStyle?: StyleProp<ViewStyle>;
+  height?: number;
 }
 
 export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
@@ -52,11 +57,13 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
     return props.data.map((item, index) => {
       // const title = props.showIcons ? item.title : item;
       return (
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
+          activeOpacity={1}
           key={index}
           style={[
             styles.tabView,
             selected === item.title ? { borderBottomColor: theme.colors.APP_GREEN } : {},
+            props.height ? { height: props.height } : {},
           ]}
           onPress={() => props.onChange(item.title)}
         >

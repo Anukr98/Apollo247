@@ -99,14 +99,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       });
   }, []);
 
-  const onAddCartItem = ({
-    sku,
-    mou,
-    name,
-    price,
-    is_prescription_required,
-    type_id,
-  }: MedicineProduct) => {
+  const onAddCartItem = ({ sku, mou, name, price, is_prescription_required }: MedicineProduct) => {
     addCartItem &&
       addCartItem({
         id: sku,
@@ -123,7 +116,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     return (
       <View style={styles.bottonButtonContainer}>
         <Button
-          title="CALL US"
+          title="NEED HELP"
           style={styles.bottomButtonStyle}
           titleTextStyle={{ color: '#fc9916' }}
         />
@@ -166,12 +159,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     });
   };
 
+  const _title = props.navigation.getParam('title');
+  const shouldTrim = _title.length > 18 ? '...' : '';
+  const formattedTile = `${_title}${shouldTrim}`.substr(0, 25).toUpperCase();
+
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       <Header
         leftIcon="backArrow"
         onPressLeftIcon={() => props.navigation.goBack()}
-        title={(props.navigation.getParam('title') || '').toUpperCase()}
+        title={formattedTile}
         container={{ borderBottomWidth: 0 }}
       />
 
@@ -186,13 +183,19 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
       {!loading && medicineOverview.length == 0 && (
         <View style={{ flex: 1 }}>
-          <Card
-            cardContainer={styles.noDataCard}
-            heading={'Uh oh! :('}
-            description={'No Data Found!'}
-            descriptionTextStyle={{ fontSize: 14 }}
-            headingTextStyle={{ fontSize: 14 }}
-          />
+          <View style={styles.cardStyle}>
+            {renderNote()}
+            <Card
+              cardContainer={[
+                styles.noDataCard,
+                { marginTop: medicineDetails!.is_prescription_required == '1' ? -10 : 5 },
+              ]}
+              heading={'Uh oh! :('}
+              description={'No Data Found!'}
+              descriptionTextStyle={{ fontSize: 14 }}
+              headingTextStyle={{ fontSize: 14 }}
+            />
+          </View>
         </View>
       )}
 

@@ -1,22 +1,40 @@
 import '@aph/universal/dist/global';
 import {
   Appointment,
+  AppointmentPayments,
   AppointmentSessions,
   CaseSheet,
-  TransferAppointmentDetails,
   RescheduleAppointmentDetails,
+  TransferAppointmentDetails,
 } from 'consults-service/entities/';
 import {
   ConsultHours,
   Doctor,
   DoctorAndHospital,
   DoctorBankAccounts,
+  DoctorDeviceTokens,
   DoctorSpecialty,
   Facility,
   Packages,
   StarTeam,
-  DoctorDeviceTokens,
 } from 'doctors-service/entities';
+import {
+  Coupon,
+  MedicalRecordParameters,
+  MedicalRecords,
+  MedicineOrderLineItems,
+  MedicineOrderPayments,
+  MedicineOrders,
+  MedicineOrdersStatus,
+  Patient,
+  PatientAddress,
+  PatientDeviceTokens,
+  PatientFamilyHistory,
+  PatientHealthVault,
+  PatientLifeStyle,
+  PatientNotificationSettings,
+  SearchHistory,
+} from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
 
@@ -47,6 +65,7 @@ export const connect = async () => {
       name: 'consults-db',
       entities: [
         Appointment,
+        AppointmentPayments,
         AppointmentSessions,
         CaseSheet,
         TransferAppointmentDetails,
@@ -58,6 +77,33 @@ export const connect = async () => {
       username: process.env.CONSULTS_DB_USER,
       password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.NODE_ENV}`,
+      logging: true,
+    },
+    {
+      name: 'patients-db',
+      entities: [
+        Patient,
+        SearchHistory,
+        PatientAddress,
+        PatientFamilyHistory,
+        PatientLifeStyle,
+        PatientHealthVault,
+        MedicineOrders,
+        MedicineOrderLineItems,
+        MedicineOrderPayments,
+        Coupon,
+        MedicineOrdersStatus,
+        PatientDeviceTokens,
+        PatientNotificationSettings,
+        MedicalRecords,
+        MedicalRecordParameters,
+      ],
+      type: 'postgres',
+      host: process.env.PROFILES_DB_HOST,
+      port: parseInt(process.env.PROFILES_DB_PORT, 10),
+      username: process.env.PROFILES_DB_USER,
+      password: process.env.PROFILES_DB_PASSWORD,
+      database: `profiles_${process.env.NODE_ENV}`,
       logging: true,
     },
   ]).catch((error) => {

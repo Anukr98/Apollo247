@@ -66,6 +66,7 @@ import {
 import DocumentPicker from 'react-native-document-picker';
 import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps } from 'react-navigation';
+import RNFetchBlob from 'react-native-fetch-blob';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -77,8 +78,24 @@ let diffInHours: number;
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
+
+  useEffect(() => {
+    RNFetchBlob.config({
+      // add this option that makes response data to be stored as a file,
+      // this is much more performant.
+      fileCache: true,
+    })
+      .fetch('GET', 'http://samples.leanpub.com/thereactnativebook-sample.pdf', {
+        //some headers ..
+      })
+      .then((res) => {
+        // the temp file path
+        console.log('The file saved to res ', res);
+        console.log('The file saved to ', res.path());
+      });
+  }, []);
   const appointmentData = props.navigation.state.params!.data;
-  // console.log('appointmentData', appointmentData);
+  console.log('appointmentData', appointmentData);
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -177,7 +194,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [transferAccept, setTransferAccept] = useState<boolean>(false);
   const [transferDcotorName, setTransferDcotorName] = useState<string>('');
-
+  const [bottompopup, setBottompopup] = useState<boolean>(false);
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -205,7 +222,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
-    console.log('consult room', currentPatient);
     analytics.setCurrentScreen(AppRoutes.ChatRoom);
   }, []);
 
@@ -371,7 +387,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     console.ignoredYellowBox = ['Warning: Each', 'Warning: Failed'];
     console.disableYellowBox = true;
-    console.log('isIphoneX', isIphoneX());
 
     pubnub.subscribe({
       channels: [channel],
@@ -462,37 +477,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       },
       (status, res) => {
         // const start = res.startTimeToken;
-        const msgs = res.messages;
-        console.log('msgs', msgs);
+        try {
+          const msgs = res.messages;
+          console.log('msgs', msgs);
 
-        const newmessage: { message: string }[] = [];
+          const newmessage: { message: string }[] = [];
 
-        res.messages.forEach((element, index) => {
-          newmessage[index] = element.entry;
-        });
-        console.log('res', res);
+          res.messages.forEach((element, index) => {
+            newmessage[index] = element.entry;
+          });
+          console.log('res', res);
 
-        if (messages.length !== newmessage.length) {
-          try {
+          if (messages.length !== newmessage.length) {
             if (newmessage[newmessage.length - 1].message === startConsultMsg) {
               updateSessionAPI();
               checkingAppointmentDates();
             }
-          } catch (error) {
-            console.log('error', error);
-          }
 
-          insertText = newmessage;
-          setMessages(newmessage as []);
-          console.log('newmessage', newmessage);
-          if (msgs.length == 100) {
-            console.log('hihihihihi');
-            // getHistory(start);
-          }
+            insertText = newmessage;
+            setMessages(newmessage as []);
+            console.log('newmessage', newmessage);
+            if (msgs.length == 100) {
+              console.log('hihihihihi');
+              // getHistory(start);
+            }
 
-          setTimeout(() => {
-            flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
-          }, 1000);
+            setTimeout(() => {
+              flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
+            }, 1000);
+          }
+        } catch (error) {
+          console.log('error', error);
         }
       }
     );
@@ -660,10 +675,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               width: 282,
               borderRadius: 10,
               marginVertical: 2,
-              alignSelf: 'flex-start',
+              alignSelf: 'center',
             }}
           >
-            {leftComponent === 1 && (
+            {/* {leftComponent === 1 && (
               <View
                 style={{
                   width: 32,
@@ -683,15 +698,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 />
               </View>
-            )}
+            )} */}
             <View
               style={{
                 backgroundColor: '#0087ba',
                 width: 244,
                 height: 354,
                 borderRadius: 10,
-                marginLeft: 38,
+                //marginLeft: 38,
                 ...theme.viewStyles.shadowStyle,
+
+                alignSelf: 'center',
               }}
             >
               <Text
@@ -733,7 +750,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       letterSpacing: 0.3,
                     }}
                   >
-                    {rowData.transferInfo.specilty} | {rowData.transferInfo.experience}
+                    {rowData.transferInfo.specilty} | {rowData.transferInfo.experience} YR
+                    {Number(rowData.transferInfo.experience) > 1 ? 'S' : ''}
                   </Text>
                   <View
                     style={{
@@ -820,7 +838,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     flex: 0.5,
                     marginLeft: 16,
                     marginRight: 5,
-                    backgroundColor: 'transparent',
+                    backgroundColor: '#0087ba',
                     borderWidth: 2,
                     borderColor: '#fcb715',
                   }}
@@ -828,7 +846,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onPress={() => {
                     props.navigation.navigate(AppRoutes.DoctorDetails, {
                       doctorId: rowData.transferInfo.doctorId,
-
                       showBookAppointment: true,
                     });
                   }}
@@ -921,7 +938,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <Button
                   title={'VIEW'}
                   style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
-                  onPress={() => {}}
+                  onPress={() => {
+                    console.log('Followupdata', rowData.transferInfo.caseSheetId);
+                    props.navigation.navigate(AppRoutes.ConsultDetails, {
+                      CaseSheet: rowData.transferInfo.caseSheetId,
+                      DoctorInfo: rowData.transferInfo.doctorInfo,
+                    });
+                  }}
                 />
               </StickyBottomComponent>
             </View>
@@ -1025,6 +1048,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
                     props.navigation.goBack();
+                  }}
+                />
+                <Button
+                  title={'ACCEPT'}
+                  style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                  onPress={() => {
+                    transferAppointmentAPI(rowData);
                   }}
                 />
               </StickyBottomComponent>
@@ -1408,6 +1438,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const transferAppointmentAPI = (rowData: any) => {
+    console.log(rowData, 'rowData');
     Keyboard.dismiss();
     const appointmentTransferInput: BookTransferAppointmentInput = {
       patientId: patientId,
@@ -1428,19 +1459,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       })
       .then((data: any) => {
         console.log('Accept Api', data);
+        console.log('time', data.data.bookTransferAppointment.appointment.appointmentDateTime);
         setTransferAccept(true),
           setTransferDcotorName(rowData.transferInfo.doctorName),
           setTimeout(() => {
             setTransferAccept(false);
           }, 1000);
-        props.navigation.push(AppRoutes.Consult);
+        AsyncStorage.setItem('showTransferPopup', 'true');
+        props.navigation.replace(AppRoutes.TabBar, {
+          TransferData: rowData.transferInfo,
+          TranferDateTime: data.data.bookTransferAppointment.appointment.appointmentDateTime,
+        });
       })
       .catch((e: string) => {
-        console.log('Error occured while accept appid', e);
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while accept appid', errorMessage, error);
-        Alert.alert('Error', errorMessage);
+        setBottompopup(true);
+        // console.log('Error occured while accept appid', e);
+        // const error = JSON.parse(JSON.stringify(e));
+        // const errorMessage = error && error.message;
+        // console.log('Error occured while accept appid', errorMessage, error);
+        // Alert.alert(
+        //   'Error',
+        //   'Opps ! The selected slot is unavailable. Please choose a different one'
+        // );
+        // <BottomPopUp
+        //   title="Error"
+        //   description="Opps ! The selected slot is unavailable. Please choose a different one"
+        // />;
       });
   };
 
@@ -1496,6 +1540,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   publishAudio: mute,
                   audioVolume: 100,
                 }}
+                resolution={'352x288'}
                 eventHandlers={publisherEventHandlers}
               />
               <OTSubscriber
@@ -1612,6 +1657,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               publishAudio: mute,
               audioVolume: 100,
             }}
+            resolution={'352x288'}
             eventHandlers={publisherEventHandlers}
           />
           <OTSubscriber
@@ -2538,6 +2584,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               resizeMode: 'contain',
             }}
           />
+        </BottomPopUp>
+      )}
+      {bottompopup && (
+        <BottomPopUp
+          title={'Hi:)'}
+          description="Opps ! The selected slot is unavailable. Please choose a different one"
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottompopup(false);
+                props.navigation.replace(AppRoutes.TabBar);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
         </BottomPopUp>
       )}
     </View>

@@ -15,11 +15,12 @@ import { Calendar } from 'components/Calendar';
 import { PatientLog } from 'components/PatientLog/PatientLog';
 import { ConsultTabs } from 'components/ConsultTabs';
 import { AuthProvider } from 'components/AuthProvider';
-import { useAuth } from 'hooks/authHooks';
+import { useAuth, useCurrentPatient } from 'hooks/authHooks';
 import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
 import { JuniorDoctor } from 'components/JuniorDoctors/JuniorDoctor';
 import { PatientDetails } from 'components/JuniorDoctors/PatientDetails';
 import { JDProfile } from 'components/JuniorDoctors/JDProfile';
+import { DoctorType } from 'graphql/types/globalTypes';
 
 const App: React.FC = () => {
   const classes = useStyles();
@@ -30,12 +31,24 @@ const App: React.FC = () => {
         'Sorry, this application is invite only. Please reach out to us at admin@apollo247.com in case you wish to enroll.'
       );
   }, [signInError]);
+
+  // TODO Why is this called patient?
+  const currentDoctor = useCurrentPatient();
+  const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
+
   return isSignedIn ? (
+    // TODO This should all be inside of a <Switch>, why are we rendering multiple routes simultaneously?
     <div className={classes.app}>
       <AuthRouted
         exact
         path={clientRoutes.welcome()}
-        render={() => <Redirect to={isSignedIn.firebaseToken == '' ? '/profile' : '/Calendar'} />}
+        render={() =>
+          isJuniorDoctor ? (
+            <Redirect to={clientRoutes.juniorDoctor()} />
+          ) : (
+            <Redirect to={!isSignedIn.firebaseToken ? '/profile' : '/Calendar'} />
+          )
+        }
       />
       <AuthRouted exact path={clientRoutes.patients()} component={PatientsList} />
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
@@ -57,6 +70,7 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.juniorDoctorProfile()} component={JDProfile} />
     </div>
   ) : (
+    // TODO why are there `AuthedRoute`s inside of the "is not signed in" section?
     <div className={classes.app}>
       <Route exact path={clientRoutes.welcome()} component={Welcome} />
       <AuthRouted exact path={clientRoutes.DoctorsProfile()} component={DoctorsProfile} />
@@ -80,7 +94,7 @@ const useStyles = makeStyles((theme: Theme) => {
     app: {
       minHeight: '100vh',
       backgroundImage: 'linear-gradient(to bottom, #f5f8f9, #e6edef)',
-      paddingBottom: 20,
+      paddingBottom: 0,
       [theme.breakpoints.down('xs')]: {
         paddingBottom: 20,
       },

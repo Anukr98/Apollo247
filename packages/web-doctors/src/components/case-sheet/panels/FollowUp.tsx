@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Switch, Divider, Slider, createMuiTheme, withStyles } from '@material-ui/core';
+import { Typography, Divider, Slider, createMuiTheme, withStyles } from '@material-ui/core';
+// import { AphToggleSwitch } from '@aph/web-ui-components';
+import { AphToggleSwitch } from 'components/case-sheet/panels/AphToggleSwitch';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { debounce } from 'lodash';
 import ToggleButton from '@material-ui/lab/ToggleButton';
@@ -28,6 +30,23 @@ const useStyles = makeStyles(() => ({
     },
     '& .Mui-checked': {
       // color: '#f00',
+    },
+  },
+  KeyboardDatePicker: {
+    width: '100%',
+    '& div': {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+    },
+    '& input': {
+      fontSize: 18,
+      color: '##01475b',
+      borderBottom: '2px solid #00b38e',
+      fontWeight: 500,
     },
   },
   switchBtn: {
@@ -120,16 +139,16 @@ const useStyles = makeStyles(() => ({
       fontWeight: 500,
 
       '&:hover': {
-        // borderBottom: 'none',
+        borderBottom: 'none',
         '&:before': {
-          // borderBottom: 'none',
+          borderBottom: 'none',
         },
       },
       '&:before': {
-        // borderBottom: 'none',
+        borderBottom: 'none',
       },
       '&:after': {
-        // borderBottom: 'none',
+        borderBottom: 'none',
       },
     },
   },
@@ -318,7 +337,7 @@ export const FollowUp: React.FC = () => {
           <Typography component="span" className={classes.followupTxt}>
             Do you recommend a follow up?
           </Typography>
-          <Switch
+          <AphToggleSwitch
             checked={shouldFollowUp}
             onChange={(e) => setShouldFollowUp(e.target.checked)}
             value="followup"
@@ -348,20 +367,24 @@ export const FollowUp: React.FC = () => {
                     Follow Up On
                   </Typography>
                   <ThemeProvider theme={defaultMaterialTheme}>
-                    <KeyboardDatePicker
-                      disableToolbar
-                      autoOk
-                      placeholder="dd/mm/yyyy"
-                      variant="inline"
-                      format="dd/MM/yyyy"
-                      value={selectedDate}
-                      minDate={new Date()}
-                      onKeyPress={(e) => {
-                        if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
-                      }}
-                      // InputAdornmentProps={{ position: 'end' }}
-                      onChange={(date) => handleDateChange((date as unknown) as Date)}
-                    />
+                    <span>
+                      <KeyboardDatePicker
+                        className={classes.KeyboardDatePicker}
+                        inputVariant="standard"
+                        disableToolbar
+                        autoOk
+                        placeholder="dd/mm/yyyy"
+                        variant="inline"
+                        format="dd/MM/yyyy"
+                        value={selectedDate}
+                        minDate={new Date()}
+                        onKeyPress={(e) => {
+                          if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+                        }}
+                        // InputAdornmentProps={{ position: 'end' }}
+                        onChange={(date) => handleDateChange((date as unknown) as Date)}
+                      />
+                    </span>
                   </ThemeProvider>
                 </div>
               )}

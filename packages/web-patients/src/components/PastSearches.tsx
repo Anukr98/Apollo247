@@ -66,9 +66,21 @@ const useStyles = makeStyles((theme: Theme) => {
       margin: 'auto',
       marginTop: -20,
       marginBottom: 5,
+      backgroundColor: '#dcdfcf',
+      padding: 8,
       [theme.breakpoints.down('xs')]: {
         display: 'none',
       },
+      '& img': {
+        verticalAlign: 'middle',
+        height: 'auto',
+        width: 'auto',
+        maxWidth: '100%',
+        maxHeight: '100%',
+      },
+    },
+    doctorAvatar: {
+      padding: 0,
     },
     sectionHeader: {
       color: '#02475b',
@@ -135,7 +147,7 @@ export const PastSearches: React.FC<PastSearchProps> = (props) => {
                     <Avatar
                       alt={(searchDetails && searchDetails.name) || ''}
                       src={(searchDetails && searchDetails.image) || ''}
-                      className={classes.bigAvatar}
+                      className={`${classes.bigAvatar} ${classes.doctorAvatar}`}
                     />
                     {searchDetails && `Dr. ${_startCase(_toLower(searchDetails.name || ''))}`}
                   </div>

@@ -96,6 +96,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
         flex: 1,
         alignItems: 'flex-end',
         zIndex: 999,
+        elevation: 5,
         // backgroundColor: 'red',
         backgroundColor: 'transparent',
       }}
@@ -116,7 +117,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
           paddingBottom: 16,
           ...Platform.select({
             android: {
-              marginTop: 124,
+              marginTop: 94,
             },
             ios: {
               marginTop: 134,
@@ -169,7 +170,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
         {props.children}
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => setShowMenu(true)}
+          // onPress={() => setShowMenu(true)}
           style={{
             flexDirection: 'row',
             // marginTop: 18,
@@ -178,8 +179,10 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
           }}
         >
           <View style={{ flexDirection: 'row' }}>
-            <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
-            <View>
+            <Text style={styles.hiTextStyle}>
+              {string.home.hi} {userName}!
+            </Text>
+            {/* <View>
               <View
                 style={{
                   flexDirection: 'row',
@@ -190,7 +193,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
                 <DropdownGreen style={{ marginTop: 8 }} />
               </View>
               <View style={styles.seperatorStyle} />
-            </View>
+            </View> */}
           </View>
         </TouchableOpacity>
         <Text style={styles.descriptionTextStyle}>{props.description}</Text>

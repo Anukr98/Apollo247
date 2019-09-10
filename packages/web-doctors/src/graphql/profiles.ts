@@ -370,6 +370,7 @@ export const GET_CASESHEET = gql`
           appointmentDateTime
           status
           appointmentState
+          displayId
         }
         medicinePrescription {
           id
@@ -447,6 +448,7 @@ export const UPDATE_CASESHEET = gql`
   mutation UpdateCaseSheet($UpdateCaseSheetInput: UpdateCaseSheetInput) {
     updateCaseSheet(UpdateCaseSheetInput: $UpdateCaseSheetInput) {
       consultType
+      blobName
       appointment {
         id
       }

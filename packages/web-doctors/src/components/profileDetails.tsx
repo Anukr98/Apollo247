@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import { MyProfile } from 'components/MyProfile';
 import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
-
+import Scrollbars from 'react-custom-scrollbars';
 import { MyAccountFeeTab } from 'components/MyAccountFeeTab';
 import { MyAccountAvailabilityTab } from 'components/MyAccountAvailabilityTab';
 
@@ -211,188 +211,193 @@ export const MyAccount: React.FC = (props) => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <div className={classes.container}>
-        <div className={classes.ProfileContainer}>
-          <div>
-            <Grid container alignItems="flex-start" spacing={0}>
-              <Grid item lg={3} sm={6} xs={12} className={classes.tabRightcontent}>
-                <Paper
-                  className={`${classes.doctorPanelLeft} ${classes.serviceItemLeft} ${classes.tabContent}`}
-                >
-                  <div className={classes.avatarBlock}>
-                    <img
-                      alt=""
-                      src={require('images/doctor-profile.jpg')}
-                      className={classes.bigAvatar}
-                    />
-                    <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
+      <Scrollbars autoHide={true} style={{ height: '100vh' }}>
+        <div className={classes.container}>
+          <div className={classes.ProfileContainer}>
+            <div>
+              <Grid container alignItems="flex-start" spacing={0}>
+                <Grid item lg={3} sm={6} xs={12} className={classes.tabRightcontent}>
+                  <Paper
+                    className={`${classes.doctorPanelLeft} ${classes.serviceItemLeft} ${classes.tabContent}`}
+                  >
+                    <div className={classes.avatarBlock}>
+                      <img
+                        alt=""
+                        src={require('images/doctor-profile.jpg')}
+                        className={classes.bigAvatar}
+                      />
+                      <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
+                    </div>
+                    <div className={classes.doctorSectionLeft}>
+                      <Typography variant="h4">
+                        {doctorProfile!.salutation &&
+                          doctorProfile!.salutation!.charAt(0).toUpperCase()}
+                        {doctorProfile!.salutation!.slice(1).toLowerCase() + '.'}{' '}
+                        {`${doctorProfile!.firstName!.split(' ')[0]} ${doctorProfile!.lastName!}`
+                          .length < 18
+                          ? `${doctorProfile!.firstName!.split(' ')[0]} ${doctorProfile!.lastName}`
+                          : `${
+                              doctorProfile!.firstName!.split(' ')[0]
+                            } ${doctorProfile!.lastName!.charAt(0)}.`}
+                      </Typography>
+                      <Typography variant="h6">
+                        <span>{`MCI Number : ${doctorProfile.registrationNumber}`} </span>
+                      </Typography>
+                    </div>
+                  </Paper>
+                  <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
+                    <div className={classes.leftNav}>
+                      <img
+                        alt=""
+                        src={require('images/ic_stats.svg')}
+                        className={classes.navLeftIcon}
+                      />
+                      My Stats
+                      <img
+                        alt=""
+                        src={require('images/ic_rightarrow.svg')}
+                        className={classes.navRightIcon}
+                      />
+                    </div>
+                  </Paper>
+                  <Paper
+                    className={`${classes.serviceItemLeft} ${
+                      classes.tabContent
+                    } ${selectedNavTab === 1 && classes.tabActive}`}
+                  >
+                    <div onClick={() => setselectedNavTab(1)} className={classes.leftNav}>
+                      <img
+                        alt=""
+                        src={
+                          selectedNavTab === 1
+                            ? require('images/ic_profilenav_white.svg')
+                            : require('images/ic_profilenav.svg')
+                        }
+                        className={classes.navLeftIcon}
+                      />
+                      My Profile
+                      <img
+                        alt=""
+                        src={
+                          selectedNavTab === 1
+                            ? require('images/ic_rightarrowwhite.svg')
+                            : require('images/ic_rightarrow.svg')
+                        }
+                        className={classes.navRightIcon}
+                      />
+                    </div>
+                  </Paper>
+                  <Paper
+                    className={`${classes.serviceItemLeft} ${
+                      classes.tabContent
+                    } ${selectedNavTab === 2 && classes.tabActive}`}
+                  >
+                    <div onClick={() => setselectedNavTab(2)} className={classes.leftNav}>
+                      <img
+                        alt=""
+                        src={
+                          selectedNavTab === 2
+                            ? require('images/ic_availibility_white.svg')
+                            : require('images/ic_availibility.svg')
+                        }
+                        className={classes.navLeftIcon}
+                      />
+                      Availability
+                      <img
+                        alt=""
+                        src={
+                          selectedNavTab === 2
+                            ? require('images/ic_rightarrowwhite.svg')
+                            : require('images/ic_rightarrow.svg')
+                        }
+                        className={classes.navRightIcon}
+                      />
+                    </div>
+                  </Paper>
+                  <Paper
+                    className={`${classes.serviceItemLeft} ${
+                      classes.tabContent
+                    } ${selectedNavTab === 3 && classes.tabActive}`}
+                  >
+                    <div onClick={() => setselectedNavTab(3)} className={classes.leftNav}>
+                      <img
+                        alt=""
+                        src={
+                          selectedNavTab === 3
+                            ? require('images/ic_fees_white.svg')
+                            : require('images/ic_fees.svg')
+                        }
+                        className={classes.navLeftIcon}
+                      />
+                      Fees
+                      <img
+                        alt=""
+                        src={
+                          selectedNavTab === 3
+                            ? require('images/ic_rightarrowwhite.svg')
+                            : require('images/ic_rightarrow.svg')
+                        }
+                        className={classes.navRightIcon}
+                      />
+                    </div>
+                  </Paper>
+                  <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
+                    <div className={classes.leftNav}>
+                      <img
+                        alt=""
+                        src={require('images/ic_smart_prescription.svg')}
+                        className={classes.navLeftIcon}
+                      />
+                      Smart Prescription
+                      <img
+                        alt=""
+                        src={require('images/ic_rightarrow.svg')}
+                        className={classes.navRightIcon}
+                      />
+                    </div>
+                  </Paper>
+                  <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
+                    <div className={classes.leftNav}>
+                      <img
+                        alt=""
+                        src={require('images/ic_settings.svg')}
+                        className={classes.navLeftIcon}
+                      />
+                      Settings
+                      <img
+                        alt=""
+                        src={require('images/ic_rightarrow.svg')}
+                        className={classes.navRightIcon}
+                      />
+                    </div>
+                  </Paper>
+                </Grid>
+                <Grid item lg={9} sm={6} xs={12} className={classes.tabLeftcontent}>
+                  <div className={classes.outerContainer}>
+                    {selectedNavTab === 1 ? (
+                      <MyProfile doctor={doctorProfile} clinics={clinics} />
+                    ) : selectedNavTab === 3 ? (
+                      <MyAccountFeeTab
+                        values={doctorProfile}
+                        onNext={() => onNext()}
+                        onBack={() => onBack()}
+                        key={3}
+                      />
+                    ) : (
+                      <MyAccountAvailabilityTab
+                        values={doctorProfile}
+                        onNext={() => onNext()}
+                        onBack={() => onBack()}
+                        key={3}
+                      />
+                    )}
                   </div>
-                  <div className={classes.doctorSectionLeft}>
-                    <Typography variant="h4">
-                      {doctorProfile!.salutation &&
-                        doctorProfile!.salutation!.charAt(0).toUpperCase()}
-                      {doctorProfile!.salutation!.slice(1).toLowerCase() + '.'}{' '}
-                      {`${doctorProfile!.firstName!.split(' ')[0]} ${doctorProfile!.lastName!}`
-                        .length < 18
-                        ? `${doctorProfile!.firstName!.split(' ')[0]} ${doctorProfile!.lastName}`
-                        : `${
-                            doctorProfile!.firstName!.split(' ')[0]
-                          } ${doctorProfile!.lastName!.charAt(0)}.`}
-                    </Typography>
-                    <Typography variant="h6">
-                      <span>{`MCI Number : ${doctorProfile.registrationNumber}`} </span>
-                    </Typography>
-                  </div>
-                </Paper>
-                <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
-                  <div className={classes.leftNav}>
-                    <img
-                      alt=""
-                      src={require('images/ic_stats.svg')}
-                      className={classes.navLeftIcon}
-                    />
-                    My Stats
-                    <img
-                      alt=""
-                      src={require('images/ic_rightarrow.svg')}
-                      className={classes.navRightIcon}
-                    />
-                  </div>
-                </Paper>
-                <Paper
-                  className={`${classes.serviceItemLeft} ${classes.tabContent} ${selectedNavTab ===
-                    1 && classes.tabActive}`}
-                >
-                  <div onClick={() => setselectedNavTab(1)} className={classes.leftNav}>
-                    <img
-                      alt=""
-                      src={
-                        selectedNavTab === 1
-                          ? require('images/ic_profilenav_white.svg')
-                          : require('images/ic_profilenav.svg')
-                      }
-                      className={classes.navLeftIcon}
-                    />
-                    My Profile
-                    <img
-                      alt=""
-                      src={
-                        selectedNavTab === 1
-                          ? require('images/ic_rightarrowwhite.svg')
-                          : require('images/ic_rightarrow.svg')
-                      }
-                      className={classes.navRightIcon}
-                    />
-                  </div>
-                </Paper>
-                <Paper
-                  className={`${classes.serviceItemLeft} ${classes.tabContent} ${selectedNavTab ===
-                    2 && classes.tabActive}`}
-                >
-                  <div onClick={() => setselectedNavTab(2)} className={classes.leftNav}>
-                    <img
-                      alt=""
-                      src={
-                        selectedNavTab === 2
-                          ? require('images/ic_availibility_white.svg')
-                          : require('images/ic_availibility.svg')
-                      }
-                      className={classes.navLeftIcon}
-                    />
-                    Availability
-                    <img
-                      alt=""
-                      src={
-                        selectedNavTab === 2
-                          ? require('images/ic_rightarrowwhite.svg')
-                          : require('images/ic_rightarrow.svg')
-                      }
-                      className={classes.navRightIcon}
-                    />
-                  </div>
-                </Paper>
-                <Paper
-                  className={`${classes.serviceItemLeft} ${classes.tabContent} ${selectedNavTab ===
-                    3 && classes.tabActive}`}
-                >
-                  <div onClick={() => setselectedNavTab(3)} className={classes.leftNav}>
-                    <img
-                      alt=""
-                      src={
-                        selectedNavTab === 3
-                          ? require('images/ic_fees_white.svg')
-                          : require('images/ic_fees.svg')
-                      }
-                      className={classes.navLeftIcon}
-                    />
-                    Fees
-                    <img
-                      alt=""
-                      src={
-                        selectedNavTab === 3
-                          ? require('images/ic_rightarrowwhite.svg')
-                          : require('images/ic_rightarrow.svg')
-                      }
-                      className={classes.navRightIcon}
-                    />
-                  </div>
-                </Paper>
-                <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
-                  <div className={classes.leftNav}>
-                    <img
-                      alt=""
-                      src={require('images/ic_smart_prescription.svg')}
-                      className={classes.navLeftIcon}
-                    />
-                    Smart Prescription
-                    <img
-                      alt=""
-                      src={require('images/ic_rightarrow.svg')}
-                      className={classes.navRightIcon}
-                    />
-                  </div>
-                </Paper>
-                <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
-                  <div className={classes.leftNav}>
-                    <img
-                      alt=""
-                      src={require('images/ic_settings.svg')}
-                      className={classes.navLeftIcon}
-                    />
-                    Settings
-                    <img
-                      alt=""
-                      src={require('images/ic_rightarrow.svg')}
-                      className={classes.navRightIcon}
-                    />
-                  </div>
-                </Paper>
+                </Grid>
               </Grid>
-              <Grid item lg={9} sm={6} xs={12} className={classes.tabLeftcontent}>
-                <div className={classes.outerContainer}>
-                  {selectedNavTab === 1 ? (
-                    <MyProfile doctor={doctorProfile} clinics={clinics} />
-                  ) : selectedNavTab === 3 ? (
-                    <MyAccountFeeTab
-                      values={doctorProfile}
-                      onNext={() => onNext()}
-                      onBack={() => onBack()}
-                      key={3}
-                    />
-                  ) : (
-                    <MyAccountAvailabilityTab
-                      values={doctorProfile}
-                      onNext={() => onNext()}
-                      onBack={() => onBack()}
-                      key={3}
-                    />
-                  )}
-                </div>
-              </Grid>
-            </Grid>
+            </div>
           </div>
         </div>
-      </div>
+      </Scrollbars>
     </div>
   );
 };

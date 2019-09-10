@@ -13,7 +13,7 @@ import {
 import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
-import { isEmpty, debounce, trim } from 'lodash';
+import { isEmpty } from 'lodash';
 import { AphSelect, AphTextField } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
@@ -469,6 +469,8 @@ interface CallPopoverProps {
   appointmentId: string;
   appointmentDateTime: string;
   doctorId: string;
+  isEnded: boolean;
+  caseSheetId: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -486,7 +488,9 @@ let transferObject: any = {
 };
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
-  const { loading, appointmentInfo, caseSheetId, followUpDate } = useContext(CaseSheetContext);
+  const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
+    CaseSheetContext
+  );
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -707,7 +711,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
     ssl: true,
   };
-  const { caseSheetEdit, setCaseSheetEdit } = useContext(CaseSheetContext);
+  const { setCaseSheetEdit } = useContext(CaseSheetContext);
+  useEffect(() => {
+    if (props.isEnded) {
+      onStopConsult();
+      setStartAppointment(!startAppointment);
+      setStartAppointmentButton(true);
+    }
+  }, [props.isEnded]);
   useEffect(() => {
     setTextOtherTransfer;
     if (reason === 'Other') {
@@ -773,30 +784,43 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status, response) => {}
     );
+
+    let folloupDateTime = '';
     if (
       followUpDate &&
       followUpDate.length > 0 &&
       followUpDate[0] !== null &&
       followUpDate[0] !== ''
     ) {
-      const folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
-      const followupObj: any = {
-        appointmentId: props.appointmentId,
-        folloupDateTime: folloupDateTime,
-        doctorId: props.doctorId,
-      };
-      pubnub.publish(
-        {
-          message: {
-            id: props.doctorId,
-            message: followupconsult,
-            transferInfo: followupObj,
+      folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
+    } else if (followUp[0] && followUpAfterInDays[0] !== 'Custom') {
+      const apptdateTime = new Date(props.appointmentDateTime);
+      folloupDateTime = new Date(
+        apptdateTime.getTime() + parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
+      ).toISOString();
+    }
+    const followupObj: any = {
+      appointmentId: props.appointmentId,
+      folloupDateTime: folloupDateTime,
+      doctorId: props.doctorId,
+      caseSheetId: props.caseSheetId,
+      doctorInfo: currentPatient,
+    };
+    if (folloupDateTime !== '') {
+      setTimeout(() => {
+        pubnub.publish(
+          {
+            message: {
+              id: props.doctorId,
+              message: followupconsult,
+              transferInfo: followupObj,
+            },
+            channel: channel,
+            storeInHistory: true,
           },
-          channel: channel,
-          storeInHistory: true,
-        },
-        (status, response) => {}
-      );
+          (status, response) => {}
+        );
+      }, 100);
     }
   };
   const transferConsultAction = () => {
@@ -993,11 +1017,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <Button
                 className={classes.endconsultButton}
                 onClick={() => {
-                  onStopConsult();
-                  setStartAppointment(!startAppointment);
+                  //onStopConsult();
+                  //setStartAppointment(!startAppointment);
                   stopInterval();
                   props.endConsultAction();
-                  setCaseSheetEdit(false);
+                  //setCaseSheetEdit(false);
                   setDisableOnTransfer(true);
                 }}
               >
@@ -1164,7 +1188,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       >
         <Paper className={classes.modalBox}>
           <div className={classes.tabHeader}>
-            <h4>RESHEDULE CONSULT</h4>
+            <h4>RESCHEDULE CONSULT</h4>
             <Button className={classes.cross}>
               <img
                 src={require('images/ic_cross.svg')}
@@ -1330,7 +1354,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               >
                 Patient needs a in person visit
               </MenuItem>
-              <MenuItem value="Others" classes={{ selected: classes.menuSelected }}>
+              <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
                 Other
               </MenuItem>
             </AphSelect>

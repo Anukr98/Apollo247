@@ -31,7 +31,11 @@ import {
   InputDropdown,
   InputDropdownMenu,
 } from '@aph/mobile-patients/src/components/ui/InputDropdown';
-import { AddMedicalRecordParametersInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  AddMedicalRecordParametersInput,
+  MedicalRecordType,
+  MedicalTestUnit,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import Moment from 'moment';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -80,7 +84,49 @@ type RecordTypeType = {
   value: string;
 };
 
-const RecordType: RecordTypeType[] = [{ name: 'Test Report', value: 'Test Report' }];
+const RecordType: RecordTypeType[] = [
+  { name: MedicalRecordType.EHR.toLowerCase().replace('_', ' '), value: MedicalRecordType.EHR },
+  {
+    name: MedicalRecordType.OPERATIVE_REPORT.toLowerCase().replace('_', ' '),
+    value: MedicalRecordType.OPERATIVE_REPORT,
+  },
+  {
+    name: MedicalRecordType.PATHOLOGY_REPORT.toLowerCase().replace('_', ' '),
+    value: MedicalRecordType.PATHOLOGY_REPORT,
+  },
+  {
+    name: MedicalRecordType.PHYSICAL_EXAMINATION.toLowerCase().replace('_', ' '),
+    value: MedicalRecordType.PHYSICAL_EXAMINATION,
+  },
+];
+
+const charactersList = {
+  _PERCENT_: '%',
+  _SLASH_: '/',
+};
+
+const replaceStringWithChar = (str: string) => {
+  const ss = str;
+  Object.entries(charactersList).forEach(([key, value]) => {
+    console.log(key, value, 'key, value');
+    ss.replace(key, value);
+  });
+  console.log(ss, 'ssrrrrrr');
+  return ss.toLowerCase();
+};
+
+const MedicalTest: RecordTypeType[] = [
+  { name: 'gm', value: MedicalTestUnit.GM },
+  {
+    name: 'gm/dl',
+    value: MedicalTestUnit.GM_SLASH_DL,
+  },
+  {
+    name: '%', //replaceStringWithChar(MedicalTestUnit._PERCENT_),
+    value: MedicalTestUnit._PERCENT_,
+  },
+];
+console.log(MedicalTest, 'MedicalTest');
 
 const MedicalRecordInitialValues: AddMedicalRecordParametersInput = {
   parameterName: '',
@@ -99,7 +145,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [testName, settestName] = useState<string>('');
-  const [typeofRecord, settypeofRecord] = useState<string>('');
+  const [typeofRecord, settypeofRecord] = useState<MedicalRecordType>();
   const [dateOfTest, setdateOfTest] = useState<string>('');
   const [referringDoctor, setreferringDoctor] = useState<string>('');
   const [observations, setobservations] = useState<string>('');
@@ -109,6 +155,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   >([MedicalRecordInitialValues]);
   const [showRecordTypePopup, setshowRecordTypePopup] = useState<boolean>(false);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
+
+  const [showUnitPopup, setshowUnitPopup] = useState<boolean>(false);
+
+  const [selectedUnitIndex, setselectedUnitIndex] = useState<number>();
 
   const [Images, setImages] = useState<PickerImage[]>(
     props.navigation.state.params ? props.navigation.state.params!.images : []
@@ -145,7 +195,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     console.log('inputData', inputData);
     if (currentPatient && currentPatient.id)
       client
-        .mutate<addPatientMedicalRecord>({
+        .mutate<addPatientMedicalRecord, addPatientMedicalRecordVariables>({
           mutation: ADD_MEDICAL_RECORD,
           variables: {
             AddMedicalRecordInput: inputData,
@@ -391,11 +441,29 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                       />
                     </View>
                     <View style={{ flex: 1, marginLeft: 8 }}>
-                      <TextInputComponent
+                      {/* <TextInputComponent
                         label={'Unit'}
                         placeholder={'Select unit'}
                         value={(item.unit || '').toString()}
                         onChangeText={(value) => setParametersData('unit', value, i)}
+                      /> */}
+                      <TextInputComponent
+                        label={'Unit'}
+                        noInput={true}
+                        conatinerstyles={{
+                          paddingBottom: 0,
+                        }}
+                      />
+                      <InputDropdown
+                        setShowPopup={(showpopup) => {
+                          setshowUnitPopup(showpopup);
+                          setselectedUnitIndex(i);
+                        }}
+                        containerStyle={{
+                          paddingBottom: 10,
+                        }}
+                        label={(item.unit || '').toString()}
+                        placeholder={'Select unit'}
                       />
                     </View>
                   </View>
@@ -532,9 +600,21 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         )}
         {showRecordTypePopup && (
           <InputDropdownMenu
+            width={200}
             Options={RecordType}
             setShowPopup={(showpopup) => setshowRecordTypePopup(showpopup)}
-            setSelectedOption={(value) => settypeofRecord(value)}
+            setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
+          />
+        )}
+        {showUnitPopup && (
+          <InputDropdownMenu
+            Options={MedicalTest}
+            setShowPopup={(showpopup) => setshowUnitPopup(showpopup)}
+            setSelectedOption={(value: MedicalTestUnit) => {
+              console.log(value, 'value', selectedUnitIndex);
+              selectedUnitIndex !== undefined &&
+                setParametersData('unit', value, selectedUnitIndex);
+            }}
           />
         )}
         {showSpinner && <Spinner />}

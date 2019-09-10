@@ -25,7 +25,11 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
       cwd: process.cwd(),
     }),
   ];
-  if (isLocal) plugins.push(new NodemonPlugin(nodemonPluginArgs));
+  if (isLocal) {
+    plugins.push(
+      new NodemonPlugin({ watch: path.resolve(__dirname, 'dist'), ...nodemonPluginArgs })
+    );
+  }
 
   const tsLoader = { loader: 'awesome-typescript-loader' };
 

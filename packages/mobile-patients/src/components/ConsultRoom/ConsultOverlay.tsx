@@ -9,10 +9,14 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import {
   BOOK_APPOINTMENT,
-  GET_AVAILABLE_SLOTS,
   BOOK_FOLLOWUP_APPOINTMENT,
+  GET_AVAILABLE_SLOTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+import {
+  BookFollowUpAppointment,
+  BookFollowUpAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/BookFollowUpAppointment';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 import {
   getDoctorDetailsById_getDoctorDetailsById,
@@ -23,28 +27,21 @@ import {
   BookAppointmentInput,
   DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
 import React, { useState } from 'react';
-import { Mutation } from 'react-apollo';
-
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
+  Alert,
   Dimensions,
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
-import {
-  BookFollowUpAppointment,
-  BookFollowUpAppointmentVariables,
-} from '@aph/mobile-patients/src/graphql/types/BookFollowUpAppointment';
 
 const { width, height } = Dimensions.get('window');
 
@@ -108,9 +105,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [showSuccessPopUp, setshowSuccessPopUp] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
+  const [AppointmentExistAlert, setAppointmentExistAlert] = useState<boolean>(false);
 
-  const setTimeArrayData = (availableSlots: string[]) => {
-    const array = divideSlots(availableSlots, date);
+  const todayDate = new Date().toDateString().split('T')[0];
+  console.log(todayDate, 'todayDatetodayDate', new Date().toDateString());
+
+  const setTimeArrayData = async (availableSlots: string[]) => {
+    console.log(availableSlots, 'setTimeArrayData availableSlots');
+
+    const array = await divideSlots(availableSlots, date);
     console.log(array, 'array', timeArray, 'timeArray.......');
     if (array !== timeArray) settimeArray(array);
   };
@@ -129,6 +132,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
 
   if (availabilityData.error) {
     console.log('error', availabilityData.error);
+    showSpinner && setshowSpinner(false);
   } else {
     console.log(availabilityData.data, 'availableSlots');
     if (
@@ -138,13 +142,75 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       availabilityData.data.getDoctorAvailableSlots.availableSlots &&
       availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots
     ) {
-      setTimeArrayData(availabilityData.data.getDoctorAvailableSlots.availableSlots);
-      console.log(availableSlots, 'availableSlots1111');
-
-      setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots);
       setshowSpinner(false);
+      console.log(
+        availableSlots,
+        'availableSlots1111',
+        availabilityData.data.getDoctorAvailableSlots.availableSlots
+      );
+      setTimeArrayData(availabilityData.data.getDoctorAvailableSlots.availableSlots, date);
+      setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots);
     }
   }
+
+  const onSubmitBookAppointment = () => {
+    console.log('BookAppointment flow');
+    setshowSpinner(true);
+    const timeSlot =
+      tabs[0].title === selectedTab &&
+      isConsultOnline &&
+      availableInMin! <= 15 &&
+      0 < availableInMin!
+        ? nextAvailableSlot
+        : selectedTimeSlot;
+    const appointmentInput: BookAppointmentInput = {
+      patientId: props.patientId,
+      doctorId: props.doctor ? props.doctor.id : '',
+      appointmentDateTime: timeSlot, //appointmentDate,
+      appointmentType:
+        selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
+      hospitalId:
+        props.clinics && props.clinics.length > 0 && props.clinics[0].facility
+          ? props.clinics[0].facility.id
+          : '',
+    };
+    console.log(appointmentInput, 'appointmentInput');
+
+    client
+      .mutate<bookAppointment>({
+        mutation: BOOK_APPOINTMENT,
+        variables: {
+          bookAppointment: appointmentInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data) => {
+        // console.log('BookFollowUpAppointment', _data);
+        // props.navigation.navigate(AppRoutes.Consult);
+        console.log('bookAppointment data', data),
+          // props.setdisplayoverlay(false),
+          setshowSpinner(false),
+          setshowSuccessPopUp(true);
+      })
+      .catch((error) => {
+        console.log(
+          'bookAppointment error',
+          // error.graphQLErrors,
+          error.message.split(':')[1],
+          // error.name,
+          // error.graphQLErrors.map((item, i) => console.log(item, 'item.message')),
+
+          setshowSpinner(false)
+        ),
+          error.message.split(':')[1].trim() == 'APPOINTMENT_EXIST_ERROR' &&
+            setAppointmentExistAlert(true);
+        // Alert.alert(
+        //   'Alert',
+        //   'Opps ! The selected slot is unavailable. Please choose a different one',
+        //   [{ text: 'OK', onPress: () => console.log('OK Pressed') }]
+        // );
+      });
+  };
 
   const renderBottomButton = () => {
     return (
@@ -156,122 +222,74 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           marginTop: 10,
         }}
       >
-        <Mutation<bookAppointment> mutation={BOOK_APPOINTMENT}>
-          {(mutate, { loading, data, error }) => (
-            <Button
-              title={`PAY Rs. ${
-                tabs[0].title === selectedTab
-                  ? props.doctor!.onlineConsultationFees
-                  : props.doctor!.physicalConsultationFees
-              }`}
-              disabled={
+        <Button
+          title={`PAY Rs. ${
+            tabs[0].title === selectedTab
+              ? props.doctor!.onlineConsultationFees
+              : props.doctor!.physicalConsultationFees
+          }`}
+          disabled={
+            tabs[0].title === selectedTab &&
+            isConsultOnline &&
+            availableInMin! <= 15 &&
+            0 < availableInMin!
+              ? false
+              : selectedTimeSlot === ''
+              ? true
+              : false
+          }
+          onPress={() => {
+            if (props.FollowUp == false) {
+              console.log('BookfollowupAppointment flow');
+              const timeSlot =
                 tabs[0].title === selectedTab &&
                 isConsultOnline &&
                 availableInMin! <= 15 &&
                 0 < availableInMin!
-                  ? false
-                  : selectedTimeSlot === ''
-                  ? true
-                  : false
-              }
-              onPress={() => {
-                if (props.FollowUp == false) {
-                  console.log('BookfollowupAppointment flow');
-                  const timeSlot =
-                    tabs[0].title === selectedTab &&
-                    isConsultOnline &&
-                    availableInMin! <= 15 &&
-                    0 < availableInMin!
-                      ? nextAvailableSlot
-                      : selectedTimeSlot;
-                  console.log('time', timeSlot);
-                  console.log('FollowUp', props.FollowUp);
-                  console.log('appointmentType', props.appointmentType);
-                  console.log('patientId', props.patientId);
-                  console.log('appointmentType', props.appointmentType);
-                  console.log('appointmentId', props.appointmentId);
-                  console.log('doctorId', props.doctorId);
-                  const input = {
-                    patientId: props.patientId,
-                    doctorId: props.doctorId,
-                    appointmentDateTime: timeSlot,
-                    appointmentType: APPOINTMENT_TYPE.ONLINE,
-                    hospitalId: '',
-                    followUpParentId: props.appointmentId,
-                  };
-                  client
-                    .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
-                      mutation: BOOK_FOLLOWUP_APPOINTMENT,
-                      variables: {
-                        followUpAppointmentInput: input,
-                      },
-                      fetchPolicy: 'no-cache',
-                    })
-                    .then((_data: any) => {
-                      console.log('BookFollowUpAppointment', _data);
-                      props.navigation.navigate(AppRoutes.Consult);
-                    })
-                    .catch((e: any) => {
-                      const error = JSON.parse(JSON.stringify(e));
-                      const errorMessage = error && error.message;
-                      console.log(
-                        'Error occured while BookFollowUpAppointment ',
-                        errorMessage,
-                        error
-                      );
-                      Alert.alert('Error', errorMessage);
-                    });
-                } else {
-                  console.log('BookAppointment flow');
-                  setshowSpinner(true);
-                  const timeSlot =
-                    tabs[0].title === selectedTab &&
-                    isConsultOnline &&
-                    availableInMin! <= 15 &&
-                    0 < availableInMin!
-                      ? nextAvailableSlot
-                      : selectedTimeSlot;
-                  // const formatDate = date.toISOString().split('T')[0];
-                  // const appointmentDate = moment
-                  //   .utc(moment(`${formatDate} ${timeSlot}`, 'DD-MM-YYYY HH:mm'))
-                  //   .utc()
-                  //   .toISOString();
-                  const appointmentInput: BookAppointmentInput = {
-                    patientId: props.patientId,
-                    doctorId: props.doctor ? props.doctor.id : '',
-                    appointmentDateTime: timeSlot, //appointmentDate,
-                    appointmentType:
-                      selectedTab === tabs[0].title
-                        ? APPOINTMENT_TYPE.ONLINE
-                        : APPOINTMENT_TYPE.PHYSICAL,
-                    hospitalId:
-                      props.clinics && props.clinics.length > 0 && props.clinics[0].facility
-                        ? props.clinics[0].facility.id
-                        : '',
-                  };
-                  console.log(appointmentInput, 'appointmentInput');
-                  mutate({
-                    variables: {
-                      bookAppointment: appointmentInput,
-                    },
-                  });
-                }
-              }}
-            >
-              {data
-                ? (console.log('bookAppointment data', data),
-                  // props.setdisplayoverlay(false),
-                  setshowSpinner(false),
-                  setshowSuccessPopUp(true))
-                : null}
-              {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
-              {error ? console.log('bookAppointment error', error, setshowSpinner(false)) : null}
-            </Button>
-          )}
-        </Mutation>
+                  ? nextAvailableSlot
+                  : selectedTimeSlot;
+              console.log('time', timeSlot);
+              console.log('FollowUp', props.FollowUp);
+              console.log('appointmentType', props.appointmentType);
+              console.log('patientId', props.patientId);
+              console.log('appointmentType', props.appointmentType);
+              console.log('appointmentId', props.appointmentId);
+              console.log('doctorId', props.doctorId);
+              const input = {
+                patientId: props.patientId,
+                doctorId: props.doctorId,
+                appointmentDateTime: timeSlot,
+                appointmentType: APPOINTMENT_TYPE.ONLINE,
+                hospitalId: '',
+                followUpParentId: props.appointmentId,
+              };
+              client
+                .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
+                  mutation: BOOK_FOLLOWUP_APPOINTMENT,
+                  variables: {
+                    followUpAppointmentInput: input,
+                  },
+                  fetchPolicy: 'no-cache',
+                })
+                .then((_data: any) => {
+                  console.log('BookFollowUpAppointment', _data);
+                  props.navigation.navigate(AppRoutes.Consult);
+                })
+                .catch((e: any) => {
+                  const error = JSON.parse(JSON.stringify(e));
+                  const errorMessage = error && error.message;
+                  console.log('Error occured while BookFollowUpAppointment ', errorMessage, error);
+                  Alert.alert('Error', errorMessage);
+                });
+            } else {
+              onSubmitBookAppointment();
+            }
+          }}
+        />
       </StickyBottomComponent>
     );
   };
+  console.log(timeArray, 'timeArraytimeArray render');
 
   return (
     <View
@@ -396,10 +414,28 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               style={styles.gotItStyles}
               onPress={() => {
                 setshowSuccessPopUp(false);
-                props.navigation.replace(AppRoutes.TabBar);
+                props.navigation.push(AppRoutes.TabBar);
               }}
             >
               <Text style={styles.gotItTextStyles}>GO TO CONSULT ROOM</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {AppointmentExistAlert && (
+        <BottomPopUp
+          title={'Alert!'}
+          description={`Oops ! The selected slot is unavailable. Please choose a different one`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.gotItStyles}
+              onPress={() => {
+                setAppointmentExistAlert(false);
+              }}
+            >
+              <Text style={styles.gotItTextStyles}>Okay</Text>
             </TouchableOpacity>
           </View>
         </BottomPopUp>

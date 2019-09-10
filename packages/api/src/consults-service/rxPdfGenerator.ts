@@ -12,43 +12,64 @@ import _capitalize from 'lodash/capitalize';
 import _isEmpty from 'lodash/isEmpty';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import fs from 'fs';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { Connection } from 'typeorm';
 
-export const convertCaseSheetToRxPdfData = (
+export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet> & {
     medicinePrescription: CaseSheet['medicinePrescription'];
     otherInstructions: CaseSheet['otherInstructions'];
     diagnosis: CaseSheet['diagnosis'];
-  }
-): RxPdfData => {
+  },
+  doctorsDb: Connection
+): Promise<RxPdfData> => {
   const caseSheetMedicinePrescription = JSON.parse(
-    caseSheet.medicinePrescription
+    JSON.stringify(caseSheet.medicinePrescription)
   ) as CaseSheetMedicinePrescription[];
 
-  const prescriptions = caseSheetMedicinePrescription.map((csRx) => {
-    const name = csRx.medicineName;
-    const ingredients = [] as string[];
-    const timings = csRx.medicineTimings.map(_capitalize).join(', ');
-    const frequency = `${csRx.medicineDosage} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
-    const instructions = csRx.medicineInstructions;
-    return { name, ingredients, frequency, instructions };
-  });
+  let prescriptions;
+  if (caseSheet.medicinePrescription == null || caseSheet.medicinePrescription == '') {
+    prescriptions = [{ name: '', ingredients: [], frequency: '', instructions: '' }];
+  } else {
+    prescriptions = caseSheetMedicinePrescription.map((csRx) => {
+      const name = csRx.medicineName;
+      const ingredients = [] as string[];
+      const timings = csRx.medicineTimings.map(_capitalize).join(', ');
+      const frequency = `${csRx.medicineDosage} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
+      const instructions = csRx.medicineInstructions;
+      return { name, ingredients, frequency, instructions };
+    });
+  }
 
   const caseSheetOtherInstructions = JSON.parse(
-    caseSheet.otherInstructions
+    JSON.stringify(caseSheet.otherInstructions)
   ) as CaseSheetOtherInstruction[];
-  const generalAdvice = caseSheetOtherInstructions.map((otherInst) => ({
-    title: otherInst.instruction,
-    description: [] as string[],
-  }));
+  let generalAdvice;
 
-  const caseSheetDiagnoses = JSON.parse(caseSheet.diagnosis) as CaseSheetDiagnosis[];
-  const diagnoses = caseSheetDiagnoses.map((diag) => ({
-    title: diag.name,
-    description: '',
-  }));
+  if (caseSheet.otherInstructions == null || caseSheet.otherInstructions == '') {
+    generalAdvice = [{ title: '', description: [] }];
+  } else {
+    generalAdvice = caseSheetOtherInstructions.map((otherInst) => ({
+      title: otherInst.instruction,
+      description: [] as string[],
+    }));
+  }
+
+  const caseSheetDiagnoses = JSON.parse(
+    JSON.stringify(caseSheet.diagnosis)
+  ) as CaseSheetDiagnosis[];
+  let diagnoses;
+  if (caseSheet.diagnosis == null || caseSheet.diagnosis == '') {
+    diagnoses = [{ title: '', description: '' }];
+  } else {
+    diagnoses = caseSheetDiagnoses.map((diag) => ({
+      title: diag.name,
+      description: '',
+    }));
+  }
 
   // TODO: CaseSheet needs to have a relationship with Doctor so we can get this info from it
-  const doctorInfo = {
+  let doctorInfo = {
     salutation: '',
     firstName: '',
     lastName: '',
@@ -56,10 +77,26 @@ export const convertCaseSheetToRxPdfData = (
     registrationNumber: '',
   };
 
+  if (caseSheet.doctorId) {
+    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+    const doctordata = await doctorRepository.getDoctorProfileData(caseSheet.doctorId);
+    if (doctordata != null)
+      doctorInfo = {
+        salutation: doctordata.salutation,
+        firstName: doctordata.firstName,
+        lastName: doctordata.lastName,
+        qualifications: doctordata.qualification,
+        registrationNumber: doctordata.registrationNumber,
+      };
+  }
+
   return { prescriptions, generalAdvice, diagnoses, doctorInfo };
 };
 
-const assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+if (process.env.NODE_ENV != 'local') {
+  assetsDir = path.resolve('/home/devdeploy/apollo-hospitals/packages/api/src/assets');
+}
 
 const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
@@ -280,7 +317,12 @@ export const uploadRxPdf = async (
   const name = `${caseSheetId}.pdf`;
   const filePath = loadAsset(name);
   pdfDoc.pipe(fs.createWriteStream(filePath));
+  await delay(300);
   const blob = await client.uploadFile({ name, filePath });
   fs.unlink(filePath, (error) => console.log(error));
   return blob;
+
+  function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 };

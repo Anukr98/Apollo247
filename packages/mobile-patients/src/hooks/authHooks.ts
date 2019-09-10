@@ -71,7 +71,8 @@ export const useAllCurrentPatients = () => {
       : null;
 
   const currentPatient = allCurrentPatients
-    ? allCurrentPatients.find((patient) => patient.id === currentPatientId) || allCurrentPatients[0]
+    ? allCurrentPatients.find((patient) => patient.id === currentPatientId) ||
+      allCurrentPatients.find((patient) => patient.relation === Relation.ME)
     : null;
 
   // console.log('currentPatient', currentPatient);

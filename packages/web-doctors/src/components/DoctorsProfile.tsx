@@ -12,6 +12,7 @@ import { DoctorProfileTab } from 'components/DoctorProfileTab';
 import { AvailabilityTab } from 'components/AvailabilityTab';
 import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
+import Scrollbars from 'react-custom-scrollbars';
 //import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 
@@ -188,114 +189,116 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <div className={classes.container}>
-        {data && data.getDoctorDetails && (
-          <div>
-            <div className={classes.tabHeading}>
-              <Typography variant="h1">
+      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+        <div className={classes.container}>
+          {data && data.getDoctorDetails && (
+            <div>
+              <div className={classes.tabHeading}>
+                <Typography variant="h1">
+                  {selectedTabIndex === 0 && (
+                    <span>{`hi ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()} !`}</span>
+                  )}
+                  {selectedTabIndex === 1 && (
+                    <span>
+                      {` ok ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()}`}
+                      !
+                    </span>
+                  )}
+                  {selectedTabIndex === 2 && (
+                    <span>
+                      {`ok ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()}`}
+                      !
+                    </span>
+                  )}
+                  {selectedTabIndex === 3 && (
+                    <span>{`thank you, ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()} :)`}</span>
+                  )}
+                </Typography>
                 {selectedTabIndex === 0 && (
-                  <span>{`hi ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()} !`}</span>
+                  <p>
+                    It’s great to have you join us! <br /> Here’s what your patients see when they
+                    view your profile
+                  </p>
                 )}
                 {selectedTabIndex === 1 && (
-                  <span>
-                    {` ok ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()}`}
-                    !
-                  </span>
+                  <p>Now tell us what hours suit you for online and in-person consults</p>
                 )}
                 {selectedTabIndex === 2 && (
-                  <span>
-                    {`ok ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()}`}
-                    !
-                  </span>
+                  <p>
+                    Lastly, some money-related matters like fees, packages and how you take payments
+                  </p>
                 )}
                 {selectedTabIndex === 3 && (
-                  <span>{`thank you, ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()} :)`}</span>
+                  <div>
+                    <p>Let’s go over now to see the Apollo24x7 portal and start consultations!</p>
+
+                    <Link to="/calendar">
+                      <AphButton
+                        variant="contained"
+                        color="primary"
+                        classes={{ root: classes.saveButton }}
+                      >
+                        GET STARTED
+                      </AphButton>
+                    </Link>
+                  </div>
                 )}
-              </Typography>
+              </div>
+              {selectedTabIndex < 3 && (
+                <AppBar position="static" color="default" className={classes.tabBarHeading}>
+                  <AntTabs
+                    value={selectedTabIndex}
+                    indicatorColor="secondary"
+                    className={classes.tabBar}
+                  >
+                    {tabsHtml}
+                  </AntTabs>
+                </AppBar>
+              )}
               {selectedTabIndex === 0 && (
-                <p>
-                  It’s great to have you join us! <br /> Here’s what your patients see when they
-                  view your profile
-                </p>
+                <TabContainer>
+                  {!!data.getDoctorDetails && (
+                    <DoctorProfileTab
+                      //values={data.getDoctorDetails}
+                      onNext={() => onNext()}
+                      key={1}
+                    />
+                  )}
+                </TabContainer>
               )}
               {selectedTabIndex === 1 && (
-                <p>Now tell us what hours suit you for online and in-person consults</p>
+                <TabContainer>
+                  {!!data.getDoctorDetails && (
+                    <AvailabilityTab
+                      values={data.getDoctorDetails}
+                      onNext={() => onNext()}
+                      onBack={() => onBack()}
+                      key={2}
+                    />
+                  )}
+                </TabContainer>
               )}
               {selectedTabIndex === 2 && (
-                <p>
-                  Lastly, some money-related matters like fees, packages and how you take payments
-                </p>
+                <TabContainer>
+                  {!!data.getDoctorDetails && (
+                    <FeesTab
+                      values={data.getDoctorDetails}
+                      onNext={() => onNext()}
+                      onBack={() => onBack()}
+                      key={3}
+                    />
+                  )}
+                </TabContainer>
               )}
               {selectedTabIndex === 3 && (
-                <div>
-                  <p>Let’s go over now to see the Apollo24x7 portal and start consultations!</p>
-
-                  <Link to="/calendar">
-                    <AphButton
-                      variant="contained"
-                      color="primary"
-                      classes={{ root: classes.saveButton }}
-                    >
-                      GET STARTED
-                    </AphButton>
-                  </Link>
+                <div className={classes.none}>
+                  <TabContainer>&nbsp;</TabContainer>
                 </div>
               )}
             </div>
-            {selectedTabIndex < 3 && (
-              <AppBar position="static" color="default" className={classes.tabBarHeading}>
-                <AntTabs
-                  value={selectedTabIndex}
-                  indicatorColor="secondary"
-                  className={classes.tabBar}
-                >
-                  {tabsHtml}
-                </AntTabs>
-              </AppBar>
-            )}
-            {selectedTabIndex === 0 && (
-              <TabContainer>
-                {!!data.getDoctorDetails && (
-                  <DoctorProfileTab
-                    //values={data.getDoctorDetails}
-                    onNext={() => onNext()}
-                    key={1}
-                  />
-                )}
-              </TabContainer>
-            )}
-            {selectedTabIndex === 1 && (
-              <TabContainer>
-                {!!data.getDoctorDetails && (
-                  <AvailabilityTab
-                    values={data.getDoctorDetails}
-                    onNext={() => onNext()}
-                    onBack={() => onBack()}
-                    key={2}
-                  />
-                )}
-              </TabContainer>
-            )}
-            {selectedTabIndex === 2 && (
-              <TabContainer>
-                {!!data.getDoctorDetails && (
-                  <FeesTab
-                    values={data.getDoctorDetails}
-                    onNext={() => onNext()}
-                    onBack={() => onBack()}
-                    key={3}
-                  />
-                )}
-              </TabContainer>
-            )}
-            {selectedTabIndex === 3 && (
-              <div className={classes.none}>
-                <TabContainer>&nbsp;</TabContainer>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </Scrollbars>
     </div>
   );
 };

@@ -7,7 +7,7 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
-// import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
 console.log('gateway starting');
@@ -97,40 +97,50 @@ export type Resolver<Parent, Args, Context, Result> = (
     context: async ({ req }) => {
       const isNotProduction = process.env.NODE_ENV !== 'production';
       const isSchemaIntrospectionQuery = req.body.operationName == 'IntrospectionQuery';
-
       if (isNotProduction && isSchemaIntrospectionQuery) {
         const gatewayContext: GatewayContext = { firebaseUid: '', mobileNumber: '' };
         return gatewayContext;
       }
 
       const jwt = req.headers.authorization || '';
+
       if (jwt.indexOf('Bearer 3d1833da7020e0602165529446587434') == 0) {
         const gatewayContext: GatewayContext = {
           firebaseUid: '',
           mobileNumber: '',
         };
         return gatewayContext;
-      } else {
-        const firebaseIdToken = await firebase
-          .auth()
-          .verifyIdToken(jwt)
-          .catch((firebaseError: firebaseAdmin.FirebaseError) => {
-            throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
-          });
+      }
 
-        const firebaseUser = await firebase
-          .auth()
-          .getUser(firebaseIdToken.uid)
-          .catch((firebaseError: firebaseAdmin.FirebaseError) => {
-            throw new AphAuthenticationError(AphErrorMessages.FIREBASE_GET_USER_ERROR);
-          });
-
+      const isLocal = process.env.NODE_ENV === 'local';
+      const isFromLocalPlayground = jwt === 'FromLocalPlayground';
+      if (isLocal && isFromLocalPlayground) {
         const gatewayContext: GatewayContext = {
-          firebaseUid: firebaseUser.uid,
-          mobileNumber: firebaseUser.phoneNumber || '',
+          firebaseUid: (req.headers.firebaseuid as string) || '',
+          mobileNumber: (req.headers.mobilenumber as string) || '',
         };
         return gatewayContext;
       }
+
+      const firebaseIdToken = await firebase
+        .auth()
+        .verifyIdToken(jwt)
+        .catch((firebaseError: firebaseAdmin.FirebaseError) => {
+          throw new AphAuthenticationError(AphErrorMessages.FIREBASE_AUTH_TOKEN_ERROR);
+        });
+
+      const firebaseUser = await firebase
+        .auth()
+        .getUser(firebaseIdToken.uid)
+        .catch((firebaseError: firebaseAdmin.FirebaseError) => {
+          throw new AphAuthenticationError(AphErrorMessages.FIREBASE_GET_USER_ERROR);
+        });
+
+      const gatewayContext: GatewayContext = {
+        firebaseUid: firebaseUser.uid,
+        mobileNumber: firebaseUser.phoneNumber || '',
+      };
+      return gatewayContext;
     },
   });
 
@@ -145,46 +155,39 @@ export type Resolver<Parent, Args, Context, Result> = (
     });
 })();
 
-//(async () => {
-//console.log('------------------------STORAGE TEST----------------------------');
-// const client = new AphStorageClient(
-//   process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-//   process.env.AZURE_STORAGE_CONTAINER_NAME
-// );
+(async () => {
+  console.log('------------------------STORAGE TEST----------------------------');
+  const client = new AphStorageClient(
+    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+    process.env.AZURE_STORAGE_CONTAINER_NAME
+  );
 
-// if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development') {
-//   console.log('deleting container...');
-//   await client
-//     .deleteContainer()
-//     .then((res) => console.log(res))
-//     .catch((error) => console.log('error deleting', error));
+  if (process.env.NODE_ENV === 'local' || process.env.NODE_ENV === 'development') {
+    console.log('deleting container...');
+    await client
+      .deleteContainer()
+      .then((res) => console.log(res))
+      .catch((error) => console.log('error deleting', error));
 
-//   console.log('setting service properties...');
-//   await client
-//     .setServiceProperties()
-//     .then((res) => console.log(res))
-//     .catch((error) => console.log('error setting service properties', error));
+    console.log('setting service properties...');
+    await client
+      .setServiceProperties()
+      .then((res) => console.log(res))
+      .catch((error) => console.log('error setting service properties', error));
 
-//   console.log('creating container...');
-//   await client
-//     .createContainer()
-//     .then((res) => console.log(res))
-//     .catch((error) => console.log('error creating', error));
-// }
+    console.log('creating container...');
+    await client
+      .createContainer()
+      .then((res) => console.log('Storage test succeeded!', res))
+      .catch((error) => console.log('error creating', error));
+  }
 
-// console.log('testing storage connection...');
-// await client
-//   .testStorageConnection()
-//   .then((res) => console.log(res))
-//   .catch((error) => console.log('error testing', error));
-
-// const filePath = '/apollo-hospitals/README.md';
-// console.log(`uploading ${filePath}`);
-// const readmeBlob = await client.uploadFile({ name: 'README.md', filePath }).catch((error) => {
-//   throw error;
-// });
-// console.log('file saved!', readmeBlob.url);
-//})();
+  console.log('testing storage connection...');
+  await client
+    .testStorageConnection()
+    .then((res) => console.log(res))
+    .catch((error) => console.log('error testing', error));
+})();
 
 // (async () => {
 //   console.log('------------------------MESSAGE QUEUE TEST----------------------------');

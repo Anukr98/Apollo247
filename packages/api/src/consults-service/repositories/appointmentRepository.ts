@@ -1,6 +1,16 @@
-import { EntityRepository, Repository, Between, MoreThan, LessThan, Brackets, Not } from 'typeorm';
+import {
+  EntityRepository,
+  Repository,
+  Between,
+  MoreThan,
+  LessThan,
+  Brackets,
+  Not,
+  Connection,
+} from 'typeorm';
 import {
   Appointment,
+  AppointmentPayments,
   AppointmentSessions,
   STATUS,
   patientLogSort,
@@ -13,16 +23,35 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, differenceInMinutes, addDays, subDays } from 'date-fns';
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
+import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
   findById(id: string) {
-    return this.findOne({ id });
+    return this.findOne({ id }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
   }
 
   findByAppointmentId(id: string) {
     return this.find({
       where: { id },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
+    });
+  }
+
+  findByIdAndStatus(id: string, status: STATUS) {
+    return this.findOne({
+      where: { id, status },
+    }).catch((getApptError) => {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_ERROR, undefined, {
+        getApptError,
+      });
     });
   }
 
@@ -46,6 +75,16 @@ export class AppointmentRepository extends Repository<Appointment> {
       .save()
       .catch((createErrors) => {
         throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+      });
+  }
+
+  saveAppointmentPayment(appointmentPaymentAttrs: Partial<AppointmentPayments>) {
+    return AppointmentPayments.create(appointmentPaymentAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.ADD_APPOINTMENT_PAYMENT_ERROR, undefined, {
+          createErrors,
+        });
       });
   }
 
@@ -99,14 +138,18 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getDoctorAppointments(doctorId: string, startDate: Date, endDate: Date) {
+    //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
+    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+
     return this.find({
       where: {
         doctorId,
-        appointmentDateTime: Between(startDate, endDate),
+        appointmentDateTime: Between(newStartDate, newEndDate),
         status: Not(STATUS.CANCELLED),
       },
       relations: ['caseSheet'],
-      order: { appointmentDateTime: 'DESC' },
+      order: { appointmentDateTime: 'ASC' },
     });
   }
 
@@ -189,7 +232,7 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   getPatinetUpcomingAppointments(patientId: string) {
     //const startDate = new Date();
-    const inputStartDate = format(addDays(new Date(), -1), 'yyyy-MM-dd');
+    const inputStartDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
     const startDate = new Date(inputStartDate + 'T18:30');
     return this.find({
       where: { patientId, appointmentDateTime: MoreThan(startDate), status: Not(STATUS.CANCELLED) },
@@ -300,6 +343,94 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  async getDoctorNextSlotDate(doctorId: string, selectedDate: Date, doctorsDb: Connection) {
+    const weekDay = format(selectedDate, 'EEEE').toUpperCase();
+    //console.log('entered here', selDate, weekDay);
+    const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+    const docConsultHrs = await consultHoursRepo.getConsultHours(doctorId, weekDay);
+    let availableSlots: string[] = [];
+    const inputStartDate = format(addDays(selectedDate, -1), 'yyyy-MM-dd');
+    const currentStartDate = new Date(inputStartDate + 'T18:30');
+    const currentEndDate = new Date(format(selectedDate, 'yyyy-MM-dd').toString() + 'T18:29');
+    if (docConsultHrs && docConsultHrs.length > 0) {
+      //get the slots of the day first
+      let st = `${selectedDate.toDateString()} ${docConsultHrs[0].startTime.toString()}`;
+      const ed = `${selectedDate.toDateString()} ${docConsultHrs[0].endTime.toString()}`;
+      let consultStartTime = new Date(st);
+      const consultEndTime = new Date(ed);
+      console.log(consultStartTime, consultEndTime);
+      let previousDate: Date = selectedDate;
+      if (consultEndTime < consultStartTime) {
+        previousDate = addDays(selectedDate, -1);
+        st = `${previousDate.toDateString()} ${docConsultHrs[0].startTime.toString()}`;
+        consultStartTime = new Date(st);
+      }
+      const slotsCount =
+        Math.ceil(Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
+      //check if all slots are booked or not
+      const doctorAppointments = await this.find({
+        where: {
+          doctorId,
+          appointmentDateTime: Between(currentStartDate, currentEndDate),
+          status: Not(STATUS.CANCELLED),
+        },
+        order: { appointmentDateTime: 'ASC' },
+      });
+      if (doctorAppointments.length == slotsCount) {
+        return '';
+      }
+      const dayStartTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
+      let startTime = new Date(previousDate.toDateString() + ' ' + dayStartTime);
+      //console.log(slotsCount, 'slots count');
+      //console.log(startTime, 'slot start time');
+      availableSlots = Array(slotsCount)
+        .fill(0)
+        .map(() => {
+          const stTime = startTime;
+          startTime = addMinutes(startTime, 15);
+          const stTimeHours = stTime
+            .getUTCHours()
+            .toString()
+            .padStart(2, '0');
+          const stTimeMins = stTime
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0');
+          const startDateStr = format(stTime, 'yyyy-MM-dd');
+          const endStr = ':00.000Z';
+          return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
+        });
+
+      if (doctorAppointments && doctorAppointments.length > 0) {
+        doctorAppointments.map((doctorAppointment) => {
+          const apptDt = format(doctorAppointment.appointmentDateTime, 'yyyy-MM-dd');
+          const aptSlot = `${apptDt}T${doctorAppointment.appointmentDateTime
+            .getUTCHours()
+            .toString()
+            .padStart(2, '0')}:${doctorAppointment.appointmentDateTime
+            .getUTCMinutes()
+            .toString()
+            .padStart(2, '0')}:00.000Z`;
+          if (availableSlots.indexOf(aptSlot) >= 0) {
+            availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
+          }
+        });
+      }
+      let finalSlot = '';
+      let foundFlag = 0;
+      availableSlots.map((slot) => {
+        const slotDate = new Date(slot);
+        if (slotDate >= new Date() && foundFlag == 0) {
+          finalSlot = slot;
+          foundFlag = 1;
+        }
+      });
+      return finalSlot;
+    } else {
+      return '';
+    }
+  }
+
   getAddAlignedSlot(apptDate: Date, mins: number) {
     const nextSlot = addMinutes(apptDate, mins);
     return `${nextSlot
@@ -328,7 +459,9 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   updateAppointmentStatus(id: string, status: STATUS) {
-    this.update(id, { status });
+    this.update(id, { status }).catch((createErrors) => {
+      throw new AphError(AphErrorMessages.UPDATE_APPOINTMENT_ERROR, undefined, { createErrors });
+    });
   }
 
   confirmAppointment(id: string, status: STATUS, apolloAppointmentId: number) {

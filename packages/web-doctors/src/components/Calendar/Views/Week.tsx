@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 18,
       color: 'rgba(101, 143, 155, 0.6)',
       position: 'sticky',
-      top: 64,
+      top: 0,
       zIndex: 99,
       [theme.breakpoints.down('xs')]: {
         padding: '15px 0',

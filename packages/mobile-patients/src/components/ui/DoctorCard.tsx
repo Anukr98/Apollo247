@@ -18,10 +18,14 @@ import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
 } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
-import { useQuery } from 'react-apollo-hooks';
-import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
+import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import { NEXT_AVAILABLE_SLOT, SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import Moment from 'moment';
+import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -105,6 +109,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
   doctorAvailalbeSlots?:
     | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
     | null;
+  saveSearch?: boolean;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -115,6 +120,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
   >([]);
   const rowData = props.rowData;
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
 
   const setAvailability = useCallback(
     (
@@ -122,7 +129,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
         | null
     ) => {
-      console.log(doctorAvailalbeSlots, 'doctorAvailalbeSlots', rowData);
+      // console.log(doctorAvailalbeSlots, 'doctorAvailalbeSlots', rowData);
       const filterData = doctorAvailalbeSlots
         ? doctorAvailalbeSlots.filter((item) => {
             if (item && rowData) {
@@ -130,11 +137,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             }
           })
         : [];
-      console.log(filterData, 'filterData');
+      // console.log(filterData, 'filterData');
       if (filterData.length > 0 && filterData[0]!.availableSlot) {
         const nextSlot = filterData[0] ? filterData[0]!.availableSlot : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
 
-        console.log(nextSlot, 'nextSlot dd');
+        // console.log(nextSlot, 'nextSlot dd');
         // const ISOFormat = nextSlot; //`${todayDate}T${nextSlot}:48.000Z`;
         const formatedTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('HH:mm');
         let timeDiff: number = 0;
@@ -150,10 +157,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         if (date2 && today) {
           timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
         }
-        if (timeDiff < 0) {
-          const availableTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('h:mm A');
-          setavailableTime(availableTime);
-        }
+        // if (timeDiff < 0) {
+        //   const availableTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('h:mm A');
+        // }
+        setavailableTime(nextSlot);
+
         setavailableInMin(timeDiff);
       }
     },
@@ -218,6 +226,26 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   // }
 
   const navigateToDetails = (id: string, params?: {}) => {
+    if (props.saveSearch) {
+      const searchInput = {
+        type: SEARCH_TYPE.DOCTOR,
+        typeId: props.rowData ? props.rowData.id : '',
+        patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+      };
+      client
+        .mutate<saveSearch>({
+          mutation: SAVE_SEARCH,
+          variables: {
+            saveSearchInput: searchInput,
+          },
+        })
+        .then(({ data }) => {
+          console.log(data, 'saveSearch result');
+        })
+        .catch((error) => {
+          console.log('Error occured', { error });
+        });
+    }
     props.navigation.navigate(AppRoutes.DoctorDetails, {
       doctorId: id,
       ...params,
@@ -226,17 +254,20 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const availabilityText = () => {
     if (availableInMin) {
-      if (availableInMin === 0) {
-        return 'AVAILABLE NOW';
-      } else if (availableInMin > 0 && availableInMin <= 15) {
+      // if (availableInMin === 0) {
+      //   return 'AVAILABLE NOW';
+      // } else
+      if (availableInMin > 0 && availableInMin < 60) {
         return ` AVAILABLE IN ${availableInMin} MINS`;
-      } else if (availableInMin > 15 && availableInMin <= 45) {
-        return `AVAILABLE IN ${availableInMin} MINS`;
-      } else if (availableInMin > 45 && availableInMin <= 60) {
-        return `AVAILABLE IN 1 HOUR`;
-      } else if (availableInMin > 60) {
-        return `TODAY ${Moment(new Date(), 'h:mm a').format('h:mm a')}`;
       }
+      // else if (availableInMin > 15 && availableInMin <= 45) {
+      //   return `AVAILABLE IN ${availableInMin} MINS`;
+      // else if (availableInMin === 60) {
+      //   return `AVAILABLE IN 1 HOUR`;
+      // }
+      // else if (availableInMin > 60) {
+      //   return `TODAY ${Moment(new Date(availableTime), 'h:mm a').format('h:mm a')}`;
+      // }
     }
   };
 
@@ -266,7 +297,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                   style={{ width: 80, height: 80, borderRadius: 40 }}
                   source={{ uri: rowData.photoUrl }}
                 />
-              ) : null}
+              ) : (
+                <DoctorPlaceholderImage />
+              )}
 
               {/* {rowData.isStarDoctor ? (
               <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />

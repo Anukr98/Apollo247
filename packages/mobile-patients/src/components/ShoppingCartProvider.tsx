@@ -3,6 +3,7 @@ import { Alert, AsyncStorage } from 'react-native';
 import { MEDICINE_DELIVERY_TYPE, DiscountType } from '../graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '../graphql/types/savePatientAddress';
 import { getCoupons_getCoupons_coupons } from '../graphql/types/getCoupons';
+import { AppConfig } from '../strings/AppConfig';
 
 export interface ShoppingCartItem {
   id: string;
@@ -11,16 +12,13 @@ export interface ShoppingCartItem {
   quantity: number;
   price: number;
   prescriptionRequired: boolean;
-  // productType: 'PHARMA' | 'FMCG';
 }
 
-// export interface Coupon {
-//   type: 'limited' | 'unlimited';
-//   code: string;
-//   discountPercentage: number;
-//   discountLimit?: number;
-//   minCartValue: number;
-// }
+export interface PhysicalPrescription {
+  title: string;
+  path: string;
+  base64: string;
+}
 
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
@@ -35,6 +33,16 @@ export interface ShoppingCartContextProps {
   deliveryCharges: number;
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
+
+  addPhysicalPrescription: ((item: PhysicalPrescription) => void) | null;
+  setPhysicalPrescriptions: ((items: PhysicalPrescription[]) => void) | null;
+  updatePhysicalPrescription:
+    | ((
+        itemUpdates: Partial<PhysicalPrescription> & { title: PhysicalPrescription['title'] }
+      ) => void)
+    | null;
+  removePhysicalPrescription: ((title: string) => void) | null;
+  physicalPrescriptions: PhysicalPrescription[];
 
   addresses: savePatientAddress_savePatientAddress_patientAddress[];
   setAddresses:
@@ -65,6 +73,11 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   deliveryCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
+  setPhysicalPrescriptions: null,
+  addPhysicalPrescription: null,
+  updatePhysicalPrescription: null,
+  removePhysicalPrescription: null,
+  physicalPrescriptions: [],
 
   addresses: [],
   setAddresses: null,
@@ -82,10 +95,6 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 });
 
 export const ShoppingCartProvider: React.FC = (props) => {
-  const config = {
-    MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
-    DELIVERY_CHARGES: 25,
-  };
   const [cartItems, setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
@@ -99,6 +108,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [storeId, _setStoreId] = useState<ShoppingCartContextProps['storeId']>('');
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
+
+  const [physicalPrescriptions, setPhysicalPrescriptions] = useState<
+    ShoppingCartContextProps['physicalPrescriptions']
+  >([]);
 
   const saveCartItems = (cartItems: ShoppingCartItem[]) => {
     AsyncStorage.setItem('cartItems', JSON.stringify(cartItems)).catch(() => {
@@ -140,7 +153,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   );
 
   const deliveryCharges =
-    cartTotal < config.MIN_CART_VALUE_FOR_FREE_DELIVERY ? config.DELIVERY_CHARGES : 0;
+    cartTotal > 0 && cartTotal < AppConfig.Configuration.MIN_CART_VALUE_FOR_FREE_DELIVERY
+      ? AppConfig.Configuration.DELIVERY_CHARGES
+      : 0;
 
   const grandTotal = parseFloat((cartTotal + deliveryCharges - couponDiscount).toFixed(2));
 
@@ -162,7 +177,32 @@ export const ShoppingCartProvider: React.FC = (props) => {
     _setStoreId('');
   };
 
+  const addPhysicalPrescription: ShoppingCartContextProps['addPhysicalPrescription'] = (item) => {
+    setPhysicalPrescriptions([item, ...physicalPrescriptions]);
+  };
+
+  const updatePhysicalPrescription: ShoppingCartContextProps['updatePhysicalPrescription'] = (
+    itemUpdates
+  ) => {
+    const foundIndex = physicalPrescriptions.findIndex((item) => item.title == itemUpdates.title);
+    if (foundIndex !== -1) {
+      physicalPrescriptions[foundIndex] = { ...physicalPrescriptions[foundIndex], ...itemUpdates };
+      setPhysicalPrescriptions([...physicalPrescriptions]);
+    }
+  };
+
+  const removePhysicalPrescription: ShoppingCartContextProps['removePhysicalPrescription'] = (
+    title
+  ) => {
+    const newItems = physicalPrescriptions.filter((item) => item.title !== title);
+    setPhysicalPrescriptions([...newItems]);
+  };
+
   const clearCartInfo = () => {
+    AsyncStorage.setItem('cartItems', '').catch(() => {
+      Alert.alert('Alert', 'Failed to clear cart items from local storage.');
+    });
+    setPhysicalPrescriptions([]);
     setCartItems([]);
     setDeliveryAddressId('');
     setStoreId('');
@@ -175,7 +215,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         const cartItemsFromStorage = await AsyncStorage.getItem('cartItems');
         setCartItems(JSON.parse(cartItemsFromStorage || 'null') || []);
       } catch (error) {
-        Alert.alert('Error', 'Failed to get cart items from local storage.');
+        Alert.alert('Alert', 'Failed to get cart items from local storage.');
       }
     };
     updateCartItemsFromStorage();
@@ -183,14 +223,6 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   useEffect(() => {
     // updating coupon discount here on update in cart or new coupon code applied
-    // if (!coupon || cartTotalOfPharmaProducts < coupon.minCartValue) {
-    //   setCoupon(null);
-    //   setCouponDiscount(0);
-    // } else {
-    //   const discount = parseFloat(
-    //     ((coupon.discountPercentage / 100) * cartTotalOfPharmaProducts).toFixed(2)
-    //   );
-
     const minimumOrderAmount = coupon && coupon.minimumOrderAmount;
     if (!coupon || (minimumOrderAmount && cartTotalOfPharmaProducts < minimumOrderAmount)) {
       setCoupon(null);
@@ -221,6 +253,12 @@ export const ShoppingCartProvider: React.FC = (props) => {
         couponDiscount,
         deliveryCharges,
         uploadPrescriptionRequired,
+
+        physicalPrescriptions,
+        setPhysicalPrescriptions,
+        addPhysicalPrescription,
+        updatePhysicalPrescription,
+        removePhysicalPrescription,
 
         addresses,
         setAddresses,

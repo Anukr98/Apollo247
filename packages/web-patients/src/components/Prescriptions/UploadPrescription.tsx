@@ -171,8 +171,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                         throw error;
                       });
                       props.setPrescriptionUrls({
-                        imageUrl: aphBlob.url,
-                        name: aphBlob.name,
+                        imageUrl: '',
+                        name: '',
                       });
                       setIsUploading(false);
                       props.closeDialog();

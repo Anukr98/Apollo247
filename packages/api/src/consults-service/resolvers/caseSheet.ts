@@ -11,6 +11,12 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { Patient } from 'profiles-service/entities';
 import { DiagnosisData } from 'consults-service/data/diagnosis';
 import { DiagnosticData } from 'consults-service/data/diagnostics';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import {
+  convertCaseSheetToRxPdfData,
+  generateRxPdfDocument,
+  uploadRxPdf,
+} from 'consults-service/rxPdfGenerator';
 
 export type DiagnosisJson = {
   name: string;
@@ -93,6 +99,11 @@ export const caseSheetTypeDefs = gql`
     patientId: String
     parentId: String
     status: STATUS
+    rescheduleCount: Int
+    isFollowUp: Int
+    followUpParentId: String
+    isTransfer: Int
+    transferParentId: String
     caseSheet: [CaseSheet]
   }
 
@@ -105,6 +116,7 @@ export const caseSheetTypeDefs = gql`
 
   type CaseSheet {
     appointment: Appointment
+    blobName: String
     consultType: String
     diagnosis: [Diagnosis]
     diagnosticPrescription: [DiagnosticPrescription]
@@ -377,7 +389,7 @@ const updateCaseSheet: Resolver<
   UpdateCaseSheetInputArgs,
   ConsultServiceContext,
   CaseSheet
-> = async (parent, { UpdateCaseSheetInput }, { consultsDb }) => {
+> = async (parent, { UpdateCaseSheetInput }, { consultsDb, doctorsDb }) => {
   const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
 
   //validate date
@@ -411,6 +423,20 @@ const updateCaseSheet: Resolver<
 
   const getUpdatedCaseSheet = await caseSheetRepo.getCaseSheetById(inputArguments.id);
   if (getUpdatedCaseSheet == null) throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR);
+
+  //convert casesheet to prescription
+  const client = new AphStorageClient(
+    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+    process.env.AZURE_STORAGE_CONTAINER_NAME
+  );
+  const rxPdfData = await convertCaseSheetToRxPdfData(getUpdatedCaseSheet, doctorsDb);
+  const pdfDocument = generateRxPdfDocument(rxPdfData);
+  const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
+  if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+  caseSheetRepo.updateCaseSheet(getUpdatedCaseSheet.id, { blobName: blob.name });
+
+  getUpdatedCaseSheet.blobName = blob.name;
+
   return getUpdatedCaseSheet;
 };
 

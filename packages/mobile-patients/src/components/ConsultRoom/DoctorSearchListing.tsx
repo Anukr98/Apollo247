@@ -44,6 +44,7 @@ import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
 } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   topView: {
@@ -80,9 +81,15 @@ export type filterDataType = {
 };
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
-  const specialityName = props.navigation.state.params
+  const specialityName: string = props.navigation.state.params
     ? props.navigation.state.params!.specialityName
     : '';
+  const specialities = AppConfig.Specialities[specialityName]
+    ? AppConfig.Specialities[specialityName]
+    : null;
+
+  console.log(specialities, 'specialitiessssss');
+
   const filterData: filterDataType[] = [
     {
       label: 'City',
@@ -132,7 +139,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     | null
   >([]);
 
-  const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
+  const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [locationSearchList, setlocationSearchList] = useState<string[]>([]);
   const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
@@ -240,18 +247,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             .utc()
             .format('YYYY-MM-DD hh:mm'),
         };
-      }
-      if (element === 'Today') {
+      } else if (element === 'Today') {
         availabilityArray.push(today);
-      }
-      if (element === 'Tomorrow') {
+      } else if (element === 'Tomorrow') {
         availabilityArray.push(
           moment(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
             'YYYY-MM-DD'
           )
         );
-      }
-      if (element === 'Next 3 Days') {
+      } else if (element === 'Next 3 Days') {
         availabilityArray.push(
           moment(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
             'YYYY-MM-DD'
@@ -267,8 +271,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             'YYYY-MM-DD'
           )
         );
+      } else {
+        availabilityArray.push(element);
       }
-      new Date().getTime() + 24 * 60 * 60 * 1000;
+      // new Date().getTime() + 24 * 60 * 60 * 1000;
     });
   console.log(
     experienceArray,
@@ -411,26 +417,36 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     return (
       <View style={{ flexDirection: 'row' }}>
         {currentLocation === '' ? (
-          <TouchableOpacity activeOpacity={1} onPress={() => fetchCurrentLocation()}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              setshowLocationpopup(true);
+              fetchCurrentLocation();
+            }}
+          >
             <LocationOff />
           </TouchableOpacity>
         ) : (
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <Text
+          <View>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => setshowLocationpopup(true)}
               style={{
-                color: theme.colors.SHERPA_BLUE,
-                ...theme.fonts.IBMPlexSansSemiBold(13),
-                textTransform: 'uppercase',
+                flexDirection: 'row',
+                alignItems: 'center',
               }}
             >
-              {currentLocation}
-            </Text>
-            <TouchableOpacity activeOpacity={1} onPress={() => setshowLocationpopup(true)}>
+              {currentLocation ? (
+                <Text
+                  style={{
+                    color: theme.colors.SHERPA_BLUE,
+                    ...theme.fonts.IBMPlexSansSemiBold(13),
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {currentLocation}
+                </Text>
+              ) : null}
               <LocationOn />
             </TouchableOpacity>
           </View>
@@ -511,8 +527,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             heading={'Uh oh! :('}
             description={
               filter === ConsultMode.PHYSICAL
-                ? `There is no ${specialityName} available for Physical Consult. Please you try Online Consultation.`
-                : `There is no ${specialityName} available to match your filters. Please try again with different filters.`
+                ? `There is no ${
+                    specialities && specialities.length > 0 ? specialities[0] : ''
+                  } available for Physical Consult. Please you try Online Consultation.`
+                : `There is no ${
+                    specialities && specialities.length > 0 ? specialities[0] : ''
+                  } available to match your filters. Please try again with different filters.`
             }
             descriptionTextStyle={{ fontSize: 14 }}
             headingTextStyle={{ fontSize: 14 }}
@@ -571,7 +591,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <Text style={styles.headingText}>{string.common.okay}</Text>
           <Text style={styles.descriptionText}>
             {string.common.best_doctor_text}
-            {specialityName}
+            {specialities && specialities.length > 0 ? specialities[1] : ''}
           </Text>
         </Animated.View>
 
@@ -670,6 +690,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
+  console.log(FilterData, 'FilterData', showSpinner, 'displayFilter', displayFilter);
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView
@@ -699,18 +721,18 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         </Animated.ScrollView>
       </SafeAreaView>
       {renderPopup()}
-      {displayFilter && (
+      {displayFilter ? (
         <FilterScene
-          onClickClose={(data: filterDataType[]) => {
+          onClickClose={() => {
             setDisplayFilter(false);
           }}
-          setData={(data) => {
-            setshowSpinner(true);
-            setFilterData(data);
+          setData={(selecteddata) => {
+            // if (selecteddata !== data) setshowSpinner(true);
+            setFilterData(selecteddata);
           }}
-          data={FilterData}
+          data={[...FilterData]}
         />
-      )}
+      ) : null}
       {showSpinner && <Spinner />}
       {renderAnimatedView()}
       {renderTopView()}

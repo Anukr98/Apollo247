@@ -1,18 +1,24 @@
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
+  PhysicalPrescription,
   ShoppingCartItem,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  ArrowRight,
+  CouponIcon,
+  CrossYellow,
+  MedicineIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { GET_PATIENT_ADDRESS_LIST, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
@@ -26,23 +32,22 @@ import {
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AxiosResponse } from 'axios';
-import { GraphQLError } from 'graphql';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import RNFS from 'react-native-fs';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
-import { UploadPrescriprionPopup } from './UploadPrescriprionPopup';
-import resizebase64 from 'resize-base64';
+import { handleGraphQlError } from '../../helpers/helperFunctions';
+import { PickerImage } from './Medicine';
+import { UploadPrescriprionPopupForMedicineForMedicine } from './UploadPrescriprionPopupForMedicine';
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -105,6 +110,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     grandTotal,
     coupon,
     uploadPrescriptionRequired,
+    addPhysicalPrescription,
+    setPhysicalPrescriptions,
+    physicalPrescriptions,
+    removePhysicalPrescription,
   } = useShoppingCart();
 
   useEffect(() => {
@@ -119,10 +128,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           setshowSpinner(false);
           setAddresses && setAddresses(addressList!);
         })
-        .catch((e: GraphQLError[]) => {
+        .catch((e) => {
           setshowSpinner(false);
-          console.log({ e });
-          Alert.alert('Error', (e && e[0] && e[0].message) || 'Unable to fetch user address');
+          handleGraphQlError(e, 'Unable to fetch user address');
         })) ||
       setshowSpinner(false);
   }, [currentPatientId]);
@@ -217,14 +225,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         {renderLabel('ITEMS IN YOUR CART', cartItemsCount)}
         {cartItems.length == 0 && (
           <Text
-            style={[
-              styles.labelTextStyle,
-              {
-                margin: 20,
-                textAlign: 'center',
-                opacity: 0.3,
-              },
-            ]}
+            style={{
+              color: theme.colors.FILTER_CARD_LABEL,
+              ...theme.fonts.IBMPlexSansMedium(13),
+              margin: 20,
+              textAlign: 'center',
+              opacity: 0.3,
+            }}
           >
             Your Cart is empty
           </Text>
@@ -277,41 +284,131 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const uploadPrescriptionPopup = () => {
     return (
       showPopup && (
-        <UploadPrescriprionPopup
+        <UploadPrescriprionPopupForMedicineForMedicine
           onClickClose={() => setShowPopup(false)}
-          getData={async (images) => {
-            console.log({ images });
+          getData={(_images) => {
             setShowPopup(false);
-            // console.log(images[0].path);
-            // console.log(images[0].sourceURL);
-            // RNFS.readFile(images[0].sourceURL, 'base64').then(async (res) => {
-            //   console.log(res);
-
-            //   client
-            //     .mutate<uploadFile, uploadFileVariables>({
-            //       mutation: UPLOAD_FILE,
-            //       variables: { fileType: 'jpeg', base64FileInput: res },
-            //       fetchPolicy: 'no-cache',
-            //     })
-            //     .then(({ data }) => {
-            //       console.log({ data });
-            //     })
-            //     .catch((e: GraphQLError[]) => {
-            //       console.log({ e });
-            //     });
-
-            //   try {
-            //     const img = await resizebase64(res, 200, 200);
-            //     console.log('img', img);
-            //   } catch (error) {
-            //     console.log({ error });
-            //   }
-            // });
-            // props.navigation.navigate(AppRoutes.UploadPrescription, { images });
+            const images = [..._images] as PickerImage[];
+            const prescriptions = images.map(
+              (item) =>
+                ({
+                  base64: item.data,
+                  path: item.path,
+                  title: item.filename,
+                } as PhysicalPrescription)
+            );
+            const itemsToAdd = prescriptions.filter(
+              (p) => !physicalPrescriptions.find((pToFind) => pToFind.title == p.title)
+            );
+            setPhysicalPrescriptions &&
+              setPhysicalPrescriptions([...itemsToAdd, ...physicalPrescriptions]);
           }}
           navigation={props.navigation}
         />
       )
+    );
+  };
+
+  const renderPhysicalPrescriptionRow = (
+    item: PhysicalPrescription,
+    i: number,
+    arrayLength: number
+  ) => {
+    return (
+      <View key={i} style={{}}>
+        <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              shadowRadius: 4,
+              height: 56,
+              marginHorizontal: 20,
+              backgroundColor: theme.colors.WHITE,
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginTop: i === 0 ? 16 : 4,
+              marginBottom: arrayLength === i + 1 ? 16 : 4,
+            }}
+            key={i}
+          >
+            <View
+              style={{
+                paddingLeft: 8,
+                paddingRight: 16,
+                width: 54,
+              }}
+            >
+              <Image
+                style={{
+                  height: 40,
+                  width: 30,
+                  borderRadius: 5,
+                }}
+                source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <TextInputComponent
+                textInputprops={{ editable: false }}
+                inputStyle={{
+                  marginTop: 3,
+                }}
+                value={item.title}
+              />
+            </View>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={{
+                width: 40,
+                paddingHorizontal: 8,
+              }}
+              onPress={() => {
+                removePhysicalPrescription && removePhysicalPrescription(item.title);
+              }}
+            >
+              <CrossYellow />
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderPhysicalPrescriptions = (prescriptions = physicalPrescriptions) => {
+    const cardContainerStyle = {
+      ...theme.viewStyles.cardViewStyle,
+      marginHorizontal: 20,
+      marginVertical: 16,
+      marginBottom: 24,
+      paddingTop: 16,
+    };
+    return (
+      <View>
+        <View style={cardContainerStyle}>
+          <View>{renderLabel(`Physical Prescription${prescriptions.length == 1 ? '' : 's'}`)}</View>
+          <FlatList
+            bounces={false}
+            data={prescriptions}
+            renderItem={({ item, index }) =>
+              renderPhysicalPrescriptionRow(item, index, prescriptions.length)
+            }
+            keyExtractor={(_, index) => index.toString()}
+          />
+        </View>
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansBold(13),
+            color: theme.colors.APP_YELLOW,
+            lineHeight: 24,
+            paddingRight: 24,
+            paddingBottom: 16,
+            textAlign: 'right',
+          }}
+          onPress={() => setShowPopup(true)}
+        >
+          ADD MORE PRESCRIPTIONS
+        </Text>
+      </View>
     );
   };
 
@@ -320,36 +417,41 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       return (
         <View>
           {renderLabel('UPLOAD PRESCRIPTION')}
-          <TouchableOpacity
-            activeOpacity={1}
-            style={{
-              ...theme.viewStyles.cardViewStyle,
-              marginHorizontal: 20,
-              marginTop: 15,
-              marginBottom: 24,
-            }}
-            onPress={() => setShowPopup(true)}
-          >
-            <Text
+
+          {physicalPrescriptions.length == 0 ? (
+            <TouchableOpacity
+              activeOpacity={1}
               style={{
-                ...theme.fonts.IBMPlexSansMedium(16),
-                lineHeight: 24,
-                color: theme.colors.SKY_BLUE,
-                padding: 16,
+                ...theme.viewStyles.cardViewStyle,
+                marginHorizontal: 20,
+                marginTop: 15,
+                marginBottom: 24,
               }}
+              onPress={() => setShowPopup(true)}
             >
-              {`Some of your medicines require prescription to make a purchase.\nPlease upload the necessary prescriptions.`}
-            </Text>
-            <Text
-              style={{
-                ...styles.yellowTextStyle,
-                paddingTop: 0,
-                textAlign: 'right',
-              }}
-            >
-              UPLOAD
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                  lineHeight: 24,
+                  color: theme.colors.SKY_BLUE,
+                  padding: 16,
+                }}
+              >
+                {`Some of your medicines require prescription to make a purchase.\nPlease upload the necessary prescriptions.`}
+              </Text>
+              <Text
+                style={{
+                  ...styles.yellowTextStyle,
+                  paddingTop: 0,
+                  textAlign: 'right',
+                }}
+              >
+                UPLOAD
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            renderPhysicalPrescriptions()
+          )}
         </View>
       );
     }
@@ -358,24 +460,25 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [checkingServicability, setCheckingServicability] = useState(false);
 
   const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    console.log({ address });
     setCheckingServicability(true);
     pinCodeServiceabilityApi(address.zipcode!, 'PHARMA')
       .then(({ data: { Availability } }) => {
         console.log({ Availability });
         setCheckingServicability(false);
         if (Availability) {
-          // setDeliveryType && setDeliveryType(MEDICINE_DELIVERY_TYPE.HOME_DELIVERY);
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
           Alert.alert(
-            'Error',
+            'Alert',
             'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
           );
         }
       })
       .catch((e) => {
-        setCheckingServicability(false);
         console.log({ e });
+        setCheckingServicability(false);
+        handleGraphQlError(e);
       });
   };
 
@@ -608,23 +711,23 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         >
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Subtotal</Text>
-            <Text style={styles.blueTextStyle}>Rs. {cartTotal}</Text>
+            <Text style={styles.blueTextStyle}>Rs. {cartTotal.toFixed(2)}</Text>
           </View>
           {couponDiscount > 0 && (
             <View style={styles.rowSpaceBetweenStyle}>
-              <Text style={styles.blueTextStyle}>Discount</Text>
-              <Text style={styles.blueTextStyle}>- Rs. {couponDiscount}</Text>
+              <Text style={styles.blueTextStyle}>Coupon Discount</Text>
+              <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
             </View>
           )}
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Delivery Charges</Text>
-            <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges}</Text>
+            <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges.toFixed(2)}</Text>
           </View>
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>To Pay </Text>
             <Text style={[styles.blueTextStyle, { ...theme.fonts.IBMPlexSansBold }]}>
-              Rs. {grandTotal}
+              Rs. {grandTotal.toFixed(2)}
             </Text>
           </View>
         </View>
@@ -706,7 +809,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const disableProceedToPay = !(cartItems.length > 0 && !!(deliveryAddressId || storeId));
+  const disableProceedToPay = !(
+    cartItems.length > 0 &&
+    !!(deliveryAddressId || storeId) &&
+    (uploadPrescriptionRequired ? physicalPrescriptions.length > 0 : true)
+  );
 
   return (
     <View style={{ flex: 1 }}>
@@ -725,13 +832,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <StickyBottomComponent defaultBG>
           <Button
             disabled={disableProceedToPay}
-            title={`PROCEED TO PAY RS. ${grandTotal}`}
+            title={`PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
             onPress={() => props.navigation.navigate(AppRoutes.CheckoutScene)}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>
+        {uploadPrescriptionPopup()}
       </SafeAreaView>
-      {uploadPrescriptionPopup()}
       {showSpinner && <Spinner />}
     </View>
   );

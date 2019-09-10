@@ -10,6 +10,7 @@ import {
   MorningUnselected,
   Night,
   NightUnselected,
+  LocationOff,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import {
@@ -19,14 +20,22 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
 import React, { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, Text, View, Platform, PermissionsAndroid } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Platform,
+  PermissionsAndroid,
+  AsyncStorage,
+  TouchableOpacity,
+} from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
 import { useQuery } from 'react-apollo-hooks';
 import { getDoctorPhysicalAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorPhysicalAvailableSlots';
 import { GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { divideSlots, timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import Permissions from 'react-native-permissions';
+import Moment from 'moment';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -67,7 +76,7 @@ const styles = StyleSheet.create({
   },
   textStyle: {
     color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
+    ...theme.fonts.IBMPlexSansMedium(13),
     paddingVertical: 8,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
   },
@@ -137,33 +146,47 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   ]);
 
   const fetchLocation = useCallback(() => {
+    console.log('fetchLocation');
+
     Permissions.request('location')
       .then((response) => {
         console.log(response, 'permission response');
         if (response === 'authorized') {
           navigator.geolocation.getCurrentPosition(
             (position) => {
-              const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-              const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+              let searchstring = '';
+              AsyncStorage.getItem('location').then((item) => {
+                const latlong = item ? JSON.parse(item) : null;
+                console.log(item, 'AsyncStorage item', latlong);
+                if (latlong) {
+                  searchstring = `${latlong.lat}, ${latlong.lng}`;
+                } else {
+                  searchstring = position.coords.latitude + ', ' + position.coords.longitude;
+                }
+                console.log(searchstring, ' AsyncStorage searchstring');
 
-              const destination = selectedClinic
-                ? `${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}` // `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}`
-                : '';
-              const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
-              Axios.get(distanceUrl)
-                .then((obj) => {
-                  console.log(obj, 'distanceUrl');
-                  if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
-                    const value = obj.data.rows[0].elements[0].distance
-                      ? obj.data.rows[0].elements[0].distance.value
-                      : 0;
-                    console.log(`${(value / 1000).toFixed(1)} Kms`, 'distance');
-                    setdistance(`${(value / 1000).toFixed(1)} Kms`);
-                  }
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
+                const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+
+                const destination = selectedClinic
+                  ? `${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}` // `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}`
+                  : '';
+                const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
+                Axios.get(distanceUrl)
+                  .then((obj) => {
+                    console.log(obj, 'distanceUrl');
+                    if (obj.data.rows.length > 0 && obj.data.rows[0].elements.length > 0) {
+                      const value = obj.data.rows[0].elements[0].distance
+                        ? obj.data.rows[0].elements[0].distance.value
+                        : 0;
+                      console.log(`${(value / 1000).toFixed(1)} Kms`, 'distance');
+                      setdistance(`${(value / 1000).toFixed(1)} Kms`);
+                    }
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                  });
+                // }
+              });
             },
             (error) => console.log(JSON.stringify(error)),
             { enableHighAccuracy: false, timeout: 2000 }
@@ -198,7 +221,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
 
   useEffect(() => {
     console.log('didmout');
-    Platform.OS === 'android' && requestLocationPermission();
+    Platform.OS === 'android' ? requestLocationPermission() : fetchLocation();
   }, [requestLocationPermission]);
 
   const setTimeArrayData = (availableSlots: string[]) => {
@@ -225,6 +248,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
 
   if (availabilityData.error) {
     console.log('error', availabilityData.error);
+    props.setshowSpinner && props.setshowSpinner(false);
   } else {
     console.log(availabilityData.data, 'availableSlots');
     if (
@@ -234,11 +258,10 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots &&
       availableSlots !== availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots
     ) {
+      props.setshowSpinner && props.setshowSpinner(false);
       setTimeArrayData(availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots);
       console.log(availableSlots, 'availableSlots1111');
-
       setavailableSlots(availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots);
-      props.setshowSpinner && props.setshowSpinner(false);
     }
   }
 
@@ -353,7 +376,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           </View>
           <View style={styles.horizontalSeparatorStyle} />
           <View style={{ width: 70, alignItems: 'flex-end' }}>
-            <Location />
+            {distance === '' ? <LocationOff /> : <Location />}
             <Text
               style={{
                 color: theme.colors.SHERPA_BLUE,
@@ -375,11 +398,16 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       <CalendarView
         date={date}
         minDate={new Date()}
-        onPressDate={(date) => {
-          props.setshowSpinner && props.setshowSpinner(true);
-          setDate(date);
-          props.setDate(date);
+        onPressDate={(selectedDate) => {
+          setDate(selectedDate);
+          props.setDate(selectedDate);
           props.setselectedTimeSlot('');
+
+          if (
+            Moment(selectedDate).format('YYYY-MM-DD') !== Moment(date).format('YYYY-MM-DD') &&
+            props.setshowSpinner
+          )
+            props.setshowSpinner(true);
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {

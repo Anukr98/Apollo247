@@ -155,12 +155,12 @@ const arrayTest: ArrayTest[] = [
     descripiton: 'SEARCH MEDICINE',
     image: require('@aph/mobile-patients/src/images/home/medicine.png'),
   },
-  {
-    id: 3,
-    title: 'Do you want to get some tests done?',
-    descripiton: 'BOOK A TEST',
-    image: require('@aph/mobile-patients/src/images/home/test.png'),
-  },
+  // {
+  //   id: 3,
+  //   title: 'Do you want to get some tests done?',
+  //   descripiton: 'BOOK A TEST',
+  //   image: require('@aph/mobile-patients/src/images/home/test.png'),
+  // },
 ];
 
 type TabBarOptions = {
@@ -304,10 +304,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           paddingBottom: 16,
           ...Platform.select({
             android: {
-              marginTop: 124,
+              marginTop: 94,
             },
             ios: {
-              marginTop: 134,
+              marginTop: 114,
             },
           }),
         }}
@@ -335,7 +335,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </Text>
             </View>
           ))}
-
+        {/* 
         <Text
           style={{
             paddingTop: 15,
@@ -346,7 +346,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           }}
         >
           ADD MEMBER
-        </Text>
+        </Text> */}
       </View>
     </TouchableOpacity>
   );
@@ -579,14 +579,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
                 <TouchableOpacity
                   activeOpacity={1}
-                  onPress={() => props.navigation.replace(AppRoutes.TabBar)}
+                  onPress={() => {}} //props.navigation.replace(AppRoutes.TabBar)}
                 >
                   <ApolloLogo style={{ right: 20 }} />
                 </TouchableOpacity>
               </View>
               <TouchableOpacity
                 activeOpacity={1}
-                onPress={() => setShowMenu(true)}
+                // onPress={() => setShowMenu(true)}
                 style={{
                   flexDirection: 'row',
                   marginTop: 8,
@@ -594,8 +594,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
-                  <View>
+                  <Text style={styles.hiTextStyle}>
+                    {string.home.hi} {userName}!
+                  </Text>
+                  {/* <View>
                     <View
                       style={{
                         flexDirection: 'row',
@@ -606,7 +608,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       <DropdownGreen style={{ marginTop: 8 }} />
                     </View>
                     <View style={styles.seperatorStyle} />
-                  </View>
+                  </View> */}
                 </View>
               </TouchableOpacity>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
