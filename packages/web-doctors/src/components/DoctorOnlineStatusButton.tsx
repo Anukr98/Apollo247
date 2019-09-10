@@ -1,10 +1,8 @@
-import { makeStyles, CSSProperties } from '@material-ui/styles';
+import { makeStyles } from '@material-ui/styles';
 import { Theme, CircularProgress } from '@material-ui/core';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
-import React, { useState } from 'react';
-import { useCurrentPatient } from 'hooks/authHooks';
+import React from 'react';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
-import _startCase from 'lodash/startCase';
 import {
   UpdateDoctorOnlineStatus,
   UpdateDoctorOnlineStatusVariables,
