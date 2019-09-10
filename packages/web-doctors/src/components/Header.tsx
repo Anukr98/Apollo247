@@ -15,7 +15,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
-import { OnlineAwayButton } from 'components/OnlineAwayButton';
+import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -167,7 +167,7 @@ export const Header: React.FC = (props) => {
           !window.location.href.includes('/profile') &&
           !window.location.href.includes('/patientlogdetailspage') && <Navigation />}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
-          <OnlineAwayButton />
+          <DoctorOnlineStatusButton />
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (
               <div className={`${!isSignedIn ? classes.userCircle : ''}`} ref={avatarRef}>

@@ -10,6 +10,7 @@ import { DOCTOR_ONLINE_STATUS } from "./globalTypes";
 
 export interface UpdateDoctorOnlineStatus_updateDoctorOnlineStatus_doctor {
   __typename: "DoctorDetails";
+  id: string;
   onlineStatus: DOCTOR_ONLINE_STATUS;
 }
 

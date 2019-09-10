@@ -26,12 +26,13 @@ const updateDoctorOnlineStatus: Resolver<
   DoctorsServiceContext,
   UpdateDoctorOnlineStatusResult
 > = async (parent, { doctorId, onlineStatus }, { doctorsDb, currentUser }) => {
-  const authorized = currentUser && currentUser.id && currentUser.id === doctorId;
-  if (!authorized) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  docRepo.update(currentUser.id, { onlineStatus });
-  await currentUser.reload();
-  return { doctor: currentUser };
+  const doctor = await docRepo.findById(currentUser.id);
+  const authorized = currentUser && currentUser.id && currentUser.id === doctorId;
+  if (!authorized || !doctor) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  await docRepo.update(doctor.id, { onlineStatus });
+  await doctor.reload();
+  return { doctor };
 };
 
 export const doctorOnlineStatusResolvers = {
