@@ -9,10 +9,14 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import {
   BOOK_APPOINTMENT,
-  GET_AVAILABLE_SLOTS,
   BOOK_FOLLOWUP_APPOINTMENT,
+  GET_AVAILABLE_SLOTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
+import {
+  BookFollowUpAppointment,
+  BookFollowUpAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/BookFollowUpAppointment';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 import {
   getDoctorDetailsById_getDoctorDetailsById,
@@ -23,28 +27,21 @@ import {
   BookAppointmentInput,
   DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import moment from 'moment';
 import React, { useState } from 'react';
-import { Mutation } from 'react-apollo';
-
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
+  Alert,
   Dimensions,
   Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
-import {
-  BookFollowUpAppointment,
-  BookFollowUpAppointmentVariables,
-} from '@aph/mobile-patients/src/graphql/types/BookFollowUpAppointment';
 
 const { width, height } = Dimensions.get('window');
 
@@ -110,8 +107,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
   const [AppointmentExistAlert, setAppointmentExistAlert] = useState<boolean>(false);
 
-  const setTimeArrayData = (availableSlots: string[]) => {
-    const array = divideSlots(availableSlots, date);
+  const todayDate = new Date().toDateString().split('T')[0];
+  console.log(todayDate, 'todayDatetodayDate', new Date().toDateString());
+
+  const setTimeArrayData = async (availableSlots: string[]) => {
+    console.log(availableSlots, 'setTimeArrayData availableSlots');
+
+    const array = await divideSlots(availableSlots, date);
     console.log(array, 'array', timeArray, 'timeArray.......');
     if (array !== timeArray) settimeArray(array);
   };
@@ -141,8 +143,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots
     ) {
       setshowSpinner(false);
-      setTimeArrayData(availabilityData.data.getDoctorAvailableSlots.availableSlots);
-      console.log(availableSlots, 'availableSlots1111');
+      console.log(
+        availableSlots,
+        'availableSlots1111',
+        availabilityData.data.getDoctorAvailableSlots.availableSlots
+      );
+      setTimeArrayData(availabilityData.data.getDoctorAvailableSlots.availableSlots, date);
       setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots);
     }
   }
@@ -283,6 +289,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       </StickyBottomComponent>
     );
   };
+  console.log(timeArray, 'timeArraytimeArray render');
 
   return (
     <View

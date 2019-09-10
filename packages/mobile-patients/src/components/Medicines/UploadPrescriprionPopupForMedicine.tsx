@@ -162,6 +162,7 @@ export const UploadPrescriprionPopupForMedicineForMedicine: React.FC<
         >
           <View
             style={{
+              ...theme.viewStyles.cardContainer,
               backgroundColor: theme.colors.WHITE,
               alignItems: 'center',
               justifyContent: 'center',

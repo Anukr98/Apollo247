@@ -379,11 +379,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               style={{
                 marginTop: 38,
                 height: 60,
-                width: 60,
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginLeft: 150,
-                marginRight: 100,
               }}
             >
               <FileBig />
@@ -392,24 +389,25 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               style={{
                 ...theme.fonts.IBMPlexSansMedium(12),
                 color: '#02475b',
-                marginLeft: 38,
-                marginRight: 38,
                 marginBottom: 25,
+                alignItems: 'center',
+                textAlign: 'center',
               }}
             >
               You don’t have any records with us right now. {'\n'}Add a record to keep everything
               handy in one place!
             </Text>
-            <View style={{ marginLeft: 60, marginRight: 60 }}>
-              <Button title="ADD RECORD" />
+            <View style={{ marginLeft: 60, marginRight: 60, marginBottom: 20 }}>
+              <Button
+                title="ADD RECORD"
+                onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
+              />
             </View>
           </View>
         ) : (
           <View>
             {arrayValues &&
               arrayValues.map((item: any) => {
-                // console.log('item', item);
-
                 return (
                   <HealthConsultView
                     onPressOrder={() => {

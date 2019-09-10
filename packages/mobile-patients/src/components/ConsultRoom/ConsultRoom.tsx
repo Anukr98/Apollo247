@@ -155,12 +155,12 @@ const arrayTest: ArrayTest[] = [
     descripiton: 'SEARCH MEDICINE',
     image: require('@aph/mobile-patients/src/images/home/medicine.png'),
   },
-  {
-    id: 3,
-    title: 'Do you want to get some tests done?',
-    descripiton: 'BOOK A TEST',
-    image: require('@aph/mobile-patients/src/images/home/test.png'),
-  },
+  // {
+  //   id: 3,
+  //   title: 'Do you want to get some tests done?',
+  //   descripiton: 'BOOK A TEST',
+  //   image: require('@aph/mobile-patients/src/images/home/test.png'),
+  // },
 ];
 
 type TabBarOptions = {
