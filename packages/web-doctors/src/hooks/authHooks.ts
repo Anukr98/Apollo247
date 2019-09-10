@@ -3,7 +3,7 @@ import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 
 const useAuthContext = () => useContext(AuthContext);
 
-export const useCurrentPatient = () => useAuthContext().currentPatient;
+export const useCurrentPatient = () => useAuthContext().currentPatient!;
 // export const useAllCurrentPatients = () => useAuthContext().allCurrentPatients;
 // export const useIsSignedIn = () => useAllCurrentPatients() != null;
 
