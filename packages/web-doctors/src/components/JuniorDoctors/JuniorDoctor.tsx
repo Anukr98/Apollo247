@@ -124,17 +124,11 @@ export const JuniorDoctor: React.FC = (props) => {
           <div className={classes.boxGroup}>
             {futureConsults.map(({ patient, appointment }, index) => (
               <ActiveConsultCard
-                key={patient.id}
-                patient={{
-                  firstName: patient.firstName || '',
-                  lastName: patient.lastName || '',
-                  uhid: patient.uhid,
-                  photoUrl: patient.photoUrl,
-                  queueNumber: index + 1,
-                }}
+                key={appointment.id}
+                patient={{ ...patient, queueNumber: index + 1 }}
                 appointment={{
+                  ...appointment,
                   appointmentDateTime: new Date(appointment.appointmentDateTime),
-                  appointmentType: appointment.appointmentType,
                 }}
               />
             ))}
@@ -147,17 +141,11 @@ export const JuniorDoctor: React.FC = (props) => {
           <div className={classes.boxGroup}>
             {pastConsults.map(({ patient, appointment }, index) => (
               <PastConsultCard
-                key={patient.id}
-                patient={{
-                  firstName: patient.firstName || '',
-                  lastName: patient.lastName || '',
-                  uhid: patient.uhid,
-                  photoUrl: patient.photoUrl,
-                  queueNumber: index + 1,
-                }}
+                key={appointment.id}
+                patient={{ ...patient, queueNumber: index + 1 }}
                 appointment={{
+                  ...appointment,
                   appointmentDateTime: new Date(appointment.appointmentDateTime),
-                  appointmentType: appointment.appointmentType,
                 }}
               />
             ))}
