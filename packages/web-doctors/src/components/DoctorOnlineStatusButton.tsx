@@ -71,12 +71,14 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
             exclusive
             value={onlineStatus}
             onChange={(e, newStatus: DOCTOR_ONLINE_STATUS) => {
-              updateDoctorOnlineStatus({
-                variables: {
-                  doctorId: id,
-                  onlineStatus: newStatus,
-                },
-              });
+              if (newStatus !== onlineStatus) {
+                updateDoctorOnlineStatus({
+                  variables: {
+                    doctorId: id,
+                    onlineStatus: newStatus,
+                  },
+                });
+              }
             }}
           >
             <ToggleButton
