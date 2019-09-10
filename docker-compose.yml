@@ -100,6 +100,7 @@ services:
     depends_on:
       - doctors-db
       - consults-db
+      - profiles-db
 
   doctors-db:
     image: postgres:10.8-alpine

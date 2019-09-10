@@ -27,6 +27,11 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum DOCTOR_ONLINE_STATUS {
+  AWAY = "AWAY",
+  ONLINE = "ONLINE",
+}
+
 export enum DoctorType {
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",

@@ -12,6 +12,7 @@ export const GET_DOCTOR_CONSULTS = gql`
           photoUrl
         }
         appointment {
+          id
           appointmentDateTime
           appointmentType
         }
