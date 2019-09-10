@@ -7,7 +7,7 @@ import { IncomingHttpHeaders } from 'http';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { webPatientsBaseUrl, webDoctorsBaseUrl, getPortStr } from '@aph/universal/src/aphRoutes';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+//import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 
 console.log('gateway starting');
@@ -155,7 +155,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     });
 })();
 
-(async () => {
+/*(async () => {
   console.log('------------------------STORAGE TEST----------------------------');
   const client = new AphStorageClient(
     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
@@ -187,7 +187,7 @@ export type Resolver<Parent, Args, Context, Result> = (
     .testStorageConnection()
     .then((res) => console.log(res))
     .catch((error) => console.log('error testing', error));
-})();
+})();*/
 
 // (async () => {
 //   console.log('------------------------MESSAGE QUEUE TEST----------------------------');

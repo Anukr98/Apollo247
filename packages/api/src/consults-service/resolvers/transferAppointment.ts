@@ -7,6 +7,7 @@ import {
   APPOINTMENT_TYPE,
   APPOINTMENT_STATE,
   TRANSFER_INITIATED_TYPE,
+  CaseSheet
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -23,6 +24,7 @@ import {
   sendNotification,
   PushNotificationSuccessMessage,
 } from 'notifications-service/resolvers/notifications';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const transferAppointmentTypeDefs = gql`
   enum TRANSFER_STATUS {
@@ -233,6 +235,18 @@ const bookTransferAppointment: Resolver<
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
   };
   const appointment = await appointmentRepo.saveAppointment(appointmentAttrs);
+
+  
+  //TODO after junior doctor flow.. casesheet creation should be changed.
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const caseSheetAttrs: Partial<CaseSheet> = {
+    consultType: appointment.appointmentType,
+    doctorId: appointment.doctorId,
+    patientId: appointment.patientId,
+    appointment: appointment,
+  };
+  await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+  ///////////
 
   //update initiate transfer to completed
   const transferApptRepo = consultsDb.getCustomRepository(TransferAppointmentRepository);
