@@ -39,6 +39,8 @@ const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
 };
 
 export const TabBar = createBottomTabNavigator(routeConfigMap, {
+  initialRouteName: 'CONSULT ROOM',
+  backBehavior: 'initialRoute',
   defaultNavigationOptions: ({ navigation }) => ({
     tabBarIcon: ({ focused }) =>
       focused

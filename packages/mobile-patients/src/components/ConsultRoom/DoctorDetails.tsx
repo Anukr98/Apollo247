@@ -644,7 +644,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   console.log(displayoverlay, 'displayoverlay', doctorDetails, 'availableTime', availableTime);
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,

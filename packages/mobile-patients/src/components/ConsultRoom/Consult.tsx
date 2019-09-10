@@ -216,25 +216,27 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   useEffect(() => {
-    setNewAppointmentTime(
-      props.navigation.getParam('Data')
-        ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
-            'Do MMMM, dddd \nhh:mm a'
-          )
-        : ''
-    );
+    try {
+      setNewAppointmentTime(
+        props.navigation.getParam('Data')
+          ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
+              'Do MMMM, dddd \nhh:mm a'
+            )
+          : ''
+      );
 
-    // let calculateCount = props.navigation.getParam('Data')
-    //   ? props.navigation.getParam('Data').rescheduleCount
-    //   : '';
+      let calculateCount = props.navigation.getParam('Data')
+        ? props.navigation.getParam('Data').rescheduleCount
+        : 5;
 
-    let calculateCount: number = 5;
+      if (calculateCount > 3) {
+        calculateCount = Math.floor(calculateCount / 3);
+      }
 
-    if (calculateCount > 3) {
-      calculateCount = Math.floor(calculateCount / 3);
+      setNewRescheduleCount(calculateCount);
+    } catch (error) {
+      console.log('error', error);
     }
-
-    setNewRescheduleCount(calculateCount);
   });
 
   useEffect(() => {
@@ -704,7 +706,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 title={string.home.consult_doctor}
                 style={styles.buttonStyles}
                 onPress={() => {
-                  // props.navigation.navigate(AppRoutes.DoctorSearch);
+                  props.navigation.navigate(AppRoutes.SymptomChecker);
                 }}
               />
             </View>
@@ -715,7 +717,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {showMenu && Popup()}

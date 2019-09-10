@@ -17,6 +17,7 @@ export interface bookRescheduleAppointment_bookRescheduleAppointment_appointment
   appointmentDateTime: any | null;
   status: STATUS | null;
   patientId: string | null;
+  rescheduleCount: number | null;
 }
 
 export interface bookRescheduleAppointment_bookRescheduleAppointment {

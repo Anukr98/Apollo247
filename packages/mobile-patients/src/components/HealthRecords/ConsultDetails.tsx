@@ -4,7 +4,7 @@ import { ShareGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
@@ -13,6 +13,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getCaseSheet';
 import { GET_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
 import moment from 'moment';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -72,6 +73,8 @@ const styles = StyleSheet.create({
 export interface ConsultDetailsProps extends NavigationScreenProps {
   CaseSheet: string;
   DoctorInfo: any;
+  PatientId: any;
+  appointmentType: string;
 }
 
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
@@ -105,6 +108,11 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     }
   } else {
     console.log(getData.error, 'getData error');
+    console.log('Error occured while accept appid', getData.error);
+    const error = JSON.parse(JSON.stringify(getData.error));
+    const errorMessage = error && error.message;
+    console.log('Error occured while getData error', errorMessage, error);
+    Alert.alert('Error', errorMessage);
   }
 
   const data = {
@@ -128,51 +136,52 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const renderDoctorDetails = () => {
     return (
       <View style={styles.doctorDetailsStyle}>
-        <View
-          style={{
-            flexDirection: 'row',
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansMedium(12),
-                color: theme.colors.SEARCH_EDUCATION_COLOR,
-                paddingBottom: 4,
-              }}
-            >
-              #
-              {props.navigation.state.params!.DoctorInfo &&
-                props.navigation.state.params!.DoctorInfo.id}
-            </Text>
-            <View style={theme.viewStyles.lightSeparatorStyle} />
-            <Text style={styles.doctorNameStyle}>
-              Dr.{' '}
-              {props.navigation.state.params!.DoctorInfo &&
-                props.navigation.state.params!.DoctorInfo.firstName}
-            </Text>
-            <Text style={styles.timeStyle}>
-              {props.navigation.state.params!.appointmentType} Consult
-            </Text>
-            <View style={theme.viewStyles.lightSeparatorStyle} />
-          </View>
-          <View style={styles.imageView}>
-            {props.navigation.state.params!.DoctorInfo.photoUrl && (
-              <Image
-                source={{
-                  uri:
-                    props.navigation.state.params!.DoctorInfo &&
-                    props.navigation.state.params!.DoctorInfo.photoUrl,
-                }}
+        {!props.navigation.state.params!.DoctorInfo ? null : (
+          <View
+            style={{
+              flexDirection: 'row',
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text
                 style={{
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
+                  ...theme.fonts.IBMPlexSansMedium(12),
+                  color: theme.colors.SEARCH_EDUCATION_COLOR,
+                  paddingBottom: 4,
                 }}
-              />
-            )}
+              >
+                {props.navigation.state.params!.DoctorInfo &&
+                  '#' + props.navigation.state.params!.DoctorInfo.id}
+              </Text>
+              <View style={theme.viewStyles.lightSeparatorStyle} />
+              <Text style={styles.doctorNameStyle}>
+                {props.navigation.state.params!.DoctorInfo &&
+                  'Dr.' + props.navigation.state.params!.DoctorInfo.firstName}
+              </Text>
+              <Text style={styles.timeStyle}>
+                {props.navigation.state.params!.appointmentType} Consult
+              </Text>
+              <View style={theme.viewStyles.lightSeparatorStyle} />
+            </View>
+            <View style={styles.imageView}>
+              {props.navigation.state.params!.DoctorInfo &&
+                props.navigation.state.params!.DoctorInfo.photoUrl && (
+                  <Image
+                    source={{
+                      uri:
+                        props.navigation.state.params!.DoctorInfo &&
+                        props.navigation.state.params!.DoctorInfo.photoUrl,
+                    }}
+                    style={{
+                      width: 80,
+                      height: 80,
+                      borderRadius: 40,
+                    }}
+                  />
+                )}
+            </View>
           </View>
-        </View>
+        )}
         {caseSheetDetails && caseSheetDetails.followUp ? (
           <View>
             <Text style={styles.descriptionStyle}>
@@ -364,14 +373,36 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                   </Text>
                 )}
               </View>
-              <Text
-                style={[
-                  theme.viewStyles.yellowTextStyle,
-                  { textAlign: 'right', paddingBottom: 16 },
-                ]}
+              <TouchableOpacity
+                onPress={() => {
+                  console.log(
+                    'doctorid',
+                    props.navigation.state.params!.DoctorInfo &&
+                      props.navigation.state.params!.DoctorInfo.id
+                  );
+                  console.log('patientid', props.navigation.state.params!.PatientId);
+                  console.log('appointmentid', props.navigation.state.params!.CaseSheet);
+                  console.log('follwup', caseSheetDetails.followUp);
+                  console.log('appointmentType', props.navigation.state.params!.appointmentType);
+                  props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    doctorId: props.navigation.state.params!.DoctorInfo.id,
+                    PatientId: props.navigation.state.params!.PatientId,
+                    FollowUp: caseSheetDetails.followUp,
+                    appointmentType: props.navigation.state.params!.appointmentType,
+                    appointmentId: props.navigation.state.params!.CaseSheet,
+                    showBookAppointment: true,
+                  });
+                }}
               >
-                {strings.health_records_home.book_follow_up}
-              </Text>
+                <Text
+                  style={[
+                    theme.viewStyles.yellowTextStyle,
+                    { textAlign: 'right', paddingBottom: 16 },
+                  ]}
+                >
+                  {strings.health_records_home.book_follow_up}
+                </Text>
+              </TouchableOpacity>
             </View>
           </CollapseCard>
         </View>
@@ -389,7 +420,19 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           {renderFollowUp()}
         </View>
       );
-    return null;
+    return (
+      <Text
+        style={{
+          flex: 1,
+          alignSelf: 'center',
+          color: '#02475b',
+          ...theme.fonts.IBMPlexSansMedium(16),
+          justifyContent: 'center',
+        }}
+      >
+        No Data
+      </Text>
+    );
   };
 
   if (data.doctorInfo)
