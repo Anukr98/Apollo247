@@ -14,19 +14,19 @@ import { useQuery } from 'react-apollo-hooks';
 import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
-  // const toggleBtn = {
-  //   wi: '50%',
-  //   color: '#02475b',
-  //   fontSize: 14,
-  //   fontWeight: 600,
-  //   textTransform: 'none' as 'none',
-  //   textAlign: 'center' as 'center',
-  //   height: 30,
-  //   '& span': {
-  //     padding: 0,
-  //     width: 'auto',
-  //   },
-  // };
+  const toggleBtn = {
+    //   width: '50%',
+    //   color: '#02475b',
+    //   fontSize: 14,
+    //   fontWeight: 600,
+    //   textTransform: 'none' as 'none',
+    //   textAlign: 'center' as 'center',
+    //   height: 30,
+    //   '& span': {
+    //     padding: 0,
+    //     width: 'auto',
+    //   },
+  };
   return {
     toggleBtnGroup: {
       backgroundColor: 'black',
@@ -35,17 +35,17 @@ const useStyles = makeStyles((theme: Theme) => {
       // borderRadius: 20,
       // marginRight: 10,
     },
-    // toggleBtn,
-    // toggleBtnSelected: {
-    //   ...toggleBtn,
-    //   backgroundColor: '#00b38e',
-    //   color: theme.palette.common.white,
-    //   borderRadius: '20px !important',
-    //   '&:hover': {
-    //     backgroundColor: '#00b38e',
-    //     color: theme.palette.common.white,
-    //   },
-    // },
+    toggleBtn,
+    toggleBtnSelected: {
+      ...toggleBtn,
+      //   backgroundColor: '#00b38e',
+      //   color: theme.palette.common.white,
+      //   borderRadius: '20px !important',
+      //   '&:hover': {
+      //     backgroundColor: '#00b38e',
+      //     color: theme.palette.common.white,
+      //   },
+    },
   };
 });
 
@@ -58,7 +58,7 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
   const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
   if (loading || error || !data || !data.getDoctorDetails) return null;
   const { id, onlineStatus } = data.getDoctorDetails;
-  // const isSelected = (status: DOCTOR_ONLINE_STATUS) => status === onlineStatus;
+  const isSelected = (status: DOCTOR_ONLINE_STATUS) => status === onlineStatus;
   return (
     <Mutation<UpdateDoctorOnlineStatus, UpdateDoctorOnlineStatusVariables>
       mutation={UPDATE_DOCTOR_ONLINE_STATUS}
@@ -83,7 +83,7 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
               key={AWAY}
               value={AWAY}
               disabled={loading}
-              // className={isSelected(AWAY) ? classes.toggleBtnSelected : classes.toggleBtn}
+              className={isSelected(AWAY) ? classes.toggleBtnSelected : classes.toggleBtn}
             >
               Away
             </ToggleButton>
@@ -92,7 +92,7 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
               key={ONLINE}
               value={ONLINE}
               disabled={loading}
-              // className={isSelected(ONLINE) ? classes.toggleBtnSelected : classes.toggleBtn}
+              className={isSelected(ONLINE) ? classes.toggleBtnSelected : classes.toggleBtn}
             >
               Online
             </ToggleButton>
