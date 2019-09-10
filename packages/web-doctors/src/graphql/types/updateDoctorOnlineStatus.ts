@@ -5,24 +5,24 @@
 import { DOCTOR_ONLINE_STATUS } from "./globalTypes";
 
 // ====================================================
-// GraphQL mutation operation: updateDoctorOnlineStatus
+// GraphQL mutation operation: UpdateDoctorOnlineStatus
 // ====================================================
 
-export interface updateDoctorOnlineStatus_updateDoctorOnlineStatus_doctor {
+export interface UpdateDoctorOnlineStatus_updateDoctorOnlineStatus_doctor {
   __typename: "DoctorDetails";
   onlineStatus: DOCTOR_ONLINE_STATUS;
 }
 
-export interface updateDoctorOnlineStatus_updateDoctorOnlineStatus {
+export interface UpdateDoctorOnlineStatus_updateDoctorOnlineStatus {
   __typename: "UpdateDoctorOnlineStatusResult";
-  doctor: updateDoctorOnlineStatus_updateDoctorOnlineStatus_doctor;
+  doctor: UpdateDoctorOnlineStatus_updateDoctorOnlineStatus_doctor;
 }
 
-export interface updateDoctorOnlineStatus {
-  updateDoctorOnlineStatus: updateDoctorOnlineStatus_updateDoctorOnlineStatus;
+export interface UpdateDoctorOnlineStatus {
+  updateDoctorOnlineStatus: UpdateDoctorOnlineStatus_updateDoctorOnlineStatus;
 }
 
-export interface updateDoctorOnlineStatusVariables {
+export interface UpdateDoctorOnlineStatusVariables {
   doctorId: string;
   onlineStatus: DOCTOR_ONLINE_STATUS;
 }
