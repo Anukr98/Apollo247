@@ -1,4 +1,4 @@
-import { Doctor, DoctorType, Salutation } from 'doctors-service/entities';
+import { Doctor, DoctorType, Salutation, DOCTOR_ONLINE_STATUS } from 'doctors-service/entities';
 import faker from 'faker';
 import { randomEnum, randomValue, randomValues } from 'helpers/factoryHelpers';
 import _random from 'lodash/random';
@@ -31,6 +31,7 @@ export const buildDoctor = (attrs: Partial<Doctor> = {}) => {
   doctor.lastName = faker.name.lastName();
   doctor.mobileNumber = faker.phone.phoneNumber('+91##########');
   doctor.onlineConsultationFees = _random(100, 999);
+  doctor.onlineStatus = randomEnum(DOCTOR_ONLINE_STATUS);
   doctor.photoUrl = _sample(allPhotoUrls) as string;
   doctor.physicalConsultationFees = _random(100, 999);
   doctor.qualification = randomValues(allQualifications).join(', ');

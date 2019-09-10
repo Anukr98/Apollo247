@@ -68,6 +68,11 @@ export enum DOCTOR_DEVICE_TYPE {
   ANDROID = 'ANDROID',
 }
 
+export enum DOCTOR_ONLINE_STATUS {
+  ONLINE = 'ONLINE',
+  AWAY = 'AWAY',
+}
+
 //consult Hours starts
 @Entity()
 export class ConsultHours extends BaseEntity {
@@ -192,6 +197,9 @@ export class Doctor extends BaseEntity {
 
   @Column({ type: 'float8' })
   onlineConsultationFees: Number;
+
+  @Column()
+  onlineStatus: DOCTOR_ONLINE_STATUS;
 
   @OneToMany((type) => Packages, (packages) => packages.doctor)
   packages: Packages[];

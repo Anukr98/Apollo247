@@ -52,6 +52,10 @@ import { GraphQLTime, GraphQLDate } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
+import {
+  doctorOnlineStatusTypeDefs,
+  doctorOnlineStatusResolvers,
+} from 'doctors-service/resolvers/doctorOnlineStatus';
 
 (async () => {
   await connect();
@@ -135,6 +139,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: saveDoctorDeviceTokenTypeDefs,
         resolvers: saveDoctorDeviceTokenResolvers,
+      },
+      {
+        typeDefs: doctorOnlineStatusTypeDefs,
+        resolvers: doctorOnlineStatusResolvers,
       },
     ]),
   });
