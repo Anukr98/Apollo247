@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
+import _ from 'lodash';
 
 export const emailTypeDefs = gql`
   extend type Query {
@@ -13,7 +14,13 @@ export async function buildEmail() {
   //const configuration = lib.Configuration;
   const controller = lib.EmailController;
   const apiKey = '0e396e4e9b5247d267c9a536cd154869';
-  const mailContent = 'Hello There, This is a test email from apollo Hospitals [% name %]';
+
+  const compiled = _.template(
+    '<% _.forEach(users, function(user) { %><li><%- user %></li><% }); %>'
+  );
+  compiled({ users: ['fred', 'barney'] });
+
+  const mailContent = compiled;
 
   const body = new lib.EmailBody();
 
