@@ -98,13 +98,13 @@ export interface ActiveConsultCardProps {
   patient: {
     firstName: string;
     lastName: string;
-    uhid?: string | null;
-    photoUrl?: string | null;
+    uhid: string | null;
+    photoUrl: string | null;
     queueNumber: number;
   };
   appointment: {
     appointmentDateTime: Date;
-    appointmentType?: APPOINTMENT_TYPE | null;
+    appointmentType: APPOINTMENT_TYPE;
   };
 }
 export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {

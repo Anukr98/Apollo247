@@ -12,15 +12,16 @@ export interface GetDoctorConsults_getDoctorConsults_doctorConsults_patient {
   __typename: "Patient";
   id: string;
   uhid: string | null;
-  firstName: string | null;
-  lastName: string | null;
+  firstName: string;
+  lastName: string;
   photoUrl: string | null;
 }
 
 export interface GetDoctorConsults_getDoctorConsults_doctorConsults_appointment {
   __typename: "Appointment";
-  appointmentDateTime: any | null;
-  appointmentType: APPOINTMENT_TYPE | null;
+  id: string;
+  appointmentDateTime: any;
+  appointmentType: APPOINTMENT_TYPE;
 }
 
 export interface GetDoctorConsults_getDoctorConsults_doctorConsults {
