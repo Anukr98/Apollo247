@@ -27,7 +27,7 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
     });
   }
 
-  checkIfConsultsHours(doctor: string, consultMode: string) {
+  checkByDoctorAndConsultMode(doctor: string, consultMode: string) {
     return this.count({ where: [{ doctor, consultMode }, { doctor, consultMode: 'BOTH' }] });
   }
 }

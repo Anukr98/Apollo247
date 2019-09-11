@@ -83,8 +83,14 @@ const getDoctorNextAvailableSlot: Resolver<
       }*/
 
       const docConsultRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
-      const docConsultHrsOnline = await docConsultRep.checkIfConsultsHours(doctorId, 'ONLINE');
-      const docConsultHrsPhysical = await docConsultRep.checkIfConsultsHours(doctorId, 'PHYSICAL');
+      const docConsultHrsOnline = await docConsultRep.checkByDoctorAndConsultMode(
+        doctorId,
+        'ONLINE'
+      );
+      const docConsultHrsPhysical = await docConsultRep.checkByDoctorAndConsultMode(
+        doctorId,
+        'PHYSICAL'
+      );
       if (docConsultHrsOnline > 0) {
         //if the slot is empty check for next day
         let nextDate = new Date();
