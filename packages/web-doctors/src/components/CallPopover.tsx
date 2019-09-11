@@ -471,6 +471,7 @@ interface CallPopoverProps {
   doctorId: string;
   isEnded: boolean;
   caseSheetId: string;
+  prescriptionPdf: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -612,7 +613,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (
       disablecurrent >= minusTime &&
       disableaddedTime >= disablecurrent &&
-      sessionStorage.getItem('loggedInMobileNumber') !== currentPatient!.delegateNumber
+      localStorage.getItem('loggedInMobileNumber') !== currentPatient!.delegateNumber
     ) {
       setStartAppointmentButton(false);
     } else {

@@ -465,6 +465,7 @@ export const UPDATE_CASESHEET = gql`
       followUpDate
       id
       medicinePrescription {
+        id
         medicineConsumptionDurationInDays
         medicineName
         medicineDosage

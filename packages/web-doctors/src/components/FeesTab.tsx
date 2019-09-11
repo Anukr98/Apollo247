@@ -294,7 +294,7 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
           </div>
         </Grid>
       </Grid>
-      {sessionStorage.getItem('loggedInMobileNumber') === data.mobileNumber &&
+      {localStorage.getItem('loggedInMobileNumber') === data.mobileNumber &&
         data.bankAccount &&
         data.bankAccount.length > 0 && (
           <Grid container alignItems="flex-start" spacing={0}>

@@ -554,6 +554,7 @@ export const ConsultTabs: React.FC = () => {
                 doctorId={doctorId}
                 isEnded={isEnded}
                 caseSheetId={caseSheetId}
+                prescriptionPdf={prescriptionPdf}
               />
               <div>
                 <div>
