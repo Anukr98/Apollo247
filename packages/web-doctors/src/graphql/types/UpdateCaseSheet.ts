@@ -25,6 +25,7 @@ export interface UpdateCaseSheet_updateCaseSheet_diagnosticPrescription {
 
 export interface UpdateCaseSheet_updateCaseSheet_medicinePrescription {
   __typename: "MedicinePrescription";
+  id: string | null;
   medicineConsumptionDurationInDays: string | null;
   medicineName: string | null;
   medicineDosage: string | null;
