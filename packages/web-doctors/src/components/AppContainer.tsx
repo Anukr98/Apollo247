@@ -20,6 +20,8 @@ import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
 import { JuniorDoctor } from 'components/JuniorDoctors/JuniorDoctor';
 import { PatientDetails } from 'components/JuniorDoctors/PatientDetails';
 import { JDProfile } from 'components/JuniorDoctors/JDProfile';
+import { JDConsultRoom } from 'components/JuniorDoctors/JDConsultRoom';
+
 import { DoctorType } from 'graphql/types/globalTypes';
 
 const App: React.FC = () => {
@@ -68,6 +70,11 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.juniorDoctor()} component={JuniorDoctor} />
       <AuthRouted exact path={clientRoutes.patientDetails()} component={PatientDetails} />
       <AuthRouted exact path={clientRoutes.juniorDoctorProfile()} component={JDProfile} />
+      <AuthRouted
+        exact
+        path={clientRoutes.JDConsultRoom(':id', ':patientId')}
+        component={JDConsultRoom}
+      />
     </div>
   ) : (
     // TODO why are there `AuthedRoute`s inside of the "is not signed in" section?

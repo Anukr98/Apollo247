@@ -16,6 +16,8 @@ export const clientRoutes = {
   juniorDoctorProfile: () => '/juniordoctor-profile',
   ConsultTabs: (appointmentId: string, patientId: string) =>
     `/Consulttabs/${appointmentId}/${patientId}`,
+  JDConsultRoom: (appointmentId: string, patientId: string) =>
+    `/jd-consultroom/${appointmentId}/${patientId}`,
 };
 
 export const clientBaseUrl = () => webDoctorsBaseUrl();
