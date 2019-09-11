@@ -72,7 +72,6 @@ export interface PastConsultCardProps {
     lastName: string;
     uhid?: string | null;
     photoUrl?: string | null;
-    queueNumber: number;
   };
   appointment: {
     appointmentDateTime: Date;

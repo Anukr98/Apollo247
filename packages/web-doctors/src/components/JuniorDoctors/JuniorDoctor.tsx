@@ -6,9 +6,12 @@ import Scrollbars from 'react-custom-scrollbars';
 import { ActiveConsultCard } from 'components/JuniorDoctors/ActiveConsultCard';
 import { PastConsultCard } from 'components/JuniorDoctors/PastConsultCard';
 import { useQuery } from 'react-apollo-hooks';
-import { GetDoctorConsults, GetDoctorConsultsVariables } from 'graphql/types/GetDoctorConsults';
-import { GET_DOCTOR_CONSULTS } from 'graphql/consults';
+import { GET_CONSULT_QUEUE_AND_ALL_DOCTOR_APPOINTMENTS } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
+import {
+  GetConsultQueueAndAllDoctorAppointments,
+  GetConsultQueueAndAllDoctorAppointmentsVariables,
+} from 'graphql/types/GetConsultQueueAndAllDoctorAppointments';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -92,44 +95,52 @@ const useStyles = makeStyles((theme: Theme) => {
 export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
   const currentDoctor = useCurrentPatient();
-  const { data, loading, error } = useQuery<GetDoctorConsults, GetDoctorConsultsVariables>(
-    GET_DOCTOR_CONSULTS,
-    {
-      skip: !currentDoctor,
-      variables: {
-        getDoctorConsultsInput: {
-          doctorId: currentDoctor!.id,
-        },
-      },
-    }
-  );
+  const { data, loading, error } = useQuery<
+    GetConsultQueueAndAllDoctorAppointments,
+    GetConsultQueueAndAllDoctorAppointmentsVariables
+  >(GET_CONSULT_QUEUE_AND_ALL_DOCTOR_APPOINTMENTS, {
+    skip: !currentDoctor,
+    variables: {
+      doctorId: currentDoctor!.id,
+    },
+  });
 
   let content: [React.ReactNode, React.ReactNode] = [null, null];
-
   if (error) content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
-
   if (loading) content = [<CircularProgress />, <CircularProgress />];
+  if (data && data.getConsultQueue && data.getConsultQueue && data.getAllDoctorAppointments) {
+    const { consultQueue } = data.getConsultQueue;
+    const activeConsults = consultQueue.map((consult) => ({
+      ...consult,
+      appointment: {
+        ...consult.appointment,
+        appointmentDateTime: new Date(consult.appointment.appointmentDateTime),
+      },
+    }));
 
-  if (data && data.getDoctorConsults && data.getDoctorConsults.doctorConsults) {
-    const { doctorConsults } = data.getDoctorConsults;
-    const pastConsults = doctorConsults.filter(
-      (dc) => new Date(dc.appointment.appointmentDateTime) < new Date()
-    );
-    const futureConsults = doctorConsults.filter(
-      (dc) => new Date(dc.appointment.appointmentDateTime) > new Date()
-    );
+    const { appointmentsAndPatients } = data.getAllDoctorAppointments;
+    const pastAppointments = appointmentsAndPatients
+      .map((patientAndAppointment) => ({
+        ...patientAndAppointment,
+        appointment: {
+          ...patientAndAppointment.appointment,
+          appointmentDateTime: new Date(patientAndAppointment.appointment.appointmentDateTime),
+        },
+      }))
+      .filter(
+        (patientAndAppointment) =>
+          patientAndAppointment.appointment.appointmentDateTime < new Date()
+      );
+
     content = [
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {futureConsults.map(({ patient, appointment }, index) => (
+            {activeConsults.map(({ patient, appointment }, index) => (
               <ActiveConsultCard
                 key={appointment.id}
                 patient={{ ...patient, queueNumber: index + 1 }}
-                appointment={{
-                  ...appointment,
-                  appointmentDateTime: new Date(appointment.appointmentDateTime),
-                }}
+                appointment={appointment}
               />
             ))}
           </div>
@@ -139,15 +150,8 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {pastConsults.map(({ patient, appointment }, index) => (
-              <PastConsultCard
-                key={appointment.id}
-                patient={{ ...patient, queueNumber: index + 1 }}
-                appointment={{
-                  ...appointment,
-                  appointmentDateTime: new Date(appointment.appointmentDateTime),
-                }}
-              />
+            {pastAppointments.map(({ patient, appointment }) => (
+              <PastConsultCard key={appointment.id} patient={patient} appointment={appointment} />
             ))}
           </div>
         </div>
