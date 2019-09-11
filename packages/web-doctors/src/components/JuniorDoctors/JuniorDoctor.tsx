@@ -6,7 +6,7 @@ import Scrollbars from 'react-custom-scrollbars';
 import { ActiveConsultCard } from 'components/JuniorDoctors/ActiveConsultCard';
 import { PastConsultCard } from 'components/JuniorDoctors/PastConsultCard';
 import { useQuery } from 'react-apollo-hooks';
-import { GET_CONSULT_QUEUE } from 'graphql/consults';
+import { GET_CONSULT_QUEUE_AND_ALL_DOCTOR_APPOINTMENTS } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
 import {
   GetConsultQueueAndAllDoctorAppointments,
@@ -98,7 +98,7 @@ export const JuniorDoctor: React.FC = (props) => {
   const { data, loading, error } = useQuery<
     GetConsultQueueAndAllDoctorAppointments,
     GetConsultQueueAndAllDoctorAppointmentsVariables
-  >(GET_CONSULT_QUEUE, {
+  >(GET_CONSULT_QUEUE_AND_ALL_DOCTOR_APPOINTMENTS, {
     skip: !currentDoctor,
     variables: {
       doctorId: currentDoctor!.id,

@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 
-export const GET_CONSULT_QUEUE = gql`
+export const GET_CONSULT_QUEUE_AND_ALL_DOCTOR_APPOINTMENTS = gql`
   query GetConsultQueueAndAllDoctorAppointments($doctorId: String!) {
     getConsultQueue(doctorId: $doctorId) {
       consultQueue {
