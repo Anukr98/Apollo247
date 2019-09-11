@@ -10,6 +10,7 @@ import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/picker
 import DateFnsUtils from '@date-io/date-fns';
 import { fontWeight } from '@material-ui/system';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { addDays } from 'date-fns';
 
 const useStyles = makeStyles(() => ({
   followUpContainer: {
@@ -326,7 +327,7 @@ export const FollowUp: React.FC = () => {
     followUpAfterInDays[0] = `${followUpDays === 9 ? 'Custom' : followUpDays}`;
     setFollowUpAfterInDays(followUpAfterInDays);
 
-    followUpDate[0] = `${followUpDays === 9 ? selectedDate : ''}`;
+    followUpDate[0] = `${followUpDays === 9 ? selectedDate : addDays(new Date(), followUpDays)}`;
     setFollowUpDate(followUpDate);
   }, [consultType, shouldFollowUp, followUpDays, selectedDate]);
 

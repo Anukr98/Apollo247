@@ -21,8 +21,8 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo {
   __typename: "Patient";
   id: string;
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory {

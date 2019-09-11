@@ -68,8 +68,8 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface PastConsultCardProps {
   patient: {
-    firstName: string;
-    lastName: string;
+    firstName: string | null;
+    lastName: string | null;
     uhid?: string | null;
     photoUrl?: string | null;
   };
@@ -93,8 +93,8 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
             <Avatar src={patient.photoUrl} className={classes.avatar} />
           ) : (
             <Avatar className={classes.avatar}>
-              {patient.firstName.charAt(0)}
-              {patient.lastName.charAt(0)}
+              {(patient.firstName || '').charAt(0)}
+              {(patient.lastName || '').charAt(0)}
             </Avatar>
           )}
         </div>

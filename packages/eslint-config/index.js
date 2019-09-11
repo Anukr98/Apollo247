@@ -4,13 +4,20 @@ module.exports = {
     ecmaVersion: 6,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint', 'import'],
+  plugins: ['@typescript-eslint', 'graphql', 'import'],
   rules: {
     '@typescript-eslint/array-type': ['warn', 'array'],
     '@typescript-eslint/class-name-casing': 'warn',
     '@typescript-eslint/no-array-constructor': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
+    'graphql/template-strings': [
+      'error',
+      {
+        env: 'apollo',
+        schemaJson: require('../api-schema/schema.json'),
+      },
+    ],
     'import/newline-after-import': 'warn',
     'import/no-cycle': 'error',
     'import/no-default-export': 'warn',

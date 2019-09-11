@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingTop: 0,
       },
       position: 'absolute',
-      top: -69,
+      top: 0,
       zIndex: 9999,
       width: '100%',
       background: '#fff',
@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     videoContainer: {
-      minHeight: 470,
+      minHeight: 455,
       backgroundColor: '#000',
       borderRadius: 10,
       margin: 20,
@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
     },
     hideVideoContainer: {
-      right: 20,
+      right: 15,
       width: 170,
       height: 170,
       position: 'absolute',
@@ -60,7 +60,7 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
       overflow: 'hidden',
-      top: 80,
+      top: 60,
       backgroundColor: '#000',
     },
     VideoAlignment: {
