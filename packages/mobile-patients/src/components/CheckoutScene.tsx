@@ -500,7 +500,12 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         orderAutoId: orderInfo.orderAutoId,
         orderDetails: [
           {
-            id: `${orderInfo.orderAutoId}`,
+            id: `1`,
+            orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
+            statusDate: new Date().toString(),
+          },
+          {
+            id: `2`,
             orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
             statusDate: new Date().toString(),
           },
