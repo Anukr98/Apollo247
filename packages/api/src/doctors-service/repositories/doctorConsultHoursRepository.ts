@@ -17,4 +17,17 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
       ],
     });
   }
+
+  getAnyPhysicalConsultHours(doctor: string, weekDay: string) {
+    return this.find({
+      where: [
+        { doctor, weekDay, consultMode: 'PHYSICAL' },
+        { doctor, weekDay, consultMode: 'BOTH' },
+      ],
+    });
+  }
+
+  checkByDoctorAndConsultMode(doctor: string, consultMode: string) {
+    return this.count({ where: [{ doctor, consultMode }, { doctor, consultMode: 'BOTH' }] });
+  }
 }

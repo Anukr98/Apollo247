@@ -7,7 +7,7 @@ import {
   APPOINTMENT_TYPE,
   APPOINTMENT_STATE,
   TRANSFER_INITIATED_TYPE,
-  CaseSheet
+  CaseSheet,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -236,7 +236,6 @@ const bookTransferAppointment: Resolver<
   };
   const appointment = await appointmentRepo.saveAppointment(appointmentAttrs);
 
-  
   //TODO after junior doctor flow.. casesheet creation should be changed.
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const caseSheetAttrs: Partial<CaseSheet> = {
@@ -310,7 +309,8 @@ const initiateTransferAppointment: Resolver<
     const nextSlot = await appointmentRepo.getDoctorNextSlotDate(
       TransferAppointmentInput.transferredDoctorId,
       nextDate,
-      doctorsDb
+      doctorsDb,
+      'ONLINE'
     );
     if (nextSlot != '' && nextSlot != undefined) {
       slot = nextSlot;

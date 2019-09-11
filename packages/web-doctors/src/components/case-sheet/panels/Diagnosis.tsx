@@ -142,12 +142,19 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       paddingRight: 30,
       position: 'relative',
+      minHeight: 32,
+      height: 'auto',
       '& svg': {
         position: 'absolute',
         right: 0,
         '& path': {
           fill: '#fff',
         },
+      },
+      '& span': {
+        whiteSpace: 'normal',
+        paddingTop: 5,
+        paddingBottom: 5,
       },
       '&:focus': {
         backgroundColor: '#00b38e',
