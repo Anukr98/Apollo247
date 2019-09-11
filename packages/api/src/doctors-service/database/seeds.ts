@@ -166,11 +166,11 @@ import { buildConsultQueueItem } from 'doctors-service/database/factories/consul
   const consultQueueDoctor = jrKabir;
   const consultQueueAppointments = _sampleSize(jrKabirAppointments, numConsultQueueItems);
   const consultQueue = await Promise.all(
-    _times(numConsultQueueItems, () =>
+    _times(numConsultQueueItems, (index) =>
       consultQueueRepo.save(
         buildConsultQueueItem({
           doctorId: consultQueueDoctor.id,
-          appointmentId: _sample(consultQueueAppointments)!.id,
+          appointmentId: consultQueueAppointments[index].id,
         })
       )
     )

@@ -6,10 +6,17 @@ import { Appointment } from 'consults-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { Patient } from 'profiles-service/entities';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const getAllDoctorAppointmentsTypeDefs = gql`
+  type AppointmentAndPatient {
+    appointment: Appointment!
+    patient: Patient!
+  }
+
   type GetAllDoctorAppointmentsResult {
-    appointments: [Appointment!]!
+    appointmentsAndPatients: [AppointmentAndPatient!]!
   }
 
   extend type Query {
@@ -17,8 +24,12 @@ export const getAllDoctorAppointmentsTypeDefs = gql`
   }
 `;
 
+type AppointmentAndPatient = {
+  appointment: Appointment;
+  patient: Patient;
+};
 type GetAllDoctorAppointmentsResult = {
-  appointments: Appointment[];
+  appointmentsAndPatients: AppointmentAndPatient[];
 };
 type GetAllDoctorAppointmentsInput = {
   doctorId: string;
@@ -26,6 +37,7 @@ type GetAllDoctorAppointmentsInput = {
 
 const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) => ({
   apptRepo: consultsDb.getCustomRepository(AppointmentRepository),
+  patRepo: patientsDb.getCustomRepository(PatientRepository),
   docRepo: doctorsDb.getCustomRepository(DoctorRepository),
 });
 
@@ -41,13 +53,19 @@ const getAllDoctorAppointments: Resolver<
   ConsultServiceContext,
   GetAllDoctorAppointmentsResult
 > = async (parent, { doctorId }, context) => {
-  const { apptRepo, docRepo } = getRepos(context);
+  const { patRepo, apptRepo, docRepo } = getRepos(context);
   await checkAuth(docRepo, context.firebaseUid, doctorId);
-  const appointments = await apptRepo.find({
+  const allDocAppointments = await apptRepo.find({
     where: { doctorId },
     order: { appointmentDateTime: 'DESC' },
   });
-  return { appointments };
+  const appointmentsAndPatients = await Promise.all(
+    allDocAppointments.map(async (appointment) => {
+      const patient = await patRepo.findOneOrFail(appointment.parentId);
+      return { appointment, patient };
+    })
+  );
+  return { appointmentsAndPatients };
 };
 
 export const getAllDoctorAppointmentsResolvers = {
