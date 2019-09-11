@@ -12,6 +12,7 @@ import { ConsultQueueRepository } from 'consults-service/repositories/consultQue
 
 export const getConsultQueueTypeDefs = gql`
   type ConsultQueueItem {
+    order: Int!
     patient: Patient!
     appointment: Appointment!
   }
@@ -26,6 +27,7 @@ export const getConsultQueueTypeDefs = gql`
 `;
 
 type GqlConsultQueueItem = {
+  order: number;
   patient: Patient;
   appointment: Appointment;
 };
@@ -57,17 +59,13 @@ const getConsultQueue: Resolver<
 > = async (parent, { doctorId }, context) => {
   const { apptRepo, docRepo, patRepo, cqRepo } = getRepos(context);
   await checkAuth(docRepo, context.firebaseUid, doctorId);
-
-  const dbConsultQueue = await cqRepo.find({ doctorId });
-  const appointmentIds = dbConsultQueue.map((cq) => cq.appointmentId);
-  const appointments = await apptRepo.findByIds(appointmentIds, {
-    order: { appointmentDateTime: 'DESC' },
-  });
-
+  const dbConsultQueue = await cqRepo.find({ where: { doctorId }, order: { order: 'ASC' } });
   const consultQueue = await Promise.all(
-    appointments.map(async (appointment) => {
-      const patient = (await patRepo.findById(appointment.patientId)) as Patient;
-      return { appointment, patient };
+    dbConsultQueue.map(async (cq) => {
+      const order = cq.order;
+      const appointment = await apptRepo.findOneOrFail(cq.appointmentId);
+      const patient = await patRepo.findOneOrFail(appointment.patientId);
+      return { appointment, patient, order };
     })
   );
   return { consultQueue };
