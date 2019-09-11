@@ -25,19 +25,20 @@
     "@material-ui/core": "^4.0.2",
     "@material-ui/icons": "^4.0.1",
     "@material-ui/styles": "^4.0.2",
+    "@types/node": "^12.6.9",
     "@types/react": "^16.8.19",
     "@typescript-eslint/eslint-plugin": "^1.9.0",
     "@typescript-eslint/parser": "^1.9.0",
     "create-index": "^2.4.0",
     "eslint": "^5.16.0",
+    "eslint-plugin-graphql": "^3.0.3",
     "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-react": "^7.13.0",
     "eslint-plugin-react-hooks": "^1.6.0",
     "eslint-plugin-react-native": "^3.7.0",
     "prettier": "^1.18.2",
     "react": "16.8.6",
-    "typescript": "^3.5.2",
-    "@types/node": "^12.6.9"
+    "typescript": "^3.5.2"
   },
   "dependencies": {
     "@aph/universal": "file:../universal"
