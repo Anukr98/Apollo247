@@ -508,6 +508,8 @@ let transferObject: any = {
   facilityId: '',
   transferId: '',
 };
+let timerIntervalId: any;
+let stoppedConsulTimer: number;
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
@@ -525,6 +527,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
 
+  const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
+  const [startingTime, setStartingTime] = useState<number>(0);
+
+  // timer for audio/video call start
+  const timerMinuts = Math.floor(startingTime / 60);
+  const timerSeconds = startingTime - timerMinuts * 60;
+  const timerLastMinuts = Math.floor(startingTime / 60);
+  const timerLastSeconds = startingTime - timerMinuts * 60;
+  const startIntervalTimer = (timer: number) => {
+    setstartTimerAppoinment(true);
+    timerIntervalId = setInterval(() => {
+      timer = timer + 1;
+      stoppedConsulTimer = timer;
+      setStartingTime(timer);
+    }, 1000);
+  };
+  // timer for audio/video call end
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -570,7 +589,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     setShowVideoChat(!showVideoChat);
     //srollToBottomAction();
   };
-
+  useEffect(() => {
+    if (isCallAccepted) {
+      startIntervalTimer(0);
+    }
+  }, [isCallAccepted]);
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -595,12 +618,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     );
     const stoptext = {
       id: props.doctorId,
-      message: `Audio call ended`,
-      //message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
-      // duration: `${
-      //   timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      // } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
-      duration: `10:00`,
+      //message: `Audio call ended`,
+      message: `${setIsVideoCall ? 'Video' : 'Audio'} call ended`,
+      duration: `${
+        timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      //duration: `10:00`,
       isTyping: true,
     };
     pubnub.publish(
@@ -1136,8 +1159,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     return '';
   };
-  const ConsultMinutes = 2;
-  const ConsultSeconds = 10;
   return (
     <div>
       <div className={classes.breadcrumbs}>
@@ -1666,8 +1687,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               isVideoCall={isVideoCall}
               sessionId={props.sessionId}
               token={props.token}
-              timerMinuts={ConsultMinutes}
-              timerSeconds={ConsultSeconds}
+              timerMinuts={timerMinuts}
+              timerSeconds={timerSeconds}
               isCallAccepted={isCallAccepted}
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}
