@@ -12,8 +12,8 @@ export interface GetConsultQueueAndAllDoctorAppointments_getConsultQueue_consult
   __typename: "Patient";
   id: string;
   uhid: string | null;
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
   photoUrl: string | null;
 }
 
@@ -47,8 +47,8 @@ export interface GetConsultQueueAndAllDoctorAppointments_getAllDoctorAppointment
   __typename: "Patient";
   id: string;
   uhid: string | null;
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
   photoUrl: string | null;
 }
 

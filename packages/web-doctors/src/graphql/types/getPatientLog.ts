@@ -10,13 +10,13 @@ import { patientLogSort, patientLogType, Gender } from "./globalTypes";
 
 export interface GetPatientLog_getPatientLog_patientInfo {
   __typename: "Patient";
-  firstName: string;
-  lastName: string;
-  dateOfBirth: any;
+  firstName: string | null;
+  lastName: string | null;
+  dateOfBirth: any | null;
   id: string;
   emailAddress: string | null;
   mobileNumber: string;
-  gender: Gender;
+  gender: Gender | null;
   uhid: string | null;
   photoUrl: string | null;
 }
