@@ -1,9 +1,10 @@
 import gql from 'graphql-tag';
 
-export const GET_DOCTOR_CONSULTS = gql`
-  query GetDoctorConsults($getDoctorConsultsInput: GetDoctorConsultsInput!) {
-    getDoctorConsults(getDoctorConsultsInput: $getDoctorConsultsInput) {
-      doctorConsults {
+export const GET_CONSULT_QUEUE = gql`
+  query GetConsultQueue($doctorId: String!) {
+    getConsultQueue(doctorId: $doctorId) {
+      consultQueue {
+        order
         patient {
           id
           uhid
@@ -13,8 +14,8 @@ export const GET_DOCTOR_CONSULTS = gql`
         }
         appointment {
           id
-          appointmentDateTime
           appointmentType
+          appointmentDateTime
         }
       }
     }

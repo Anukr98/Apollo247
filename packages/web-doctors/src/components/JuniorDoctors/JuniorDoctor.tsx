@@ -6,9 +6,9 @@ import Scrollbars from 'react-custom-scrollbars';
 import { ActiveConsultCard } from 'components/JuniorDoctors/ActiveConsultCard';
 import { PastConsultCard } from 'components/JuniorDoctors/PastConsultCard';
 import { useQuery } from 'react-apollo-hooks';
-import { GetDoctorConsults, GetDoctorConsultsVariables } from 'graphql/types/GetDoctorConsults';
-import { GET_DOCTOR_CONSULTS } from 'graphql/consults';
+import { GET_CONSULT_QUEUE } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
+import { GetConsultQueue, GetConsultQueueVariables } from 'graphql/types/GetConsultQueue';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -92,14 +92,12 @@ const useStyles = makeStyles((theme: Theme) => {
 export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
   const currentDoctor = useCurrentPatient();
-  const { data, loading, error } = useQuery<GetDoctorConsults, GetDoctorConsultsVariables>(
-    GET_DOCTOR_CONSULTS,
+  const { data, loading, error } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
+    GET_CONSULT_QUEUE,
     {
       skip: !currentDoctor,
       variables: {
-        getDoctorConsultsInput: {
-          doctorId: currentDoctor!.id,
-        },
+        doctorId: currentDoctor!.id,
       },
     }
   );
@@ -110,12 +108,12 @@ export const JuniorDoctor: React.FC = (props) => {
 
   if (loading) content = [<CircularProgress />, <CircularProgress />];
 
-  if (data && data.getDoctorConsults && data.getDoctorConsults.doctorConsults) {
-    const { doctorConsults } = data.getDoctorConsults;
-    const pastConsults = doctorConsults.filter(
+  if (data && data.getConsultQueue && data.getConsultQueue.consultQueue) {
+    const { consultQueue } = data.getConsultQueue;
+    const pastConsults = consultQueue.filter(
       (dc) => new Date(dc.appointment.appointmentDateTime) < new Date()
     );
-    const futureConsults = doctorConsults.filter(
+    const futureConsults = consultQueue.filter(
       (dc) => new Date(dc.appointment.appointmentDateTime) > new Date()
     );
     content = [
