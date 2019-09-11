@@ -8,6 +8,7 @@ import {
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { format } from 'date-fns';
 
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
@@ -104,5 +105,33 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     currentStatus: MEDICINE_ORDER_STATUS
   ) {
     return this.update({ id, orderAutoId }, { orderDateTime, currentStatus });
+  }
+
+  getMedicineOrdersListByCreateddate(patient: String, startDate: Date, endDate: Date) {
+    const status = [
+      MEDICINE_ORDER_STATUS.QUOTE,
+      MEDICINE_ORDER_STATUS.ORDER_PLACED,
+      MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+      MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+      MEDICINE_ORDER_STATUS.PICKEDUP,
+      MEDICINE_ORDER_STATUS.RETURN_INITIATED,
+      MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
+      MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
+      MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY,
+    ];
+    const newStartDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:30');
+
+    return this.createQueryBuilder('MedicineOrders')
+      .where('patient = :patient', { patient })
+      .andWhere(
+        'MedicineOrders.createdDate > :startDate and MedicineOrders.createdDate < :endDate',
+        { newStartDate, newEndDate }
+      )
+      .andWhere('currentStatus IN ...status', { status: status })
+      .leftJoinAndSelect('MedicineOrders.medicineOrderLineItems', 'medicineOrderLineItems')
+      .leftJoinAndSelect('MedicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+      .leftJoinAndSelect('MedicineOrders.medicineOrdersStatus', 'medicineOrdersStatus')
+      .getRawMany();
   }
 }

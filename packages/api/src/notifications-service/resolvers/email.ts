@@ -15,12 +15,13 @@ export async function buildEmail() {
   const controller = lib.EmailController;
   const apiKey = '0e396e4e9b5247d267c9a536cd154869';
 
-  const compiled = _.template(
+  const mailContent = _.template(
     '<% _.forEach(users, function(user) { %><li><%- user %></li><% }); %>'
   );
-  compiled({ users: ['fred', 'barney'] });
+  const result = mailContent({ users: ['fred', 'barney'] });
 
-  const mailContent = compiled;
+  console.log('------------------------');
+  console.log(result);
 
   const body = new lib.EmailBody();
 
@@ -39,7 +40,7 @@ export async function buildEmail() {
   body.from.fromEmail = 'info@pepisandbox.com';
   body.from.fromName = 'Apollo Hospitals';
   body.subject = 'nothing';
-  body.content = mailContent; //'Hello There, This is a test email from apollo Hospitals [% name %]';
+  body.content = result; //'Hello There, This is a test email from apollo Hospitals [% name %]';
   body.settings = new lib.Settings();
 
   body.settings.footer = 1;
@@ -49,11 +50,9 @@ export async function buildEmail() {
   body.settings.bcc = '';
   body.replyToId = 'sriram.kanchan@popcornapps.com';
 
-  console.log(apiKey, body);
   const promise = await controller.createSendEmail(apiKey, body);
-  console.log(promise);
 
-  return <String>'success';
+  return promise;
 }
 
 const sendEmail: Resolver<null, {}, NotificationsServiceContext, string> = async (
