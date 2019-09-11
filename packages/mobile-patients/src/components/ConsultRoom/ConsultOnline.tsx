@@ -44,6 +44,11 @@ const styles = StyleSheet.create({
     color: theme.colors.APP_GREEN,
     ...theme.fonts.IBMPlexSansMedium(15),
   },
+  ctaTextStyle: {
+    color: theme.colors.APP_GREEN,
+    ...theme.fonts.IBMPlexSansMedium(16),
+    letterSpacing: -0.36,
+  },
 });
 
 type TimeArray = {
@@ -99,23 +104,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const [date, setDate] = useState<Date>(props.date);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
   const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
-  const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
-
-  //   const [availableSlot, setavailableSlot] = useState<string>('');
-
-  const [timeArray, settimeArray] = useState<TimeArray>([
-    { label: 'Morning', time: [] },
-    { label: 'Afternoon', time: [] },
-    { label: 'Evening', time: [] },
-    { label: 'Night', time: [] },
-  ]);
-
-  const setTimeArrayData = async (availableSlots: string[], date: Date) => {
-    console.log(availableSlots, 'setTimeArrayData availableSlots');
-    const array = await divideSlots(availableSlots, date);
-    console.log(array, 'array', timeArray, 'timeArray.......');
-    if (array !== timeArray) settimeArray(array);
-  };
 
   useEffect(() => {
     if (date !== props.date) {
@@ -192,12 +180,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         <View style={styles.optionsView}>
           {props.timeArray && props.timeArray.length > 0
             ? props.timeArray.map((value) => {
-                console.log(
-                  value,
-                  selectedtiming,
-                  value.label === selectedtiming,
-                  'selectedtiming'
-                );
                 if (value.label === selectedtiming) {
                   if (value.time.length > 0) {
                     return value.time.map((name: string, index: number) => (
@@ -265,7 +247,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     );
   };
 
-  console.log(availableInMin, 'availableInMin');
+  console.log(date, 'date online');
   return (
     <View>
       <View
@@ -308,11 +290,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               selectedCTA === onlineCTA[0] ? styles.selectedButtonView : null,
             ]}
             titleTextStyle={[
-              {
-                color: theme.colors.APP_GREEN,
-                letterSpacing: -0.36,
-                ...theme.fonts.IBMPlexSansMedium(16),
-              },
+              styles.ctaTextStyle,
               selectedCTA === onlineCTA[0] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
@@ -324,22 +302,16 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
           <View style={{ width: 16 }} />
           <Button
             title="Schedule For Later"
-            // style={{ width: 'auto', paddingHorizontal: 12 }}
             style={[
               {
                 flex: 3,
-                // width: 'auto',
                 paddingHorizontal: 12,
                 backgroundColor: theme.colors.WHITE,
               },
               selectedCTA === onlineCTA[1] ? styles.selectedButtonView : null,
             ]}
             titleTextStyle={[
-              {
-                color: theme.colors.APP_GREEN,
-                ...theme.fonts.IBMPlexSansMedium(16),
-                letterSpacing: -0.36,
-              },
+              styles.ctaTextStyle,
               selectedCTA === onlineCTA[1] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {

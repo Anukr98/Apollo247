@@ -64,6 +64,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
+  const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
+
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
   const client = useApolloClient();
   const isAddressValid =
@@ -111,7 +113,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
       addAddress && addAddress(address);
 
-      if (pinAvailabilityResult.data.Availability) {
+      if (pinAvailabilityResult.data.Availability || addOnly) {
         setDeliveryAddressId && setDeliveryAddressId(address.id || '');
         props.navigation.goBack();
       } else {
@@ -235,7 +237,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         {renderAddress()}
         <StickyBottomComponent defaultBG>
           <Button
-            title={'SAVE & USE'}
+            title={addOnly ? 'SAVE' : 'SAVE & USE'}
             style={{ flex: 1, marginHorizontal: 40 }}
             onPress={onSavePress}
             disabled={!isAddressValid}

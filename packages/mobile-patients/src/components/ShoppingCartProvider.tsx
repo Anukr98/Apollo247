@@ -20,6 +20,17 @@ export interface PhysicalPrescription {
   base64: string;
   uploadedUrl?: string;
 }
+type addressType = {
+  id?: string;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipcode?: string | null;
+  landmark?: string | null;
+  createdDate?: any | null;
+  updatedDate?: any | null;
+};
 
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
@@ -46,11 +57,9 @@ export interface ShoppingCartContextProps {
   removePhysicalPrescription: ((title: string) => void) | null;
   physicalPrescriptions: PhysicalPrescription[];
 
-  addresses: savePatientAddress_savePatientAddress_patientAddress[];
-  setAddresses:
-    | ((addresses: savePatientAddress_savePatientAddress_patientAddress[]) => void)
-    | null;
-  addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
+  addresses: addressType[];
+  setAddresses: ((addresses: addressType[]) => void) | null;
+  addAddress: ((address: addressType) => void) | null;
   deliveryAddressId: string;
   setDeliveryAddressId: ((id: string) => void) | null;
 

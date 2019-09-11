@@ -10,6 +10,8 @@ export const GET_CURRENT_PATIENTS = gql`
         lastName
         relation
         uhid
+        gender
+        dateOfBirth
         emailAddress
         gender
         dateOfBirth
@@ -393,6 +395,7 @@ export const NEXT_AVAILABLE_SLOT = gql`
       doctorAvailalbeSlots {
         availableSlot
         doctorId
+        physicalAvailableSlot
       }
     }
   }
