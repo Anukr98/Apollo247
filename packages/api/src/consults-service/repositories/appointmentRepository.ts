@@ -590,4 +590,16 @@ export class AppointmentRepository extends Repository<Appointment> {
       }
     );
   }
+
+  getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {
+    return this.find({
+      where: {
+        patientId,
+        appointmentDateTime: Between(startDate, endDate),
+        status: Not(STATUS.CANCELLED),
+      },
+      relations: ['caseSheet'],
+      order: { appointmentDateTime: 'ASC' },
+    });
+  }
 }
