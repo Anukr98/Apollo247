@@ -241,7 +241,9 @@ export const Calendar: React.FC = () => {
                 )}`}
               </p>
             ) : (
-              <p>here’s your schedule for {monthSelected}</p>
+              <p>
+                here’s your schedule for {monthSelected} {selectedDate.getFullYear()}
+              </p>
             )}
           </div>
           <div>
@@ -262,7 +264,7 @@ export const Calendar: React.FC = () => {
                   value="month"
                   onClick={() => {
                     setViewSelection('month');
-                    setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
+                    //setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
                     setMonthSelected(moment(selectedDate).format('MMMM'));
                   }}
                 >
