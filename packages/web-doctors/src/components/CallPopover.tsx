@@ -471,6 +471,7 @@ interface CallPopoverProps {
   doctorId: string;
   isEnded: boolean;
   caseSheetId: string;
+  prescriptionPdf: string;
 }
 let intervalId: any;
 let stoppedTimer: number;

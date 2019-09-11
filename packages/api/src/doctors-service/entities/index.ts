@@ -198,7 +198,7 @@ export class Doctor extends BaseEntity {
   @Column({ type: 'float8' })
   onlineConsultationFees: Number;
 
-  @Column()
+  @Column({ default: DOCTOR_ONLINE_STATUS.AWAY })
   onlineStatus: DOCTOR_ONLINE_STATUS;
 
   @OneToMany((type) => Packages, (packages) => packages.doctor)
