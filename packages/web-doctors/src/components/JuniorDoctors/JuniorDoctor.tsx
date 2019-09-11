@@ -6,12 +6,9 @@ import Scrollbars from 'react-custom-scrollbars';
 import { ActiveConsultCard } from 'components/JuniorDoctors/ActiveConsultCard';
 import { PastConsultCard } from 'components/JuniorDoctors/PastConsultCard';
 import { useQuery } from 'react-apollo-hooks';
-import { GET_CONSULT_QUEUE_AND_ALL_DOCTOR_APPOINTMENTS } from 'graphql/consults';
+import { GET_CONSULT_QUEUE } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
-import {
-  GetConsultQueueAndAllDoctorAppointments,
-  GetConsultQueueAndAllDoctorAppointmentsVariables,
-} from 'graphql/types/GetConsultQueueAndAllDoctorAppointments';
+import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetConsultQueue';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -95,42 +92,30 @@ const useStyles = makeStyles((theme: Theme) => {
 export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
   const currentDoctor = useCurrentPatient();
-  const { data, loading, error } = useQuery<
-    GetConsultQueueAndAllDoctorAppointments,
-    GetConsultQueueAndAllDoctorAppointmentsVariables
-  >(GET_CONSULT_QUEUE_AND_ALL_DOCTOR_APPOINTMENTS, {
-    skip: !currentDoctor,
-    variables: {
-      doctorId: currentDoctor!.id,
-    },
-  });
+  const { data, loading, error } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
+    GET_CONSULT_QUEUE,
+    {
+      skip: !currentDoctor,
+      variables: {
+        doctorId: currentDoctor!.id,
+      },
+    }
+  );
 
   let content: [React.ReactNode, React.ReactNode] = [null, null];
   if (error) content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
   if (loading) content = [<CircularProgress />, <CircularProgress />];
-  if (data && data.getConsultQueue && data.getConsultQueue && data.getAllDoctorAppointments) {
+  if (data && data.getConsultQueue) {
     const { consultQueue } = data.getConsultQueue;
-    const activeConsults = consultQueue.map((consult) => ({
+    const allConsults = consultQueue.map((consult) => ({
       ...consult,
       appointment: {
         ...consult.appointment,
         appointmentDateTime: new Date(consult.appointment.appointmentDateTime),
       },
     }));
-
-    const { appointmentsAndPatients } = data.getAllDoctorAppointments;
-    const pastAppointments = appointmentsAndPatients
-      .map((patientAndAppointment) => ({
-        ...patientAndAppointment,
-        appointment: {
-          ...patientAndAppointment.appointment,
-          appointmentDateTime: new Date(patientAndAppointment.appointment.appointmentDateTime),
-        },
-      }))
-      .filter(
-        (patientAndAppointment) =>
-          patientAndAppointment.appointment.appointmentDateTime < new Date()
-      );
+    const activeConsults = allConsults.filter((consult) => consult.isActive);
+    const pastConsults = allConsults.filter((consult) => !consult.isActive);
 
     content = [
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
@@ -150,7 +135,7 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {pastAppointments.map(({ patient, appointment }) => (
+            {pastConsults.map(({ patient, appointment }) => (
               <PastConsultCard key={appointment.id} patient={patient} appointment={appointment} />
             ))}
           </div>
