@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Theme, Button, Modal } from '@material-ui/core';
+import { Prompt } from 'react-router';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -205,6 +206,25 @@ const storageClient = new AphStorageClient(
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
 
+const handleBrowserUnload = (event: BeforeUnloadEvent) => {
+  event.preventDefault();
+  event.returnValue = '';
+};
+
+const handleBrowserStateChange = (event: Event) => {
+  console.log('coming');
+};
+
+const subscribeBrowserButtonsListener = () => {
+  window.addEventListener('beforeunload', handleBrowserUnload);
+  window.addEventListener('onpopstate', handleBrowserStateChange);
+};
+
+const unSubscribeBrowserButtonsListener = () => {
+  window.removeEventListener('beforeunload', handleBrowserUnload);
+  window.removeEventListener('onpopstate', handleBrowserStateChange);
+};
+
 export const ConsultTabs: React.FC = () => {
   const classes = useStyles();
   const params = useParams<Params>();
@@ -269,6 +289,13 @@ export const ConsultTabs: React.FC = () => {
   const setCasesheetNotes = (notes: string) => {
     customNotes = notes; // this will be used in saving case sheet.
   };
+
+  useEffect(() => {
+    subscribeBrowserButtonsListener();
+    return () => {
+      unSubscribeBrowserButtonsListener();
+    };
+  });
 
   useEffect(() => {
     if (isSignedIn) {

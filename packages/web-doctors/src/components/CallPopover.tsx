@@ -10,7 +10,7 @@ import {
   Paper,
   FormHelperText,
 } from '@material-ui/core';
-import { Link } from 'react-router-dom';
+import { Prompt, Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
@@ -1138,10 +1138,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const ConsultMinutes = 2;
   const ConsultSeconds = 10;
+
   return (
     <div>
       <div className={classes.breadcrumbs}>
         <div>
+          <Prompt message="Are you sure to exit"></Prompt>
           <Link to="/calendar">
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
