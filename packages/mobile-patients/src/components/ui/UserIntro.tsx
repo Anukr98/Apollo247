@@ -168,8 +168,8 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
     <View>
       <View style={[styles.viewName, props.style]}>
         {props.children}
-        <TouchableOpacity
-          activeOpacity={1}
+        <View
+          // activeOpacity={1}
           // onPress={() => setShowMenu(true)}
           style={{
             flexDirection: 'row',
@@ -195,7 +195,7 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
               <View style={styles.seperatorStyle} />
             </View> */}
           </View>
-        </TouchableOpacity>
+        </View>
         <Text style={styles.descriptionTextStyle}>{props.description}</Text>
       </View>
       {showMenu && Popup()}

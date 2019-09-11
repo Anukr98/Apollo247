@@ -11,13 +11,13 @@ import { UpdatePatientInput, Relation, Gender } from "./globalTypes";
 export interface updatePatient_updatePatient_patient {
   __typename: "Patient";
   id: string;
-  mobileNumber: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  relation: Relation | null;
-  gender: Gender | null;
+  mobileNumber: string;
+  firstName: string;
+  lastName: string;
+  relation: Relation;
+  gender: Gender;
   uhid: string | null;
-  dateOfBirth: any | null;
+  dateOfBirth: any;
   emailAddress: string | null;
 }
 

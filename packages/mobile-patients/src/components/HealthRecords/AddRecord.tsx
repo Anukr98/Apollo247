@@ -5,7 +5,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CrossYellow, PrescriptionThumbnail } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { ADD_MEDICAL_RECORD } from '@aph/mobile-patients/src/graphql/profiles';
+import { ADD_MEDICAL_RECORD, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   addPatientMedicalRecord,
   addPatientMedicalRecordVariables,
@@ -40,6 +40,7 @@ import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import Moment from 'moment';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
+import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -178,9 +179,47 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     description: 'This is a follow-up consult to the Clinic Visit on 27 Jul 2019',
   };
 
+  const multiplePhysicalPrescriptionUpload = (prescriptions) => {
+    return Promise.all(
+      prescriptions.map((item) =>
+        client.mutate<uploadFile, uploadFileVariables>({
+          mutation: UPLOAD_FILE,
+          fetchPolicy: 'no-cache',
+          variables: {
+            fileType: item.path!.substring(item.path!.lastIndexOf('.') + 1),
+            base64FileInput: item.data,
+          },
+        })
+      )
+    );
+  };
+
   const onSavePress = () => {
     setshowSpinner(true);
     console.log(currentPatient, 'currentPatient', currentPatient ? currentPatient.id : '');
+    let uploadedUrls = [];
+    multiplePhysicalPrescriptionUpload(Images)
+      .then((data) => {
+        console.log({ data });
+        const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
+        const uploadedPrescriptions = Images.map((item, index) => ({
+          ...item,
+          uploadedUrl: uploadUrls[index],
+        }));
+        console.log(uploadedPrescriptions, 'uploadedPrescriptions');
+        uploadedUrls = uploadedPrescriptions.map((item) => item.uploadedUrl);
+
+        // setPhysicalPrescriptions && setPhysicalPrescriptions(uploadedPrescriptions);
+        // setshowSpinner(false);
+        // props.navigation.navigate(AppRoutes.CheckoutScene);
+      })
+      .catch((e) => {
+        setshowSpinner(false);
+        console.error({ e });
+        Alert.alert('ALert', 'Error occurred while uploading prescriptions.');
+      });
+    console.log(uploadedUrls.join(','), 'uploadedUrls');
+
     const inputData = {
       patientId: currentPatient ? currentPatient.id : '',
       testName: testName,
@@ -191,6 +230,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       observations: observations,
       additionalNotes: additionalNotes,
       medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
+      documentURLs: uploadedUrls.join(','),
     };
     console.log('inputData', inputData);
     if (currentPatient && currentPatient.id)
@@ -594,7 +634,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }}
             getData={(data: (PickerImage | PickerImage[])[]) => {
               console.log(data);
-              // setImages(data);
+              setImages(data);
+              setdisplayOrderPopup(false);
             }}
           />
         )}

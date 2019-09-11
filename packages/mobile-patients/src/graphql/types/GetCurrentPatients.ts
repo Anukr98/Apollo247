@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Relation, Gender } from "./globalTypes";
+import { Relation } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCurrentPatients
@@ -11,13 +11,11 @@ import { Relation, Gender } from "./globalTypes";
 export interface GetCurrentPatients_getCurrentPatients_patients {
   __typename: "Patient";
   id: string;
-  mobileNumber: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  relation: Relation | null;
-  gender: Gender | null;
+  mobileNumber: string;
+  firstName: string;
+  lastName: string;
+  relation: Relation;
   uhid: string | null;
-  dateOfBirth: any | null;
   emailAddress: string | null;
 }
 

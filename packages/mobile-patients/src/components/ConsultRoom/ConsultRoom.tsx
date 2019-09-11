@@ -584,8 +584,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   <ApolloLogo style={{ right: 20 }} />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                activeOpacity={1}
+              <View
+                // activeOpacity={1}
                 // onPress={() => setShowMenu(true)}
                 style={{
                   flexDirection: 'row',
@@ -610,7 +610,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     <View style={styles.seperatorStyle} />
                   </View> */}
                 </View>
-              </TouchableOpacity>
+              </View>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
             </View>
           </View>

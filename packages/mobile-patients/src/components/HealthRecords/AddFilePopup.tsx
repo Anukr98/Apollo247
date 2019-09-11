@@ -68,6 +68,8 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
       height: 400,
       cropping: false,
       // useFrontCamera: true,
+      includeBase64: true,
+      compressImageQuality: 0.1,
     }).then((image) => {
       console.log(image, typeof image);
       props.getData([image]);
@@ -81,6 +83,8 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
       height: 400,
       cropping: false,
       multiple: true,
+      includeBase64: true,
+      compressImageQuality: 0.1,
     }).then((image) => {
       console.log(image, typeof image);
       props.getData(image as PickerImage[]);
@@ -108,7 +112,8 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
           alignItems: 'flex-end',
         }}
       >
-        <TouchableOpacity activeOpacity={1}
+        <TouchableOpacity
+          activeOpacity={1}
           onPress={() => props.onClickClose()}
           style={{
             marginTop: Platform.OS === 'ios' ? 38 : 14,
@@ -170,12 +175,20 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
                 marginHorizontal: 8,
               }}
             >
-              <TouchableOpacity activeOpacity={1} style={styles.cardContainer} onPress={onClickTakePhoto}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.cardContainer}
+                onPress={onClickTakePhoto}
+              >
                 <CameraIcon />
                 <Text style={styles.yelloTextStyle}>TAKE A PHOTO</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity activeOpacity={1} style={styles.cardContainer} onPress={onClickGallery}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.cardContainer}
+                onPress={onClickGallery}
+              >
                 <GalleryIcon />
                 <Text style={styles.yelloTextStyle}>{`CHOOSE FROM GALLERY`}</Text>
               </TouchableOpacity>

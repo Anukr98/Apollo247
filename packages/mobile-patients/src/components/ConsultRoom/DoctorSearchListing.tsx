@@ -282,7 +282,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     availabilityArray,
     'availabilityArray',
     feesArray,
-    'feesArray'
+    'feesArray',
+    availableNow,
+    'availableNow'
   );
 
   const FilterInput = {
@@ -354,10 +356,20 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     // console.log(e, 'jvjhvhm');
   };
 
+  const findAddressFromLocationString = (searchstring, key) => {
+    return new Promise((resolve, reject) => {
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+      axios
+        .get(url)
+        .then(resolve)
+        .catch(reject);
+    });
+  };
+
   const autoSearch = (searchText: string) => {
     axios
       .get(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&latitude=17.3355835&longitude=78.46756239999999&key=${key}`
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&location=17.3355835,78.46756239999999&key=${key}`
       )
       .then((obj) => {
         console.log(obj, 'places');
@@ -383,34 +395,66 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const fetchCurrentLocation = () => {
     // setshowLocationpopup(true);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-        axios
-          .get(url)
-          .then((obj) => {
-            console.log(obj);
-            if (obj.data.results.length > 0 && obj.data.results[0].address_components.length > 0) {
-              const address = obj.data.results[0].address_components[0].short_name;
-              console.log(address, 'address', obj.data.results[0].geometry.location, 'location');
+    AsyncStorage.getItem('location').then((item) => {
+      const latlong = item ? JSON.parse(item) : null;
+      console.log(item, 'AsyncStorage item', latlong);
+      if (latlong) {
+        findAddressFromLocationString(`${latlong.lat}, ${latlong.lng}`, key)
+          .then((response) => {
+            console.log(response);
+            if (
+              response.data.results.length &&
+              response.data.results[0].address_components.length
+            ) {
+              const address = response.data.results[0].address_components[0].short_name;
+              console.log(address, 'address');
               setcurrentLocation(address.toUpperCase());
-              AsyncStorage.setItem(
-                'location',
-                JSON.stringify(obj.data.results[0].geometry.location)
-              );
             }
           })
-          .catch((error) => {
-            console.log(error);
-          });
-      },
-      (error) => {
-        console.warn(error.code, error.message);
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
+          .catch((error) => console.log(error));
+        // searchstring = `${latlong.lat}, ${latlong.lng}`;
+      } else {
+        // searchstring = position.coords.latitude + ', ' + position.coords.longitude;
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+            console.log(searchstring, 'getCurrentPosition searchstring');
+
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+            axios
+              .get(url)
+              .then((obj) => {
+                console.log(obj);
+                if (
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
+                ) {
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(
+                    address,
+                    'address',
+                    obj.data.results[0].geometry.location,
+                    'location'
+                  );
+                  setcurrentLocation(address.toUpperCase());
+                  AsyncStorage.setItem(
+                    'location',
+                    JSON.stringify(obj.data.results[0].geometry.location)
+                  );
+                }
+              })
+              .catch((error) => {
+                console.log(error, 'geocode error');
+              });
+          },
+          (error) => {
+            console.log(error.code, error.message, 'getCurrentPosition error');
+          },
+          { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+        );
+      }
+    });
   };
 
   const RightHeader = () => {
@@ -611,22 +655,26 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     console.log(showLocationpopup, 'showLocationpopup');
     if (showLocationpopup) {
       return (
-        <View
+        <TouchableOpacity
+          activeOpacity={1}
           style={{
             position: 'absolute',
             left: 0,
             right: 0,
-            top: 40,
+            top: 0, //40
+            bottom: 0,
             alignItems: 'center',
             zIndex: 15,
             elevation: 15,
           }}
+          onPress={() => setshowLocationpopup(false)}
         >
           <View
             style={{
               ...theme.viewStyles.cardViewStyle,
               width: 235,
               padding: 16,
+              marginTop: 40,
             }}
           >
             <Text
@@ -685,7 +733,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               ))}
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       );
     }
   };
@@ -720,14 +768,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           {selectedTab === tabs[2].title && renderDoctorSearches(ConsultMode.PHYSICAL)}
         </Animated.ScrollView>
       </SafeAreaView>
-      {renderPopup()}
       {displayFilter ? (
         <FilterScene
           onClickClose={() => {
             setDisplayFilter(false);
           }}
           setData={(selecteddata) => {
-            // if (selecteddata !== data) setshowSpinner(true);
+            setshowSpinner(true);
             setFilterData(selecteddata);
           }}
           data={[...FilterData]}
@@ -736,6 +783,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       {showSpinner && <Spinner />}
       {renderAnimatedView()}
       {renderTopView()}
+      {renderPopup()}
     </View>
   );
 };

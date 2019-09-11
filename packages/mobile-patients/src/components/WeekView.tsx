@@ -132,6 +132,7 @@ export const WeekView: ForwardRefExoticComponent<
     velocityThreshold: 0.3,
     directionalOffsetThreshold: 80,
   };
+  console.log(props.date, 'props.date weekview');
 
   return (
     <GestureRecognizer onSwipeLeft={onSwipeLeft} onSwipeRight={onSwipeRight} config={config}>

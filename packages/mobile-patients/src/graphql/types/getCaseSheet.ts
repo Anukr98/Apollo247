@@ -10,15 +10,15 @@ import { APPOINTMENT_TYPE, STATUS, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN } from
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
-  id: string | null;
-  appointmentDateTime: any | null;
+  id: string;
+  appointmentDateTime: any;
   appointmentState: string | null;
-  appointmentType: APPOINTMENT_TYPE | null;
-  doctorId: string | null;
-  hospitalId: string | null;
-  patientId: string | null;
+  appointmentType: APPOINTMENT_TYPE;
+  doctorId: string;
+  hospitalId: string;
+  patientId: string;
   parentId: string | null;
-  status: STATUS | null;
+  status: STATUS;
 }
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {

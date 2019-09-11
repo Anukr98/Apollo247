@@ -216,27 +216,25 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   useEffect(() => {
-    try {
-      setNewAppointmentTime(
-        props.navigation.getParam('Data')
-          ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
-              'Do MMMM, dddd \nhh:mm a'
-            )
-          : ''
-      );
+    setNewAppointmentTime(
+      props.navigation.getParam('Data')
+        ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
+            'Do MMMM, dddd \nhh:mm a'
+          )
+        : ''
+    );
 
-      let calculateCount = props.navigation.getParam('Data')
-        ? props.navigation.getParam('Data').rescheduleCount
-        : 5;
+    // let calculateCount = props.navigation.getParam('Data')
+    //   ? props.navigation.getParam('Data').rescheduleCount
+    //   : '';
 
-      if (calculateCount > 3) {
-        calculateCount = Math.floor(calculateCount / 3);
-      }
+    let calculateCount: number = 5;
 
-      setNewRescheduleCount(calculateCount);
-    } catch (error) {
-      console.log('error', error);
+    if (calculateCount > 3) {
+      calculateCount = Math.floor(calculateCount / 3);
     }
+
+    setNewRescheduleCount(calculateCount);
   });
 
   useEffect(() => {
@@ -647,9 +645,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               <ApolloLogo />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {}} //setShowMenu(true)}
+          <View
+            // activeOpacity={1}
+            // onPress={() => setShowMenu(true)}
             style={{
               flexDirection: 'row',
               marginTop: 8,
@@ -673,7 +671,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 <View style={styles.seperatorStyle} />
               </View> */}
             </View>
-          </TouchableOpacity>
+          </View>
           <Text style={styles.descriptionTextStyle}>
             {consultations.length > 0
               ? `You have ${consultations.length} upcoming consultation${
@@ -706,7 +704,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 title={string.home.consult_doctor}
                 style={styles.buttonStyles}
                 onPress={() => {
-                  props.navigation.navigate(AppRoutes.SymptomChecker);
+                  // props.navigation.navigate(AppRoutes.DoctorSearch);
                 }}
               />
             </View>
@@ -717,7 +715,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
+    <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {showMenu && Popup()}
