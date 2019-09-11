@@ -123,12 +123,12 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:30');
 
     return this.createQueryBuilder('MedicineOrders')
-      .where('patient = :patient', { patient })
+      .where('MedicineOrders.patient = :patient', { patient })
       .andWhere(
         'MedicineOrders.createdDate > :startDate and MedicineOrders.createdDate < :endDate',
-        { newStartDate, newEndDate }
+        { startDate: newStartDate, endDate: newEndDate }
       )
-      .andWhere('currentStatus IN ...status', { status: status })
+      .andWhere('MedicineOrders.currentStatus IN (:...status)', { status: status })
       .leftJoinAndSelect('MedicineOrders.medicineOrderLineItems', 'medicineOrderLineItems')
       .leftJoinAndSelect('MedicineOrders.medicineOrderPayments', 'medicineOrderPayments')
       .leftJoinAndSelect('MedicineOrders.medicineOrdersStatus', 'medicineOrdersStatus')
