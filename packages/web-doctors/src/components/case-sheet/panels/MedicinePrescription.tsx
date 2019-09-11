@@ -487,6 +487,7 @@ export const MedicinePrescription: React.FC = () => {
         setLoading(false);
       })
       .catch();
+    setLoading(false);
   };
   const deletemedicine = (idx: any) => {
     selectedMedicines.splice(idx, 1);
@@ -780,6 +781,7 @@ export const MedicinePrescription: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
+    setLoading(false);
     if (newValue.length > 2) {
       fetchMedicines(newValue);
     }
