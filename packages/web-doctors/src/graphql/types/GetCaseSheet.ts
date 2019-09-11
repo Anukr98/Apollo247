@@ -51,11 +51,11 @@ export interface GetCaseSheet_getCaseSheet_patientDetails {
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
-  id: string | null;
-  appointmentDateTime: any | null;
-  status: STATUS | null;
+  id: string;
+  appointmentDateTime: any;
+  status: STATUS;
   appointmentState: string | null;
-  displayId: string | null;
+  displayId: string;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {
@@ -155,15 +155,15 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments_caseSheet {
 
 export interface GetCaseSheet_getCaseSheet_pastAppointments {
   __typename: "Appointment";
-  id: string | null;
-  appointmentDateTime: any | null;
+  id: string;
+  appointmentDateTime: any;
   appointmentState: string | null;
-  doctorId: string | null;
-  hospitalId: string | null;
-  patientId: string | null;
+  doctorId: string;
+  hospitalId: string;
+  patientId: string;
   parentId: string | null;
-  status: STATUS | null;
-  caseSheet: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet | null)[] | null;
+  status: STATUS;
+  caseSheet: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet[] | null;
 }
 
 export interface GetCaseSheet_getCaseSheet {

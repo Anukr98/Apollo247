@@ -272,7 +272,7 @@ export class MedicineOrderPayments extends BaseEntity {
   @Column({ nullable: true })
   responseCode: string;
 
-  @Column()
+  @Column({ nullable: true })
   responseMessage: string;
 
   @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderPayments)

@@ -84,27 +84,27 @@ export const caseSheetTypeDefs = gql`
   }
 
   input CaseSheetInput {
-    appointmentId: String
-    createdDoctorId: String
+    appointmentId: String!
+    createdDoctorId: String!
   }
 
   type Appointment {
-    id: String
-    appointmentDateTime: DateTime
+    id: String!
+    appointmentDateTime: DateTime!
     appointmentState: String
-    appointmentType: APPOINTMENT_TYPE
-    displayId: String
-    doctorId: String
-    hospitalId: String
-    patientId: String
+    appointmentType: APPOINTMENT_TYPE!
+    displayId: String!
+    doctorId: String!
+    hospitalId: String!
+    patientId: String!
     parentId: String
-    status: STATUS
-    rescheduleCount: Int
-    isFollowUp: Int
+    status: STATUS!
+    rescheduleCount: Int!
+    isFollowUp: Int!
     followUpParentId: String
-    isTransfer: Int
+    isTransfer: Int!
     transferParentId: String
-    caseSheet: [CaseSheet]
+    caseSheet: [CaseSheet!]
   }
 
   type CaseSheetFullDetails {
