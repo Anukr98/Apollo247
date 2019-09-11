@@ -19,7 +19,7 @@ import { useQuery } from 'react-apollo-hooks';
 import Moment from 'moment';
 import { StyleSheet, Text, View } from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
-import { timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { timeTo12HrFormat, divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -65,6 +65,7 @@ export interface ConsultOnlineProps {
   setselectedTimeSlot: (arg0: string) => void;
   selectedTimeSlot: string;
   setshowSpinner?: (arg0: boolean) => void;
+  availableSlots?: [];
 }
 export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const timings = [
@@ -98,13 +99,32 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const [date, setDate] = useState<Date>(props.date);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
   const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
+  const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
 
   //   const [availableSlot, setavailableSlot] = useState<string>('');
+
+  const [timeArray, settimeArray] = useState<TimeArray>([
+    { label: 'Morning', time: [] },
+    { label: 'Afternoon', time: [] },
+    { label: 'Evening', time: [] },
+    { label: 'Night', time: [] },
+  ]);
+
+  const setTimeArrayData = async (availableSlots: string[], date: Date) => {
+    console.log(availableSlots, 'setTimeArrayData availableSlots');
+    const array = await divideSlots(availableSlots, date);
+    console.log(array, 'array', timeArray, 'timeArray.......');
+    if (array !== timeArray) settimeArray(array);
+  };
 
   useEffect(() => {
     if (date !== props.date) {
       setDate(props.date);
     }
+    // if (availableSlots !== props.availableSlots && props.availableSlots) {
+    //   setTimeArrayData(props.availableSlots, props.date);
+    //   setavailableSlots(props.availableSlots);
+    // }
   }, [props.date, date]);
 
   const todayDate = new Date().toISOString().slice(0, 10);
@@ -135,19 +155,9 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
         .availableSlot;
       // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
-      console.log(nextSlot, new Date(nextSlot));
-      const formatedTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('HH:mm');
-      console.log(formatedTime, 'formatedTime');
       let timeDiff: Number = 0;
-      const time = formatedTime.split(':');
       const today: Date = new Date();
-      const date2: Date = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        Number(time[0]),
-        Number(time[1])
-      );
+      const date2: Date = new Date(nextSlot);
       if (date2 && today) {
         timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
       }
@@ -161,7 +171,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   }
 
   const renderTimings = () => {
-    // console.log(timeArray, 'timeArray123456789', selectedtiming);
+    console.log(props.timeArray, 'timeArray123456789', selectedtiming);
     return (
       <View>
         <TabsComponent

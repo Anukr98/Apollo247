@@ -298,7 +298,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               <View style={styles.separatorStyle} />
               <Text style={styles.doctorSpecializationStyles}>
                 {doctorDetails.specialty ? doctorDetails.specialty.name : ''} |{' '}
-                {doctorDetails.experience} YRS
+                {doctorDetails.experience} YR{Number(doctorDetails.experience) > 1 ? 'S' : ''}
               </Text>
               <Text style={styles.educationTextStyles}>{doctorDetails.qualification}</Text>
               <Text style={[styles.educationTextStyles, { paddingBottom: 12 }]}>
@@ -644,7 +644,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   console.log(displayoverlay, 'displayoverlay', doctorDetails, 'availableTime', availableTime);
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,

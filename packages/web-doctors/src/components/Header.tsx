@@ -15,8 +15,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
-// import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
-import ToggleButton from '@material-ui/lab/ToggleButton';
+import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -142,34 +141,6 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: '9px !important',
       marginRight: '0 !important',
     },
-    toggleBtnGroup: {
-      backgroundColor: '#f7f7f7',
-      minWidth: 208,
-      borderRadius: 20,
-      marginRight: 10,
-    },
-    toggleBtn: {
-      width: '50%',
-      color: '#02475b',
-      fontSize: 14,
-      fontWeight: 600,
-      textTransform: 'none',
-      textAlign: 'center',
-      height: 30,
-      '& span': {
-        padding: 0,
-        width: 'auto',
-      },
-    },
-    toggleBtnActive: {
-      backgroundColor: '#00b38e',
-      color: theme.palette.common.white,
-      borderRadius: '20px !important',
-      '&:hover': {
-        backgroundColor: '#00b38e',
-        color: theme.palette.common.white,
-      },
-    },
   };
 });
 
@@ -196,18 +167,7 @@ export const Header: React.FC = (props) => {
           !window.location.href.includes('/profile') &&
           !window.location.href.includes('/patientlogdetailspage') && <Navigation />}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
-          {/* <ToggleButtonGroup className={classes.toggleBtnGroup}>
-            <ToggleButton
-              className={`${classes.toggleBtn} ${classes.toggleBtnActive}`}
-              key={1}
-              value="left"
-            >
-              Online
-            </ToggleButton>
-            <ToggleButton className={`${classes.toggleBtn}`} key={2} value="right">
-              Away
-            </ToggleButton>
-          </ToggleButtonGroup> */}
+          <DoctorOnlineStatusButton />
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (
               <div className={`${!isSignedIn ? classes.userCircle : ''}`} ref={avatarRef}>

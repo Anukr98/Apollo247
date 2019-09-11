@@ -1,5 +1,4 @@
 import {
-  CircularProgress,
   Fab,
   FormControl,
   FormHelperText,
@@ -10,7 +9,7 @@ import {
   Button,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphTextField, AphInput } from '@aph/web-ui-components';
+import { AphTextField, AphInput, AphCircularProgress } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
@@ -258,7 +257,7 @@ const OtpInput: React.FC<{ mobileNumber: string }> = (props) => {
             }}
           >
             {isSigningIn || isSendingOtp || isVerifyingOtp || showTimer ? (
-              <CircularProgress color="secondary" />
+              <AphCircularProgress color="inherit" />
             ) : (
               <img src={require('images/ic_arrow_forward.svg')} />
             )}
@@ -353,7 +352,7 @@ export const SignIn: React.FC = (props) => {
                     disabled={Boolean(errors.mobileNumber) || !dirty}
                   >
                     {isSendingOtp ? (
-                      <CircularProgress color="secondary" />
+                      <AphCircularProgress color="inherit" />
                     ) : (
                       <img src={require('images/ic_arrow_forward.svg')} />
                     )}

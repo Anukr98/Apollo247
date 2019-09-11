@@ -322,7 +322,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 85px' }}>
+      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
         <div className={classes.container}>
           <div>
             <div className={classes.tabHeading}>

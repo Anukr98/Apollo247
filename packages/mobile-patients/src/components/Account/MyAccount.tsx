@@ -284,7 +284,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         >
           {profileDetails && renderDetails()}
           {renderRows()}
-          <NeedHelpAssistant />
+          <NeedHelpAssistant navigation={props.navigation} />
           <View style={{ height: 92 }}>
             <Text
               style={{
@@ -296,7 +296,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              V 1.0(5)
+              V 1.0(6)
             </Text>
           </View>
         </Animated.ScrollView>

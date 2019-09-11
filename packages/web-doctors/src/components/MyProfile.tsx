@@ -769,7 +769,6 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                     .replace('&amp;', '&')
                     .replace(/<\/?[^>]+>/gi, '')
                     .trim()}
-                  }
                 </Typography>
               </Paper>
             </Grid>
@@ -839,7 +838,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
         </Typography>
         <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={doctorProfile!.starTeam!} />
       </div>
-      {sessionStorage.getItem('loggedInMobileNumber') === doctorProfile.mobileNumber && (
+      {localStorage.getItem('loggedInMobileNumber') === doctorProfile.mobileNumber && (
         <div>
           <h2>Secretary Login</h2>
           <div className={`${classes.tabContent} ${classes.awardsSection}`}>

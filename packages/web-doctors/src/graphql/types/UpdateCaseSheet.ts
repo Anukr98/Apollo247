@@ -10,7 +10,7 @@ import { UpdateCaseSheetInput, MEDICINE_TIMINGS } from "./globalTypes";
 
 export interface UpdateCaseSheet_updateCaseSheet_appointment {
   __typename: "Appointment";
-  id: string | null;
+  id: string;
 }
 
 export interface UpdateCaseSheet_updateCaseSheet_diagnosis {
@@ -25,6 +25,7 @@ export interface UpdateCaseSheet_updateCaseSheet_diagnosticPrescription {
 
 export interface UpdateCaseSheet_updateCaseSheet_medicinePrescription {
   __typename: "MedicinePrescription";
+  id: string | null;
   medicineConsumptionDurationInDays: string | null;
   medicineName: string | null;
   medicineDosage: string | null;

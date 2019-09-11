@@ -242,7 +242,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={{ marginRight: 60 }}>
+        <View style={{ marginRight: 20, flex: 1 }}>
           {moment(new Date()).format('DD/MM/YYYY') ===
           moment(props.PastData.quoteDateTime).format('DD/MM/YYYY') ? (
             <Text style={styles.labelTextStyle}>

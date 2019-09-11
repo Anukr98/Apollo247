@@ -42,6 +42,11 @@ export const getDoctorDetailsTypeDefs = gql`
     DR
   }
 
+  enum DOCTOR_ONLINE_STATUS {
+    ONLINE
+    AWAY
+  }
+
   enum WeekDay {
     SUNDAY
     MONDAY
@@ -90,6 +95,7 @@ export const getDoctorDetailsTypeDefs = gql`
     lastName: String!
     mobileNumber: String!
     onlineConsultationFees: String!
+    onlineStatus: DOCTOR_ONLINE_STATUS!
     photoUrl: String
     physicalConsultationFees: String!
     qualification: String

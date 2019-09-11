@@ -67,6 +67,8 @@ import DocumentPicker from 'react-native-document-picker';
 import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'react-native-fetch-blob';
+import { Spinner } from '../ui/Spinner';
+// import KeepAwake from 'react-native-keep-awake';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -77,23 +79,24 @@ let diffInHours: number;
 
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
 
-  useEffect(() => {
-    RNFetchBlob.config({
-      // add this option that makes response data to be stored as a file,
-      // this is much more performant.
-      fileCache: true,
-    })
-      .fetch('GET', 'http://samples.leanpub.com/thereactnativebook-sample.pdf', {
-        //some headers ..
-      })
-      .then((res) => {
-        // the temp file path
-        console.log('The file saved to res ', res);
-        console.log('The file saved to ', res.path());
-      });
-  }, []);
+  // useEffect(() => {
+  //   RNFetchBlob.config({
+  //     // add this option that makes response data to be stored as a file,
+  //     // this is much more performant.
+  //     fileCache: true,
+  //   })
+  //     .fetch('GET', 'http://samples.leanpub.com/thereactnativebook-sample.pdf', {
+  //       //some headers ..
+  //     })
+  //     .then((res) => {
+  //       // the temp file path
+  //       console.log('The file saved to res ', res);
+  //       console.log('The file saved to ', res.path());
+  //     });
+  // }, []);
   const appointmentData = props.navigation.state.params!.data;
   console.log('appointmentData', appointmentData);
 
@@ -348,7 +351,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setHideStatusBar(false);
       console.log('session stream connectionDestroyed!', event);
       setConvertVideo(false);
-
+      // KeepAwake.deactivate();
       setTimerStyles({
         position: 'absolute',
         marginHorizontal: 20,
@@ -750,7 +753,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       letterSpacing: 0.3,
                     }}
                   >
-                    {rowData.transferInfo.specilty} | {rowData.transferInfo.experience} YRS
+                    {rowData.transferInfo.specilty} | {rowData.transferInfo.experience} YR
+                    {Number(rowData.transferInfo.experience) > 1 ? 'S' : ''}
                   </Text>
                   <View
                     style={{
@@ -926,12 +930,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     flex: 0.5,
                     marginLeft: 16,
                     marginRight: 5,
-                    backgroundColor: 'transparent',
+                    backgroundColor: '#0087ba',
                     borderWidth: 2,
                     borderColor: '#fcb715',
                   }}
                   titleTextStyle={{ color: 'white' }}
-                  onPress={() => {}}
+                  onPress={() => {
+                    setLoading(true);
+                    RNFetchBlob.config({
+                      // add this option that makes response data to be stored as a file,
+                      // this is much more performant.
+                      fileCache: true,
+                    })
+                      .fetch('GET', 'http://samples.leanpub.com/thereactnativebook-sample.pdf', {
+                        //some headers ..
+                      })
+                      .then((res) => {
+                        setLoading(false);
+                        // the temp file path
+                        console.log('The file saved to res ', res);
+                        console.log('The file saved to ', res.path());
+                      })
+                      .catch((err) => {
+                        console.log('error ', err);
+                        setLoading(false);
+                        // ...
+                      });
+                  }}
                 />
 
                 <Button
@@ -939,9 +964,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
                   onPress={() => {
                     console.log('Followupdata', rowData.transferInfo.caseSheetId);
+                    console.log('rowdata', rowData);
                     props.navigation.navigate(AppRoutes.ConsultDetails, {
-                      CaseSheet: rowData.transferInfo.caseSheetId,
+                      CaseSheet: rowData.transferInfo.appointmentId,
                       DoctorInfo: rowData.transferInfo.doctorInfo,
+                      PatientId: appointmentData.patientId,
+                      appointmentType: appointmentData.appointmentType,
                     });
                   }}
                 />
@@ -1040,7 +1068,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     flex: 0.5,
                     marginLeft: 16,
                     marginRight: 5,
-                    backgroundColor: 'transparent',
+                    backgroundColor: '#0087ba',
                     borderWidth: 2,
                     borderColor: '#fcb715',
                   }}
@@ -2296,7 +2324,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             changeAudioStyles();
             setConvertVideo(false);
             changeVideoStyles();
-
+            // KeepAwake.activate();
             if (token) {
               PublishAudioVideo();
             } else {
@@ -2504,7 +2532,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }
                 }}
               >
-                {isDropdownVisible == true ? (
+                {/* {isDropdownVisible == true ? (
                   <View
                     style={{
                       width: 200,
@@ -2555,7 +2583,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       ]}
                     />
                   </View>
-                ) : null}
+                ) : null} */}
                 <AddAttachmentIcon
                   style={{ width: 22, height: 22, marginTop: 18, marginLeft: 22, zIndex: -1 }}
                 />
@@ -2564,6 +2592,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             <View style={linestyles} />
           </View>
         </KeyboardAvoidingView>
+        {loading && <Spinner />}
       </SafeAreaView>
       {onSubscribe && IncomingCallView()}
       {isCall && VideoCall()}

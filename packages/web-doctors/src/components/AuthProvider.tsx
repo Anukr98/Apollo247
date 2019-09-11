@@ -119,8 +119,7 @@ export const AuthProvider: React.FC = (props) => {
         reject();
         return;
       }
-
-      sessionStorage.setItem('loggedInMobileNumber', phoneNumber);
+      localStorage.setItem('loggedInMobileNumber', phoneNumber);
       setIsSendingOtp(true);
       // Create a new unique captcha every time because (apparently) captcha.clear() is flaky,
       // and can eventually result in a 'recaptcha already assigned to this element' error.

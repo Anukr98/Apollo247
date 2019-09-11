@@ -64,6 +64,7 @@ export const GET_DOCTOR_DETAILS = gql`
       lastName
       mobileNumber
       onlineConsultationFees
+      onlineStatus
       photoUrl
       physicalConsultationFees
       qualification
@@ -464,6 +465,7 @@ export const UPDATE_CASESHEET = gql`
       followUpDate
       id
       medicinePrescription {
+        id
         medicineConsumptionDurationInDays
         medicineName
         medicineDosage

@@ -11,12 +11,12 @@ import { Gender } from "./globalTypes";
 export interface GetPatients_getPatients_patients {
   __typename: "Patient";
   id: string;
-  mobileNumber: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  gender: Gender | null;
+  mobileNumber: string;
+  firstName: string;
+  lastName: string;
+  gender: Gender;
   uhid: string | null;
-  dateOfBirth: any | null;
+  dateOfBirth: any;
   emailAddress: string | null;
 }
 
