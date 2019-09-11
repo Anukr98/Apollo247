@@ -356,7 +356,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     if (appointmentType == 'ONLINE') {
       docConsultHrs = await consultHoursRepo.getConsultHours(doctorId, weekDay);
     } else {
-      docConsultHrs = await consultHoursRepo.getOnePhysicalConsultHours(doctorId, weekDay);
+      docConsultHrs = await consultHoursRepo.getAnyPhysicalConsultHours(doctorId, weekDay);
     }
 
     if (docConsultHrs && docConsultHrs.length > 0) {
@@ -399,7 +399,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     if (appointmentType == 'ONLINE') {
       docConsultHrs = await consultHoursRepo.getConsultHours(doctorId, weekDay);
     } else {
-      docConsultHrs = await consultHoursRepo.getOnePhysicalConsultHours(doctorId, weekDay);
+      docConsultHrs = await consultHoursRepo.getAnyPhysicalConsultHours(doctorId, weekDay);
     }
 
     let availableSlots: string[] = [];
