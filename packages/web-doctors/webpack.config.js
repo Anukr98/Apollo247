@@ -29,11 +29,18 @@ const plugins = [
     filename: 'index.html',
     chunks: ['index'],
     template: './index.html',
+    templateParameters: { env: process.env.NODE_ENV },
     inject: true,
   }),
 ];
 if (isLocal) {
-  plugins.push(new webpack.HotModuleReplacementPlugin());
+  plugins.push(
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.DllReferencePlugin({
+      context: __dirname,
+      manifest: require(path.join(distDir, 'dependencies.dll.manifest.json')),
+    })
+  );
 }
 
 const rhlBabelLoader = {
@@ -55,7 +62,7 @@ const urlLoader = {
 module.exports = {
   mode: isStaging || isProduction ? 'production' : 'development',
 
-  devtool: isLocal || isDevelopment ? 'source-map' : false,
+  devtool: isLocal || isDevelopment ? 'eval' : false,
 
   context: path.resolve(__dirname, 'src'),
 
@@ -73,7 +80,8 @@ module.exports = {
         test: /\.(j|t)sx?$/,
         include: [path.resolve(__dirname, 'src')],
         exclude: [/node_modules/],
-        use: isLocal ? [rhlBabelLoader, tsLoader] : [tsLoader],
+        // use: isLocal ? [rhlBabelLoader, tsLoader] : [tsLoader],
+        use: [tsLoader],
       },
       {
         test: /\.(png|jpg|jpeg|svg|gif)$/,
@@ -96,15 +104,21 @@ module.exports = {
       : undefined,
   },
 
+  // optimization: {
+  // Enable these for tree-shaking capabilities.
+  // Also set `"sideEffects": false` in `package.json`
+  //   sideEffects: true,
+  //   usedExports: true,
+  // },
   optimization: {
-    // Enable these for tree-shaking capabilities.
-    // Also set `"sideEffects": false` in `package.json`
-    sideEffects: true,
-    usedExports: true,
+    removeAvailableModules: false,
+    removeEmptyChunks: false,
+    splitChunks: false,
   },
 
   devServer: isLocal
     ? {
+        stats: 'verbose',
         publicPath: '/', // URL path where the webpack files are served from
         contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
         host: '0.0.0.0',
