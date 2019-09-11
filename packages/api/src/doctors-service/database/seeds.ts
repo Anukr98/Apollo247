@@ -12,7 +12,13 @@ import _sample from 'lodash/sample';
 import _sampleSize from 'lodash/sampleSize';
 import { buildFacility } from 'doctors-service/database/factories/facilityFactory';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { Facility, Doctor, DoctorType, Gender } from 'doctors-service/entities';
+import {
+  Facility,
+  Doctor,
+  DoctorType,
+  Gender,
+  DOCTOR_ONLINE_STATUS,
+} from 'doctors-service/entities';
 import { buildDoctorAndHospital } from 'doctors-service/database/factories/doctorAndHospitalFactory';
 import {
   buildDoctorSpecialty,
@@ -28,6 +34,8 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import faker from 'faker';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { buildPatient } from 'profiles-service/database/factories/patientFactory';
+import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
+import { buildConsultQueueItem } from 'doctors-service/database/factories/consultQueueFactory';
 
 (async () => {
   console.log('Seeding doctors-db...');
@@ -39,6 +47,10 @@ import { buildPatient } from 'profiles-service/database/factories/patientFactory
   const patientsDb = getConnection('patients-db');
 
   console.log('Clearing all data...');
+  await patientsDb.dropDatabase();
+  await patientsDb.synchronize();
+  await consultsDb.dropDatabase();
+  await consultsDb.synchronize();
   await doctorsDb.dropDatabase();
   await doctorsDb.synchronize();
 
@@ -52,6 +64,7 @@ import { buildPatient } from 'profiles-service/database/factories/patientFactory
   const packagesRepo = doctorsDb.getCustomRepository(PackagesRepository);
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
 
@@ -68,15 +81,17 @@ import { buildPatient } from 'profiles-service/database/factories/patientFactory
 
   console.log('Building doctors...');
   const jrKabir = buildDoctor({
-    // The firebaseuid for this record is: dJYFTV7MJGWK2EdziTtr5zUPm243
+    id: 'befa91a6-adb0-488d-a148-cc84ce3cacac',
     firstName: 'Kabir',
     lastName: 'Sarin',
     gender: Gender.MALE,
     emailAddress: 'kabir@sarink.net',
     specialty: _sample(doctorSpecialties),
     doctorType: DoctorType.JUNIOR,
-    mobileNumber: '+919999999999',
+    mobileNumber: '+919999999999', // OTP is 999999
     isActive: true, // Don't forget to set this to true or you won't be able to log in!
+    onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+    firebaseToken: 'dJYFTV7MJGWK2EdziTtr5zUPm243', // This is actually the firebaseuid, not the token
   });
   const staticDoctorObjs = [jrKabir];
   const staticDoctors = await Promise.all(staticDoctorObjs.map((doc) => doctorRepo.save(doc)));
@@ -145,6 +160,22 @@ import { buildPatient } from 'profiles-service/database/factories/patientFactory
     })
   );
   console.log(jrKabirAppointments);
+
+  console.log('Building consultqueue...');
+  const numConsultQueueItems = 8;
+  const consultQueueDoctor = jrKabir;
+  const consultQueueAppointments = _sampleSize(jrKabirAppointments, numConsultQueueItems);
+  const consultQueue = await Promise.all(
+    _times(numConsultQueueItems, () =>
+      consultQueueRepo.save(
+        buildConsultQueueItem({
+          doctorId: consultQueueDoctor.id,
+          appointmentId: _sample(consultQueueAppointments)!.id,
+        })
+      )
+    )
+  );
+  console.log(consultQueue);
 
   console.log('Seeding doctors-db complete!');
 })();
