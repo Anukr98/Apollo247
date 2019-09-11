@@ -69,6 +69,10 @@ import {
   getConsultQueueTypeDefs,
   getConsultQueueResolvers,
 } from 'consults-service/resolvers/getConsultQueue';
+import {
+  getAllDoctorAppointmentsTypeDefs,
+  getAllDoctorAppointmentsResolvers,
+} from 'consults-service/resolvers/getAllDoctorAppointments';
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 //import { SampleMessage } from 'types/appointmentTypes';
 
@@ -168,6 +172,10 @@ import {
       {
         typeDefs: getConsultQueueTypeDefs,
         resolvers: getConsultQueueResolvers,
+      },
+      {
+        typeDefs: getAllDoctorAppointmentsTypeDefs,
+        resolvers: getAllDoctorAppointmentsResolvers,
       },
     ]),
   });
