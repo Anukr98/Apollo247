@@ -245,6 +245,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.MedicineConsultDetails]: {
     screen: MedicineConsultDetails,
   },
+  [AppRoutes.MobileHelp]: {
+    screen: MobileHelp,
+  },
 };
 
 const stackConfig: StackNavigatorConfig = {

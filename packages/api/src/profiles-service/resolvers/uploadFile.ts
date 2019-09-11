@@ -4,6 +4,7 @@ import { Resolver } from 'api-gateway';
 import fs from 'fs';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { format } from 'date-fns';
+import path from 'path';
 
 export const uploadFileTypeDefs = gql`
   enum UPLOAD_FILE_TYPES {
@@ -31,12 +32,13 @@ const uploadFile: Resolver<
   ProfilesServiceContext,
   UploadFileResult
 > = async (parent, args, { profilesDb }) => {
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve('/home/devdeploy/apollo-hospitals/packages/api/src/assets');
+  }
   const fileName = format(new Date(), 'ddmmyyyy-HHmmss') + '.' + args.fileType.toLowerCase();
-  const uploadPath = '/apollo-uploads/' + fileName;
+  const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, args.base64FileInput, { encoding: 'base64' }, (err) => {
-    console.log(err);
-  });
-  fs.writeFile(fileName, args.base64FileInput, { encoding: 'base64' }, (err) => {
     console.log(err);
   });
   const client = new AphStorageClient(
@@ -70,8 +72,7 @@ const uploadFile: Resolver<
     .then((res) => console.log(res))
     .catch((error) => console.log('error testing', error));
 
-  //const localFilePath = '/apollo-hospitals/packages/api/' + fileName;
-  const localFilePath = '/apollo-uploads/' + fileName;
+  const localFilePath = assetsDir + '/' + fileName;
   console.log(`uploading ${localFilePath}`);
   const readmeBlob = await client
     .uploadFile({ name: fileName, filePath: localFilePath })
@@ -79,13 +80,8 @@ const uploadFile: Resolver<
       console.log('error final', error);
       throw error;
     });
-  /*console.log('file saved!', readmeBlob.url);
-  if (!readmeBlob.url) {
-    throw new AphError(AphErrorMessages.FILE_SAVE_ERROR, undefined, {});
-  }*/
   fs.unlinkSync(localFilePath);
-  console.log(readmeBlob.name, readmeBlob, 'readme blob');
-  return { filePath: fileName };
+  return { filePath: client.getBlobUrl(readmeBlob.name) };
 };
 
 export const uploadFileResolvers = {

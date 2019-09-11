@@ -513,7 +513,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               key={i}
               onPress={() => {
                 if (i === 0) {
-                  props.navigation.replace(AppRoutes.TabBar);
+                  props.navigation.replace(AppRoutes.TabBar, { tabBarName: 'CONSULT ROOM' });
                 } else if (i == 1) {
                 } else if (i == 2) {
                 } else if (i == 3) {
@@ -552,7 +552,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {showMenu && Popup()}
         <ScrollView style={{ flex: 1 }} bounces={false}>

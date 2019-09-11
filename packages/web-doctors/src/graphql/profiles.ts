@@ -64,6 +64,7 @@ export const GET_DOCTOR_DETAILS = gql`
       lastName
       mobileNumber
       onlineConsultationFees
+      onlineStatus
       photoUrl
       physicalConsultationFees
       qualification

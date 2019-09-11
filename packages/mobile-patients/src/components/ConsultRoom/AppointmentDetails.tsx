@@ -220,11 +220,15 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     }
   };
   const acceptChange = () => {
-    console.log('acceptChange');
-    setResheduleoverlay(false);
-    AsyncStorage.setItem('showSchduledPopup', 'true');
-    setshowSpinner(true);
-    rescheduleAPI(availability);
+    try {
+      console.log('acceptChange');
+      setResheduleoverlay(false);
+      AsyncStorage.setItem('showSchduledPopup', 'true');
+      setshowSpinner(true);
+      rescheduleAPI(availability);
+    } catch (error) {
+      console.log(error, 'error');
+    }
   };
 
   const reshedulePopUpMethod = () => {
