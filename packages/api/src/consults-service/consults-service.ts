@@ -66,9 +66,9 @@ import gql from 'graphql-tag';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import {
-  getDoctorConsultsTypeDefs,
-  getDoctorConsultsResolvers,
-} from 'consults-service/resolvers/getDoctorConsults';
+  getConsultQueueTypeDefs,
+  getConsultQueueResolvers,
+} from 'consults-service/resolvers/getConsultQueue';
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 //import { SampleMessage } from 'types/appointmentTypes';
 
@@ -166,8 +166,8 @@ import {
         resolvers: bookFollowUpAppointmentResolvers,
       },
       {
-        typeDefs: getDoctorConsultsTypeDefs,
-        resolvers: getDoctorConsultsResolvers,
+        typeDefs: getConsultQueueTypeDefs,
+        resolvers: getConsultQueueResolvers,
       },
     ]),
   });
