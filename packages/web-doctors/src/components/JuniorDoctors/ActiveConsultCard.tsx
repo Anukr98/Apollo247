@@ -96,8 +96,8 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface ActiveConsultCardProps {
   patient: {
-    firstName: string;
-    lastName: string;
+    firstName: string | null;
+    lastName: string | null;
     uhid: string | null;
     photoUrl: string | null;
     queueNumber: number;
@@ -123,8 +123,8 @@ export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
             <Avatar src={patient.photoUrl} className={classes.avatar} />
           ) : (
             <Avatar className={classes.avatar}>
-              {patient.firstName.charAt(0)}
-              {patient.lastName.charAt(0)}
+              {(patient.firstName || '').charAt(0)}
+              {(patient.lastName || '').charAt(0)}
             </Avatar>
           )}
         </div>

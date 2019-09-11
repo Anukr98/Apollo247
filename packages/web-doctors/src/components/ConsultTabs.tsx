@@ -555,6 +555,8 @@ export const ConsultTabs: React.FC = () => {
                 isEnded={isEnded}
                 caseSheetId={caseSheetId}
                 prescriptionPdf={prescriptionPdf}
+                sessionId={sessionId}
+                token={token}
               />
               <div>
                 <div>

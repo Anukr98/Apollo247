@@ -12,12 +12,12 @@ export interface UpdatePatient_updatePatient_patient {
   __typename: "Patient";
   id: string;
   mobileNumber: string;
-  firstName: string;
-  lastName: string;
-  relation: Relation;
-  gender: Gender;
+  firstName: string | null;
+  lastName: string | null;
+  relation: Relation | null;
+  gender: Gender | null;
   uhid: string | null;
-  dateOfBirth: any;
+  dateOfBirth: any | null;
   emailAddress: string | null;
 }
 
