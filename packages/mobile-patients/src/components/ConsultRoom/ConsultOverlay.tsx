@@ -110,7 +110,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const todayDate = new Date().toDateString().split('T')[0];
   console.log(todayDate, 'todayDatetodayDate', new Date().toDateString());
 
-  const setTimeArrayData = async (availableSlots: string[]) => {
+  const setTimeArrayData = async (availableSlots: string[], date: Date) => {
     console.log(availableSlots, 'setTimeArrayData availableSlots');
 
     const array = await divideSlots(availableSlots, date);

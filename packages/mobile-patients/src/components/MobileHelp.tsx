@@ -133,7 +133,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     },
   ];
   return (
-    <View style={[styles.cardContainer, props.cardContainer]}>
+    <View style={[styles.cardContainer]}>
       <View style={{ alignItems: 'flex-end', marginTop: -20, marginRight: 20 }}>
         <TouchableOpacity
           activeOpacity={1}
