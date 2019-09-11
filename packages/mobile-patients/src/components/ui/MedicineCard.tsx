@@ -220,6 +220,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             style={[{ flex: 1, alignSelf: 'flex-start' }]}
+            // style={styles.unitDropdownContainer}
             onPress={() => onChangeUnit(unit - 1)}
           >
             <Minus />
@@ -228,6 +229,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             style={[{ flex: 1, alignItems: 'flex-end' }]}
+            // style={styles.unitDropdownContainer}
             onPress={() => onChangeUnit(unit + 1)}
           >
             <Plus />

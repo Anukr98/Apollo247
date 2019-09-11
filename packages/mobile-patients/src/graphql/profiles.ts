@@ -919,6 +919,7 @@ export const BOOK_APPOINTMENT_RESCHEDULE = gql`
         appointmentDateTime
         status
         patientId
+        rescheduleCount
       }
     }
   }

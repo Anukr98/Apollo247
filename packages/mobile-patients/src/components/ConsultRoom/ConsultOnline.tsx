@@ -110,7 +110,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     { label: 'Night', time: [] },
   ]);
 
-  const setTimeArrayData = async (availableSlots: string[], date) => {
+  const setTimeArrayData = async (availableSlots: string[], date: Date) => {
     console.log(availableSlots, 'setTimeArrayData availableSlots');
     const array = await divideSlots(availableSlots, date);
     console.log(array, 'array', timeArray, 'timeArray.......');
