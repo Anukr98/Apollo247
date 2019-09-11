@@ -343,11 +343,65 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  async getDoctorNextSlotDate(doctorId: string, selectedDate: Date, doctorsDb: Connection) {
+  async checkWithinConsultHours(
+    appointmentDate: Date,
+    appointmentType: string,
+    doctorId: string,
+    doctorsDb: Connection
+  ) {
+    const weekDay = format(appointmentDate, 'EEEE').toUpperCase();
+    //console.log('entered here', selDate, weekDay);
+    const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+    let docConsultHrs: ConsultHours[];
+    if (appointmentType == 'ONLINE') {
+      docConsultHrs = await consultHoursRepo.getConsultHours(doctorId, weekDay);
+    } else {
+      docConsultHrs = await consultHoursRepo.getOnePhysicalConsultHours(doctorId, weekDay);
+    }
+
+    if (docConsultHrs && docConsultHrs.length > 0) {
+      //get the slots of the day first
+      let st = `${appointmentDate.toDateString()} ${docConsultHrs[0].startTime.toString()}`;
+      const ed = `${appointmentDate.toDateString()} ${docConsultHrs[0].endTime.toString()}`;
+      let consultStartTime = new Date(st);
+      const consultEndTime = new Date(ed);
+      console.log(consultStartTime, consultEndTime);
+      let previousDate: Date = appointmentDate;
+      if (consultEndTime < consultStartTime) {
+        previousDate = addDays(previousDate, -1);
+        st = `${previousDate.toDateString()} ${docConsultHrs[0].startTime.toString()}`;
+        consultStartTime = new Date(st);
+      }
+
+      console.log(consultStartTime, 'start time');
+      console.log(consultEndTime, 'end time');
+
+      if (appointmentDate >= consultStartTime && appointmentDate < consultEndTime) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  async getDoctorNextSlotDate(
+    doctorId: string,
+    selectedDate: Date,
+    doctorsDb: Connection,
+    appointmentType: string
+  ) {
     const weekDay = format(selectedDate, 'EEEE').toUpperCase();
     //console.log('entered here', selDate, weekDay);
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
-    const docConsultHrs = await consultHoursRepo.getConsultHours(doctorId, weekDay);
+    let docConsultHrs: ConsultHours[];
+    if (appointmentType == 'ONLINE') {
+      docConsultHrs = await consultHoursRepo.getConsultHours(doctorId, weekDay);
+    } else {
+      docConsultHrs = await consultHoursRepo.getOnePhysicalConsultHours(doctorId, weekDay);
+    }
+
     let availableSlots: string[] = [];
     const inputStartDate = format(addDays(selectedDate, -1), 'yyyy-MM-dd');
     const currentStartDate = new Date(inputStartDate + 'T18:30');

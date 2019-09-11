@@ -267,6 +267,11 @@ const bookRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
+  //check if given appointment datetime is greater than current date time
+  if (bookRescheduleAppointmentInput.newDateTimeslot <= new Date()) {
+    throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
+  }
+
   const apptCount = await appointmentRepo.checkIfAppointmentExist(
     bookRescheduleAppointmentInput.doctorId,
     bookRescheduleAppointmentInput.newDateTimeslot
