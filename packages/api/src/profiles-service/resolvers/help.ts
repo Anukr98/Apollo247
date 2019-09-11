@@ -10,6 +10,7 @@ import { MedicineOrdersRepository } from 'profiles-service/repositories/Medicine
 import _ from 'lodash';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { ApiConstants } from 'ApiConstants';
+import { EmailMessage } from 'types/notificationMessageTypes';
 
 export const helpTypeDefs = gql`
   input HelpEmailInput {
@@ -48,13 +49,11 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
 
   //get ongoing and open orders in last 10 days
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const MedicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListByCreateddate(
+  const medicineOrdersList = await medicineOrdersRepo.getMedicineOrdersListByCreateddate(
     patientDetails.id,
     startDate,
     endDate
   );
-
-  console.log(MedicineOrdersList);
 
   //get ongoing, open, scheduled appointments in last 10 days
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
@@ -63,7 +62,6 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     startDate,
     endDate
   );
-  console.log(appointmentDetails);
 
   const mailContentTemplate = _.template(
     `<html>
@@ -83,33 +81,28 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
        <li>Mobile Number : <%- patientDetails.mobileNumber %></li>
       </ul>
     </li>
-    <li> Appointment Details
-      <ul>
-      
-      </ul>
-    </li>
-     
+    <li> Appointment Details </li>     
     </ul>
     </body> 
     </html>
     `
   );
   const mailContent = mailContentTemplate({
-    helpEmailInput: helpEmailInput,
-    patientDetails: patientDetails,
+    helpEmailInput,
+    patientDetails,
+    medicineOrdersList,
+    appointmentDetails,
   });
 
-  console.log('startDate', startDate);
-  console.log('endDate', endDate);
-  console.log(appointmentDetails);
+  const emailContent: EmailMessage = {
+    subject: <string>ApiConstants.PATIENT_HELP_SUBJECT,
+    fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
+    fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
+    messageContent: <string>mailContent,
+    toEmail: <string>ApiConstants.PATIENT_HELP_SUPPORT_EMAILID,
+  };
 
-  const mailStatus = await sendMail(
-    mailContent,
-    ApiConstants.PATIENT_HELP_FROM_EMAILID,
-    ApiConstants.PATIENT_HELP_FROM_NAME,
-    ApiConstants.PATIENT_HELP_SUPPORT_EMAILID,
-    ApiConstants.PATIENT_HELP_SUBJECT
-  );
+  const mailStatus = await sendMail(emailContent);
 
   return mailStatus.message;
 };

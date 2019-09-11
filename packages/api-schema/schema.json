@@ -1147,7 +1147,7 @@
             "deprecationReason": null
           },
           {
-            "name": "sendEmail",
+            "name": "sendEmailMessage",
             "description": null,
             "args": [],
             "type": {

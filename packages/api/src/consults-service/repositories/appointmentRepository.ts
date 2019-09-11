@@ -592,13 +592,10 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {
-    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
-    const newEndDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
-
     return this.find({
       where: {
         patientId,
-        appointmentDateTime: Between(newStartDate, newEndDate),
+        appointmentDateTime: Between(startDate, endDate),
         status: Not(STATUS.CANCELLED),
       },
       relations: ['caseSheet'],
