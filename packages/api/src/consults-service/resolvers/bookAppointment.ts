@@ -169,6 +169,20 @@ const bookAppointment: Resolver<
   if (apptCount > 0) {
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
+
+  const checkHours = await appts.checkWithinConsultHours(
+    appointmentInput.appointmentDateTime,
+    appointmentInput.appointmentType,
+    appointmentInput.doctorId,
+    doctorsDb
+  );
+
+  if (!checkHours) {
+    throw new AphError(AphErrorMessages.OUT_OF_CONSULT_HOURS, undefined, {});
+  }
+
+  console.log(checkHours, 'check hours');
+
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
     status: STATUS.PENDING,
