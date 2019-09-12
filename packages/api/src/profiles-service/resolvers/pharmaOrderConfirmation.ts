@@ -25,7 +25,7 @@ export const pharmaOrderConfirmationTypeDefs = gql`
   }
 
   extend type Mutation {
-    saveOrderConfirmation(orderConfimrationInput: OrderConfimrationInput): OrderConfirmationResult!
+    saveOrderConfirmation(orderConfirmationInput: OrderConfirmationInput): OrderConfirmationResult!
   }
 `;
 
