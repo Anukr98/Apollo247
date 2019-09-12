@@ -11,10 +11,7 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 //import { AppointmentPayload } from 'types/appointmentTypes';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { DOCTOR_ONLINE_STATUS, DoctorType } from 'doctors-service/entities';
-import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 //import { addMinutes, format, addMilliseconds } from 'date-fns';
-import _sample from 'lodash/sample';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {

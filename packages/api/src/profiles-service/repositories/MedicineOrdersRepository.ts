@@ -49,6 +49,12 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     });
   }
 
+  getMedicineOrderDetailsByAp(apOrderNo: string) {
+    return this.findOne({
+      where: { apOrderNo },
+    });
+  }
+
   saveMedicineOrderStatus(orderStatusAttrs: Partial<MedicineOrdersStatus>, orderAutoId: number) {
     return MedicineOrdersStatus.create(orderStatusAttrs).save();
   }
@@ -133,5 +139,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       .leftJoinAndSelect('MedicineOrders.medicineOrderPayments', 'medicineOrderPayments')
       .leftJoinAndSelect('MedicineOrders.medicineOrdersStatus', 'medicineOrdersStatus')
       .getRawMany();
+  }
+
+  updateOrderFullfillment(orderAutoId: number, id: string, apOrderNo: string) {
+    this.update({ id, orderAutoId }, { apOrderNo });
   }
 }
