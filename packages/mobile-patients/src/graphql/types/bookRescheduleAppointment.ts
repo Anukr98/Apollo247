@@ -10,14 +10,14 @@ import { BookRescheduleAppointmentInput, APPOINTMENT_TYPE, STATUS } from "./glob
 
 export interface bookRescheduleAppointment_bookRescheduleAppointment_appointmentDetails {
   __typename: "Appointment";
-  appointmentType: APPOINTMENT_TYPE | null;
-  id: string | null;
-  doctorId: string | null;
+  appointmentType: APPOINTMENT_TYPE;
+  id: string;
+  doctorId: string;
   appointmentState: string | null;
-  appointmentDateTime: any | null;
-  status: STATUS | null;
-  patientId: string | null;
-  rescheduleCount: number | null;
+  appointmentDateTime: any;
+  status: STATUS;
+  patientId: string;
+  rescheduleCount: number;
 }
 
 export interface bookRescheduleAppointment_bookRescheduleAppointment {
