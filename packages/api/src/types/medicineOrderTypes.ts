@@ -8,6 +8,18 @@ export interface PharmaResponse {
   ordersResult: PharmaResult;
 }
 
+export interface PharmaCancelResponse {
+  ordersCancelResult: PharmaCancelResult;
+}
+
+export interface PharmaCancelResult {
+  ApOrderNo: string;
+  Message: string;
+  OrderNo: string;
+  SiteId: string;
+  Status: boolean;
+}
+
 export interface PharmaLineItem {
   ItemID: string;
   ItemName: string;
