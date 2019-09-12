@@ -246,20 +246,6 @@ const bookAppointment: Resolver<
   AphMqClient.send(testMessage);*/
   //message queue ends
 
-  (async () => {
-    const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
-    const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
-    const onlineJrDocs = await docRepo.find({
-      onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
-      doctorType: DoctorType.JUNIOR,
-    });
-    const chosenJrDoc = _sample(onlineJrDocs);
-    if (!chosenJrDoc) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-    const appointmentId = appointment.id;
-    const doctorId = chosenJrDoc.id;
-    await cqRepo.save(cqRepo.create({ appointmentId, doctorId }));
-  })();
-
   //TODO after junior doctor flow.. casesheet creation should be changed.
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const caseSheetAttrs: Partial<CaseSheet> = {

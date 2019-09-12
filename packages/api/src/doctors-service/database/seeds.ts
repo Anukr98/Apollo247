@@ -96,7 +96,13 @@ import { buildConsultQueueItem } from 'doctors-service/database/factories/consul
   const staticDoctorObjs = [jrKabir];
   const staticDoctors = await Promise.all(staticDoctorObjs.map((doc) => doctorRepo.save(doc)));
   const randomDoctors = await Promise.all(
-    _times(20, () => doctorRepo.save(buildDoctor({ specialty: _sample(doctorSpecialties) })))
+    _times(20, () =>
+      doctorRepo.save(
+        buildDoctor({
+          specialty: _sample(doctorSpecialties),
+        })
+      )
+    )
   );
   const doctors = [...staticDoctors, ...randomDoctors];
   console.log(doctors);
@@ -162,7 +168,7 @@ import { buildConsultQueueItem } from 'doctors-service/database/factories/consul
   console.log(jrKabirAppointments);
 
   console.log('Building consultqueue...');
-  const numConsultQueueItems = 8;
+  const numConsultQueueItems = 10;
   const consultQueueDoctor = jrKabir;
   const consultQueueAppointments = _sampleSize(jrKabirAppointments, numConsultQueueItems);
   const consultQueue = await Promise.all(
@@ -171,6 +177,7 @@ import { buildConsultQueueItem } from 'doctors-service/database/factories/consul
         buildConsultQueueItem({
           doctorId: consultQueueDoctor.id,
           appointmentId: consultQueueAppointments[index].id,
+          isActive: faker.random.boolean(),
         })
       )
     )
