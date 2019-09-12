@@ -3,8 +3,9 @@ const process = require('process');
 const webpack = require('webpack');
 const nodeExternals = require('webpack-node-externals');
 const NodemonPlugin = require('nodemon-webpack-plugin');
-const DotenvPlugin = require('dotenv-webpack');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+const DotenvPlugin = require('dotenv-webpack');
 const dotenv = require('dotenv');
 
 module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
@@ -28,7 +29,7 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
     }),
   ];
   if (isLocal) {
-    plugins.push(new NodemonPlugin({ ...nodemonPluginArgs }));
+    plugins.push(new NodemonPlugin({ ...nodemonPluginArgs }), new HardSourceWebpackPlugin());
   }
 
   const tsLoader = {
