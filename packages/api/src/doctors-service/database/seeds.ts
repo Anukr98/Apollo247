@@ -99,7 +99,6 @@ import { buildConsultQueueItem } from 'doctors-service/database/factories/consul
     _times(20, () =>
       doctorRepo.save(
         buildDoctor({
-          onlineStatus: DOCTOR_ONLINE_STATUS.AWAY,
           specialty: _sample(doctorSpecialties),
         })
       )
