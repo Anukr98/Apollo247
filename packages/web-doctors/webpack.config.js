@@ -49,7 +49,16 @@ const rhlBabelLoader = {
     plugins: ['react-hot-loader/babel'],
   },
 };
-const tsLoader = { loader: 'awesome-typescript-loader' };
+const tsLoader = {
+  loader: 'awesome-typescript-loader',
+  options: isLocal
+    ? {
+        useCache: true,
+        transpileModule: true,
+        forceIsolatedModules: true,
+      }
+    : undefined,
+};
 const urlLoader = {
   loader: 'url-loader',
   options: {
@@ -80,8 +89,7 @@ module.exports = {
         test: /\.(j|t)sx?$/,
         include: [path.resolve(__dirname, 'src')],
         exclude: [/node_modules/],
-        // use: isLocal ? [rhlBabelLoader, tsLoader] : [tsLoader],
-        use: [tsLoader],
+        use: isLocal ? [rhlBabelLoader, tsLoader] : [tsLoader],
       },
       {
         test: /\.(png|jpg|jpeg|svg|gif)$/,
@@ -104,21 +112,21 @@ module.exports = {
       : undefined,
   },
 
-  // optimization: {
-  // Enable these for tree-shaking capabilities.
-  // Also set `"sideEffects": false` in `package.json`
-  //   sideEffects: true,
-  //   usedExports: true,
-  // },
-  optimization: {
-    removeAvailableModules: false,
-    removeEmptyChunks: false,
-    splitChunks: false,
-  },
+  optimization: isLocal
+    ? {
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        splitChunks: false,
+      }
+    : {
+        // Enable these for tree-shaking capabilities.
+        // Also set `"sideEffects": false` in `package.json`
+        sideEffects: true,
+        usedExports: true,
+      },
 
   devServer: isLocal
     ? {
-        stats: 'verbose',
         publicPath: '/', // URL path where the webpack files are served from
         contentBase: distDir, // A directory to serve files non-webpack files from (Absolute path)
         host: '0.0.0.0',
