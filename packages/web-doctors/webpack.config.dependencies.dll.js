@@ -9,7 +9,7 @@ const dependencies = allDependencies.filter(
   (dep) =>
     !dep.startsWith('@aph') && !dep.startsWith('autosuggest') && !dep.startsWith('react-hot-loader')
 );
-console.log('Bundling dll dependencies...', dependencies);
+console.log('Bundling dependencies dll...', dependencies);
 
 module.exports = {
   mode: 'development',
