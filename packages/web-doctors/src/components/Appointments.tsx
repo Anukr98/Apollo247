@@ -288,7 +288,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
 }) => {
   const classes = useStyles();
   const [appointments, setAppointments] = useState<Appointment[]>(values);
-  //console.log(appointments!.type);
+  console.log(appointments);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
@@ -472,11 +472,15 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                                   <img src={require('images/ic_physical_consult.svg')} alt="" />
                                 )}
                               </IconButton>
+                              {/* {appointment!.caseSheet &&
+                                appointment!.caseSheet !== null &&
+                                appointment!.caseSheet.length > 0 && ( */}
                               <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}`}>
                                 <IconButton aria-label="Navigate next">
                                   <NavigateNextIcon />
                                 </IconButton>
                               </Link>
+                              {/* )} */}
                             </div>
                           </Grid>
                         </Grid>

@@ -919,6 +919,20 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        if (
+          !showVideoChat &&
+          message.message.message !== videoCallMsg &&
+          message.message.message !== audioCallMsg &&
+          message.message.message !== stopcallMsg &&
+          message.message.message !== acceptcallMsg &&
+          message.message.message !== startConsult &&
+          message.message.message !== stopConsult &&
+          message.message.message !== transferconsult &&
+          message.message.message !== rescheduleconsult &&
+          message.message.message !== followupconsult
+        ) {
+          setIsNewMsg(true);
+        }
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
         }
