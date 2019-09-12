@@ -16,6 +16,8 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
   const isStaging = process.env.NODE_ENV === 'staging';
   const isProduction = process.env.NODE_ENV === 'production';
 
+  const distDir = path.resolve(__dirname, 'dist');
+
   const plugins = [
     new DotenvPlugin({ path: envFile }),
     new CircularDependencyPlugin({
@@ -26,12 +28,19 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
     }),
   ];
   if (isLocal) {
-    plugins.push(
-      new NodemonPlugin({ watch: path.resolve(__dirname, 'dist'), ...nodemonPluginArgs })
-    );
+    plugins.push(new NodemonPlugin({ ...nodemonPluginArgs }));
   }
 
-  const tsLoader = { loader: 'awesome-typescript-loader' };
+  const tsLoader = {
+    loader: 'awesome-typescript-loader',
+    options: isLocal
+      ? {
+          useCache: true,
+          transpileModule: true,
+          forceIsolatedModules: true,
+        }
+      : undefined,
+  };
 
   return {
     target: 'node',
@@ -45,7 +54,7 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
     context: path.resolve(__dirname, 'src'),
 
     output: {
-      path: path.resolve(__dirname, 'dist'),
+      path: distDir,
       filename: '[name].bundle.js',
     },
 
@@ -72,7 +81,6 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
     watch: isLocal,
     watchOptions: {
       aggregateTimeout: 300,
-      poll: 1000, // We have to poll bc we're inside a docker container :(
       ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
     },
 
