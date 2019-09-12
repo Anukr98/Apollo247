@@ -57,6 +57,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       flexDirection: 'column',
       flex: 1,
+      maxWidth: 707,
     },
     right: {
       flex: 'initial',

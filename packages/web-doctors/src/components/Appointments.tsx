@@ -431,7 +431,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                           !!appointment.details.checkups.symptoms.length ? (
                             <Grid lg={5} sm={5} xs={8} key={2} item className={classes.valign}>
                               <div className={classes.section1}>
-                                {(appointment.details.checkups.symptoms.length > 3
+                                {(appointment.details.checkups.symptoms.length > 2
                                   ? appointment.details.checkups.symptoms.slice(0, 2)
                                   : appointment.details.checkups.symptoms
                                 ).map((checkup: any, idx: any) => (
@@ -441,7 +441,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                                     label={checkup.symptom.toUpperCase()}
                                   />
                                 ))}
-                                {appointment.details.checkups.length > 3 && (
+                                {appointment.details.checkups.symptoms.length > 2 && (
                                   <Typography
                                     gutterBottom
                                     variant="caption"

@@ -12,11 +12,11 @@ export interface GetPatients_getPatients_patients {
   __typename: "Patient";
   id: string;
   mobileNumber: string;
-  firstName: string;
-  lastName: string;
-  gender: Gender;
+  firstName: string | null;
+  lastName: string | null;
+  gender: Gender | null;
   uhid: string | null;
-  dateOfBirth: any;
+  dateOfBirth: any | null;
   emailAddress: string | null;
 }
 

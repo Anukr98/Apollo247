@@ -301,6 +301,29 @@
             "deprecationReason": null
           },
           {
+            "name": "sendHelpEmail",
+            "description": null,
+            "args": [
+              {
+                "name": "helpEmailInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "HelpEmailInput",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "getDoctors",
             "description": null,
             "args": [],
@@ -1023,18 +1046,18 @@
             "deprecationReason": null
           },
           {
-            "name": "getDoctorConsults",
+            "name": "getConsultQueue",
             "description": null,
             "args": [
               {
-                "name": "getDoctorConsultsInput",
+                "name": "doctorId",
                 "description": null,
                 "type": {
                   "kind": "NON_NULL",
                   "name": null,
                   "ofType": {
-                    "kind": "INPUT_OBJECT",
-                    "name": "GetDoctorConsultsInput",
+                    "kind": "SCALAR",
+                    "name": "String",
                     "ofType": null
                   }
                 },
@@ -1046,7 +1069,38 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "GetDoctorConsultsResult",
+                "name": "GetConsultQueueResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "getAllDoctorAppointments",
+            "description": null,
+            "args": [
+              {
+                "name": "doctorId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "GetAllDoctorAppointmentsResult",
                 "ofType": null
               }
             },
@@ -1087,6 +1141,18 @@
             "type": {
               "kind": "OBJECT",
               "name": "PushNotificationSuccessMessage",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "sendEmailMessage",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
               "ofType": null
             },
             "isDeprecated": false,
@@ -1179,13 +1245,9 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -1195,13 +1257,9 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -1227,13 +1285,9 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "ENUM",
-                "name": "Gender",
-                "ofType": null
-              }
+              "kind": "ENUM",
+              "name": "Gender",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -1267,13 +1321,9 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "Date",
-                "ofType": null
-              }
+              "kind": "SCALAR",
+              "name": "Date",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -1283,13 +1333,9 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "ENUM",
-                "name": "Relation",
-                "ofType": null
-              }
+              "kind": "ENUM",
+              "name": "Relation",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -3122,6 +3168,47 @@
             "deprecationReason": null
           }
         ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "HelpEmailInput",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "category",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "reason",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "comments",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
         "possibleTypes": null
       },
       {
@@ -9948,47 +10035,12 @@
         "possibleTypes": null
       },
       {
-        "kind": "INPUT_OBJECT",
-        "name": "GetDoctorConsultsInput",
-        "description": null,
-        "fields": null,
-        "inputFields": [
-          {
-            "name": "doctorId",
-            "description": null,
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "limit",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "Int",
-              "ofType": null
-            },
-            "defaultValue": null
-          }
-        ],
-        "interfaces": null,
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
         "kind": "OBJECT",
-        "name": "GetDoctorConsultsResult",
+        "name": "GetConsultQueueResult",
         "description": null,
         "fields": [
           {
-            "name": "doctorConsults",
+            "name": "consultQueue",
             "description": null,
             "args": [],
             "type": {
@@ -10002,7 +10054,7 @@
                   "name": null,
                   "ofType": {
                     "kind": "OBJECT",
-                    "name": "DoctorConsult",
+                    "name": "ConsultQueueItem",
                     "ofType": null
                   }
                 }
@@ -10019,9 +10071,25 @@
       },
       {
         "kind": "OBJECT",
-        "name": "DoctorConsult",
+        "name": "ConsultQueueItem",
         "description": null,
         "fields": [
+          {
+            "name": "order",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
           {
             "name": "patient",
             "description": null,
@@ -10048,6 +10116,84 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "Appointment",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "GetAllDoctorAppointmentsResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "appointmentsAndPatients",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "AppointmentAndPatient",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "AppointmentAndPatient",
+        "description": null,
+        "fields": [
+          {
+            "name": "appointment",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Appointment",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "patient",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Patient",
                 "ofType": null
               }
             },

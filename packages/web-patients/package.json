@@ -6,7 +6,7 @@
   "sideEffects": false,
   "private": true,
   "scripts": {
-    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./node_modules/@aph/api-schema/schema.json --target=typescript --queries=./src/graphql/**.ts --watch",
+    "apollo:codegen": "apollo codegen:generate ./src/graphql/types/ --outputFlat --addTypename --localSchemaFile=./node_modules/@aph/api-schema/schema.json --target=typescript --queries=./src/graphql/**.ts",
     "build": "webpack",
     "format": "prettier --list-different '**/*.{js,jsx,ts,tsx,json,htm,html}'",
     "format:fix": "prettier --write '**/*.{js,jsx,ts,tsx,json,htm,html}'",
@@ -46,6 +46,7 @@
     "dotenv": "^8.0.0",
     "dotenv-webpack": "^1.7.0",
     "eslint": "^5.16.0",
+    "eslint-plugin-graphql": "^3.0.3",
     "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-react": "^7.13.0",
     "eslint-plugin-react-hooks": "^1.6.0",

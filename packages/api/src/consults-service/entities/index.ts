@@ -359,6 +359,30 @@ export class CaseSheet extends BaseEntity {
 }
 //case sheet ends
 
+///////////////////////////////////////////////////////////
+// ConsultQueueItem
+///////////////////////////////////////////////////////////
+@Entity()
+export class ConsultQueueItem extends BaseEntity {
+  @Column()
+  appointmentId: string;
+
+  @Column()
+  createdDate: Date;
+
+  @Column()
+  doctorId: string;
+
+  @PrimaryGeneratedColumn()
+  order: number;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+}
+///////////////////////////////////////////////////////////
+
 //transfer-appointment starts
 @Entity()
 export class TransferAppointmentDetails extends BaseEntity {

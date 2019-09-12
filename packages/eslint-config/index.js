@@ -4,7 +4,7 @@ module.exports = {
     ecmaVersion: 6,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint', 'import'],
+  plugins: ['@typescript-eslint', 'graphql', 'import'],
   rules: {
     '@typescript-eslint/array-type': ['warn', 'array'],
     '@typescript-eslint/class-name-casing': 'warn',

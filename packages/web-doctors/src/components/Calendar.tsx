@@ -212,8 +212,6 @@ export const Calendar: React.FC = () => {
     //setMonthSelected(moment(selectedDate).format('MMMM'));
     setSelectedDate(startOfMonth(start as Date));
   };
-  console.log(format(range.start as number | Date, 'yyyy-MM-dd'));
-  console.log(format(range.end as number | Date, 'yyyy-MM-dd'));
   const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
     variables: {
       startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
@@ -241,7 +239,9 @@ export const Calendar: React.FC = () => {
                 )}`}
               </p>
             ) : (
-              <p>here’s your schedule for {monthSelected}</p>
+              <p>
+                here’s your schedule for {monthSelected} {selectedDate.getFullYear()}
+              </p>
             )}
           </div>
           <div>
@@ -262,7 +262,7 @@ export const Calendar: React.FC = () => {
                   value="month"
                   onClick={() => {
                     setViewSelection('month');
-                    setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
+                    //setRange({ start: startOfMonth(selectedDate), end: endOfMonth(selectedDate) });
                     setMonthSelected(moment(selectedDate).format('MMMM'));
                   }}
                 >

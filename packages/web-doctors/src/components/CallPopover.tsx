@@ -18,6 +18,7 @@ import { AphSelect, AphTextField } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useApolloClient } from 'react-apollo-hooks';
+import { Consult } from 'components/Consult';
 import {
   InitiateTransferAppointment,
   InitiateTransferAppointmentVariables,
@@ -37,6 +38,7 @@ import {
 } from 'graphql/profiles';
 import { TRANSFER_INITIATED_TYPE, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { relative } from 'path';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -204,6 +206,20 @@ const useStyles = makeStyles((theme: Theme) => {
       top: '10px',
       fontSize: '18px',
       color: '#02475b',
+    },
+    container: {
+      maxWidth: 1064,
+      margin: 'auto',
+      position: 'relative',
+      backgroundColor: '#f7f7f7',
+      paddingBottom: 95,
+    },
+    audioVideoContainer: {
+      maxWidth: 1064,
+      margin: 'auto',
+      position: 'relative',
+      backgroundColor: '#f7f7f7',
+      paddingBottom: 0,
     },
     needHelp: {
       padding: '8px',
@@ -450,6 +466,9 @@ const useStyles = makeStyles((theme: Theme) => {
     othercases: {
       marginTop: 10,
     },
+    posRelative: {
+      position: 'relative',
+    },
   };
 });
 
@@ -471,6 +490,9 @@ interface CallPopoverProps {
   doctorId: string;
   isEnded: boolean;
   caseSheetId: string;
+  prescriptionPdf: string;
+  sessionId: string;
+  token: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -491,6 +513,18 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
     CaseSheetContext
   );
+  const covertVideoMsg = '^^convert`video^^';
+  const covertAudioMsg = '^^convert`audio^^';
+  const videoCallMsg = '^^callme`video^^';
+  const audioCallMsg = '^^callme`audio^^';
+  const stopcallMsg = '^^callme`stop^^';
+  const acceptcallMsg = '^^callme`accept^^';
+  const startConsult = '^^#startconsult';
+  const stopConsult = '^^#stopconsult';
+  const transferconsult = '^^#transferconsult';
+  const rescheduleconsult = '^^#rescheduleconsult';
+  const followupconsult = '^^#followupconsult';
+
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -524,6 +558,127 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [errorStateReshedule, setErrorStateReshedule] = React.useState<errorObjectReshedule>({
     otherError: false,
   });
+  // audioVideoChat start
+  const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
+  const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
+  const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
+  const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
+  const [showVideo, setShowVideo] = useState<boolean>(false);
+  const [convertVideo, setConvertVideo] = useState<boolean>(false);
+  const toggelChatVideo = () => {
+    setIsNewMsg(false);
+    setShowVideoChat(!showVideoChat);
+    //srollToBottomAction();
+  };
+
+  const stopAudioVideoCall = () => {
+    setIsCallAccepted(false);
+    setShowVideo(false);
+    setShowVideoChat(false);
+    const cookieStr = `action=`;
+    document.cookie = cookieStr + ';path=/;';
+    const text = {
+      id: props.doctorId,
+      message: stopcallMsg,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        //setMessageText('');
+      }
+    );
+    const stoptext = {
+      id: props.doctorId,
+      message: `Audio call ended`,
+      //message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
+      // duration: `${
+      //   timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
+      // } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      duration: `10:00`,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: stoptext,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        //setMessageText('');
+      }
+    );
+    //setIsVideoCall(false);
+  };
+  const autoSend = (callType: string) => {
+    const text = {
+      id: props.doctorId,
+      message: callType,
+      // props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        //setMessageText('');
+      }
+    );
+    actionBtn();
+  };
+  const actionBtn = () => {
+    setShowVideo(true);
+  };
+  const stopAudioVideoCallpatient = () => {
+    setIsCallAccepted(false);
+    setShowVideo(false);
+    setShowVideoChat(false);
+    const cookieStr = `action=`;
+    document.cookie = cookieStr + ';path=/;';
+    const text = {
+      id: props.doctorId,
+      message: stopcallMsg,
+      isTyping: true,
+    };
+    pubnub.publish(
+      {
+        channel: channel,
+        message: text,
+        storeInHistory: true,
+        sendByPost: true,
+      },
+      (status, response) => {
+        //setMessageText('');
+      }
+    );
+  };
+  const convertCall = () => {
+    setConvertVideo(!convertVideo);
+    setTimeout(() => {
+      pubnub.publish(
+        {
+          message: {
+            isTyping: true,
+            message: convertVideo ? covertVideoMsg : covertAudioMsg,
+          },
+          channel: channel,
+          storeInHistory: false,
+        },
+        (status, response) => {}
+      );
+    }, 10);
+  };
+  // audioVideo chat end
   const clearError = () => {
     setErrorState({
       ...errorState,
@@ -700,11 +855,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   }
   const openThreeDots = Boolean(anchorElThreeDots);
   const idThreeDots = openThreeDots ? 'simple-three-dots' : undefined;
-  const startConsult = '^^#startconsult';
-  const stopConsult = '^^#stopconsult';
-  const transferconsult = '^^#transferconsult';
-  const rescheduleconsult = '^^#rescheduleconsult';
-  const followupconsult = '^^#followupconsult';
   const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
     subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
@@ -745,10 +895,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     });
     pubnub.addListener({
       status: (statusEvent) => {},
-      message: (message) => {},
-      // presence: (presenceEvent) => {
-      //   console.log('presenceEvent', presenceEvent);
-      // },
+      message: (message) => {
+        if (message.message && message.message.message === acceptcallMsg) {
+          setIsCallAccepted(true);
+        }
+      },
     });
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
@@ -805,6 +956,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       doctorId: props.doctorId,
       caseSheetId: props.caseSheetId,
       doctorInfo: currentPatient,
+      pdfUrl: props.prescriptionPdf,
     };
     if (folloupDateTime !== '') {
       setTimeout(() => {
@@ -984,63 +1136,154 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     return '';
   };
+  const ConsultMinutes = 2;
+  const ConsultSeconds = 10;
   return (
-    <div className={classes.breadcrumbs}>
-      <div>
-        <Link to="/calendar">
-          <div className={classes.backArrow}>
-            <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-            <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-          </div>
-        </Link>
-      </div>
-      CONSULT ROOM &nbsp;
-      <span className={classes.timeLeft}>
-        {startAppointment
-          ? `| Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
-              seconds.toString().length < 2 ? '0' + seconds : seconds
-            }`
-          : getTimerText()}
-      </span>
-      <div className={classes.consultButtonContainer}>
-        <span>
-          {startAppointment ? (
-            <span>
+    <div>
+      <div className={classes.breadcrumbs}>
+        <div>
+          <Link to="/calendar">
+            <div className={classes.backArrow}>
+              <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+              <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+            </div>
+          </Link>
+        </div>
+        CONSULT ROOM &nbsp;
+        <span className={classes.timeLeft}>
+          {startAppointment
+            ? `| Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
+                seconds.toString().length < 2 ? '0' + seconds : seconds
+              }`
+            : getTimerText()}
+        </span>
+        <div className={classes.consultButtonContainer}>
+          <span>
+            {startAppointment ? (
+              <span>
+                <Button
+                  className={classes.backButton}
+                  onClick={() => {
+                    props.saveCasesheetAction(true);
+                  }}
+                >
+                  Save
+                </Button>
+                <Button
+                  className={classes.endconsultButton}
+                  onClick={() => {
+                    //onStopConsult();
+                    //setStartAppointment(!startAppointment);
+                    stopInterval();
+                    props.endConsultAction();
+                    //setCaseSheetEdit(false);
+                    setDisableOnTransfer(true);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                  >
+                    <g fill="none" fillRule="evenodd">
+                      <path d="M0 0h24v24H0z" />
+                      <path
+                        fill="#ffffff"
+                        fillRule="nonzero"
+                        d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
+                      />
+                    </g>
+                  </svg>
+                  End Consult
+                </Button>
+              </span>
+            ) : (
               <Button
-                className={classes.backButton}
+                className={classes.consultButton}
+                disabled={
+                  startAppointmentButton ||
+                  disableOnTransfer ||
+                  appointmentInfo!.appointmentState !== 'NEW' ||
+                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                    appointmentInfo!.status !== STATUS.PENDING)
+                }
                 onClick={() => {
-                  props.saveCasesheetAction(true);
+                  !startAppointment ? onStartConsult() : onStopConsult();
+                  !startAppointment ? startInterval(900) : stopInterval();
+                  setStartAppointment(!startAppointment);
+                  props.createSessionAction();
+                  setCaseSheetEdit(true);
                 }}
               >
-                Save
-              </Button>
-              <Button
-                className={classes.endconsultButton}
-                onClick={() => {
-                  //onStopConsult();
-                  //setStartAppointment(!startAppointment);
-                  stopInterval();
-                  props.endConsultAction();
-                  //setCaseSheetEdit(false);
-                  setDisableOnTransfer(true);
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" fillRule="evenodd">
-                    <path d="M0 0h24v24H0z" />
-                    <path
-                      fill="#ffffff"
-                      fillRule="nonzero"
-                      d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
-                    />
-                  </g>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                  <path fill="#fff" d="M8 5v14l11-7z" />
                 </svg>
-                End Consult
+                {startAppointment ? 'End Consult' : 'Start Consult'}
               </Button>
-            </span>
-          ) : (
+            )}
             <Button
-              className={classes.consultButton}
+              className={classes.consultIcon}
+              aria-describedby={id}
+              variant="contained"
+              onClick={(e) => handleClick(e)}
+            >
+              <img src={require('images/ic_call.svg')} />
+            </Button>
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+            >
+              <Paper className={classes.loginForm}>
+                <Button className={classes.cross}>
+                  <img src={require('images/ic_cross.svg')} alt="" onClick={() => handleClose()} />
+                </Button>
+                <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
+                  <p>How do you want to talk to the patient?</p>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.needHelp}
+                    onClick={() => {
+                      handleClose();
+                      props.setStartConsultAction(false);
+                      autoSend(audioCallMsg);
+                      setIsVideoCall(false);
+                    }}
+                  >
+                    <img src={require('images/call_popup.svg')} alt="" />
+                    AUDIO CALL
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.needHelp}
+                    onClick={() => {
+                      handleClose();
+                      props.setStartConsultAction(true);
+                      autoSend(videoCallMsg);
+                      setIsVideoCall(true);
+                    }}
+                  >
+                    <img src={require('images/video_popup.svg')} alt="" />
+                    VIDEO CALL
+                  </Button>
+                </div>
+              </Paper>
+            </Popover>
+            <Button
+              className={classes.consultIcon}
+              aria-describedby={idThreeDots}
               disabled={
                 startAppointmentButton ||
                 disableOnTransfer ||
@@ -1048,447 +1291,391 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                   appointmentInfo!.status !== STATUS.PENDING)
               }
-              onClick={() => {
-                !startAppointment ? onStartConsult() : onStopConsult();
-                !startAppointment ? startInterval(900) : stopInterval();
-                setStartAppointment(!startAppointment);
-                props.createSessionAction();
-                setCaseSheetEdit(true);
+              onClick={(e) => handleClickThreeDots(e)}
+            >
+              <img src={require('images/ic_more.svg')} />
+            </Button>
+
+            <Popover
+              id={idThreeDots}
+              className={classes.dotPaper}
+              open={openThreeDots}
+              anchorEl={anchorElThreeDots}
+              onClose={handleCloseThreeDots}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
               }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                <path fill="#fff" d="M8 5v14l11-7z" />
-              </svg>
-              {startAppointment ? 'End Consult' : 'Start Consult'}
-            </Button>
-          )}
-          <Button
-            className={classes.consultIcon}
-            aria-describedby={id}
-            variant="contained"
-            onClick={(e) => handleClick(e)}
-          >
-            <img src={require('images/ic_call.svg')} />
-          </Button>
-          <Popover
-            id={id}
-            open={open}
-            anchorEl={anchorEl}
-            onClose={handleClose}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-          >
-            <Paper className={classes.loginForm}>
-              <Button className={classes.cross}>
-                <img src={require('images/ic_cross.svg')} alt="" onClick={() => handleClose()} />
-              </Button>
-              <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
-                <p>How do you want to talk to the patient?</p>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  className={classes.needHelp}
-                  onClick={() => {
-                    handleClose();
-                    props.setStartConsultAction(false);
-                  }}
-                >
-                  <img src={require('images/call_popup.svg')} alt="" />
-                  AUDIO CALL
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  className={classes.needHelp}
-                  onClick={() => {
-                    handleClose();
-                    props.setStartConsultAction(true);
-                  }}
-                >
-                  <img src={require('images/video_popup.svg')} alt="" />
-                  VIDEO CALL
-                </Button>
-              </div>
-            </Paper>
-          </Popover>
-          <Button
-            className={classes.consultIcon}
-            aria-describedby={idThreeDots}
-            disabled={
-              startAppointmentButton ||
-              disableOnTransfer ||
-              appointmentInfo!.appointmentState !== 'NEW' ||
-              (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                appointmentInfo!.status !== STATUS.PENDING)
-            }
-            onClick={(e) => handleClickThreeDots(e)}
-          >
-            <img src={require('images/ic_more.svg')} />
-          </Button>
-
-          <Popover
-            id={idThreeDots}
-            className={classes.dotPaper}
-            open={openThreeDots}
-            anchorEl={anchorElThreeDots}
-            onClose={handleCloseThreeDots}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-          >
-            <div>
-              <ul className={classes.popOverUL}>
-                {/* <li>Share Case Sheet</li> */}
-                <li
-                  onClick={() => {
-                    if (
-                      appointmentInfo!.status === STATUS.PENDING ||
-                      appointmentInfo!.status === STATUS.IN_PROGRESS
-                    ) {
-                      handleCloseThreeDots();
-                      setIsTransferPopoverOpen(true);
-                    } else {
-                      alert('You are not allowed to transfer the appointment');
-                    }
-                  }}
-                >
-                  Transfer Consult
-                </li>
-                {!startAppointment && appointmentInfo!.status === STATUS.PENDING && (
+              <div>
+                <ul className={classes.popOverUL}>
+                  {/* <li>Share Case Sheet</li> */}
                   <li
                     onClick={() => {
-                      handleCloseThreeDots();
-                      setIsPopoverOpen(true);
+                      if (
+                        appointmentInfo!.status === STATUS.PENDING ||
+                        appointmentInfo!.status === STATUS.IN_PROGRESS
+                      ) {
+                        handleCloseThreeDots();
+                        setIsTransferPopoverOpen(true);
+                      } else {
+                        alert('You are not allowed to transfer the appointment');
+                      }
                     }}
                   >
-                    Reschedule Consult
+                    Transfer Consult
                   </li>
-                )}
-              </ul>
-            </div>
-          </Popover>
-        </span>
-      </div>
-      <Modal
-        open={isPopoverOpen}
-        onClose={() => setIsPopoverOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <Paper className={classes.modalBox}>
-          <div className={classes.tabHeader}>
-            <h4>RESCHEDULE CONSULT</h4>
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => setIsPopoverOpen(false)}
-              />
-            </Button>
-          </div>
-          <div className={classes.tabBody}>
-            <p>Why do you want to reschedule this consult?</p>
-
-            <AphSelect
-              value={reason}
-              MenuProps={{
-                classes: { paper: classes.menuPopover },
-                anchorOrigin: {
-                  vertical: 'top',
-                  horizontal: 'right',
-                },
-                transformOrigin: {
-                  vertical: 'top',
-                  horizontal: 'right',
-                },
-              }}
-              onChange={(e: any) => {
-                setReason(e.target.value as string);
-              }}
-            >
-              <MenuItem
-                value="I am running late from previous consult"
-                classes={{ selected: classes.menuSelected }}
-              >
-                I am running late from previous consult
-              </MenuItem>
-              <MenuItem
-                value="I have personal engagement"
-                classes={{ selected: classes.menuSelected }}
-              >
-                I have personal engagement
-              </MenuItem>
-              <MenuItem
-                value="I have a parallel appointment/ procedure"
-                classes={{ selected: classes.menuSelected }}
-              >
-                I have a parallel appointment/ procedure
-              </MenuItem>
-              <MenuItem
-                value="Patient was not reachable"
-                classes={{ selected: classes.menuSelected }}
-              >
-                Patient was not reachable
-              </MenuItem>
-              <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
-                Other
-              </MenuItem>
-            </AphSelect>
-            {textOther && (
-              <div className={classes.othercases}>
-                <AphTextField
-                  classes={{ root: classes.searchInput }}
-                  placeholder="Enter here...."
-                  onChange={(e: any) => {
-                    setOtherTextValue(e.target.value);
-                  }}
-                  value={otherTextValue}
-                  error={errorStateReshedule.otherError}
-                />
-                {errorStateReshedule.otherError && (
-                  <FormHelperText
-                    className={classes.helpText}
-                    component="div"
-                    error={errorStateReshedule.otherError}
-                  >
-                    Please write other reason
-                  </FormHelperText>
-                )}
+                  {!startAppointment && appointmentInfo!.status === STATUS.PENDING && (
+                    <li
+                      onClick={() => {
+                        handleCloseThreeDots();
+                        setIsPopoverOpen(true);
+                      }}
+                    >
+                      Reschedule Consult
+                    </li>
+                  )}
+                </ul>
               </div>
-            )}
-          </div>
-          <div className={classes.tabFooter}>
-            <Button
-              className={classes.cancelConsult}
-              onClick={() => {
-                setIsPopoverOpen(false);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              className={classes.ResheduleCosultButton}
-              onClick={() => {
-                rescheduleConsultAction();
-              }}
-            >
-              Reschedule Consult
-            </Button>
-          </div>
-        </Paper>
-      </Modal>
-      <Modal
-        open={isTransferPopoverOpen}
-        onClose={() => setIsTransferPopoverOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <Paper className={classes.modalBoxTransfer}>
-          <div className={classes.tabHeader}>
-            <h4>TRANSFER CONSULT</h4>
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => {
-                  clearTransferField();
-                  setIsTransferPopoverOpen(false);
-                }}
-              />
-            </Button>
-          </div>
-          <div className={classes.tabBody}>
-            <p>Why do you want to transfer this consult?</p>
+            </Popover>
+          </span>
+        </div>
+        <Modal
+          open={isPopoverOpen}
+          onClose={() => setIsPopoverOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <Paper className={classes.modalBox}>
+            <div className={classes.tabHeader}>
+              <h4>RESCHEDULE CONSULT</h4>
+              <Button className={classes.cross}>
+                <img
+                  src={require('images/ic_cross.svg')}
+                  alt=""
+                  onClick={() => setIsPopoverOpen(false)}
+                />
+              </Button>
+            </div>
+            <div className={classes.tabBody}>
+              <p>Why do you want to reschedule this consult?</p>
 
-            <AphSelect
-              value={transferReason}
-              placeholder="Select a reason"
-              MenuProps={{
-                classes: { paper: classes.menuPopover },
-                anchorOrigin: {
-                  vertical: 'top',
-                  horizontal: 'right',
-                },
-                transformOrigin: {
-                  vertical: 'top',
-                  horizontal: 'right',
-                },
-              }}
-              onChange={(e: any) => {
-                setTransferReason(e.target.value as string);
-              }}
-              error={errorState.reasonError}
-            >
-              <MenuItem
-                value="Not related to my specialty"
-                classes={{ selected: classes.menuSelected }}
+              <AphSelect
+                value={reason}
+                MenuProps={{
+                  classes: { paper: classes.menuPopover },
+                  anchorOrigin: {
+                    vertical: 'top',
+                    horizontal: 'right',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'right',
+                  },
+                }}
+                onChange={(e: any) => {
+                  setReason(e.target.value as string);
+                }}
               >
-                Not related to my specialty
-              </MenuItem>
-              <MenuItem
-                value="Needs a second opinion from a senior specialist"
-                classes={{ selected: classes.menuSelected }}
+                <MenuItem
+                  value="I am running late from previous consult"
+                  classes={{ selected: classes.menuSelected }}
+                >
+                  I am running late from previous consult
+                </MenuItem>
+                <MenuItem
+                  value="I have personal engagement"
+                  classes={{ selected: classes.menuSelected }}
+                >
+                  I have personal engagement
+                </MenuItem>
+                <MenuItem
+                  value="I have a parallel appointment/ procedure"
+                  classes={{ selected: classes.menuSelected }}
+                >
+                  I have a parallel appointment/ procedure
+                </MenuItem>
+                <MenuItem
+                  value="Patient was not reachable"
+                  classes={{ selected: classes.menuSelected }}
+                >
+                  Patient was not reachable
+                </MenuItem>
+                <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
+                  Other
+                </MenuItem>
+              </AphSelect>
+              {textOther && (
+                <div className={classes.othercases}>
+                  <AphTextField
+                    classes={{ root: classes.searchInput }}
+                    placeholder="Enter here...."
+                    onChange={(e: any) => {
+                      setOtherTextValue(e.target.value);
+                    }}
+                    value={otherTextValue}
+                    error={errorStateReshedule.otherError}
+                  />
+                  {errorStateReshedule.otherError && (
+                    <FormHelperText
+                      className={classes.helpText}
+                      component="div"
+                      error={errorStateReshedule.otherError}
+                    >
+                      Please write other reason
+                    </FormHelperText>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className={classes.tabFooter}>
+              <Button
+                className={classes.cancelConsult}
+                onClick={() => {
+                  setIsPopoverOpen(false);
+                }}
               >
-                Needs a second opinion from a senior specialist
-              </MenuItem>
-              <MenuItem
-                value="Patient requested for a slot when I am not available"
-                classes={{ selected: classes.menuSelected }}
+                Cancel
+              </Button>
+              <Button
+                className={classes.ResheduleCosultButton}
+                onClick={() => {
+                  rescheduleConsultAction();
+                }}
               >
-                Patient requested for a slot when I am not available
-              </MenuItem>
-              <MenuItem
-                value="Patient needs a in person visit"
-                classes={{ selected: classes.menuSelected }}
-              >
-                Patient needs a in person visit
-              </MenuItem>
-              <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
-                Other
-              </MenuItem>
-            </AphSelect>
-            {errorState.reasonError && (
-              <FormHelperText
-                className={classes.helpText}
-                component="div"
+                Reschedule Consult
+              </Button>
+            </div>
+          </Paper>
+        </Modal>
+        <Modal
+          open={isTransferPopoverOpen}
+          onClose={() => setIsTransferPopoverOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <Paper className={classes.modalBoxTransfer}>
+            <div className={classes.tabHeader}>
+              <h4>TRANSFER CONSULT</h4>
+              <Button className={classes.cross}>
+                <img
+                  src={require('images/ic_cross.svg')}
+                  alt=""
+                  onClick={() => {
+                    clearTransferField();
+                    setIsTransferPopoverOpen(false);
+                  }}
+                />
+              </Button>
+            </div>
+            <div className={classes.tabBody}>
+              <p>Why do you want to transfer this consult?</p>
+
+              <AphSelect
+                value={transferReason}
+                placeholder="Select a reason"
+                MenuProps={{
+                  classes: { paper: classes.menuPopover },
+                  anchorOrigin: {
+                    vertical: 'top',
+                    horizontal: 'right',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'right',
+                  },
+                }}
+                onChange={(e: any) => {
+                  setTransferReason(e.target.value as string);
+                }}
                 error={errorState.reasonError}
               >
-                Please select reason
-              </FormHelperText>
-            )}
-            {textOtherTransfer && (
-              <div>
-                <AphTextField
-                  classes={{ root: classes.searchInput }}
-                  placeholder="Enter here...."
-                  onChange={(e: any) => {
-                    setOtherTextTansferValue(e.target.value);
-                  }}
-                  value={otherTextTransferValue}
-                  error={errorState.otherErrorTransfer}
-                />
-                {errorState.otherErrorTransfer && (
-                  <FormHelperText
-                    className={classes.helpText}
-                    component="div"
+                <MenuItem
+                  value="Not related to my specialty"
+                  classes={{ selected: classes.menuSelected }}
+                >
+                  Not related to my specialty
+                </MenuItem>
+                <MenuItem
+                  value="Needs a second opinion from a senior specialist"
+                  classes={{ selected: classes.menuSelected }}
+                >
+                  Needs a second opinion from a senior specialist
+                </MenuItem>
+                <MenuItem
+                  value="Patient requested for a slot when I am not available"
+                  classes={{ selected: classes.menuSelected }}
+                >
+                  Patient requested for a slot when I am not available
+                </MenuItem>
+                <MenuItem
+                  value="Patient needs a in person visit"
+                  classes={{ selected: classes.menuSelected }}
+                >
+                  Patient needs a in person visit
+                </MenuItem>
+                <MenuItem value="Other" classes={{ selected: classes.menuSelected }}>
+                  Other
+                </MenuItem>
+              </AphSelect>
+              {errorState.reasonError && (
+                <FormHelperText
+                  className={classes.helpText}
+                  component="div"
+                  error={errorState.reasonError}
+                >
+                  Please select reason
+                </FormHelperText>
+              )}
+              {textOtherTransfer && (
+                <div>
+                  <AphTextField
+                    classes={{ root: classes.searchInput }}
+                    placeholder="Enter here...."
+                    onChange={(e: any) => {
+                      setOtherTextTansferValue(e.target.value);
+                    }}
+                    value={otherTextTransferValue}
                     error={errorState.otherErrorTransfer}
-                  >
-                    Please write other reason
-                  </FormHelperText>
-                )}
-              </div>
-            )}
-          </div>
-          <div className={classes.tabBody}>
-            <p>Whom do you want to transfer this consult to?</p>
-            <AphTextField
-              classes={{ root: classes.searchInput }}
-              placeholder="Search for Doctor/Speciality"
-              onChange={(e: any) => {
-                setSearchKeyword(e.target.value);
-                if (e.target.value.length > 2) {
-                  doctorSpeciality(e.target.value);
-                }
-                setSelectedDoctor('');
-                clearError();
-              }}
-              value={searchKeyWord}
-              error={errorState.searchError}
-            />
-            {errorState.searchError && (
-              <FormHelperText
-                className={classes.helpText}
-                component="div"
+                  />
+                  {errorState.otherErrorTransfer && (
+                    <FormHelperText
+                      className={classes.helpText}
+                      component="div"
+                      error={errorState.otherErrorTransfer}
+                    >
+                      Please write other reason
+                    </FormHelperText>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className={classes.tabBody}>
+              <p>Whom do you want to transfer this consult to?</p>
+              <AphTextField
+                classes={{ root: classes.searchInput }}
+                placeholder="Search for Doctor/Speciality"
+                onChange={(e: any) => {
+                  setSearchKeyword(e.target.value);
+                  if (e.target.value.length > 2) {
+                    doctorSpeciality(e.target.value);
+                  }
+                  setSelectedDoctor('');
+                  clearError();
+                }}
+                value={searchKeyWord}
                 error={errorState.searchError}
+              />
+              {errorState.searchError && (
+                <FormHelperText
+                  className={classes.helpText}
+                  component="div"
+                  error={errorState.searchError}
+                >
+                  Please select doctor or speciality
+                </FormHelperText>
+              )}
+              {isDoctorOrSpeciality && searchKeyWord.length > 2 && (
+                <span className={classes.doctorSearch}>
+                  <h6>Doctor(s)</h6>
+                  {filteredStarDoctors!.length > 0 ? (
+                    <ul>
+                      {filteredStarDoctors!.map((item: any, idx: any) => (
+                        <li
+                          key={idx}
+                          onClick={() => {
+                            handleDoctorClick(item);
+                          }}
+                        >
+                          {item.firstName} {item.lastName}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    'No Doctors found'
+                  )}
+                  <h6> Speciality(s)</h6>
+                  {filterSpeciality!.length > 0 ? (
+                    <ul>
+                      {filterSpeciality!.map((item: any, idx: any) => (
+                        <li
+                          key={idx}
+                          onClick={() => {
+                            handleSpecialityClick(item);
+                          }}
+                        >
+                          {item.name}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    'No Speciality found'
+                  )}
+                </span>
+              )}
+            </div>
+            <div className={classes.tabBody}>
+              <p>Add a Note (optional)</p>
+              <InputBase
+                fullWidth
+                className={classes.textFieldColor}
+                placeholder="Enter here.."
+                onChange={(e) => {
+                  setNoteKeyword(e.target.value);
+                }}
+                value={noteKeyword}
+              />
+            </div>
+            <div className={classes.tabFooter}>
+              <Button
+                className={classes.cancelConsult}
+                onClick={() => {
+                  setIsTransferPopoverOpen(false);
+                  clearTransferField();
+                }}
               >
-                Please select doctor or speciality
-              </FormHelperText>
-            )}
-            {isDoctorOrSpeciality && searchKeyWord.length > 2 && (
-              <span className={classes.doctorSearch}>
-                <h6>Doctor(s)</h6>
-                {filteredStarDoctors!.length > 0 ? (
-                  <ul>
-                    {filteredStarDoctors!.map((item: any, idx: any) => (
-                      <li
-                        key={idx}
-                        onClick={() => {
-                          handleDoctorClick(item);
-                        }}
-                      >
-                        {item.firstName} {item.lastName}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  'No Doctors found'
-                )}
-                <h6> Speciality(s)</h6>
-                {filterSpeciality!.length > 0 ? (
-                  <ul>
-                    {filterSpeciality!.map((item: any, idx: any) => (
-                      <li
-                        key={idx}
-                        onClick={() => {
-                          handleSpecialityClick(item);
-                        }}
-                      >
-                        {item.name}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  'No Speciality found'
-                )}
-              </span>
-            )}
-          </div>
-          <div className={classes.tabBody}>
-            <p>Add a Note (optional)</p>
-            <InputBase
-              fullWidth
-              className={classes.textFieldColor}
-              placeholder="Enter here.."
-              onChange={(e) => {
-                setNoteKeyword(e.target.value);
-              }}
-              value={noteKeyword}
+                Cancel
+              </Button>
+              <Button
+                className={classes.ResheduleCosultButton}
+                onClick={() => {
+                  //setIsTransferPopoverOpen(false);
+                  //resheduleCosult();
+                  transferConsultAction();
+                }}
+              >
+                Transfer Consult
+              </Button>
+            </div>
+          </Paper>
+        </Modal>
+      </div>
+      {/* audio/video start*/}
+      <div className={classes.posRelative}>
+        <div className={showVideo ? '' : classes.audioVideoContainer}>
+          {showVideo && (
+            <Consult
+              toggelChatVideo={() => toggelChatVideo()}
+              stopAudioVideoCall={() => stopAudioVideoCall()}
+              stopAudioVideoCallpatient={() => stopAudioVideoCallpatient()}
+              showVideoChat={showVideoChat}
+              isVideoCall={isVideoCall}
+              sessionId={props.sessionId}
+              token={props.token}
+              timerMinuts={ConsultMinutes}
+              timerSeconds={ConsultSeconds}
+              isCallAccepted={isCallAccepted}
+              isNewMsg={isNewMsg}
+              convertCall={() => convertCall()}
             />
-          </div>
-          <div className={classes.tabFooter}>
-            <Button
-              className={classes.cancelConsult}
-              onClick={() => {
-                setIsTransferPopoverOpen(false);
-                clearTransferField();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              className={classes.ResheduleCosultButton}
-              onClick={() => {
-                //setIsTransferPopoverOpen(false);
-                //resheduleCosult();
-                transferConsultAction();
-              }}
-            >
-              Transfer Consult
-            </Button>
-          </div>
-        </Paper>
-      </Modal>
+          )}
+        </div>
+        {/* audio/video end*/}
+      </div>
     </div>
   );
 };

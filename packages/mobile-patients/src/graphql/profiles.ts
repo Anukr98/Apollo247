@@ -9,10 +9,10 @@ export const GET_CURRENT_PATIENTS = gql`
         firstName
         lastName
         relation
-        gender
         uhid
-        dateOfBirth
         emailAddress
+        gender
+        dateOfBirth
       }
     }
   }
@@ -929,6 +929,18 @@ export const DELETE_PATIENT_MEDICAL_RECORD = gql`
   mutation deletePatientMedicalRecord($recordId: ID!) {
     deletePatientMedicalRecord(recordId: $recordId) {
       status
+    }
+  }
+`;
+
+export const CHECK_IF_RESCHDULE = gql`
+  query checkIfReschedule($existAppointmentId: String!, $rescheduleDate: DateTime!) {
+    checkIfReschedule(existAppointmentId: $existAppointmentId, rescheduleDate: $rescheduleDate) {
+      isPaid
+      isCancel
+      isFollowUp
+      appointmentState
+      rescheduleCount
     }
   }
 `;
