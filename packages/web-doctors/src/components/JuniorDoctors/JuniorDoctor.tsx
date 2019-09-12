@@ -127,10 +127,15 @@ export const JuniorDoctor: React.FC = (props) => {
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
             {activeConsults.map(({ id, patient, appointment }, index) => (
-              <Link to={clientRoutes.JDConsultRoom(patient.id, appointment.id || '')}>
+              <Link
+                key={id}
+                to={clientRoutes.JDConsultRoom({
+                  appointmentId: appointment.id,
+                  patientId: patient.id,
+                })}
+              >
                 <ActiveConsultCard
                   id={id}
-                  key={id}
                   patient={{ ...patient, queueNumber: index + 1 }}
                   appointment={appointment}
                 />

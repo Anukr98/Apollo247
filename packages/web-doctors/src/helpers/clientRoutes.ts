@@ -1,5 +1,10 @@
 import { webDoctorsBaseUrl } from '@aph/universal/dist/aphRoutes';
 
+export interface JDConsultRoomParams {
+  appointmentId: string;
+  patientId: string;
+}
+
 export const clientRoutes = {
   welcome: () => '/',
   patients: () => '/patients',
@@ -16,7 +21,7 @@ export const clientRoutes = {
   juniorDoctorProfile: () => '/juniordoctor-profile',
   ConsultTabs: (appointmentId: string, patientId: string) =>
     `/Consulttabs/${appointmentId}/${patientId}`,
-  JDConsultRoom: (appointmentId: string, patientId: string) =>
+  JDConsultRoom: ({ appointmentId, patientId }: JDConsultRoomParams) =>
     `/jd-consultroom/${appointmentId}/${patientId}`,
 };
 
