@@ -177,6 +177,7 @@ export const Header: React.FC = (props) => {
                   window.location.href.includes('/profile') ? (
                     <div>
                       <img
+                        title="Help"
                         className={`${classes.accountIc} ${selectedTab === 5 &&
                           classes.menuItemActive}`}
                         onClick={() => {
@@ -195,21 +196,21 @@ export const Header: React.FC = (props) => {
                     </div>
                   ) : (
                     <div>
-                      <span>
+                      <span title="Inbox">
                         <img
                           className={`${selectedTab === 3 && classes.menuItemActive}`}
                           onClick={() => setSelectedTab(3)}
                           src={require('images/ic_inbox.svg')}
                         />
                       </span>
-                      <span>
+                      <span title="Notification">
                         <img
                           className={`${selectedTab === 4 && classes.menuItemActive}`}
                           onClick={() => setSelectedTab(4)}
                           src={require('images/ic_notifications.svg')}
                         />
                       </span>
-                      <span>
+                      <span title="Help">
                         <img
                           className={`${selectedTab === 5 && classes.menuItemActive}`}
                           onClick={() => {
@@ -220,6 +221,7 @@ export const Header: React.FC = (props) => {
                         />
                       </span>
                       <span
+                        title="My Account"
                         className={`${window.location.href.includes('/myaccount') &&
                           classes.menuItemActive}`}
                       >
