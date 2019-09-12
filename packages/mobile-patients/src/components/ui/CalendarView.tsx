@@ -143,11 +143,12 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
         ref={(ref) => {
           weekViewRef.current = ref;
         }}
-        date={props.date}
+        date={calendarDate}
         minDate={props.minDate}
-        onTapDate={(date: Date) => {
-          props.onPressDate(moment(date).toDate());
-          setCalendarDate(moment(date).toDate());
+        onTapDate={(selectedDate: Date) => {
+          console.log(selectedDate, 'onTapDate');
+          props.onPressDate(moment(selectedDate).toDate());
+          setCalendarDate(moment(selectedDate).toDate());
         }}
         onWeekChanged={(date) => {
           const weekDate = moment(date).toDate();
@@ -268,6 +269,8 @@ export const CalendarView: React.FC<CalendarViewProps> = (props) => {
       </View>
     );
   };
+
+  console.log(calendarDate, 'calendarDate');
 
   return (
     <View

@@ -9,7 +9,7 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
@@ -189,13 +189,40 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
     );
   };
 
+  const renderImage = () => {
+    const urls = data.documentURLs.split(',');
+    console.log(urls, 'urls');
+    return (
+      <View
+        style={{
+          marginTop: 15,
+        }}
+      >
+        {urls.map((item: string) => (
+          <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+            <Image
+              source={{ uri: item }}
+              style={{
+                // flex: 1,
+                width: '100%',
+                height: 425,
+              }}
+              resizeMode="contain"
+            />
+          </View>
+        ))}
+      </View>
+    );
+  };
+
   const renderData = () => {
     return (
       <View>
         {!!data.observations && renderTopLineReport()}
-        {data.medicalRecordParameters &&
-          data.medicalRecordParameters.length &&
-          renderDetailsFinding()}
+        {data.medicalRecordParameters && data.medicalRecordParameters.length
+          ? renderDetailsFinding()
+          : null}
+        {!!data.documentURLs && renderImage()}
       </View>
     );
   };
@@ -213,9 +240,9 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
             leftIcon="backArrow"
             rightComponent={
               <View style={{ flexDirection: 'row' }}>
-                <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
+                {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
                   <ShareGreen />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
                 <TouchableOpacity activeOpacity={1} onPress={() => {}}>
                   <Download />
                 </TouchableOpacity>

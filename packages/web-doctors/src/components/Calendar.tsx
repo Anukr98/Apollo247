@@ -168,6 +168,7 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
         endTime,
         type,
         status,
+        caseSheet,
         isNew: !!newPatientsList && newPatientsList.includes(patientId),
         details: {
           patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,

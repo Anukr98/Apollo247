@@ -14,6 +14,7 @@ import {
   StepConnector,
   StepContent,
   Typography,
+  Tooltip,
 } from '@material-ui/core';
 import { format, isToday } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -28,6 +29,7 @@ export interface Appointment {
   isNew: boolean;
   type: string;
   status: string;
+  caseSheet: any;
   details: {
     patientName: string;
     checkups: any;
@@ -288,7 +290,6 @@ export const Appointments: React.FC<AppointmentsProps> = ({
 }) => {
   const classes = useStyles();
   const [appointments, setAppointments] = useState<Appointment[]>(values);
-  //console.log(appointments!.type);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
@@ -303,7 +304,21 @@ export const Appointments: React.FC<AppointmentsProps> = ({
 
     return null;
   });
-
+  const getSymptomTooltip = (appointment: any, symptomArr: any) => {
+    let symptms: any = [];
+    symptomArr.filter((value: any, index: number) => {
+      if (index > 1) {
+        symptms.push(value.symptom.toUpperCase());
+      }
+    });
+    return (
+      <Tooltip title={symptms.join(', ')} placement="top-start">
+        <Typography gutterBottom variant="caption" className={classes.bold}>
+          +{appointment.details.checkups.symptoms.length - 2}
+        </Typography>
+      </Tooltip>
+    );
+  };
   useEffect(() => {
     let activeStep = getActiveStep(values);
     activeStep = activeStep < 0 ? 0 : activeStep;
@@ -387,102 +402,125 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                 }}
               >
                 <div>
-                  <Card
-                    className={classes.card}
-                    ref={activeStep === idx ? upcomingElement : null}
-                    classes={{
-                      root: 'cardRow',
-                    }}
-                  >
-                    <CardContent>
-                      <Grid item xs={12}>
-                        <Grid item container spacing={2}>
-                          <Grid item lg={5} sm={5} xs={12} key={1} container>
-                            <Grid sm={3} xs={2} key={5} item>
-                              <Avatar
-                                alt={appointment.details.patientName}
-                                src={appointment.details.avatar}
-                                className={classes.bigAvatar}
-                              />
-                            </Grid>
-                            <Grid sm={9} xs={10} key={6} item className={classes.valign}>
-                              <div className={classes.section2}>
-                                {appointment.isNew && (
-                                  <Typography
-                                    gutterBottom
-                                    variant="caption"
-                                    className={classes.newAppointment}
+                  {appointment!.caseSheet &&
+                    appointment!.caseSheet !== null &&
+                    appointment!.caseSheet.length > 0 && (
+                      <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}`}>
+                        <Card
+                          className={classes.card}
+                          ref={activeStep === idx ? upcomingElement : null}
+                          classes={{
+                            root: 'cardRow',
+                          }}
+                        >
+                          <CardContent>
+                            <Grid item xs={12}>
+                              <Grid item container spacing={2}>
+                                <Grid item lg={5} sm={5} xs={12} key={1} container>
+                                  <Grid sm={3} xs={2} key={5} item>
+                                    <Avatar
+                                      alt={appointment.details.patientName}
+                                      src={appointment.details.avatar}
+                                      className={classes.bigAvatar}
+                                    />
+                                  </Grid>
+                                  <Grid sm={9} xs={10} key={6} item className={classes.valign}>
+                                    <div className={classes.section2}>
+                                      {appointment.isNew && (
+                                        <Typography
+                                          gutterBottom
+                                          variant="caption"
+                                          className={classes.newAppointment}
+                                        >
+                                          New
+                                        </Typography>
+                                      )}
+                                      <Typography
+                                        gutterBottom
+                                        variant="body1"
+                                        className={classes.mainHeading}
+                                      >
+                                        {appointment.details.patientName}
+                                      </Typography>
+                                    </div>
+                                  </Grid>
+                                </Grid>
+                                {!!appointment.details.checkups &&
+                                !!appointment.details.checkups.symptoms &&
+                                !!appointment.details.checkups.symptoms.length ? (
+                                  <Grid
+                                    lg={5}
+                                    sm={5}
+                                    xs={8}
+                                    key={2}
+                                    item
+                                    className={classes.valign}
                                   >
-                                    New
-                                  </Typography>
-                                )}
-                                <Typography
-                                  gutterBottom
-                                  variant="body1"
-                                  className={classes.mainHeading}
-                                >
-                                  {appointment.details.patientName}
-                                </Typography>
-                              </div>
-                            </Grid>
-                          </Grid>
-                          {!!appointment.details.checkups &&
-                          !!appointment.details.checkups.symptoms &&
-                          !!appointment.details.checkups.symptoms.length ? (
-                            <Grid lg={5} sm={5} xs={8} key={2} item className={classes.valign}>
-                              <div className={classes.section1}>
-                                {(appointment.details.checkups.symptoms.length > 2
-                                  ? appointment.details.checkups.symptoms.slice(0, 2)
-                                  : appointment.details.checkups.symptoms
-                                ).map((checkup: any, idx: any) => (
-                                  <Chip
-                                    key={idx}
-                                    className={classes.chip}
-                                    label={checkup.symptom.toUpperCase()}
-                                  />
-                                ))}
-                                {appointment.details.checkups.symptoms.length > 2 && (
-                                  <Typography
-                                    gutterBottom
-                                    variant="caption"
-                                    className={classes.bold}
-                                  >
-                                    +{appointment.details.checkups.symptoms.length - 2}
-                                  </Typography>
-                                )}
-                              </div>
-                            </Grid>
-                          ) : (
-                            <Grid lg={5} sm={5} xs={8} key={2} item className={classes.valign}>
-                              <div className={classes.section1}>
-                                <Typography
-                                  gutterBottom
-                                  variant="caption"
-                                  className={classes.bold}
-                                ></Typography>
-                              </div>
-                            </Grid>
-                          )}
-                          <Grid lg={2} sm={2} xs={3} key={3} className={classes.valign} item>
-                            <div className={`${classes.section2} ${classes.videoIcomm}`}>
-                              <IconButton aria-label="Video call">
-                                {appointment.type === APPOINTMENT_TYPE.ONLINE ? (
-                                  <img src={require('images/ic_video.svg')} alt="" />
+                                    <div className={classes.section1}>
+                                      {(appointment.details.checkups.symptoms.length > 2
+                                        ? appointment.details.checkups.symptoms.slice(0, 2)
+                                        : appointment.details.checkups.symptoms
+                                      ).map((checkup: any, idx: any) => (
+                                        <Chip
+                                          key={idx}
+                                          className={classes.chip}
+                                          label={checkup.symptom.toUpperCase()}
+                                        />
+                                      ))}
+                                      {appointment.details.checkups.symptoms.length > 2 &&
+                                        getSymptomTooltip(
+                                          appointment,
+                                          appointment.details.checkups.symptoms
+                                        )}
+                                    </div>
+                                  </Grid>
                                 ) : (
-                                  <img src={require('images/ic_physical_consult.svg')} alt="" />
+                                  <Grid
+                                    lg={5}
+                                    sm={5}
+                                    xs={8}
+                                    key={2}
+                                    item
+                                    className={classes.valign}
+                                  >
+                                    <div className={classes.section1}>
+                                      <Typography
+                                        gutterBottom
+                                        variant="caption"
+                                        className={classes.bold}
+                                      ></Typography>
+                                    </div>
+                                  </Grid>
                                 )}
-                              </IconButton>
-                              <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}`}>
-                                <IconButton aria-label="Navigate next">
-                                  <NavigateNextIcon />
-                                </IconButton>
-                              </Link>
-                            </div>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    </CardContent>
-                  </Card>
+                                <Grid lg={2} sm={2} xs={3} key={3} className={classes.valign} item>
+                                  <div className={`${classes.section2} ${classes.videoIcomm}`}>
+                                    <IconButton aria-label="Video call">
+                                      {appointment.type === APPOINTMENT_TYPE.ONLINE ? (
+                                        <img src={require('images/ic_video.svg')} alt="" />
+                                      ) : (
+                                        <img
+                                          src={require('images/ic_physical_consult.svg')}
+                                          alt=""
+                                        />
+                                      )}
+                                    </IconButton>
+                                    {/* {appointment!.caseSheet &&
+                                appointment!.caseSheet !== null &&
+                                appointment!.caseSheet.length > 0 && (
+                                  <Link
+                                    to={`/consulttabs/${appointment.id}/${appointment.patientId}`}
+                                  > */}
+                                    <IconButton aria-label="Navigate next">
+                                      <NavigateNextIcon />
+                                    </IconButton>
+                                  </div>
+                                </Grid>
+                              </Grid>
+                            </Grid>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                    )}
                 </div>
               </StepContent>
             </Step>
