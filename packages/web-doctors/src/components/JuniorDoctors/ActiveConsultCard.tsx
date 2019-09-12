@@ -1,8 +1,14 @@
-import { Theme, Avatar } from '@material-ui/core';
+import { Theme, Avatar, Button, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { format } from 'date-fns';
 import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+import { Mutation } from 'react-apollo';
+import {
+  RemoveFromConsultQueue,
+  RemoveFromConsultQueueVariables,
+} from 'graphql/types/RemoveFromConsultQueue';
+import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -95,6 +101,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export interface ActiveConsultCardProps {
+  id: number;
   patient: {
     firstName: string | null;
     lastName: string | null;
@@ -103,13 +110,14 @@ export interface ActiveConsultCardProps {
     queueNumber: number;
   };
   appointment: {
+    id: string;
     appointmentDateTime: Date;
     appointmentType: APPOINTMENT_TYPE;
   };
 }
 export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
   const classes = useStyles();
-  const { patient, appointment } = props;
+  const { id, patient, appointment } = props;
 
   return (
     <div className={classes.root}>
@@ -118,11 +126,31 @@ export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
       </div>
       <div className={`${classes.cardGroup} ${classes.upNextCardGroup}`}>
         {patient.queueNumber > 1 && <div className={classes.queueText}>Queued</div>}
+        <Mutation<RemoveFromConsultQueue, RemoveFromConsultQueueVariables>
+          mutation={REMOVE_FROM_CONSULT_QUEUE}
+        >
+          {(removeFromConsultQueue, { loading }) => (
+            <Button
+              variant="contained"
+              disabled={loading}
+              onClick={() =>
+                removeFromConsultQueue({
+                  variables: {
+                    id,
+                  },
+                })
+              }
+            >
+              {loading && <CircularProgress size={20} />} REMOVE
+            </Button>
+          )}
+        </Mutation>
         <div className={classes.cardImg}>
           {patient.photoUrl ? (
             <Avatar src={patient.photoUrl} className={classes.avatar} />
           ) : (
             <Avatar className={classes.avatar}>
+              {id}
               {(patient.firstName || '').charAt(0)}
               {(patient.lastName || '').charAt(0)}
             </Avatar>
