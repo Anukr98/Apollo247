@@ -10907,11 +10907,11 @@
             "description": null,
             "args": [
               {
-                "name": "orderConfimrationInput",
+                "name": "orderConfirmationInput",
                 "description": null,
                 "type": {
                   "kind": "INPUT_OBJECT",
-                  "name": "OrderConfimrationInput",
+                  "name": "OrderConfirmationInput",
                   "ofType": null
                 },
                 "defaultValue": null
@@ -13818,7 +13818,7 @@
       },
       {
         "kind": "INPUT_OBJECT",
-        "name": "OrderConfimrationInput",
+        "name": "OrderConfirmationInput",
         "description": null,
         "fields": null,
         "inputFields": [
