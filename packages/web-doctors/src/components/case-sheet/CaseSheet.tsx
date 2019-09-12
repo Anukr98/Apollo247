@@ -155,8 +155,8 @@ export const CaseSheet: React.FC = () => {
     isExpanded: boolean
   ) => setExpanded(isExpanded ? panelName : false);
 
-  const { setCasesheetNotes, notes } = useContext(CaseSheetContext);
-
+  const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContext);
+  //const expandedValue: boolean = caseSheetEdit ? true : false;
   return (
     <div className={classes.container}>
       <div className={classes.caseSheet}>
@@ -167,6 +167,7 @@ export const CaseSheet: React.FC = () => {
           {/* Symptoms Panel */}
           <ExpansionPanel
             expanded={expanded === 'symptoms'}
+            //expanded={expandedValue}
             onChange={handlePanelExpansion('symptoms')}
             className={classes.expandIcon}
           >
@@ -181,6 +182,7 @@ export const CaseSheet: React.FC = () => {
           {/* Patient History & Lifestyle Panel */}
           <ExpansionPanel
             expanded={expanded === 'lifestyle'}
+            //expanded={expandedValue}
             onChange={handlePanelExpansion('lifestyle')}
             className={classes.expandIcon}
           >
@@ -195,6 +197,7 @@ export const CaseSheet: React.FC = () => {
           {/* Patient Health Vault Panel */}
           <ExpansionPanel
             expanded={expanded === 'healthVault'}
+            //expanded={expandedValue}
             onChange={handlePanelExpansion('healthVault')}
             className={classes.expandIcon}
           >
@@ -209,6 +212,7 @@ export const CaseSheet: React.FC = () => {
           {/* Juniour Doctor's Notes Panel */}
           <ExpansionPanel
             expanded={expanded === 'notes'}
+            //expanded={expandedValue}
             onChange={handlePanelExpansion('notes')}
             className={classes.expandIcon}
           >
@@ -223,6 +227,7 @@ export const CaseSheet: React.FC = () => {
           {/* Diagnosis Panel */}
           <ExpansionPanel
             expanded={expanded === 'diagnosis'}
+            //expanded={expandedValue}
             onChange={handlePanelExpansion('diagnosis')}
             className={classes.expandIcon}
           >
@@ -237,6 +242,7 @@ export const CaseSheet: React.FC = () => {
           {/* Medicine Prescription Panel */}
           <ExpansionPanel
             expanded={expanded === 'medicinePrescription'}
+            //expanded={expandedValue}
             onChange={handlePanelExpansion('medicinePrescription')}
             className={classes.expandIcon}
           >
@@ -251,6 +257,7 @@ export const CaseSheet: React.FC = () => {
           {/* Diagnostic Prescription Panel */}
           <ExpansionPanel
             expanded={expanded === 'diagnosticPrescription'}
+            //expanded={expandedValue}
             onChange={handlePanelExpansion('diagnosticPrescription')}
             className={classes.expandIcon}
           >
@@ -265,6 +272,7 @@ export const CaseSheet: React.FC = () => {
           {/* Follow Up Panel */}
           <ExpansionPanel
             expanded={expanded === 'followup'}
+            //expanded={expandedValue}
             onChange={handlePanelExpansion('followup')}
             className={classes.expandIcon}
           >
@@ -279,6 +287,7 @@ export const CaseSheet: React.FC = () => {
           {/* Other Instructions Panel */}
           <ExpansionPanel
             expanded={expanded === 'otherInstructions'}
+            // expanded={expandedValue}
             onChange={handlePanelExpansion('otherInstructions')}
             className={classes.expandIcon}
           >
