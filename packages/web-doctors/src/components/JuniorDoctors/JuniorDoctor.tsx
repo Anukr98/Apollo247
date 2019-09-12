@@ -1,4 +1,4 @@
-import { Theme, CircularProgress, Button } from '@material-ui/core';
+import { Theme, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
@@ -6,12 +6,10 @@ import Scrollbars from 'react-custom-scrollbars';
 import { ActiveConsultCard } from 'components/JuniorDoctors/ActiveConsultCard';
 import { PastConsultCard } from 'components/JuniorDoctors/PastConsultCard';
 import { useQuery } from 'react-apollo-hooks';
-import { GET_CONSULT_QUEUE, ADD_TO_CONSULT_QUEUE } from 'graphql/consults';
+import { GET_CONSULT_QUEUE } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetConsultQueue';
 import _isEmpty from 'lodash/isEmpty';
-import { Mutation } from 'react-apollo';
-import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

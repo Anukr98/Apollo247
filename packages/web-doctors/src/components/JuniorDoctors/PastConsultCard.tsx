@@ -106,7 +106,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
                 })
               }
             >
-              {loading && <CircularProgress size={20} />} NEW {id}
+              {loading && <CircularProgress size={20} />} NEW
             </Button>
           )}
         </Mutation>
@@ -115,6 +115,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
             <Avatar src={patient.photoUrl} className={classes.avatar} />
           ) : (
             <Avatar className={classes.avatar}>
+              {id}
               {(patient.firstName || '').charAt(0)}
               {(patient.lastName || '').charAt(0)}
             </Avatar>
