@@ -41,7 +41,7 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, timeDiffFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { height, width } = Dimensions.get('window');
 
@@ -157,6 +157,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [scrollY] = useState(new Animated.Value(0));
   const [availableInMin, setavailableInMin] = useState<Number>();
   const [availableTime, setavailableTime] = useState<string>('');
+  const [availableInMinPhysical, setavailableInMinPhysical] = useState<Number>();
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -240,33 +241,24 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'getDoctorNextAvailableSlot',
       'doctorAvailalbeSlots'
     );
-    console.log(doctorAvailalbeSlots, ';234567');
+    console.log(doctorAvailalbeSlots, '1234567');
     if (doctorAvailalbeSlots && availableInMin === undefined) {
       const nextSlot = doctorAvailalbeSlots ? g(doctorAvailalbeSlots[0], 'availableSlot') : null;
-      console.log(nextSlot, 'nextSlot');
+      const nextPhysicalSlot = doctorAvailalbeSlots
+        ? g(doctorAvailalbeSlots[0], 'physicalAvailableSlot')
+        : null;
+
+      console.log(nextSlot, 'nextSlot', nextPhysicalSlot);
       if (nextSlot) {
-        const formatedTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('HH:mm');
-        console.log(formatedTime, 'formatedTime');
-        let timeDiff: Number = 0;
-        const time = formatedTime.split(':');
-        const today: Date = new Date();
-        const date2: Date = new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          today.getDate(),
-          Number(time[0]),
-          Number(time[1])
-        );
-        if (date2 && today) {
-          timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
-        }
+        const timeDiff: Number = timeDiffFromNow(nextSlot);
         if (timeDiff < 0) {
-          const availableTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('h:mm A');
-          console.log(availableTime, 'availableTime');
-          setavailableTime(availableTime);
+          setavailableTime(Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('h:mm A'));
         }
-        console.log(timeDiff, 'timeDiff');
         setavailableInMin(timeDiff);
+      }
+      if (nextPhysicalSlot) {
+        const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
+        setavailableInMinPhysical(timeDiff);
       }
     }
   }
@@ -287,7 +279,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       'availableInMin',
       availableInMin
     );
-    if (doctorDetails)
+    if (doctorDetails) {
+      const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
+        console.log(item, item.facility);
+        return item.facility.facilityType === 'HOSPITAL';
+      });
+      const clinicAddress = doctorClinics.length
+        ? `${doctorClinics[0].facility.name}, ${doctorClinics[0].facility.city}`
+        : '';
+
       return (
         <View style={styles.topView}>
           {doctorDetails && doctorDetails && (
@@ -306,15 +306,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   ? doctorDetails.awards.replace(/(<([^>]+)>)/gi, '').trim()
                   : ''}
               </Text>
-
               <View style={styles.separatorStyle} />
-              <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{doctorDetails.city}</Text>
+              {!!clinicAddress && (
+                <Text style={[styles.doctorLocation, { paddingTop: 11 }]}>{clinicAddress}</Text>
+              )}
               {doctorDetails.languages && (
                 <Text style={[styles.doctorLocation, { paddingBottom: 11, paddingTop: 4 }]}>
                   {doctorDetails.languages.split(',').join(' | ')}
                 </Text>
               )}
-
               <View style={styles.separatorStyle} />
               <View style={styles.onlineConsultView}>
                 <View style={{ flex: 1 }}>
@@ -339,14 +339,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       <Text style={styles.onlineConsultAmount}>
                         Rs. {doctorDetails.physicalConsultationFees}
                       </Text>
-                      {availableInMin && availableInMin < 60 && availableInMin > 0 && (
-                        <CapsuleView
-                          title={`AVAILABLE IN ${availableInMin} MIN${
-                            availableInMin > 1 ? 'S' : ''
-                          }`}
-                          isActive={availableInMin <= 15 ? true : false}
-                        />
-                      )}
+                      {availableInMinPhysical &&
+                        availableInMinPhysical < 60 &&
+                        availableInMinPhysical > 0 && (
+                          <CapsuleView
+                            title={`AVAILABLE IN ${availableInMinPhysical} MIN${
+                              availableInMinPhysical > 1 ? 'S' : ''
+                            }`}
+                            isActive={availableInMinPhysical <= 15 ? true : false}
+                          />
+                        )}
                     </>
                   )}
                 </View>
@@ -355,17 +357,13 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           )}
         </View>
       );
+    }
     return null;
   };
 
   const renderDoctorClinic = () => {
     if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const doctorClinics = doctorDetails.doctorHospital;
-      // doctorDetails.doctorHospital.filter((item) => {
-      //   console.log(item, item.facility);
-      //   return item.facility.facilityType === 'CLINIC';
-      // });
-      console.log(doctorClinics, 'doctorClinics');
       if (doctorClinics.length > 0)
         return (
           <View style={styles.cardView}>
@@ -644,7 +642,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   console.log(displayoverlay, 'displayoverlay', doctorDetails, 'availableTime', availableTime);
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
+    <View style={{ flex: 1 }}>
       <SafeAreaView
         style={{
           ...theme.viewStyles.container,

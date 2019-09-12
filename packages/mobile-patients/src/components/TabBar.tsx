@@ -20,21 +20,21 @@ import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigatio
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': <ConsultationRoom />,
   'HEALTH RECORDS': <MyHealth />,
-  'TESTS & MEDICINES': <ShoppingCart />,
+  MEDICINES: <ShoppingCart />,
   'MY ACCOUNT': <Person />,
 };
 
 const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': <ConsultationRoomFocused />,
   'HEALTH RECORDS': <MyHealthFocused />,
-  'TESTS & MEDICINES': <ShoppingCartFocused />,
+  MEDICINES: <ShoppingCartFocused />,
   'MY ACCOUNT': <PersonFocused />,
 };
 
 const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': Consult,
   'HEALTH RECORDS': HealthRecordsHome,
-  'TESTS & MEDICINES': Medicine,
+  MEDICINES: Medicine,
   'MY ACCOUNT': MyAccount,
 };
 

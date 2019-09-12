@@ -18,7 +18,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_PATIENT_ADDRESS_LIST, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
@@ -27,7 +27,6 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
-  Store,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -44,9 +43,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { ImagePickerResponse } from 'react-native-image-picker';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
 import { handleGraphQlError } from '../../helpers/helperFunctions';
-import { PickerImage } from './Medicine';
 import { UploadPrescriprionPopupForMedicineForMedicine } from './UploadPrescriprionPopupForMedicine';
 const styles = StyleSheet.create({
   labelView: {
@@ -85,7 +85,11 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface YourCartProps extends NavigationScreenProps {}
+export interface YourCartProps extends NavigationScreenProps {
+  isComingFromConsult: boolean;
+}
+{
+}
 
 export const YourCart: React.FC<YourCartProps> = (props) => {
   const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
@@ -114,6 +118,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setPhysicalPrescriptions,
     physicalPrescriptions,
     removePhysicalPrescription,
+    pinCode,
+    setPinCode,
+    stores,
+    setStores,
   } = useShoppingCart();
 
   useEffect(() => {
@@ -189,7 +197,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         title={'YOUR CART'}
         rightComponent={
           <View>
-            <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.pop()}>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                if (props.navigation.getParam('isComingFromConsult'))
+                  props.navigation.navigate(AppRoutes.SearchMedicineScene);
+                else props.navigation.goBack();
+              }}
+            >
               <Text
                 style={{
                   ...theme.fonts.IBMPlexSansSemiBold(13),
@@ -280,28 +295,35 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
+  const updatePrescriptions = (images: ImagePickerResponse[]) => {
+    const prescriptions = images.map(
+      (item) =>
+        ({
+          base64: item.data,
+          path: item.path,
+          title: item.path!.substring(
+            item.path!.lastIndexOf('/') + 1,
+            item.path!.lastIndexOf('.') || undefined
+          ),
+          fileType: item.path!.substring(item.path!.lastIndexOf('.') + 1),
+        } as PhysicalPrescription)
+    );
+
+    const itemsToAdd = prescriptions.filter(
+      (p) => !physicalPrescriptions.find((pToFind) => pToFind.base64 == p.base64)
+    );
+    setPhysicalPrescriptions && setPhysicalPrescriptions([...itemsToAdd, ...physicalPrescriptions]);
+  };
+
   const [showPopup, setShowPopup] = useState(false);
   const uploadPrescriptionPopup = () => {
     return (
       showPopup && (
         <UploadPrescriprionPopupForMedicineForMedicine
           onClickClose={() => setShowPopup(false)}
-          getData={(_images) => {
+          onResponse={(images) => {
             setShowPopup(false);
-            const images = [..._images] as PickerImage[];
-            const prescriptions = images.map(
-              (item) =>
-                ({
-                  base64: item.data,
-                  path: item.path,
-                  title: item.filename,
-                } as PhysicalPrescription)
-            );
-            const itemsToAdd = prescriptions.filter(
-              (p) => !physicalPrescriptions.find((pToFind) => pToFind.title == p.title)
-            );
-            setPhysicalPrescriptions &&
-              setPhysicalPrescriptions([...itemsToAdd, ...physicalPrescriptions]);
+            updatePrescriptions(images);
           }}
           navigation={props.navigation}
         />
@@ -345,6 +367,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                   borderRadius: 5,
                 }}
                 source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
+                // source={{ uri: item.path }}
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -510,7 +533,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           </View>
         ) : null}
         {addresses.slice(startIndex, startIndex + 2).map((item, index, array) => {
-          console.log({ item, i: item.id }, item.id === deliveryAddressId);
           return (
             <RadioSelectionItem
               key={item.id}
@@ -546,50 +568,47 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const [storePinCode, setStorePinCode] = useState<string>('');
-  const [storePickUpList, setStorePickUpList] = useState<Store[]>([]);
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
   const fetchStorePickup = (pincode: string) => {
     if (isValidPinCode(pincode)) {
-      setStorePinCode(pincode);
+      setPinCode && setPinCode(pincode);
       if (pincode.length == 6) {
         setStorePickUpLoading(true);
         searchPickupStoresApi(pincode)
           .then(({ data: { Stores, stores_count } }) => {
             setStorePickUpLoading(false);
-            setStorePickUpList(stores_count > 0 ? Stores : []);
+            setStores && setStores(stores_count > 0 ? Stores : []);
           })
           .catch((e) => {
-            console.log({ e });
             setStorePickUpLoading(false);
           });
       } else {
-        setStorePickUpList([]);
-        // setDeliveryType && setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICK_UP);
+        setStores && setStores([]);
         setStoreId && setStoreId('');
       }
     }
   };
 
   const renderStorePickup = () => {
-    const selectedStoreIndex = storePickUpList.findIndex(({ storeid }) => storeid == storeId);
-    const storesLength = storePickUpList.length;
+    const selectedStoreIndex = stores.findIndex(({ storeid }) => storeid == storeId);
+    const storesLength = stores.length;
     const spliceStartIndex =
       selectedStoreIndex == storesLength - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
     const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
+    const slicedStoreList = [...stores].slice(startIndex, startIndex + 2);
 
     return (
       <View style={{ margin: 16, marginTop: 20 }}>
         <TextInputComponent
-          value={`${storePinCode}`}
+          value={`${pinCode}`}
           maxLength={6}
           onChangeText={(pincode) => fetchStorePickup(pincode)}
           placeholder={'Enter Pincode'}
         />
         {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
-        {!storePickUpLoading && storePinCode.length == 6 && storePickUpList.length == 0 && (
+        {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
           <Text
             style={{
               paddingTop: 10,
@@ -603,13 +622,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           </Text>
         )}
 
-        {[...storePickUpList].slice(startIndex, startIndex + 2).map((store, index, array) => (
+        {slicedStoreList.map((store, index, array) => (
           <RadioSelectionItem
             key={store.storeid}
             title={`${store.storename}\n${store.address}`}
             isSelected={storeId === store.storeid}
             onPress={() => {
-              // setDeliveryType && setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICK_UP);
               setStoreId && setStoreId(store.storeid);
             }}
             containerStyle={{ marginTop: 16 }}
@@ -617,13 +635,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
         ))}
         <View>
-          {storePickUpList.length > 2 && (
+          {stores.length > 2 && (
             <Text
               style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
               onPress={() =>
                 props.navigation.navigate(AppRoutes.StorPickupScene, {
-                  pincode: storePinCode,
-                  stores: storePickUpList,
+                  pincode: pinCode,
+                  stores: stores,
                 })
               }
             >
@@ -815,6 +833,49 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     (uploadPrescriptionRequired ? physicalPrescriptions.length > 0 : true)
   );
 
+  const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
+    return Promise.all(
+      prescriptions.map((item) =>
+        client.mutate<uploadFile, uploadFileVariables>({
+          mutation: UPLOAD_FILE,
+          fetchPolicy: 'no-cache',
+          variables: {
+            fileType: item.fileType,
+            base64FileInput: item.base64,
+          },
+        })
+      )
+    );
+  };
+
+  const onPressProceedToPay = () => {
+    setshowSpinner(true);
+    const prescriptions = physicalPrescriptions;
+
+    if (prescriptions.length == 0) {
+      props.navigation.navigate(AppRoutes.CheckoutScene);
+    } else {
+      multiplePhysicalPrescriptionUpload(prescriptions)
+        .then((data) => {
+          const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
+          const uploadedPrescriptions = prescriptions.map(
+            (item, index) =>
+              ({
+                ...item,
+                uploadedUrl: uploadUrls[index],
+              } as PhysicalPrescription)
+          );
+          setPhysicalPrescriptions && setPhysicalPrescriptions(uploadedPrescriptions);
+          setshowSpinner(false);
+          props.navigation.navigate(AppRoutes.CheckoutScene);
+        })
+        .catch((e) => {
+          setshowSpinner(false);
+          Alert.alert('ALert', 'Error occurred while uploading prescriptions.');
+        });
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -833,7 +894,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           <Button
             disabled={disableProceedToPay}
             title={`PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
-            onPress={() => props.navigation.navigate(AppRoutes.CheckoutScene)}
+            onPress={() => onPressProceedToPay()}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>

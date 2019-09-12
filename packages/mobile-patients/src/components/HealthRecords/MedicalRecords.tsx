@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, TouchableOpacity, Alert, Text } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { AddFileIcon, FileBig, NoData } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -47,7 +47,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     client
       .query<getPatientMedicalRecords>({
         query: GET_MEDICAL_RECORD,
@@ -67,7 +67,8 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
       .catch((error) => {
         console.log('Error occured', { error });
       });
-  }, [currentPatient, client]);
+  }, [currentPatient, client, medicalRecords]);
+
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       console.log('didFocus', payload);
