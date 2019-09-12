@@ -5,8 +5,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import Paper from '@material-ui/core/Paper';
 import { JDCallPopover } from 'components/JuniorDoctors/JDCallPopover';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { useApolloClient } from 'react-apollo-hooks';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
@@ -38,8 +36,8 @@ import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import Scrollbars from 'react-custom-scrollbars';
 import { ChatWindow } from 'components/JuniorDoctors/ChatWindow';
+import Scrollbars from 'react-custom-scrollbars';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -52,11 +50,13 @@ const useStyles = makeStyles((theme: Theme) => {
     container: {
       maxWidth: 1064,
       margin: 'auto',
+      paddingBottom: 20,
     },
     pageContainer: {
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
       backgroundColor: '#f7f7f7',
       marginTop: 28,
+      borderRadius: '0 0 5px 5px',
     },
     pageHeader: {
       backgroundColor: theme.palette.common.white,
@@ -144,6 +144,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     contentGroup: {
       display: 'flex',
+      paddingBottom: 30,
     },
     leftSection: {
       width: 'calc(50% - 1px)',
@@ -165,11 +166,10 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
     },
     blockBody: {
-      padding: 30,
-      paddingBottom: 20,
+      padding: '20px 5px 0 5px',
     },
     customScroll: {
-      padding: '0 20px',
+      padding: '10px 25px',
     },
     boxGroup: {
       boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.3)',
@@ -178,19 +178,11 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '30px 30px 10px 30px',
       marginBottom: 10,
     },
-    chatContainer: {
-      minHeight: 'calc(100vh - 360px)',
-    },
     headerSticky: {
       position: 'fixed',
       width: '100%',
       zIndex: 999,
       top: 0,
-    },
-    tabsRoot: {
-      backgroundColor: theme.palette.common.white,
-      borderRadius: 0,
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
     },
     tabRoot: {
       fontSize: 16,
@@ -205,29 +197,6 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         width: '50%',
       },
-    },
-    tabSelected: {
-      fontWeight: theme.typography.fontWeightBold,
-      color: '#02475b',
-    },
-    tabsIndicator: {
-      backgroundColor: '#00b38e',
-      height: 4,
-    },
-    DisplayNone: {
-      display: 'none !important',
-    },
-    typography: {
-      padding: theme.spacing(2),
-    },
-    pointerNone: {
-      pointerEvents: 'none',
-    },
-    none: {
-      display: 'none',
-    },
-    block: {
-      display: 'block',
     },
     modalBox: {
       maxWidth: 320,
@@ -719,66 +688,32 @@ export const JDConsultRoom: React.FC = () => {
                   <div className={classes.blockGroup}>
                     <div className={classes.blockHeader}>Case Sheet</div>
                     <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                      {casesheetInfo ? <CaseSheet /> : ''}
+                      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 440px' }}>
+                        <div className={classes.customScroll}>
+                          {casesheetInfo ? <CaseSheet /> : ''}
+                        </div>
+                      </Scrollbars>
                     </div>
                   </div>
                 </div>
                 <div className={classes.rightSection}>
                   <div className={classes.blockGroup}>
                     <div className={classes.blockHeader}>Chat</div>
-                    <div className={`${classes.blockBody} ${classes.chatBody}`}>
-                      <div className={tabValue !== 1 ? classes.none : classes.block}>
-                        <div className={classes.chatContainer}>
-                          <ChatWindow
-                            startConsult={startConsult}
-                            sessionId={sessionId}
-                            token={token}
-                            appointmentId={paramId}
-                            doctorId={doctorId}
-                            patientId={patientId}
-                          />
-                        </div>
-                      </div>
+                    <div className={`${classes.blockBody}`}>
+                      <ChatWindow
+                        startConsult={startConsult}
+                        sessionId={sessionId}
+                        token={token}
+                        appointmentId={paramId}
+                        doctorId={doctorId}
+                        patientId={patientId}
+                      />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
-            <div className={classes.container}>
-              <div>
-                <div>
-                  <div>
-                    <Tabs
-                      value={tabValue}
-                      variant="fullWidth"
-                      classes={{
-                        root: classes.tabsRoot,
-                        indicator: classes.tabsIndicator,
-                      }}
-                      onChange={(e, newValue) => {
-                        setTabValue(newValue);
-                      }}
-                    >
-                      <Tab
-                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                        label="Case Sheet"
-                      />
-                      <Tab
-                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                        label="Chat"
-                      />
-                    </Tabs>
-                  </div>
-                  <TabContainer>
-                    <div className={tabValue !== 0 ? classes.none : classes.block}></div>
-                  </TabContainer>
-                  <TabContainer></TabContainer>
-                </div>
-              </div>
-            </div>
-          </Scrollbars>
         </CaseSheetContext.Provider>
       )}
       <Modal
@@ -823,7 +758,7 @@ export const JDConsultRoom: React.FC = () => {
                 setCaseSheetEdit(false);
               }}
             >
-              PREVIEW PRESCRIPTION
+              Preview Prescription
             </Button>
             <Button
               className={classes.cancelConsult}
@@ -831,7 +766,7 @@ export const JDConsultRoom: React.FC = () => {
                 setIsPopoverOpen(false);
               }}
             >
-              EDIT CASE SHEET
+              Edit Case Sheet
             </Button>
           </div>
         </Paper>

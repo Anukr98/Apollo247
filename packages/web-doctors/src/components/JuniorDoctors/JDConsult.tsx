@@ -8,15 +8,12 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     consult: {
-      paddingTop: 0,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 0,
-      },
       position: 'absolute',
       top: 0,
       zIndex: 9999,
       width: '100%',
-      background: '#fff',
+      background: theme.palette.common.white,
+      borderRadius: '0 0 5px 5px',
     },
     muteBtn: {
       zIndex: 9999,
@@ -44,7 +41,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     videoContainer: {
-      minHeight: 455,
+      height: 'calc(100vh - 373px)',
       backgroundColor: '#000',
       borderRadius: 10,
       margin: 20,
@@ -56,7 +53,6 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 170,
       height: 170,
       position: 'absolute',
-      // bottom: 125,
       boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
       borderRadius: 10,
       overflow: 'hidden',

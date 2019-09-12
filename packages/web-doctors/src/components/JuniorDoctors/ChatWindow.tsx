@@ -8,20 +8,23 @@ import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-    consultRoom: {
-      paddingTop: 0,
-      paddingBottom: 0,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 0,
-      },
+    root: {
+      padding: '10px 25px 0 25px',
     },
-    booksLink: {
-      color: theme.palette.primary.main,
-      textDecoration: 'underline',
+    container: {
+      position: 'relative',
+      backgroundColor: '#fff',
+      borderRadius: 10,
     },
-    chatContainer: {
-      paddingTop: 20,
-      minHeight: 'calc(100vh - 330px)',
+    audioVideoContainer: {
+      position: 'relative',
+    },
+    chatBody: {
+      padding: '20px 10px',
+      borderRadius: 10,
+    },
+    customScroll: {
+      padding: '10px 20px',
     },
     petient: {
       color: '#0087ba',
@@ -43,7 +46,6 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 #00000026',
-      marginRight: 30,
       textAlign: 'left',
       fontSize: 16,
       maxWidth: '40%',
@@ -63,23 +65,8 @@ const useStyles = makeStyles((theme: Theme) => {
       align: 'left',
       paddingRight: 26,
     },
-
     showIncomingBox: {
       color: '#f00',
-    },
-    container: {
-      maxWidth: 1064,
-      margin: 'auto',
-      position: 'relative',
-      backgroundColor: '#f7f7f7',
-      paddingBottom: 95,
-    },
-    audioVideoContainer: {
-      maxWidth: 1064,
-      margin: 'auto',
-      position: 'relative',
-      backgroundColor: '#f7f7f7',
-      paddingBottom: 0,
     },
     docterChat: {
       display: 'block',
@@ -92,7 +79,6 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: '50%',
       margin: '5px 5px 10px 70px',
       position: 'relative',
-
       '& img': {
         position: 'absolute',
         left: -50,
@@ -101,13 +87,12 @@ const useStyles = makeStyles((theme: Theme) => {
         borderRadius: '50%',
       },
     },
-    chatFooterSection: {
-      position: 'absolute',
-      padding: '40px 20px 20px 20px',
-      clear: 'both',
-      backgroundColor: '#fff',
-      width: '100%',
-      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
+    chatFooter: {
+      padding: '6px 16px 20px 16px',
+      backgroundColor: theme.palette.common.white,
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.15)',
+      position: 'relative',
+      borderRadius: '0 0 10px 10px',
     },
     chatsendcircle: {
       position: 'absolute',
@@ -126,7 +111,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       color: '#02475b',
       fontWeight: 500,
-      marginRight: 32,
       lineHeight: 'normal',
       '& img': {
         position: 'relative',
@@ -576,7 +560,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     }, 10);
   };
   return (
-    <div className={classes.consultRoom}>
+    <div className={classes.root}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
         {showVideo && (
           <JDConsult
@@ -594,37 +578,37 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             convertCall={() => convertCall()}
           />
         )}
-        <div>
-          {(!showVideo || showVideoChat) && (
-            <div className={classes.chatContainer}>
-              <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 360px)'}>
+        {(!showVideo || showVideoChat) && (
+          <div className={classes.chatBody}>
+            <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 540px' }}>
+              <div className={classes.customScroll}>
                 {messagessHtml}
                 <span id="scrollDiv"></span>
-              </Scrollbars>
-            </div>
-          )}
-          {(!showVideo || showVideoChat) && (
-            <div className={classes.chatFooterSection}>
-              <AphInput
-                className={classes.inputWidth}
-                inputProps={{ type: 'text' }}
-                placeholder="Type here..."
-                value={messageText}
-                onKeyPress={(e) => {
-                  if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-                    send();
-                  }
-                }}
-                onChange={(event) => {
-                  setMessageText(event.currentTarget.value);
-                }}
-              />
-              <Button className={classes.chatsendcircle}>
-                <img src={require('images/ic_add_circle.svg')} alt="" />
-              </Button>
-            </div>
-          )}
-        </div>
+              </div>
+            </Scrollbars>
+          </div>
+        )}
+        {(!showVideo || showVideoChat) && (
+          <div className={classes.chatFooter}>
+            <AphInput
+              className={classes.inputWidth}
+              inputProps={{ type: 'text' }}
+              placeholder="Type here..."
+              value={messageText}
+              onKeyPress={(e) => {
+                if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                  send();
+                }
+              }}
+              onChange={(event) => {
+                setMessageText(event.currentTarget.value);
+              }}
+            />
+            <Button className={classes.chatsendcircle}>
+              <img src={require('images/ic_add_circle.svg')} alt="" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
