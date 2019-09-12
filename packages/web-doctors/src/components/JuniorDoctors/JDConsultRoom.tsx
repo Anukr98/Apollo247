@@ -38,6 +38,14 @@ import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { ChatWindow } from 'components/JuniorDoctors/ChatWindow';
 import Scrollbars from 'react-custom-scrollbars';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import { Relation } from 'graphql/types/globalTypes';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
+import isNull from 'lodash/isNull';
+import { parseISO, format } from 'date-fns';
+import { Gender } from 'graphql/types/globalTypes';
+import differenceInYears from 'date-fns/differenceInYears';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -299,6 +307,27 @@ export const JDConsultRoom: React.FC = () => {
 
   const { currentPatient, isSignedIn } = useAuth();
 
+  const doctorFirstName =
+    currentPatient && currentPatient.firstName
+      ? _startCase(_toLower(currentPatient.firstName))
+      : '';
+  const doctorLastName =
+    currentPatient && currentPatient.lastName ? _startCase(_toLower(currentPatient.lastName)) : '';
+  const doctorMobileNumber =
+    currentPatient && currentPatient.mobileNumber
+      ? _startCase(_toLower(currentPatient.mobileNumber))
+      : '';
+  const doctorSalutation =
+    currentPatient && currentPatient.salutation
+      ? _startCase(_toLower(currentPatient.salutation))
+      : '';
+  const doctorSpecialty =
+    currentPatient && currentPatient.specialty && currentPatient.specialty.name
+      ? _startCase(_toLower(currentPatient.specialty.name))
+      : '';
+  const doctorPhotoUrl =
+    currentPatient && currentPatient.photoUrl ? _startCase(_toLower(currentPatient.photoUrl)) : '';
+
   //     setAppointmentId(paramId);
   //     setpatientId(params.patientId);
   //     setdoctorId(currentPatient.id);
@@ -356,6 +385,79 @@ export const JDConsultRoom: React.FC = () => {
   const setCasesheetNotes = (notes: string) => {
     customNotes = notes; // this will be used in saving case sheet.
   };
+
+  let genderString,
+    appointmentDateIST = '';
+
+  // retrieve patient details
+  const patientFirstName =
+    casesheetInfo && casesheetInfo!.getCaseSheet && casesheetInfo!.getCaseSheet!.patientDetails
+      ? casesheetInfo!.getCaseSheet!.patientDetails.firstName
+      : '';
+  const patientLastName =
+    casesheetInfo && casesheetInfo!.getCaseSheet && casesheetInfo!.getCaseSheet!.patientDetails
+      ? casesheetInfo!.getCaseSheet!.patientDetails.lastName
+      : '';
+  const patientUhid =
+    casesheetInfo && casesheetInfo!.getCaseSheet && casesheetInfo!.getCaseSheet!.patientDetails
+      ? casesheetInfo!.getCaseSheet!.patientDetails.uhid
+      : '';
+  // const doctorId =
+  //   casesheetInfo &&
+  //   casesheetInfo.getCaseSheet &&
+  //   casesheetInfo.getCaseSheet.caseSheetDetails &&
+  //   casesheetInfo.getCaseSheet.caseSheetDetails.doctorId
+  //     ? casesheetInfo.getCaseSheet.caseSheetDetails.doctorId
+  //     : '';
+  const patientRelation =
+    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
+      ? casesheetInfo.getCaseSheet.patientDetails.relation
+      : '';
+  const patientDob =
+    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
+      ? casesheetInfo.getCaseSheet.patientDetails.dateOfBirth
+      : new Date();
+  const patientAge = differenceInYears(new Date(), parseISO(patientDob));
+  const patientGender =
+    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
+      ? casesheetInfo.getCaseSheet.patientDetails.gender
+      : Gender.OTHER;
+
+  if (Gender.FEMALE === patientGender) genderString = 'F';
+  if (Gender.MALE === patientGender) genderString = 'M';
+  if (Gender.OTHER === patientGender) genderString = 'O';
+
+  const patientAppointmentId =
+    (casesheetInfo &&
+      casesheetInfo.getCaseSheet &&
+      casesheetInfo.getCaseSheet.caseSheetDetails &&
+      casesheetInfo.getCaseSheet.caseSheetDetails.appointment &&
+      casesheetInfo.getCaseSheet.caseSheetDetails.appointment.displayId) ||
+    '';
+  const patientAppointmentTimeUtc =
+    (casesheetInfo &&
+      casesheetInfo.getCaseSheet &&
+      casesheetInfo.getCaseSheet.caseSheetDetails &&
+      casesheetInfo.getCaseSheet.caseSheetDetails.appointment &&
+      casesheetInfo.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime) ||
+    '';
+  const patientPhotoUrl =
+    casesheetInfo &&
+    casesheetInfo.getCaseSheet &&
+    casesheetInfo.getCaseSheet.patientDetails &&
+    !isNull(casesheetInfo.getCaseSheet.patientDetails.photoUrl)
+      ? casesheetInfo.getCaseSheet.patientDetails.photoUrl
+      : '';
+
+  if (patientAppointmentTimeUtc !== '') {
+    appointmentDateIST = format(
+      new Date(patientAppointmentTimeUtc).getTime(),
+      'dd-MM-yyyy hh:mm a'
+    );
+  }
+
+  const patientRelationHeader =
+    patientRelation === Relation.ME ? 'Self' : _startCase(_toLower(patientRelation));
 
   useEffect(() => {
     if (isSignedIn) {
@@ -589,7 +691,9 @@ export const JDConsultRoom: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
-  return (
+  return !loaded ? (
+    <LinearProgress />
+  ) : (
     <div className={classes.root}>
       <div className={classes.headerSticky}>
         <Header />
@@ -635,36 +739,49 @@ export const JDConsultRoom: React.FC = () => {
               <div className={classes.pageHeader}>
                 <div className={classes.patientSection}>
                   <div className={classes.patientImage}>
-                    <img src="https://via.placeholder.com/132x132" alt="" />
+                    <img
+                      src={
+                        patientPhotoUrl !== ''
+                          ? patientPhotoUrl
+                          : 'https://via.placeholder.com/132x132'
+                      }
+                      alt="Patient Profile Photo"
+                    />
                   </div>
                   <div className={classes.patientInfo}>
                     <div className={classes.patientName}>
-                      Rahul Mehta <span>(28, M)</span>
+                      {patientFirstName} {patientLastName}
+                      <span>
+                        ({isNull(patientAge) ? patientAge : ''}, {patientGender})
+                      </span>
                     </div>
                     <div className={classes.patientTextInfo}>
-                      <label>UHID:</label> 012345 | <label>Relation:</label> Self
+                      <label>UHID:</label> {patientUhid} | <label>Relation:</label>
+                      {patientRelationHeader}
                     </div>
                     <div className={classes.patientTextInfo}>
-                      <label>Appt ID:</label> 98765
+                      <label>Appt ID:</label> {patientAppointmentId}
                     </div>
                     <div className={classes.patientTextInfo}>
-                      <label>Appt Date:</label> 02/08/2019, 11.55 AM
+                      <label>Appt Date:</label> {appointmentDateIST}
                     </div>
                   </div>
                 </div>
                 <div className={classes.doctorSection}>
                   <div className={classes.doctorImg}>
                     <Avatar
-                      src={require('images/doctor_02.png')}
-                      alt=""
+                      src={doctorPhotoUrl !== '' ? doctorPhotoUrl : require('images/doctor_02.png')}
+                      alt="Doctor Profile Photo"
                       className={classes.avatar}
                     />
                   </div>
                   <div className={classes.doctorInfo}>
                     <div className={classes.assign}>Assigned to:</div>
-                    <div className={classes.doctorName}>Dr. Seema Rao</div>
-                    <div className={classes.doctorType}>General Physician</div>
-                    <div className={classes.doctorContact}>+91 98765 43210</div>
+                    <div
+                      className={classes.doctorName}
+                    >{`${doctorSalutation} ${doctorFirstName} ${doctorLastName}`}</div>
+                    <div className={classes.doctorType}>{doctorSpecialty}</div>
+                    <div className={classes.doctorContact}>{doctorMobileNumber}</div>
                   </div>
                 </div>
               </div>

@@ -6,14 +6,12 @@ import Scrollbars from 'react-custom-scrollbars';
 import { ActiveConsultCard } from 'components/JuniorDoctors/ActiveConsultCard';
 import { PastConsultCard } from 'components/JuniorDoctors/PastConsultCard';
 import { useQuery } from 'react-apollo-hooks';
-import { GET_CONSULT_QUEUE_AND_ALL_DOCTOR_APPOINTMENTS } from 'graphql/consults';
+import { GET_CONSULT_QUEUE } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
-import {
-  GetConsultQueueAndAllDoctorAppointments,
-  GetConsultQueueAndAllDoctorAppointmentsVariables,
-} from 'graphql/types/GetConsultQueueAndAllDoctorAppointments';
-import { clientRoutes } from 'helpers/clientRoutes';
+import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetConsultQueue';
+import _isEmpty from 'lodash/isEmpty';
 import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -97,64 +95,44 @@ const useStyles = makeStyles((theme: Theme) => {
 export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
   const currentDoctor = useCurrentPatient();
-  const { data, loading, error } = useQuery<
-    GetConsultQueueAndAllDoctorAppointments,
-    GetConsultQueueAndAllDoctorAppointmentsVariables
-  >(GET_CONSULT_QUEUE_AND_ALL_DOCTOR_APPOINTMENTS, {
-    skip: !currentDoctor,
-    variables: {
-      doctorId: currentDoctor!.id,
-    },
-  });
+  const { data, loading, error } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
+    GET_CONSULT_QUEUE,
+    {
+      skip: !currentDoctor,
+      variables: {
+        doctorId: currentDoctor!.id,
+      },
+      pollInterval: 10 * 1000,
+      notifyOnNetworkStatusChange: true,
+    }
+  );
 
   let content: [React.ReactNode, React.ReactNode] = [null, null];
   if (error) content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
-  if (loading) content = [<CircularProgress />, <CircularProgress />];
-  if (data && data.getConsultQueue && data.getConsultQueue && data.getAllDoctorAppointments) {
+  if (loading && _isEmpty(data)) content = [<CircularProgress />, <CircularProgress />];
+  if (data && data.getConsultQueue) {
     const { consultQueue } = data.getConsultQueue;
-    const activeConsults = consultQueue.map((consult) => ({
+    const allConsults = consultQueue.map((consult) => ({
       ...consult,
       appointment: {
         ...consult.appointment,
         appointmentDateTime: new Date(consult.appointment.appointmentDateTime),
       },
     }));
-
-    console.log('-------', activeConsults);
-
-    const { appointmentsAndPatients } = data.getAllDoctorAppointments;
-    const pastAppointments = appointmentsAndPatients
-      .map((patientAndAppointment) => ({
-        ...patientAndAppointment,
-        appointment: {
-          ...patientAndAppointment.appointment,
-          appointmentDateTime: new Date(patientAndAppointment.appointment.appointmentDateTime),
-        },
-      }))
-      .filter(
-        (patientAndAppointment) =>
-          patientAndAppointment.appointment.appointmentDateTime < new Date()
-      );
+    const activeConsults = allConsults.filter((consult) => consult.isActive);
+    const pastConsults = allConsults.filter((consult) => !consult.isActive);
 
     content = [
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {activeConsults.map(({ patient, appointment }, index) => (
-              <Link to={clientRoutes.JDConsultRoom(appointment.id || '', patient.id)}>
+            {activeConsults.map(({ id, patient, appointment }, index) => (
+              <Link to={clientRoutes.JDConsultRoom(patient.id, appointment.id || '')}>
                 <ActiveConsultCard
-                  key={patient.id}
-                  patient={{
-                    firstName: patient.firstName || '',
-                    lastName: patient.lastName || '',
-                    uhid: patient.uhid,
-                    photoUrl: patient.photoUrl,
-                    queueNumber: index + 1,
-                  }}
-                  appointment={{
-                    appointmentDateTime: new Date(appointment.appointmentDateTime),
-                    appointmentType: appointment.appointmentType,
-                  }}
+                  id={id}
+                  key={id}
+                  patient={{ ...patient, queueNumber: index + 1 }}
+                  appointment={appointment}
                 />
               </Link>
             ))}
@@ -165,8 +143,8 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {pastAppointments.map(({ patient, appointment }) => (
-              <PastConsultCard key={appointment.id} patient={patient} appointment={appointment} />
+            {pastConsults.map(({ id, patient, appointment }) => (
+              <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
             ))}
           </div>
         </div>
@@ -188,13 +166,17 @@ export const JuniorDoctor: React.FC = (props) => {
           <div className={classes.contentGroup}>
             <div className={classes.leftSection}>
               <div className={classes.blockGroup}>
-                <div className={classes.blockHeader}>Active Patients</div>
+                <div className={classes.blockHeader}>
+                  {loading && data && <CircularProgress size={20} />} Active Patients
+                </div>
                 <div className={classes.blockBody}>{content[0]}</div>
               </div>
             </div>
             <div className={classes.rightSection}>
               <div className={classes.blockGroup}>
-                <div className={classes.blockHeader}>Past Consults</div>
+                <div className={classes.blockHeader}>
+                  {loading && data && <CircularProgress size={20} />} Past Consults
+                </div>
                 <div className={classes.blockBody}>{content[1]}</div>
               </div>
             </div>
