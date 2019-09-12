@@ -3,6 +3,7 @@ package com.apollopatient;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import com.corbt.keepawake.KCKeepAwakePackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
 import com.imagepicker.ImagePickerPackage;
@@ -12,7 +13,6 @@ import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.zxcpoiu.incallmanager.InCallManagerPackage;
 import io.github.elyx0.reactnativedocumentpicker.DocumentPickerPackage;
 import com.opentokreactnative.OTPackage;
-import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import org.devio.rn.splashscreen.SplashScreenReactPackage;
 import io.invertase.firebase.RNFirebasePackage;
 import com.oblador.vectoricons.VectorIconsPackage;
@@ -42,6 +42,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new PickerPackage(),
             new KCKeepAwakePackage(),
             new RNFetchBlobPackage(),
             new ImagePickerPackage(),
@@ -51,7 +52,6 @@ public class MainApplication extends Application implements ReactApplication {
             new InCallManagerPackage(),
             new DocumentPickerPackage(),
             new OTPackage(),
-            new PickerPackage(),
             new SplashScreenReactPackage(),
             new RNFirebasePackage(),
             new VectorIconsPackage(),
