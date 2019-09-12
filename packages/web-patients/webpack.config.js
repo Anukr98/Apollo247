@@ -29,11 +29,20 @@ const plugins = [
     filename: 'index.html',
     chunks: ['index'],
     template: './index.html',
+    templateParameters: {
+      env: process.env.NODE_ENV,
+    },
     inject: true,
   }),
 ];
 if (isLocal) {
-  plugins.push(new webpack.HotModuleReplacementPlugin());
+  plugins.push(
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.DllReferencePlugin({
+      context: __dirname,
+      manifest: require(path.join(distDir, 'dependencies.dll.manifest.json')),
+    })
+  );
 }
 
 const rhlBabelLoader = {
@@ -42,7 +51,16 @@ const rhlBabelLoader = {
     plugins: ['react-hot-loader/babel'],
   },
 };
-const tsLoader = { loader: 'awesome-typescript-loader' };
+const tsLoader = {
+  loader: 'awesome-typescript-loader',
+  options: isLocal
+    ? {
+        useCache: true,
+        transpileModule: true,
+        forceIsolatedModules: true,
+      }
+    : undefined,
+};
 const urlLoader = {
   loader: 'url-loader',
   options: {
@@ -83,7 +101,7 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx'],
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
     modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
     alias: isLocal
       ? {
