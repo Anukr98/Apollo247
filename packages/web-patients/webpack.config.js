@@ -1,10 +1,11 @@
 const path = require('path');
 const process = require('process');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const DotenvWebpack = require('dotenv-webpack');
 const webpack = require('webpack');
-const dotenv = require('dotenv');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+const DotenvWebpack = require('dotenv-webpack');
+const dotenv = require('dotenv');
 
 const envFile = path.resolve(__dirname, '../../.env');
 const dotEnvConfig = dotenv.config({ path: envFile });
@@ -36,13 +37,7 @@ const plugins = [
   }),
 ];
 if (isLocal) {
-  plugins.push(
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.DllReferencePlugin({
-      context: __dirname,
-      manifest: require(path.join(distDir, 'dependencies.dll.manifest.json')),
-    })
-  );
+  plugins.push(new webpack.HotModuleReplacementPlugin(), new HardSourceWebpackPlugin());
 }
 
 const rhlBabelLoader = {
@@ -58,6 +53,7 @@ const tsLoader = {
         useCache: true,
         transpileModule: true,
         forceIsolatedModules: true,
+        reportFiles: ['src/**/*.{ts,tsx}'],
       }
     : undefined,
 };
@@ -73,7 +69,8 @@ const urlLoader = {
 module.exports = {
   mode: isStaging || isProduction ? 'production' : 'development',
 
-  devtool: isLocal || isDevelopment ? 'source-map' : false,
+  // devtool: isLocal || isDevelopment ? 'source-map' : false,
+  devtool: isLocal || isDevelopment ? 'eval' : false,
 
   context: path.resolve(__dirname, 'src'),
 
@@ -110,12 +107,25 @@ module.exports = {
       : undefined,
   },
 
-  optimization: {
-    // Enable these for tree-shaking capabilities.
-    // Also set `"sideEffects": false` in `package.json`
-    sideEffects: true,
-    usedExports: true,
-  },
+  // Enable these for tree-shaking capabilities.
+  // Also set `"sideEffects": false` in `package.json`
+  // optimization: {
+  //   sideEffects: true,
+  //   usedExports: true,
+  // },
+
+  optimization: isLocal
+    ? {
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        splitChunks: false,
+      }
+    : {
+        // Enable these for tree-shaking capabilities.
+        // Also set `"sideEffects": false` in `package.json`
+        sideEffects: true,
+        usedExports: true,
+      },
 
   devServer: isLocal
     ? {
