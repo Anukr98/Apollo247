@@ -11477,7 +11477,7 @@
             "description": null,
             "args": [
               {
-                "name": "doctorId",
+                "name": "appointmentId",
                 "description": null,
                 "type": {
                   "kind": "NON_NULL",
@@ -11508,14 +11508,14 @@
             "description": null,
             "args": [
               {
-                "name": "appointmentId",
+                "name": "id",
                 "description": null,
                 "type": {
                   "kind": "NON_NULL",
                   "name": null,
                   "ofType": {
                     "kind": "SCALAR",
-                    "name": "String",
+                    "name": "Int",
                     "ofType": null
                   }
                 },
@@ -16392,6 +16392,22 @@
         "name": "AddToConsultQueueResult",
         "description": null,
         "fields": [
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
           {
             "name": "doctorId",
             "description": null,

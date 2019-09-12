@@ -1,8 +1,11 @@
-import { Theme, Avatar } from '@material-ui/core';
+import { Theme, Avatar, Button, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React from 'react';
 import { APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { format } from 'date-fns';
+import { Mutation } from 'react-apollo';
+import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
+import { ADD_TO_CONSULT_QUEUE } from 'graphql/consults';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -67,6 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export interface PastConsultCardProps {
+  id: number;
   patient: {
     firstName: string | null;
     lastName: string | null;
@@ -74,13 +78,14 @@ export interface PastConsultCardProps {
     photoUrl?: string | null;
   };
   appointment: {
+    id: string;
     appointmentDateTime: Date;
     appointmentType?: APPOINTMENT_TYPE | null;
   };
 }
 export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
   const classes = useStyles();
-  const { patient, appointment } = props;
+  const { id, patient, appointment } = props;
 
   return (
     <div className={classes.root}>
@@ -88,6 +93,23 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
         APPT DATE: {format(appointment.appointmentDateTime, 'Pp')}
       </div>
       <div className={classes.cardGroup}>
+        <Mutation<AddToConsultQueue, AddToConsultQueueVariables> mutation={ADD_TO_CONSULT_QUEUE}>
+          {(addToConsultQueue, { loading }) => (
+            <Button
+              variant="contained"
+              disabled={loading}
+              onClick={() =>
+                addToConsultQueue({
+                  variables: {
+                    appointmentId: appointment.id,
+                  },
+                })
+              }
+            >
+              {loading && <CircularProgress size={20} />} NEW {id}
+            </Button>
+          )}
+        </Mutation>
         <div className={classes.cardImg}>
           {patient.photoUrl ? (
             <Avatar src={patient.photoUrl} className={classes.avatar} />

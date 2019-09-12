@@ -1,4 +1,4 @@
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme, CircularProgress, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
@@ -6,9 +6,12 @@ import Scrollbars from 'react-custom-scrollbars';
 import { ActiveConsultCard } from 'components/JuniorDoctors/ActiveConsultCard';
 import { PastConsultCard } from 'components/JuniorDoctors/PastConsultCard';
 import { useQuery } from 'react-apollo-hooks';
-import { GET_CONSULT_QUEUE } from 'graphql/consults';
+import { GET_CONSULT_QUEUE, ADD_TO_CONSULT_QUEUE } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetConsultQueue';
+import _isEmpty from 'lodash/isEmpty';
+import { Mutation } from 'react-apollo';
+import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -99,12 +102,14 @@ export const JuniorDoctor: React.FC = (props) => {
       variables: {
         doctorId: currentDoctor!.id,
       },
+      pollInterval: 10 * 1000,
+      notifyOnNetworkStatusChange: true,
     }
   );
 
   let content: [React.ReactNode, React.ReactNode] = [null, null];
   if (error) content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
-  if (loading) content = [<CircularProgress />, <CircularProgress />];
+  if (loading && _isEmpty(data)) content = [<CircularProgress />, <CircularProgress />];
   if (data && data.getConsultQueue) {
     const { consultQueue } = data.getConsultQueue;
     const allConsults = consultQueue.map((consult) => ({
@@ -121,9 +126,10 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {activeConsults.map(({ patient, appointment }, index) => (
+            {activeConsults.map(({ id, patient, appointment }, index) => (
               <ActiveConsultCard
-                key={appointment.id}
+                id={id}
+                key={id}
                 patient={{ ...patient, queueNumber: index + 1 }}
                 appointment={appointment}
               />
@@ -135,8 +141,8 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {pastConsults.map(({ patient, appointment }) => (
-              <PastConsultCard key={appointment.id} patient={patient} appointment={appointment} />
+            {pastConsults.map(({ id, patient, appointment }) => (
+              <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
             ))}
           </div>
         </div>
@@ -158,13 +164,17 @@ export const JuniorDoctor: React.FC = (props) => {
           <div className={classes.contentGroup}>
             <div className={classes.leftSection}>
               <div className={classes.blockGroup}>
-                <div className={classes.blockHeader}>Active Patients</div>
+                <div className={classes.blockHeader}>
+                  {loading && data && <CircularProgress size={20} />} Active Patients
+                </div>
                 <div className={classes.blockBody}>{content[0]}</div>
               </div>
             </div>
             <div className={classes.rightSection}>
               <div className={classes.blockGroup}>
-                <div className={classes.blockHeader}>Past Consults</div>
+                <div className={classes.blockHeader}>
+                  {loading && data && <CircularProgress size={20} />} Past Consults
+                </div>
                 <div className={classes.blockBody}>{content[1]}</div>
               </div>
             </div>

@@ -29,6 +29,7 @@ export const consultQueueTypeDefs = gql`
   }
 
   type AddToConsultQueueResult {
+    id: Int!
     doctorId: String!
   }
 
@@ -37,8 +38,8 @@ export const consultQueueTypeDefs = gql`
   }
 
   extend type Mutation {
-    addToConsultQueue(doctorId: String!): AddToConsultQueueResult!
-    removeFromConsultQueue(appointmentId: String!): RemoveFromConsultQueueResult!
+    addToConsultQueue(appointmentId: String!): AddToConsultQueueResult!
+    removeFromConsultQueue(id: Int!): RemoveFromConsultQueueResult!
   }
 `;
 
@@ -97,14 +98,15 @@ const getConsultQueue: Resolver<
 };
 
 type AddToConsultQueueInput = { appointmentId: string };
-type AddToConsultQueueResult = { doctorId: string };
+type AddToConsultQueueResult = { id: number; doctorId: string };
 const addToConsultQueue: Resolver<
   null,
   AddToConsultQueueInput,
   ConsultServiceContext,
   AddToConsultQueueResult
 > = async (parent, { appointmentId }, context) => {
-  const { cqRepo, docRepo } = getRepos(context);
+  const { cqRepo, docRepo, apptRepo } = getRepos(context);
+  await apptRepo.findOneOrFail(appointmentId);
   const onlineJrDocs = await docRepo.find({
     onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
     doctorType: DoctorType.JUNIOR,
@@ -112,20 +114,20 @@ const addToConsultQueue: Resolver<
   const chosenJrDoc = _sample(onlineJrDocs);
   if (!chosenJrDoc) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
   const doctorId = chosenJrDoc.id;
-  await cqRepo.save(cqRepo.create({ appointmentId, doctorId }));
-  return { doctorId };
+  const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
+  return { id, doctorId };
 };
 
-type RemoveFromConsultQueueInput = { appointmentId: string };
+type RemoveFromConsultQueueInput = { id: number };
 type RemoveFromConsultQueueResult = { consultQueue: GqlConsultQueue };
 const removeFromConsultQueue: Resolver<
   null,
   RemoveFromConsultQueueInput,
   ConsultServiceContext,
   RemoveFromConsultQueueResult
-> = async (parent, { appointmentId }, context) => {
+> = async (parent, { id }, context) => {
   const { docRepo, cqRepo } = getRepos(context);
-  const consultQueueItemToDeactivate = await cqRepo.findOneOrFail({ appointmentId });
+  const consultQueueItemToDeactivate = await cqRepo.findOneOrFail(id);
   const { doctorId } = consultQueueItemToDeactivate;
   await checkAuth(docRepo, context.firebaseUid, doctorId);
   await cqRepo.update(consultQueueItemToDeactivate.id, { isActive: false });

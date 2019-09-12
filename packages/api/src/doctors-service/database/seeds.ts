@@ -96,7 +96,14 @@ import { buildConsultQueueItem } from 'doctors-service/database/factories/consul
   const staticDoctorObjs = [jrKabir];
   const staticDoctors = await Promise.all(staticDoctorObjs.map((doc) => doctorRepo.save(doc)));
   const randomDoctors = await Promise.all(
-    _times(20, () => doctorRepo.save(buildDoctor({ specialty: _sample(doctorSpecialties) })))
+    _times(20, () =>
+      doctorRepo.save(
+        buildDoctor({
+          onlineStatus: DOCTOR_ONLINE_STATUS.AWAY,
+          specialty: _sample(doctorSpecialties),
+        })
+      )
+    )
   );
   const doctors = [...staticDoctors, ...randomDoctors];
   console.log(doctors);

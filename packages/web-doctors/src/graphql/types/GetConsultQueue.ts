@@ -12,8 +12,8 @@ export interface GetConsultQueue_getConsultQueue_consultQueue_patient {
   __typename: "Patient";
   id: string;
   uhid: string | null;
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
   photoUrl: string | null;
 }
 
