@@ -12,6 +12,8 @@ import {
   GetConsultQueueAndAllDoctorAppointments,
   GetConsultQueueAndAllDoctorAppointmentsVariables,
 } from 'graphql/types/GetConsultQueueAndAllDoctorAppointments';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -118,6 +120,8 @@ export const JuniorDoctor: React.FC = (props) => {
       },
     }));
 
+    console.log('-------', activeConsults);
+
     const { appointmentsAndPatients } = data.getAllDoctorAppointments;
     const pastAppointments = appointmentsAndPatients
       .map((patientAndAppointment) => ({
@@ -137,11 +141,22 @@ export const JuniorDoctor: React.FC = (props) => {
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
             {activeConsults.map(({ patient, appointment }, index) => (
-              <ActiveConsultCard
-                key={appointment.id}
-                patient={{ ...patient, queueNumber: index + 1 }}
-                appointment={appointment}
-              />
+              <Link to={clientRoutes.JDConsultRoom(appointment.id || '', patient.id)}>
+                <ActiveConsultCard
+                  key={patient.id}
+                  patient={{
+                    firstName: patient.firstName || '',
+                    lastName: patient.lastName || '',
+                    uhid: patient.uhid,
+                    photoUrl: patient.photoUrl,
+                    queueNumber: index + 1,
+                  }}
+                  appointment={{
+                    appointmentDateTime: new Date(appointment.appointmentDateTime),
+                    appointmentType: appointment.appointmentType,
+                  }}
+                />
+              </Link>
             ))}
           </div>
         </div>
