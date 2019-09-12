@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Theme, Button, Modal } from '@material-ui/core';
-import { Prompt } from 'react-router';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
