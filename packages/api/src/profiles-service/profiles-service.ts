@@ -84,6 +84,7 @@ import {
 } from 'profiles-service/resolvers/updateOrderStatusPharma';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
+import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
 
 (async () => {
   await connect();
@@ -96,12 +97,14 @@ import { getConnection } from 'typeorm';
 
       const profilesDb = getConnection();
       const doctorsDb = getConnection('doctors-db');
+      const consultsDb = getConnection('consults-db');
       const currentPatient = null;
       const context: ProfilesServiceContext = {
         firebaseUid,
         mobileNumber,
         profilesDb,
         doctorsDb,
+        consultsDb,
         currentPatient,
       };
       return context;
@@ -206,6 +209,10 @@ import { getConnection } from 'typeorm';
       {
         typeDefs: updateOrderStatusTypeDefs,
         resolvers: updateOrderStatusResolvers,
+      },
+      {
+        typeDefs: helpTypeDefs,
+        resolvers: helpResolvers,
       },
     ]),
   });

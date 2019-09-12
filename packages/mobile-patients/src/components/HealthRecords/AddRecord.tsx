@@ -179,6 +179,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const onSavePress = () => {
+    console.log('dateOfTest', dateOfTest);
     setshowSpinner(true);
     console.log(currentPatient, 'currentPatient', currentPatient ? currentPatient.id : '');
     const inputData = {

@@ -26,4 +26,18 @@ export class PatientRepository extends Repository<Patient> {
       where: { mobileNumber },
     });
   }
+
+  findDetailsByMobileNumber(mobileNumber: string) {
+    return this.findOne({
+      where: { mobileNumber },
+      relations: [
+        'lifeStyle',
+        'healthVault',
+        'familyHistory',
+        'patientAddress',
+        'patientDeviceTokens',
+        'patientNotificationSettings',
+      ],
+    });
+  }
 }

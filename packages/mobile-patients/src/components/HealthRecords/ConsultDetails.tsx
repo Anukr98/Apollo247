@@ -1,19 +1,21 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ShareGreen } from '@aph/mobile-patients/src/components/ui/Icons';
-import strings from '@aph/mobile-patients/src/strings/strings.json';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect, useCallback } from 'react';
-import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { GET_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getCaseSheet,
+  getCaseSheetVariables,
   getCaseSheet_getCaseSheet_caseSheetDetails,
 } from '@aph/mobile-patients/src/graphql/types/getCaseSheet';
-import { GET_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+import strings from '@aph/mobile-patients/src/strings/strings.json';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Alert, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
+import { ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
+import { Spinner } from '../ui/Spinner';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -81,57 +83,64 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   console.log('consulcasesheetid', props.navigation.state.params!.CaseSheet);
   console.log('DoctorInfo', props.navigation.state.params!.DoctorInfo);
   console.log('FollowUp', props.navigation.state.params!.FollowUp);
+  const [loading, setLoading] = useState<boolean>(true);
+  const client = useApolloClient();
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [caseSheetDetails, setcaseSheetDetails] = useState<
     getCaseSheet_getCaseSheet_caseSheetDetails
   >();
 
-  const getData = useQuery<getCaseSheet>(GET_CASESHEET_DETAILS, {
-    fetchPolicy: 'no-cache',
-    variables: {
-      appointmentId: props.navigation.state.params!.CaseSheet,
-    },
-  });
-  console.log(getData, 'getData');
+  useEffect(() => {
+    setLoading(true);
+    client
+      .query<getCaseSheet, getCaseSheetVariables>({
+        query: GET_CASESHEET_DETAILS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentId: props.navigation.state.params!.CaseSheet,
+        },
+      })
+      .then((_data) => {
+        setLoading(false);
+        console.log('GET_CASESHEET_DETAILS', _data!);
+        setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.log(error, 'GET_CASESHEET_DETAILS error');
+        const errorMessage = error && error.message;
+        console.log('Error occured while GET_CASESHEET_DETAILS error', errorMessage, error);
+        Alert.alert('Error', errorMessage);
+      });
+  }, []);
+  // const getData = useQuery<getCaseSheet>(GET_CASESHEET_DETAILS, {
+  //   fetchPolicy: 'no-cache',
+  //   variables: {
+  //     appointmentId: props.navigation.state.params!.CaseSheet,
+  //   },
+  // });
+  // console.log(getData, 'getData');
 
-  if (getData.data) {
-    if (
-      getData &&
-      getData.data &&
-      getData.data.getCaseSheet &&
-      getData.data.getCaseSheet.caseSheetDetails &&
-      caseSheetDetails !== getData.data.getCaseSheet.caseSheetDetails
-    ) {
-      console.log(getData.data.getCaseSheet.caseSheetDetails, 'caseSheetDetails');
-      setcaseSheetDetails(getData.data.getCaseSheet.caseSheetDetails);
-    }
-  } else {
-    console.log(getData.error, 'getData error');
-    console.log('Error occured while accept appid', getData.error);
-    const error = JSON.parse(JSON.stringify(getData.error));
-    const errorMessage = error && error.message;
-    console.log('Error occured while getData error', errorMessage, error);
-    Alert.alert('Error', errorMessage);
-  }
-
-  const data = {
-    doctorInfo: {
-      firstName: 'Mamatha',
-      photoUrl:
-        'https://image.shutterstock.com/image-photo/smiling-doctor-posing-arms-crossed-600w-519507367.jpg',
-    },
-    id: '34567890987654',
-    consult_info: '03 Aug 2019, Online Consult',
-    description: 'This is a follow-up consult to the Clinic Visit on 27 Jul 2019',
-  };
-
-  const followUp = [
-    {
-      label: 'Online Consult / Clinic Visit',
-      data: 'Recommended after 5 days',
-    },
-  ];
+  // if (getData.data) {
+  //   if (
+  //     getData &&
+  //     getData.data &&
+  //     getData.data.getCaseSheet &&
+  //     getData.data.getCaseSheet.caseSheetDetails &&
+  //     caseSheetDetails !== getData.data.getCaseSheet.caseSheetDetails
+  //   ) {
+  //     console.log(getData.data.getCaseSheet.caseSheetDetails, 'caseSheetDetails');
+  //     setcaseSheetDetails(getData.data.getCaseSheet.caseSheetDetails);
+  //   }
+  // } else {
+  //   console.log(getData.error, 'getData error');
+  //   console.log('Error occured while accept appid', getData.error);
+  //   const error = JSON.parse(JSON.stringify(getData.error));
+  //   const errorMessage = error && error.message;
+  //   console.log('Error occured while getData error', errorMessage, error);
+  //   Alert.alert('Error', errorMessage);
+  // }
 
   const renderDoctorDetails = () => {
     return (
@@ -159,7 +168,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                   'Dr.' + props.navigation.state.params!.DoctorInfo.firstName}
               </Text>
               <Text style={styles.timeStyle}>
-                {props.navigation.state.params!.appointmentType} Consult
+                {props.navigation.state.params!.appointmentType} CONSULT
               </Text>
               <View style={theme.viewStyles.lightSeparatorStyle} />
             </View>
@@ -201,137 +210,184 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderSymptoms = () => {
-    if (caseSheetDetails && caseSheetDetails.symptoms && caseSheetDetails.symptoms.length > 0)
-      return (
-        <View
-          style={{
-            marginTop: 24,
-          }}
+    console.log('caseSheetDetails.symptoms.length', caseSheetDetails!.symptoms!);
+    // if (caseSheetDetails && caseSheetDetails.symptoms && caseSheetDetails.symptoms.length > 0)
+    return (
+      <View
+        style={{
+          marginTop: 24,
+        }}
+      >
+        <CollapseCard
+          heading="SYMPTOMS"
+          collapse={showsymptoms}
+          onPress={() => setshowsymptoms(!showsymptoms)}
         >
-          <CollapseCard
-            heading="SYMPTOMS"
-            collapse={showsymptoms}
-            onPress={() => setshowsymptoms(!showsymptoms)}
-          >
-            <View style={styles.cardViewStyle}>
-              {caseSheetDetails.symptoms.map((item) => {
-                if (item && item.symptom)
-                  return (
-                    <View>
-                      <View style={styles.labelViewStyle}>
-                        <Text style={styles.labelStyle}>{item.symptom}</Text>
+          <View style={styles.cardViewStyle}>
+            {caseSheetDetails!.symptoms && caseSheetDetails!.symptoms == null ? (
+              <View>
+                {caseSheetDetails!.symptoms!.map((item) => {
+                  if (item && item.symptom)
+                    return (
+                      <View>
+                        <View style={styles.labelViewStyle}>
+                          <Text style={styles.labelStyle}>{item.symptom}</Text>
+                        </View>
+                        <Text style={styles.dataTextStyle}>
+                          {`Since: ${item.since}\nHow Often: ${item.howOften}\nSeverity: ${item.severity}`}
+                        </Text>
                       </View>
-                      <Text style={styles.dataTextStyle}>
-                        {`Since: ${item.since}\nHow Often: ${item.howOften}\nSeverity: ${item.severity}`}
-                      </Text>
-                    </View>
-                  );
-              })}
-            </View>
-          </CollapseCard>
-        </View>
-      );
+                    );
+                })}
+              </View>
+            ) : (
+              <View>
+                <Text style={styles.dataTextStyle}>No symptoms data</Text>
+              </View>
+            )}
+          </View>
+        </CollapseCard>
+      </View>
+    );
   };
-
+  const { setCartItems } = useShoppingCart();
   const renderPrescriptions = () => {
-    if (
-      caseSheetDetails &&
-      caseSheetDetails.medicinePrescription &&
-      caseSheetDetails.medicinePrescription.length > 0
-    )
-      return (
-        <View>
-          <CollapseCard
-            heading="PRESCRIPTION"
-            collapse={showPrescription}
-            onPress={() => setshowPrescription(!showPrescription)}
-          >
-            <View style={styles.cardViewStyle}>
-              {caseSheetDetails.medicinePrescription.map((item) => {
-                if (item)
-                  return (
-                    <View>
-                      <View style={styles.labelViewStyle}>
-                        <Text style={styles.labelStyle}>{item.medicineName}</Text>
-                      </View>
-                      <Text style={styles.dataTextStyle}>
-                        {item.medicineDosage}
-                        {item.medicineTimings
-                          ? `\n${
-                              item.medicineTimings.length
-                            } times a day (${item.medicineTimings.join(', ').toLowerCase()}) for ${
-                              item.medicineConsumptionDurationInDays
-                            } days\n`
-                          : ''}
+    // if (
+    //   caseSheetDetails &&
+    //   caseSheetDetails.medicinePrescription &&
+    //   caseSheetDetails.medicinePrescription.length > 0
+    // )
+    return (
+      <View>
+        <CollapseCard
+          heading="PRESCRIPTION"
+          collapse={showPrescription}
+          onPress={() => setshowPrescription(!showPrescription)}
+        >
+          <View style={styles.cardViewStyle}>
+            {caseSheetDetails!.medicinePrescription &&
+            caseSheetDetails!.medicinePrescription.length == 0 ? (
+              <View>
+                {caseSheetDetails!.medicinePrescription.map((item) => {
+                  if (item)
+                    return (
+                      <View>
+                        <View style={styles.labelViewStyle}>
+                          <Text style={styles.labelStyle}>{item.medicineName}</Text>
+                        </View>
+                        <Text style={styles.dataTextStyle}>
+                          {item.medicineDosage}
+                          {item.medicineTimings
+                            ? `\n${
+                                item.medicineTimings.length
+                              } times a day (${item.medicineTimings
+                                .join(', ')
+                                .toLowerCase()}) for ${
+                                item.medicineConsumptionDurationInDays
+                              } days\n`
+                            : ''}
 
-                        {item.medicineToBeTaken
-                          ? item.medicineToBeTaken
-                              .map(
-                                (item) =>
-                                  item &&
-                                  item
-                                    .split('_')
-                                    .join(' ')
-                                    .toLowerCase()
-                              )
-                              .join(', ')
-                          : ''}
-                      </Text>
-                    </View>
-                  );
-              })}
-              <Text
-                style={[
-                  theme.viewStyles.yellowTextStyle,
-                  { textAlign: 'right', paddingBottom: 16 },
-                ]}
-              >
-                {strings.health_records_home.order_medicine}
-              </Text>
-            </View>
-          </CollapseCard>
-        </View>
-      );
+                          {item.medicineToBeTaken
+                            ? item.medicineToBeTaken
+                                .map(
+                                  (item) =>
+                                    item &&
+                                    item
+                                      .split('_')
+                                      .join(' ')
+                                      .toLowerCase()
+                                )
+                                .join(', ')
+                            : ''}
+                        </Text>
+                      </View>
+                    );
+                })}
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log('medicine', caseSheetDetails!.medicinePrescription);
+                    const medicines: ShoppingCartItem[] = caseSheetDetails!.medicinePrescription!.map(
+                      (item) =>
+                        ({
+                          id: item!.id!,
+                          mou: '10',
+                          name: item!.medicineName!,
+                          price: 50,
+                          quantity: parseInt(item!.medicineDosage!),
+                          prescriptionRequired: false,
+                        } as ShoppingCartItem)
+                    );
+                    setCartItems && setCartItems(medicines);
+                    props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+                  }}
+                >
+                  <Text
+                    style={[
+                      theme.viewStyles.yellowTextStyle,
+                      { textAlign: 'right', paddingBottom: 16 },
+                    ]}
+                  >
+                    {strings.health_records_home.order_medicine}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View>
+                <Text style={styles.dataTextStyle}>No Medicines</Text>
+              </View>
+            )}
+          </View>
+        </CollapseCard>
+      </View>
+    );
   };
 
   const renderDiagnosis = () => {
-    if (caseSheetDetails && caseSheetDetails.diagnosis && caseSheetDetails.diagnosis.length > 0)
-      return (
-        <View>
-          <CollapseCard
-            heading="DIAGNOSIS"
-            collapse={showPrescription}
-            onPress={() => setshowPrescription(!showPrescription)}
-          >
-            <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+    console.log('dia', caseSheetDetails!.diagnosis!);
+    //if (caseSheetDetails && caseSheetDetails.diagnosis && caseSheetDetails.diagnosis.length > 0)
+    return (
+      <View>
+        <CollapseCard
+          heading="DIAGNOSIS"
+          collapse={showPrescription}
+          onPress={() => setshowPrescription(!showPrescription)}
+        >
+          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+            {caseSheetDetails!.diagnosis && caseSheetDetails!.diagnosis! == null ? (
               <View>
                 <Text style={styles.labelStyle}>
-                  {caseSheetDetails.diagnosis.map((item) => item && item.name).join(', ')}
+                  {caseSheetDetails!.diagnosis!.map((item) => item && item.name).join(', ')}
                 </Text>
               </View>
-            </View>
-          </CollapseCard>
-        </View>
-      );
+            ) : (
+              <View>
+                <Text style={styles.dataTextStyle}>No diagnosis</Text>
+              </View>
+            )}
+          </View>
+        </CollapseCard>
+      </View>
+    );
   };
   const renderGenerealAdvice = () => {
-    if (
-      caseSheetDetails &&
-      caseSheetDetails.otherInstructions &&
-      caseSheetDetails.otherInstructions.length > 0
-    )
-      return (
-        <View>
-          <CollapseCard
-            heading="GENERAL ADVICE"
-            collapse={showPrescription}
-            onPress={() => setshowPrescription(!showPrescription)}
-          >
-            <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+    // if (
+    //   caseSheetDetails &&
+    //   caseSheetDetails.otherInstructions &&
+    //   caseSheetDetails.otherInstructions.length > 0
+    // )
+    return (
+      <View>
+        <CollapseCard
+          heading="GENERAL ADVICE"
+          collapse={showPrescription}
+          onPress={() => setshowPrescription(!showPrescription)}
+        >
+          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+            {caseSheetDetails!.otherInstructions && caseSheetDetails!.otherInstructions == null ? (
               <View>
                 <Text style={styles.labelStyle}>
-                  {caseSheetDetails.otherInstructions
-                    .map((item, i) => {
+                  {caseSheetDetails!
+                    .otherInstructions!.map((item, i) => {
                       if (item && item.instruction !== '') {
                         return `${i + 1}. ${item.instruction}`;
                       }
@@ -339,74 +395,89 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     .join('\n')}
                 </Text>
               </View>
-            </View>
-          </CollapseCard>
-        </View>
-      );
+            ) : (
+              <View>
+                <Text style={styles.dataTextStyle}>No advise</Text>
+              </View>
+            )}
+          </View>
+        </CollapseCard>
+      </View>
+    );
   };
 
   const renderFollowUp = () => {
-    if (caseSheetDetails && caseSheetDetails.followUp)
-      return (
-        <View>
-          <CollapseCard
-            heading="FOLLOW-UP"
-            collapse={showPrescription}
-            onPress={() => setshowPrescription(!showPrescription)}
-          >
-            <View style={styles.cardViewStyle}>
+    console.log('caseSheetDetails.followUp', caseSheetDetails!.followUp);
+    //if (caseSheetDetails && caseSheetDetails.followUp)
+    return (
+      <View>
+        <CollapseCard
+          heading="FOLLOW-UP"
+          collapse={showPrescription}
+          onPress={() => setshowPrescription(!showPrescription)}
+        >
+          <View style={styles.cardViewStyle}>
+            {caseSheetDetails!.followUp ? (
               <View>
-                <View style={styles.labelViewStyle}>
-                  <Text style={styles.labelStyle}>
-                    {caseSheetDetails.consultType === 'PHYSICAL'
-                      ? 'Clinic Visit'
-                      : 'Online Consult '}
-                  </Text>
+                <View>
+                  <View style={styles.labelViewStyle}>
+                    <Text style={styles.labelStyle}>
+                      {caseSheetDetails!.consultType === 'PHYSICAL'
+                        ? 'Clinic Visit'
+                        : 'Online Consult '}
+                    </Text>
+                  </View>
+                  {caseSheetDetails!.followUpAfterInDays == null ? (
+                    <Text style={styles.dataTextStyle}>
+                      Recommended after{' '}
+                      {moment(caseSheetDetails!.followUpDate).format('DD MMM YYYY')}{' '}
+                    </Text>
+                  ) : (
+                    <Text style={styles.dataTextStyle}>
+                      Recommended after {caseSheetDetails!.followUpAfterInDays} days
+                    </Text>
+                  )}
                 </View>
-                {caseSheetDetails.followUpAfterInDays == null ? (
-                  <Text style={styles.dataTextStyle}>
-                    Recommended after {moment(caseSheetDetails.followUpDate).format('DD MMM YYYY')}{' '}
-                  </Text>
-                ) : (
-                  <Text style={styles.dataTextStyle}>
-                    Recommended after {caseSheetDetails.followUpAfterInDays} days
-                  </Text>
-                )}
-              </View>
-              <TouchableOpacity
-                onPress={() => {
-                  console.log(
-                    'doctorid',
-                    props.navigation.state.params!.DoctorInfo &&
-                      props.navigation.state.params!.DoctorInfo.id
-                  );
-                  console.log('patientid', props.navigation.state.params!.PatientId);
-                  console.log('appointmentid', props.navigation.state.params!.CaseSheet);
-                  console.log('follwup', caseSheetDetails.followUp);
-                  console.log('appointmentType', props.navigation.state.params!.appointmentType);
-                  props.navigation.navigate(AppRoutes.DoctorDetails, {
-                    doctorId: props.navigation.state.params!.DoctorInfo.id,
-                    PatientId: props.navigation.state.params!.PatientId,
-                    FollowUp: caseSheetDetails.followUp,
-                    appointmentType: props.navigation.state.params!.appointmentType,
-                    appointmentId: props.navigation.state.params!.CaseSheet,
-                    showBookAppointment: true,
-                  });
-                }}
-              >
-                <Text
-                  style={[
-                    theme.viewStyles.yellowTextStyle,
-                    { textAlign: 'right', paddingBottom: 16 },
-                  ]}
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log(
+                      'doctorid',
+                      props.navigation.state.params!.DoctorInfo &&
+                        props.navigation.state.params!.DoctorInfo.id
+                    );
+                    console.log('patientid', props.navigation.state.params!.PatientId);
+                    console.log('appointmentid', props.navigation.state.params!.CaseSheet);
+                    console.log('follwup', caseSheetDetails!.followUp);
+                    console.log('appointmentType', props.navigation.state.params!.appointmentType);
+                    props.navigation.navigate(AppRoutes.DoctorDetails, {
+                      doctorId: props.navigation.state.params!.DoctorInfo.id,
+                      PatientId: props.navigation.state.params!.PatientId,
+                      FollowUp: caseSheetDetails!.followUp,
+                      appointmentType: props.navigation.state.params!.appointmentType,
+                      appointmentId: props.navigation.state.params!.CaseSheet,
+                      showBookAppointment: true,
+                    });
+                  }}
                 >
-                  {strings.health_records_home.book_follow_up}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </CollapseCard>
-        </View>
-      );
+                  <Text
+                    style={[
+                      theme.viewStyles.yellowTextStyle,
+                      { textAlign: 'right', paddingBottom: 16 },
+                    ]}
+                  >
+                    {strings.health_records_home.book_follow_up}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View>
+                <Text style={styles.dataTextStyle}>No followup</Text>
+              </View>
+            )}
+          </View>
+        </CollapseCard>
+      </View>
+    );
   };
 
   const renderData = () => {
@@ -420,22 +491,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           {renderFollowUp()}
         </View>
       );
-    return (
-      <Text
-        style={{
-          flex: 1,
-          alignSelf: 'center',
-          color: '#02475b',
-          ...theme.fonts.IBMPlexSansMedium(16),
-          justifyContent: 'center',
-        }}
-      >
-        No Data
-      </Text>
-    );
   };
 
-  if (data.doctorInfo)
+  if (props.navigation.state.params!.DoctorInfo)
     return (
       <View
         style={{
@@ -446,17 +504,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <Header
             title="PRESCRIPTION"
             leftIcon="backArrow"
-            // rightComponent={
-            //   <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-            //     <ShareGreen />
-            //   </TouchableOpacity>
-            // }
             onPressLeftIcon={() => props.navigation.goBack()}
           />
+
           <ScrollView bounces={false}>
             {renderDoctorDetails()}
             {renderData()}
           </ScrollView>
+          {loading && <Spinner />}
         </SafeAreaView>
       </View>
     );

@@ -28,6 +28,7 @@ import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHel
 import {
   BOOK_APPOINTMENT_TRANSFER,
   UPDATE_APPOINTMENT_SESSION,
+  CHECK_IF_RESCHDULE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookTransferAppointment,
@@ -62,12 +63,19 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  PermissionsAndroid,
 } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'react-native-fetch-blob';
 import { Spinner } from '../ui/Spinner';
+import {
+  checkIfReschedule,
+  checkIfRescheduleVariables,
+  checkIfReschedule_checkIfReschedule,
+} from '../../graphql/types/checkIfReschedule';
+
 // import KeepAwake from 'react-native-keep-awake';
 
 const { ExportDeviceToken } = NativeModules;
@@ -227,9 +235,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setuserName(userName);
     analytics.setCurrentScreen(AppRoutes.ChatRoom);
   }, []);
-
+  useEffect(() => {
+    console.log('didmout');
+    Platform.OS === 'android' && requestReadSmsPermission();
+  }, []);
   const client = useApolloClient();
 
+  const requestReadSmsPermission = async () => {
+    try {
+      const resuts = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      ]);
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        console.log(resuts, 'WRITE_EXTERNAL_STORAGE');
+      }
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        console.log(resuts, 'READ_EXTERNAL_STORAGE');
+      }
+      if (resuts) {
+        console.log(resuts, 'READ_EXTERNAL_STORAGE');
+      }
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
   const updateSessionAPI = () => {
     console.log('apiCalled', apiCalled);
 
@@ -847,10 +883,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
-                    props.navigation.navigate(AppRoutes.DoctorDetails, {
-                      doctorId: rowData.transferInfo.doctorId,
-                      showBookAppointment: true,
-                    });
+                    checkIfReschduleApi(rowData);
                   }}
                 />
 
@@ -858,7 +891,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   title={'ACCEPT'}
                   style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
                   onPress={() => {
-                    transferAppointmentAPI(rowData);
+                    transferAppointmentAPI(rowData, 'Transfer');
                   }}
                 />
               </StickyBottomComponent>
@@ -936,13 +969,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
+                    console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
+
+                    console.log(
+                      'pdf downloadDest',
+                      rowData.transferInfo &&
+                        rowData.transferInfo.pdfUrl &&
+                        rowData.transferInfo.pdfUrl.split('/').pop()
+                    );
+
                     setLoading(true);
                     RNFetchBlob.config({
-                      // add this option that makes response data to be stored as a file,
-                      // this is much more performant.
                       fileCache: true,
+                      addAndroidDownloads: {
+                        useDownloadManager: true,
+                        notification: false,
+                        mime: 'application/pdf',
+                        path:
+                          RNFetchBlob.fs.dirs.DownloadDir + '/' + rowData.transferInfo.pdfUrl &&
+                          rowData.transferInfo.pdfUrl.split('/').pop(),
+                        description: 'File downloaded by download manager.',
+                      },
                     })
-                      .fetch('GET', 'http://samples.leanpub.com/thereactnativebook-sample.pdf', {
+                      .fetch('GET', rowData.transferInfo.pdfUrl, {
                         //some headers ..
                       })
                       .then((res) => {
@@ -950,6 +999,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         // the temp file path
                         console.log('The file saved to res ', res);
                         console.log('The file saved to ', res.path());
+                        RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                       })
                       .catch((err) => {
                         console.log('error ', err);
@@ -1062,7 +1112,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   paddingTop: 13,
                 }}
               >
-                <Button
+                {/* <Button
                   title={'RESCHEDULE'}
                   style={{
                     flex: 0.5,
@@ -1074,14 +1124,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
-                    props.navigation.goBack();
+                    checkIfReschduleApi(rowData);
                   }}
-                />
+                /> */}
                 <Button
                   title={'ACCEPT'}
                   style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
                   onPress={() => {
-                    transferAppointmentAPI(rowData);
+                    transferAppointmentAPI(rowData, 'Followup');
                   }}
                 />
               </StickyBottomComponent>
@@ -1464,17 +1514,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const transferAppointmentAPI = (rowData: any) => {
+  const transferAppointmentAPI = (rowData: any, value: string) => {
     console.log(rowData, 'rowData');
+    let datettimeval = '';
+    let transferdataid = ';';
+    if (value == 'Transfer') {
+      console.log(value, 'Transfer');
+      datettimeval = rowData.transferInfo.transferDateTime;
+      transferdataid = rowData.transferInfo.transferId;
+    } else {
+      datettimeval = rowData.transferInfo.folloupDateTime;
+      transferdataid = rowData.transferInfo.caseSheetId;
+      console.log(value, 'Followup');
+    }
     Keyboard.dismiss();
     const appointmentTransferInput: BookTransferAppointmentInput = {
       patientId: patientId,
       doctorId: rowData.transferInfo.doctorId,
-      appointmentDateTime: rowData.transferInfo.transferDateTime, //appointmentDate,
+      appointmentDateTime: datettimeval, //rowData.transferInfo.transferDateTime, //appointmentDate,
       existingAppointmentId: channel,
-      transferId: rowData.transferInfo.transferId,
+      transferId: transferdataid, //rowData.transferInfo.transferId,
     };
-    console.log(appointmentTransferInput, 'AcceptApi called');
+    console.log(appointmentTransferInput, 'AcceptApi Input');
 
     client
       .mutate<bookTransferAppointment, bookTransferAppointmentVariables>({
@@ -1487,31 +1548,58 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .then((data: any) => {
         console.log('Accept Api', data);
         console.log('time', data.data.bookTransferAppointment.appointment.appointmentDateTime);
-        setTransferAccept(true),
-          setTransferDcotorName(rowData.transferInfo.doctorName),
-          setTimeout(() => {
-            setTransferAccept(false);
-          }, 1000);
-        AsyncStorage.setItem('showTransferPopup', 'true');
-        props.navigation.replace(AppRoutes.TabBar, {
-          TransferData: rowData.transferInfo,
-          TranferDateTime: data.data.bookTransferAppointment.appointment.appointmentDateTime,
-        });
+
+        if (value == 'Transfer') {
+          setTransferAccept(true),
+            setTransferDcotorName(rowData.transferInfo.doctorName),
+            setTimeout(() => {
+              setTransferAccept(false);
+            }, 1000);
+          AsyncStorage.setItem('showTransferPopup', 'true');
+          props.navigation.replace(AppRoutes.TabBar, {
+            TransferData: rowData.transferInfo,
+            TranferDateTime: data.data.bookTransferAppointment.appointment.appointmentDateTime,
+          });
+        } else {
+          AsyncStorage.setItem('showFollowUpPopup', 'true');
+          props.navigation.replace(AppRoutes.TabBar, {
+            FollowupData: rowData.transferInfo.doctorInfo,
+            FollowupDateTime: data.data.bookTransferAppointment.appointment.appointmentDateTime,
+          });
+        }
       })
       .catch((e: string) => {
         setBottompopup(true);
-        // console.log('Error occured while accept appid', e);
-        // const error = JSON.parse(JSON.stringify(e));
-        // const errorMessage = error && error.message;
-        // console.log('Error occured while accept appid', errorMessage, error);
-        // Alert.alert(
-        //   'Error',
-        //   'Opps ! The selected slot is unavailable. Please choose a different one'
-        // );
-        // <BottomPopUp
-        //   title="Error"
-        //   description="Opps ! The selected slot is unavailable. Please choose a different one"
-        // />;
+      });
+  };
+
+  const checkIfReschduleApi = (rowData: any) => {
+    console.log('checkIfReschduleApi', rowData);
+
+    client
+      .query<checkIfReschedule, checkIfRescheduleVariables>({
+        query: CHECK_IF_RESCHDULE,
+        variables: {
+          existAppointmentId: rowData.transferInfo.appointmentId,
+          rescheduleDate: rowData.transferInfo.transferDateTime,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data: any) => {
+        const result = _data.data.checkIfReschedule;
+        console.log('checkIfReschedulesuccess', result);
+
+        setLoading(false);
+        if (result.isPaid == 1) {
+          Alert.alert('Payment Integration');
+        } else {
+        }
+      })
+      .catch((e: any) => {
+        setLoading(false);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while checkIfRescheduleprofile', error);
+        Alert.alert('Error', error.message);
       });
   };
 
