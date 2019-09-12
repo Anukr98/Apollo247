@@ -51,6 +51,8 @@ export enum MEDICINE_ORDER_STATUS {
   PRESCRIPTION_UPLOADED = 'PRESCRIPTION_UPLOADED',
   ORDER_FAILED = 'ORDER_FAILED',
   PRESCRIPTION_CART_READY = 'PRESCRIPTION_CART_READY',
+  ORDER_CONFIRMED = 'ORDER_CONFIRMED',
+  CANCEL_REQUEST = 'CANCEL_REQUEST',
 }
 
 export enum UPLOAD_FILE_TYPES {
@@ -108,6 +110,9 @@ export enum MedicalRecordType {
 @Entity()
 export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
+  apOrderNo: string;
+
+  @Column({ nullable: true })
   appointmentId: string;
 
   @Column({ nullable: true })
@@ -148,6 +153,9 @@ export class MedicineOrders extends BaseEntity {
 
   @Column({ nullable: true })
   quoteId: string;
+
+  @Column({ nullable: true })
+  siteId: string;
 
   @Column({ nullable: true })
   shopId: string;
