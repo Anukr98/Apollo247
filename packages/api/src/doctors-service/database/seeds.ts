@@ -36,6 +36,8 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { buildPatient } from 'profiles-service/database/factories/patientFactory';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { buildConsultQueueItem } from 'doctors-service/database/factories/consultQueueFactory';
+import { buildCaseSheet } from 'consults-service/database/factories/caseSheetFactory';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 (async () => {
   console.log('Seeding doctors-db...');
@@ -65,6 +67,7 @@ import { buildConsultQueueItem } from 'doctors-service/database/factories/consul
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
 
@@ -117,13 +120,13 @@ import { buildConsultQueueItem } from 'doctors-service/database/factories/consul
   );
   console.log(doctorAndHospitals);
 
-  console.log('Building doctorBankAccounts...');
-  const doctorBankAccounts = await Promise.all(
-    _times(5, () =>
-      doctorBankAccountsRepo.save(buildDoctorBankAccount({ doctor: _sample(doctors) }))
-    )
-  );
-  console.log(doctorBankAccounts);
+  // console.log('Building doctorBankAccounts...');
+  // const doctorBankAccounts = await Promise.all(
+  //   _times(5, () =>
+  //     doctorBankAccountsRepo.save(buildDoctorBankAccount({ doctor: _sample(doctors) }))
+  //   )
+  // );
+  // console.log(doctorBankAccounts);
 
   console.log('Building packages...');
   const packages = await Promise.all(
@@ -152,8 +155,9 @@ import { buildConsultQueueItem } from 'doctors-service/database/factories/consul
 
   console.log('Building appointments...');
   const jrKabirAppointments = await Promise.all(
-    _times(15, () => {
+    _times(15, async () => {
       const patient = _sample(patients)!;
+      const jrDocCaseSheet = await caseSheetRepo.save(buildCaseSheet({ doctorId: jrKabir.id }));
       return appointmentRepo.save(
         buildAppointment({
           doctorId: jrKabir.id,
@@ -161,6 +165,7 @@ import { buildConsultQueueItem } from 'doctors-service/database/factories/consul
           hospitalId: _sample(facilities)!.id,
           patientName: `${patient.firstName} ${patient.lastName}`,
           appointmentDateTime: faker.random.boolean() ? faker.date.past() : faker.date.future(),
+          caseSheet: [jrDocCaseSheet],
         })
       );
     })
