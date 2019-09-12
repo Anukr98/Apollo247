@@ -239,7 +239,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       //   return 'AVAILABLE NOW';
       // } else
       if (availableInMin > 0 && availableInMin < 60) {
-        return ` AVAILABLE IN ${availableInMin} MINS`;
+        return ` AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`;
       }
       // else if (availableInMin > 15 && availableInMin <= 45) {
       //   return `AVAILABLE IN ${availableInMin} MINS`;

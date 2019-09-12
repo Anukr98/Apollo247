@@ -1,8 +1,15 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
+import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
 import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CrossYellow, PrescriptionThumbnail } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  InputDropdown,
+  InputDropdownMenu,
+} from '@aph/mobile-patients/src/components/ui/InputDropdown';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { ADD_MEDICAL_RECORD, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
@@ -10,37 +17,29 @@ import {
   addPatientMedicalRecord,
   addPatientMedicalRecordVariables,
 } from '@aph/mobile-patients/src/graphql/types/addPatientMedicalRecord';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { GraphQLError } from 'graphql';
-import React, { useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  Keyboard,
-  Alert,
-} from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { FlatList, NavigationScreenProps } from 'react-navigation';
-import {
-  InputDropdown,
-  InputDropdownMenu,
-} from '@aph/mobile-patients/src/components/ui/InputDropdown';
 import {
   AddMedicalRecordParametersInput,
   MedicalRecordType,
   MedicalTestUnit,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
-import Moment from 'moment';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Moment from 'moment';
+import React, { useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Alert,
+  Keyboard,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { FlatList, NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -179,7 +178,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     description: 'This is a follow-up consult to the Clinic Visit on 27 Jul 2019',
   };
 
-  const multiplePhysicalPrescriptionUpload = (prescriptions) => {
+  const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
     return Promise.all(
       prescriptions.map((item) =>
         client.mutate<uploadFile, uploadFileVariables>({
@@ -213,50 +212,51 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         // setPhysicalPrescriptions && setPhysicalPrescriptions(uploadedPrescriptions);
         // setshowSpinner(false);
         // props.navigation.navigate(AppRoutes.CheckoutScene);
+
+        console.log('dateOfTest', dateOfTest);
+
+        const inputData = {
+          patientId: currentPatient ? currentPatient.id : '',
+          testName: testName,
+          testDate: dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+          recordType: typeofRecord,
+          referringDoctor: referringDoctor,
+          sourceName: '',
+          observations: observations,
+          additionalNotes: additionalNotes,
+          medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
+          documentURLs: uploadedUrls.join(','),
+        };
+        console.log('inputData', inputData);
+        if (currentPatient && currentPatient.id)
+          client
+            .mutate<addPatientMedicalRecord, addPatientMedicalRecordVariables>({
+              mutation: ADD_MEDICAL_RECORD,
+              variables: {
+                AddMedicalRecordInput: inputData,
+              },
+            })
+            .then(({ data }) => {
+              setshowSpinner(false);
+              const status = g(data, 'addPatientMedicalRecord', 'status');
+              console.log(status, 'status');
+              if (status) {
+                props.navigation.goBack();
+              }
+            })
+            .catch((e) => {
+              setshowSpinner(false);
+              console.log(JSON.stringify(e), 'eeeee');
+              Alert.alert('Alert', 'Please fill all the details', [
+                { text: 'OK', onPress: () => console.log('OK Pressed') },
+              ]);
+            });
       })
       .catch((e) => {
         setshowSpinner(false);
         console.error({ e });
         Alert.alert('ALert', 'Error occurred while uploading prescriptions.');
       });
-    console.log(uploadedUrls.join(','), 'uploadedUrls');
-
-    const inputData = {
-      patientId: currentPatient ? currentPatient.id : '',
-      testName: testName,
-      testDate: dateOfTest !== '' ? Moment(dateOfTest).format('YYYY-MM-DD') : '',
-      recordType: typeofRecord,
-      referringDoctor: referringDoctor,
-      sourceName: '',
-      observations: observations,
-      additionalNotes: additionalNotes,
-      medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
-      documentURLs: uploadedUrls.join(','),
-    };
-    console.log('inputData', inputData);
-    if (currentPatient && currentPatient.id)
-      client
-        .mutate<addPatientMedicalRecord, addPatientMedicalRecordVariables>({
-          mutation: ADD_MEDICAL_RECORD,
-          variables: {
-            AddMedicalRecordInput: inputData,
-          },
-        })
-        .then(({ data }) => {
-          setshowSpinner(false);
-          const status = g(data, 'addPatientMedicalRecord', 'status');
-          console.log(status, 'status');
-          if (status) {
-            props.navigation.goBack();
-          }
-        })
-        .catch((e) => {
-          setshowSpinner(false);
-          console.log(JSON.stringify(e), 'eeeee');
-          Alert.alert('Alert', 'Please fill all the details', [
-            { text: 'OK', onPress: () => console.log('OK Pressed') },
-          ]);
-        });
   };
 
   const renderImagesRow = (data: PickerImage, i: number) => {
@@ -406,6 +406,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <DatePicker
               isDateTimePickerVisible={isDateTimePickerVisible}
               handleDatePicked={(date) => {
+                console.log(date, 'dateOfTest');
+
                 const formatDate = Moment(date).format('DD/MM/YYYY');
                 setdateOfTest(formatDate);
                 setIsDateTimePickerVisible(false);
@@ -635,7 +637,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             }}
             getData={(data: (PickerImage | PickerImage[])[]) => {
               console.log(data);
-              setImages(data);
+              setImages([...(Images as PickerImage[]), ...(data as PickerImage[])]);
               setdisplayOrderPopup(false);
             }}
           />

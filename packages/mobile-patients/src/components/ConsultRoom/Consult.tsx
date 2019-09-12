@@ -498,7 +498,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           const minutes = moment.duration(moment(appointmentDateTime).diff(new Date())).asMinutes();
           const title =
             minutes > 0 && minutes <= 15
-              ? `${Math.ceil(minutes)} MINS`
+              ? `${Math.ceil(minutes)} MIN`
               : moment(appointmentDateTime).format(
                   appointmentDateTime.split(' ')[0] === new Date().toISOString().split('T')[0]
                     ? 'h:mm A'

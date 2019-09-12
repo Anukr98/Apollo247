@@ -356,7 +356,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     // console.log(e, 'jvjhvhm');
   };
 
-  const findAddressFromLocationString = (searchstring, key) => {
+  const findAddressFromLocationString = (searchstring: string, key: string) => {
     return new Promise((resolve, reject) => {
       const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
       axios
@@ -400,7 +400,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       console.log(item, 'AsyncStorage item', latlong);
       if (latlong) {
         findAddressFromLocationString(`${latlong.lat}, ${latlong.lng}`, key)
-          .then((response) => {
+          .then((response: any) => {
             console.log(response);
             if (
               response.data.results.length &&
