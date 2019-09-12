@@ -29,6 +29,7 @@ export interface ReschedulePopUpProps extends NavigationScreenProps {
 export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   console.log('doctorreschdule', props.doctor);
+  console.log('rescheduleCount', props.rescheduleCount);
   console.log(
     'reschduleDateTime',
     props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
@@ -162,7 +163,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                   }}
                 >
                   {`Since you hace already rescheduled ${
-                    props.data.rescheduleCount
+                    props.rescheduleCount
                   } times with Dr. ${props.doctor &&
                     props.doctor.firstName}, we will consider this a new paid appointment.`}
                 </Text>
