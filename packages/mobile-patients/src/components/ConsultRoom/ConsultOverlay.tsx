@@ -42,6 +42,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
+import moment from 'moment';
 
 const { width, height } = Dimensions.get('window');
 
@@ -118,7 +119,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     if (array !== timeArray) settimeArray(array);
   };
 
-  const availableDate = date.toISOString().split('T')[0];
+  const availableDate = moment(date).format('YYYY-MM-DD');
   console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
   const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
     fetchPolicy: 'no-cache',
@@ -134,7 +135,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     console.log('error', availabilityData.error);
     showSpinner && setshowSpinner(false);
   } else {
-    console.log(availabilityData.data, 'availableSlots');
+    console.log(availabilityData.data, 'availableSlots', availableSlots);
     if (
       availabilityData &&
       availabilityData.data &&
@@ -144,6 +145,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     ) {
       setshowSpinner(false);
       console.log(
+        availableDate,
+        'dateeeeeeee',
         availableSlots,
         'availableSlots1111',
         availabilityData.data.getDoctorAvailableSlots.availableSlots
@@ -185,30 +188,18 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        // console.log('BookFollowUpAppointment', _data);
-        // props.navigation.navigate(AppRoutes.Consult);
-        console.log('bookAppointment data', data),
-          // props.setdisplayoverlay(false),
-          setshowSpinner(false),
-          setshowSuccessPopUp(true);
+        console.log('bookAppointment data', data), setshowSpinner(false), setshowSuccessPopUp(true);
       })
       .catch((error) => {
         console.log(
           'bookAppointment error',
           // error.graphQLErrors,
-          error.message.split(':')[1],
-          // error.name,
-          // error.graphQLErrors.map((item, i) => console.log(item, 'item.message')),
-
-          setshowSpinner(false)
+          error.message.split(':')[1]
         ),
-          error.message.split(':')[1].trim() == 'APPOINTMENT_EXIST_ERROR' &&
-            setAppointmentExistAlert(true);
-        // Alert.alert(
-        //   'Alert',
-        //   'Opps ! The selected slot is unavailable. Please choose a different one',
-        //   [{ text: 'OK', onPress: () => console.log('OK Pressed') }]
-        // );
+          setshowSpinner(false),
+          error.message.split(':')[1].trim() == 'APPOINTMENT_EXIST_ERROR' ||
+            (error.message.split(':')[1].trim() === 'APPOINTMENT_BOOK_DATE_ERROR' &&
+              setAppointmentExistAlert(true));
       });
   };
 
@@ -433,6 +424,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               style={styles.gotItStyles}
               onPress={() => {
                 setAppointmentExistAlert(false);
+                props.setdisplayoverlay(false);
               }}
             >
               <Text style={styles.gotItTextStyles}>Okay</Text>

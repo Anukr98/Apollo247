@@ -628,3 +628,7 @@ export const DoctorPlaceholderImage: React.FC<IconProps> = (props) => (
 export const HelpDrop: React.FC<IconProps> = (props) => (
   <IconBase style={{ height: 5, width: 10 }} {...props} source={require('./icons/HelpDrop.png')} />
 );
+
+export const NoData: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 80, width: 80 }} {...props} source={require('./icons/no_data.png')} />
+);

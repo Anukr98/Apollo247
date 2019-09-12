@@ -122,7 +122,7 @@ export interface HealthConsultViewProps extends NavigationScreenProps {
 }
 
 export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
-  console.log('PastData', props.PastData);
+  //console.log('PastData', props.PastData);
   return (
     <View style={styles.viewStyle}>
       <View style={styles.trackerViewStyle}>
@@ -132,13 +132,13 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       {props.PastData.patientId != null ? (
         <View style={styles.rightViewStyle}>
           {moment(new Date()).format('DD/MM/YYYY') ===
-          moment(props.PastData.appointmentDateTime).format('DD/MM/YYYY') ? (
+          moment(new Date(props.PastData.appointmentDateTime)).format('DD/MM/YYYY') ? (
             <Text style={styles.labelTextStyle}>
-              Today , {moment(props.PastData.appointmentDateTime).format('DD MMM YYYY')}
+              Today , {moment(new Date(props.PastData.appointmentDateTime)).format('DD MMM YYYY')}
             </Text>
           ) : (
             <Text style={styles.labelTextStyle}>
-              {moment(props.PastData.appointmentDateTime).format('DD MMM YYYY')}
+              {moment(new Date(props.PastData.appointmentDateTime)).format('DD MMM YYYY')}
             </Text>
           )}
 
@@ -254,43 +254,53 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
             </Text>
           )}
 
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[styles.cardContainerStyle]}
-            onPress={() => {
-              console.log('medicnedeial', props.PastData.medicineOrderLineItems[0]);
+          {props.PastData.medicineOrderLineItems &&
+            props.PastData.medicineOrderLineItems.map((item: any) => {
+              return (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={[styles.cardContainerStyle]}
+                  onPress={() => {
+                    console.log('medicnedeial', item);
+                    console.log(moment(props.PastData.quoteDateTime).format('DD MMM YYYY'));
 
-              props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
-                data: props.PastData.medicineOrderLineItems[0],
-                medicineDate: moment(props.PastData.quoteDateTime).format('DD MMM YYYY'),
-              });
-            }}
-          >
-            <View style={{ flexDirection: 'row' }}>
-              <View style={{ marginTop: 10 }}>
-                <MedicalIcon />
-              </View>
-
-              <View style={{ marginLeft: 30 }}>
-                <Text
-                  numberOfLines={1}
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    color: '#01475b',
-                    marginBottom: 7,
-                    marginRight: 20,
+                    props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
+                      data: item, //props.PastData.medicineOrderLineItems[0],
+                      medicineDate: moment(props.PastData.quoteDateTime).format('DD MMM YYYY'),
+                    });
                   }}
                 >
-                  {props.PastData.medicineOrderLineItems[0].medicineName}
-                </Text>
-                <Text
-                  style={{ ...theme.fonts.IBMPlexSansMedium(12), color: '#02475b', opacity: 0.6 }}
-                >
-                  {moment(props.PastData.quoteDateTime).format('MM/DD/YYYY')}
-                </Text>
-              </View>
-            </View>
-          </TouchableOpacity>
+                  <View style={{ flexDirection: 'row' }}>
+                    <View style={{ marginTop: 10 }}>
+                      <MedicalIcon />
+                    </View>
+
+                    <View style={{ marginLeft: 30 }}>
+                      <Text
+                        numberOfLines={1}
+                        style={{
+                          ...theme.fonts.IBMPlexSansMedium(16),
+                          color: '#01475b',
+                          marginBottom: 7,
+                          marginRight: 20,
+                        }}
+                      >
+                        {item.medicineName}
+                      </Text>
+                      <Text
+                        style={{
+                          ...theme.fonts.IBMPlexSansMedium(12),
+                          color: '#02475b',
+                          opacity: 0.6,
+                        }}
+                      >
+                        {moment(props.PastData.quoteDateTime).format('MM/DD/YYYY')}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
         </View>
       )}
     </View>

@@ -182,6 +182,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     cartItems,
     deliveryType,
     clearCartInfo,
+    physicalPrescriptions,
   } = useShoppingCart();
 
   const { currentPatient } = useAllCurrentPatients();
@@ -267,6 +268,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
         estimatedAmount: grandTotal,
+        prescriptionImageUrl: physicalPrescriptions.join(','),
         items: cartItems.map(
           (item) =>
             ({

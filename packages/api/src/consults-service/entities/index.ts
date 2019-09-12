@@ -374,7 +374,10 @@ export class ConsultQueueItem extends BaseEntity {
   doctorId: string;
 
   @PrimaryGeneratedColumn()
-  order: number;
+  id: number;
+
+  @Column()
+  isActive: boolean;
 
   @BeforeInsert()
   updateDateCreation() {

@@ -8,6 +8,7 @@ import {
   BOOK_APPOINTMENT,
   GET_AVAILABLE_SLOTS,
   BOOK_APPOINTMENT_RESCHEDULE,
+  CHECK_IF_RESCHDULE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { bookRescheduleAppointment } from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
@@ -23,13 +24,17 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mutation } from 'react-apollo';
-import { useQuery } from 'react-apollo-hooks';
-import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import { Dimensions, Platform, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  checkIfReschedule,
+  checkIfRescheduleVariables,
+} from '../../graphql/types/checkIfReschedule';
 
 const { width, height } = Dimensions.get('window');
 
@@ -52,7 +57,7 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
 }
 export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (props) => {
   const tabs = [{ title: 'Reschedule' }];
-
+  const client = useApolloClient();
   const [timeArray, settimeArray] = useState<TimeArray>([
     { label: 'Morning', time: [] },
     { label: 'Afternoon', time: [] },
@@ -78,6 +83,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
   };
 
   const availableDate = date.toISOString().split('T')[0];
+
   // console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
   const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
     fetchPolicy: 'no-cache',

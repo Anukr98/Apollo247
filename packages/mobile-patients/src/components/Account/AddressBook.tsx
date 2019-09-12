@@ -15,6 +15,7 @@ import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profi
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   addressContainer: {
@@ -42,6 +43,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   >([]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
+  const { setAddresses, addresses } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
 
   console.log(currentPatient);
@@ -57,11 +59,13 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
     if (
       data &&
       data.getPatientAddressList &&
+      data.getPatientAddressList.addressList &&
       addressList !== data.getPatientAddressList.addressList
     ) {
       console.log('data', data.getPatientAddressList);
       setaddressList(data.getPatientAddressList.addressList);
       setshowSpinner(false);
+      setAddresses && setAddresses(data.getPatientAddressList.addressList);
     }
   }
 
@@ -71,7 +75,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
         <Button
           title="ADD NEW ADDRESS"
           style={{ flex: 1, marginHorizontal: 60 }}
-          onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
+          onPress={() => props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true })}
         />
       </StickyBottomComponent>
     );
@@ -79,8 +83,8 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
 
   const renderRadioButtonList = () => {
     return (
-      addressList &&
-      addressList.map((address, i) => (
+      addresses &&
+      addresses.map((address, i) => (
         <View style={styles.cardStyle}>
           <Text style={styles.textStyle}>{`${address.landmark ? address.landmark : ''} ${
             address.addressLine1
@@ -95,6 +99,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   const renderAddresses = () => {
     return <View style={styles.addressContainer}>{renderRadioButtonList()}</View>;
   };
+  console.log(addresses, 'addresses');
 
   return (
     <View style={{ flex: 1 }}>
