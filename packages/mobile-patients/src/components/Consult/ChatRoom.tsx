@@ -2574,7 +2574,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
               >
                 Consultation ended in — {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                {seconds.toString().length < 2 ? '0' + seconds : seconds} mins
+                {seconds.toString().length < 2 ? '0' + seconds : seconds} min+
+                {minutes > 1 ? 's' : ''}
               </Text>
             )}
           </View>

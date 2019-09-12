@@ -1,8 +1,17 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
+import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import React, { useState, useEffect, useCallback } from 'react';
+import Moment from 'moment';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Image,
   StyleProp,
@@ -14,18 +23,6 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
-import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
-} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
-import { NEXT_AVAILABLE_SLOT, SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
-import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
-import Moment from 'moment';
-import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -129,7 +126,6 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
         | null
     ) => {
-      // console.log(doctorAvailalbeSlots, 'doctorAvailalbeSlots', rowData);
       const filterData = doctorAvailalbeSlots
         ? doctorAvailalbeSlots.filter((item) => {
             if (item && rowData) {
@@ -137,29 +133,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             }
           })
         : [];
-      // console.log(filterData, 'filterData');
       if (filterData.length > 0 && filterData[0]!.availableSlot) {
         const nextSlot = filterData[0] ? filterData[0]!.availableSlot : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
-
-        // console.log(nextSlot, 'nextSlot dd');
-        // const ISOFormat = nextSlot; //`${todayDate}T${nextSlot}:48.000Z`;
-        const formatedTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('HH:mm');
         let timeDiff: number = 0;
-        const time = formatedTime.split(':');
         const today: Date = new Date();
-        const date2: Date = new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          today.getDate(),
-          Number(time[0]),
-          Number(time[1])
-        );
+        const date2: Date = new Date(nextSlot);
         if (date2 && today) {
           timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
         }
-        // if (timeDiff < 0) {
-        //   const availableTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('h:mm A');
-        // }
         setavailableTime(nextSlot);
 
         setavailableInMin(timeDiff);
@@ -258,7 +239,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       //   return 'AVAILABLE NOW';
       // } else
       if (availableInMin > 0 && availableInMin < 60) {
-        return ` AVAILABLE IN ${availableInMin} MINS`;
+        return ` AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`;
       }
       // else if (availableInMin > 15 && availableInMin <= 45) {
       //   return `AVAILABLE IN ${availableInMin} MINS`;
@@ -272,6 +253,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
 
   if (rowData) {
+    console.log(availableInMin, 'availableInMin', rowData.firstName, availableTime);
+
     return (
       <TouchableOpacity
         activeOpacity={1}
@@ -286,7 +269,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <CapsuleView
                 title={availabilityText()}
                 style={styles.availableView}
-                isActive={Number(availableInMin) >= 15 || availableInMin < 0 ? false : true}
+                isActive={Number(availableInMin) > 15 || availableInMin < 0 ? false : true}
               />
             ) : null}
             <View style={styles.imageView}>
@@ -310,7 +293,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 Dr. {rowData.firstName} {rowData.lastName}
               </Text>
               <Text style={styles.doctorSpecializationStyles}>
-                {rowData.specialty ? rowData.specialty.name : ''} | {rowData.experience} YRS
+                {rowData.specialty ? rowData.specialty.name : ''} | {rowData.experience} YR
+                {Number(rowData.experience) > 1 ? 'S' : ''}
               </Text>
               <Text style={styles.educationTextStyles}>{rowData.qualification}</Text>
               <Text style={styles.doctorLocation}>{rowData.city}</Text>
@@ -322,13 +306,13 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 activeOpacity={1}
                 style={styles.buttonView}
                 onPress={() =>
-                  availableInMin && availableInMin < 60
+                  availableInMin && availableInMin < 60 && availableInMin > 0
                     ? navigateToDetails(rowData.id ? rowData.id : '', { showBookAppointment: true })
                     : navigateToDetails(rowData.id ? rowData.id : '')
                 }
               >
                 <Text style={styles.buttonText}>
-                  {availableInMin && availableInMin < 60
+                  {availableInMin && availableInMin < 60 && availableInMin > 0
                     ? string.common.consult_now
                     : string.common.book_apointment}
                 </Text>

@@ -132,13 +132,13 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       {props.PastData.patientId != null ? (
         <View style={styles.rightViewStyle}>
           {moment(new Date()).format('DD/MM/YYYY') ===
-          moment(props.PastData.appointmentDateTime).format('DD/MM/YYYY') ? (
+          moment(new Date(props.PastData.appointmentDateTime)).format('DD/MM/YYYY') ? (
             <Text style={styles.labelTextStyle}>
-              Today , {moment(props.PastData.appointmentDateTime).format('DD MMM YYYY')}
+              Today , {moment(new Date(props.PastData.appointmentDateTime)).format('DD MMM YYYY')}
             </Text>
           ) : (
             <Text style={styles.labelTextStyle}>
-              {moment(props.PastData.appointmentDateTime).format('DD MMM YYYY')}
+              {moment(new Date(props.PastData.appointmentDateTime)).format('DD MMM YYYY')}
             </Text>
           )}
 
