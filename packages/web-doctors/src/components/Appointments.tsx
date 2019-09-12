@@ -28,6 +28,7 @@ export interface Appointment {
   isNew: boolean;
   type: string;
   status: string;
+  caseSheet: any;
   details: {
     patientName: string;
     checkups: any;
@@ -472,15 +473,17 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                                   <img src={require('images/ic_physical_consult.svg')} alt="" />
                                 )}
                               </IconButton>
-                              {/* {appointment!.caseSheet &&
+                              {appointment!.caseSheet &&
                                 appointment!.caseSheet !== null &&
-                                appointment!.caseSheet.length > 0 && ( */}
-                              <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}`}>
-                                <IconButton aria-label="Navigate next">
-                                  <NavigateNextIcon />
-                                </IconButton>
-                              </Link>
-                              {/* )} */}
+                                appointment!.caseSheet.length > 0 && (
+                                  <Link
+                                    to={`/consulttabs/${appointment.id}/${appointment.patientId}`}
+                                  >
+                                    <IconButton aria-label="Navigate next">
+                                      <NavigateNextIcon />
+                                    </IconButton>
+                                  </Link>
+                                )}
                             </div>
                           </Grid>
                         </Grid>
