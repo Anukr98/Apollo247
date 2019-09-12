@@ -3,8 +3,6 @@ import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
 import { AphButton } from '@aph/web-ui-components';
-import { ChatWindow } from 'components/JuniorDoctors/ChatWindow';
-import { CaseSheet } from 'components/JuniorDoctors/CaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -309,17 +307,13 @@ export const PatientDetails: React.FC = (props) => {
             <div className={classes.leftSection}>
               <div className={classes.blockGroup}>
                 <div className={classes.blockHeader}>Case Sheet</div>
-                <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                  <CaseSheet />
-                </div>
+                <div className={`${classes.blockBody} ${classes.caseSheetBody}`}></div>
               </div>
             </div>
             <div className={classes.rightSection}>
               <div className={classes.blockGroup}>
                 <div className={classes.blockHeader}>Chat</div>
-                <div className={`${classes.blockBody} ${classes.chatBody}`}>
-                  <ChatWindow />
-                </div>
+                <div className={`${classes.blockBody} ${classes.chatBody}`}></div>
               </div>
             </div>
           </div>

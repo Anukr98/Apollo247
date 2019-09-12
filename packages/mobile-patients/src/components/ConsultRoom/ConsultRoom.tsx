@@ -513,11 +513,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               key={i}
               onPress={() => {
                 if (i === 0) {
-                  props.navigation.replace(AppRoutes.TabBar, { tabBarName: 'CONSULT ROOM' });
+                  props.navigation.navigate('CONSULT ROOM');
                 } else if (i == 1) {
+                  props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
+                  props.navigation.navigate('TESTS & MEDICINES');
                 } else if (i == 3) {
-                  // props.navigation.replace(AppRoutes.AzureUpload);
+                  props.navigation.navigate('MY ACCOUNT');
                 }
               }}
             >
