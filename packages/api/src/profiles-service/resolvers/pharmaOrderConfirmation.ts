@@ -7,7 +7,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const pharmaOrderConfirmationTypeDefs = gql`
-  input OrderConfimrationInput {
+  input OrderConfirmationInput {
     ordersResult: OrderResult
   }
 
@@ -29,7 +29,7 @@ export const pharmaOrderConfirmationTypeDefs = gql`
   }
 `;
 
-type OrderConfimrationInput = {
+type OrderConfirmationInput = {
   ordersResult: OrderResult;
 };
 
@@ -46,7 +46,7 @@ type OrderConfirmationResult = {
   requestMessage: string;
 };
 type saveOrderConfirmationInputArgs = {
-  orderConfimrationInput: OrderConfimrationInput;
+  orderConfirmationInput: OrderConfirmationInput;
 };
 
 const saveOrderConfirmation: Resolver<
@@ -54,10 +54,10 @@ const saveOrderConfirmation: Resolver<
   saveOrderConfirmationInputArgs,
   ProfilesServiceContext,
   OrderConfirmationResult
-> = async (parent, { orderConfimrationInput }, { profilesDb }) => {
+> = async (parent, { orderConfirmationInput }, { profilesDb }) => {
   const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
   const orderDetails = await medicineOrdersRepo.getMedicineOrderDetails(
-    orderConfimrationInput.ordersResult.orderNo
+    orderConfirmationInput.ordersResult.orderNo
   );
   if (!orderDetails) {
     throw new AphError(AphErrorMessages.INVALID_MEDICINE_ORDER_ID, undefined, {});
@@ -67,7 +67,7 @@ const saveOrderConfirmation: Resolver<
     orderStatus: MEDICINE_ORDER_STATUS.ORDER_CONFIRMED,
     medicineOrders: orderDetails,
     statusDate: new Date(),
-    statusMessage: orderConfimrationInput.ordersResult.message,
+    statusMessage: orderConfirmationInput.ordersResult.message,
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   await medicineOrdersRepo.updateMedicineOrderDetails(
@@ -80,7 +80,7 @@ const saveOrderConfirmation: Resolver<
   await medicineOrdersRepo.updateOrderFullfillment(
     orderDetails.orderAutoId,
     orderDetails.id,
-    orderConfimrationInput.ordersResult.apOrderNo
+    orderConfirmationInput.ordersResult.apOrderNo
   );
 
   return { requestStatus: 'true', requestMessage: 'order confirmation updated succssfully' };

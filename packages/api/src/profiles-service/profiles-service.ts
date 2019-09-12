@@ -85,7 +85,7 @@ import {
 import {
   pharmaOrderConfirmationTypeDefs,
   pharmaOrderConfirmationResolvers,
-} from 'profiles-service/resolvers/pharmaOrderCofirmation';
+} from 'profiles-service/resolvers/pharmaOrderConfirmation';
 import {
   pharmaOrderDeliveredTypeDefs,
   pharmaOrderDeliveryResolvers,
