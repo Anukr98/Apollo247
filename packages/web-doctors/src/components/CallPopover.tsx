@@ -508,6 +508,20 @@ let transferObject: any = {
   facilityId: '',
   transferId: '',
 };
+
+const handleBrowserUnload = (event: BeforeUnloadEvent) => {
+  event.preventDefault();
+  event.returnValue = '';
+};
+
+const subscribeBrowserButtonsListener = () => {
+  window.addEventListener('beforeunload', handleBrowserUnload);
+};
+
+const unSubscribeBrowserButtonsListener = () => {
+  window.removeEventListener('beforeunload', handleBrowserUnload);
+};
+
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
@@ -912,6 +926,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       message: startConsult,
       isTyping: true,
     };
+    subscribeBrowserButtonsListener();
     pubnub.publish(
       {
         message: text,
@@ -927,6 +942,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       message: stopConsult,
       isTyping: true,
     };
+    unSubscribeBrowserButtonsListener();
     pubnub.publish(
       {
         message: text,
@@ -1143,7 +1159,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     <div>
       <div className={classes.breadcrumbs}>
         <div>
-          <Prompt message="Are you sure to exit"></Prompt>
+          <Prompt message="Are you sure to exit?" when={startAppointment}></Prompt>
           <Link to="/calendar">
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
