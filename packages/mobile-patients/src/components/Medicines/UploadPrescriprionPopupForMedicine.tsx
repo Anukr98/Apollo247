@@ -1,4 +1,3 @@
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   CameraIcon,
   CrossPopup,
@@ -9,7 +8,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import ImagePicker, { Image as PickerImage } from 'react-native-image-crop-picker';
+import ImagePicker, { ImagePickerResponse } from 'react-native-image-picker';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const { width, height } = Dimensions.get('window');
@@ -67,7 +66,7 @@ const styles = StyleSheet.create({
 
 export interface UploadPrescriprionPopupForMedicineProps extends NavigationScreenProps {
   onClickClose: () => void;
-  getData: (arg0: (PickerImage | PickerImage[])[]) => void;
+  onResponse: (response: ImagePickerResponse[]) => void;
 }
 export const UploadPrescriprionPopupForMedicineForMedicine: React.FC<
   UploadPrescriprionPopupForMedicineProps
@@ -76,32 +75,30 @@ export const UploadPrescriprionPopupForMedicineForMedicine: React.FC<
 
   const onClickTakePhoto = () => {
     console.log('onClickTakePhoto');
-    ImagePicker.openCamera({
-      width: 400,
-      height: 400,
-      cropping: false,
-      // useFrontCamera: true,
-    }).then((image) => {
-      console.log(image, typeof image);
-      props.getData([image]);
-    });
+    setshowSpinner(true);
+    ImagePicker.launchCamera(
+      {
+        quality: 0.2,
+      },
+      (response) => {
+        setshowSpinner(false);
+        props.onResponse([response]);
+      }
+    );
   };
 
   const onClickGallery = () => {
     console.log('onClickGallery');
-    ImagePicker.openPicker({
-      width: 400,
-      height: 400,
-      cropping: false,
-      multiple: true,
-      compressImageQuality: 0.1,
-      compressImageMaxHeight: 500,
-      compressImageMaxWidth: 500,
-      includeBase64: true,
-    }).then((image) => {
-      console.log(image, typeof image);
-      props.getData(image as PickerImage[]);
-    });
+    setshowSpinner(true);
+    ImagePicker.launchImageLibrary(
+      {
+        quality: 0.2,
+      },
+      (response) => {
+        setshowSpinner(false);
+        props.onResponse([response]);
+      }
+    );
   };
 
   return (

@@ -225,7 +225,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               <View style={{ flexDirection: 'row', marginTop: 16 }}>
                 <TouchableOpacity
                   activeOpacity={1}
-                  onPress={() => props.navigation.navigate(AppRoutes.YourCart)}
+                  onPress={() =>
+                    props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true })
+                  }
                   style={{ right: 20 }}
                 >
                   <CartIcon style={{}} />
