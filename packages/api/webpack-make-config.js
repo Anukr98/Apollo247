@@ -29,7 +29,11 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
     }),
   ];
   if (isLocal) {
-    plugins.push(new NodemonPlugin({ ...nodemonPluginArgs }), new HardSourceWebpackPlugin());
+    plugins.push(
+      new NodemonPlugin({ ...nodemonPluginArgs }),
+      new HardSourceWebpackPlugin(),
+      new HardSourceWebpackPlugin.ExcludeModulePlugin([{ test: /@aph/ }])
+    );
   }
 
   const tsLoader = {

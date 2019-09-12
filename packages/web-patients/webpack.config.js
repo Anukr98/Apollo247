@@ -37,7 +37,11 @@ const plugins = [
   }),
 ];
 if (isLocal) {
-  plugins.push(new webpack.HotModuleReplacementPlugin(), new HardSourceWebpackPlugin());
+  plugins.push(
+    new webpack.HotModuleReplacementPlugin(),
+    new HardSourceWebpackPlugin(),
+    new HardSourceWebpackPlugin.ExcludeModulePlugin([{ test: /@aph/ }])
+  );
 }
 
 const rhlBabelLoader = {
