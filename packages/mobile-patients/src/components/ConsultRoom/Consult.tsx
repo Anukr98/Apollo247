@@ -173,6 +173,9 @@ export interface ConsultProps extends NavigationScreenProps {
   Data: any;
   TransferData: any;
   TranferDateTime: any;
+  FollowupData: any;
+  FollowupDateTime: any;
+  DoctorName: any;
 }
 export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
@@ -192,6 +195,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   console.log('Backdata', props.navigation.getParam('Data'));
 
   const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
+  const [followupdone, setFollowupDone] = useState<boolean>(false);
   const locationPermission = () => {
     console.log('123456789');
     Permissions.checkMultiple([
@@ -216,27 +220,25 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   useEffect(() => {
-    try {
-      setNewAppointmentTime(
-        props.navigation.getParam('Data')
-          ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
-              'Do MMMM, dddd \nhh:mm a'
-            )
-          : ''
-      );
+    setNewAppointmentTime(
+      props.navigation.getParam('Data')
+        ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
+            'Do MMMM, dddd \nhh:mm a'
+          )
+        : ''
+    );
 
-      let calculateCount = props.navigation.getParam('Data')
-        ? props.navigation.getParam('Data').rescheduleCount
-        : 5;
+    // let calculateCount = props.navigation.getParam('Data')
+    //   ? props.navigation.getParam('Data').rescheduleCount
+    //   : '';
 
-      if (calculateCount > 3) {
-        calculateCount = Math.floor(calculateCount / 3);
-      }
+    let calculateCount: number = 5;
 
-      setNewRescheduleCount(calculateCount);
-    } catch (error) {
-      console.log('error', error);
+    if (calculateCount > 3) {
+      calculateCount = Math.floor(calculateCount / 3);
     }
+
+    setNewRescheduleCount(calculateCount);
   });
 
   useEffect(() => {
@@ -256,10 +258,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
       console.log(props.navigation.getParam('TransferData'), 'TransferData');
       console.log(props.navigation.getParam('TranferDateTime'), 'TranferDateTime');
+      console.log(props.navigation.getParam('FollowupData'), 'FollowupData');
+      console.log(props.navigation.getParam('FollowupDateTime'), 'FollowupDateTime');
       const showTransferPopup = await AsyncStorage.getItem('showTransferPopup');
+      const showFollowUpPopup = await AsyncStorage.getItem('showFollowUpPopup');
       console.log(showTransferPopup, 'showTransferPopup');
+      console.log(showFollowUpPopup, 'showFollowUpPopup');
       if (showTransferPopup == 'true') {
         setTransferfollowup(true);
+      }
+      if (showFollowUpPopup == 'true') {
+        setFollowupDone(true);
       }
     }
     fetchData();
@@ -489,14 +498,17 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           const minutes = moment.duration(moment(appointmentDateTime).diff(new Date())).asMinutes();
           const title =
             minutes > 0 && minutes <= 15
-              ? `${Math.ceil(minutes)} MINS`
+              ? `${Math.ceil(minutes)} MIN`
               : moment(appointmentDateTime).format(
                   appointmentDateTime.split(' ')[0] === new Date().toISOString().split('T')[0]
                     ? 'h:mm A'
                     : 'DD MMM h:mm A'
                 );
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
-
+          const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
+          console.log('appointmentDateTime', moment(appointmentDateTime));
+          console.log('new Date()', moment(new Date()));
+          console.log('dateIsAfterconsult', dateIsAfterconsult);
           return (
             <View style={{}}>
               {/* <View style={{ width: 312 }}> */}
@@ -619,8 +631,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
                   {item.isFollowUp == 'true' ? (
                     <Text style={styles.prepareForConsult}>BOOK FOLLOW-UP</Text>
-                  ) : (
+                  ) : dateIsAfterconsult ? (
                     <Text style={styles.prepareForConsult}>{string.common.prepareForConsult}</Text>
+                  ) : (
+                    <Text style={styles.prepareForConsult}>FOLLOW UP</Text>
                   )}
                 </View>
               </TouchableOpacity>
@@ -647,9 +661,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               <ApolloLogo />
             </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => {}} //setShowMenu(true)}
+          <View
+            // activeOpacity={1}
+            // onPress={() => setShowMenu(true)}
             style={{
               flexDirection: 'row',
               marginTop: 8,
@@ -673,7 +687,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 <View style={styles.seperatorStyle} />
               </View> */}
             </View>
-          </TouchableOpacity>
+          </View>
           <Text style={styles.descriptionTextStyle}>
             {consultations.length > 0
               ? `You have ${consultations.length} upcoming consultation${
@@ -706,7 +720,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 title={string.home.consult_doctor}
                 style={styles.buttonStyles}
                 onPress={() => {
-                  props.navigation.navigate(AppRoutes.SymptomChecker);
+                  // props.navigation.navigate(AppRoutes.DoctorSearch);
                 }}
               />
             </View>
@@ -717,7 +731,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
+    <View style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {showMenu && Popup()}
@@ -745,7 +759,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       {showSchdulesView && (
         <BottomPopUp
           title={'Hi! :)'}
-          description={`Your appointment with  \nhas been rescheduled for — ${newAppointmentTime}\n\nYou have ${newRescheduleCount} free reschedules left.`}
+          description={`Your appointment with Dr. ${props.navigation.getParam(
+            'DoctorName'
+          )} \nhas been rescheduled for — ${newAppointmentTime}\n\nYou have ${newRescheduleCount} free reschedules left.`}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
@@ -764,7 +780,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         <BottomPopUp
           title={'Hi! :)'}
           description={`Your appointment with ${props.navigation.getParam('TransferData') &&
-            props.navigation.getParam('TransferData').doctorName}} has been transferred to —`}
+            props.navigation.getParam('TransferData').doctorName} has been transferred to —`}
         >
           <View
             style={{
@@ -846,7 +862,94 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
-
+      {followupdone && (
+        <BottomPopUp
+          title={'Hi! :)'}
+          description={`Your appointment with ${props.navigation.getParam('FollowupData') &&
+            props.navigation.getParam('FollowupData').firstName} has been followup to —`}
+        >
+          <View
+            style={{
+              backgroundColor: '#f7f8f5',
+              marginLeft: 20,
+              marginRight: 20,
+              marginTop: 20,
+              height: 188,
+              borderRadius: 10,
+            }}
+          >
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ marginLeft: 20, marginTop: 20, marginRight: 20 }}>
+                <Mascot />
+              </View>
+              <View style={{ flexDirection: 'column', marginTop: 20, marginBottom: 5 }}>
+                <Text style={{ color: '#02475b', ...theme.fonts.IBMPlexSansMedium(18) }}>
+                  {props.navigation.getParam('FollowupData') &&
+                    props.navigation.getParam('FollowupData').firstName}
+                </Text>
+                <Text
+                  style={{
+                    color: '#0087ba',
+                    ...theme.fonts.IBMPlexSansSemiBold(12),
+                    marginBottom: 12,
+                  }}
+                >
+                  {props.navigation.getParam('FollowupData') &&
+                    props.navigation.getParam('FollowupData').specialty &&
+                    props.navigation.getParam('FollowupData').specialty.name}
+                  {props.navigation.getParam('FollowupData') &&
+                    props.navigation.getParam('FollowupData').experience}{' '}
+                  YR
+                  {Number(props.navigation.getParam('FollowupData').experience) > 1 ? 'S' : ''}
+                </Text>
+              </View>
+            </View>
+            <View
+              style={{
+                height: 2,
+                backgroundColor: '#02475b',
+                marginTop: -15,
+                marginHorizontal: 5,
+                opacity: 0.1,
+                marginLeft: 105,
+              }}
+            ></View>
+            <View style={{ marginTop: 12, marginLeft: 100 }}>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  color: '#02475b',
+                  lineHeight: 20,
+                  marginLeft: 5,
+                }}
+              >
+                {moment(props.navigation.getParam('FollowupDateTime')).format('DD MMM YYYY')}
+              </Text>
+              <Text
+                style={{
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  color: '#02475b',
+                  lineHeight: 20,
+                  marginLeft: 5,
+                }}
+              >
+                {moment(props.navigation.getParam('FollowupDateTime')).format('hh:mm A')}
+              </Text>
+            </View>
+            <View style={{ height: 60, alignItems: 'flex-end' }}>
+              <TouchableOpacity
+                style={styles.gotItStyles}
+                onPress={() => {
+                  setFollowupDone(false);
+                  AsyncStorage.setItem('showFollowUpPopup', 'false');
+                }}
+              >
+                <Text style={styles.gotItTextStyles}>{string.home.welcome_popup.cta_label}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </BottomPopUp>
+      )}
       {showSpinner && <Spinner />}
     </View>
   );

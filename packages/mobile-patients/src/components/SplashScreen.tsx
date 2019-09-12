@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
@@ -19,8 +19,9 @@ const styles = StyleSheet.create({
 export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
-  const { isSigningIn, signInError, signOut } = useAuth();
+  const { signInError, signOut } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   useEffect(() => {
     async function fetchData() {
@@ -37,6 +38,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log(allCurrentPatients, 'allCurrentPatients');
 
       setTimeout(() => {
+        setshowSpinner(false);
+
         if (userLoggedIn == 'true') {
           if (currentPatient) {
             if (currentPatient.firstName !== '') {
@@ -70,6 +73,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     firebase.analytics().setCurrentScreen('SplashScreen');
 
     if (signInError) {
+      setshowSpinner(false);
+
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.setItem('multiSignUp', 'false');
       AsyncStorage.setItem('signUp', 'false');
@@ -94,9 +99,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         }}
         resizeMode="contain"
       />
-      {isSigningIn ? (
+      {showSpinner ? (
         <ActivityIndicator
-          animating={isSigningIn}
+          animating={showSpinner}
           size="large"
           color="green"
           style={{ bottom: 60, position: 'absolute' }}

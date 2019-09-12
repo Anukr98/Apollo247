@@ -245,19 +245,16 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.MedicineConsultDetails]: {
     screen: MedicineConsultDetails,
   },
-  [AppRoutes.MobileHelp]: {
-    screen: MobileHelp,
-  },
 };
 
 const stackConfig: StackNavigatorConfig = {
   initialRouteName: AppRoutes.SplashScreen,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
-  transitionConfig: () => {
+  transitionConfig: (sceneProps) => {
     return {
       transitionSpec: {
-        // duration: 100,
+        duration: sceneProps.scene.route.routeName === 'TabBar' ? 0 : 100,
       },
     };
   },

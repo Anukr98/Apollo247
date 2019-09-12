@@ -9,10 +9,12 @@ export const GET_CURRENT_PATIENTS = gql`
         firstName
         lastName
         relation
-        gender
         uhid
+        gender
         dateOfBirth
         emailAddress
+        gender
+        dateOfBirth
       }
     }
   }
@@ -393,6 +395,7 @@ export const NEXT_AVAILABLE_SLOT = gql`
       doctorAvailalbeSlots {
         availableSlot
         doctorId
+        physicalAvailableSlot
       }
     }
   }
@@ -575,11 +578,33 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
   }
 `;
 
+export const GET_MEDICINE_ORDER_DETAILS = gql`
+  query GetMedicineOrderDetails($patientId: String, $orderAutoId: Int) {
+    getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
+      MedicineOrderDetails {
+        id
+        orderAutoId
+        estimatedAmount
+        medicineOrdersStatus {
+          id
+          orderStatus
+        }
+      }
+    }
+  }
+`;
+
 export const UPLOAD_FILE = gql`
   mutation uploadFile($fileType: String, $base64FileInput: String) {
     uploadFile(fileType: $fileType, base64FileInput: $base64FileInput) {
       filePath
     }
+  }
+`;
+
+export const SEND_HELP_EMAIL = gql`
+  query SendHelpEmail($helpEmailInput: HelpEmailInput) {
+    sendHelpEmail(helpEmailInput: $helpEmailInput)
   }
 `;
 
@@ -595,21 +620,6 @@ export const GET_COUPONS = gql`
         minimumOrderAmount
         expirationDate
         isActive
-      }
-    }
-  }
-`;
-
-export const GET_MEDICINE_ORDER_DETAILS = gql`
-  query GetMedicineOrderDetails($patientId: String, $orderAutoId: Int) {
-    getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
-      MedicineOrderDetails {
-        id
-        orderAutoId
-        estimatedAmount
-        medicineOrdersStatus {
-          orderStatus
-        }
       }
     }
   }
@@ -929,6 +939,18 @@ export const DELETE_PATIENT_MEDICAL_RECORD = gql`
   mutation deletePatientMedicalRecord($recordId: ID!) {
     deletePatientMedicalRecord(recordId: $recordId) {
       status
+    }
+  }
+`;
+
+export const CHECK_IF_RESCHDULE = gql`
+  query checkIfReschedule($existAppointmentId: String!, $rescheduleDate: DateTime!) {
+    checkIfReschedule(existAppointmentId: $existAppointmentId, rescheduleDate: $rescheduleDate) {
+      isPaid
+      isCancel
+      isFollowUp
+      appointmentState
+      rescheduleCount
     }
   }
 `;
