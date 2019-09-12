@@ -11,6 +11,7 @@ import {
   FileBig,
   Filter,
   NotificationIcon,
+  NoData,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -50,11 +51,9 @@ const filterData: filterDataType[] = [
 export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
-  const tabs = strings.health_records_home.tabs;
+  const [tabs, setTabs] = useState(strings.health_records_home.tabs);
+  const [selectedTab, setselectedTab] = useState<string>(`${tabs[0].title} - ${tabs[0].count}`);
 
-  const [countTab, setCountTab] = useState<any>();
-
-  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
@@ -95,7 +94,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           };
         });
         console.log(consults.length + medOrders.length, 'ok');
-        setCountTab(consults.length + medOrders.length);
+        // setCountTab(consults.length + medOrders.length);
 
         medOrders.forEach((c) => {
           consultsAndMedOrders[c!.quoteDateTime] = {
@@ -255,9 +254,19 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               ...theme.viewStyles.shadowStyle,
             }}
             height={44}
-            data={tabs}
+            data={tabs.map((item) => ({ title: `${item.title} - ${item.count}` }))}
             onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-            selectedTab={selectedTab}
+            selectedTab={`${
+              tabs.find(
+                (item) =>
+                  selectedTab.indexOf(item.title) > -1 || item.title.indexOf(selectedTab) > -1
+              )!.title
+            } - ${
+              tabs.find(
+                (item) =>
+                  selectedTab.indexOf(item.title) > -1 || item.title.indexOf(selectedTab) > -1
+              )!.count
+            }`}
           />
         </View>
       </View>
@@ -285,12 +294,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   //           style={{
   //             height: 236,
   //           }}
-  //         >
   //           <View
+  //         >
   //             style={{
   //               height: 83,
-  //               flexDirection: 'row',
   //               justifyContent: 'space-between',
+  //               flexDirection: 'row',
   //               marginHorizontal: 20,
   //             }}
   //           >
@@ -381,9 +390,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 height: 60,
                 justifyContent: 'center',
                 alignItems: 'center',
+                marginBottom: 25,
               }}
             >
-              <FileBig />
+              <NoData />
             </View>
             <Text
               style={{
@@ -436,10 +446,20 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderTopView()}
-          {selectedTab === tabs[0].title ? (
+          {selectedTab === `${tabs[0].title} - ${tabs[0].count}` ? (
             renderConsults()
           ) : (
-            <MedicalRecords navigation={props.navigation} />
+            <MedicalRecords
+              navigation={props.navigation}
+              onTabCount={(count) => {
+                console.log({ count });
+                setTabs([
+                  ...tabs.map((item) =>
+                    item.title == tabs[1].title ? { ...item, count: `${count}` } : item
+                  ),
+                ]);
+              }}
+            />
           )}
         </ScrollView>
       </SafeAreaView>

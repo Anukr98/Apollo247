@@ -18,10 +18,12 @@ export interface PhysicalPrescription {
   title: string;
   path: string;
   base64: string;
+  uploadedUrl?: string;
 }
 
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
+  setCartItems: ((items: ShoppingCartItem[]) => void) | null;
   addCartItem: ((item: ShoppingCartItem) => void) | null;
   removeCartItem: ((itemId: ShoppingCartItem['id']) => void) | null;
   updateCartItem:
@@ -64,6 +66,7 @@ export interface ShoppingCartContextProps {
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   cartItems: [],
+  setCartItems: null,
   addCartItem: null,
   removeCartItem: null,
   updateCartItem: null,
@@ -244,6 +247,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     <ShoppingCartContext.Provider
       value={{
         cartItems,
+        setCartItems,
         addCartItem,
         removeCartItem,
         updateCartItem,
