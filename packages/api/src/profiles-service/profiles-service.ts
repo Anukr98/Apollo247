@@ -82,6 +82,22 @@ import {
   updateOrderStatusTypeDefs,
   updateOrderStatusResolvers,
 } from 'profiles-service/resolvers/updateOrderStatusPharma';
+import {
+  pharmaOrderConfirmationTypeDefs,
+  pharmaOrderConfirmationResolvers,
+} from 'profiles-service/resolvers/pharmaOrderConfirmation';
+import {
+  pharmaOrderDeliveredTypeDefs,
+  pharmaOrderDeliveryResolvers,
+} from 'profiles-service/resolvers/pharmaOrderDelivered';
+import {
+  pharmaOrderCancelledTypeDefs,
+  pharmaOrderCancelResolvers,
+} from 'profiles-service/resolvers/pharmaOrderCancelled';
+import {
+  medicineOrderCancelTypeDefs,
+  medicineOrderCancelResolvers,
+} from 'profiles-service/resolvers/cancelMedicineOrder';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -209,6 +225,22 @@ import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
       {
         typeDefs: updateOrderStatusTypeDefs,
         resolvers: updateOrderStatusResolvers,
+      },
+      {
+        typeDefs: pharmaOrderConfirmationTypeDefs,
+        resolvers: pharmaOrderConfirmationResolvers,
+      },
+      {
+        typeDefs: pharmaOrderDeliveredTypeDefs,
+        resolvers: pharmaOrderDeliveryResolvers,
+      },
+      {
+        typeDefs: pharmaOrderCancelledTypeDefs,
+        resolvers: pharmaOrderCancelResolvers,
+      },
+      {
+        typeDefs: medicineOrderCancelTypeDefs,
+        resolvers: medicineOrderCancelResolvers,
       },
       {
         typeDefs: helpTypeDefs,

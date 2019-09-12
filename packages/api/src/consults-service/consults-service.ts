@@ -66,9 +66,9 @@ import gql from 'graphql-tag';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import {
-  getConsultQueueTypeDefs,
-  getConsultQueueResolvers,
-} from 'consults-service/resolvers/getConsultQueue';
+  consultQueueTypeDefs,
+  consultQueueResolvers,
+} from 'consults-service/resolvers/consultQueue';
 import {
   getAllDoctorAppointmentsTypeDefs,
   getAllDoctorAppointmentsResolvers,
@@ -170,8 +170,8 @@ import {
         resolvers: bookFollowUpAppointmentResolvers,
       },
       {
-        typeDefs: getConsultQueueTypeDefs,
-        resolvers: getConsultQueueResolvers,
+        typeDefs: consultQueueTypeDefs,
+        resolvers: consultQueueResolvers,
       },
       {
         typeDefs: getAllDoctorAppointmentsTypeDefs,
