@@ -63,6 +63,9 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     endDate
   );
 
+  console.log(appointmentDetails);
+  console.log(startDate);
+  console.log(endDate);
   const mailContentTemplate = _.template(
     `<html>
     <body>
@@ -94,17 +97,20 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     appointmentDetails,
   });
 
-  const emailContent: EmailMessage = {
+  console.log(mailContent);
+
+  /*const emailContent: EmailMessage = {
     subject: <string>ApiConstants.PATIENT_HELP_SUBJECT,
     fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
     fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
     messageContent: <string>mailContent,
     toEmail: <string>ApiConstants.PATIENT_HELP_SUPPORT_EMAILID,
-  };
+  };*/
 
-  const mailStatus = await sendMail(emailContent);
+  //const mailStatus = await sendMail(emailContent);
 
-  return mailStatus.message;
+  //return mailStatus.message;
+  return 'success';
 };
 
 export const helpResolvers = {
