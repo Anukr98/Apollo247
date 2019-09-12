@@ -286,31 +286,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     setdisplayoverlay(true), setResheduleoverlay(false);
   };
 
-  // const checkingAppointmentDates = () => {
-  //   const currentTime = moment(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(
-  //     'YYYY-MM-DD HH:mm:ss'
-  //   );
-
-  //   const appointmentTime = moment.utc(data.appointmentDateTime).format('YYYY-MM-DD HH:mm:ss');
-
-  //   const diff = moment.duration(moment(appointmentTime).diff(currentTime));
-  //   let diffInHours = diff.asMinutes();
-  //   console.log('duration', diffInHours);
-  //   console.log('appointmentTime', appointmentTime);
-
-  //   if (diffInHours > 0) {
-  //   } else {
-  //     diffInHours = diffInHours * 60;
-  //     console.log('duration', diffInHours);
-
-  //     const startingTime = 900 + diffInHours;
-  //     console.log('startingTime', startingTime);
-
-  //     if (startingTime > 0) {
-  //     }
-  //   }
-  // };
-
   if (data.doctorInfo)
     return (
       <View
@@ -398,20 +373,22 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             <Button
               title={'RESCHEDULE'}
               style={{
-                flex: 0.5,
+                flex: 0.4,
                 marginLeft: 20,
                 marginRight: 8,
                 backgroundColor: 'white',
               }}
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
-                dateIsAfter ? setResheduleoverlay(true) : null;
+                try {
+                  dateIsAfter ? setResheduleoverlay(true) : null;
+                } catch (error) {}
               }}
             />
 
             <Button
               title={'START CONSULTATION'}
-              style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
+              style={{ flex: 0.6, marginRight: 20, marginLeft: 8 }}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.ChatRoom, {
                   data: data,

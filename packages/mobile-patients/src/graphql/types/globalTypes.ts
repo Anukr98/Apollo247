@@ -257,6 +257,12 @@ export interface FilterDoctorInput {
   location?: string | null;
 }
 
+export interface HelpEmailInput {
+  category?: string | null;
+  reason?: string | null;
+  comments?: string | null;
+}
+
 export interface MedicineCartInput {
   quoteId?: string | null;
   shopId?: string | null;

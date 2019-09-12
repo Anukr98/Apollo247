@@ -29,6 +29,7 @@ import {
   BOOK_APPOINTMENT_TRANSFER,
   UPDATE_APPOINTMENT_SESSION,
   CHECK_IF_RESCHDULE,
+  NEXT_AVAILABLE_SLOT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookTransferAppointment,
@@ -76,7 +77,11 @@ import {
   checkIfReschedule_checkIfReschedule,
 } from '../../graphql/types/checkIfReschedule';
 
-// import KeepAwake from 'react-native-keep-awake';
+import KeepAwake from 'react-native-keep-awake';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlotVariables,
+} from '../../graphql/types/GetDoctorNextAvailableSlot';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -84,6 +89,14 @@ const { height, width } = Dimensions.get('window');
 const timer: number = 900;
 let timerId: NodeJS.Timeout;
 let diffInHours: number;
+
+type rescheduleType = {
+  rescheduleCount: number;
+  appointmentState: string;
+  isCancel: number;
+  isFollowUp: number;
+  isPaid: number;
+};
 
 export interface ChatRoomProps extends NavigationScreenProps {}
 export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
@@ -206,6 +219,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [transferAccept, setTransferAccept] = useState<boolean>(false);
   const [transferDcotorName, setTransferDcotorName] = useState<string>('');
   const [bottompopup, setBottompopup] = useState<boolean>(false);
+  const [checkReschudule, setCheckReschudule] = useState<boolean>(false);
+  const [newRescheduleCount, setNewRescheduleCount] = useState<rescheduleType>();
+  const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
+
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const acceptedCallMsg = '^^callme`accept^^';
@@ -235,10 +252,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setuserName(userName);
     analytics.setCurrentScreen(AppRoutes.ChatRoom);
   }, []);
+
   useEffect(() => {
     console.log('didmout');
     Platform.OS === 'android' && requestReadSmsPermission();
   }, []);
+
   const client = useApolloClient();
 
   const requestReadSmsPermission = async () => {
@@ -387,7 +406,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setHideStatusBar(false);
       console.log('session stream connectionDestroyed!', event);
       setConvertVideo(false);
-      // KeepAwake.deactivate();
+      KeepAwake.deactivate();
       setTimerStyles({
         position: 'absolute',
         marginHorizontal: 20,
@@ -1112,7 +1131,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   paddingTop: 13,
                 }}
               >
-                {/* <Button
+                <Button
                   title={'RESCHEDULE'}
                   style={{
                     flex: 0.5,
@@ -1124,20 +1143,146 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
+                    console.log('Button Clicked');
                     checkIfReschduleApi(rowData);
+                    NextAvailableSlot(rowData);
+                    setCheckReschudule(true);
                   }}
-                /> */}
-                <Button
+                />
+                {/* <Button
                   title={'ACCEPT'}
                   style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
                   onPress={() => {
                     transferAppointmentAPI(rowData, 'Followup');
                   }}
-                />
+                /> */}
               </StickyBottomComponent>
             </View>
+            {checkReschudule && reschduleLoadView(rowData, index)}
           </View>
         )}
+      </>
+    );
+  };
+
+  const reschduleLoadView = (rowData: any, index: number) => {
+    return (
+      <>
+        <View
+          style={{
+            width: 244,
+            height: 116,
+            backgroundColor: '#0087ba',
+            marginLeft: 38,
+            borderRadius: 10,
+            marginBottom: 4,
+          }}
+        >
+          <Text
+            style={{
+              lineHeight: 22,
+              color: 'white',
+              ...theme.fonts.IBMPlexSansMedium(15),
+              paddingHorizontal: 16,
+              paddingTop: 12,
+            }}
+          >
+            {newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
+              ? 'We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.'
+              : `Since you hace already rescheduled 3 times with Dr. ${appointmentData.doctorInfo.firstName}, we will consider this a new paid appointment.`}
+          </Text>
+        </View>
+        <View
+          style={{
+            width: 244,
+            height: 206,
+            backgroundColor: '#0087ba',
+            marginLeft: 38,
+            borderRadius: 10,
+            marginBottom: 4,
+          }}
+        >
+          <Text
+            style={{
+              color: 'white',
+              lineHeight: 22,
+              ...theme.fonts.IBMPlexSansMedium(15),
+              textAlign: 'left',
+              marginHorizontal: 16,
+              marginTop: 12,
+            }}
+          >
+            Next slot for Dr. {appointmentData.doctorInfo.firstName} is available on —
+          </Text>
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginTop: 9,
+              opacity: 0.5,
+              height: 2,
+              borderStyle: 'dashed',
+              borderWidth: 1,
+              borderRadius: 1,
+              borderColor: '#ffffff',
+              overflow: 'hidden',
+            }}
+          />
+          <Text
+            style={{
+              marginHorizontal: 16,
+              marginTop: 9,
+              lineHeight: 22,
+              ...theme.fonts.IBMPlexSansSemiBold(15),
+              color: 'white',
+            }}
+          >
+            {moment(nextSlotAvailable).format('Do MMMM, dddd \nhh:mm a')}
+          </Text>
+          <View
+            style={{
+              marginHorizontal: 16,
+              marginTop: 10,
+              opacity: 0.5,
+              height: 2,
+              borderStyle: 'dashed',
+              borderWidth: 1,
+              borderRadius: 1,
+              borderColor: '#ffffff',
+              overflow: 'hidden',
+            }}
+          />
+          <StickyBottomComponent
+            style={{
+              paddingHorizontal: 0,
+              backgroundColor: 'transparent',
+              shadowColor: 'transparent',
+              paddingTop: 13,
+            }}
+          >
+            <Button
+              title={'CHANGE SLOT'}
+              style={{
+                flex: 0.6,
+                marginLeft: 16,
+                marginRight: 5,
+                backgroundColor: '#0087ba',
+                borderWidth: 2,
+                borderColor: '#fcb715',
+              }}
+              titleTextStyle={{ color: 'white' }}
+              onPress={() => {
+                checkIfReschduleApi(rowData);
+              }}
+            />
+            <Button
+              title={'ACCEPT'}
+              style={{ flex: 0.4, marginRight: 16, marginLeft: 5 }}
+              onPress={() => {
+                // transferAppointmentAPI(rowData, 'Followup');
+              }}
+            />
+          </StickyBottomComponent>
+        </View>
       </>
     );
   };
@@ -1576,18 +1721,31 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const checkIfReschduleApi = (rowData: any) => {
     console.log('checkIfReschduleApi', rowData);
 
+    const inputData = {
+      existAppointmentId: rowData.transferInfo.appointmentId,
+      rescheduleDate: rowData.transferInfo.folloupDateTime,
+    };
+    console.log('inputData', inputData);
+
     client
       .query<checkIfReschedule, checkIfRescheduleVariables>({
         query: CHECK_IF_RESCHDULE,
-        variables: {
-          existAppointmentId: rowData.transferInfo.appointmentId,
-          rescheduleDate: rowData.transferInfo.transferDateTime,
-        },
+        variables: inputData,
         fetchPolicy: 'no-cache',
       })
       .then((_data: any) => {
         const result = _data.data.checkIfReschedule;
         console.log('checkIfReschedulesuccess', result);
+        try {
+          const data: rescheduleType = {
+            rescheduleCount: result.rescheduleCount + 1,
+            appointmentState: result.appointmentState,
+            isCancel: result.isCancel,
+            isFollowUp: result.isFollowUp,
+            isPaid: result.isPaid,
+          };
+          setNewRescheduleCount(data);
+        } catch (error) {}
 
         setLoading(false);
         if (result.isPaid == 1) {
@@ -1600,6 +1758,48 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while checkIfRescheduleprofile', error);
         Alert.alert('Error', error.message);
+      });
+  };
+
+  const NextAvailableSlot = (rowData: any) => {
+    console.log('NextAvailableSlot', rowData);
+
+    const todayDate = moment
+      .utc(rowData.transferInfo.folloupDateTime)
+      .local()
+      .format('YYYY-MM-DD');
+    console.log('todayDate', todayDate);
+
+    client
+      .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
+        query: NEXT_AVAILABLE_SLOT,
+        variables: {
+          DoctorNextAvailableSlotInput: {
+            doctorIds: rowData.transferInfo.doctorId,
+            availableDate: todayDate,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data: any) => {
+        try {
+          console.log(
+            'checkIfReschedulesuccess',
+            _data.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
+          );
+          setNextSlotAvailable(
+            _data.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
+          );
+        } catch (error) {
+          setNextSlotAvailable('');
+        }
+
+        setLoading(false);
+      })
+      .catch((e: any) => {
+        setLoading(false);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while checkIfRescheduleprofile', error);
       });
   };
 
@@ -2412,7 +2612,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             changeAudioStyles();
             setConvertVideo(false);
             changeVideoStyles();
-            // KeepAwake.activate();
+            KeepAwake.activate();
             if (token) {
               PublishAudioVideo();
             } else {
