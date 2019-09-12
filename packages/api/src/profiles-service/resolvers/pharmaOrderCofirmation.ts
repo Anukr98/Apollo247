@@ -64,16 +64,23 @@ const saveOrderConfirmation: Resolver<
   }
 
   const orderStatusAttrs: Partial<MedicineOrdersStatus> = {
-    orderStatus: MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+    orderStatus: MEDICINE_ORDER_STATUS.ORDER_CONFIRMED,
     medicineOrders: orderDetails,
     statusDate: new Date(),
+    statusMessage: orderConfimrationInput.ordersResult.message,
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   await medicineOrdersRepo.updateMedicineOrderDetails(
     orderDetails.id,
     orderDetails.orderAutoId,
     new Date(),
-    MEDICINE_ORDER_STATUS.ORDER_VERIFIED
+    MEDICINE_ORDER_STATUS.ORDER_CONFIRMED
+  );
+
+  await medicineOrdersRepo.updateOrderFullfillment(
+    orderDetails.orderAutoId,
+    orderDetails.id,
+    orderConfimrationInput.ordersResult.apOrderNo
   );
 
   return { requestStatus: 'true', requestMessage: 'order confirmation updated succssfully' };

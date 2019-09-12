@@ -217,6 +217,7 @@ const SavePrescriptionMedicineOrder: Resolver<
         orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
         medicineOrders: saveOrder,
         statusDate: new Date(),
+        statusMessage: orderResp.ordersResult.Message,
       };
       await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
       await medicineOrdersRepo.updateMedicineOrderDetails(

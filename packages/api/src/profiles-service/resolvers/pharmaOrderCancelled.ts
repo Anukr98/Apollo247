@@ -51,6 +51,7 @@ const saveOrderCancelStatus: Resolver<
     orderStatus: MEDICINE_ORDER_STATUS.CANCELLED,
     medicineOrders: orderDetails,
     statusDate: new Date(),
+    statusMessage: orderCancelInput.remarksCode,
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   await medicineOrdersRepo.updateMedicineOrderDetails(

@@ -240,6 +240,7 @@ const SaveMedicineOrderPayment: Resolver<
       orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
       medicineOrders: orderDetails,
       statusDate: new Date(),
+      statusMessage: orderResp.ordersResult.Message,
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
     await medicineOrdersRepo.updateMedicineOrderDetails(

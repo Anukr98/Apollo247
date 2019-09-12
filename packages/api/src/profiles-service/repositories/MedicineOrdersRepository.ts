@@ -140,4 +140,8 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
       .leftJoinAndSelect('MedicineOrders.medicineOrdersStatus', 'medicineOrdersStatus')
       .getRawMany();
   }
+
+  updateOrderFullfillment(orderAutoId: number, id: string, apOrderNo: string) {
+    this.update({ id, orderAutoId }, { apOrderNo });
+  }
 }

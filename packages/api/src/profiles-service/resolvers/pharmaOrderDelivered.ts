@@ -61,6 +61,7 @@ const saveOrderDeliveryStatus: Resolver<
     orderStatus: MEDICINE_ORDER_STATUS.DELIVERED,
     medicineOrders: orderDetails,
     statusDate: new Date(),
+    statusMessage: orderDeliveryInput.ordersResult.message,
   };
   await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, orderDetails.orderAutoId);
   await medicineOrdersRepo.updateMedicineOrderDetails(

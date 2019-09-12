@@ -320,6 +320,9 @@ export class MedicineOrdersStatus extends BaseEntity {
   statusDate: Date;
 
   @Column({ nullable: true })
+  statusMessage: string;
+
+  @Column({ nullable: true })
   updatedDate: Date;
 
   @BeforeInsert()
