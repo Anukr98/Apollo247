@@ -167,7 +167,7 @@ export const Header: React.FC = (props) => {
           !window.location.href.includes('/profile') &&
           !window.location.href.includes('/patientlogdetailspage') && <Navigation />}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
-          <DoctorOnlineStatusButton />
+          {/* <DoctorOnlineStatusButton /> */}
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (
               <div className={`${!isSignedIn ? classes.userCircle : ''}`} ref={avatarRef}>
