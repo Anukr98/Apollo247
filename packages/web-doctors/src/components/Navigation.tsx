@@ -47,6 +47,7 @@ export const Navigation: React.FC = (props) => {
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
       <Link
+        title="Home"
         to={clientRoutes.welcome()}
         className={`${window.location.href.toLowerCase().includes('/calendar') &&
           classes.menuItemActive}`}
@@ -54,6 +55,7 @@ export const Navigation: React.FC = (props) => {
         Home
       </Link>
       <Link
+        title="Patients"
         className={`${window.location.href.includes('/patientlog') && classes.menuItemActive}`}
         to={clientRoutes.PatientLog()}
       >
