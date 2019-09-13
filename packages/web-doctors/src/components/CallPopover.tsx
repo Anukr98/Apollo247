@@ -136,6 +136,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fc9916',
       },
+      '&:disabled': {
+        backgroundColor: 'rgba(252,153,22,0.3)',
+      },
     },
     cancelConsult: {
       minWidth: 120,
@@ -310,7 +313,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalBoxTransfer: {
       maxWidth: 480,
-      minHeight: 480,
+      minHeight: 515,
       margin: 'auto',
       marginTop: 88,
       backgroundColor: '#eeeeee',
@@ -424,6 +427,8 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 5,
         color: 'initial',
         border: '2px solid #00b38e ',
+        paddingTop: '15px',
+        paddingBottom: '15px',
         borderRadius: 10,
         paddingLeft: 10,
         '& :before': {
@@ -1700,6 +1705,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </Button>
               <Button
                 className={classes.ResheduleCosultButton}
+                disabled={
+                  (textOtherTransfer && otherTextTransferValue === '') || searchKeyWord == ''
+                }
                 onClick={() => {
                   //setIsTransferPopoverOpen(false);
                   //resheduleCosult();

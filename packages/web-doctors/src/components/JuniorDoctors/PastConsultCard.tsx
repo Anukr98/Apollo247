@@ -86,14 +86,15 @@ export interface PastConsultCardProps {
 export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
   const classes = useStyles();
   const { id, patient, appointment } = props;
-
+  const appointmentDateIST = format(
+    new Date(appointment.appointmentDateTime).getTime(),
+    'dd-MM-yyyy hh:mm a'
+  );
   return (
     <div className={classes.root}>
-      <div className={classes.title}>
-        APPT DATE: {format(appointment.appointmentDateTime, 'Pp')}
-      </div>
+      <div className={classes.title}>APPT DATE: {appointmentDateIST}</div>
       <div className={classes.cardGroup}>
-        <Mutation<AddToConsultQueue, AddToConsultQueueVariables> mutation={ADD_TO_CONSULT_QUEUE}>
+        {/* <Mutation<AddToConsultQueue, AddToConsultQueueVariables> mutation={ADD_TO_CONSULT_QUEUE}>
           {(addToConsultQueue, { loading }) => (
             <Button
               variant="contained"
@@ -109,7 +110,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
               {loading && <CircularProgress size={20} />} NEW
             </Button>
           )}
-        </Mutation>
+        </Mutation> */}
         <div className={classes.cardImg}>
           {patient.photoUrl ? (
             <Avatar src={patient.photoUrl} className={classes.avatar} />
