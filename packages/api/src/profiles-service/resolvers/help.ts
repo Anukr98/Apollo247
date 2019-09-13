@@ -13,6 +13,7 @@ import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from 'profiles-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 
 export const helpTypeDefs = gql`
   input HelpEmailInput {
@@ -65,30 +66,65 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     endDate
   );
 
-  let appointmentsList;
+  const client = new AphStorageClient(
+    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+    process.env.AZURE_STORAGE_CONTAINER_NAME
+  );
+
+  type appointmentStore = {
+    eprescriptionURL: string;
+    doctorName: string;
+    appointmentDateTime: Date;
+    appointmentMode: string;
+    doctorType: string;
+    doctorId: string;
+  };
+
+  const appointmentList: appointmentStore[] = [];
+
   const doctorIds: string[] = [];
   if (appointmentDetails.length > 0) {
     appointmentDetails.forEach((appointment) => {
-      console.log(
-        appointment.appointmentDateTime,
-        addMilliseconds(appointment.appointmentDateTime, 19800000)
-      );
+      const data: appointmentStore = {
+        eprescriptionURL: '',
+        doctorName: '',
+        appointmentDateTime: new Date(),
+        appointmentMode: '',
+        doctorType: '',
+        doctorId: '',
+      };
+      appointment.appointmentDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+      if (appointment.caseSheet.length > 0) {
+        appointment.caseSheet.forEach((caseSheet) => {
+          if (caseSheet.doctorType == 'JUNIOR') {
+            data.eprescriptionURL = client.getBlobUrl(caseSheet.blobName);
+          }
+        });
+      }
+      data.doctorName = '';
+      data.appointmentDateTime = appointment.appointmentDateTime;
+      data.appointmentMode = appointment.appointmentType;
+      data.doctorType = '';
+      data.doctorId = appointment.doctorId;
+
       doctorIds.push(appointment.doctorId);
-      console.log(doctorIds);
+      appointmentList.push(data);
     });
+
     if (doctorIds.length > 0) {
       //get doctor details
       const doctorsRepo = doctorsDb.getCustomRepository(DoctorRepository);
       const doctorData = await doctorsRepo.getSearchDoctorsByIds(doctorIds);
-      console.log(doctorData);
 
       if (doctorData.length > 0) {
-        appointmentDetails.forEach((appointment) => {
-          console.log(
-            doctorData.filter((doctor) => {
-              return doctor.id === appointment.doctorId ? doctor.firstName : '';
-            })
-          );
+        appointmentList.forEach((appointment) => {
+          const filteredDoctorData = doctorData.filter((doctor) => {
+            return doctor.typeId === appointment.doctorId ? doctor.name : '';
+          });
+          if (filteredDoctorData != null) {
+            appointment.doctorName = filteredDoctorData[0].name;
+            appointment.doctorType = filteredDoctorData[0].doctorType;
+          }
         });
       }
     }
@@ -145,10 +181,20 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
        <li>Mobile Number : <%- patientDetails.mobileNumber %></li>
       </ul>
     </li>
-    <li> Appointment Details </li>   
-    <li> Medicine Order Details
-      <ul>
-      <% _.each(medicineOrders, function(order) { %>
+    <% _.each(appointmentList, function(appointment,index) { %>
+    <li> Appointment: <%- index+1 %>     
+    <ul>
+     <li>Doctor's Name : <%- appointment.doctorName %> </li>
+     <li>Appointment DateTime : <%- appointment.appointmentDateTime %> </li>
+     <li>Appointment Mode : <%- appointment.appointmentMode %> </li>
+     <li>E prescription  :  <%- appointment.eprescriptionURL %> </li>
+     <li>DoctorType : <%- appointment.doctorType %> </li>    
+    </ul>    
+    </li>
+    <% }); %>
+    <% _.each(medicineOrders, function(order, index) { %>
+    <li> Medicine Order Details: <%- index+1 %> 
+      <ul>      
           <li>Payment Details : <%- order.paymentMode %></li>
           <li>Item Details : 
               <ul>
@@ -159,12 +205,11 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
           </li>
           <li>Date and Time of Order : <%- order.orderDateTime %></li>
           <% if(order.prescriptionUrl != null) {  %>
-            <li>Prescription : <img src="<%- order.prescriptionUrl %>" /></li>
-          <% } %>
-      <% }); %>
-
+            <li>Prescription : order.prescriptionUrl /></li>
+          <% } %> 
       </ul>
     </li>
+    <% }); %>
 
     </ul>
     </body> 
@@ -175,12 +220,10 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     helpEmailInput,
     patientDetails,
     medicineOrders,
-    appointmentDetails,
+    appointmentList,
   });
 
-  console.log(mailContent);
-
-  /*const emailContent: EmailMessage = {
+  const emailContent: EmailMessage = {
     subject: <string>ApiConstants.PATIENT_HELP_SUBJECT,
     fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
     fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
@@ -188,9 +231,9 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     toEmail: <string>ApiConstants.PATIENT_HELP_SUPPORT_EMAILID,
   };
 
-  const mailStatus = await sendMail(emailContent);*/
+  const mailStatus = await sendMail(emailContent);
 
-  return 'mailStatus.message';
+  return mailStatus.message;
 };
 
 export const helpResolvers = {
