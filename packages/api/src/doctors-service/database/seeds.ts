@@ -6,6 +6,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { StarTeamRepository } from 'doctors-service/repositories/starTeamRepository';
 import { getConnection } from 'typeorm';
+import _random from 'lodash/random';
 import _times from 'lodash/times';
 import _reject from 'lodash/reject';
 import _sample from 'lodash/sample';
@@ -24,8 +25,8 @@ import {
   buildDoctorSpecialty,
   allSpecialties,
 } from 'doctors-service/database/factories/doctorSpecialtyFactory';
-import { DoctorBankAccountsRepository } from 'doctors-service/repositories/doctorBankAccountsRepository';
-import { buildDoctorBankAccount } from 'doctors-service/database/factories/doctorBankAccountsFactory';
+// import { DoctorBankAccountsRepository } from 'doctors-service/repositories/doctorBankAccountsRepository';
+// import { buildDoctorBankAccount } from 'doctors-service/database/factories/doctorBankAccountsFactory';
 import { PackagesRepository } from 'doctors-service/repositories/packagesRepository';
 import { buildPackage, allPackageNames } from 'doctors-service/database/factories/packagesFactory';
 import { buildStarTeam } from 'doctors-service/database/factories/starTeamFactory';
@@ -38,6 +39,8 @@ import { ConsultQueueRepository } from 'consults-service/repositories/consultQue
 import { buildConsultQueueItem } from 'doctors-service/database/factories/consultQueueFactory';
 import { buildCaseSheet } from 'consults-service/database/factories/caseSheetFactory';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
+import { buildBlockedCalendarItem } from 'consults-service/database/factories/blockedCalendarFactory';
+import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 (async () => {
   console.log('Seeding doctors-db...');
@@ -56,14 +59,15 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
   await doctorsDb.dropDatabase();
   await doctorsDb.synchronize();
 
-  const doctorConsultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+  // const doctorConsultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
   const doctorHospitalRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
-  const doctorBankAccountsRepo = doctorsDb.getCustomRepository(DoctorBankAccountsRepository);
+  // const doctorBankAccountsRepo = doctorsDb.getCustomRepository(DoctorBankAccountsRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const faiclityRepo = doctorsDb.getCustomRepository(FacilityRepository);
   const doctorSpecialtyRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
   const starTeamRepo = doctorsDb.getCustomRepository(StarTeamRepository);
   const packagesRepo = doctorsDb.getCustomRepository(PackagesRepository);
+  const blockedCalendarRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
@@ -189,6 +193,20 @@ import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepo
     )
   );
   console.log(consultQueue);
+
+  console.log('Blocking calendars...');
+  const doctorsWithBlockedCalendars = [jrKabir, ..._sampleSize(randomDoctors, 10)];
+  const blockedCalendars = await Promise.all(
+    doctorsWithBlockedCalendars.flatMap((doc) => {
+      const doctorId = doc.id;
+      const numItemsToBlockInDoctorsCalendar = _random(1, 4);
+      return _times(numItemsToBlockInDoctorsCalendar, () => {
+        const blockedCalendarItem = buildBlockedCalendarItem({ doctorId });
+        return blockedCalendarRepo.save(blockedCalendarItem);
+      });
+    })
+  );
+  console.log(blockedCalendars);
 
   console.log('Seeding doctors-db complete!');
 })();
