@@ -47,6 +47,8 @@ export const getAppointmentHistoryTypeDefs = gql`
     bookingDate: DateTime
     caseSheet: [CaseSheet]
     rescheduleCount: Int
+    isFollowUp: Boolean
+    followUpParentId: String
     patientInfo: Patient @provides(fields: "id")
     doctorInfo: Profile @provides(fields: "id")
   }
@@ -107,6 +109,8 @@ type AppointmentHistory = {
   bookingDate: Date;
   caseSheet: CaseSheet[];
   rescheduleCount: number;
+  isFollowUp: Boolean;
+  followUpParentId: string;
 };
 
 type AppointmentInputArgs = { appointmentHistoryInput: AppointmentHistoryInput };
