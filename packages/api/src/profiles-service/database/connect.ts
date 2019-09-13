@@ -36,6 +36,7 @@ import {
   CaseSheet,
   TransferAppointmentDetails,
   RescheduleAppointmentDetails,
+  JuniorAppointmentSessions,
 } from 'consults-service/entities';
 
 export const connect = async () => {
@@ -97,6 +98,7 @@ export const connect = async () => {
         CaseSheet,
         TransferAppointmentDetails,
         RescheduleAppointmentDetails,
+        JuniorAppointmentSessions,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
