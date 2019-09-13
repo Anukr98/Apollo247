@@ -34,7 +34,7 @@ const uploadFile: Resolver<
 > = async (parent, args, { profilesDb }) => {
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
-    assetsDir = path.resolve('/home/devdeploy/apollo-hospitals/packages/api/src/assets');
+    assetsDir = path.resolve(process.env.ASSETS_DIRECTORY);
   }
   const fileName = format(new Date(), 'ddmmyyyy-HHmmss') + '.' + args.fileType.toLowerCase();
   const uploadPath = assetsDir + '/' + fileName;
