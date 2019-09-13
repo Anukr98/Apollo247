@@ -26,18 +26,24 @@ const useStyles = makeStyles((theme: Theme) =>
     textFieldWrapper: {
       border: 'solid 1px #30c1a3',
       borderRadius: 10,
-      width: '80%',
+      width: '100%',
       padding: 16,
       color: '#01475b',
       fontSize: 14,
       fontWeight: 500,
+      position: 'relative',
+      paddingRight: 48,
     },
     chatSubmitBtn: {
       position: 'absolute',
-      bottom: 30,
-      right: 167,
+      top: '50%',
+      marginTop: -18,
+      right: 10,
       minWidth: 'auto',
       padding: 0,
+      '& img': {
+        maxWidth: 36,
+      },
     },
     contentContainer: {
       display: 'flex',
@@ -148,7 +154,7 @@ export const OtherInstructions: React.FC = () => {
               }
             }}
           >
-            <img src={require('images/add_doctor_white.svg')} alt="" />
+            <img src={require('images/ic_plus.png')} alt="" />
           </Button>
         </Typography>
       )}
