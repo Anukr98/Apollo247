@@ -3475,18 +3475,6 @@
             "deprecationReason": null
           },
           {
-            "name": "relation",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "ENUM",
-              "name": "Relation",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "createdDate",
             "description": null,
             "args": [],
