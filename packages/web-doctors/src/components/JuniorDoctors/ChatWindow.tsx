@@ -465,18 +465,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
-            <div className={classes.chatBubble}>
-              {leftComponent == 1 && !rowData.duration && (
-                <div className={classes.patientAvatar}>
-                  <Avatar
-                    className={classes.avatar}
-                    src={require('images/ic_patientchat.png')}
-                    alt=""
-                  />
-                </div>
-              )}
-              {rowData.message}
-            </div>
+            <div className={classes.chatBubble}>{rowData.message}</div>
           )}
         </div>
       );
