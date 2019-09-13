@@ -29,12 +29,12 @@ export const patientLifeStyleTypeDefs = gql`
     patientLifeStyle: PatientLifeStyles
   }
 
-  type patientLifeStyleListResult {
+  type PatientLifeStyleListResult {
     lifeStyleList: [PatientLifeStyles!]
   }
 
   extend type Query {
-    getPatientLifeStyleList(patientId: String): patientLifeStyleListResult!
+    getPatientLifeStyleList(patientId: String): PatientLifeStyleListResult!
   }
 
   extend type Mutation {

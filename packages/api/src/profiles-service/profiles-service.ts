@@ -102,6 +102,10 @@ import {
   patientLifeStyleTypeDefs,
   patientLifeStyleResolvers,
 } from 'profiles-service/resolvers/patientLifeStyle';
+import {
+  patientFamilyHistoryTypeDefs,
+  patientFamilyHistoryResolvers,
+} from 'profiles-service/resolvers/patientFamilyHistory';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -253,6 +257,10 @@ import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
       {
         typeDefs: patientLifeStyleTypeDefs,
         resolvers: patientLifeStyleResolvers,
+      },
+      {
+        typeDefs: patientFamilyHistoryTypeDefs,
+        resolvers: patientFamilyHistoryResolvers,
       },
     ]),
   });

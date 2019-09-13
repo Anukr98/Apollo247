@@ -1,154 +1,169 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { PatientLifeStyle } from 'profiles-service/entities';
-import { PatientLifeStyleRepository } from 'profiles-service/repositories/patientLifeStyleRepository';
+import { PatientFamilyHistory, Relation } from 'profiles-service/entities';
+import { PatientFamilyHistoryRepository } from 'profiles-service/repositories/patientFamilyHistoryRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
-export const patientLifeStyleTypeDefs = gql`
-  input PatientLifeStyleInput {
+export const patientFamilyHistoryTypeDefs = gql`
+  input PatientFamilyHistoryInput {
     patientId: ID!
     description: String!
+    relation: Relation!
   }
 
-  input UpdatePatientLifeStyleInput {
+  input UpdatePatientFamilyHistoryInput {
     id: ID!
     description: String!
+    relation: Relation!
   }
 
-  type PatientLifeStyles {
+  type PatientFamilyHistoryDetails {
     id: ID!
     description: String
     createdDate: Date
     updatedDate: Date
   }
 
-  type AddPatientLifeStyleResult {
-    patientLifeStyle: PatientLifeStyles
+  type AddPatientFamilyHistoryResult {
+    patientFamilyHistory: PatientFamilyHistoryDetails
   }
 
-  type patientLifeStyleListResult {
-    lifeStyleList: [PatientLifeStyles!]
+  type PatientFamilyHistoryListResult {
+    familyHistoryList: [PatientFamilyHistoryDetails!]
   }
 
   extend type Query {
-    getPatientLifeStyleList(patientId: String): patientLifeStyleListResult!
+    getPatientFamilyHistoryList(patientId: String): PatientFamilyHistoryListResult!
   }
 
   extend type Mutation {
-    savePatientLifeStyle(patientLifeStyleInput: PatientLifeStyleInput): AddPatientLifeStyleResult!
-    updatePatientLifeStyle(
-      updatePatientLifeStyleInput: UpdatePatientLifeStyleInput
-    ): AddPatientLifeStyleResult
-    deletePatientLifeStyle(id: String): Boolean!
+    savePatientFamilyHistory(
+      patientFamilyHistoryInput: PatientFamilyHistoryInput
+    ): AddPatientFamilyHistoryResult!
+    updatePatientFamilyHistory(
+      updatePatientFamilyHistoryInput: UpdatePatientFamilyHistoryInput
+    ): AddPatientFamilyHistoryResult
+    deletePatientFamilyHistory(id: String): Boolean!
   }
 `;
-type PatientLifeStyleInput = {
+type PatientFamilyHistoryInput = {
   patientId: string;
   description: string;
+  relation: Relation;
 };
 
-type UpdatePatientLifeStyleInput = {
+type UpdatePatientFamilyHistoryInput = {
   id: string;
   description: string;
+  relation: Relation;
 };
 
-type PatientLifeStyles = {
+type PatientFamilyHistoryDetails = {
   id: string;
   description: string;
+  relation: Relation;
   createdDate: Date;
   updatedDate: Date;
 };
-type PatientLifeStyleInputInputArgs = { patientLifeStyleInput: PatientLifeStyleInput };
-type UpdatePatientLifeStyleInputArgs = { updatePatientLifeStyleInput: UpdatePatientLifeStyleInput };
-
-type AddPatientLifeStyleResult = {
-  patientLifeStyle: PatientLifeStyles;
+type PatientFamilyHistoryInputInputArgs = { patientFamilyHistoryInput: PatientFamilyHistoryInput };
+type UpdatePatientFamilyHistoryInputArgs = {
+  updatePatientFamilyHistoryInput: UpdatePatientFamilyHistoryInput;
 };
 
-type patientLifeStyleListResult = {
-  lifeStyleList: PatientLifeStyles[];
+type AddPatientFamilyHistoryResult = {
+  patientFamilyHistory: PatientFamilyHistoryDetails;
 };
 
-const getPatientLifeStyleList: Resolver<
+type PatientFamilyHistoryListResult = {
+  familyHistoryList: PatientFamilyHistoryDetails[];
+};
+
+const getPatientFamilyHistoryList: Resolver<
   null,
   { patientId: string },
   ProfilesServiceContext,
-  patientLifeStyleListResult
+  PatientFamilyHistoryListResult
 > = async (parent, args, { profilesDb }) => {
-  const patientLifeStyleRepo = profilesDb.getCustomRepository(PatientLifeStyleRepository);
-  const lifeStyleList = await patientLifeStyleRepo.getPatientLifeStyleList(args.patientId);
-  console.log(lifeStyleList, 'life style list');
-  return { lifeStyleList };
+  const patientFamilyHistoryRepo = profilesDb.getCustomRepository(PatientFamilyHistoryRepository);
+  const familyHistoryList = await patientFamilyHistoryRepo.getPatientFamilyHistoryList(
+    args.patientId
+  );
+  console.log(familyHistoryList, 'life style list');
+  return { familyHistoryList };
 };
 
-const updatePatientLifeStyle: Resolver<
+const updatePatientFamilyHistory: Resolver<
   null,
-  UpdatePatientLifeStyleInputArgs,
+  UpdatePatientFamilyHistoryInputArgs,
   ProfilesServiceContext,
-  AddPatientLifeStyleResult
-> = async (parent, { updatePatientLifeStyleInput }, { profilesDb }) => {
-  const patientLifeStyleRepo = profilesDb.getCustomRepository(PatientLifeStyleRepository);
-  const updatePatientLifeStyleAttrs: Omit<UpdatePatientLifeStyleInput, 'id'> = {
-    ...updatePatientLifeStyleInput,
+  AddPatientFamilyHistoryResult
+> = async (parent, { updatePatientFamilyHistoryInput }, { profilesDb }) => {
+  const patientFamilyHistoryRepo = profilesDb.getCustomRepository(PatientFamilyHistoryRepository);
+  const updatePatientFamilyHistoryAttrs: Omit<UpdatePatientFamilyHistoryInput, 'id'> = {
+    ...updatePatientFamilyHistoryInput,
   };
-  await patientLifeStyleRepo.updatePatientLifeStyle(
-    updatePatientLifeStyleInput.id,
-    updatePatientLifeStyleAttrs
+  await patientFamilyHistoryRepo.updatePatientFamilyHistory(
+    updatePatientFamilyHistoryInput.id,
+    updatePatientFamilyHistoryAttrs
   );
-  const patientLifeStyle = await patientLifeStyleRepo.findById(updatePatientLifeStyleInput.id);
-  if (!patientLifeStyle) {
+  const patientFamilyHistory = await patientFamilyHistoryRepo.findById(
+    updatePatientFamilyHistoryInput.id
+  );
+  if (!patientFamilyHistory) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  return { patientLifeStyle };
+  return { patientFamilyHistory };
 };
 
-const deletePatientLifeStyle: Resolver<
+const deletePatientFamilyHistory: Resolver<
   null,
   { id: string },
   ProfilesServiceContext,
   boolean
 > = async (parent, args, { profilesDb }) => {
-  const patientLifeStyleRepo = profilesDb.getCustomRepository(PatientLifeStyleRepository);
-  const deleteResp = await patientLifeStyleRepo.deletePatientLifeStyle(args.id);
+  const patientFamilyHistoryRepo = profilesDb.getCustomRepository(PatientFamilyHistoryRepository);
+  const deleteResp = await patientFamilyHistoryRepo.deletePatientFamilyHistory(args.id);
   if (!deleteResp) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
   return true;
 };
 
-const savePatientLifeStyle: Resolver<
+const savePatientFamilyHistory: Resolver<
   null,
-  PatientLifeStyleInputInputArgs,
+  PatientFamilyHistoryInputInputArgs,
   ProfilesServiceContext,
-  AddPatientLifeStyleResult
-> = async (parent, { patientLifeStyleInput }, { profilesDb }) => {
+  AddPatientFamilyHistoryResult
+> = async (parent, { patientFamilyHistoryInput }, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(patientLifeStyleInput.patientId);
+  const patientDetails = await patientRepo.findById(patientFamilyHistoryInput.patientId);
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  const savePatientlifestyleAttrs: Partial<PatientLifeStyle> = {
-    ...patientLifeStyleInput,
+  const savePatientFamilyHistoryAttrs: Partial<PatientFamilyHistory> = {
+    ...patientFamilyHistoryInput,
     patient: patientDetails,
   };
-  const patientLifeStyleRepository = profilesDb.getCustomRepository(PatientLifeStyleRepository);
-  const patientLifeStyle = await patientLifeStyleRepository.savePatientLifeStyle(
-    savePatientlifestyleAttrs
+  const patientFamilyHistoryRepository = profilesDb.getCustomRepository(
+    PatientFamilyHistoryRepository
+  );
+  const patientFamilyHistory = await patientFamilyHistoryRepository.savePatientFamilyHistory(
+    savePatientFamilyHistoryAttrs
   );
 
-  return { patientLifeStyle };
+  return { patientFamilyHistory };
 };
 
-export const patientLifeStyleResolvers = {
+export const patientFamilyHistoryResolvers = {
   Mutation: {
-    savePatientLifeStyle,
-    updatePatientLifeStyle,
-    deletePatientLifeStyle,
+    savePatientFamilyHistory,
+    updatePatientFamilyHistory,
+    deletePatientFamilyHistory,
   },
   Query: {
-    getPatientLifeStyleList,
+    getPatientFamilyHistoryList,
   },
 };
