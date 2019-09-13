@@ -98,3 +98,14 @@ export const GET_PATIENT_LIFE_STYLE = gql`
     }
   }
 `;
+
+export const UPDATE_PATIENT_ALLERGIES = gql`
+  mutation UpdatePatientAllergies($patientId: String!, $allergies: String!) {
+    updatePatientAllergies(patientId: $patientId, allergies: $allergies) {
+      patient {
+        id
+        allergies
+      }
+    }
+  }
+`;
