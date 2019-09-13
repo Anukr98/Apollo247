@@ -231,7 +231,7 @@ export const DiagnosticPrescription: React.FC = () => {
         setSearchInput(value);
       })
       .catch((e) => {
-        console.log('Error occured while searching for Doctors', e);
+        console.log('Error occured while searching for tests', e);
       });
   };
   const getSuggestions = (value: string) => {
@@ -325,7 +325,7 @@ export const DiagnosticPrescription: React.FC = () => {
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.column}>
         <Typography component="h5" variant="h5">
-          Diagnostics
+          Tests
         </Typography>
         <Typography component="div" className={classes.listContainer}>
           {selectedValues !== null &&
@@ -351,7 +351,7 @@ export const DiagnosticPrescription: React.FC = () => {
             color="primary"
             onClick={() => showAddConditionHandler(true)}
           >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD DIAGNOSTICS
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
           </AphButton>
         )}
         {showAddCondition && (

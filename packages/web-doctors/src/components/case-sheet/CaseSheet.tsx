@@ -245,7 +245,7 @@ export const CaseSheet: React.FC = () => {
             className={classes.expandIcon}
           >
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Medicine Prescription</Typography>
+              <Typography variant="h3">Medicines</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <MedicinePrescription />
@@ -260,7 +260,7 @@ export const CaseSheet: React.FC = () => {
             className={classes.expandIcon}
           >
             <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Diagnostic Prescription</Typography>
+              <Typography variant="h3">Tests</Typography>
             </ExpansionPanelSummary>
             <ExpansionPanelDetails>
               <DiagnosticPrescription />
