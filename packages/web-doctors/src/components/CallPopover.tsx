@@ -441,6 +441,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
       padding: 10,
       zIndex: 9,
+      color: '#02475b',
       backgroundColor: '#fff',
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
@@ -462,6 +463,12 @@ const useStyles = makeStyles((theme: Theme) => {
           '&:hover': {
             cursor: 'pointer',
           },
+        },
+        '& span': {
+          color: 'rgba(0, 0, 0, 0.87)',
+          zIndex: 9,
+          fontSize: '14px',
+          fontWeight: 'normal',
         },
       },
       '& p': {
@@ -584,6 +591,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [noteKeyword, setNoteKeyword] = React.useState('');
   const [isDoctorOrSpeciality, setIsDoctorOrSpeciality] = useState(false);
   const [isDoctorSelected, setIsDoctorSelected] = useState(false);
+  const [isDoctorFound, setIsDoctorFound] = useState(true);
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<any>([]);
   const [filterSpeciality, setFilterSpeciality] = useState<any>([]);
   const {
@@ -1645,7 +1653,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               {isDoctorOrSpeciality && searchKeyWord.length > 1 && (
                 <span className={classes.doctorSearch}>
                   <h6>Doctor(s)</h6>
-                  {filteredStarDoctors!.length > 0 ? (
+                  {filteredStarDoctors!.length > 0 && isDoctorFound ? (
                     <ul>
                       {filteredStarDoctors!.map((item: any, idx: any) => (
                         <li
@@ -1655,10 +1663,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             setIsDoctorSelected(true);
                           }}
                         >
-                          {props.doctorId !== item.id &&
-                            `${item.salutation.charAt(0).toUpperCase()}${item.salutation
-                              .slice(1)
-                              .toLowerCase()}. ${item.firstName} ${item.lastName}`}
+                          {props.doctorId !== item.id
+                            ? `${item.salutation.charAt(0).toUpperCase()}${item.salutation
+                                .slice(1)
+                                .toLowerCase()}. ${item.firstName} ${item.lastName}`
+                            : filteredStarDoctors!.length === 1 && <span>No Doctors found</span>}
                         </li>
                       ))}
                     </ul>
