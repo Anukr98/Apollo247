@@ -437,13 +437,16 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     doctorSearch: {
-      position: 'relative',
       display: 'block',
       padding: 10,
       zIndex: 9,
       color: '#02475b',
       backgroundColor: '#fff',
       borderRadius: 10,
+      position: 'absolute',
+      width: '95%',
+      maxHeight: 200,
+      overflow: 'auto',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
       '& h6': {
         color: 'rgba(2,71,91,0.3)',
