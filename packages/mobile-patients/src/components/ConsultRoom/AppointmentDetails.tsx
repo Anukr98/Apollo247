@@ -177,8 +177,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
-      newDateTimeslot: availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0]
-        .availableSlot,
+      newDateTimeslot:
+        availability &&
+        availability.data! &&
+        availability.data!.getDoctorNextAvailableSlot! &&
+        availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0] &&
+        availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0].availableSlot,
       initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
       initiatedId: data.patientId,
       patientId: data.patientId,
