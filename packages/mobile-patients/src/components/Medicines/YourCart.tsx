@@ -4,6 +4,7 @@ import {
   PhysicalPrescription,
   ShoppingCartItem,
   useShoppingCart,
+  EPrescription,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -47,7 +48,10 @@ import { ImagePickerResponse } from 'react-native-image-picker';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
 import { handleGraphQlError } from '../../helpers/helperFunctions';
-import { UploadPrescriprionPopupForMedicineForMedicine } from './UploadPrescriprionPopupForMedicine';
+import { UploadPrescriprionPopupForMedicine } from './UploadPrescriprionPopupForMedicine';
+import { EPrescriptionCard } from '../ui/EPrescriptionCard';
+import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '../../graphql/types/getPatientMedicalRecords';
+import { SelectEPrescriptionModalModal } from './SelectEPrescriptionModal';
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -122,6 +126,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setPinCode,
     stores,
     setStores,
+
+    ePrescriptions,
+    setEPrescriptions,
+    removeEPrescription,
+
+    setLastSelectedprescription,
+    lastSelectedprescription,
   } = useShoppingCart();
 
   useEffect(() => {
@@ -295,7 +306,24 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const updatePrescriptions = (images: ImagePickerResponse[]) => {
+  const updateEPrescriptions = (
+    newPrescriptions: (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[]
+  ) => {
+    const prescriptions = newPrescriptions.map(
+      (item) =>
+        ({
+          id: item!.id,
+          uploadedUrl: item!.documentURLs,
+        } as EPrescription)
+    );
+
+    const itemsToAdd = prescriptions.filter(
+      (p) => !ePrescriptions.find((pToFind) => pToFind.id == p.id)
+    );
+    setEPrescriptions && setEPrescriptions([...itemsToAdd, ...ePrescriptions]);
+  };
+
+  const updatePhysicalPrescriptions = (images: ImagePickerResponse[]) => {
     const prescriptions = images.map(
       (item) =>
         ({
@@ -319,15 +347,48 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const uploadPrescriptionPopup = () => {
     return (
       showPopup && (
-        <UploadPrescriprionPopupForMedicineForMedicine
+        <UploadPrescriprionPopupForMedicine
           onClickClose={() => setShowPopup(false)}
-          onResponse={(images) => {
+          onResponse={(selectedType, response) => {
             setShowPopup(false);
-            updatePrescriptions(images);
+            if (lastSelectedprescription.cart == 'NONE') {
+              setLastSelectedprescription &&
+                setLastSelectedprescription({
+                  ...lastSelectedprescription,
+                  cart: selectedType == 'cameraOrGallery' ? 'CAMERA_AND_GALLERY' : 'E-PRESCRIPTION',
+                });
+            }
+            if (selectedType == 'cameraOrGallery') {
+              const images = response as ImagePickerResponse[];
+              updatePhysicalPrescriptions(images);
+            } else {
+              setSelectPrescriptionVisible(true);
+              // const medicalRecord = response as getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords[];
+              // updateEPrescriptions(medicalRecord);
+            }
           }}
           navigation={props.navigation}
         />
       )
+    );
+  };
+
+  const renderEPrescription = (item: any, i: number, arrayLength: number) => {
+    return (
+      <EPrescriptionCard
+        style={{
+          marginTop: i === 0 ? 20 : 4,
+          // marginTop: 20,
+          marginBottom: arrayLength === i + 1 ? 16 : 4,
+        }}
+        actionType="removal"
+        date={item!.testDate}
+        doctorName={item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''}
+        forPatient={(currentPatient && currentPatient.lastName) || ''}
+        onRemove={() => {
+          removeEPrescription && removeEPrescription(item.id);
+        }}
+      />
     );
   };
 
@@ -397,7 +458,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const renderPhysicalPrescriptions = (prescriptions = physicalPrescriptions) => {
+  const rendePrescriptions = (
+    _prescriptions = physicalPrescriptions,
+    _ePrescriptions = ePrescriptions
+  ) => {
     const cardContainerStyle = {
       ...theme.viewStyles.cardViewStyle,
       marginHorizontal: 20,
@@ -408,15 +472,34 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     return (
       <View>
         <View style={cardContainerStyle}>
-          <View>{renderLabel(`Physical Prescription${prescriptions.length == 1 ? '' : 's'}`)}</View>
-          <FlatList
-            bounces={false}
-            data={prescriptions}
-            renderItem={({ item, index }) =>
-              renderPhysicalPrescriptionRow(item, index, prescriptions.length)
-            }
-            keyExtractor={(_, index) => index.toString()}
-          />
+          {_prescriptions.length > 0 && (
+            <View>
+              {renderLabel(`Physical Prescription${_prescriptions.length == 1 ? '' : 's'}`)}
+              <FlatList
+                bounces={false}
+                data={_prescriptions}
+                renderItem={({ item, index }) =>
+                  renderPhysicalPrescriptionRow(item, index, _prescriptions.length)
+                }
+                keyExtractor={(_, index) => index.toString()}
+              />
+            </View>
+          )}
+          {_ePrescriptions.length > 0 && (
+            <View>
+              {renderLabel(
+                `Prescription${_ePrescriptions.length == 1 ? '' : 's'} From Health Records`
+              )}
+              <FlatList
+                bounces={false}
+                data={_ePrescriptions}
+                renderItem={({ item, index }) =>
+                  renderEPrescription(item, index, _ePrescriptions.length)
+                }
+                keyExtractor={(_, index) => index.toString()}
+              />
+            </View>
+          )}
         </View>
         <Text
           style={{
@@ -473,7 +556,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               </Text>
             </TouchableOpacity>
           ) : (
-            renderPhysicalPrescriptions()
+            rendePrescriptions()
           )}
         </View>
       );
@@ -876,9 +959,26 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
+  const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
+
+  const renderPrescriptionModal = () => {
+    return (
+      <SelectEPrescriptionModalModal
+        navigation={props.navigation}
+        onSubmit={(p) => {
+          console.log({ p });
+          setSelectPrescriptionVisible(false);
+          updateEPrescriptions(p);
+        }}
+        isVisible={isSelectPrescriptionVisible}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
+        {renderPrescriptionModal()}
         {renderHeader()}
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
@@ -898,8 +998,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>
-        {uploadPrescriptionPopup()}
       </SafeAreaView>
+      {uploadPrescriptionPopup()}
       {showSpinner && <Spinner />}
     </View>
   );

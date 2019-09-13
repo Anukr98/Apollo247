@@ -45,6 +45,7 @@ export const getCurrentPatientsTypeDefs = gql`
     dateOfBirth: Date
     relation: Relation
     photoUrl: String
+    allergies: String
   }
 
   type GetCurrentPatientsResult {
