@@ -2,11 +2,11 @@ import React, { useState, useContext } from 'react';
 import { Typography, Chip, Theme } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { InputBase, Button } from '@material-ui/core';
+import { AphButton } from '@aph/web-ui-components';
 // import {
 //   GetJuniorDoctorCaseSheet,
 //   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
 // } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     column: {
-      width: '49%',
+      width: '100%',
       display: 'flex',
       marginRight: '1%',
       flexDirection: 'column',
@@ -71,7 +71,7 @@ const useStyles = makeStyles((theme: Theme) =>
     othersBtn: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
       backgroundColor: 'rgba(0,0,0,0.02)',
-      height: 44,
+      height: 'auto',
       marginBottom: 12,
       borderRadius: 5,
       fontWeight: 600,
@@ -84,6 +84,23 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'inline-block',
         width: '100%',
         textAlign: 'left',
+        whiteSpace: 'normal',
+        padding: 10,
+      },
+    },
+    btnAddDoctor: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
+      // pointerEvents: 'none',
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
       },
     },
   })
@@ -96,10 +113,9 @@ export const OtherInstructions: React.FC = () => {
   );
 
   const [otherInstruct, setOtherInstruct] = useState('');
-  const [defaultValue, setDefaultValue] = useState('');
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [idx, setIdx] = React.useState();
-
+  const [showAddInputText, setShowAddInputText] = useState<boolean>(false);
   const handleDelete = (item: any, idx: number) => {
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
@@ -129,14 +145,13 @@ export const OtherInstructions: React.FC = () => {
             ))}
         </Typography>
       </Typography>
-
-      {caseSheetEdit && (
+      {showAddInputText && (
         <Typography component="div" className={classes.textFieldWrapper}>
           <InputBase
             fullWidth
             className={classes.textFieldColor}
             placeholder="Enter instruction here.."
-            defaultValue={defaultValue}
+            value={otherInstruct}
             onChange={(e) => {
               setOtherInstruct(e.target.value);
             }}
@@ -151,12 +166,25 @@ export const OtherInstructions: React.FC = () => {
                 });
                 setSelectedValues(selectedValues);
                 setIdx(selectedValues!.length + 1);
+                setTimeout(() => {
+                  setOtherInstruct('');
+                }, 10);
               }
             }}
           >
             <img src={require('images/ic_plus.png')} alt="" />
           </Button>
         </Typography>
+      )}
+      {!showAddInputText && caseSheetEdit && (
+        <AphButton
+          className={classes.btnAddDoctor}
+          variant="contained"
+          color="primary"
+          onClick={() => setShowAddInputText(true)}
+        >
+          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD INSTRUCTIONS
+        </AphButton>
       )}
     </Typography>
   );
