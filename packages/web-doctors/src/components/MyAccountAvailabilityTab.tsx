@@ -7,6 +7,7 @@ import { ConsultationHours } from 'components/ConsultationHours';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { GetDoctorDetails_getDoctorDetails_consultHours } from 'graphql/types/GetDoctorDetails';
 import { ConsultMode } from 'graphql/types/globalTypes';
+import { BlockedCalendar } from 'components/BlockedCalendar';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -326,6 +327,7 @@ export const MyAccountAvailabilityTab: React.FC<AvailabilityTabProps> = ({
         <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
         Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
       </div>
+      <BlockedCalendar doctorId={data.id} />
     </div>
   );
 };

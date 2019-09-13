@@ -10,3 +10,16 @@ export const UPDATE_DOCTOR_ONLINE_STATUS = gql`
     }
   }
 `;
+
+export const GET_BLOCKED_CALENDAR = gql`
+  query GetBlockedCalendar($doctorId: String!) {
+    getBlockedCalendar(doctorId: $doctorId) {
+      blockedCalendar {
+        id
+        doctorId
+        start
+        end
+      }
+    }
+  }
+`;
