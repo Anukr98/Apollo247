@@ -47,6 +47,17 @@ import { parseISO, format } from 'date-fns';
 import { Gender } from 'graphql/types/globalTypes';
 import differenceInYears from 'date-fns/differenceInYears';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
+import { useMutation } from 'react-apollo-hooks';
+import {
+  RemoveFromConsultQueue,
+  RemoveFromConsultQueueVariables,
+} from 'graphql/types/RemoveFromConsultQueue';
+import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -297,10 +308,20 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const JDConsultRoom: React.FC = () => {
   const classes = useStyles();
-  const { patientId, appointmentId } = useParams<JDConsultRoomParams>();
+  const { patientId, appointmentId, queueId } = useParams<JDConsultRoomParams>();
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const { currentPatient: currentDoctor, isSignedIn } = useAuth();
   const doctorId = currentDoctor!.id;
+
+  const mutationRemoveConsult = useMutation<
+    RemoveFromConsultQueue,
+    RemoveFromConsultQueueVariables
+  >(REMOVE_FROM_CONSULT_QUEUE, {
+    variables: {
+      id: parseInt(queueId, 10),
+    },
+  });
 
   const doctorFirstName =
     currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
@@ -519,20 +540,6 @@ export const JDConsultRoom: React.FC = () => {
     }
   }, [appointmentId, client, isSignedIn]);
 
-  // useEffect(() => {
-  //   if (appointmentId !== paramId && paramId !== '' && currentPatient && currentPatient.id !== '') {
-  //     setAppointmentId(paramId);
-  //     setpatientId(params.patientId);
-  //     setdoctorId(currentPatient.id);
-
-  //   }
-  //   return () => {
-  //     console.log('in return...');
-  //     const cookieStr = `action=`;
-  //     document.cookie = cookieStr + ';path=/;';
-  //   };
-  // }, [paramId, appointmentId]);
-
   const saveCasesheetAction = (flag: boolean) => {
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
@@ -558,6 +565,7 @@ export const JDConsultRoom: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
+        console.log('in save case sheet action......');
         // if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
         //   console.log(_data!.data!.updateCaseSheet!.blobName);
         //   const url =
@@ -578,11 +586,9 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const endConsultAction = () => {
+    mutationRemoveConsult().then();
+    setIsDialogOpen(true);
     saveCasesheetAction(false);
-  };
-
-  const endConsultActionFinal = () => {
-    console.log('end consultation.......final...');
   };
 
   const createSessionAction = () => {
@@ -758,7 +764,7 @@ export const JDConsultRoom: React.FC = () => {
           </div>
         </CaseSheetContext.Provider>
       )}
-      <Modal
+      {/* <Modal
         open={isPopoverOpen}
         onClose={() => setIsPopoverOpen(false)}
         disableBackdropClick
@@ -812,13 +818,36 @@ export const JDConsultRoom: React.FC = () => {
             </Button>
           </div>
         </Paper>
-      </Modal>
+      </Modal> */}
 
       {isEnded && (
         <div className={classes.tabPdfBody}>
           <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
         </div>
       )}
+
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogContent>
+          <DialogContentText>Casesheet has been successfully submitted.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsDialogOpen(false);
+              window.location.href = clientRoutes.juniorDoctor();
+            }}
+            autoFocus
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

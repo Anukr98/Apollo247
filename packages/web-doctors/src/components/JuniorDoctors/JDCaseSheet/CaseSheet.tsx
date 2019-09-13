@@ -173,7 +173,7 @@ export const CaseSheet: React.FC = () => {
       </ExpansionPanel>
 
       {/* Patient History & Lifestyle Panel */}
-      <ExpansionPanel
+      {/* <ExpansionPanel
         expanded={expanded === 'lifestyle'}
         onChange={handlePanelExpansion('lifestyle')}
         className={classes.expandIcon}
@@ -184,7 +184,7 @@ export const CaseSheet: React.FC = () => {
         <ExpansionPanelDetails>
           <LifeStyle />
         </ExpansionPanelDetails>
-      </ExpansionPanel>
+      </ExpansionPanel> */}
 
       {/* Patient Health Vault Panel */}
       <ExpansionPanel
@@ -286,7 +286,7 @@ export const CaseSheet: React.FC = () => {
       <Divider className={classes.divider} />
       <Box boxShadow={5} borderRadius={10} className={classes.notesContainer}>
         <Typography component="h4" variant="h4" className={classes.notesHeader}>
-          Personal Notes
+          Notes
         </Typography>
         <Typography component="div" className={classes.textFieldWrapper}>
           <InputBase
