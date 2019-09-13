@@ -485,6 +485,8 @@ interface CallPopoverProps {
   createSessionAction: () => void;
   saveCasesheetAction: (onlySave: boolean) => void;
   endConsultAction: () => void;
+  startAppointmentClick: (startAppointment: boolean) => void;
+  startAppointment: boolean;
   appointmentId: string;
   appointmentDateTime: string;
   doctorId: string;
@@ -560,7 +562,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   // timer for audio/video call end
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
@@ -878,7 +879,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     intervalId && clearInterval(intervalId);
   };
   function handleClick(event: any) {
-    if (startAppointment) {
+    if (props.startAppointment) {
       setAnchorEl(event.currentTarget);
     }
   }
@@ -906,7 +907,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   useEffect(() => {
     if (props.isEnded) {
       onStopConsult();
-      setStartAppointment(!startAppointment);
+      props.startAppointmentClick(!props.startAppointment);
       setStartAppointmentButton(true);
     }
   }, [props.isEnded]);
@@ -1197,7 +1198,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     <div>
       <div className={classes.breadcrumbs}>
         <div>
-          <Prompt message="Are you sure to exit?" when={startAppointment}></Prompt>
+          <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           <Link to="/calendar">
             <div className={classes.backArrow}>
               <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
@@ -1207,7 +1208,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </div>
         CONSULT ROOM &nbsp;
         <span className={classes.timeLeft}>
-          {startAppointment
+          {props.startAppointment
             ? `| Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
                 seconds.toString().length < 2 ? '0' + seconds : seconds
               }`
@@ -1215,7 +1216,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </span>
         <div className={classes.consultButtonContainer}>
           <span>
-            {startAppointment ? (
+            {props.startAppointment ? (
               <span>
                 <Button
                   className={classes.backButton}
@@ -1265,9 +1266,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     appointmentInfo!.status !== STATUS.PENDING)
                 }
                 onClick={() => {
-                  !startAppointment ? onStartConsult() : onStopConsult();
-                  !startAppointment ? startInterval(900) : stopInterval();
-                  setStartAppointment(!startAppointment);
+                  !props.startAppointment ? onStartConsult() : onStopConsult();
+                  !props.startAppointment ? startInterval(900) : stopInterval();
+                  props.startAppointmentClick(!props.startAppointment);
                   props.createSessionAction();
                   setCaseSheetEdit(true);
                 }}
@@ -1275,7 +1276,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                   <path fill="#fff" d="M8 5v14l11-7z" />
                 </svg>
-                {startAppointment ? 'End Consult' : 'Start Consult'}
+                {props.startAppointment ? 'End Consult' : 'Start Consult'}
               </Button>
             )}
             <Button
@@ -1385,7 +1386,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   >
                     Transfer Consult
                   </li>
-                  {!startAppointment && appointmentInfo!.status === STATUS.PENDING && (
+                  {!props.startAppointment && appointmentInfo!.status === STATUS.PENDING && (
                     <li
                       onClick={() => {
                         handleCloseThreeDots();
