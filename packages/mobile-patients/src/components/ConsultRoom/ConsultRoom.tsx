@@ -182,7 +182,7 @@ const tabBarOptions: TabBarOptions[] = [
   },
   {
     id: 3,
-    title: 'TESTS & MEDICINES',
+    title: 'MEDICINES',
     image: <ShoppingCart style={{ marginTop: -4 }} />,
   },
   {
@@ -517,7 +517,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 } else if (i == 1) {
                   props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
-                  props.navigation.navigate('TESTS & MEDICINES');
+                  props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
                   props.navigation.navigate('MY ACCOUNT');
                 }
