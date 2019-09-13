@@ -27,9 +27,16 @@ export const convertCaseSheetToRxPdfData = async (
     JSON.stringify(caseSheet.medicinePrescription)
   ) as CaseSheetMedicinePrescription[];
 
-  let prescriptions;
+  type PrescriptionData = {
+    name: string;
+    ingredients: string[];
+    frequency: string;
+    instructions: string;
+  };
+
+  let prescriptions: PrescriptionData[] | [];
   if (caseSheet.medicinePrescription == null || caseSheet.medicinePrescription == '') {
-    prescriptions = [{ name: '', ingredients: [], frequency: '', instructions: '' }];
+    prescriptions = [];
   } else {
     prescriptions = caseSheetMedicinePrescription.map((csRx) => {
       const name = csRx.medicineName;
@@ -37,9 +44,11 @@ export const convertCaseSheetToRxPdfData = async (
       const timings = csRx.medicineTimings.map(_capitalize).join(', ');
       const frequency = `${csRx.medicineDosage} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
       const instructions = csRx.medicineInstructions;
-      return { name, ingredients, frequency, instructions };
+      return { name, ingredients, frequency, instructions } as PrescriptionData;
     });
   }
+
+  console.log('------------', prescriptions);
 
   const caseSheetOtherInstructions = JSON.parse(
     JSON.stringify(caseSheet.otherInstructions)
