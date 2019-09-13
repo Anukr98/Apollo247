@@ -463,6 +463,7 @@ export const GET_CASESHEET_DETAILS = gql`
           patientId
           parentId
           status
+          isFollowUp
         }
         consultType
         diagnosis {
@@ -951,6 +952,25 @@ export const CHECK_IF_RESCHDULE = gql`
       isFollowUp
       appointmentState
       rescheduleCount
+    }
+  }
+`;
+
+export const GET_APPOINTMENT_DATA = gql`
+  query getAppointmentData($appointmentId: String!) {
+    getAppointmentData(appointmentId: $appointmentId) {
+      appointmentsHistory {
+        id
+        doctorId
+        appointmentState
+        isFollowUp
+        doctorInfo {
+          id
+          firstName
+
+          lastName
+        }
+      }
     }
   }
 `;
