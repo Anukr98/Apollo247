@@ -223,7 +223,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           collapse={showsymptoms}
           onPress={() => setshowsymptoms(!showsymptoms)}
         >
-          <View style={styles.cardViewStyle}>
+          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.symptoms && caseSheetDetails!.symptoms == null ? (
               <View>
                 {caseSheetDetails!.symptoms!.map((item) => {
@@ -242,7 +242,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               </View>
             ) : (
               <View>
-                <Text style={styles.dataTextStyle}>No symptoms data</Text>
+                <Text style={styles.labelStyle}>No Symptoms</Text>
               </View>
             )}
           </View>
@@ -264,7 +264,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           collapse={showPrescription}
           onPress={() => setshowPrescription(!showPrescription)}
         >
-          <View style={styles.cardViewStyle}>
+          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.medicinePrescription &&
             caseSheetDetails!.medicinePrescription.length == 0 ? (
               <View>
@@ -333,7 +333,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               </View>
             ) : (
               <View>
-                <Text style={styles.dataTextStyle}>No Medicines</Text>
+                <Text style={styles.labelStyle}>No Medicines</Text>
               </View>
             )}
           </View>
@@ -361,7 +361,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               </View>
             ) : (
               <View>
-                <Text style={styles.dataTextStyle}>No diagnosis</Text>
+                <Text style={styles.labelStyle}>No diagnosis</Text>
               </View>
             )}
           </View>
@@ -397,7 +397,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               </View>
             ) : (
               <View>
-                <Text style={styles.dataTextStyle}>No advise</Text>
+                <Text style={styles.labelStyle}>No advice</Text>
               </View>
             )}
           </View>
@@ -416,8 +416,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           collapse={showPrescription}
           onPress={() => setshowPrescription(!showPrescription)}
         >
-          <View style={styles.cardViewStyle}>
-            {caseSheetDetails!.followUp ? (
+          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+            {caseSheetDetails && caseSheetDetails!.followUp ? (
               <View>
                 <View>
                   <View style={styles.labelViewStyle}>
@@ -471,7 +471,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               </View>
             ) : (
               <View>
-                <Text style={styles.dataTextStyle}>No followup</Text>
+                <Text style={styles.labelStyle}>No followup</Text>
               </View>
             )}
           </View>

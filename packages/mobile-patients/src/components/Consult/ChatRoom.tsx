@@ -990,6 +990,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onPress={() => {
                     console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
 
+                    let dirs = RNFetchBlob.fs.dirs;
+                    console.log('dirs', dirs);
+                    if (Platform.OS == 'ios') {
+                    }
+
                     console.log(
                       'pdf downloadDest',
                       rowData.transferInfo &&
@@ -1004,9 +1009,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         useDownloadManager: true,
                         notification: false,
                         mime: 'application/pdf',
-                        path:
-                          RNFetchBlob.fs.dirs.DownloadDir + '/' + rowData.transferInfo.pdfUrl &&
-                          rowData.transferInfo.pdfUrl.split('/').pop(),
+                        //path:  RNFetchBlob.fs.dirs.DownloadDir + rowData.transferInfo.pdfUrl &&
+                        //rowData.transferInfo.pdfUrl.split('/').pop(),
+                        path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
                         description: 'File downloaded by download manager.',
                       },
                     })
@@ -1018,7 +1023,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         // the temp file path
                         console.log('The file saved to res ', res);
                         console.log('The file saved to ', res.path());
-                        RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+
+                        // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                        // RNFetchBlob.ios.openDocument(res.path());
+                        Alert.alert('Download Complete');
+                        Platform.OS === 'ios'
+                          ? RNFetchBlob.ios.previewDocument(res.path())
+                          : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                       })
                       .catch((err) => {
                         console.log('error ', err);

@@ -1,21 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert, Text } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { AddFileIcon, FileBig, NoData } from '@aph/mobile-patients/src/components/ui/Icons';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  getPatientMedicalRecords,
-  getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
-} from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
-import {
-  GET_MEDICAL_RECORD,
-  DELETE_PATIENT_MEDICAL_RECORD,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { HealthMedicineCard } from '@aph/mobile-patients/src/components/HealthRecords/HealthMedicineCard';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AddFileIcon, NoData } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DELETE_PATIENT_MEDICAL_RECORD } from '@aph/mobile-patients/src/graphql/profiles';
+import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 import {
   deletePatientMedicalRecord,
   deletePatientMedicalRecordVariables,
@@ -36,68 +29,17 @@ const styles = StyleSheet.create({
 
 export interface MedicalRecordsProps extends NavigationScreenProps {
   onTabCount: (count: number) => void;
+  MedicalRecordData: any;
+  renderDeleteMedicalOrder: (id: string) => void;
 }
 
 export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
-  const [countTab, setCountTab] = useState<any>();
-  const [medicalRecords, setmedicalRecords] = useState<
-    (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[] | null | undefined
-  >([]);
-
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
-
-  const fetchData = useCallback(() => {
-    client
-      .query<getPatientMedicalRecords>({
-        query: GET_MEDICAL_RECORD,
-        variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-      })
-      .then(({ data }) => {
-        const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
-        console.log('getPatientMedicalRecords', data, records);
-        props.onTabCount(data.getPatientMedicalRecords!.medicalRecords!.length);
-        // setCountTab(data.getPatientMedicalRecords!.medicalRecords!.length);
-        if (records !== medicalRecords) {
-          setmedicalRecords(records);
-        }
-      })
-      .catch((error) => {
-        console.log('Error occured', { error });
-      });
-  }, [currentPatient, client, medicalRecords]);
-
+  console.log('MedicalRecordData', props.MedicalRecordData);
   useEffect(() => {
-    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      console.log('didFocus', payload);
-      //fetchData();
-    });
-  }, [props.navigation]);
-  // const client = useApolloClient();
-  //console.log('DataMedical', props.data.id);
-  const renderDeleteMedicalOrder = (MedicaId: string) => {
-    client
-      .mutate<deletePatientMedicalRecord, deletePatientMedicalRecordVariables>({
-        mutation: DELETE_PATIENT_MEDICAL_RECORD,
-        variables: { recordId: MedicaId },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        console.log('renderDeleteMedicalOrder', _data);
-        console.log('Before', { medicalRecords });
-        const newRecords = medicalRecords!.filter((record) => record!.id != MedicaId);
-        console.log('After', { newRecords });
-        setmedicalRecords(newRecords);
-      })
-      .catch((e) => {
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while render Delete MedicalOrder', errorMessage, error);
-        Alert.alert('Error', errorMessage);
-      });
-  };
+    props.onTabCount(props.MedicalRecordData.length);
+  }, [currentPatient, client]);
 
   const renderFilter = () => {
     return (
@@ -115,7 +57,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const renderCards = () => {
     return (
       <View>
-        {medicalRecords && medicalRecords.length == 0 ? (
+        {props.MedicalRecordData && props.MedicalRecordData.length == 0 ? (
           <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
             <View
               style={{
@@ -149,17 +91,33 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
           </View>
         ) : (
           <View>
-            {medicalRecords &&
-              medicalRecords.map((item) => {
+            {props.MedicalRecordData &&
+              props.MedicalRecordData.map((item: any) => {
+                //console.log('itemdata', item);
                 if (item)
                   return (
                     <HealthMedicineCard
                       data={item}
                       onClickCard={() => {
-                        props.navigation.navigate(AppRoutes.RecordDetails, { data: item });
+                        props.navigation.navigate(AppRoutes.RecordDetails, {
+                          data: item,
+                        });
                       }}
                       onPressDelete={() => {
-                        renderDeleteMedicalOrder(item.id);
+                        //  props.renderDeleteMedicalOrder(item.id);
+                        Alert.alert(
+                          'Delete Record',
+                          '',
+                          [
+                            {
+                              text: 'Cancel',
+                              onPress: () => console.log('Cancel Pressed'),
+                              style: 'cancel',
+                            },
+                            { text: 'OK', onPress: () => props.renderDeleteMedicalOrder(item.id) },
+                          ],
+                          { cancelable: false }
+                        );
                       }}
                     />
                   );

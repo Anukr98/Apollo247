@@ -4,16 +4,18 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { STATUS, CaseSheet } from 'consults-service/entities';
+import { STATUS, CaseSheet, REQUEST_ROLES } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
     DOCTOR
     PATIENT
+    JUNIOR
   }
 
   type AppointmentSession {
@@ -28,6 +30,11 @@ export const createAppointmentSessionTypeDefs = gql`
     patientId: ID!
     appointmentDateTime: DateTime!
     caseSheetId: String
+  }
+
+  type CreateJuniorAppointmentSession {
+    sessionId: String!
+    appointmentToken: String!
   }
 
   input CreateAppointmentSessionInput {
@@ -46,6 +53,9 @@ export const createAppointmentSessionTypeDefs = gql`
   }
 
   extend type Mutation {
+    createJuniorAppointmentSession(
+      createAppointmentSessionInput: CreateAppointmentSessionInput
+    ): CreateJuniorAppointmentSession!
     createAppointmentSession(
       createAppointmentSessionInput: CreateAppointmentSessionInput
     ): CreateAppointmentSession!
@@ -68,6 +78,11 @@ type CreateAppointmentSession = {
   patientId: string;
   appointmentDateTime: Date;
   caseSheetId: string;
+};
+
+type CreateJuniorAppointmentSession = {
+  sessionId: string;
+  appointmentToken: string;
 };
 
 type CreateAppointmentSessionInput = {
@@ -97,6 +112,70 @@ type EndAppointmentSessionInput = {
   status: STATUS;
 };
 
+const createJuniorAppointmentSession: Resolver<
+  null,
+  createAppointmentSessionInputArgs,
+  ConsultServiceContext,
+  CreateJuniorAppointmentSession
+> = async (parent, { createAppointmentSessionInput }, { consultsDb, doctorsDb }) => {
+  if (!process.env.OPENTOK_KEY && !process.env.OPENTOK_SECRET) {
+    throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
+  }
+  const opentok_key = process.env.OPENTOK_KEY ? process.env.OPENTOK_KEY : '';
+  const opentok_secret = process.env.OPENTOK_SECRET ? process.env.OPENTOK_SECRET : '';
+  const opentok = new openTok(opentok_key, opentok_secret);
+  let sessionId = '',
+    token = '';
+  if (createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR) {
+    throw new AphError(AphErrorMessages.INVALID_REQUEST_ROLE);
+  }
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
+  if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  if (apptDetails.status == STATUS.CANCELLED || apptDetails.status == STATUS.COMPLETED) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  }
+  const juniorApptSessionRepo = consultsDb.getCustomRepository(JuniorAppointmentsSessionRepository);
+  const apptSessionDets = await juniorApptSessionRepo.getJuniorAppointmentSession(
+    createAppointmentSessionInput.appointmentId
+  );
+
+  if (apptSessionDets) {
+    return {
+      sessionId: apptSessionDets.sessionId,
+      appointmentToken: apptSessionDets.juniorDoctorToken,
+    };
+  }
+  function getSessionToken() {
+    return new Promise((resolve, reject) => {
+      opentok.createSession({}, (error, session) => {
+        if (error) {
+          reject(error);
+        }
+        if (session) {
+          sessionId = session.sessionId;
+          const tokenOptions: TokenOptions = { role: 'moderator', data: '' };
+          token = opentok.generateToken(sessionId, tokenOptions);
+        }
+        resolve(token);
+      });
+    });
+  }
+  await getSessionToken();
+
+  const appointmentSessionAttrs = {
+    sessionId,
+    juniorDoctorToken: token,
+    appointment: apptDetails,
+    consultStartDateTime: new Date(),
+  };
+  await juniorApptSessionRepo.saveJuniorAppointmentSession(appointmentSessionAttrs);
+  return {
+    sessionId: sessionId,
+    appointmentToken: token,
+  };
+};
+
 const createAppointmentSession: Resolver<
   null,
   createAppointmentSessionInputArgs,
@@ -116,7 +195,9 @@ const createAppointmentSession: Resolver<
   let appointmentDateTime: Date = new Date();
   let caseSheetId = '';
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
-
+  if (createAppointmentSessionInput.requestRole != REQUEST_ROLES.DOCTOR) {
+    throw new AphError(AphErrorMessages.INVALID_REQUEST_ROLE);
+  }
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
@@ -271,5 +352,6 @@ export const createAppointmentSessionResolvers = {
     createAppointmentSession,
     updateAppointmentSession,
     endAppointmentSession,
+    createJuniorAppointmentSession,
   },
 };

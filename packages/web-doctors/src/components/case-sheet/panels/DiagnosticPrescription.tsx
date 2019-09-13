@@ -11,14 +11,7 @@ import Autosuggest from 'react-autosuggest';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SEARCH_DIAGNOSTIC } from 'graphql/profiles';
 import { SearchDiagnostic } from 'graphql/types/SearchDiagnostic';
-// import {
-//   GetJuniorDoctorCaseSheet,
-//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
-// } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import {
-  GetCaseSheet,
-  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
-} from 'graphql/types/GetCaseSheet';
+import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 interface OptionType {
@@ -231,7 +224,7 @@ export const DiagnosticPrescription: React.FC = () => {
         setSearchInput(value);
       })
       .catch((e) => {
-        console.log('Error occured while searching for Doctors', e);
+        console.log('Error occured while searching for tests', e);
       });
   };
   const getSuggestions = (value: string) => {
@@ -325,7 +318,7 @@ export const DiagnosticPrescription: React.FC = () => {
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.column}>
         <Typography component="h5" variant="h5">
-          Diagnostics
+          Tests
         </Typography>
         <Typography component="div" className={classes.listContainer}>
           {selectedValues !== null &&
@@ -351,7 +344,7 @@ export const DiagnosticPrescription: React.FC = () => {
             color="primary"
             onClick={() => showAddConditionHandler(true)}
           >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD DIAGNOSTICS
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
           </AphButton>
         )}
         {showAddCondition && (
@@ -370,7 +363,7 @@ export const DiagnosticPrescription: React.FC = () => {
             inputProps={{
               classes,
               id: 'react-autosuggest-simple',
-              placeholder: 'Search Diagnostics',
+              placeholder: 'Search Tests',
               value: state.single,
               onChange: handleChange('single'),
             }}

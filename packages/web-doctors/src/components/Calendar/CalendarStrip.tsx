@@ -116,7 +116,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& img': {
         margin: 'auto',
-        width: 24,
+        width: 30,
       },
     },
     moreIcon: {

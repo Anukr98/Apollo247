@@ -16,7 +16,11 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { UserIntro } from '@aph/mobile-patients/src/components/ui/UserIntro';
-import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PAST_CONSULTS_PRESCRIPTIONS,
+  GET_MEDICAL_RECORD,
+  DELETE_PATIENT_MEDICAL_RECORD,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientPastConsultsAndPrescriptions } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import strings from '@aph/mobile-patients/src/strings/strings.json';
@@ -24,10 +28,19 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { Button } from '../ui/Button';
+import {
+  getPatientMedicalRecords,
+  getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
+} from '../../graphql/types/getPatientMedicalRecords';
+import { g } from '../../helpers/helperFunctions';
+import {
+  deletePatientMedicalRecord,
+  deletePatientMedicalRecordVariables,
+} from '../../graphql/types/deletePatientMedicalRecord';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -61,9 +74,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [pastarrya, setPastarrya] = useState<[]>([]);
   const [arrayValues, setarrayValues] = useState<any>();
+  const [medicalRecords, setmedicalRecords] = useState<
+    (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[] | null | undefined
+  >([]);
   const client = useApolloClient();
 
   useEffect(() => {
+    //console.log("currentPatient && currentPatient.id ? currentPatient.id : ''", currentPatient!.id);
     setLoading(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
@@ -88,13 +105,21 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         const consultsAndMedOrders: { [key: string]: any } = {};
 
         const ok = consults.forEach((c) => {
-          consultsAndMedOrders[c!.appointmentDateTime] = {
-            ...consultsAndMedOrders[c!.appointmentDateTime],
+          consultsAndMedOrders[c!.bookingDate] = {
+            ...consultsAndMedOrders[c!.bookingDate],
             ...c,
           };
         });
         console.log(consults.length + medOrders.length, 'ok');
-        // setCountTab(consults.length + medOrders.length);
+
+        setTabs([
+          ...tabs.map((item) =>
+            item.title == tabs[0].title
+              ? { ...item, count: `${consults.length + medOrders.length}` }
+              : item
+          ),
+        ]);
+        setselectedTab(`${tabs[0].title} - ${consults.length + medOrders.length}`);
 
         medOrders.forEach((c) => {
           consultsAndMedOrders[c!.quoteDateTime] = {
@@ -106,47 +131,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         console.log({ consultsAndMedOrders });
         setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
         setLoading(false);
-        // setPastarrya(_data.data.getPatientPastConsultsAndPrescriptions!.consults);
-        // console.log('arraypas', pastarrya);
-        // const array: { [key: string]: Object[] } = {};
-        // if (
-        //   _data.data &&
-        //   _data.data.getPatientPastConsultsAndPrescriptions &&
-        //   _data.data.getPatientPastConsultsAndPrescriptions
-        // ) {
-        //   _data.data.getPatientPastConsultsAndPrescriptions.consults &&
-        //     _data.data.getPatientPastConsultsAndPrescriptions.consults.forEach((item) => {
-        //       if (item) array[moment(item.appointmentDateTime).format('YYYY-MM-DD')] = [];
-        //     });
-        //   _data.data.getPatientPastConsultsAndPrescriptions.medicineOrders &&
-        //     _data.data.getPatientPastConsultsAndPrescriptions.medicineOrders.forEach((item) => {
-        //       if (item) array[moment(item.quoteDateTime).format('YYYY-MM-DD')] = [];
-        //     });
-        //   _data.data.getPatientPastConsultsAndPrescriptions.consults &&
-        //     _data.data.getPatientPastConsultsAndPrescriptions.consults.forEach((item) => {
-        //       if (item)
-        //         array[moment(item.appointmentDateTime).format('YYYY-MM-DD')] = [
-        //           ...array[moment(item.appointmentDateTime).format('YYYY-MM-DD')],
-        //           item,
-        //         ];
-        //     });
-        //   _data.data.getPatientPastConsultsAndPrescriptions.medicineOrders &&
-        //     _data.data.getPatientPastConsultsAndPrescriptions.medicineOrders.forEach((item) => {
-        //       if (item)
-        //         array[moment(item.quoteDateTime).format('YYYY-MM-DD')] = [
-        //           ...array[moment(item.quoteDateTime).format('YYYY-MM-DD')],
-        //           item,
-        //         ];
-        //     });
-        // }
-        // console.log(array, 'arrayold');
-        // const values = Object.values(array);
-        // console.log(values, 'values');
-
-        // if (array !== arrayValues && values.length) setarrayValues(values[1]);
-        // console.log(arrayValues, 'setarrayValues');
-        // console.log(values, 'array');
-        // setLoading(false);
       })
       .catch((e) => {
         setLoading(false);
@@ -155,54 +139,68 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       });
   }, []);
 
-  // const { data, error } = useQuery<getPatientPastConsultsAndPrescriptions>(
-  //   GET_PAST_CONSULTS_PRESCRIPTIONS,
-  //   {
-  //     fetchPolicy: 'no-cache',
-  //     variables: {
-  //       consultsAndOrdersInput: {
-  //         patient: currentPatient && currentPatient.id ? currentPatient.id : '',
-  //       },
-  //     },
-  //   }
-  // );
-  // if (error) {
-  //   console.log('error', JSON.stringify(error));
-  // } else {
-  //   console.log('getPatientPastConsultsAndPrescriptions', data);
-  //   const array: { [key: string]: Object[] } = {};
-  //   if (
-  //     data &&
-  //     data.getPatientPastConsultsAndPrescriptions &&
-  //     data.getPatientPastConsultsAndPrescriptions
-  //   ) {
-  //     data.getPatientPastConsultsAndPrescriptions.consults &&
-  //       data.getPatientPastConsultsAndPrescriptions.consults.forEach((item) => {
-  //         if (item) array[moment(item.appointmentDateTime).format('YYYY-MM-DD')] = [];
-  //       });
-  //     data.getPatientPastConsultsAndPrescriptions.medicineOrders &&
-  //       data.getPatientPastConsultsAndPrescriptions.medicineOrders.forEach((item) => {
-  //         if (item) array[moment(item.quoteDateTime).format('YYYY-MM-DD')] = [];
-  //       });
-  //     data.getPatientPastConsultsAndPrescriptions.consults &&
-  //       data.getPatientPastConsultsAndPrescriptions.consults.forEach((item) => {
-  //         if (item)
-  //           array[moment(item.appointmentDateTime).format('YYYY-MM-DD')] = [
-  //             ...array[moment(item.appointmentDateTime).format('YYYY-MM-DD')],
-  //             item,
-  //           ];
-  //       });
-  //     data.getPatientPastConsultsAndPrescriptions.medicineOrders &&
-  //       data.getPatientPastConsultsAndPrescriptions.medicineOrders.forEach((item) => {
-  //         if (item)
-  //           array[moment(item.quoteDateTime).format('YYYY-MM-DD')] = [
-  //             ...array[moment(item.quoteDateTime).format('YYYY-MM-DD')],
-  //             item,
-  //           ];
-  //       });
-  //   }
-  //   console.log(array, 'array');
-  // }
+  const fetchData = () => {
+    client
+      .query<getPatientMedicalRecords>({
+        query: GET_MEDICAL_RECORD,
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
+        console.log('getPatientMedicalRecords', data, records);
+        setmedicalRecords(records);
+        setTabs([
+          ...tabs.map((item) =>
+            item.title == tabs[1].title
+              ? { ...item, count: `${data.getPatientMedicalRecords!.medicalRecords!.length}` }
+              : item
+          ),
+        ]);
+      })
+      .catch((error) => {
+        console.log('Error occured', { error });
+      });
+  };
+  useEffect(() => {
+    fetchData();
+  }, []);
+  useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      console.log('didFocus', payload);
+      console.log('api call back', payload);
+      fetchData();
+    });
+  }, [props.navigation, fetchData]);
+
+  const renderDeleteMedicalOrder = (MedicaId: string) => {
+    client
+      .mutate<deletePatientMedicalRecord, deletePatientMedicalRecordVariables>({
+        mutation: DELETE_PATIENT_MEDICAL_RECORD,
+        variables: { recordId: MedicaId },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        console.log('renderDeleteMedicalOrder', _data);
+        console.log('Before', medicalRecords);
+        const newRecords = medicalRecords!.filter((record: any) => record!.id != MedicaId);
+        console.log('After', { newRecords });
+        setmedicalRecords(newRecords);
+        setTabs([
+          ...tabs.map((item) =>
+            item.title == tabs[1].title ? { ...item, count: `${newRecords.length}` } : item
+          ),
+        ]);
+      })
+      .catch((e) => {
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while render Delete MedicalOrder', errorMessage, error);
+        Alert.alert('Error', errorMessage);
+      });
+  };
 
   const renderTopView = () => {
     return (
@@ -273,65 +271,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
-  // const renderTopView = () => {
-  //   return (
-  //     <View
-  //       style={{
-  //         height: 280,
-  //         // justifyContent: 'space-between',
-  //       }}
-  //     >
-  //       <View
-  //         style={{
-  //           position: 'absolute',
-  //           top: 0,
-  //           left: 0,
-  //           right: 0,
-  //         }}
-  //       >
-  //         <UserIntro
-  //           description={strings.health_records_home.description}
-  //           style={{
-  //             height: 236,
-  //           }}
-  //           <View
-  //         >
-  //             style={{
-  //               height: 83,
-  //               justifyContent: 'space-between',
-  //               flexDirection: 'row',
-  //               marginHorizontal: 20,
-  //             }}
-  //           >
-  //             <View style={{ marginTop: 20 }}>
-  //               <ApolloLogo />
-  //             </View>
-  //             <View style={{ flexDirection: 'row', marginTop: 16 }}>
-  //               <NotificationIcon />
-  //             </View>
-  //           </View>
-  //         </UserIntro>
-  //       </View>
-  //       <View>
-  //         <TabsComponent
-  //           style={{
-  //             height: 43,
-  //             marginTop: 236,
-  //             backgroundColor: theme.colors.CARD_BG,
-  //             ...theme.viewStyles.shadowStyle,
-  //           }}
-  //           textStyle={{
-  //             paddingTop: 12,
-  //           }}
-  //           data={tabs}
-  //           onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-  //           selectedTab={selectedTab}
-  //         />
-  //       </View>
-  //     </View>
-  //   );
-  // };
-
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
@@ -348,36 +287,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
-  // const consultionType = (id: string, filter: ConsultMode) => {
-  //   doctorsAvailability;
-  //   let filterType = false;
-  //   doctorsAvailability &&
-  //     doctorsAvailability.forEach((element) => {
-  //       if (
-  //         element &&
-  //         element.doctorId === id &&
-  //         element.availableModes &&
-  //         element.availableModes.includes(filter)
-  //       ) {
-  //         filterType = true;
-  //       }
-  //     });
-  //   return filterType;
-  // };
-
   const renderConsults = () => {
-    console.log('arrayValues', arrayValues);
-
-    // const arrayValuesFilter =
-    //   filterData[0].selectedOptions && filterData[0].selectedOptions.length
-    //     ? arrayValues.filter(
-    //         (item: any) => {
-    //           return consultionType(item.appointmentType);
-    //         }
-    //         // item && item.appointmentType && filterData[0].selectedOptions.split(' ') ===
-    //       )
-    //     : arrayValues;
-    // console.log(arrayValuesFilter, 'arrayValues', arrayValues);
     return (
       <View>
         {renderFilter()}
@@ -452,13 +362,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             <MedicalRecords
               navigation={props.navigation}
               onTabCount={(count) => {
-                console.log({ count });
+                // console.log({ count });
                 setTabs([
                   ...tabs.map((item) =>
                     item.title == tabs[1].title ? { ...item, count: `${count}` } : item
                   ),
                 ]);
               }}
+              MedicalRecordData={medicalRecords}
+              renderDeleteMedicalOrder={renderDeleteMedicalOrder}
             />
           )}
         </ScrollView>

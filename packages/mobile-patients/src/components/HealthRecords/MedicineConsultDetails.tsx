@@ -9,8 +9,9 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { Button } from '../ui/Button';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -85,6 +86,8 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   console.log(data, 'data');
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
   console.log(me, 'me');
+  const url = props.navigation.state.params ? props.navigation.state.params.PrescriptionUrl : {};
+  console.log(url, 'url');
   return (
     <View
       style={{
@@ -97,9 +100,9 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           leftIcon="backArrow"
           rightComponent={
             <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
+              {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
                 <ShareGreen />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <TouchableOpacity activeOpacity={1} onPress={() => {}}>
                 <Download />
               </TouchableOpacity>
@@ -107,10 +110,12 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
           }
           onPressLeftIcon={() => props.navigation.goBack()}
         />
+
         <View style={{ backgroundColor: '#f7f8f5' }}>
           <View style={{ marginLeft: 20, marginBottom: 8, marginTop: 17 }}>
             <MedicineRxIcon />
           </View>
+
           <View style={{ marginLeft: 20 }}>
             <Text
               style={{ ...theme.fonts.IBMPlexSansSemiBold(23), color: '#02475b', marginBottom: 4 }}
@@ -128,6 +133,31 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
               {me}
             </Text>
           </View>
+        </View>
+        {url == null ? null : (
+          <Image
+            style={{
+              width: 327,
+              height: 344,
+              marginLeft: 16,
+              marginRight: 16,
+              marginTop: 30,
+              alignSelf: 'center',
+            }}
+            source={{ uri: url }}
+          />
+        )}
+
+        <View
+          style={{
+            marginLeft: 20,
+            marginRight: 20,
+            flex: 1,
+            justifyContent: 'flex-end',
+            marginBottom: 36,
+          }}
+        >
+          <Button title="RE-ORDER MEDICINES" />
         </View>
       </SafeAreaView>
     </View>
