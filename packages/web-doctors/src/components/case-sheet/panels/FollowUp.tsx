@@ -294,7 +294,6 @@ export const FollowUp: React.FC = () => {
     followUpDate,
     setFollowUpDate,
   } = useContext(CaseSheetContext);
-  console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
   const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(!!followUp[0]);
   const [followUpDays, setFollowUpDays] = useState<number>(
     parseInt(followUpAfterInDays[0], 10) || 5
@@ -313,7 +312,7 @@ export const FollowUp: React.FC = () => {
   useEffect(() => {
     if (!shouldFollowUp) {
       handleDateChange(new Date());
-      //setFollowUpDays(5);
+      setFollowUpDays(5);
       setConsultType('');
     }
   }, [shouldFollowUp]);
@@ -336,8 +335,9 @@ export const FollowUp: React.FC = () => {
     followUpDate[0] = `${followUpDays === 9 ? selectedDate : addDays(new Date(), followUpDays)}`;
     setFollowUpDate(followUpDate);
   }, [consultType, shouldFollowUp, followUpDays, selectedDate]);
+  // console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
+  // console.log(followUpDays);
   console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
-  console.log(followUpDays);
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Typography component="div" className={classes.followUpContainer}>
@@ -369,34 +369,33 @@ export const FollowUp: React.FC = () => {
                 defaultValue={defaultValue}
                 onChange={debounce((e, value) => setFollowUpDays(value), 200)}
               />
-              {followUpDays === 9 ||
-                (followUpDate[0] && (
-                  <div className={classes.recommendedType}>
-                    <Typography component="h5" variant="h5">
-                      Follow Up On
-                    </Typography>
-                    <ThemeProvider theme={defaultMaterialTheme}>
-                      <span>
-                        <KeyboardDatePicker
-                          className={classes.KeyboardDatePicker}
-                          inputVariant="standard"
-                          disableToolbar
-                          autoOk
-                          placeholder="dd/mm/yyyy"
-                          variant="inline"
-                          format="dd/MM/yyyy"
-                          value={selectedDate}
-                          minDate={new Date()}
-                          onKeyPress={(e) => {
-                            if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
-                          }}
-                          // InputAdornmentProps={{ position: 'end' }}
-                          onChange={(date) => handleDateChange((date as unknown) as Date)}
-                        />
-                      </span>
-                    </ThemeProvider>
-                  </div>
-                ))}
+              {followUpDays === 9 && (
+                <div className={classes.recommendedType}>
+                  <Typography component="h5" variant="h5">
+                    Follow Up On
+                  </Typography>
+                  <ThemeProvider theme={defaultMaterialTheme}>
+                    <span>
+                      <KeyboardDatePicker
+                        className={classes.KeyboardDatePicker}
+                        inputVariant="standard"
+                        disableToolbar
+                        autoOk
+                        placeholder="dd/mm/yyyy"
+                        variant="inline"
+                        format="dd/MM/yyyy"
+                        value={selectedDate}
+                        minDate={new Date()}
+                        onKeyPress={(e) => {
+                          if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+                        }}
+                        // InputAdornmentProps={{ position: 'end' }}
+                        onChange={(date) => handleDateChange((date as unknown) as Date)}
+                      />
+                    </span>
+                  </ThemeProvider>
+                </div>
+              )}
             </Typography>
             <Typography component="div" className={classes.recommendedType}>
               <Typography component="h5" variant="h5">
