@@ -66,6 +66,7 @@ export enum MEDICINE_TO_BE_TAKEN {
 
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
+  JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
 }
 
