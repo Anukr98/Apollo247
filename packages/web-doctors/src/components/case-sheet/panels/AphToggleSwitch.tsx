@@ -12,8 +12,8 @@ const useStyles = makeStyles((theme: Theme) => {
       right: '20px !important',
     },
     track: {
-      backgroundColor: '#00b38e !important',
-      opacity: 0.3,
+      backgroundColor: '#ccc !important',
+      opacity: 0.6,
       height: 20,
       marginRight: 4,
       borderRadius: 15,
@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
     thumb: {
       height: 20,
       width: 20,
-      border: 'solid 1px #00b38e',
+      border: 'solid 1px #ccc',
       boxShadow: 'none',
       backgroundColor: '#f7f7f7',
       '&:hover': {
@@ -40,6 +40,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '&$checked + $track': {
         opacity: 1,
+        backgroundColor: '#00b38e !important',
+      },
+      '&$checked + $thumb': {
+        border: 'solid 1px #00b38e',
       },
     },
     checked: {

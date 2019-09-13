@@ -93,10 +93,7 @@ export const convertCaseSheetToRxPdfData = async (
   return { prescriptions, generalAdvice, diagnoses, doctorInfo };
 };
 
-let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
-if (process.env.NODE_ENV != 'local') {
-  assetsDir = path.resolve('/home/devdeploy/apollo-hospitals/packages/api/src/assets');
-}
+const assetsDir = <string>process.env.ASSETS_DIRECTORY;
 
 const loadAsset = (file: string) => path.resolve(assetsDir, file);
 

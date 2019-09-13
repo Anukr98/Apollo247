@@ -47,6 +47,17 @@ import { parseISO, format } from 'date-fns';
 import { Gender } from 'graphql/types/globalTypes';
 import differenceInYears from 'date-fns/differenceInYears';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
+import { useMutation } from 'react-apollo-hooks';
+import {
+  RemoveFromConsultQueue,
+  RemoveFromConsultQueueVariables,
+} from 'graphql/types/RemoveFromConsultQueue';
+import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -297,10 +308,20 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const JDConsultRoom: React.FC = () => {
   const classes = useStyles();
-  const { patientId, appointmentId } = useParams<JDConsultRoomParams>();
+  const { patientId, appointmentId, queueId } = useParams<JDConsultRoomParams>();
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const { currentPatient: currentDoctor, isSignedIn } = useAuth();
   const doctorId = currentDoctor!.id;
+
+  const mutationRemoveConsult = useMutation<
+    RemoveFromConsultQueue,
+    RemoveFromConsultQueueVariables
+  >(REMOVE_FROM_CONSULT_QUEUE, {
+    variables: {
+      id: parseInt(queueId, 10),
+    },
+  });
 
   const doctorFirstName =
     currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
@@ -402,8 +423,8 @@ export const JDConsultRoom: React.FC = () => {
   const patientAge = differenceInYears(new Date(), parseISO(patientDob));
   const patientGender =
     casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
-      ? casesheetInfo.getCaseSheet.patientDetails.gender
-      : Gender.OTHER;
+      ? _startCase(_toLower(casesheetInfo.getCaseSheet.patientDetails.gender))
+      : '';
 
   const patientAppointmentId =
     (casesheetInfo &&
@@ -519,20 +540,6 @@ export const JDConsultRoom: React.FC = () => {
     }
   }, [appointmentId, client, isSignedIn]);
 
-  // useEffect(() => {
-  //   if (appointmentId !== paramId && paramId !== '' && currentPatient && currentPatient.id !== '') {
-  //     setAppointmentId(paramId);
-  //     setpatientId(params.patientId);
-  //     setdoctorId(currentPatient.id);
-
-  //   }
-  //   return () => {
-  //     console.log('in return...');
-  //     const cookieStr = `action=`;
-  //     document.cookie = cookieStr + ';path=/;';
-  //   };
-  // }, [paramId, appointmentId]);
-
   const saveCasesheetAction = (flag: boolean) => {
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
@@ -558,16 +565,17 @@ export const JDConsultRoom: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
-          console.log(_data!.data!.updateCaseSheet!.blobName);
-          const url =
-            'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
-            _data!.data!.updateCaseSheet!.blobName;
-          setPrescriptionPdf(url);
-        }
-        if (!flag) {
-          setIsPopoverOpen(true);
-        }
+        console.log('in save case sheet action......');
+        // if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
+        //   console.log(_data!.data!.updateCaseSheet!.blobName);
+        //   const url =
+        //     'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
+        //     _data!.data!.updateCaseSheet!.blobName;
+        //   setPrescriptionPdf(url);
+        // }
+        // if (!flag) {
+        //   setIsPopoverOpen(true);
+        // }
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -578,63 +586,9 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const endConsultAction = () => {
+    mutationRemoveConsult().then();
+    setIsDialogOpen(true);
     saveCasesheetAction(false);
-    // client
-    //   .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-    //     mutation: UPDATE_CASESHEET,
-    //     variables: {
-    //       UpdateCaseSheetInput: {
-    //         symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-    //         notes,
-    //         diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
-    //         diagnosticPrescription:
-    //           diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
-    //         followUp: followUp[0],
-    //         followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
-    //         followUpAfterInDays:
-    //           followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
-    //         otherInstructions:
-    //           otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
-    //         medicinePrescription:
-    //           medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
-    //         id: caseSheetId,
-    //       },
-    //     },
-    //     fetchPolicy: 'no-cache',
-    //   })
-    //   .then((_data) => {
-    //     console.log('_data', _data);
-    //     endConsultActionFinal();
-    //   })
-    //   .catch((e) => {
-    //     console.log('Error occured while update casesheet', e);
-    //   });
-  };
-
-  const endConsultActionFinal = () => {
-    client
-      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
-        mutation: END_APPOINTMENT_SESSION,
-        variables: {
-          endAppointmentSessionInput: {
-            appointmentId: appointmentId,
-            status: STATUS.COMPLETED,
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        // setIsPopoverOpen(true);
-        setIsEnded(true);
-        console.log('_data', _data);
-      })
-      .catch((e) => {
-        console.log('Error occured while End casesheet', e);
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while End casesheet', errorMessage, error);
-        alert(errorMessage);
-      });
   };
 
   const createSessionAction = () => {
@@ -810,7 +764,7 @@ export const JDConsultRoom: React.FC = () => {
           </div>
         </CaseSheetContext.Provider>
       )}
-      <Modal
+      {/* <Modal
         open={isPopoverOpen}
         onClose={() => setIsPopoverOpen(false)}
         disableBackdropClick
@@ -829,7 +783,7 @@ export const JDConsultRoom: React.FC = () => {
           <div className={classes.tabBody}>
             {}
             <h3>
-              You're ending your consult with{' '}
+              You're ending your consult with
               {casesheetInfo &&
                 casesheetInfo !== null &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
@@ -864,13 +818,36 @@ export const JDConsultRoom: React.FC = () => {
             </Button>
           </div>
         </Paper>
-      </Modal>
+      </Modal> */}
 
       {isEnded && (
         <div className={classes.tabPdfBody}>
           <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
         </div>
       )}
+
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogContent>
+          <DialogContentText>Casesheet has been successfully submitted.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsDialogOpen(false);
+              window.location.href = clientRoutes.juniorDoctor();
+            }}
+            autoFocus
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

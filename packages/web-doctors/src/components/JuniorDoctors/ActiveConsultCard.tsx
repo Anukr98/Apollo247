@@ -118,15 +118,19 @@ export interface ActiveConsultCardProps {
 export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
   const classes = useStyles();
   const { id, patient, appointment } = props;
+  const appointmentDateIST = format(
+    new Date(appointment.appointmentDateTime).getTime(),
+    'dd-MM-yyyy hh:mm a'
+  );
 
   return (
     <div className={classes.root}>
       <div className={`${classes.title} ${classes.upnextTitle}`}>
-        APPT DATE: {format(appointment.appointmentDateTime, 'Pp')}
+        APPT DATE: {appointmentDateIST}
       </div>
       <div className={`${classes.cardGroup} ${classes.upNextCardGroup}`}>
         {patient.queueNumber > 1 && <div className={classes.queueText}>Queued</div>}
-        <Mutation<RemoveFromConsultQueue, RemoveFromConsultQueueVariables>
+        {/* <Mutation<RemoveFromConsultQueue, RemoveFromConsultQueueVariables>
           mutation={REMOVE_FROM_CONSULT_QUEUE}
         >
           {(removeFromConsultQueue, { loading }) => (
@@ -144,7 +148,7 @@ export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
               {loading && <CircularProgress size={20} />} REMOVE
             </Button>
           )}
-        </Mutation>
+        </Mutation> */}
         <div className={classes.cardImg}>
           {patient.photoUrl ? (
             <Avatar src={patient.photoUrl} className={classes.avatar} />

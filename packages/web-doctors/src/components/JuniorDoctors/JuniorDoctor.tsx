@@ -108,6 +108,9 @@ export const JuniorDoctor: React.FC = (props) => {
   );
 
   let content: [React.ReactNode, React.ReactNode] = [null, null];
+  let isActiveConsultsAvailable,
+    isPastConsultsAvailable = false;
+
   if (error) content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
   if (loading && _isEmpty(data)) content = [<CircularProgress />, <CircularProgress />];
   if (data && data.getConsultQueue) {
@@ -126,21 +129,25 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {activeConsults.map(({ id, patient, appointment }, index) => (
-              <Link
-                key={id}
-                to={clientRoutes.JDConsultRoom({
-                  appointmentId: appointment.id,
-                  patientId: patient.id,
-                })}
-              >
-                <ActiveConsultCard
-                  id={id}
-                  patient={{ ...patient, queueNumber: index + 1 }}
-                  appointment={appointment}
-                />
-              </Link>
-            ))}
+            {activeConsults.map(({ id, patient, appointment }, index) => {
+              isActiveConsultsAvailable = true;
+              return (
+                <Link
+                  key={id}
+                  to={clientRoutes.JDConsultRoom({
+                    appointmentId: appointment.id,
+                    patientId: patient.id,
+                    queueId: String(id),
+                  })}
+                >
+                  <ActiveConsultCard
+                    id={id}
+                    patient={{ ...patient, queueNumber: index + 1 }}
+                    appointment={appointment}
+                  />
+                </Link>
+              );
+            })}
           </div>
         </div>
       </Scrollbars>,
@@ -148,9 +155,12 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {pastConsults.map(({ id, patient, appointment }) => (
-              <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
-            ))}
+            {pastConsults.map(({ id, patient, appointment }) => {
+              isPastConsultsAvailable = true;
+              return (
+                <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
+              );
+            })}
           </div>
         </div>
       </Scrollbars>,
@@ -174,7 +184,13 @@ export const JuniorDoctor: React.FC = (props) => {
                 <div className={classes.blockHeader}>
                   {loading && data && <CircularProgress size={20} />} Active Patients
                 </div>
-                <div className={classes.blockBody}>{content[0]}</div>
+                <div className={classes.blockBody}>
+                  {isActiveConsultsAvailable ? (
+                    content[0]
+                  ) : (
+                    <h4>No Appointments are available....</h4>
+                  )}
+                </div>
               </div>
             </div>
             <div className={classes.rightSection}>
@@ -182,7 +198,13 @@ export const JuniorDoctor: React.FC = (props) => {
                 <div className={classes.blockHeader}>
                   {loading && data && <CircularProgress size={20} />} Past Consults
                 </div>
-                <div className={classes.blockBody}>{content[1]}</div>
+                <div className={classes.blockBody}>
+                  {isPastConsultsAvailable ? (
+                    content[1]
+                  ) : (
+                    <h4>No Past Consults are available....</h4>
+                  )}
+                </div>
               </div>
             </div>
           </div>
