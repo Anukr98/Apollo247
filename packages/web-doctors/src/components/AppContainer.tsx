@@ -75,6 +75,7 @@ const App: React.FC = () => {
         path={clientRoutes.JDConsultRoom({
           appointmentId: ':appointmentId',
           patientId: ':patientId',
+          queueId: ':queueId',
         })}
         component={JDConsultRoom}
       />
