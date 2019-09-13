@@ -19,6 +19,7 @@ import {
   Facility,
   Packages,
   StarTeam,
+  BlockedCalendarItem,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -53,6 +54,7 @@ export const connect = async () => {
         DoctorBankAccounts,
         Packages,
         DoctorDeviceTokens,
+        BlockedCalendarItem,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
