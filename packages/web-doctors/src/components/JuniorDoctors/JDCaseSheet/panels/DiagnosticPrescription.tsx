@@ -325,7 +325,7 @@ export const DiagnosticPrescription: React.FC = () => {
     <Typography component="div" className={classes.contentContainer}>
       <Typography component="div" className={classes.column}>
         <Typography component="h5" variant="h5">
-          Diagnostics
+          Tests
         </Typography>
         <Typography component="div" className={classes.listContainer}>
           {selectedValues !== null &&
