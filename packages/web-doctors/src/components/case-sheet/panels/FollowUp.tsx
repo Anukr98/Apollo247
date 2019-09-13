@@ -294,30 +294,35 @@ export const FollowUp: React.FC = () => {
     followUpDate,
     setFollowUpDate,
   } = useContext(CaseSheetContext);
+  console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
   const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(!!followUp[0]);
   const [followUpDays, setFollowUpDays] = useState<number>(
     parseInt(followUpAfterInDays[0], 10) || 5
   );
-  const [defaultValue, setDefaultValue] = useState(followUpDate ? 9 : 5);
+  const [defaultValue, setDefaultValue] = useState(
+    parseInt(followUpAfterInDays[0], 10) ||
+      (followUpDate[0] !== null && followUpDate[0] !== '' ? 9 : 5)
+  );
+  //const [defaultValue, setDefaultValue] = useState(followUpDate ? 9 : 5);
   const [consultType, setConsultType] = useState<string>(consultTypeData[0]);
   const [selectedDate, handleDateChange] = useState<Date>(
-    followUpDate[0] ? new Date(followUpDate[0]) : new Date()
+    followUp[0] && followUpDate[0] !== '' && followUpDate[0] !== null
+      ? new Date(followUpDate[0])
+      : new Date()
   );
-
-  console.log(parseInt(followUpAfterInDays[0], 10) || 5);
   useEffect(() => {
     if (!shouldFollowUp) {
       handleDateChange(new Date());
-      setFollowUpDays(5);
+      //setFollowUpDays(5);
       setConsultType('');
     }
   }, [shouldFollowUp]);
-  useEffect(() => {
-    if (followUpDate) {
-      setFollowUpDays(9);
-      setDefaultValue(9);
-    }
-  }, [setFollowUpDays, setDefaultValue, followUpDate, defaultValue]);
+  // useEffect(() => {
+  //   if (followUpDate) {
+  //     setFollowUpDays(9);
+  //     setDefaultValue(9);
+  //   }
+  // }, [setFollowUpDays, setDefaultValue, followUpDate, defaultValue]);
   useEffect(() => {
     consultTypeData[0] = consultType;
     setConsultTypeData(consultTypeData);
@@ -331,7 +336,8 @@ export const FollowUp: React.FC = () => {
     followUpDate[0] = `${followUpDays === 9 ? selectedDate : addDays(new Date(), followUpDays)}`;
     setFollowUpDate(followUpDate);
   }, [consultType, shouldFollowUp, followUpDays, selectedDate]);
-
+  console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
+  console.log(followUpDays);
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Typography component="div" className={classes.followUpContainer}>
@@ -363,33 +369,34 @@ export const FollowUp: React.FC = () => {
                 defaultValue={defaultValue}
                 onChange={debounce((e, value) => setFollowUpDays(value), 200)}
               />
-              {followUpDays === 9 && (
-                <div className={classes.recommendedType}>
-                  <Typography component="h5" variant="h5">
-                    Follow Up On
-                  </Typography>
-                  <ThemeProvider theme={defaultMaterialTheme}>
-                    <span>
-                      <KeyboardDatePicker
-                        className={classes.KeyboardDatePicker}
-                        inputVariant="standard"
-                        disableToolbar
-                        autoOk
-                        placeholder="dd/mm/yyyy"
-                        variant="inline"
-                        format="dd/MM/yyyy"
-                        value={selectedDate}
-                        minDate={new Date()}
-                        onKeyPress={(e) => {
-                          if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
-                        }}
-                        // InputAdornmentProps={{ position: 'end' }}
-                        onChange={(date) => handleDateChange((date as unknown) as Date)}
-                      />
-                    </span>
-                  </ThemeProvider>
-                </div>
-              )}
+              {followUpDays === 9 ||
+                (followUpDate[0] && (
+                  <div className={classes.recommendedType}>
+                    <Typography component="h5" variant="h5">
+                      Follow Up On
+                    </Typography>
+                    <ThemeProvider theme={defaultMaterialTheme}>
+                      <span>
+                        <KeyboardDatePicker
+                          className={classes.KeyboardDatePicker}
+                          inputVariant="standard"
+                          disableToolbar
+                          autoOk
+                          placeholder="dd/mm/yyyy"
+                          variant="inline"
+                          format="dd/MM/yyyy"
+                          value={selectedDate}
+                          minDate={new Date()}
+                          onKeyPress={(e) => {
+                            if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
+                          }}
+                          // InputAdornmentProps={{ position: 'end' }}
+                          onChange={(date) => handleDateChange((date as unknown) as Date)}
+                        />
+                      </span>
+                    </ThemeProvider>
+                  </div>
+                ))}
             </Typography>
             <Typography component="div" className={classes.recommendedType}>
               <Typography component="h5" variant="h5">
@@ -411,7 +418,7 @@ export const FollowUp: React.FC = () => {
                       <g fill="none" fill-rule="evenodd">
                         <path
                           fill="#00B38E"
-                          fill-rule="nonzero"
+                          fillRule="nonzero"
                           d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l2.29 2.29c.63.63 1.71.18 1.71-.71V8.91c0-.89-1.08-1.34-1.71-.71L17 10.5z"
                         />
                       </g>
