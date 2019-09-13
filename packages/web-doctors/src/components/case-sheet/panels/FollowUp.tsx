@@ -296,18 +296,19 @@ export const FollowUp: React.FC = () => {
   } = useContext(CaseSheetContext);
   const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(!!followUp[0]);
   const [followUpDays, setFollowUpDays] = useState<number>(
-    parseInt(followUpAfterInDays[0], 10) || 2
+    parseInt(followUpAfterInDays[0], 10) || 5
   );
-  const [defaultValue, setDefaultValue] = useState(followUpDate ? 9 : 2);
+  const [defaultValue, setDefaultValue] = useState(followUpDate ? 9 : 5);
   const [consultType, setConsultType] = useState<string>(consultTypeData[0]);
   const [selectedDate, handleDateChange] = useState<Date>(
     followUpDate[0] ? new Date(followUpDate[0]) : new Date()
   );
 
+  console.log(parseInt(followUpAfterInDays[0], 10) || 5);
   useEffect(() => {
     if (!shouldFollowUp) {
       handleDateChange(new Date());
-      setFollowUpDays(2);
+      setFollowUpDays(5);
       setConsultType('');
     }
   }, [shouldFollowUp]);

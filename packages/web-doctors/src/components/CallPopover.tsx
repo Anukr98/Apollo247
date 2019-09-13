@@ -995,6 +995,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
     let folloupDateTime = '';
     if (
+      followUp[0] &&
       followUpDate &&
       followUpDate.length > 0 &&
       followUpDate[0] !== null &&
@@ -1015,7 +1016,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       doctorInfo: currentPatient,
       pdfUrl: props.prescriptionPdf,
     };
-    if (folloupDateTime !== '') {
+    if (followUp[0] && folloupDateTime !== '') {
       setTimeout(() => {
         pubnub.publish(
           {
