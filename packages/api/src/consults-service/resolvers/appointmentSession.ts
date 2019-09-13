@@ -4,7 +4,7 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { STATUS, CaseSheet } from 'consults-service/entities';
+import { STATUS, CaseSheet, REQUEST_ROLES } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
@@ -126,11 +126,25 @@ const createJuniorAppointmentSession: Resolver<
   const opentok = new openTok(opentok_key, opentok_secret);
   let sessionId = '',
     token = '';
+  if (createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR) {
+    throw new AphError(AphErrorMessages.INVALID_REQUEST_ROLE);
+  }
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   if (apptDetails.status == STATUS.CANCELLED || apptDetails.status == STATUS.COMPLETED) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  }
+  const juniorApptSessionRepo = consultsDb.getCustomRepository(JuniorAppointmentsSessionRepository);
+  const apptSessionDets = await juniorApptSessionRepo.getJuniorAppointmentSession(
+    createAppointmentSessionInput.appointmentId
+  );
+
+  if (apptSessionDets) {
+    return {
+      sessionId: apptSessionDets.sessionId,
+      appointmentToken: apptSessionDets.juniorDoctorToken,
+    };
   }
   function getSessionToken() {
     return new Promise((resolve, reject) => {
@@ -148,14 +162,14 @@ const createJuniorAppointmentSession: Resolver<
     });
   }
   await getSessionToken();
-  const repo = consultsDb.getCustomRepository(JuniorAppointmentsSessionRepository);
+
   const appointmentSessionAttrs = {
     sessionId,
     juniorDoctorToken: token,
     appointment: apptDetails,
     consultStartDateTime: new Date(),
   };
-  await repo.saveJuniorAppointmentSession(appointmentSessionAttrs);
+  await juniorApptSessionRepo.saveJuniorAppointmentSession(appointmentSessionAttrs);
   return {
     sessionId: sessionId,
     appointmentToken: token,
@@ -181,7 +195,9 @@ const createAppointmentSession: Resolver<
   let appointmentDateTime: Date = new Date();
   let caseSheetId = '';
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
-
+  if (createAppointmentSessionInput.requestRole != REQUEST_ROLES.DOCTOR) {
+    throw new AphError(AphErrorMessages.INVALID_REQUEST_ROLE);
+  }
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
