@@ -229,6 +229,7 @@ export const ConsultTabs: React.FC = () => {
   const [patientId, setpatientId] = useState<string>(params.patientId);
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
+  const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -503,6 +504,11 @@ export const ConsultTabs: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
+
+  const startAppointmentClick = (startAppointment: boolean) => {
+    setStartAppointment(startAppointment);
+  }
+
   return (
     <div className={classes.consultRoom}>
       <div className={classes.headerSticky}>
@@ -558,6 +564,8 @@ export const ConsultTabs: React.FC = () => {
                 prescriptionPdf={prescriptionPdf}
                 sessionId={sessionId}
                 token={token}
+                startAppointment={startAppointment}
+                startAppointmentClick={startAppointmentClick}
               />
               <div>
                 {/* <Document file="https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/1132ed6b-6505-495a-a4b0-43a75af23ee0.pdf"></Document> */}
@@ -586,7 +594,7 @@ export const ConsultTabs: React.FC = () => {
                   </div>
                   <TabContainer>
                     <div className={tabValue !== 0 ? classes.none : classes.block}>
-                      {casesheetInfo ? <CaseSheet /> : ''}
+                      {casesheetInfo ? <CaseSheet startAppointment={startAppointment}/> : ''}
                     </div>
                   </TabContainer>
                   <TabContainer>
