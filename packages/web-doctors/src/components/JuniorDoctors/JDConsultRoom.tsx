@@ -46,6 +46,7 @@ import isNull from 'lodash/isNull';
 import { parseISO, format } from 'date-fns';
 import { Gender } from 'graphql/types/globalTypes';
 import differenceInYears from 'date-fns/differenceInYears';
+import { JDConsultRoomParams } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -294,62 +295,45 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type Params = { id: string; patientId: string };
-const storageClient = new AphStorageClient(
-  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
-  process.env.AZURE_STORAGE_CONTAINER_NAME
-);
-
 export const JDConsultRoom: React.FC = () => {
   const classes = useStyles();
-  const params = useParams<Params>();
-  const paramId = params.id;
+  const { patientId, appointmentId } = useParams<JDConsultRoomParams>();
 
-  const { currentPatient, isSignedIn } = useAuth();
+  const { currentPatient: currentDoctor, isSignedIn } = useAuth();
+  const doctorId = currentDoctor!.id;
 
   const doctorFirstName =
-    currentPatient && currentPatient.firstName
-      ? _startCase(_toLower(currentPatient.firstName))
-      : '';
+    currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
   const doctorLastName =
-    currentPatient && currentPatient.lastName ? _startCase(_toLower(currentPatient.lastName)) : '';
+    currentDoctor && currentDoctor.lastName ? _startCase(_toLower(currentDoctor.lastName)) : '';
   const doctorMobileNumber =
-    currentPatient && currentPatient.mobileNumber
-      ? _startCase(_toLower(currentPatient.mobileNumber))
+    currentDoctor && currentDoctor.mobileNumber
+      ? _startCase(_toLower(currentDoctor.mobileNumber))
       : '';
   const doctorSalutation =
-    currentPatient && currentPatient.salutation
-      ? _startCase(_toLower(currentPatient.salutation))
-      : '';
+    currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
   const doctorSpecialty =
-    currentPatient && currentPatient.specialty && currentPatient.specialty.name
-      ? _startCase(_toLower(currentPatient.specialty.name))
+    currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
+      ? _startCase(_toLower(currentDoctor.specialty.name))
       : '';
   const doctorPhotoUrl =
-    currentPatient && currentPatient.photoUrl ? _startCase(_toLower(currentPatient.photoUrl)) : '';
+    currentDoctor && currentDoctor.photoUrl ? _startCase(_toLower(currentDoctor.photoUrl)) : '';
 
   //     setAppointmentId(paramId);
   //     setpatientId(params.patientId);
   //     setdoctorId(currentPatient.id);
 
-  const [tabValue, setTabValue] = useState<number>(0);
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
-  const [appointmentId, setAppointmentId] = useState<string>(paramId);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
-  const [doctorId, setdoctorId] = useState<string>(currentPatient ? currentPatient.id : '');
-  const [patientId, setpatientId] = useState<string>(params.patientId);
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const TabContainer: React.FC = (props) => {
-    return <Typography component="div">{props.children}</Typography>;
-  };
   const client = useApolloClient();
 
   /* case sheet data*/
@@ -376,7 +360,6 @@ export const JDConsultRoom: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
-  const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   /* case sheet data*/
 
@@ -386,8 +369,7 @@ export const JDConsultRoom: React.FC = () => {
     customNotes = notes; // this will be used in saving case sheet.
   };
 
-  let genderString,
-    appointmentDateIST = '';
+  let appointmentDateIST = '';
 
   // retrieve patient details
   const patientFirstName =
@@ -422,10 +404,6 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
       ? casesheetInfo.getCaseSheet.patientDetails.gender
       : Gender.OTHER;
-
-  if (Gender.FEMALE === patientGender) genderString = 'F';
-  if (Gender.MALE === patientGender) genderString = 'M';
-  if (Gender.OTHER === patientGender) genderString = 'O';
 
   const patientAppointmentId =
     (casesheetInfo &&
@@ -539,7 +517,7 @@ export const JDConsultRoom: React.FC = () => {
         document.cookie = cookieStr + ';path=/;';
       };
     }
-  }, []);
+  }, [appointmentId, client, isSignedIn]);
 
   // useEffect(() => {
   //   if (appointmentId !== paramId && paramId !== '' && currentPatient && currentPatient.id !== '') {
@@ -647,7 +625,6 @@ export const JDConsultRoom: React.FC = () => {
       })
       .then((_data) => {
         // setIsPopoverOpen(true);
-        setIsPdfPopoverOpen(true);
         setIsEnded(true);
         console.log('_data', _data);
       })
@@ -666,7 +643,7 @@ export const JDConsultRoom: React.FC = () => {
         mutation: CREATE_APPOINTMENT_SESSION,
         variables: {
           createAppointmentSessionInput: {
-            appointmentId: paramId,
+            appointmentId,
             requestRole: REQUEST_ROLES.DOCTOR,
           },
         },
@@ -821,7 +798,7 @@ export const JDConsultRoom: React.FC = () => {
                         startConsult={startConsult}
                         sessionId={sessionId}
                         token={token}
-                        appointmentId={paramId}
+                        appointmentId={appointmentId}
                         doctorId={doctorId}
                         patientId={patientId}
                       />

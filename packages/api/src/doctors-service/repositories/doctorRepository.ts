@@ -83,6 +83,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .select('doctor.id', 'typeId')
       .addSelect("doctor.firstName || ' ' || doctor.lastName", 'name')
       .addSelect('doctor.photoUrl', 'image')
+      .addSelect('doctor.doctorType', 'doctorType')
       .where('doctor.id IN (:...doctorIds)', { doctorIds })
       .getRawMany();
   }
