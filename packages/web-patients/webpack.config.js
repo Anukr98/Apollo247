@@ -1,10 +1,11 @@
 const path = require('path');
 const process = require('process');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const DotenvWebpack = require('dotenv-webpack');
 const webpack = require('webpack');
-const dotenv = require('dotenv');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CircularDependencyPlugin = require('circular-dependency-plugin');
+const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+const DotenvWebpack = require('dotenv-webpack');
+const dotenv = require('dotenv');
 
 const envFile = path.resolve(__dirname, '../../.env');
 const dotEnvConfig = dotenv.config({ path: envFile });
@@ -29,11 +30,18 @@ const plugins = [
     filename: 'index.html',
     chunks: ['index'],
     template: './index.html',
+    templateParameters: {
+      env: process.env.NODE_ENV,
+    },
     inject: true,
   }),
 ];
 if (isLocal) {
-  plugins.push(new webpack.HotModuleReplacementPlugin());
+  plugins.push(
+    new webpack.HotModuleReplacementPlugin(),
+    new HardSourceWebpackPlugin(),
+    new HardSourceWebpackPlugin.ExcludeModulePlugin([{ test: /@aph/ }])
+  );
 }
 
 const rhlBabelLoader = {
@@ -42,7 +50,17 @@ const rhlBabelLoader = {
     plugins: ['react-hot-loader/babel'],
   },
 };
-const tsLoader = { loader: 'awesome-typescript-loader' };
+const tsLoader = {
+  loader: 'awesome-typescript-loader',
+  options: isLocal
+    ? {
+        useCache: true,
+        transpileModule: true,
+        forceIsolatedModules: true,
+        reportFiles: ['src/**/*.{ts,tsx}'],
+      }
+    : undefined,
+};
 const urlLoader = {
   loader: 'url-loader',
   options: {
@@ -55,7 +73,8 @@ const urlLoader = {
 module.exports = {
   mode: isStaging || isProduction ? 'production' : 'development',
 
-  devtool: isLocal || isDevelopment ? 'source-map' : false,
+  // devtool: isLocal || isDevelopment ? 'source-map' : false,
+  devtool: isLocal || isDevelopment ? 'eval' : false,
 
   context: path.resolve(__dirname, 'src'),
 
@@ -83,7 +102,7 @@ module.exports = {
   },
 
   resolve: {
-    extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx'],
+    extensions: ['.js', '.jsx', '.ts', '.tsx'],
     modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'node_modules')],
     alias: isLocal
       ? {
@@ -92,12 +111,25 @@ module.exports = {
       : undefined,
   },
 
-  optimization: {
-    // Enable these for tree-shaking capabilities.
-    // Also set `"sideEffects": false` in `package.json`
-    sideEffects: true,
-    usedExports: true,
-  },
+  // Enable these for tree-shaking capabilities.
+  // Also set `"sideEffects": false` in `package.json`
+  // optimization: {
+  //   sideEffects: true,
+  //   usedExports: true,
+  // },
+
+  optimization: isLocal
+    ? {
+        removeAvailableModules: false,
+        removeEmptyChunks: false,
+        splitChunks: false,
+      }
+    : {
+        // Enable these for tree-shaking capabilities.
+        // Also set `"sideEffects": false` in `package.json`
+        sideEffects: true,
+        usedExports: true,
+      },
 
   devServer: isLocal
     ? {

@@ -55,6 +55,7 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
 
   const renderTabs = () => {
     return props.data.map((item, index) => {
+      const isSelected = selected == item.title;
       // const title = props.showIcons ? item.title : item;
       return (
         <TouchableOpacity
@@ -62,7 +63,7 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
           key={index}
           style={[
             styles.tabView,
-            selected === item.title ? { borderBottomColor: theme.colors.APP_GREEN } : {},
+            isSelected ? { borderBottomColor: theme.colors.APP_GREEN } : {},
             props.height ? { height: props.height } : {},
           ]}
           onPress={() => props.onChange(item.title)}
@@ -74,14 +75,14 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
                 paddingBottom: 10,
               }}
             >
-              {selected === item.title ? item.selectedIcon : null}
+              {isSelected ? item.selectedIcon : null}
               {selected !== item.title ? item.unselectedIcon : null}
             </View>
           ) : (
             <Text
               style={[
                 styles.textStyle,
-                selected === item.title ? { color: theme.colors.LIGHT_BLUE } : {},
+                isSelected ? { color: theme.colors.LIGHT_BLUE } : {},
                 props.textStyle,
               ]}
             >

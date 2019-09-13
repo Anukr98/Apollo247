@@ -133,17 +133,18 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                       activeOpacity={1}
                       onPress={() => {
                         setshowCalander(!showCalander);
+                        const selectedData = [];
+
                         if (!showCalander) {
                           const selectedDate = moment(date).format('YYYY-MM-DD');
-                          const selectedData = [];
-                          const dataCopy = [...data];
                           selectedData.push(selectedDate);
-                          dataCopy[index] = {
-                            ...dataCopy[index],
-                            selectedOptions: selectedData,
-                          };
-                          setData(dataCopy);
                         }
+                        const dataCopy = [...data];
+                        dataCopy[index] = {
+                          ...dataCopy[index],
+                          selectedOptions: selectedData,
+                        };
+                        setData(dataCopy);
                       }}
                     >
                       {showCalander ? <CalendarClose /> : <CalendarShow />}
@@ -169,6 +170,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
                 <CalendarView
                   styles={styles.calendarStyle}
                   date={date}
+                  minDate={new Date()}
                   onPressDate={(date) => {
                     // setDate(date);
                     console.log(date, 'selected date ');

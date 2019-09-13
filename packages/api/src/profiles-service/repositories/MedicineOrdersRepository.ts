@@ -8,6 +8,7 @@ import {
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { format } from 'date-fns';
 
 @EntityRepository(MedicineOrders)
 export class MedicineOrdersRepository extends Repository<MedicineOrders> {
@@ -45,6 +46,12 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return this.findOne({
       where: { orderAutoId },
       relations: ['patient', 'medicineOrderLineItems'],
+    });
+  }
+
+  getMedicineOrderDetailsByAp(apOrderNo: string) {
+    return this.findOne({
+      where: { apOrderNo },
     });
   }
 
@@ -104,5 +111,37 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     currentStatus: MEDICINE_ORDER_STATUS
   ) {
     return this.update({ id, orderAutoId }, { orderDateTime, currentStatus });
+  }
+
+  getMedicineOrdersListByCreateddate(patient: String, startDate: Date, endDate: Date) {
+    const status = [
+      MEDICINE_ORDER_STATUS.QUOTE,
+      MEDICINE_ORDER_STATUS.ORDER_PLACED,
+      MEDICINE_ORDER_STATUS.ORDER_VERIFIED,
+      MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY,
+      MEDICINE_ORDER_STATUS.PICKEDUP,
+      MEDICINE_ORDER_STATUS.RETURN_INITIATED,
+      MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
+      MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED,
+      MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY,
+    ];
+    const newStartDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:30');
+
+    return this.createQueryBuilder('medicineOrders')
+      .where('medicineOrders.patient = :patient', { patient })
+      .andWhere(
+        'medicineOrders.createdDate > :startDate and medicineOrders.createdDate < :endDate',
+        { startDate: newStartDate, endDate: newEndDate }
+      )
+      .andWhere('medicineOrders.currentStatus IN (:...status)', { status: status })
+      .leftJoinAndSelect('medicineOrders.medicineOrderLineItems', 'medicineOrderLineItems')
+      .leftJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+      .leftJoinAndSelect('medicineOrders.medicineOrdersStatus', 'medicineOrdersStatus')
+      .getRawMany();
+  }
+
+  updateOrderFullfillment(orderAutoId: number, id: string, apOrderNo: string) {
+    this.update({ id, orderAutoId }, { apOrderNo });
   }
 }

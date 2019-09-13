@@ -20,6 +20,7 @@ import { GatewayHeaders } from 'api-gateway';
 import { getConnection } from 'typeorm';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 import { connect } from 'notifications-service/database/connect';
+import { emailTypeDefs, emailResolvers } from 'notifications-service/resolvers/email';
 //import fetch from 'node-fetch';
 
 (async () => {
@@ -49,6 +50,10 @@ import { connect } from 'notifications-service/database/connect';
       {
         typeDefs: getNotificationsTypeDefs,
         resolvers: getNotificationsResolvers,
+      },
+      {
+        typeDefs: emailTypeDefs,
+        resolvers: emailResolvers,
       },
     ]),
   });

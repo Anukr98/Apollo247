@@ -182,7 +182,7 @@ const tabBarOptions: TabBarOptions[] = [
   },
   {
     id: 3,
-    title: 'TESTS & MEDICINES',
+    title: 'MEDICINES',
     image: <ShoppingCart style={{ marginTop: -4 }} />,
   },
   {
@@ -513,11 +513,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               key={i}
               onPress={() => {
                 if (i === 0) {
-                  props.navigation.replace(AppRoutes.TabBar, { tabBarName: 'CONSULT ROOM' });
+                  props.navigation.navigate('CONSULT ROOM');
                 } else if (i == 1) {
+                  props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
+                  props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
-                  // props.navigation.replace(AppRoutes.AzureUpload);
+                  props.navigation.navigate('MY ACCOUNT');
                 }
               }}
             >
@@ -584,8 +586,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   <ApolloLogo style={{ right: 20 }} />
                 </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                activeOpacity={1}
+              <View
+                // activeOpacity={1}
                 // onPress={() => setShowMenu(true)}
                 style={{
                   flexDirection: 'row',
@@ -610,7 +612,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     <View style={styles.seperatorStyle} />
                   </View> */}
                 </View>
-              </TouchableOpacity>
+              </View>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
             </View>
           </View>

@@ -10,6 +10,7 @@ import {
   CANCEL_APPOINTMENT,
   NEXT_AVAILABLE_SLOT,
   BOOK_APPOINTMENT_RESCHEDULE,
+  CHECK_IF_RESCHDULE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   cancelAppointment,
@@ -40,6 +41,10 @@ import {
 } from '../../graphql/types/bookRescheduleAppointment';
 import { Spinner } from '../ui/Spinner';
 import { getDoctorAvailableSlots_getDoctorAvailableSlots } from '../../graphql/types/getDoctorAvailableSlots';
+import {
+  checkIfReschedule,
+  checkIfRescheduleVariables,
+} from '../../graphql/types/checkIfReschedule';
 
 const { width, height } = Dimensions.get('window');
 
@@ -139,21 +144,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     // availabilitySlots();
   }, []);
 
-  useEffect(() => {
-    let calculateCount = data.rescheduleCount ? data.rescheduleCount : '';
-    console.log('calculateCount', calculateCount);
-
-    if (calculateCount > 3) {
-      calculateCount = Math.floor(calculateCount / 3);
-      setBelowThree(true);
-      console.log('calculateCount', calculateCount);
-    } else {
-      setBelowThree(false);
-    }
-
-    setNewRescheduleCount(calculateCount);
-  });
-
   const todayDate = moment
     .utc(data.appointmentDateTime)
     .local()
@@ -206,12 +196,16 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     }
   };
 
-  const rescheduleAPI = (availability: any) => {
+  const rescheduleAPI = (availability: any, newRescheduleCount: number) => {
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
-      newDateTimeslot: availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0]
-        .availableSlot,
+      newDateTimeslot:
+        availability &&
+        availability.data! &&
+        availability.data!.getDoctorNextAvailableSlot! &&
+        availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0] &&
+        availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0].availableSlot,
       initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
       initiatedId: data.patientId,
       patientId: data.patientId,
@@ -230,13 +224,18 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           fetchPolicy: 'no-cache',
         })
         .then((data: any) => {
-          console.log(data, 'data');
+          console.log(data, 'data reschedule');
           setshowSpinner(false);
           props.navigation.replace(AppRoutes.TabBar, {
             Data:
               data.data &&
               data.data.bookRescheduleAppointment &&
               data.data.bookRescheduleAppointment.appointmentDetails,
+            DoctorName:
+              props.navigation.state.params!.data &&
+              props.navigation.state.params!.data.doctorInfo &&
+              props.navigation.state.params!.data.doctorInfo.firstName,
+            //newRescheduleCount: newRescheduleCount,
           });
         })
         .catch((e: string) => {
@@ -258,7 +257,30 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       setResheduleoverlay(false);
       AsyncStorage.setItem('showSchduledPopup', 'true');
       setshowSpinner(true);
-      rescheduleAPI(availability);
+      client
+        .query<checkIfReschedule, checkIfRescheduleVariables>({
+          query: CHECK_IF_RESCHDULE,
+          variables: {
+            existAppointmentId: data.id,
+            rescheduleDate: data.appointmentDateTime,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((_data: any) => {
+          const result = _data.data.checkIfReschedule;
+          console.log('checfReschedulesuccess', result);
+          setNewRescheduleCount(result.rescheduleCount + 1);
+          rescheduleAPI(availability, newRescheduleCount);
+          if (result.isPaid == 1) {
+            setshowSpinner(false);
+            Alert.alert('Payment Integration');
+          }
+        })
+        .catch((e: any) => {
+          const error = JSON.parse(JSON.stringify(e));
+          console.log('Error occured while checkIfRescheduleprofile', error);
+          Alert.alert('Error', error.message);
+        });
     } catch (error) {
       console.log(error, 'error');
     }
@@ -267,31 +289,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const reshedulePopUpMethod = () => {
     setdisplayoverlay(true), setResheduleoverlay(false);
   };
-
-  // const checkingAppointmentDates = () => {
-  //   const currentTime = moment(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(
-  //     'YYYY-MM-DD HH:mm:ss'
-  //   );
-
-  //   const appointmentTime = moment.utc(data.appointmentDateTime).format('YYYY-MM-DD HH:mm:ss');
-
-  //   const diff = moment.duration(moment(appointmentTime).diff(currentTime));
-  //   let diffInHours = diff.asMinutes();
-  //   console.log('duration', diffInHours);
-  //   console.log('appointmentTime', appointmentTime);
-
-  //   if (diffInHours > 0) {
-  //   } else {
-  //     diffInHours = diffInHours * 60;
-  //     console.log('duration', diffInHours);
-
-  //     const startingTime = 900 + diffInHours;
-  //     console.log('startingTime', startingTime);
-
-  //     if (startingTime > 0) {
-  //     }
-  //   }
-  // };
 
   if (data.doctorInfo)
     return (
@@ -380,20 +377,22 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             <Button
               title={'RESCHEDULE'}
               style={{
-                flex: 0.5,
+                flex: 0.4,
                 marginLeft: 20,
                 marginRight: 8,
                 backgroundColor: 'white',
               }}
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
-                dateIsAfter ? setResheduleoverlay(true) : null;
+                try {
+                  dateIsAfter ? setResheduleoverlay(true) : null;
+                } catch (error) {}
               }}
             />
 
             <Button
               title={'START CONSULTATION'}
-              style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
+              style={{ flex: 0.6, marginRight: 20, marginLeft: 8 }}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.ChatRoom, {
                   data: data,

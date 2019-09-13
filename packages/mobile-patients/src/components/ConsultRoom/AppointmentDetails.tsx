@@ -177,8 +177,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
-      newDateTimeslot: availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0]
-        .availableSlot,
+      newDateTimeslot:
+        availability &&
+        availability.data! &&
+        availability.data!.getDoctorNextAvailableSlot! &&
+        availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0] &&
+        availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0].availableSlot,
       initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
       initiatedId: data.patientId,
       patientId: data.patientId,
@@ -374,20 +378,22 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             <Button
               title={'RESCHEDULE'}
               style={{
-                flex: 0.5,
+                flex: 0.4,
                 marginLeft: 20,
                 marginRight: 8,
                 backgroundColor: 'white',
               }}
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
-                dateIsAfter ? setResheduleoverlay(true) : null;
+                try {
+                  dateIsAfter ? setResheduleoverlay(true) : null;
+                } catch (error) {}
               }}
             />
             <Button
               title={'START CONSULTATION'}
               style={{
-                flex: 0.5,
+                flex: 0.6,
                 marginRight: 20,
                 marginLeft: 8,
               }}

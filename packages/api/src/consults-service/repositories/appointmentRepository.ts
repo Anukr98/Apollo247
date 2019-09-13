@@ -175,25 +175,25 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   async findByDoctorIdsAndDateTimes(
     doctorIds: string[],
-    appointmentDateTimes: AppointmentDateTime[]
+    utcAppointmentDateTimes: AppointmentDateTime[]
   ) {
     const queryBuilder = this.createQueryBuilder('appointment').where(
       'appointment.doctorId IN (:...doctorIds)',
-      { doctorIds }
+      { doctorIds, status: Not(STATUS.CANCELLED) }
     );
 
-    if (appointmentDateTimes && appointmentDateTimes.length > 0) {
+    if (utcAppointmentDateTimes && utcAppointmentDateTimes.length > 0) {
       queryBuilder.andWhere(
         new Brackets((qb) => {
-          appointmentDateTimes.forEach((apptDateTime: AppointmentDateTime) => {
+          utcAppointmentDateTimes.forEach((apptUtcDtTm: AppointmentDateTime) => {
             qb.orWhere(
               new Brackets((qb) => {
                 qb.where(
                   `appointment.appointmentDateTime Between '${format(
-                    apptDateTime.startDateTime,
+                    apptUtcDtTm.startDateTime,
                     'yyyy-MM-dd HH:mm'
-                  )}' AND '${format(apptDateTime.endDateTime, 'yyyy-MM-dd HH:mm')}'`,
-                  apptDateTime
+                  )}' AND '${format(apptUtcDtTm.endDateTime, 'yyyy-MM-dd HH:mm')}'`,
+                  apptUtcDtTm
                 );
               })
             );
@@ -219,7 +219,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     const inputDate = format(appointmentDateTime, 'yyyy-MM-dd');
     const endDate = new Date(inputDate + 'T18:29');
     const inputStartDate = format(addDays(appointmentDateTime, -1), 'yyyy-MM-dd');
-    console.log(inputStartDate, 'inputStartDate get patient date appointments');
     const startDate = new Date(inputStartDate + 'T18:30');
     return this.find({
       where: {
@@ -589,5 +588,19 @@ export class AppointmentRepository extends Repository<Appointment> {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
       }
     );
+  }
+
+  getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {
+    const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:30');
+    return this.find({
+      where: {
+        patientId,
+        appointmentDateTime: Between(newStartDate, newEndDate),
+        status: Not(STATUS.CANCELLED),
+      },
+      relations: ['caseSheet'],
+      order: { appointmentDateTime: 'ASC' },
+    });
   }
 }

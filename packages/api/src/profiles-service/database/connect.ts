@@ -29,6 +29,14 @@ import {
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
+import {
+  Appointment,
+  AppointmentPayments,
+  AppointmentSessions,
+  CaseSheet,
+  TransferAppointmentDetails,
+  RescheduleAppointmentDetails,
+} from 'consults-service/entities';
 
 export const connect = async () => {
   return await createConnections([
@@ -78,6 +86,24 @@ export const connect = async () => {
       username: process.env.DOCTORS_DB_USER,
       password: process.env.DOCTORS_DB_PASSWORD,
       database: `doctors_${process.env.NODE_ENV}`,
+      logging: true,
+    },
+    {
+      name: 'consults-db',
+      entities: [
+        Appointment,
+        AppointmentPayments,
+        AppointmentSessions,
+        CaseSheet,
+        TransferAppointmentDetails,
+        RescheduleAppointmentDetails,
+      ],
+      type: 'postgres',
+      host: process.env.CONSULTS_DB_HOST,
+      port: parseInt(process.env.CONSULTS_DB_PORT, 10),
+      username: process.env.CONSULTS_DB_USER,
+      password: process.env.CONSULTS_DB_PASSWORD,
+      database: `consults_${process.env.NODE_ENV}`,
       logging: true,
     },
   ]).catch((error) => {

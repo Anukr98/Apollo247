@@ -3,7 +3,7 @@ import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Doctor, ConsultMode } from 'doctors-service/entities/';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { format, addMinutes } from 'date-fns';
+import { format, addMinutes, addDays } from 'date-fns';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -123,18 +123,18 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     if (selectedNow && selectedNow != '') {
       const nowStartDateTime = new Date(selectedNow);
       let nowEndDateTime = addMinutes(nowStartDateTime, 60);
-      if (format(nowEndDateTime, 'yyyy-MM-dd') !== format(nowStartDateTime, 'yyyy-MM-dd')) {
-        nowEndDateTime = new Date(format(nowStartDateTime, 'yyyy-MM-dd') + 'T23:59');
+      if (format(nowEndDateTime, 'HH:mm') > '18:30') {
+        nowEndDateTime = new Date(format(nowStartDateTime, 'yyyy-MM-dd') + 'T18:29');
       }
-      //selectedDates.push(format(nowStartDateTime, 'yyyy-MM-dd'));
       nowDateTime = { startDateTime: nowStartDateTime, endDateTime: nowEndDateTime };
       appointmentDateTimes.push(nowDateTime);
     }
 
     if (availabilityDates && availabilityDates.length > 0) {
       availabilityDates.forEach((date: string) => {
-        const startDateTime = new Date(date + 'T00:00');
-        const endDateTime = new Date(date + 'T23:59');
+        const previousDate = format(addDays(new Date(date), -1), 'yyyy-MM-dd');
+        const startDateTime = new Date(previousDate + 'T18:30');
+        const endDateTime = new Date(date + 'T18:29');
         selectedDates.push(date);
         appointmentDateTimes.push({ startDateTime, endDateTime });
       });

@@ -11,13 +11,6 @@ module.exports = {
     '@typescript-eslint/no-array-constructor': 'warn',
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-vars': ['warn', { args: 'none' }],
-    'graphql/template-strings': [
-      'error',
-      {
-        env: 'apollo',
-        schemaJson: require('../api-schema/schema.json'),
-      },
-    ],
     'import/newline-after-import': 'warn',
     'import/no-cycle': 'error',
     'import/no-default-export': 'warn',

@@ -11,10 +11,7 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 //import { AppointmentPayload } from 'types/appointmentTypes';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { DOCTOR_ONLINE_STATUS, DoctorType } from 'doctors-service/entities';
-import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 //import { addMinutes, format, addMilliseconds } from 'date-fns';
-import _sample from 'lodash/sample';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -245,20 +242,6 @@ const bookAppointment: Resolver<
 
   AphMqClient.send(testMessage);*/
   //message queue ends
-
-  (async () => {
-    const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
-    const docRepo = doctorsDb.getCustomRepository(DoctorRepository);
-    const onlineJrDocs = await docRepo.find({
-      onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
-      doctorType: DoctorType.JUNIOR,
-    });
-    const chosenJrDoc = _sample(onlineJrDocs);
-    if (!chosenJrDoc) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-    const appointmentId = appointment.id;
-    const doctorId = chosenJrDoc.id;
-    await cqRepo.save(cqRepo.create({ appointmentId, doctorId }));
-  })();
 
   //TODO after junior doctor flow.. casesheet creation should be changed.
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);

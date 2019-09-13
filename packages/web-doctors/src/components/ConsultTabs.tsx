@@ -11,6 +11,7 @@ import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
 import { useApolloClient } from 'react-apollo-hooks';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+//import { Document } from 'react-pdf';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -555,8 +556,11 @@ export const ConsultTabs: React.FC = () => {
                 isEnded={isEnded}
                 caseSheetId={caseSheetId}
                 prescriptionPdf={prescriptionPdf}
+                sessionId={sessionId}
+                token={token}
               />
               <div>
+                {/* <Document file="https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/1132ed6b-6505-495a-a4b0-43a75af23ee0.pdf"></Document> */}
                 <div>
                   <div>
                     <Tabs

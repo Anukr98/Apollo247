@@ -2,6 +2,8 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { Salutation } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: SearchDoctorAndSpecialtyByName
 // ====================================================
@@ -25,12 +27,13 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors {
   __typename: "DoctorDetails";
+  id: string;
+  salutation: Salutation | null;
   firstName: string;
   lastName: string;
   specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty;
   specialization: string | null;
   photoUrl: string | null;
-  id: string;
   experience: string | null;
   doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital[];
 }
