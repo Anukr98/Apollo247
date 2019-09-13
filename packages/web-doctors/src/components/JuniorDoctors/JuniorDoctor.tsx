@@ -12,6 +12,8 @@ import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetCons
 import _isEmpty from 'lodash/isEmpty';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -95,6 +97,8 @@ const useStyles = makeStyles((theme: Theme) => {
 export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
   const currentDoctor = useCurrentPatient();
+  const { isSigningIn } = useAuth();
+
   const { data, loading, error } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
     GET_CONSULT_QUEUE,
     {
@@ -167,7 +171,9 @@ export const JuniorDoctor: React.FC = (props) => {
     ];
   }
 
-  return (
+  return isSigningIn ? (
+    <LinearProgress />
+  ) : (
     <div className={classes.root}>
       <div className={classes.headerSticky}>
         <Header />
