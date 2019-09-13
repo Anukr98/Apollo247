@@ -57,6 +57,14 @@ type TimeArray = {
   time: string[];
 }[];
 
+type rescheduleType = {
+  rescheduleCount: number;
+  appointmentState: string;
+  isCancel: number;
+  isFollowUp: number;
+  isPaid: number;
+};
+
 export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   renderTab: string;
   setdisplayoverlay: (arg0: boolean) => void;
@@ -64,11 +72,11 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   doctorId: string;
-  rescheduleCount: number;
+  rescheduleCount: rescheduleType;
   appointmentId: string;
   data: any;
   bookFollowUp: boolean;
-  KeyFollow: string;
+  // KeyFollow: string;
   // availableSlots: string[] | null;
 }
 export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (props) => {
@@ -104,6 +112,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
   console.log(props.rescheduleCount, 'rescheduleCount');
   console.log(props.data, 'back');
 
+  console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
   const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
     fetchPolicy: 'no-cache',
     variables: {
@@ -179,12 +188,12 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
             <Button
               title={
                 props.KeyFollow == 'FollowUp'
-                  ? props.rescheduleCount === 3
+                  ? props.rescheduleCount.isPaid === 1
                     ? `PAY Rs. ${props.data.doctorInfo &&
                         props.data.doctorInfo.onlineConsultationFees &&
                         props.data.doctorInfo.onlineConsultationFees}`
                     : `CONFIRM RESCHEDULE`
-                  : props.rescheduleCount === 1
+                  : props.rescheduleCount.isPaid === 1
                   ? `PAY Rs. ${props.doctor &&
                       props.doctor.onlineConsultationFees &&
                       props.doctor.onlineConsultationFees}`

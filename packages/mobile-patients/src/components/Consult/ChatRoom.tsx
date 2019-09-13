@@ -30,12 +30,18 @@ import {
   UPDATE_APPOINTMENT_SESSION,
   CHECK_IF_RESCHDULE,
   NEXT_AVAILABLE_SLOT,
+  BOOK_APPOINTMENT_RESCHEDULE,
+  ADD_TO_CONSULT_QUEUE,
+  UPLOAD_FILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookTransferAppointment,
   bookTransferAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
-import { BookTransferAppointmentInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  BookTransferAppointmentInput,
+  TRANSFER_INITIATED_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
   updateAppointmentSessionVariables,
@@ -82,6 +88,17 @@ import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
 } from '../../graphql/types/GetDoctorNextAvailableSlot';
+import {
+  bookRescheduleAppointment,
+  bookRescheduleAppointmentVariables,
+} from '../../graphql/types/bookRescheduleAppointment';
+import { OverlayRescheduleView } from './OverlayRescheduleView';
+import {
+  addToConsultQueue,
+  addToConsultQueueVariables,
+} from '../../graphql/types/addToConsultQueue';
+import ImagePicker from 'react-native-image-picker';
+import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -222,6 +239,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [checkReschudule, setCheckReschudule] = useState<boolean>(false);
   const [newRescheduleCount, setNewRescheduleCount] = useState<rescheduleType>();
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
+  const [transferData, setTransferData] = useState<any>([]);
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -235,6 +255,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const transferConsultMsg = '^^#transferconsult';
   const rescheduleConsultMsg = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
+  const imageconsult = '^^#DocumentUpload';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -250,6 +271,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
+    requestToJrDoctor();
     analytics.setCurrentScreen(AppRoutes.ChatRoom);
   }, []);
 
@@ -259,6 +281,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   }, []);
 
   const client = useApolloClient();
+
+  const requestToJrDoctor = async () => {
+    // let ConsultQueueData: any = await AsyncStorage.getItem('ConsultQueueData');
+    // ConsultQueueData = JSON.parse(ConsultQueueData || 'null') || [];
+    // console.log('ConsultQueueData', ConsultQueueData);
+
+    // if (ConsultQueueData.appointmentId != appointmentData.id) {
+    client
+      .mutate<addToConsultQueue, addToConsultQueueVariables>({
+        mutation: ADD_TO_CONSULT_QUEUE,
+        variables: {
+          appointmentId: appointmentData.id,
+        },
+      })
+      .then((data: any) => {
+        console.log('requestToJrDoctor', data.data.addToConsultQueue);
+        const queueData = {
+          queueId: data.data.addToConsultQueue && data.data.addToConsultQueue.doctorId,
+          appointmentId: appointmentData.id,
+        };
+        AsyncStorage.setItem('ConsultQueueData', JSON.stringify(queueData));
+      })
+      .catch((e: string) => {
+        console.log('requestToJrDoctor', e);
+      });
+    // } else {
+    //   console.log('requestToJrDoctor not called');
+    // }
+  };
 
   const requestReadSmsPermission = async () => {
     try {
@@ -736,7 +787,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               alignSelf: 'center',
             }}
           >
-            {/* {leftComponent === 1 && (
+            {leftComponent === 1 && (
               <View
                 style={{
                   width: 32,
@@ -756,16 +807,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                 />
               </View>
-            )} */}
+            )}
             <View
               style={{
                 backgroundColor: '#0087ba',
                 width: 244,
                 height: 354,
                 borderRadius: 10,
-                //marginLeft: 38,
+                marginBottom: 4,
+                marginLeft: 38,
                 ...theme.viewStyles.shadowStyle,
-
                 alignSelf: 'center',
               }}
             >
@@ -893,7 +944,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <Button
                   title={'RESCHEDULE'}
                   style={{
-                    flex: 0.5,
+                    flex: 0.6,
                     marginLeft: 16,
                     marginRight: 5,
                     backgroundColor: '#0087ba',
@@ -902,19 +953,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
-                    checkIfReschduleApi(rowData);
+                    try {
+                      checkIfReschduleApi(rowData, 'Transfer');
+                      NextAvailableSlot(rowData, 'Transfer');
+                      setCheckReschudule(true);
+                      setTransferData(rowData.transferInfo);
+                      setTimeout(() => {
+                        flatListRef.current! &&
+                          flatListRef.current!.scrollToEnd({ animated: true });
+                      }, 200);
+                    } catch (error) {}
                   }}
                 />
 
                 <Button
                   title={'ACCEPT'}
-                  style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                  style={{ flex: 0.4, marginRight: 16, marginLeft: 5 }}
                   onPress={() => {
-                    transferAppointmentAPI(rowData, 'Transfer');
+                    try {
+                      let datettimeval = rowData.transferInfo.transferDateTime;
+                      let transferdataid = rowData.transferInfo.transferId;
+
+                      const appointmentTransferInput: BookTransferAppointmentInput = {
+                        patientId: patientId,
+                        doctorId: rowData.transferInfo.doctorId,
+                        appointmentDateTime: datettimeval, //rowData.transferInfo.transferDateTime, //appointmentDate,
+                        existingAppointmentId: channel,
+                        transferId: transferdataid, //rowData.transferInfo.transferId,
+                      };
+                      console.log(appointmentTransferInput, 'AcceptApi Input');
+
+                      transferAppointmentAPI(rowData, appointmentTransferInput);
+                    } catch (error) {}
                   }}
                 />
               </StickyBottomComponent>
             </View>
+            {checkReschudule && reschduleLoadView(rowData, index, 'Transfer')}
           </View>
         ) : (
           <View
@@ -1043,15 +1118,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   title={'VIEW'}
                   style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
                   onPress={() => {
-                    console.log('Followupdata', rowData.transferInfo.caseSheetId);
-                    console.log('rowdata', rowData);
-                    props.navigation.navigate(AppRoutes.ConsultDetails, {
-                      CaseSheet: rowData.transferInfo.appointmentId,
-                      DoctorInfo: rowData.transferInfo.doctorInfo,
-                      PatientId: appointmentData.patientId,
-                      appointmentType: appointmentData.appointmentType,
-                      appointmentDate: rowData.transferInfo.folloupDateTime,
-                    });
+                    try {
+                      console.log('Followupdata', rowData.transferInfo.caseSheetId);
+                      console.log('rowdata', rowData);
+                      props.navigation.navigate(AppRoutes.ConsultDetails, {
+                        CaseSheet: rowData.transferInfo.appointmentId,
+                        DoctorInfo: rowData.transferInfo.doctorInfo,
+                        PatientId: appointmentData.patientId,
+                        appointmentType: appointmentData.appointmentType,
+                      });
+                    } catch (error) {}
                   }}
                 />
               </StickyBottomComponent>
@@ -1156,28 +1232,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
                     console.log('Button Clicked');
-                    checkIfReschduleApi(rowData);
-                    NextAvailableSlot(rowData);
+                    checkIfReschduleApi(rowData, 'Followup');
+                    NextAvailableSlot(rowData, 'Followup');
                     setCheckReschudule(true);
+                    setTransferData(rowData.transferInfo);
+                    setTimeout(() => {
+                      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
+                    }, 200);
                   }}
                 />
-                {/* <Button
-                  title={'ACCEPT'}
-                  style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
-                  onPress={() => {
-                    transferAppointmentAPI(rowData, 'Followup');
-                  }}
-                /> */}
               </StickyBottomComponent>
             </View>
-            {checkReschudule && reschduleLoadView(rowData, index)}
+            {checkReschudule && reschduleLoadView(rowData, index, 'Followup')}
           </View>
         )}
       </>
     );
   };
 
-  const reschduleLoadView = (rowData: any, index: number) => {
+  const reschduleLoadView = (rowData: any, index: number, type: string) => {
     return (
       <>
         <View
@@ -1224,7 +1297,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               marginTop: 12,
             }}
           >
-            Next slot for Dr. {appointmentData.doctorInfo.firstName} is available on —
+            Next slot for Dr. {rowData.transferInfo.doctorInfo.firstName} is available on —
           </Text>
           <View
             style={{
@@ -1283,14 +1356,58 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               titleTextStyle={{ color: 'white' }}
               onPress={() => {
-                checkIfReschduleApi(rowData);
+                if (type === 'Followup') {
+                  setdisplayoverlay(true);
+                } else {
+                  // props.navigation.navigate(AppRoutes.DoctorDetails, {
+                  //   doctorId: rowData.transferInfo.doctorInfo.id,
+                  //   PatientId: patientId,
+                  //   appointmentType: appointmentData.appointmentType,
+                  //   appointmentId: appointmentData.id,
+                  //   showBookAppointment: true,
+                  // });
+                }
               }}
             />
             <Button
               title={'ACCEPT'}
-              style={{ flex: 0.4, marginRight: 16, marginLeft: 5 }}
+              style={{
+                flex: 0.4,
+                marginRight: 16,
+                marginLeft: 5,
+              }}
               onPress={() => {
-                // transferAppointmentAPI(rowData, 'Followup');
+                try {
+                  if (type === 'Followup') {
+                    const bookRescheduleInput = {
+                      appointmentId: rowData.transferInfo.appointmentId,
+                      doctorId: rowData.transferInfo.transferDateTime
+                        ? rowData.transferInfo.doctorInfo.id
+                        : rowData.transferInfo.doctorId,
+                      newDateTimeslot: nextSlotAvailable,
+                      initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                      initiatedId: patientId,
+                      patientId: patientId,
+                      rescheduledId: '',
+                    };
+
+                    rescheduleAPI(rowData, bookRescheduleInput);
+                  } else {
+                    let datettimeval = nextSlotAvailable;
+                    let transferdataid = rowData.transferInfo.transferId;
+
+                    const appointmentTransferInput: BookTransferAppointmentInput = {
+                      patientId: patientId,
+                      doctorId: rowData.transferInfo.doctorId,
+                      appointmentDateTime: datettimeval, //rowData.transferInfo.transferDateTime, //appointmentDate,
+                      existingAppointmentId: channel,
+                      transferId: transferdataid, //rowData.transferInfo.transferId,
+                    };
+                    console.log(appointmentTransferInput, 'AcceptApi Input');
+
+                    transferAppointmentAPI(rowData, appointmentTransferInput);
+                  }
+                } catch (error) {}
               }}
             />
           </StickyBottomComponent>
@@ -1553,7 +1670,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const renderChatRow = (
-    rowData: { id: string; message: string; duration: string; transferInfo: any },
+    rowData: { id: string; message: string; duration: string; transferInfo: any; url: any },
     index: number
   ) => {
     if (
@@ -1644,26 +1761,53 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </View>
             </View>
           ) : (
-            <View
-              style={{
-                backgroundColor: 'white',
-                // width: 244,
-                borderRadius: 10,
-                marginVertical: 2,
-                alignSelf: 'flex-end',
-              }}
-            >
-              <Text
-                style={{
-                  color: '#01475b',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  textAlign: 'right',
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                }}
-              >
-                {rowData.message}
-              </Text>
+            <View>
+              {rowData.message === imageconsult ? (
+                <View
+                  style={{
+                    backgroundColor: 'transparent',
+                    width: 180,
+                    height: 180,
+                    borderRadius: 10,
+                    marginVertical: 2,
+                    alignSelf: 'flex-end',
+                    marginBottom: 4,
+                    flex: 1,
+                  }}
+                >
+                  <Image
+                    source={{ uri: rowData.url }}
+                    style={{
+                      resizeMode: 'stretch',
+                      width: 180,
+                      height: 180,
+                      borderRadius: 10,
+                    }}
+                  />
+                </View>
+              ) : (
+                <View
+                  style={{
+                    backgroundColor: 'white',
+                    // width: 244,
+                    borderRadius: 10,
+                    marginVertical: 2,
+                    alignSelf: 'flex-end',
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: '#01475b',
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      textAlign: 'right',
+                      ...theme.fonts.IBMPlexSansMedium(16),
+                    }}
+                  >
+                    {rowData.message}
+                  </Text>
+                </View>
+              )}
             </View>
           )}
         </View>
@@ -1671,28 +1815,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
-  const transferAppointmentAPI = (rowData: any, value: string) => {
+  const transferAppointmentAPI = (
+    rowData: any,
+    appointmentTransferInput: BookTransferAppointmentInput
+  ) => {
     console.log(rowData, 'rowData');
-    let datettimeval = '';
-    let transferdataid = ';';
-    if (value == 'Transfer') {
-      console.log(value, 'Transfer');
-      datettimeval = rowData.transferInfo.transferDateTime;
-      transferdataid = rowData.transferInfo.transferId;
-    } else {
-      datettimeval = rowData.transferInfo.folloupDateTime;
-      transferdataid = rowData.transferInfo.caseSheetId;
-      console.log(value, 'Followup');
-    }
-    Keyboard.dismiss();
-    const appointmentTransferInput: BookTransferAppointmentInput = {
-      patientId: patientId,
-      doctorId: rowData.transferInfo.doctorId,
-      appointmentDateTime: datettimeval, //rowData.transferInfo.transferDateTime, //appointmentDate,
-      existingAppointmentId: channel,
-      transferId: transferdataid, //rowData.transferInfo.transferId,
-    };
-    console.log(appointmentTransferInput, 'AcceptApi Input');
+    setLoading(true);
 
     client
       .mutate<bookTransferAppointment, bookTransferAppointmentVariables>({
@@ -1705,39 +1833,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .then((data: any) => {
         console.log('Accept Api', data);
         console.log('time', data.data.bookTransferAppointment.appointment.appointmentDateTime);
+        setLoading(false);
 
-        if (value == 'Transfer') {
-          setTransferAccept(true),
-            setTransferDcotorName(rowData.transferInfo.doctorName),
-            setTimeout(() => {
-              setTransferAccept(false);
-            }, 1000);
-          AsyncStorage.setItem('showTransferPopup', 'true');
-          props.navigation.replace(AppRoutes.TabBar, {
-            TransferData: rowData.transferInfo,
-            TranferDateTime: data.data.bookTransferAppointment.appointment.appointmentDateTime,
-          });
-        } else {
-          AsyncStorage.setItem('showFollowUpPopup', 'true');
-          props.navigation.replace(AppRoutes.TabBar, {
-            FollowupData: rowData.transferInfo.doctorInfo,
-            FollowupDateTime: data.data.bookTransferAppointment.appointment.appointmentDateTime,
-          });
-        }
+        setTransferAccept(true),
+          setTransferDcotorName(rowData.transferInfo.doctorName),
+          setTimeout(() => {
+            setTransferAccept(false);
+          }, 1000);
+        AsyncStorage.setItem('showTransferPopup', 'true');
+        props.navigation.replace(AppRoutes.TabBar, {
+          TransferData: rowData.transferInfo,
+          TranferDateTime: data.data.bookTransferAppointment.appointment.appointmentDateTime,
+        });
       })
       .catch((e: string) => {
+        setLoading(false);
         setBottompopup(true);
       });
   };
 
-  const checkIfReschduleApi = (rowData: any) => {
+  const checkIfReschduleApi = (rowData: any, Value: string) => {
     console.log('checkIfReschduleApi', rowData);
 
     const inputData = {
       existAppointmentId: rowData.transferInfo.appointmentId,
-      rescheduleDate: rowData.transferInfo.folloupDateTime,
+      rescheduleDate:
+        Value === 'Followup'
+          ? rowData.transferInfo.folloupDateTime
+          : rowData.transferInfo.transferDateTime,
     };
     console.log('inputData', inputData);
+    setLoading(true);
 
     client
       .query<checkIfReschedule, checkIfRescheduleVariables>({
@@ -1746,6 +1872,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((_data: any) => {
+        setLoading(false);
+
         const result = _data.data.checkIfReschedule;
         console.log('checkIfReschedulesuccess', result);
         try {
@@ -1760,45 +1888,53 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         } catch (error) {}
 
         setLoading(false);
-        if (result.isPaid == 1) {
-          Alert.alert('Payment Integration');
-        } else {
-        }
+        // if (result.isPaid == 1) {
+        //   Alert.alert('Payment Integration');
+        // } else {
+        // }
       })
       .catch((e: any) => {
         setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while checkIfRescheduleprofile', error);
-        Alert.alert('Error', error.message);
+        // Alert.alert('Error', error.message);
       });
   };
 
-  const NextAvailableSlot = (rowData: any) => {
+  const NextAvailableSlot = (rowData: any, Value: string) => {
     console.log('NextAvailableSlot', rowData);
+    setLoading(true);
 
     const todayDate = moment
-      .utc(rowData.transferInfo.folloupDateTime)
+      .utc(
+        Value === 'Followup'
+          ? rowData.transferInfo.folloupDateTime
+          : rowData.transferInfo.transferDateTime
+      )
       .local()
       .format('YYYY-MM-DD');
     console.log('todayDate', todayDate);
+
+    const slotDoctorId =
+      Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
+    console.log('slotDoctorId', slotDoctorId);
+    setDoctorScheduleId(slotDoctorId);
 
     client
       .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
         query: NEXT_AVAILABLE_SLOT,
         variables: {
           DoctorNextAvailableSlotInput: {
-            doctorIds: rowData.transferInfo.doctorId,
+            doctorIds: slotDoctorId,
             availableDate: todayDate,
           },
         },
         fetchPolicy: 'no-cache',
       })
       .then((_data: any) => {
+        setLoading(false);
         try {
-          console.log(
-            'checkIfReschedulesuccess',
-            _data.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
-          );
+          console.log('checkIfReschedulesuccess', _data);
           setNextSlotAvailable(
             _data.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
           );
@@ -1812,6 +1948,36 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while checkIfRescheduleprofile', error);
+      });
+  };
+
+  const rescheduleAPI = (rowData: any, bookRescheduleInput: any) => {
+    console.log('rescheduleAPI', rowData);
+    setLoading(true);
+
+    console.log(bookRescheduleInput, 'bookRescheduleInput');
+    client
+      .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
+        mutation: BOOK_APPOINTMENT_RESCHEDULE,
+        variables: {
+          bookRescheduleAppointmentInput: bookRescheduleInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        console.log(data, 'data');
+        setLoading(false);
+        props.navigation.replace(AppRoutes.TabBar, {
+          Data:
+            data.data &&
+            data.data.bookRescheduleAppointment &&
+            data.data.bookRescheduleAppointment.appointmentDetails,
+        });
+      })
+      .catch((e: string) => {
+        console.log(e, 'error');
+        setLoading(false);
+        setBottompopup(true);
       });
   };
 
@@ -2694,6 +2860,60 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const options = {
+    quality: 0.1,
+    storageOptions: {
+      skipBackup: true,
+      path: 'images',
+    },
+  };
+
+  const uploadDocument = (resource: any) => {
+    try {
+      const fileType = resource.uri!.substring(resource.uri!.lastIndexOf('.') + 1);
+      console.log('upload fileType', fileType);
+      setLoading(true);
+
+      client
+        .mutate<uploadFile, uploadFileVariables>({
+          mutation: UPLOAD_FILE,
+          fetchPolicy: 'no-cache',
+          variables: {
+            fileType: fileType,
+            base64FileInput: resource.data,
+          },
+        })
+        .then((data) => {
+          console.log('upload data', data);
+          setLoading(false);
+
+          const text = {
+            id: patientId,
+            message: imageconsult,
+            fileType: 'image',
+            url: data.data && data.data.uploadFile.filePath,
+          };
+
+          pubnub.publish(
+            {
+              channel: channel,
+              message: text,
+              storeInHistory: true,
+              sendByPost: true,
+            },
+            (status, response) => {}
+          );
+        })
+        .catch((e) => {
+          setLoading(false);
+
+          console.log('upload data error', e);
+        });
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
 
@@ -2786,7 +3006,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 }}
               >
                 Consultation ended in — {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                {seconds.toString().length < 2 ? '0' + seconds : seconds} min+
+                {seconds.toString().length < 2 ? '0' + seconds : seconds} min
                 {minutes > 1 ? 's' : ''}
               </Text>
             )}
@@ -2826,65 +3046,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={async () => {
-                  if (messageText.length == 0) {
-                    //Alert.alert('Apollo', 'Please write something to send');
-                    setDropdownVisible(!isDropdownVisible);
-                    return;
-                  }
+                  // if (messageText.length == 0) {
+                  //Alert.alert('Apollo', 'Please write something to send');
+                  setDropdownVisible(!isDropdownVisible);
+                  // return;
+                  // }
                 }}
               >
-                {/* {isDropdownVisible == true ? (
-                  <View
-                    style={{
-                      width: 200,
-                      bottom: -15,
-                      position: 'absolute',
-                      right: -15,
-                      shadowColor: '#808080',
-                      shadowOffset: { width: 0, height: 5 },
-                      shadowOpacity: 0.4,
-                      shadowRadius: 20,
-                      elevation: 16,
-                      zIndex: 2,
-                    }}
-                  >
-                    <DropDown
-                      options={[
-                        {
-                          optionText: 'Camera',
-                          onPress: () => {
-                            setDropdownVisible(false);
-                          },
-                        },
-                        {
-                          optionText: 'Document',
-
-                          onPress: () => {
-                            try {
-                              const results = DocumentPicker.pickMultiple({
-                                type: [DocumentPicker.types.allFiles],
-                              });
-                              console.log('results', results);
-                              setDropdownVisible(false);
-                            } catch (err) {
-                              if (DocumentPicker.isCancel(err)) {
-                                // User cancelled the picker, exit any dialogs or menus and move on
-                              } else {
-                                throw err;
-                              }
-                            }
-                          },
-                        },
-                        {
-                          optionText: 'Gallery',
-                          onPress: () => {
-                            setDropdownVisible(false);
-                          },
-                        },
-                      ]}
-                    />
-                  </View>
-                ) : null} */}
                 <AddAttachmentIcon
                   style={{ width: 22, height: 22, marginTop: 18, marginLeft: 22, zIndex: -1 }}
                 />
@@ -2944,6 +3112,68 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
+      {displayoverlay && transferData && (
+        <OverlayRescheduleView
+          setdisplayoverlay={() => setdisplayoverlay(false)}
+          navigation={props.navigation}
+          doctor={transferData ? transferData.doctorInfo : null}
+          patientId={currentPatient ? currentPatient.id : ''}
+          clinics={transferData ? transferData.doctorInfo.doctorHospital : []}
+          doctorId={doctorScheduleId}
+          renderTab={
+            appointmentData.appointmentType === 'ONLINE' ? 'Consult Online' : 'Visit Clinic'
+          }
+          rescheduleCount={newRescheduleCount!}
+          appointmentId={transferData.appointmentId}
+          data={transferData}
+          bookFollowUp={false}
+        />
+      )}
+      <View>
+        {isDropdownVisible == true ? (
+          <View
+            style={{
+              width: 200,
+              bottom: 15,
+              position: 'absolute',
+              right: 15,
+              shadowColor: '#808080',
+              shadowOffset: { width: 0, height: 5 },
+              shadowOpacity: 0.4,
+              shadowRadius: 20,
+              elevation: 25,
+              zIndex: 2,
+            }}
+          >
+            <DropDown
+              cardContainer={{
+                elevation: 25,
+              }}
+              options={[
+                {
+                  optionText: 'Camera',
+                  onPress: () => {
+                    setDropdownVisible(false);
+                    ImagePicker.launchCamera(options, (response) => {
+                      uploadDocument(response);
+                    });
+                  },
+                },
+                {
+                  optionText: 'Gallery',
+                  onPress: () => {
+                    setDropdownVisible(false);
+                    ImagePicker.launchImageLibrary(options, (response) => {
+                      console.log('response', response);
+                      uploadDocument(response);
+                    });
+                  },
+                },
+              ]}
+            />
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 };

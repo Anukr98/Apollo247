@@ -193,14 +193,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     console.log('error', appointmentData.error);
   } else {
     console.log(appointmentData, '00000000000');
-    if (
-      appointmentData &&
-      appointmentData.data &&
-      appointmentData.data.getAppointmentHistory &&
-      appointmentHistory !== appointmentData.data.getAppointmentHistory.appointmentsHistory
-    ) {
-      setAppointmentHistory(appointmentData.data.getAppointmentHistory.appointmentsHistory);
-    }
+    try {
+      if (
+        appointmentData &&
+        appointmentData.data &&
+        appointmentData.data.getAppointmentHistory &&
+        appointmentHistory !== appointmentData.data.getAppointmentHistory.appointmentsHistory
+      ) {
+        setAppointmentHistory(appointmentData.data.getAppointmentHistory.appointmentsHistory);
+      }
+    } catch {}
   }
 
   const { data, error } = useQuery<getDoctorDetailsById>(GET_DOCTOR_DETAILS_BY_ID, {
@@ -234,30 +236,32 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   if (availability.error) {
     console.log('error', availability.error);
   } else {
-    console.log(availability.data, 'availabilityData', 'availableSlots');
-    const doctorAvailalbeSlots = g(
-      availability,
-      'data',
-      'getDoctorNextAvailableSlot',
-      'doctorAvailalbeSlots'
-    );
-    console.log(doctorAvailalbeSlots, '1234567');
-    if (doctorAvailalbeSlots && availableInMin === undefined) {
-      const nextSlot = doctorAvailalbeSlots ? g(doctorAvailalbeSlots[0], 'availableSlot') : null;
-      const nextPhysicalSlot = doctorAvailalbeSlots
-        ? g(doctorAvailalbeSlots[0], 'physicalAvailableSlot')
-        : null;
+    try {
+      console.log(availability.data, 'availabilityData', 'availableSlots');
+      const doctorAvailalbeSlots = g(
+        availability,
+        'data',
+        'getDoctorNextAvailableSlot',
+        'doctorAvailalbeSlots'
+      );
+      console.log(doctorAvailalbeSlots, '1234567');
+      if (doctorAvailalbeSlots && availableInMin === undefined) {
+        const nextSlot = doctorAvailalbeSlots ? g(doctorAvailalbeSlots[0], 'availableSlot') : null;
+        const nextPhysicalSlot = doctorAvailalbeSlots
+          ? g(doctorAvailalbeSlots[0], 'physicalAvailableSlot')
+          : null;
 
-      console.log(nextSlot, 'nextSlot', nextPhysicalSlot);
-      if (nextSlot) {
-        const timeDiff: Number = timeDiffFromNow(nextSlot);
-        setavailableInMin(timeDiff);
+        console.log(nextSlot, 'nextSlot', nextPhysicalSlot);
+        if (nextSlot) {
+          const timeDiff: Number = timeDiffFromNow(nextSlot);
+          setavailableInMin(timeDiff);
+        }
+        if (nextPhysicalSlot) {
+          const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
+          setavailableInMinPhysical(timeDiff);
+        }
       }
-      if (nextPhysicalSlot) {
-        const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
-        setavailableInMinPhysical(timeDiff);
-      }
-    }
+    } catch (error) {}
   }
 
   const formatTime = (time: string) => {

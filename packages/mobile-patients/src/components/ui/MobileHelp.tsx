@@ -170,7 +170,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
         <Text style={[styles.fieldLabel, { marginBottom: 12 }]}>
           Please select a reason that best matches your query
         </Text>
-        <TouchableOpacity onPress={() => handleDropdownClick()}>
+        <TouchableOpacity activeOpacity={1} onPress={() => handleDropdownClick()}>
           <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
             <Text
               style={[
@@ -286,7 +286,11 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     submit(helpCategory, selectedQuery, comment)
       .then(() => {
         setShowSpinner(false);
-        props.navigation.goBack();
+        Alert.alert(
+          'Alert',
+          'Thank you for reaching out. Our team will call you back within 3 hours.',
+          [{ text: 'OK, GOT IT', onPress: () => props.navigation.goBack() }]
+        );
       })
       .catch((e) => {
         setShowSpinner(false);
