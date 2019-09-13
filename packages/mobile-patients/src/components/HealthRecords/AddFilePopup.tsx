@@ -216,7 +216,7 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.instructionsStyle}>3.</Text>
                 <Text style={[styles.instructionsStyle, { paddingLeft: 16 }]}>
-                  Use JPG and PDF file format only.
+                  Use JPG and PNG file format only.
                 </Text>
               </View>
               <View style={{ flexDirection: 'row' }}>

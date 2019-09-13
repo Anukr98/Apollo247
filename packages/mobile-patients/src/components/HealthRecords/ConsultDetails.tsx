@@ -1,6 +1,10 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { GET_CASESHEET_DETAILS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_CASESHEET_DETAILS,
+  GET_APPOINTMENT_DATA,
+  CHECK_IF_RESCHDULE,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getCaseSheet,
   getCaseSheetVariables,
@@ -11,11 +15,29 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  AsyncStorage,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
 import { ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
 import { Spinner } from '../ui/Spinner';
+import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { getAppointmentData } from '../../graphql/types/getAppointmentData';
+
+import { ConsultOverlay } from '../ConsultRoom/ConsultOverlay';
+import {
+  checkIfReschedule,
+  checkIfRescheduleVariables,
+} from '../../graphql/types/checkIfReschedule';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -77,12 +99,15 @@ export interface ConsultDetailsProps extends NavigationScreenProps {
   DoctorInfo: any;
   PatientId: any;
   appointmentType: string;
+  appointmentDate: any;
 }
 
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   console.log('consulcasesheetid', props.navigation.state.params!.CaseSheet);
   console.log('DoctorInfo', props.navigation.state.params!.DoctorInfo);
   console.log('FollowUp', props.navigation.state.params!.FollowUp);
+  console.log('appointmentDate', props.navigation.state.params!.appointmentDate);
+  const data = props.navigation.state.params!.DoctorInfo;
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
@@ -90,7 +115,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [caseSheetDetails, setcaseSheetDetails] = useState<
     getCaseSheet_getCaseSheet_caseSheetDetails
   >();
-
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [bookFollowUp, setBookFollowUp] = useState<boolean>(true);
+  const [isfollowcount, setIsfollowucount] = useState<number>(0);
+  const { currentPatient } = useAllCurrentPatients();
   useEffect(() => {
     setLoading(true);
     client
@@ -104,6 +132,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       .then((_data) => {
         setLoading(false);
         console.log('GET_CASESHEET_DETAILS', _data!);
+        console.log(
+          'isfollowupcasesheet',
+          _data!.data!.getCaseSheet!.caseSheetDetails!.isFollowUp!
+        );
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
       })
       .catch((error) => {
@@ -449,14 +481,35 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     console.log('appointmentid', props.navigation.state.params!.CaseSheet);
                     console.log('follwup', caseSheetDetails!.followUp);
                     console.log('appointmentType', props.navigation.state.params!.appointmentType);
-                    props.navigation.navigate(AppRoutes.DoctorDetails, {
-                      doctorId: props.navigation.state.params!.DoctorInfo.id,
-                      PatientId: props.navigation.state.params!.PatientId,
-                      FollowUp: caseSheetDetails!.followUp,
-                      appointmentType: props.navigation.state.params!.appointmentType,
-                      appointmentId: props.navigation.state.params!.CaseSheet,
-                      showBookAppointment: true,
-                    });
+                    client
+                      .query<getAppointmentData>({
+                        query: GET_APPOINTMENT_DATA,
+                        variables: {
+                          appointmentId: props.navigation.state.params!.CaseSheet,
+                        },
+                        fetchPolicy: 'no-cache',
+                      })
+                      .then(({ data }) => {
+                        console.log('getAppointmentData', data);
+
+                        // setBookFollowUp(
+                        //   data!.getAppointmentData &&
+                        //     data!.getAppointmentData!.appointmentsHistory[0].isFollowUp!
+                        // );
+                        setdisplayoverlay(true);
+                      })
+                      .catch((error) => {
+                        console.log('Error occured', { error });
+                      });
+                    // props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    //   doctorId: props.navigation.state.params!.DoctorInfo.id,
+                    //   PatientId: props.navigation.state.params!.PatientId,
+                    //   FollowUp: caseSheetDetails!.followUp,
+                    //   appointmentType: props.navigation.state.params!.appointmentType,
+                    //   appointmentId: props.navigation.state.params!.CaseSheet,
+                    //   showBookAppointment: true,
+                    // });
+                    //setdisplayoverlay(true);
                   }}
                 >
                   <Text
@@ -512,6 +565,35 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             {renderData()}
           </ScrollView>
           {loading && <Spinner />}
+
+          {displayoverlay && props.navigation.state.params!.DoctorInfo && (
+            <OverlayRescheduleView
+              setdisplayoverlay={() => setdisplayoverlay(false)}
+              navigation={props.navigation}
+              doctor={
+                props.navigation.state.params!.DoctorInfo
+                  ? props.navigation.state.params!.DoctorInfo
+                  : null
+              }
+              patientId={currentPatient ? currentPatient.id : ''}
+              clinics={
+                props.navigation.state.params!.DoctorInfo &&
+                props.navigation.state.params!.DoctorInfo.doctorHospital
+                  ? props.navigation.state.params!.DoctorInfo.doctorHospital
+                  : []
+              }
+              doctorId={
+                props.navigation.state.params!.DoctorInfo &&
+                props.navigation.state.params!.DoctorInfo.id
+              }
+              renderTab={'Consult Online'}
+              rescheduleCount={isfollowcount}
+              appointmentId={props.navigation.state.params!.CaseSheet}
+              bookFollowUp={bookFollowUp}
+              data={data}
+              KeyFollow={'Followup'}
+            />
+          )}
         </SafeAreaView>
       </View>
     );

@@ -19,6 +19,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   patientId: string;
   parentId: string | null;
   status: STATUS;
+  isFollowUp: number;
 }
 
 export interface getCaseSheet_getCaseSheet_caseSheetDetails_diagnosis {
