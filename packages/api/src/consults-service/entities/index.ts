@@ -53,6 +53,7 @@ export enum APPOINTMENT_STATE {
 export enum REQUEST_ROLES {
   DOCTOR = 'DOCTOR',
   PATIENT = 'PATIENT',
+  JUNIOR = 'JUNIOR',
 }
 
 export enum TRANSFER_STATUS {
@@ -256,6 +257,49 @@ export class AppointmentSessions extends BaseEntity {
   }
 }
 //AppointmentSessions ends
+
+//Junior AppointmentSessions starts
+@Entity()
+export class JuniorAppointmentSessions extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @OneToOne((type) => Appointment)
+  @JoinColumn()
+  appointment: Appointment;
+
+  @Column({ type: 'timestamp', nullable: true })
+  consultStartDateTime: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  consultEndDateTime: Date;
+
+  @Column()
+  sessionId: string;
+
+  @Column()
+  juniorDoctorToken: string;
+
+  @Column({ nullable: true })
+  patientToken: string;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//Junior AppointmentSessions ends
 
 //case sheet starts
 export enum MEDICINE_TIMINGS {

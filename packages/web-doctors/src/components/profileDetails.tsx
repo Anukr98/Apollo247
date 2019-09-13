@@ -12,6 +12,16 @@ import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import Scrollbars from 'react-custom-scrollbars';
 import { MyAccountFeeTab } from 'components/MyAccountFeeTab';
 import { MyAccountAvailabilityTab } from 'components/MyAccountAvailabilityTab';
+import { MyAccountSettings } from 'components/MyAccountSettings';
+import { MyAccountStats } from 'components/MyAccountStats';
+import { MyAccountPrescription } from 'components/MyAccountPrescription';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
+import { useAuth } from 'hooks/authHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -197,6 +207,8 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const MyAccount: React.FC = (props) => {
   const classes = useStyles();
+  const { signOut } = useAuth();
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
   const getDoctorDetailsData = data && data.getDoctorDetails ? data.getDoctorDetails : null;
   const [selectedNavTab, setselectedNavTab] = React.useState(1);
@@ -204,6 +216,7 @@ export const MyAccount: React.FC = (props) => {
   if (error || !getDoctorDetailsData) return <div>error :(</div>;
   const doctorProfile = getDoctorDetailsData;
   const clinics = getDoctorDetailsData.doctorHospital || [];
+
   const onNext = () => {};
   const onBack = () => {};
   return (
@@ -245,17 +258,29 @@ export const MyAccount: React.FC = (props) => {
                       </Typography>
                     </div>
                   </Paper>
-                  <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
-                    <div className={classes.leftNav}>
+                  <Paper
+                    className={`${classes.serviceItemLeft} ${
+                      classes.tabContent
+                    } ${selectedNavTab === 0 && classes.tabActive}`}
+                  >
+                    <div onClick={() => setselectedNavTab(0)} className={classes.leftNav}>
                       <img
                         alt=""
-                        src={require('images/ic_stats.svg')}
+                        src={
+                          selectedNavTab === 0
+                            ? require('images/ic_stats_white.svg')
+                            : require('images/ic_stats.svg')
+                        }
                         className={classes.navLeftIcon}
                       />
                       My Stats
                       <img
                         alt=""
-                        src={require('images/ic_rightarrow.svg')}
+                        src={
+                          selectedNavTab === 0
+                            ? require('images/ic_rightarrowwhite.svg')
+                            : require('images/ic_rightarrow.svg')
+                        }
                         className={classes.navRightIcon}
                       />
                     </div>
@@ -341,32 +366,82 @@ export const MyAccount: React.FC = (props) => {
                       />
                     </div>
                   </Paper>
-                  <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
-                    <div className={classes.leftNav}>
+                  <Paper
+                    className={`${classes.serviceItemLeft} ${
+                      classes.tabContent
+                    } ${selectedNavTab === 4 && classes.tabActive}`}
+                  >
+                    <div onClick={() => setselectedNavTab(4)} className={classes.leftNav}>
                       <img
                         alt=""
-                        src={require('images/ic_smart_prescription.svg')}
+                        src={
+                          selectedNavTab === 4
+                            ? require('images/ic_smart_prescription_white.svg')
+                            : require('images/ic_smart_prescription.svg')
+                        }
                         className={classes.navLeftIcon}
                       />
                       Smart Prescription
                       <img
                         alt=""
-                        src={require('images/ic_rightarrow.svg')}
+                        src={
+                          selectedNavTab === 4
+                            ? require('images/ic_rightarrowwhite.svg')
+                            : require('images/ic_rightarrow.svg')
+                        }
                         className={classes.navRightIcon}
                       />
                     </div>
                   </Paper>
-                  <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
-                    <div className={classes.leftNav}>
+                  <Paper
+                    className={`${classes.serviceItemLeft} ${
+                      classes.tabContent
+                    } ${selectedNavTab === 5 && classes.tabActive}`}
+                  >
+                    <div onClick={() => setselectedNavTab(5)} className={classes.leftNav}>
                       <img
                         alt=""
-                        src={require('images/ic_settings.svg')}
+                        src={
+                          selectedNavTab === 5
+                            ? require('images/ic_settings_white.svg')
+                            : require('images/ic_settings.svg')
+                        }
                         className={classes.navLeftIcon}
                       />
                       Settings
                       <img
                         alt=""
-                        src={require('images/ic_rightarrow.svg')}
+                        src={
+                          selectedNavTab === 5
+                            ? require('images/ic_rightarrowwhite.svg')
+                            : require('images/ic_rightarrow.svg')
+                        }
+                        className={classes.navRightIcon}
+                      />
+                    </div>
+                  </Paper>
+                  <Paper
+                    className={`${classes.serviceItemLeft} ${classes.tabContent} ${isDialogOpen &&
+                      classes.tabActive}`}
+                  >
+                    <div onClick={() => setIsDialogOpen(true)} className={classes.leftNav}>
+                      <img
+                        alt=""
+                        src={
+                          isDialogOpen
+                            ? require('images/ic_profilenav_white.svg')
+                            : require('images/ic_profilenav.svg')
+                        }
+                        className={classes.navLeftIcon}
+                      />
+                      Log Out
+                      <img
+                        alt=""
+                        src={
+                          isDialogOpen
+                            ? require('images/ic_rightarrowwhite.svg')
+                            : require('images/ic_rightarrow.svg')
+                        }
                         className={classes.navRightIcon}
                       />
                     </div>
@@ -374,8 +449,15 @@ export const MyAccount: React.FC = (props) => {
                 </Grid>
                 <Grid item lg={9} sm={6} xs={12} className={classes.tabLeftcontent}>
                   <div className={classes.outerContainer}>
-                    {selectedNavTab === 1 ? (
-                      <MyProfile doctor={doctorProfile} clinics={clinics} />
+                    {selectedNavTab === 0 ? (
+                      <MyAccountStats />
+                    ) : selectedNavTab === 2 ? (
+                      <MyAccountAvailabilityTab
+                        values={doctorProfile}
+                        onNext={() => onNext()}
+                        onBack={() => onBack()}
+                        key={3}
+                      />
                     ) : selectedNavTab === 3 ? (
                       <MyAccountFeeTab
                         values={doctorProfile}
@@ -383,17 +465,39 @@ export const MyAccount: React.FC = (props) => {
                         onBack={() => onBack()}
                         key={3}
                       />
+                    ) : selectedNavTab === 4 ? (
+                      <MyAccountPrescription />
+                    ) : selectedNavTab === 5 ? (
+                      <MyAccountSettings />
                     ) : (
-                      <MyAccountAvailabilityTab
-                        values={doctorProfile}
-                        onNext={() => onNext()}
-                        onBack={() => onBack()}
-                        key={3}
-                      />
+                      <MyProfile doctor={doctorProfile} clinics={clinics} />
                     )}
                   </div>
                 </Grid>
               </Grid>
+              <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+                <DialogTitle>{''}</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    You are successfully Logged in with Apollo 24x7
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    color="primary"
+                    onClick={() => {
+                      signOut();
+                      localStorage.removeItem('loggedInMobileNumber');
+                      sessionStorage.removeItem('mobileNumberSession');
+                    }}
+                  >
+                    Sign out
+                  </Button>
+                  <Button color="primary" onClick={() => setIsDialogOpen(false)} autoFocus>
+                    Close
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </div>
           </div>
         </div>
