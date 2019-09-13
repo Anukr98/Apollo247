@@ -145,16 +145,97 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CaseSheet: React.FC = () => {
+interface CashSheetProps {
+  startAppointment: boolean;
+}
+
+export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const classes = useStyles();
-  const [expanded, setExpanded] = useState<string | boolean>(false);
-  const handlePanelExpansion = (panelName: string) => (
+
+  const [symptoms, setSymptoms] = useState<boolean>(props.startAppointment);
+  const [lifestyle, setLifestyle] = useState<boolean>(props.startAppointment);
+  const [healthVault, setHealthVault] = useState<boolean>(props.startAppointment);
+  const [note, setNotes] = useState<boolean>(props.startAppointment);
+  const [diagnosis, setDiagnosis] = useState<boolean>(props.startAppointment);
+  const [medicinePrescription, setMedicinePrescription] = useState<boolean>(props.startAppointment);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(
+    props.startAppointment
+  );
+  const [followUp, setFollowUp] = useState<boolean>(props.startAppointment);
+  const [otherInstructions, setOtherInstructions] = useState<boolean>(props.startAppointment);
+  const items = [
+    { key: 'symptoms', value: 'Symptoms', state: symptoms, component: <Symptoms /> },
+    {
+      key: 'lifestyle',
+      value: 'Patient History & Lifestyle',
+      state: lifestyle,
+      component: <LifeStyle />,
+    },
+    {
+      key: 'healthVault',
+      value: 'Patient Health Vault',
+      state: healthVault,
+      component: <HealthVault />,
+    },
+    { key: 'note', value: "Junior Doctor's Notes", state: note, component: <DoctorsNotes /> },
+    { key: 'diagnosis', value: 'Diagnosis', state: diagnosis, component: <Diagnosis /> },
+    {
+      key: 'medicinePrescription',
+      value: 'Medicines',
+      state: medicinePrescription,
+      component: <MedicinePrescription />,
+    },
+    {
+      key: 'diagnosticPrescription',
+      value: 'Tests',
+      state: diagnosticPrescription,
+      component: <DiagnosticPrescription />,
+    },
+    { key: 'followup', value: 'Follow up', state: followUp, component: <FollowUp /> },
+    {
+      key: 'otherInstructions',
+      value: 'Other Instructions',
+      state: otherInstructions,
+      component: <OtherInstructions />,
+    },
+  ];
+
+  const handlePanelExpansion = (expansionKey: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
-  ) => setExpanded(isExpanded ? panelName : false);
+  ) => {
+    switch (expansionKey) {
+      case 'symptoms':
+        setSymptoms(isExpanded);
+        break;
+      case 'lifestyle':
+        setLifestyle(isExpanded);
+        break;
+      case 'healthVault':
+        setHealthVault(isExpanded);
+        break;
+      case 'note':
+        setNotes(isExpanded);
+        break;
+      case 'diagnosis':
+        setDiagnosis(isExpanded);
+        break;
+      case 'medicinePrescription':
+        setMedicinePrescription(isExpanded);
+        break;
+      case 'diagnosticPrescription':
+        setDiagnosticPrescription(isExpanded);
+        break;
+      case 'followup':
+        setFollowUp(isExpanded);
+        break;
+      case 'otherInstructions':
+        setOtherInstructions(isExpanded);
+        break;
+    }
+  };
 
   const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContext);
-  //const expandedValue: boolean = caseSheetEdit ? true : false;
   return (
     <div className={classes.container}>
       <div className={classes.caseSheet}>
@@ -162,140 +243,18 @@ export const CaseSheet: React.FC = () => {
           <UserCard />
         </section>
         <section className={classes.column}>
-          {/* Symptoms Panel */}
-          <ExpansionPanel
-            expanded={expanded === 'symptoms'}
-            //expanded={expandedValue}
-            onChange={handlePanelExpansion('symptoms')}
-            className={classes.expandIcon}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Symptoms</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <Symptoms />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-
-          {/* Patient History & Lifestyle Panel */}
-          <ExpansionPanel
-            expanded={expanded === 'lifestyle'}
-            //expanded={expandedValue}
-            onChange={handlePanelExpansion('lifestyle')}
-            className={classes.expandIcon}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Patient History &amp; Lifestyle</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <LifeStyle />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-
-          {/* Patient Health Vault Panel */}
-          <ExpansionPanel
-            expanded={expanded === 'healthVault'}
-            //expanded={expandedValue}
-            onChange={handlePanelExpansion('healthVault')}
-            className={classes.expandIcon}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Patient Health Vault</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <HealthVault />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-
-          {/* Juniour Doctor's Notes Panel */}
-          <ExpansionPanel
-            expanded={expanded === 'notes'}
-            //expanded={expandedValue}
-            onChange={handlePanelExpansion('notes')}
-            className={classes.expandIcon}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Junior Doctor's Notes</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <DoctorsNotes />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-
-          {/* Diagnosis Panel */}
-          <ExpansionPanel
-            expanded={expanded === 'diagnosis'}
-            //expanded={expandedValue}
-            onChange={handlePanelExpansion('diagnosis')}
-            className={classes.expandIcon}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Diagnosis</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <Diagnosis />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-
-          {/* Medicine Prescription Panel */}
-          <ExpansionPanel
-            expanded={expanded === 'medicinePrescription'}
-            //expanded={expandedValue}
-            onChange={handlePanelExpansion('medicinePrescription')}
-            className={classes.expandIcon}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Medicines</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <MedicinePrescription />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-
-          {/* Diagnostic Prescription Panel */}
-          <ExpansionPanel
-            expanded={expanded === 'diagnosticPrescription'}
-            //expanded={expandedValue}
-            onChange={handlePanelExpansion('diagnosticPrescription')}
-            className={classes.expandIcon}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Tests</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <DiagnosticPrescription />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-
-          {/* Follow Up Panel */}
-          <ExpansionPanel
-            expanded={expanded === 'followup'}
-            //expanded={expandedValue}
-            onChange={handlePanelExpansion('followup')}
-            className={classes.expandIcon}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Follow up</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <FollowUp />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
-
-          {/* Other Instructions Panel */}
-          <ExpansionPanel
-            expanded={expanded === 'otherInstructions'}
-            // expanded={expandedValue}
-            onChange={handlePanelExpansion('otherInstructions')}
-            className={classes.expandIcon}
-          >
-            <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="h3">Other Instructions</Typography>
-            </ExpansionPanelSummary>
-            <ExpansionPanelDetails>
-              <OtherInstructions />
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
+          {items.map((item) => (
+            <ExpansionPanel
+              expanded={item.state}
+              onChange={handlePanelExpansion(item.key)}
+              className={classes.expandIcon}
+            >
+              <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="h3">{item.value}</Typography>
+              </ExpansionPanelSummary>
+              <ExpansionPanelDetails>{item.component}</ExpansionPanelDetails>
+            </ExpansionPanel>
+          ))}
         </section>
       </div>
       <Divider className={classes.divider} />
