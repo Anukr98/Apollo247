@@ -561,7 +561,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   // timer for audio/video call end
   const [anchorEl, setAnchorEl] = React.useState(null);
-  // const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
