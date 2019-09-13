@@ -402,8 +402,8 @@ export const JDConsultRoom: React.FC = () => {
   const patientAge = differenceInYears(new Date(), parseISO(patientDob));
   const patientGender =
     casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
-      ? casesheetInfo.getCaseSheet.patientDetails.gender
-      : Gender.OTHER;
+      ? _startCase(_toLower(casesheetInfo.getCaseSheet.patientDetails.gender))
+      : '';
 
   const patientAppointmentId =
     (casesheetInfo &&
@@ -558,16 +558,16 @@ export const JDConsultRoom: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
-          console.log(_data!.data!.updateCaseSheet!.blobName);
-          const url =
-            'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
-            _data!.data!.updateCaseSheet!.blobName;
-          setPrescriptionPdf(url);
-        }
-        if (!flag) {
-          setIsPopoverOpen(true);
-        }
+        // if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
+        //   console.log(_data!.data!.updateCaseSheet!.blobName);
+        //   const url =
+        //     'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
+        //     _data!.data!.updateCaseSheet!.blobName;
+        //   setPrescriptionPdf(url);
+        // }
+        // if (!flag) {
+        //   setIsPopoverOpen(true);
+        // }
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -579,62 +579,10 @@ export const JDConsultRoom: React.FC = () => {
 
   const endConsultAction = () => {
     saveCasesheetAction(false);
-    // client
-    //   .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-    //     mutation: UPDATE_CASESHEET,
-    //     variables: {
-    //       UpdateCaseSheetInput: {
-    //         symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-    //         notes,
-    //         diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
-    //         diagnosticPrescription:
-    //           diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
-    //         followUp: followUp[0],
-    //         followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
-    //         followUpAfterInDays:
-    //           followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
-    //         otherInstructions:
-    //           otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
-    //         medicinePrescription:
-    //           medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
-    //         id: caseSheetId,
-    //       },
-    //     },
-    //     fetchPolicy: 'no-cache',
-    //   })
-    //   .then((_data) => {
-    //     console.log('_data', _data);
-    //     endConsultActionFinal();
-    //   })
-    //   .catch((e) => {
-    //     console.log('Error occured while update casesheet', e);
-    //   });
   };
 
   const endConsultActionFinal = () => {
-    client
-      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
-        mutation: END_APPOINTMENT_SESSION,
-        variables: {
-          endAppointmentSessionInput: {
-            appointmentId: appointmentId,
-            status: STATUS.COMPLETED,
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        // setIsPopoverOpen(true);
-        setIsEnded(true);
-        console.log('_data', _data);
-      })
-      .catch((e) => {
-        console.log('Error occured while End casesheet', e);
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while End casesheet', errorMessage, error);
-        alert(errorMessage);
-      });
+    console.log('end consultation.......final...');
   };
 
   const createSessionAction = () => {
@@ -829,7 +777,7 @@ export const JDConsultRoom: React.FC = () => {
           <div className={classes.tabBody}>
             {}
             <h3>
-              You're ending your consult with{' '}
+              You're ending your consult with
               {casesheetInfo &&
                 casesheetInfo !== null &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
