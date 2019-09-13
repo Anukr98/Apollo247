@@ -13,6 +13,8 @@ import Scrollbars from 'react-custom-scrollbars';
 import { MyAccountFeeTab } from 'components/MyAccountFeeTab';
 import { MyAccountAvailabilityTab } from 'components/MyAccountAvailabilityTab';
 import { MyAccountSettings } from 'components/MyAccountSettings';
+import { MyAccountStats } from 'components/MyAccountStats';
+import { MyAccountPrescription } from 'components/MyAccountPrescription';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -256,17 +258,29 @@ export const MyAccount: React.FC = (props) => {
                       </Typography>
                     </div>
                   </Paper>
-                  <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
-                    <div className={classes.leftNav}>
+                  <Paper
+                    className={`${classes.serviceItemLeft} ${
+                      classes.tabContent
+                    } ${selectedNavTab === 0 && classes.tabActive}`}
+                  >
+                    <div onClick={() => setselectedNavTab(0)} className={classes.leftNav}>
                       <img
                         alt=""
-                        src={require('images/ic_stats.svg')}
+                        src={
+                          selectedNavTab === 0
+                            ? require('images/ic_stats_white.svg')
+                            : require('images/ic_stats.svg')
+                        }
                         className={classes.navLeftIcon}
                       />
                       My Stats
                       <img
                         alt=""
-                        src={require('images/ic_rightarrow.svg')}
+                        src={
+                          selectedNavTab === 0
+                            ? require('images/ic_rightarrowwhite.svg')
+                            : require('images/ic_rightarrow.svg')
+                        }
                         className={classes.navRightIcon}
                       />
                     </div>
@@ -352,17 +366,29 @@ export const MyAccount: React.FC = (props) => {
                       />
                     </div>
                   </Paper>
-                  <Paper className={`${classes.serviceItemLeft} ${classes.tabContent}`}>
-                    <div className={classes.leftNav}>
+                  <Paper
+                    className={`${classes.serviceItemLeft} ${
+                      classes.tabContent
+                    } ${selectedNavTab === 4 && classes.tabActive}`}
+                  >
+                    <div onClick={() => setselectedNavTab(4)} className={classes.leftNav}>
                       <img
                         alt=""
-                        src={require('images/ic_smart_prescription.svg')}
+                        src={
+                          selectedNavTab === 4
+                            ? require('images/ic_smart_prescription_white.svg')
+                            : require('images/ic_smart_prescription.svg')
+                        }
                         className={classes.navLeftIcon}
                       />
                       Smart Prescription
                       <img
                         alt=""
-                        src={require('images/ic_rightarrow.svg')}
+                        src={
+                          selectedNavTab === 4
+                            ? require('images/ic_rightarrowwhite.svg')
+                            : require('images/ic_rightarrow.svg')
+                        }
                         className={classes.navRightIcon}
                       />
                     </div>
@@ -423,7 +449,9 @@ export const MyAccount: React.FC = (props) => {
                 </Grid>
                 <Grid item lg={9} sm={6} xs={12} className={classes.tabLeftcontent}>
                   <div className={classes.outerContainer}>
-                    {selectedNavTab === 2 ? (
+                    {selectedNavTab === 0 ? (
+                      <MyAccountStats />
+                    ) : selectedNavTab === 2 ? (
                       <MyAccountAvailabilityTab
                         values={doctorProfile}
                         onNext={() => onNext()}
@@ -437,6 +465,8 @@ export const MyAccount: React.FC = (props) => {
                         onBack={() => onBack()}
                         key={3}
                       />
+                    ) : selectedNavTab === 4 ? (
+                      <MyAccountPrescription />
                     ) : selectedNavTab === 5 ? (
                       <MyAccountSettings />
                     ) : (
