@@ -173,7 +173,7 @@ export const CaseSheet: React.FC = () => {
       </ExpansionPanel>
 
       {/* Patient History & Lifestyle Panel */}
-      <ExpansionPanel
+      {/* <ExpansionPanel
         expanded={expanded === 'lifestyle'}
         onChange={handlePanelExpansion('lifestyle')}
         className={classes.expandIcon}
@@ -184,7 +184,7 @@ export const CaseSheet: React.FC = () => {
         <ExpansionPanelDetails>
           <LifeStyle />
         </ExpansionPanelDetails>
-      </ExpansionPanel>
+      </ExpansionPanel> */}
 
       {/* Patient Health Vault Panel */}
       <ExpansionPanel
@@ -201,7 +201,7 @@ export const CaseSheet: React.FC = () => {
       </ExpansionPanel>
 
       {/* Juniour Doctor's Notes Panel */}
-      <ExpansionPanel
+      {/* <ExpansionPanel
         expanded={expanded === 'notes'}
         onChange={handlePanelExpansion('notes')}
         className={classes.expandIcon}
@@ -212,7 +212,7 @@ export const CaseSheet: React.FC = () => {
         <ExpansionPanelDetails>
           <DoctorsNotes />
         </ExpansionPanelDetails>
-      </ExpansionPanel>
+      </ExpansionPanel> */}
 
       {/* Diagnosis Panel */}
       <ExpansionPanel
@@ -235,7 +235,7 @@ export const CaseSheet: React.FC = () => {
         className={classes.expandIcon}
       >
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Medicine Prescription</Typography>
+          <Typography variant="h3">Medicines</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
           <MedicinePrescription />
@@ -249,7 +249,7 @@ export const CaseSheet: React.FC = () => {
         className={classes.expandIcon}
       >
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Diagnostic Prescription</Typography>
+          <Typography variant="h3">Tests</Typography>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails>
           <DiagnosticPrescription />
@@ -286,7 +286,7 @@ export const CaseSheet: React.FC = () => {
       <Divider className={classes.divider} />
       <Box boxShadow={5} borderRadius={10} className={classes.notesContainer}>
         <Typography component="h4" variant="h4" className={classes.notesHeader}>
-          Personal Notes
+          Notes
         </Typography>
         <Typography component="div" className={classes.textFieldWrapper}>
           <InputBase
