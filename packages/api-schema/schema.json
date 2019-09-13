@@ -3377,7 +3377,7 @@
         "description": null,
         "fields": [
           {
-            "name": "FamilyHistoryList",
+            "name": "familyHistoryList",
             "description": null,
             "args": [],
             "type": {

@@ -437,12 +437,16 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     doctorSearch: {
-      position: 'relative',
       display: 'block',
       padding: 10,
       zIndex: 9,
+      color: '#02475b',
       backgroundColor: '#fff',
       borderRadius: 10,
+      position: 'absolute',
+      width: '95%',
+      maxHeight: 200,
+      overflow: 'auto',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
       '& h6': {
         color: 'rgba(2,71,91,0.3)',
@@ -462,6 +466,12 @@ const useStyles = makeStyles((theme: Theme) => {
           '&:hover': {
             cursor: 'pointer',
           },
+        },
+        '& span': {
+          color: 'rgba(0, 0, 0, 0.87)',
+          zIndex: 9,
+          fontSize: '14px',
+          fontWeight: 'normal',
         },
       },
       '& p': {
@@ -583,6 +593,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [searchKeyWord, setSearchKeyword] = React.useState('');
   const [noteKeyword, setNoteKeyword] = React.useState('');
   const [isDoctorOrSpeciality, setIsDoctorOrSpeciality] = useState(false);
+  const [isDoctorSelected, setIsDoctorSelected] = useState(false);
+  const [isDoctorFound, setIsDoctorFound] = useState(true);
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<any>([]);
   const [filterSpeciality, setFilterSpeciality] = useState<any>([]);
   const {
@@ -1622,6 +1634,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 classes={{ root: classes.searchInput }}
                 placeholder="Search for Doctor/Speciality"
                 onChange={(e: any) => {
+                  setIsDoctorSelected(false);
                   setSearchKeyword(e.target.value);
                   if (e.target.value.length > 1) {
                     doctorSpeciality(e.target.value);
@@ -1644,19 +1657,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               {isDoctorOrSpeciality && searchKeyWord.length > 1 && (
                 <span className={classes.doctorSearch}>
                   <h6>Doctor(s)</h6>
-                  {filteredStarDoctors!.length > 0 ? (
+                  {filteredStarDoctors!.length > 0 && isDoctorFound ? (
                     <ul>
                       {filteredStarDoctors!.map((item: any, idx: any) => (
                         <li
                           key={idx}
                           onClick={() => {
                             handleDoctorClick(item);
+                            setIsDoctorSelected(true);
                           }}
                         >
-                          {props.doctorId !== item.id &&
-                            `${item.salutation.charAt(0).toUpperCase()}${item.salutation
-                              .slice(1)
-                              .toLowerCase()}. ${item.firstName} ${item.lastName}`}
+                          {props.doctorId !== item.id
+                            ? `${item.salutation.charAt(0).toUpperCase()}${item.salutation
+                                .slice(1)
+                                .toLowerCase()}. ${item.firstName} ${item.lastName}`
+                            : filteredStarDoctors!.length === 1 && <span>No Doctors found</span>}
                         </li>
                       ))}
                     </ul>
@@ -1671,6 +1686,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           key={idx}
                           onClick={() => {
                             handleSpecialityClick(item);
+                            setIsDoctorSelected(true);
                           }}
                         >
                           {item.name}
@@ -1706,9 +1722,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </Button>
               <Button
                 className={classes.ResheduleCosultButton}
-                disabled={
-                  (textOtherTransfer && otherTextTransferValue === '') || searchKeyWord == ''
-                }
+                disabled={(textOtherTransfer && otherTextTransferValue === '') || !isDoctorSelected}
                 onClick={() => {
                   //setIsTransferPopoverOpen(false);
                   //resheduleCosult();
