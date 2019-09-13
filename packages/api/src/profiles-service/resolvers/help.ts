@@ -96,7 +96,11 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
       appointment.appointmentDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
       if (appointment.caseSheet.length > 0) {
         appointment.caseSheet.forEach((caseSheet) => {
-          if (caseSheet.doctorType == 'JUNIOR') {
+          if (
+            caseSheet.doctorType == 'JUNIOR' &&
+            caseSheet.blobName &&
+            caseSheet.blobName.length > 0
+          ) {
             data.eprescriptionURL = client.getBlobUrl(caseSheet.blobName);
           }
         });
@@ -205,7 +209,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
           </li>
           <li>Date and Time of Order : <%- order.orderDateTime %></li>
           <% if(order.prescriptionUrl != null) {  %>
-            <li>Prescription : order.prescriptionUrl /></li>
+            <li>Prescription : <%- order.prescriptionUrl %></li>
           <% } %> 
       </ul>
     </li>
