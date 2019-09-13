@@ -48,15 +48,18 @@ export const convertCaseSheetToRxPdfData = async (
     });
   }
 
-  console.log('------------', prescriptions);
-
   const caseSheetOtherInstructions = JSON.parse(
     JSON.stringify(caseSheet.otherInstructions)
   ) as CaseSheetOtherInstruction[];
-  let generalAdvice;
+
+  type GeneralAdviceData = {
+    title: string;
+    description: string[];
+  };
+  let generalAdvice: GeneralAdviceData[] | [];
 
   if (caseSheet.otherInstructions == null || caseSheet.otherInstructions == '') {
-    generalAdvice = [{ title: '', description: [] }];
+    generalAdvice = [];
   } else {
     generalAdvice = caseSheetOtherInstructions.map((otherInst) => ({
       title: otherInst.instruction,
@@ -67,9 +70,13 @@ export const convertCaseSheetToRxPdfData = async (
   const caseSheetDiagnoses = JSON.parse(
     JSON.stringify(caseSheet.diagnosis)
   ) as CaseSheetDiagnosis[];
-  let diagnoses;
+  type diagnosesData = {
+    title: string;
+    description: string;
+  };
+  let diagnoses: diagnosesData[] | [];
   if (caseSheet.diagnosis == null || caseSheet.diagnosis == '') {
-    diagnoses = [{ title: '', description: '' }];
+    diagnoses = [];
   } else {
     diagnoses = caseSheetDiagnoses.map((diag) => ({
       title: diag.name,
@@ -77,7 +84,6 @@ export const convertCaseSheetToRxPdfData = async (
     }));
   }
 
-  // TODO: CaseSheet needs to have a relationship with Doctor so we can get this info from it
   let doctorInfo = {
     salutation: '',
     firstName: '',
