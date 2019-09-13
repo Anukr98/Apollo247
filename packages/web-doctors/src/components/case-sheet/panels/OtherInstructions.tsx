@@ -169,6 +169,8 @@ export const OtherInstructions: React.FC = () => {
                 setTimeout(() => {
                   setOtherInstruct('');
                 }, 10);
+              } else {
+                setOtherInstruct('');
               }
             }}
           >
