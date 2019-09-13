@@ -1,7 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
@@ -18,8 +18,8 @@ import {
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   MedicineProduct,
-  searchMedicineApi,
   pinCodeServiceabilityApi,
+  searchMedicineApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -181,24 +181,28 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     Alert.alert('Alert', error || 'Unknown error occurred.');
   };
 
-  const onSearchMedicine = (searchText: string) => {
-    setSearchText(searchText);
-    if (!(searchText && searchText.length > 2)) {
+  const onSearchMedicine = (_searchText: string) => {
+    setSearchText(_searchText);
+    if (!(_searchText && _searchText.length > 2)) {
       setMedicineList([]);
       return;
     }
     setShowMatchingMedicines(true);
     setIsLoading(true);
-    searchMedicineApi(searchText)
+    searchMedicineApi(_searchText)
       .then(async ({ data }) => {
-        // console.log({ data });
         const products = data.products || [];
         setMedicineList(products);
         setIsLoading(false);
       })
       .catch((e) => {
-        setIsLoading(false);
-        showGenericALert(e);
+        if (axios.isCancel(e)) {
+          console.log('Request canceled', e);
+        } else {
+          // handle error
+          setIsLoading(false);
+          showGenericALert(e);
+        }
       });
   };
 
@@ -368,7 +372,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
-              style={{ marginRight: 24 }}
+              // style={{ marginRight: 24 }}
               onPress={() => {
                 console.log('YourCartProps onpress');
                 props.navigation.navigate(AppRoutes.YourCart);
@@ -377,9 +381,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            {/* <TouchableOpacity activeOpacity={1} onPress={() => {}}>
               <Filter />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}

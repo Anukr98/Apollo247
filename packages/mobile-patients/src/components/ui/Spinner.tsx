@@ -18,7 +18,7 @@ export const Spinner: React.FC<SpinnerProps> = (props) => {
         right: 0,
         bottom: 0,
         zIndex: 10,
-        elevation: 10,
+        elevation: 20,
       }}
     >
       <ActivityIndicator animating={true} size="large" color="green" />
