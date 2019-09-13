@@ -616,4 +616,8 @@ export class AppointmentRepository extends Repository<Appointment> {
       order: { appointmentDateTime: 'ASC' },
     });
   }
+
+  followUpBookedCount(id: string) {
+    return this.count({ where: { followUpParentId: id } });
+  }
 }
