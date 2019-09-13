@@ -36,7 +36,7 @@ export interface MedicalRecordsProps extends NavigationScreenProps {
 export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
-  console.log('MedicalRecordData', props.MedicalRecordData);
+  // console.log('MedicalRecordData', props.MedicalRecordData);
   useEffect(() => {
     props.onTabCount(props.MedicalRecordData.length);
   }, [currentPatient, client]);

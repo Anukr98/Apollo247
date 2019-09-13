@@ -25,5 +25,5 @@ export enum ApiConstants {
 
   //initiate senior docotr session
   SENIOR_APPT_SESSION_TITLE = 'Doctor has joined the consult room',
-  SENIOR_APPT_SESSION_BODY = 'Doctor {1} has stated the consult for your appointment {0}',
+  SENIOR_APPT_SESSION_BODY = 'Doctor has started the consult for your appointment {0}',
 }

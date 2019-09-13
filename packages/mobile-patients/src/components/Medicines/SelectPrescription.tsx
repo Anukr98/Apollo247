@@ -1,46 +1,41 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Check, PrescriptionIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { GET_MEDICAL_RECORD } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getPatientMedicalRecords,
+  getPatientMedicalRecordsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useQuery } from 'react-apollo-hooks';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 
-const { width, height } = Dimensions.get('window');
-
 const styles = StyleSheet.create({});
-
-type prescriptions = {
-  id: number;
-  doctor_name: string;
-  date: string;
-  patient_name: string;
-  disease: string;
-};
-
-const Prescriptions: prescriptions[] = [
-  {
-    id: 1,
-    doctor_name: 'Dr. Simran Rai',
-    date: '27 July 2019',
-    patient_name: 'Preeti',
-    disease: 'Cytoplam, Metformin, Insulin, Crocin',
-  },
-  {
-    id: 2,
-    doctor_name: 'Dr. Ranjan Reddy',
-    date: '25 July 2019',
-    patient_name: 'Surj',
-    disease: 'Cytoplam, Metformin, Insulin, Crocin',
-  },
-];
 
 export interface SelectPrescriptionProps extends NavigationScreenProps {}
 export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const { currentPatient } = useAllCurrentPatients();
 
-  const renderRow = (rowData: prescriptions, rowID: number) => {
+  const { data, loading, error } = useQuery<
+    getPatientMedicalRecords,
+    getPatientMedicalRecordsVariables
+  >(GET_MEDICAL_RECORD, {
+    variables: {
+      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+    },
+    fetchPolicy: 'no-cache',
+  });
+  const ePrescriptions = g(data, 'getPatientMedicalRecords', 'medicalRecords') || [];
+  console.log({ ePrescriptions });
+
+  const renderRow = (rowData: typeof ePrescriptions[0], rowID: number) => {
     return (
       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
         <View
@@ -52,7 +47,7 @@ export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => 
             marginHorizontal: 20,
             backgroundColor: theme.colors.WHITE,
             marginTop: rowID === 0 ? 20 : 4,
-            marginBottom: Prescriptions.length === rowID + 1 ? 20 : 4,
+            marginBottom: ePrescriptions.length === rowID + 1 ? 20 : 4,
           }}
           key={rowID}
         >
@@ -67,7 +62,7 @@ export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => 
                 paddingLeft: 16,
               }}
             >
-              {rowData.doctor_name}
+              {rowData!.referringDoctor}
             </Text>
             <View style={{ flex: 1, alignItems: 'flex-end' }}>
               <Check />
@@ -84,7 +79,7 @@ export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => 
                   letterSpacing: 0.04,
                 }}
               >
-                {rowData.date}
+                {rowData!.testDate}
               </Text>
               <View
                 style={{
@@ -103,7 +98,7 @@ export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => 
                   letterSpacing: 0.04,
                 }}
               >
-                {rowData.patient_name}
+                {(currentPatient && currentPatient.firstName) || ''}
               </Text>
             </View>
             <View
@@ -120,7 +115,7 @@ export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => 
                 ...theme.fonts.IBMPlexSansMedium(12),
               }}
             >
-              {rowData.disease}
+              {rowData!.medicalRecordParameters}
             </Text>
           </View>
         </View>
@@ -133,20 +128,22 @@ export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => 
         ...theme.viewStyles.container,
       }}
     >
-      <SafeAreaView>
+      <SafeAreaView
+        style={{
+          backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+        }}
+      >
         <Header
           title={'SELECT FROM E-PRESCRIPTIONS'}
           leftIcon="backArrow"
           container={{
             ...theme.viewStyles.cardContainer,
           }}
-          // rightComponent={<RightHeader />}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-
         <FlatList
           bounces={false}
-          data={Prescriptions}
+          data={ePrescriptions}
           onEndReachedThreshold={0.5}
           renderItem={({ item, index }) => renderRow(item, index)}
           keyExtractor={(_, index) => index.toString()}
@@ -157,6 +154,7 @@ export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => 
       <StickyBottomComponent defaultBG>
         <Button title={'UPLOAD'} onPress={() => {}} style={{ marginHorizontal: 60, flex: 1 }} />
       </StickyBottomComponent>
+      {(loading || showSpinner) && <Spinner />}
     </View>
   );
 };
