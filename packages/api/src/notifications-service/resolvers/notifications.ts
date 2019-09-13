@@ -8,6 +8,7 @@ import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -59,6 +60,8 @@ export type PushNotificationSuccessMessage = {
 export enum NotificationType {
   INITIATE_RESCHEDULE = 'INITIATE_RESCHEDULE',
   INITIATE_TRANSFER = 'INITIATE_TRANSFER',
+  INITIATE_JUNIOR_APPT_SESSION = 'INITIATE_JUNIOR_APPT_SESSION',
+  INITIATE_SENIOR_APPT_SESSION = 'INITIATE_SENIOR_APPT_SESSION',
 }
 
 export enum NotificationPriority {
@@ -79,9 +82,13 @@ export async function sendNotification(
   consultsDb: Connection
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  //const doctorRepo = doct .getCustomRepository(DoctorRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
   if (appointment == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  //const doctorDetails = await doctorRepo.getDoctorProfileData(appointment.doctorId);
 
+  /*if (doctorDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  console.log(doctorDetails, doctorDetails.firstName, 'doctorDetails');*/
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
@@ -119,6 +126,22 @@ export async function sendNotification(
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
     notificationTitle = ApiConstants.TRANSFER_INITIATION_TITLE;
     notificationBody = ApiConstants.TRANSFER_INITIATION_BODY.replace(
+      '{0}',
+      appointment.displayId + ''
+    );
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.INITIATE_JUNIOR_APPT_SESSION
+  ) {
+    notificationTitle = ApiConstants.JUNIOR_APPT_SESSION_TITLE;
+    notificationBody = ApiConstants.JUNIOR_APPT_SESSION_BODY.replace(
+      '{0}',
+      appointment.displayId + ''
+    );
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
+  ) {
+    notificationTitle = ApiConstants.SENIOR_APPT_SESSION_TITLE;
+    notificationBody = ApiConstants.SENIOR_APPT_SESSION_BODY.replace(
       '{0}',
       appointment.displayId + ''
     );

@@ -10,6 +10,11 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
+import {
+  NotificationType,
+  sendNotification,
+  PushNotificationSuccessMessage,
+} from 'notifications-service/resolvers/notifications';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -117,7 +122,7 @@ const createJuniorAppointmentSession: Resolver<
   createAppointmentSessionInputArgs,
   ConsultServiceContext,
   CreateJuniorAppointmentSession
-> = async (parent, { createAppointmentSessionInput }, { consultsDb, doctorsDb }) => {
+> = async (parent, { createAppointmentSessionInput }, { consultsDb, patientsDb, doctorsDb }) => {
   if (!process.env.OPENTOK_KEY && !process.env.OPENTOK_SECRET) {
     throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
   }
@@ -141,6 +146,17 @@ const createJuniorAppointmentSession: Resolver<
   );
 
   if (apptSessionDets) {
+    // send notification
+    const pushNotificationInput = {
+      appointmentId: createAppointmentSessionInput.appointmentId,
+      notificationType: NotificationType.INITIATE_JUNIOR_APPT_SESSION,
+    };
+    const notificationResult = await sendNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb
+    );
+    console.log(notificationResult, 'notificationResult');
     return {
       sessionId: apptSessionDets.sessionId,
       appointmentToken: apptSessionDets.juniorDoctorToken,
@@ -170,6 +186,13 @@ const createJuniorAppointmentSession: Resolver<
     consultStartDateTime: new Date(),
   };
   await juniorApptSessionRepo.saveJuniorAppointmentSession(appointmentSessionAttrs);
+  // send notification
+  const pushNotificationInput = {
+    appointmentId: createAppointmentSessionInput.appointmentId,
+    notificationType: NotificationType.INITIATE_JUNIOR_APPT_SESSION,
+  };
+  const notificationResult = await sendNotification(pushNotificationInput, patientsDb, consultsDb);
+  console.log(notificationResult, 'notificationResult');
   return {
     sessionId: sessionId,
     appointmentToken: token,
@@ -181,7 +204,7 @@ const createAppointmentSession: Resolver<
   createAppointmentSessionInputArgs,
   ConsultServiceContext,
   CreateAppointmentSession
-> = async (parent, { createAppointmentSessionInput }, { consultsDb, doctorsDb }) => {
+> = async (parent, { createAppointmentSessionInput }, { consultsDb, patientsDb, doctorsDb }) => {
   if (!process.env.OPENTOK_KEY && !process.env.OPENTOK_SECRET) {
     throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
   }
@@ -251,6 +274,17 @@ const createAppointmentSession: Resolver<
   );
 
   if (apptSessionDets) {
+    // send notification
+    const pushNotificationInput = {
+      appointmentId: createAppointmentSessionInput.appointmentId,
+      notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
+    };
+    const notificationResult = await sendNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb
+    );
+    console.log(notificationResult, 'notificationResult');
     return {
       sessionId: apptSessionDets.sessionId,
       appointmentToken: apptSessionDets.doctorToken,
@@ -288,6 +322,13 @@ const createAppointmentSession: Resolver<
     STATUS.IN_PROGRESS
   );
   await repo.saveAppointmentSession(appointmentSessionAttrs);
+  // send notification
+  const pushNotificationInput = {
+    appointmentId: createAppointmentSessionInput.appointmentId,
+    notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
+  };
+  const notificationResult = await sendNotification(pushNotificationInput, patientsDb, consultsDb);
+  console.log(notificationResult, 'notificationResult');
   return {
     sessionId: sessionId,
     appointmentToken: token,
