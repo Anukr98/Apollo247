@@ -214,7 +214,7 @@
   "orders": {
     "urOrders": "YOUR ORDERS",
     "trackOrder": "Track Order",
-    "viewBill": "View Bill"
+    "viewBill": "View Order Summary"
   },
   "health_records_home": {
     "description": "Find all your health record & prescription in one place.",

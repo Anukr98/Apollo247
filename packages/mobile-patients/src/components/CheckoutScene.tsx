@@ -442,7 +442,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
         <View style={[styles.paymentModeRowStyle, { marginBottom: 16 }]}>
           {isCashOnDelivery ? <RadioButtonUnselectedIcon /> : <RadioButtonIcon />}
-          <Text style={styles.paymentModeTextStyle}>Pay Using paytm</Text>
+          <Text style={styles.paymentModeTextStyle}>Pay Online Using Debit/Credit Card</Text>
         </View>
       </TouchableOpacity>
     );
