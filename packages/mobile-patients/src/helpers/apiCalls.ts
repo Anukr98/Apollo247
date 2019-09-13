@@ -185,9 +185,14 @@ export const getMedicineDetailsApi = (
   );
 };
 
+let cancel: any;
+
 export const searchMedicineApi = (
   searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancel && cancel();
+
   return Axios.post(
     `${config.BASE_URL}/popcsrchprd_api.php`,
     { params: searchText },
@@ -196,6 +201,10 @@ export const searchMedicineApi = (
         Authorization: config.AUTH_TOKEN,
         'Content-Type': 'application/json',
       },
+      cancelToken: new CancelToken(function executor(c) {
+        // An executor function receives a cancel function as a parameter
+        cancel = c;
+      }),
     }
   );
 };

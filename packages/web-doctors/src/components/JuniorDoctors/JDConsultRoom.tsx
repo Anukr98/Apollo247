@@ -1,29 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Theme, Button, Modal, Avatar } from '@material-ui/core';
+import { Theme, Button, Avatar } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import Paper from '@material-ui/core/Paper';
 import { JDCallPopover } from 'components/JuniorDoctors/JDCallPopover';
 import Typography from '@material-ui/core/Typography';
 import { useApolloClient } from 'react-apollo-hooks';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
-import {
-  EndAppointmentSession,
-  EndAppointmentSessionVariables,
-} from 'graphql/types/EndAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
-
-import {
-  CREATE_APPOINTMENT_SESSION,
-  GET_CASESHEET,
-  UPDATE_CASESHEET,
-  END_APPOINTMENT_SESSION,
-} from 'graphql/profiles';
+import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
@@ -32,7 +20,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetCaseSheet';
-import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -58,6 +46,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -81,6 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
     pageHeader: {
       backgroundColor: theme.palette.common.white,
       display: 'flex',
+      position: 'relative',
     },
     patientSection: {
       width: '50%',
@@ -127,8 +117,8 @@ const useStyles = makeStyles((theme: Theme) => {
     avatar: {
       width: 60,
       height: 60,
+      backgroundColor: '#f7f8f5',
     },
-
     doctorInfo: {
       paddingRight: 55,
       fontWeight: 500,
@@ -301,6 +291,38 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
+      },
+    },
+    backArrow: {
+      cursor: 'pointer',
+      marginRight: 50,
+      position: 'absolute',
+      left: 20,
+      top: 20,
+      [theme.breakpoints.up(1220)]: {
+        left: -62,
+        top: 0,
+        width: 48,
+        height: 48,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    blackArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up(1220)]: {
+        display: 'none',
       },
     },
   };
@@ -668,6 +690,12 @@ export const JDConsultRoom: React.FC = () => {
             <div className={classes.pageContainer}>
               {/* patient and doctors details start */}
               <div className={classes.pageHeader}>
+                <div className={classes.backArrow}>
+                  <Link to={clientRoutes.juniorDoctor()}>
+                    <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                    <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                  </Link>
+                </div>
                 <div className={classes.patientSection}>
                   <div className={classes.patientImage}>
                     <img
@@ -736,7 +764,7 @@ export const JDConsultRoom: React.FC = () => {
                   <div className={classes.blockGroup}>
                     <div className={classes.blockHeader}>Case Sheet</div>
                     <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 440px' }}>
+                      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 430px' }}>
                         <div className={classes.customScroll}>
                           {casesheetInfo ? <CaseSheet /> : ''}
                         </div>

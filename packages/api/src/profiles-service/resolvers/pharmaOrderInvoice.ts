@@ -1,0 +1,165 @@
+import gql from 'graphql-tag';
+import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import {
+  MedicineOrders,
+  MEDICINE_DELIVERY_TYPE,
+  MEDICINE_ORDER_TYPE,
+  MedicineOrderLineItems,
+  MEDICINE_ORDER_STATUS,
+  MedicineOrdersStatus,
+} from 'profiles-service/entities';
+import { Resolver } from 'api-gateway';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
+
+export const saveMedicineOrderInvoiceTypeDefs = gql`
+  input MedicineCartInput {
+    quoteId: String
+    shopId: String
+    estimatedAmount: Float
+    patientId: ID!
+    medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
+    patientAddressId: ID!
+    devliveryCharges: Float
+    prescriptionImageUrl: String
+    items: [MedicineCartItem]
+  }
+
+  input MedicineCartItem {
+    medicineSKU: String
+    medicineName: String
+    price: Float
+    quantity: Int
+    mrp: Float
+    isPrescriptionNeeded: Int
+    prescriptionImageUrl: String
+    mou: Int
+    isMedicine: String
+  }
+
+  type SaveMedicineOrderResult {
+    errorCode: Int
+    errorMessage: String
+    orderId: ID!
+    orderAutoId: Int!
+  }
+
+  extend type Mutation {
+    SaveMedicineOrder(MedicineCartInput: MedicineCartInput): SaveMedicineOrderResult!
+  }
+`;
+
+type MedicineCartInput = {
+  quoteId: string;
+  shopId: string;
+  estimatedAmount: number;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patientAddressId: string;
+  devliveryCharges: number;
+  prescriptionImageUrl: string;
+  items: MedicineCartItem[];
+};
+
+type MedicineCartItem = {
+  medicineSku: string;
+  medicineName: string;
+  price: number;
+  quantity: number;
+  mrp: number;
+  isPrescriptionNeeded: number;
+  prescriptionImageUrl: string;
+  mou: number;
+  isMedicine: string;
+};
+
+type SaveMedicineOrderResult = {
+  errorCode: number;
+  errorMessage: string;
+  orderId: string;
+  orderAutoId: number;
+};
+
+type MedicineCartInputInputArgs = { MedicineCartInput: MedicineCartInput };
+
+const SaveMedicineOrderInvoice: Resolver<
+  null,
+  MedicineCartInputInputArgs,
+  ProfilesServiceContext,
+  SaveMedicineOrderResult
+> = async (parent, { MedicineCartInput }, { profilesDb }) => {
+  const errorCode = 0,
+    errorMessage = '';
+
+  if (!MedicineCartInput.items || MedicineCartInput.items.length == 0) {
+    throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
+  }
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.findById(MedicineCartInput.patientId);
+  if (!patientDetails) {
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  }
+  if (MedicineCartInput.patientAddressId != '' && MedicineCartInput.patientAddressId != null) {
+    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+    const patientAddressDetails = await patientAddressRepo.findById(
+      MedicineCartInput.patientAddressId
+    );
+    if (!patientAddressDetails) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+    }
+  }
+
+  const medicineOrderattrs: Partial<MedicineOrders> = {
+    patient: patientDetails,
+    estimatedAmount: MedicineCartInput.estimatedAmount,
+    orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
+    shopId: MedicineCartInput.shopId,
+    quoteDateTime: new Date(),
+    devliveryCharges: MedicineCartInput.devliveryCharges,
+    deliveryType: MedicineCartInput.medicineDeliveryType,
+    quoteId: MedicineCartInput.quoteId,
+    prescriptionImageUrl: MedicineCartInput.prescriptionImageUrl,
+    currentStatus: MEDICINE_ORDER_STATUS.QUOTE,
+    patientAddressId: MedicineCartInput.patientAddressId,
+  };
+
+  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
+  if (saveOrder) {
+    MedicineCartInput.items.map(async (item) => {
+      const orderItemAttrs: Partial<MedicineOrderLineItems> = {
+        medicineOrders: saveOrder,
+        ...item,
+      };
+      const lineItemOrder = await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
+      console.log(lineItemOrder);
+    });
+
+    //save in order status table
+    const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {
+      medicineOrders: saveOrder,
+      orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
+      statusDate: new Date(),
+    };
+    await medicineOrdersRepo.saveMedicineOrderStatus(
+      medicineOrderStatusAttrs,
+      saveOrder.orderAutoId
+    );
+  }
+
+  return {
+    errorCode,
+    errorMessage,
+    orderId: saveOrder.id,
+    orderAutoId: saveOrder.orderAutoId,
+  };
+};
+
+export const saveMedicineOrderInvoiceResolvers = {
+  Mutation: {
+    SaveMedicineOrderInvoice,
+  },
+};
