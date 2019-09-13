@@ -5,12 +5,14 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { addDays } from 'date-fns';
+import { addDays, addMilliseconds } from 'date-fns';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import _ from 'lodash';
 import { sendMail } from 'notifications-service/resolvers/email';
 import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
+import { MEDICINE_ORDER_PAYMENT_TYPE } from 'profiles-service/entities';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const helpTypeDefs = gql`
   input HelpEmailInput {
@@ -35,7 +37,7 @@ type HelpEmailInputArgs = { helpEmailInput: HelpEmailInput };
 const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, string> = async (
   parent,
   { helpEmailInput },
-  { profilesDb, consultsDb, mobileNumber }
+  { profilesDb, consultsDb, mobileNumber, doctorsDb }
 ) => {
   //get patient details
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
@@ -63,9 +65,68 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     endDate
   );
 
-  console.log(appointmentDetails);
-  console.log(startDate);
-  console.log(endDate);
+  let appointmentsList;
+  const doctorIds: string[] = [];
+  if (appointmentDetails.length > 0) {
+    appointmentDetails.forEach((appointment) => {
+      console.log(
+        appointment.appointmentDateTime,
+        addMilliseconds(appointment.appointmentDateTime, 19800000)
+      );
+      doctorIds.push(appointment.doctorId);
+      console.log(doctorIds);
+    });
+    if (doctorIds.length > 0) {
+      //get doctor details
+      const doctorsRepo = doctorsDb.getCustomRepository(DoctorRepository);
+      const doctorData = await doctorsRepo.getSearchDoctorsByIds(doctorIds);
+      console.log(doctorData);
+
+      if (doctorData.length > 0) {
+        appointmentDetails.forEach((appointment) => {
+          console.log(
+            doctorData.filter((doctor) => {
+              return doctor.id === appointment.doctorId ? doctor.firstName : '';
+            })
+          );
+        });
+      }
+    }
+  }
+
+  type MedicineOrderData = {
+    paymentMode: MEDICINE_ORDER_PAYMENT_TYPE;
+    lineItems: Object[];
+    orderDateTime?: Date;
+    prescriptionUrl: string;
+  };
+  type FormattedMedicineOrders = { [index: string]: MedicineOrderData };
+
+  const formattedOrdersObject: FormattedMedicineOrders = {};
+
+  medicineOrdersList.forEach((order) => {
+    if (!formattedOrdersObject[order.medicineOrders_id]) {
+      formattedOrdersObject[order.medicineOrders_id] = {
+        paymentMode: order.medicineOrderPayments_paymentType,
+        lineItems: [
+          {
+            name: order.medicineOrderLineItems_medicineName,
+            sku: order.medicineOrderLineItems_medicineSKU,
+          },
+        ],
+        orderDateTime: order.medicineOrders_orderDateTime,
+        prescriptionUrl: order.medicineOrders_prescriptionImageUrl,
+      };
+    } else {
+      formattedOrdersObject[order.medicineOrders_id].lineItems.push({
+        name: order.medicineOrderLineItems_medicineName,
+        sku: order.medicineOrderLineItems_medicineSKU,
+      });
+    }
+  });
+
+  const medicineOrders = Object.values(formattedOrdersObject);
+
   const mailContentTemplate = _.template(
     `<html>
     <body>
@@ -84,7 +145,27 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
        <li>Mobile Number : <%- patientDetails.mobileNumber %></li>
       </ul>
     </li>
-    <li> Appointment Details </li>     
+    <li> Appointment Details </li>   
+    <li> Medicine Order Details
+      <ul>
+      <% _.each(medicineOrders, function(order) { %>
+          <li>Payment Details : <%- order.paymentMode %></li>
+          <li>Item Details : 
+              <ul>
+                <% _.each(order.lineItems, function(item) { %>
+                    <li>Name: <%- item.name %> , SKU: <%-item.sku%></li>
+                <% }); %>
+                </ul>
+          </li>
+          <li>Date and Time of Order : <%- order.orderDateTime %></li>
+          <% if(order.prescriptionUrl != null) {  %>
+            <li>Prescription : <img src="<%- order.prescriptionUrl %>" /></li>
+          <% } %>
+      <% }); %>
+
+      </ul>
+    </li>
+
     </ul>
     </body> 
     </html>
@@ -93,7 +174,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
   const mailContent = mailContentTemplate({
     helpEmailInput,
     patientDetails,
-    medicineOrdersList,
+    medicineOrders,
     appointmentDetails,
   });
 
@@ -105,12 +186,11 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
     messageContent: <string>mailContent,
     toEmail: <string>ApiConstants.PATIENT_HELP_SUPPORT_EMAILID,
-  };*/
+  };
 
-  //const mailStatus = await sendMail(emailContent);
+  const mailStatus = await sendMail(emailContent);*/
 
-  //return mailStatus.message;
-  return 'success';
+  return 'mailStatus.message';
 };
 
 export const helpResolvers = {

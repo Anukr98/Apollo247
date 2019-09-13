@@ -122,16 +122,16 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     const newStartDate = new Date(format(startDate, 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(endDate, 'yyyy-MM-dd') + 'T18:30');
 
-    return this.createQueryBuilder('MedicineOrders')
-      .where('MedicineOrders.patient = :patient', { patient })
+    return this.createQueryBuilder('medicineOrders')
+      .where('medicineOrders.patient = :patient', { patient })
       .andWhere(
-        'MedicineOrders.createdDate > :startDate and MedicineOrders.createdDate < :endDate',
+        'medicineOrders.createdDate > :startDate and medicineOrders.createdDate < :endDate',
         { startDate: newStartDate, endDate: newEndDate }
       )
-      .andWhere('MedicineOrders.currentStatus IN (:...status)', { status: status })
-      .leftJoinAndSelect('MedicineOrders.medicineOrderLineItems', 'medicineOrderLineItems')
-      .leftJoinAndSelect('MedicineOrders.medicineOrderPayments', 'medicineOrderPayments')
-      .leftJoinAndSelect('MedicineOrders.medicineOrdersStatus', 'medicineOrdersStatus')
+      .andWhere('medicineOrders.currentStatus IN (:...status)', { status: status })
+      .leftJoinAndSelect('medicineOrders.medicineOrderLineItems', 'medicineOrderLineItems')
+      .leftJoinAndSelect('medicineOrders.medicineOrderPayments', 'medicineOrderPayments')
+      .leftJoinAndSelect('medicineOrders.medicineOrdersStatus', 'medicineOrdersStatus')
       .getRawMany();
   }
 }
