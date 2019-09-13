@@ -261,12 +261,13 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                   activeOpacity={1}
                   style={[styles.cardContainerStyle]}
                   onPress={() => {
-                    console.log('medicnedeial', item);
+                    console.log('medicnedeial', props.PastData.medicineOrderLineItems);
                     console.log(moment(props.PastData.quoteDateTime).format('DD MMM YYYY'));
 
                     props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
-                      data: item, //props.PastData.medicineOrderLineItems[0],
+                      data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
                       medicineDate: moment(props.PastData.quoteDateTime).format('DD MMM YYYY'),
+                      PrescriptionUrl: props.PastData.prescriptionImageUrl,
                     });
                   }}
                 >
