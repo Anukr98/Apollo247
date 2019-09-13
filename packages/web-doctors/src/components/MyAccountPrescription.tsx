@@ -50,7 +50,7 @@ export const MyAccountPrescription: React.FC = () => {
   const classes = useStyles();
   return (
     <div className={classes.ProfileContainer}>
-      <div className={classes.helpTxt}>We will be available soon...</div>
+      <div className={classes.helpTxt}>Will be available soon...</div>
     </div>
   );
 };
