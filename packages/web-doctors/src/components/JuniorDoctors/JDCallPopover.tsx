@@ -501,6 +501,7 @@ const useStyles = makeStyles((theme: Theme) => {
     submitBtn: {
       minWidth: 216,
       borderRadius: 10,
+      marginLeft: 20,
     },
     consultName: {
       fontSize: 13,
@@ -517,6 +518,30 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(2, 71, 91, 0.6)',
       '& span': {
         fontWeight: 'bold',
+      },
+    },
+    consultMenuPopover: {
+      minWidth: 160,
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.4)',
+      backgroundColor: theme.palette.common.white,
+      marginTop: 14,
+    },
+    menuBtnGroup: {
+      padding: 6,
+      '& button': {
+        boxShadow: 'none',
+        borderRadius: 0,
+        backgroundColor: 'transparent',
+        fontSize: 15,
+        fontWeight: 500,
+        color: '#02475b',
+        padding: 10,
+        display: 'block',
+        textTransform: 'none',
+        width: '100%',
+        textAlign: 'left',
+        lineHeight: '15px',
       },
     },
   };
@@ -1213,14 +1238,15 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 Save
               </AphButton>
               <AphButton
-                className={classes.endconsultButton}
+                color="primary"
+                className={classes.submitBtn}
                 onClick={() => {
                   stopInterval();
                   props.endConsultAction();
                   setDisableOnTransfer(true);
                 }}
               >
-                SUBMIT CASE SHEET
+                Submit Case Sheet
               </AphButton>
             </span>
           ) : (
@@ -1323,7 +1349,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       </Popover>
       <Popover
         id={idThreeDots}
-        className={classes.dotPaper}
+        classes={{ paper: classes.consultMenuPopover }}
         open={openThreeDots}
         anchorEl={anchorElThreeDots}
         onClose={handleCloseThreeDots}
@@ -1336,35 +1362,21 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           horizontal: 'right',
         }}
       >
-        <div>
-          <ul className={classes.popOverUL}>
-            {/* <li>Share Case Sheet</li> */}
-            <li
-              onClick={() => {
-                if (
-                  appointmentInfo!.status === STATUS.PENDING ||
-                  appointmentInfo!.status === STATUS.IN_PROGRESS
-                ) {
-                  handleCloseThreeDots();
-                  setIsTransferPopoverOpen(true);
-                } else {
-                  alert('You are not allowed to transfer the appointment');
-                }
-              }}
-            >
-              Transfer Consult
-            </li>
-            {!startAppointment && appointmentInfo!.status === STATUS.PENDING && (
-              <li
-                onClick={() => {
-                  handleCloseThreeDots();
-                  setIsPopoverOpen(true);
-                }}
-              >
-                Reschedule Consult
-              </li>
-            )}
-          </ul>
+        <div
+          onClick={() => {
+            if (
+              appointmentInfo!.status === STATUS.PENDING ||
+              appointmentInfo!.status === STATUS.IN_PROGRESS
+            ) {
+              handleCloseThreeDots();
+              setIsTransferPopoverOpen(true);
+            } else {
+              alert('You are not allowed to transfer the appointment');
+            }
+          }}
+          className={classes.menuBtnGroup}
+        >
+          <AphButton>Transfer Consult</AphButton>
         </div>
       </Popover>
       <Modal

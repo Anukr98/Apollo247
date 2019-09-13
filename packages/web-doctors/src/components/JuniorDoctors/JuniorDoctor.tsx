@@ -1,4 +1,4 @@
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
@@ -12,6 +12,7 @@ import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetCons
 import _isEmpty from 'lodash/isEmpty';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { AphLinearProgress } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -78,6 +79,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     blockBody: {
       padding: '30px 20px',
+      position: 'relative',
     },
     customScroll: {
       padding: '0 20px',
@@ -88,6 +90,20 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       padding: '30px 30px 10px 30px',
       marginBottom: 10,
+    },
+    cardLoader: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: '100%',
+    },
+    noData: {
+      fontSize: 16,
+      fontWeight: 500,
+      color: '#02475b',
+      padding: 10,
+      textAlign: 'center',
+      opacity: 0.6,
     },
   };
 });
@@ -112,7 +128,7 @@ export const JuniorDoctor: React.FC = (props) => {
     isPastConsultsAvailable = false;
 
   if (error) content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
-  if (loading && _isEmpty(data)) content = [<CircularProgress />, <CircularProgress />];
+  if (loading && _isEmpty(data)) content = [<AphLinearProgress />, <AphLinearProgress />];
   if (data && data.getConsultQueue) {
     const { consultQueue } = data.getConsultQueue;
     const allConsults = consultQueue.map((consult) => ({
@@ -181,28 +197,26 @@ export const JuniorDoctor: React.FC = (props) => {
           <div className={classes.contentGroup}>
             <div className={classes.leftSection}>
               <div className={classes.blockGroup}>
-                <div className={classes.blockHeader}>
-                  {loading && data && <CircularProgress size={20} />} Active Patients
-                </div>
+                <div className={classes.blockHeader}>Active Patients</div>
                 <div className={classes.blockBody}>
+                  {loading && data && <AphLinearProgress className={classes.cardLoader} />}
                   {isActiveConsultsAvailable ? (
                     content[0]
                   ) : (
-                    <h4>No Appointments are available....</h4>
+                    <div className={classes.noData}>No Active Patients are available.</div>
                   )}
                 </div>
               </div>
             </div>
             <div className={classes.rightSection}>
               <div className={classes.blockGroup}>
-                <div className={classes.blockHeader}>
-                  {loading && data && <CircularProgress size={20} />} Past Consults
-                </div>
+                <div className={classes.blockHeader}>Past Consults</div>
                 <div className={classes.blockBody}>
+                  {loading && data && <AphLinearProgress className={classes.cardLoader} />}
                   {isPastConsultsAvailable ? (
                     content[1]
                   ) : (
-                    <h4>No Past Consults are available....</h4>
+                    <div className={classes.noData}>No Past Consults are available.</div>
                   )}
                 </div>
               </div>
