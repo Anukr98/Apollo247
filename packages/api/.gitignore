@@ -4,3 +4,4 @@ node_modules
 .Trash*
 **/*secrets.json
 .DS_Store
+.awcache

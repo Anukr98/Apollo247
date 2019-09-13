@@ -1,9 +1,13 @@
+import { getCoupons_getCoupons_coupons } from '@aph/mobile-patients/src/graphql/types/getCoupons';
+import {
+  DiscountType,
+  MEDICINE_DELIVERY_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
+import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert, AsyncStorage } from 'react-native';
-import { MEDICINE_DELIVERY_TYPE, DiscountType } from '../graphql/types/globalTypes';
-import { savePatientAddress_savePatientAddress_patientAddress } from '../graphql/types/savePatientAddress';
-import { getCoupons_getCoupons_coupons } from '../graphql/types/getCoupons';
-import { AppConfig } from '../strings/AppConfig';
 
 export interface ShoppingCartItem {
   id: string;
@@ -16,6 +20,7 @@ export interface ShoppingCartItem {
 
 export interface PhysicalPrescription {
   title: string;
+  fileType: string;
   path: string;
   base64: string;
   uploadedUrl?: string;
@@ -36,26 +41,32 @@ export interface ShoppingCartContextProps {
   grandTotal: number;
   uploadPrescriptionRequired: boolean;
 
+  stores: Store[];
+  setStores: ((store: Store[]) => void) | null;
+
   addPhysicalPrescription: ((item: PhysicalPrescription) => void) | null;
   setPhysicalPrescriptions: ((items: PhysicalPrescription[]) => void) | null;
   updatePhysicalPrescription:
     | ((
-        itemUpdates: Partial<PhysicalPrescription> & { title: PhysicalPrescription['title'] }
+        itemUpdates: Partial<PhysicalPrescription> & { path: PhysicalPrescription['path'] }
       ) => void)
     | null;
-  removePhysicalPrescription: ((title: string) => void) | null;
+  removePhysicalPrescription: ((path: string) => void) | null;
   physicalPrescriptions: PhysicalPrescription[];
+
+  addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
+  deliveryAddressId: string;
+  setDeliveryAddressId: ((id: string) => void) | null;
 
   addresses: savePatientAddress_savePatientAddress_patientAddress[];
   setAddresses:
     | ((addresses: savePatientAddress_savePatientAddress_patientAddress[]) => void)
     | null;
-  addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
-  deliveryAddressId: string;
-  setDeliveryAddressId: ((id: string) => void) | null;
 
   storeId: string;
   setStoreId: ((id: string) => void) | null;
+  pinCode: string;
+  setPinCode: ((pinCode: string) => void) | null;
 
   coupon: getCoupons_getCoupons_coupons | null;
   setCoupon: ((id: getCoupons_getCoupons_coupons) => void) | null;
@@ -82,6 +93,11 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   removePhysicalPrescription: null,
   physicalPrescriptions: [],
 
+  stores: [],
+  setStores: null,
+  pinCode: '',
+  setPinCode: null,
+
   addresses: [],
   setAddresses: null,
   addAddress: null,
@@ -105,6 +121,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [addresses, setAddresses] = useState<
     savePatientAddress_savePatientAddress_patientAddress[]
   >([]);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [pinCode, setPinCode] = useState<string>('');
   const [deliveryAddressId, _setDeliveryAddressId] = useState<
     ShoppingCartContextProps['deliveryAddressId']
   >('');
@@ -243,6 +261,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
   }, [cartTotalOfPharmaProducts, coupon]);
 
+  useEffect(() => {
+    // updating prescription here on update in cart items
+    if (cartTotalOfPharmaProducts == 0 && physicalPrescriptions.length > 0) {
+      setPhysicalPrescriptions([]);
+    }
+  }, [cartTotalOfPharmaProducts]);
+
   return (
     <ShoppingCartContext.Provider
       value={{
@@ -270,8 +295,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
         deliveryAddressId,
         setDeliveryAddressId,
 
+        stores,
+        setStores,
         storeId,
         setStoreId,
+
+        pinCode,
+        setPinCode,
 
         coupon,
         setCoupon,

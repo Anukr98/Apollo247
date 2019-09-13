@@ -38,6 +38,15 @@ import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { ChatWindow } from 'components/JuniorDoctors/ChatWindow';
 import Scrollbars from 'react-custom-scrollbars';
+import LinearProgress from '@material-ui/core/LinearProgress';
+import { Relation } from 'graphql/types/globalTypes';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
+import isNull from 'lodash/isNull';
+import { parseISO, format } from 'date-fns';
+import { Gender } from 'graphql/types/globalTypes';
+import differenceInYears from 'date-fns/differenceInYears';
+import { JDConsultRoomParams } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -286,41 +295,45 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type Params = { id: string; patientId: string };
-const storageClient = new AphStorageClient(
-  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
-  process.env.AZURE_STORAGE_CONTAINER_NAME
-);
-
 export const JDConsultRoom: React.FC = () => {
   const classes = useStyles();
-  const params = useParams<Params>();
-  const paramId = params.id;
+  const { patientId, appointmentId } = useParams<JDConsultRoomParams>();
 
-  const { currentPatient, isSignedIn } = useAuth();
+  const { currentPatient: currentDoctor, isSignedIn } = useAuth();
+  const doctorId = currentDoctor!.id;
+
+  const doctorFirstName =
+    currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
+  const doctorLastName =
+    currentDoctor && currentDoctor.lastName ? _startCase(_toLower(currentDoctor.lastName)) : '';
+  const doctorMobileNumber =
+    currentDoctor && currentDoctor.mobileNumber
+      ? _startCase(_toLower(currentDoctor.mobileNumber))
+      : '';
+  const doctorSalutation =
+    currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
+  const doctorSpecialty =
+    currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
+      ? _startCase(_toLower(currentDoctor.specialty.name))
+      : '';
+  const doctorPhotoUrl =
+    currentDoctor && currentDoctor.photoUrl ? _startCase(_toLower(currentDoctor.photoUrl)) : '';
 
   //     setAppointmentId(paramId);
   //     setpatientId(params.patientId);
   //     setdoctorId(currentPatient.id);
 
-  const [tabValue, setTabValue] = useState<number>(0);
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
-  const [appointmentId, setAppointmentId] = useState<string>(paramId);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
-  const [doctorId, setdoctorId] = useState<string>(currentPatient ? currentPatient.id : '');
-  const [patientId, setpatientId] = useState<string>(params.patientId);
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const TabContainer: React.FC = (props) => {
-    return <Typography component="div">{props.children}</Typography>;
-  };
   const client = useApolloClient();
 
   /* case sheet data*/
@@ -347,7 +360,6 @@ export const JDConsultRoom: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
-  const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   /* case sheet data*/
 
@@ -356,6 +368,74 @@ export const JDConsultRoom: React.FC = () => {
   const setCasesheetNotes = (notes: string) => {
     customNotes = notes; // this will be used in saving case sheet.
   };
+
+  let appointmentDateIST = '';
+
+  // retrieve patient details
+  const patientFirstName =
+    casesheetInfo && casesheetInfo!.getCaseSheet && casesheetInfo!.getCaseSheet!.patientDetails
+      ? casesheetInfo!.getCaseSheet!.patientDetails.firstName
+      : '';
+  const patientLastName =
+    casesheetInfo && casesheetInfo!.getCaseSheet && casesheetInfo!.getCaseSheet!.patientDetails
+      ? casesheetInfo!.getCaseSheet!.patientDetails.lastName
+      : '';
+  const patientUhid =
+    casesheetInfo && casesheetInfo!.getCaseSheet && casesheetInfo!.getCaseSheet!.patientDetails
+      ? casesheetInfo!.getCaseSheet!.patientDetails.uhid
+      : '';
+  // const doctorId =
+  //   casesheetInfo &&
+  //   casesheetInfo.getCaseSheet &&
+  //   casesheetInfo.getCaseSheet.caseSheetDetails &&
+  //   casesheetInfo.getCaseSheet.caseSheetDetails.doctorId
+  //     ? casesheetInfo.getCaseSheet.caseSheetDetails.doctorId
+  //     : '';
+  const patientRelation =
+    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
+      ? casesheetInfo.getCaseSheet.patientDetails.relation
+      : '';
+  const patientDob =
+    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
+      ? casesheetInfo.getCaseSheet.patientDetails.dateOfBirth
+      : new Date();
+  const patientAge = differenceInYears(new Date(), parseISO(patientDob));
+  const patientGender =
+    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
+      ? casesheetInfo.getCaseSheet.patientDetails.gender
+      : Gender.OTHER;
+
+  const patientAppointmentId =
+    (casesheetInfo &&
+      casesheetInfo.getCaseSheet &&
+      casesheetInfo.getCaseSheet.caseSheetDetails &&
+      casesheetInfo.getCaseSheet.caseSheetDetails.appointment &&
+      casesheetInfo.getCaseSheet.caseSheetDetails.appointment.displayId) ||
+    '';
+  const patientAppointmentTimeUtc =
+    (casesheetInfo &&
+      casesheetInfo.getCaseSheet &&
+      casesheetInfo.getCaseSheet.caseSheetDetails &&
+      casesheetInfo.getCaseSheet.caseSheetDetails.appointment &&
+      casesheetInfo.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime) ||
+    '';
+  const patientPhotoUrl =
+    casesheetInfo &&
+    casesheetInfo.getCaseSheet &&
+    casesheetInfo.getCaseSheet.patientDetails &&
+    !isNull(casesheetInfo.getCaseSheet.patientDetails.photoUrl)
+      ? casesheetInfo.getCaseSheet.patientDetails.photoUrl
+      : '';
+
+  if (patientAppointmentTimeUtc !== '') {
+    appointmentDateIST = format(
+      new Date(patientAppointmentTimeUtc).getTime(),
+      'dd-MM-yyyy hh:mm a'
+    );
+  }
+
+  const patientRelationHeader =
+    patientRelation === Relation.ME ? 'Self' : _startCase(_toLower(patientRelation));
 
   useEffect(() => {
     if (isSignedIn) {
@@ -437,7 +517,7 @@ export const JDConsultRoom: React.FC = () => {
         document.cookie = cookieStr + ';path=/;';
       };
     }
-  }, []);
+  }, [appointmentId, client, isSignedIn]);
 
   // useEffect(() => {
   //   if (appointmentId !== paramId && paramId !== '' && currentPatient && currentPatient.id !== '') {
@@ -545,7 +625,6 @@ export const JDConsultRoom: React.FC = () => {
       })
       .then((_data) => {
         // setIsPopoverOpen(true);
-        setIsPdfPopoverOpen(true);
         setIsEnded(true);
         console.log('_data', _data);
       })
@@ -564,7 +643,7 @@ export const JDConsultRoom: React.FC = () => {
         mutation: CREATE_APPOINTMENT_SESSION,
         variables: {
           createAppointmentSessionInput: {
-            appointmentId: paramId,
+            appointmentId,
             requestRole: REQUEST_ROLES.DOCTOR,
           },
         },
@@ -589,7 +668,9 @@ export const JDConsultRoom: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
-  return (
+  return !loaded ? (
+    <LinearProgress />
+  ) : (
     <div className={classes.root}>
       <div className={classes.headerSticky}>
         <Header />
@@ -635,36 +716,49 @@ export const JDConsultRoom: React.FC = () => {
               <div className={classes.pageHeader}>
                 <div className={classes.patientSection}>
                   <div className={classes.patientImage}>
-                    <img src="https://via.placeholder.com/132x132" alt="" />
+                    <img
+                      src={
+                        patientPhotoUrl !== ''
+                          ? patientPhotoUrl
+                          : 'https://via.placeholder.com/132x132'
+                      }
+                      alt="Patient Profile Photo"
+                    />
                   </div>
                   <div className={classes.patientInfo}>
                     <div className={classes.patientName}>
-                      Rahul Mehta <span>(28, M)</span>
+                      {patientFirstName} {patientLastName}
+                      <span>
+                        ({isNull(patientAge) ? patientAge : ''}, {patientGender})
+                      </span>
                     </div>
                     <div className={classes.patientTextInfo}>
-                      <label>UHID:</label> 012345 | <label>Relation:</label> Self
+                      <label>UHID:</label> {patientUhid} | <label>Relation:</label>
+                      {patientRelationHeader}
                     </div>
                     <div className={classes.patientTextInfo}>
-                      <label>Appt ID:</label> 98765
+                      <label>Appt ID:</label> {patientAppointmentId}
                     </div>
                     <div className={classes.patientTextInfo}>
-                      <label>Appt Date:</label> 02/08/2019, 11.55 AM
+                      <label>Appt Date:</label> {appointmentDateIST}
                     </div>
                   </div>
                 </div>
                 <div className={classes.doctorSection}>
                   <div className={classes.doctorImg}>
                     <Avatar
-                      src={require('images/doctor_02.png')}
-                      alt=""
+                      src={doctorPhotoUrl !== '' ? doctorPhotoUrl : require('images/doctor_02.png')}
+                      alt="Doctor Profile Photo"
                       className={classes.avatar}
                     />
                   </div>
                   <div className={classes.doctorInfo}>
                     <div className={classes.assign}>Assigned to:</div>
-                    <div className={classes.doctorName}>Dr. Seema Rao</div>
-                    <div className={classes.doctorType}>General Physician</div>
-                    <div className={classes.doctorContact}>+91 98765 43210</div>
+                    <div
+                      className={classes.doctorName}
+                    >{`${doctorSalutation} ${doctorFirstName} ${doctorLastName}`}</div>
+                    <div className={classes.doctorType}>{doctorSpecialty}</div>
+                    <div className={classes.doctorContact}>{doctorMobileNumber}</div>
                   </div>
                 </div>
               </div>
@@ -704,7 +798,7 @@ export const JDConsultRoom: React.FC = () => {
                         startConsult={startConsult}
                         sessionId={sessionId}
                         token={token}
-                        appointmentId={paramId}
+                        appointmentId={appointmentId}
                         doctorId={doctorId}
                         patientId={patientId}
                       />

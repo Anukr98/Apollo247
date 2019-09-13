@@ -1,13 +1,13 @@
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { searchPickupStoresApi, Store } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { searchPickupStoresApi, Store } from '../../helpers/apiCalls';
-import { useShoppingCart } from '../ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -54,41 +54,32 @@ export interface StorePickupSceneProps extends NavigationScreenProps {
 }
 
 export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
-  const [storePinCode, setStorePinCode] = useState<string>('');
-  const [storePickUpList, setStorePickUpList] = useState<Store[]>([]);
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
-  const { storeId, setStoreId } = useShoppingCart();
-  const pincode = props.navigation.getParam('pincode');
-  const stores = props.navigation.getParam('stores');
-
-  useEffect(() => {
-    pincode && setStorePinCode(pincode);
-    stores && setStorePickUpList(stores);
-  }, []);
-
+  const { storeId, setStoreId, pinCode, setStores, stores, setPinCode } = useShoppingCart();
   const fetchStorePickup = (pincode: string) => {
     if (isValidPinCode(pincode)) {
-      setStorePinCode(pincode);
+      setPinCode && setPinCode(pincode);
       if (pincode.length == 6) {
         setStorePickUpLoading(true);
         searchPickupStoresApi(pincode)
           .then(({ data: { Stores, stores_count } }) => {
             setStorePickUpLoading(false);
-            setStorePickUpList(stores_count > 0 ? Stores : []);
+            setStores && setStores(stores_count > 0 ? Stores : []);
           })
           .catch((e) => {
             console.log({ e });
             setStorePickUpLoading(false);
           });
       } else {
-        setStorePickUpList([]);
+        setStoreId && setStoreId('');
+        setStores && setStores([]);
       }
     }
   };
 
   const renderBottomButton = () => {
-    const foundStoreIdIndex = storePickUpList.findIndex(({ storeid }) => storeid == storeId);
+    const foundStoreIdIndex = stores.findIndex(({ storeid }) => storeid == storeId);
     return (
       <View style={styles.bottonButtonContainer}>
         <Button
@@ -104,23 +95,23 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
     return (
       <View style={{ paddingBottom: 24 }}>
         <TextInputComponent
-          value={storePinCode}
+          value={pinCode}
           onChangeText={(pincode) => fetchStorePickup(pincode)}
           maxLength={6}
           textInputprops={{
-            ...(!isValidPinCode(storePinCode) ? { selectionColor: '#e50000' } : {}),
+            ...(!isValidPinCode(pinCode) ? { selectionColor: '#e50000' } : {}),
             autoFocus: true,
           }}
           inputStyle={[
             styles.inputStyle,
-            !isValidPinCode(storePinCode) ? { borderBottomColor: '#e50000' } : {},
+            !isValidPinCode(pinCode) ? { borderBottomColor: '#e50000' } : {},
           ]}
           conatinerstyles={{ paddingBottom: 0 }}
           placeholder={'Enter pin code'}
           autoCorrect={false}
         />
         {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
-        {!storePickUpLoading && storePinCode.length == 6 && storePickUpList.length == 0 && (
+        {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
           <Text
             style={{
               paddingTop: 10,
@@ -134,7 +125,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
           </Text>
         )}
 
-        {!isValidPinCode(storePinCode) ? (
+        {!isValidPinCode(pinCode) ? (
           <Text style={styles.inputValidationStyle}>{'Invalid Pincode'}</Text>
         ) : null}
       </View>
@@ -142,7 +133,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
   };
 
   const renderCardTitle = () => {
-    if (!storePickUpLoading && storePinCode.length == 6 && storePickUpList.length > 0) {
+    if (!storePickUpLoading && pinCode.length == 6 && stores.length > 0) {
       return (
         <>
           <Text style={styles.heading}>{'Stores In This Region'}</Text>
@@ -153,7 +144,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
   };
 
   const renderRadioButtonList = () => {
-    return storePickUpList.map((store, index, array) => (
+    return stores.map((store, index, array) => (
       <RadioSelectionItem
         key={store.storeid}
         title={`${store.storename}\n${store.address}`}

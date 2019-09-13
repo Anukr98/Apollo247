@@ -21,6 +21,9 @@ type TimeArray = {
 }[];
 
 export const divideSlots = (availableSlots: string[], date: Date) => {
+  // const todayDate = new Date().toDateString().split('T')[0];
+  const todayDate = moment(new Date()).format('YYYY-MM-DD');
+
   console.log(availableSlots, 'availableSlots divideSlots');
   const array: TimeArray = [
     { label: 'Morning', time: [] },
@@ -38,8 +41,6 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
   const nightStartTime = moment('21:01', 'HH:mm');
   const nightEndTime = moment('05:59', 'HH:mm');
 
-  const todayDate = new Date().toDateString().split('T')[0];
-
   availableSlots.forEach((slot) => {
     const IOSFormat = slot; //`${date.toISOString().split('T')[0]}T${slot}:00.000Z`;
 
@@ -47,9 +48,16 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
       .local()
       .format('HH:mm'); //.format('HH:mm');
     const slotTime = moment(formatedSlot, 'HH:mm');
+    console.log(
+      todayDate,
+      'todayDate',
+      moment(new Date()).format('YYYY-MM-DD'),
+      new Date(IOSFormat).toDateString().split('T')[0]
+    );
+
     if (
-      todayDate === date.toDateString().split('T')[0] &&
-      todayDate !== new Date(IOSFormat).toDateString().split('T')[0]
+      todayDate === moment(date).format('YYYY-MM-DD') && //date.toDateString().split('T')[0] &&
+      todayDate !== moment(IOSFormat).format('YYYY-MM-DD') //new Date(IOSFormat).toDateString().split('T')[0])
     ) {
       console.log('today past');
     } else {
@@ -106,17 +114,17 @@ export const handleGraphQlError = (
 };
 
 export const timeTo12HrFormat = (time: string) => {
-  console.log(time, 'time');
   return moment(time).format('h:mm a');
-  // const time_array = time.split(':');
-  // let ampm = 'am';
-  // if (Number(time_array[0]) >= 12) {
-  //   ampm = 'pm';
-  // }
-  // if (Number(time_array[0]) > 12) {
-  //   time_array[0] = (Number(time_array[0]) - 12).toString();
-  // }
-  // return time_array[0].replace(/^00/, '12').replace(/^0/, '') + ':' + time_array[1] + ' ' + ampm;
+};
+
+export const timeDiffFromNow = (toDate: string) => {
+  let timeDiff: Number = 0;
+  const today: Date = new Date();
+  const date2: Date = new Date(toDate);
+  if (date2 && today) {
+    timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+  }
+  return timeDiff;
 };
 
 export function g<T, P1 extends keyof NonNullable<T>>(

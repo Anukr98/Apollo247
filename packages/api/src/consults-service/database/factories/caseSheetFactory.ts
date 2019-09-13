@@ -7,6 +7,7 @@ import {
   CaseSheetDiagnosis,
   CaseSheetDiagnosisPrescription,
   CaseSheetOtherInstruction,
+  APPOINTMENT_TYPE,
 } from 'consults-service/entities';
 import faker from 'faker';
 import _random from 'lodash/random';
@@ -65,12 +66,13 @@ export const buildCaseSheet = (attrs?: Partial<CaseSheet>) => {
   const medicinePrescriptions = _times(_random(0, 8), () => buildMedicinePrescription());
   const symptoms = _times(_random(0, 5), () => buildSymptom());
   caseSheet.notes = notes;
-  caseSheet.diagnosis = JSON.stringify(diagnosis);
-  caseSheet.diagnosticPrescription = JSON.stringify(diagnosisPrescription);
+  caseSheet.diagnosis = (diagnosis as unknown) as string;
+  caseSheet.diagnosticPrescription = (diagnosisPrescription as unknown) as string;
   caseSheet.followUp = faker.random.boolean();
   caseSheet.followUpAfterInDays = _random(1, 60);
-  caseSheet.otherInstructions = JSON.stringify(otherInstructions);
-  caseSheet.medicinePrescription = JSON.stringify(medicinePrescriptions);
-  caseSheet.symptoms = JSON.stringify(symptoms);
+  caseSheet.otherInstructions = (otherInstructions as unknown) as string;
+  caseSheet.medicinePrescription = (medicinePrescriptions as unknown) as string;
+  caseSheet.symptoms = (symptoms as unknown) as string;
+  caseSheet.consultType = randomEnum(APPOINTMENT_TYPE);
   return Object.assign(caseSheet, attrs);
 };

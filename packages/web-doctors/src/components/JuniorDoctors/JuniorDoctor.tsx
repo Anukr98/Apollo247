@@ -10,6 +10,8 @@ import { GET_CONSULT_QUEUE } from 'graphql/consults';
 import { useCurrentPatient } from 'hooks/authHooks';
 import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetConsultQueue';
 import _isEmpty from 'lodash/isEmpty';
+import { Link } from 'react-router-dom';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -125,12 +127,19 @@ export const JuniorDoctor: React.FC = (props) => {
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
             {activeConsults.map(({ id, patient, appointment }, index) => (
-              <ActiveConsultCard
-                id={id}
+              <Link
                 key={id}
-                patient={{ ...patient, queueNumber: index + 1 }}
-                appointment={appointment}
-              />
+                to={clientRoutes.JDConsultRoom({
+                  appointmentId: appointment.id,
+                  patientId: patient.id,
+                })}
+              >
+                <ActiveConsultCard
+                  id={id}
+                  patient={{ ...patient, queueNumber: index + 1 }}
+                  appointment={appointment}
+                />
+              </Link>
             ))}
           </div>
         </div>
