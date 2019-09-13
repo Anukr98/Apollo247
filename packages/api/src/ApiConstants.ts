@@ -18,4 +18,12 @@ export enum ApiConstants {
   PATIENT_HELP_FROM_EMAILID = 'info@pepisandbox.com',
   PATIENT_HELP_FROM_NAME = 'Apollo24*7',
   PATIENT_HELP_SUBJECT = 'Patient Help Form',
+
+  //initiate junior docotr session
+  JUNIOR_APPT_SESSION_TITLE = 'Junior doctor initiated the session',
+  JUNIOR_APPT_SESSION_BODY = 'Junior doctor has started the session to fill the casesheet for your appointment {0}',
+
+  //initiate senior docotr session
+  SENIOR_APPT_SESSION_TITLE = 'Doctor has joined the consult room',
+  SENIOR_APPT_SESSION_BODY = 'Doctor {1} has stated the consult for your appointment {0}',
 }
