@@ -71,6 +71,12 @@ export enum APPOINTMENT_PAYMENT_TYPE {
   ONLINE = 'ONLINE',
 }
 
+export enum CONSULTS_RX_SEARCH_FILTER {
+  ONLINE = 'ONLINE',
+  PHYSICAL = 'PHYSICAL',
+  PRESCRIPTION = 'PRESCRIPTION',
+}
+
 //Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
