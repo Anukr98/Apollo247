@@ -1,23 +1,37 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { OrderCard, OrderCardProps } from '@aph/mobile-patients/src/components/ui/OrderCard';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { GET_MEDICINE_ORDERS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GetMedicineOrdersList,
+  GetMedicineOrdersListVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
+import {
+  MEDICINE_DELIVERY_TYPE,
+  MEDICINE_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { ActivityIndicator, SafeAreaView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { GET_MEDICINE_ORDERS_LIST } from '../graphql/profiles';
-import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-} from '../graphql/types/GetMedicineOrdersList';
-import { MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
-import { g } from '../helpers/helperFunctions';
-import { useAllCurrentPatients } from '../hooks/authHooks';
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  noDataCard: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
+  },
+});
 
 const list = [
   {
@@ -54,8 +68,8 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   );
 
   const orders = (!loading && data && data.getMedicineOrdersList.MedicineOrdersList!) || [];
-  !loading && console.log({ orders });
-  !loading && error && console.error({ error });
+  // !loading && console.log({ orders });
+  // !loading && error && console.error({ error });
 
   const getDeliverType = (type: MEDICINE_DELIVERY_TYPE) => {
     switch (type) {
@@ -144,28 +158,48 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     );
   };
 
+  const renderNoOrders = () => {
+    if (!loading && orders.length == 0) {
+      return (
+        <Card
+          cardContainer={[styles.noDataCard]}
+          heading={'Uh oh! :('}
+          description={'No Orders Found!'}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        >
+          <Button
+            style={{ marginTop: 20 }}
+            title={'ORDER NOW'}
+            onPress={() => {
+              props.navigation.navigate(AppRoutes.SearchMedicineScene);
+            }}
+          />
+        </Card>
+      );
+    }
+  };
+
   return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      <Header
-        leftIcon="backArrow"
-        title={string.orders.urOrders}
-        container={{ borderBottomWidth: 0 }}
-        // rightComponent={
-        //   <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
-        //     <More />
-        //   </TouchableOpacity>
-        // }
-        onPressLeftIcon={() => props.navigation.goBack()}
-      />
-      {loading && (
-        <ActivityIndicator
-          style={{ flex: 1, alignItems: 'center' }}
-          animating={loading}
-          size="large"
-          color="green"
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={theme.viewStyles.container}>
+        <Header
+          leftIcon="backArrow"
+          title={string.orders.urOrders}
+          container={{ borderBottomWidth: 0 }}
+          // rightComponent={
+          //   <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
+          //     <More />
+          //   </TouchableOpacity>
+          // }
+          onPressLeftIcon={() => props.navigation.goBack()}
         />
-      )}
-      <ScrollView bounces={false}>{renderOrders()}</ScrollView>
-    </SafeAreaView>
+        <ScrollView bounces={false}>
+          {renderOrders()}
+          {renderNoOrders()}
+        </ScrollView>
+      </SafeAreaView>
+      {loading && <Spinner />}
+    </View>
   );
 };

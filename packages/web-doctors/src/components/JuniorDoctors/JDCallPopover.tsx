@@ -501,6 +501,7 @@ const useStyles = makeStyles((theme: Theme) => {
     submitBtn: {
       minWidth: 216,
       borderRadius: 10,
+      marginLeft: 20,
     },
     consultName: {
       fontSize: 13,
@@ -517,6 +518,30 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(2, 71, 91, 0.6)',
       '& span': {
         fontWeight: 'bold',
+      },
+    },
+    consultMenuPopover: {
+      minWidth: 160,
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.4)',
+      backgroundColor: theme.palette.common.white,
+      marginTop: 14,
+    },
+    menuBtnGroup: {
+      padding: 6,
+      '& button': {
+        boxShadow: 'none',
+        borderRadius: 0,
+        backgroundColor: 'transparent',
+        fontSize: 15,
+        fontWeight: 500,
+        color: '#02475b',
+        padding: 10,
+        display: 'block',
+        textTransform: 'none',
+        width: '100%',
+        textAlign: 'left',
+        lineHeight: '15px',
       },
     },
   };
@@ -1213,24 +1238,15 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 Save
               </AphButton>
               <AphButton
-                className={classes.endconsultButton}
+                color="primary"
+                className={classes.submitBtn}
                 onClick={() => {
                   stopInterval();
                   props.endConsultAction();
                   setDisableOnTransfer(true);
                 }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                  <g fill="none" fillRule="evenodd">
-                    <path d="M0 0h24v24H0z" />
-                    <path
-                      fill="#ffffff"
-                      fillRule="nonzero"
-                      d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
-                    />
-                  </g>
-                </svg>
-                End Consult
+                Submit Case Sheet
               </AphButton>
             </span>
           ) : (
@@ -1333,7 +1349,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       </Popover>
       <Popover
         id={idThreeDots}
-        className={classes.dotPaper}
+        classes={{ paper: classes.consultMenuPopover }}
         open={openThreeDots}
         anchorEl={anchorElThreeDots}
         onClose={handleCloseThreeDots}
@@ -1346,35 +1362,21 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           horizontal: 'right',
         }}
       >
-        <div>
-          <ul className={classes.popOverUL}>
-            {/* <li>Share Case Sheet</li> */}
-            <li
-              onClick={() => {
-                if (
-                  appointmentInfo!.status === STATUS.PENDING ||
-                  appointmentInfo!.status === STATUS.IN_PROGRESS
-                ) {
-                  handleCloseThreeDots();
-                  setIsTransferPopoverOpen(true);
-                } else {
-                  alert('You are not allowed to transfer the appointment');
-                }
-              }}
-            >
-              Transfer Consult
-            </li>
-            {!startAppointment && appointmentInfo!.status === STATUS.PENDING && (
-              <li
-                onClick={() => {
-                  handleCloseThreeDots();
-                  setIsPopoverOpen(true);
-                }}
-              >
-                Reschedule Consult
-              </li>
-            )}
-          </ul>
+        <div
+          onClick={() => {
+            if (
+              appointmentInfo!.status === STATUS.PENDING ||
+              appointmentInfo!.status === STATUS.IN_PROGRESS
+            ) {
+              handleCloseThreeDots();
+              setIsTransferPopoverOpen(true);
+            } else {
+              alert('You are not allowed to transfer the appointment');
+            }
+          }}
+          className={classes.menuBtnGroup}
+        >
+          <AphButton>Transfer Consult</AphButton>
         </div>
       </Popover>
       <Modal

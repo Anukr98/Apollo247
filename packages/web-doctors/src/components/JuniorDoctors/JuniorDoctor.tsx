@@ -1,4 +1,4 @@
-import { Theme, CircularProgress } from '@material-ui/core';
+import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import React from 'react';
@@ -12,6 +12,8 @@ import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetCons
 import _isEmpty from 'lodash/isEmpty';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { useAuth } from 'hooks/authHooks';
+import { AphLinearProgress } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -78,6 +80,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     blockBody: {
       padding: '30px 20px',
+      position: 'relative',
     },
     customScroll: {
       padding: '0 20px',
@@ -89,12 +92,28 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: '30px 30px 10px 30px',
       marginBottom: 10,
     },
+    cardLoader: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: '100%',
+    },
+    noData: {
+      fontSize: 16,
+      fontWeight: 500,
+      color: '#02475b',
+      padding: 10,
+      textAlign: 'center',
+      opacity: 0.6,
+    },
   };
 });
 
 export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
   const currentDoctor = useCurrentPatient();
+  const { isSigningIn } = useAuth();
+
   const { data, loading, error } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
     GET_CONSULT_QUEUE,
     {
@@ -108,8 +127,11 @@ export const JuniorDoctor: React.FC = (props) => {
   );
 
   let content: [React.ReactNode, React.ReactNode] = [null, null];
+  let isActiveConsultsAvailable,
+    isPastConsultsAvailable = false;
+
   if (error) content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
-  if (loading && _isEmpty(data)) content = [<CircularProgress />, <CircularProgress />];
+  if (loading && _isEmpty(data)) content = [<AphLinearProgress />, <AphLinearProgress />];
   if (data && data.getConsultQueue) {
     const { consultQueue } = data.getConsultQueue;
     const allConsults = consultQueue.map((consult) => ({
@@ -126,21 +148,25 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {activeConsults.map(({ id, patient, appointment }, index) => (
-              <Link
-                key={id}
-                to={clientRoutes.JDConsultRoom({
-                  appointmentId: appointment.id,
-                  patientId: patient.id,
-                })}
-              >
-                <ActiveConsultCard
-                  id={id}
-                  patient={{ ...patient, queueNumber: index + 1 }}
-                  appointment={appointment}
-                />
-              </Link>
-            ))}
+            {activeConsults.map(({ id, patient, appointment }, index) => {
+              isActiveConsultsAvailable = true;
+              return (
+                <Link
+                  key={id}
+                  to={clientRoutes.JDConsultRoom({
+                    appointmentId: appointment.id,
+                    patientId: patient.id,
+                    queueId: String(id),
+                  })}
+                >
+                  <ActiveConsultCard
+                    id={id}
+                    patient={{ ...patient, queueNumber: index + 1 }}
+                    appointment={appointment}
+                  />
+                </Link>
+              );
+            })}
           </div>
         </div>
       </Scrollbars>,
@@ -148,16 +174,21 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {pastConsults.map(({ id, patient, appointment }) => (
-              <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
-            ))}
+            {pastConsults.map(({ id, patient, appointment }) => {
+              isPastConsultsAvailable = true;
+              return (
+                <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
+              );
+            })}
           </div>
         </div>
       </Scrollbars>,
     ];
   }
 
-  return (
+  return isSigningIn ? (
+    <AphLinearProgress />
+  ) : (
     <div className={classes.root}>
       <div className={classes.headerSticky}>
         <Header />
@@ -171,18 +202,28 @@ export const JuniorDoctor: React.FC = (props) => {
           <div className={classes.contentGroup}>
             <div className={classes.leftSection}>
               <div className={classes.blockGroup}>
-                <div className={classes.blockHeader}>
-                  {loading && data && <CircularProgress size={20} />} Active Patients
+                <div className={classes.blockHeader}>Active Patients</div>
+                <div className={classes.blockBody}>
+                  {loading && data && <AphLinearProgress className={classes.cardLoader} />}
+                  {isActiveConsultsAvailable ? (
+                    content[0]
+                  ) : (
+                    <div className={classes.noData}>No Active Patients are available.</div>
+                  )}
                 </div>
-                <div className={classes.blockBody}>{content[0]}</div>
               </div>
             </div>
             <div className={classes.rightSection}>
               <div className={classes.blockGroup}>
-                <div className={classes.blockHeader}>
-                  {loading && data && <CircularProgress size={20} />} Past Consults
+                <div className={classes.blockHeader}>Past Consults</div>
+                <div className={classes.blockBody}>
+                  {loading && data && <AphLinearProgress className={classes.cardLoader} />}
+                  {isPastConsultsAvailable ? (
+                    content[1]
+                  ) : (
+                    <div className={classes.noData}>No Past Consults are available.</div>
+                  )}
                 </div>
-                <div className={classes.blockBody}>{content[1]}</div>
               </div>
             </div>
           </div>

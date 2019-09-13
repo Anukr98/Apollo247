@@ -3,6 +3,7 @@ import { webDoctorsBaseUrl } from '@aph/universal/dist/aphRoutes';
 export interface JDConsultRoomParams {
   appointmentId: string;
   patientId: string;
+  queueId: string;
 }
 
 export const clientRoutes = {
@@ -18,11 +19,11 @@ export const clientRoutes = {
   calendar: () => '/calendar',
   juniorDoctor: () => '/junior-doctor',
   patientDetails: () => '/patient-details',
-  juniorDoctorProfile: () => '/juniordoctor-profile',
+  juniorDoctorProfile: () => '/jd-profile',
   ConsultTabs: (appointmentId: string, patientId: string) =>
     `/Consulttabs/${appointmentId}/${patientId}`,
-  JDConsultRoom: ({ appointmentId, patientId }: JDConsultRoomParams) =>
-    `/jd-consultroom/${appointmentId}/${patientId}`,
+  JDConsultRoom: ({ appointmentId, patientId, queueId }: JDConsultRoomParams) =>
+    `/jd-consultroom/${appointmentId}/${patientId}/${queueId}`,
 };
 
 export const clientBaseUrl = () => webDoctorsBaseUrl();

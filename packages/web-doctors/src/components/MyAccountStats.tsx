@@ -46,7 +46,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const MyAccountSettings: React.FC = () => {
+export const MyAccountStats: React.FC = () => {
   const classes = useStyles();
   return (
     <div className={classes.ProfileContainer}>

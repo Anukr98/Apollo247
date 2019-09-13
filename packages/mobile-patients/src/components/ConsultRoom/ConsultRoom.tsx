@@ -41,6 +41,7 @@ import { SAVE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import firebase from 'react-native-firebase';
 import DeviceInfo from 'react-native-device-info';
 import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 
 const { width, height } = Dimensions.get('window');
 
@@ -674,14 +675,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             ))}
           </View>
           {/* {renderStarDoctors()} */}
-          <View style={styles.helpView}>
+          <NeedHelpAssistant
+            containerStyle={{ marginTop: 30, marginBottom: 48 }}
+            navigation={props.navigation}
+          />
+          {/* <View style={styles.helpView}>
             <Mascot style={{ height: 80, width: 80 }} />
             <Button
               title={string.home.need_help}
               style={styles.needhelpbuttonStyles}
               titleTextStyle={styles.titleBtnStyles}
             />
-          </View>
+          </View> */}
         </ScrollView>
       </SafeAreaView>
       {renderBottomTabBar()}

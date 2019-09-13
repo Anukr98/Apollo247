@@ -3,18 +3,14 @@ import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
   Typography,
+  Divider,
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
-  Divider,
-  Box,
-  TextField,
   InputBase,
 } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import {
   Symptoms,
-  LifeStyle,
   HealthVault,
   DoctorsNotes,
   Diagnosis,
@@ -23,8 +19,6 @@ import {
   FollowUp,
   OtherInstructions,
 } from 'components/JuniorDoctors/JDCaseSheet/panels';
-//import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -32,90 +26,9 @@ const useStyles = makeStyles((theme: Theme) => {
     root: {
       width: '100%',
     },
-    caseSheet: {
-      minHeight: 'calc(100vh - 360px)',
-      display: 'flex',
-      flexFlow: 'row',
-      flexWrap: 'wrap',
-      marginTop: 10,
-      '& .Mui-expanded': {
-        margin: '5px 0 0 0 !important',
-        minHeight: 20,
-        paddingBottom: 0,
-        paddingRight: 6,
-        paddingTop: 3,
-      },
-      '& div': {
-        color: '#000',
-      },
-      [theme.breakpoints.down('xs')]: {
-        display: 'block',
-      },
-    },
-    column: {
-      display: 'flex',
-      flexDirection: 'column',
-      flex: 1,
-      maxWidth: 707,
-    },
-    right: {
-      flex: 'initial',
-      margin: '0 15px 0 0',
-      minWidth: 300,
-      maxWidth: 300,
-      [theme.breakpoints.down('xs')]: {
-        margin: '0 0 15px 0',
-        maxWidth: '100%',
-        minWidth: 200,
-      },
-      '& h2': {
-        fontSize: 20,
-        lineHeight: 'normal',
-        fontWeight: 600,
-        color: '#02475b',
-      },
-      '& h5': {
-        fontSize: 16,
-        lineHeight: 'normal',
-        fontWeight: 500,
-        color: 'rgba(2, 71, 91, 0.8)',
-        marginBottom: 10,
-        textTransform: 'capitalize',
-      },
-      '& h6': {
-        fontSize: 14,
-        lineHeight: 'normal',
-        fontWeight: 500,
-        color: 'rgba(2, 71, 91, 0.8)',
-        marginBottom: 10,
-      },
-      '& hr': {
-        marginBottom: 10,
-      },
-    },
-    expandIcon: {
-      color: '#02475b',
-      margin: '5px 0',
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
-      borderRadius: 10,
-      backgroundColor: '#fff',
-      '&:before': {
-        backgroundColor: 'transparent',
-      },
-      '&:first-child': {
-        marginTop: 0,
-      },
-      '& h3': {
-        fontSize: 17,
-        fontWeight: theme.typography.fontWeightMedium,
-        color: '#01475b',
-        lineHeight: '24px',
-        padding: '4px 0',
-      },
-    },
     divider: {
       margin: '20px 0',
-      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+      backgroundColor: 'rgba(2, 71, 91, 0.3)',
     },
     notesHeader: {
       color: '#0087ba',
@@ -123,9 +36,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       marginBottom: 10,
     },
-    notesContainer: {
+    notesBox: {
       padding: 16,
-      backgroundColor: '#fff',
+      borderRadius: 10,
+      boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.3)',
+      backgroundColor: theme.palette.common.white,
     },
     textFieldColor: {
       '& input': {
@@ -143,6 +58,55 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 14,
       fontWeight: 500,
     },
+    panelRoot: {
+      borderRadius: 10,
+      boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.3)',
+      backgroundColor: theme.palette.common.white,
+      marginBottom: 16,
+      '&:before': {
+        display: 'none',
+      },
+    },
+    panelDetails: {
+      padding: 16,
+      paddingTop: 0,
+      display: 'inline-block',
+      width: '100%',
+    },
+    panelHeader: {
+      padding: '4px 16px',
+      fontSize: 17,
+      fontWeight: 500,
+      color: '#02475b',
+    },
+    panelExpanded: {
+      minHeight: 'auto !important',
+      '& >div:first-child': {
+        marginTop: 12,
+        marginBottom: 12,
+      },
+    },
+    sectionTitle: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
+      opacity: 0.6,
+      paddingBottom: 8,
+    },
+    historyBox: {
+      padding: '12px 16px',
+      fontSize: 14,
+      fontWeight: 500,
+      lineHeight: 1.43,
+      color: '#01475b',
+      borderRadius: 5,
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
+      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      marginBottom: 16,
+    },
+    marginNone: {
+      margin: 0,
+    },
   };
 });
 
@@ -159,30 +123,15 @@ export const CaseSheet: React.FC = () => {
   return (
     <div className={classes.root}>
       {/* Symptoms Panel */}
-      <ExpansionPanel
-        expanded={expanded === 'symptoms'}
-        onChange={handlePanelExpansion('symptoms')}
-        className={classes.expandIcon}
-      >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Symptoms</Typography>
+      <ExpansionPanel defaultExpanded={true} className={classes.panelRoot}>
+        <ExpansionPanelSummary
+          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        >
+          Symptoms
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
+        <ExpansionPanelDetails className={classes.panelDetails}>
           <Symptoms />
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-
-      {/* Patient History & Lifestyle Panel */}
-      <ExpansionPanel
-        expanded={expanded === 'lifestyle'}
-        onChange={handlePanelExpansion('lifestyle')}
-        className={classes.expandIcon}
-      >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Patient History &amp; Lifestyle</Typography>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
-          <LifeStyle />
         </ExpansionPanelDetails>
       </ExpansionPanel>
 
@@ -190,27 +139,16 @@ export const CaseSheet: React.FC = () => {
       <ExpansionPanel
         expanded={expanded === 'healthVault'}
         onChange={handlePanelExpansion('healthVault')}
-        className={classes.expandIcon}
+        className={classes.panelRoot}
       >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Patient Health Vault</Typography>
+        <ExpansionPanelSummary
+          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        >
+          Patient Health Vault
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
+        <ExpansionPanelDetails className={classes.panelDetails}>
           <HealthVault />
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-
-      {/* Juniour Doctor's Notes Panel */}
-      <ExpansionPanel
-        expanded={expanded === 'notes'}
-        onChange={handlePanelExpansion('notes')}
-        className={classes.expandIcon}
-      >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Junior Doctor's Notes</Typography>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
-          <DoctorsNotes />
         </ExpansionPanelDetails>
       </ExpansionPanel>
 
@@ -218,12 +156,15 @@ export const CaseSheet: React.FC = () => {
       <ExpansionPanel
         expanded={expanded === 'diagnosis'}
         onChange={handlePanelExpansion('diagnosis')}
-        className={classes.expandIcon}
+        className={classes.panelRoot}
       >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Diagnosis</Typography>
+        <ExpansionPanelSummary
+          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        >
+          Diagnosis
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
+        <ExpansionPanelDetails className={classes.panelDetails}>
           <Diagnosis />
         </ExpansionPanelDetails>
       </ExpansionPanel>
@@ -232,12 +173,15 @@ export const CaseSheet: React.FC = () => {
       <ExpansionPanel
         expanded={expanded === 'medicinePrescription'}
         onChange={handlePanelExpansion('medicinePrescription')}
-        className={classes.expandIcon}
+        className={classes.panelRoot}
       >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Medicine Prescription</Typography>
+        <ExpansionPanelSummary
+          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        >
+          Medicine Prescription
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
+        <ExpansionPanelDetails className={classes.panelDetails}>
           <MedicinePrescription />
         </ExpansionPanelDetails>
       </ExpansionPanel>
@@ -246,27 +190,16 @@ export const CaseSheet: React.FC = () => {
       <ExpansionPanel
         expanded={expanded === 'diagnosticPrescription'}
         onChange={handlePanelExpansion('diagnosticPrescription')}
-        className={classes.expandIcon}
+        className={classes.panelRoot}
       >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Diagnostic Prescription</Typography>
+        <ExpansionPanelSummary
+          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        >
+          Diagnostic Prescription
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
+        <ExpansionPanelDetails className={classes.panelDetails}>
           <DiagnosticPrescription />
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-
-      {/* Follow Up Panel */}
-      <ExpansionPanel
-        expanded={expanded === 'followup'}
-        onChange={handlePanelExpansion('followup')}
-        className={classes.expandIcon}
-      >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Follow up</Typography>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
-          <FollowUp />
         </ExpansionPanelDetails>
       </ExpansionPanel>
 
@@ -274,19 +207,44 @@ export const CaseSheet: React.FC = () => {
       <ExpansionPanel
         expanded={expanded === 'otherInstructions'}
         onChange={handlePanelExpansion('otherInstructions')}
-        className={classes.expandIcon}
+        className={classes.panelRoot}
       >
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h3">Other Instructions</Typography>
+        <ExpansionPanelSummary
+          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+        >
+          Other Instructions
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails>
+        <ExpansionPanelDetails className={classes.panelDetails}>
           <OtherInstructions />
         </ExpansionPanelDetails>
       </ExpansionPanel>
+      <ExpansionPanel className={classes.panelRoot} defaultExpanded={true}>
+        <ExpansionPanelSummary
+          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+        >
+          Patient History & Lifestyle
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.panelDetails}>
+          <div className={classes.sectionTitle}>Family History</div>
+          <div className={classes.historyBox}>
+            Father: Cardiac patient
+            <br /> Mother: Severe diabetes
+            <br /> Married, No kids
+          </div>
+          <div className={classes.sectionTitle}>Allergies</div>
+          <div className={classes.historyBox}>Paracetamol, Dairy, Dust</div>
+          <div className={classes.sectionTitle}>Lifestyle & Habits</div>
+          <div className={`${classes.historyBox} ${classes.marginNone}`}>
+            Patient doesn’t smoke, She recovered from chickenpox 6 months ago
+          </div>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
       <Divider className={classes.divider} />
-      <Box boxShadow={5} borderRadius={10} className={classes.notesContainer}>
+      <div className={classes.notesBox}>
         <Typography component="h4" variant="h4" className={classes.notesHeader}>
-          Personal Notes
+          Notes
         </Typography>
         <Typography component="div" className={classes.textFieldWrapper}>
           <InputBase
@@ -299,7 +257,7 @@ export const CaseSheet: React.FC = () => {
             }}
           />
         </Typography>
-      </Box>
+      </div>
     </div>
   );
 };

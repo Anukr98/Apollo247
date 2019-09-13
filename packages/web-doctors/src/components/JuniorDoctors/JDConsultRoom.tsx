@@ -1,29 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Theme, Button, Modal, Avatar } from '@material-ui/core';
+import { Theme, Button, Avatar } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import Paper from '@material-ui/core/Paper';
 import { JDCallPopover } from 'components/JuniorDoctors/JDCallPopover';
 import Typography from '@material-ui/core/Typography';
 import { useApolloClient } from 'react-apollo-hooks';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
-import {
-  EndAppointmentSession,
-  EndAppointmentSessionVariables,
-} from 'graphql/types/EndAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
-
-import {
-  CREATE_APPOINTMENT_SESSION,
-  GET_CASESHEET,
-  UPDATE_CASESHEET,
-  END_APPOINTMENT_SESSION,
-} from 'graphql/profiles';
+import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
@@ -32,7 +20,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetCaseSheet';
-import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -47,6 +35,18 @@ import { parseISO, format } from 'date-fns';
 import { Gender } from 'graphql/types/globalTypes';
 import differenceInYears from 'date-fns/differenceInYears';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
+import { useMutation } from 'react-apollo-hooks';
+import {
+  RemoveFromConsultQueue,
+  RemoveFromConsultQueueVariables,
+} from 'graphql/types/RemoveFromConsultQueue';
+import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import { clientRoutes } from 'helpers/clientRoutes';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -70,6 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
     pageHeader: {
       backgroundColor: theme.palette.common.white,
       display: 'flex',
+      position: 'relative',
     },
     patientSection: {
       width: '50%',
@@ -116,8 +117,8 @@ const useStyles = makeStyles((theme: Theme) => {
     avatar: {
       width: 60,
       height: 60,
+      backgroundColor: '#f7f8f5',
     },
-
     doctorInfo: {
       paddingRight: 55,
       fontWeight: 500,
@@ -292,15 +293,57 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
       },
     },
+    backArrow: {
+      cursor: 'pointer',
+      marginRight: 50,
+      position: 'absolute',
+      left: 20,
+      top: 20,
+      [theme.breakpoints.up(1220)]: {
+        left: -62,
+        top: 0,
+        width: 48,
+        height: 48,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    blackArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up(1220)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
 export const JDConsultRoom: React.FC = () => {
   const classes = useStyles();
-  const { patientId, appointmentId } = useParams<JDConsultRoomParams>();
+  const { patientId, appointmentId, queueId } = useParams<JDConsultRoomParams>();
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const { currentPatient: currentDoctor, isSignedIn } = useAuth();
   const doctorId = currentDoctor!.id;
+
+  const mutationRemoveConsult = useMutation<
+    RemoveFromConsultQueue,
+    RemoveFromConsultQueueVariables
+  >(REMOVE_FROM_CONSULT_QUEUE, {
+    variables: {
+      id: parseInt(queueId, 10),
+    },
+  });
 
   const doctorFirstName =
     currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
@@ -402,8 +445,8 @@ export const JDConsultRoom: React.FC = () => {
   const patientAge = differenceInYears(new Date(), parseISO(patientDob));
   const patientGender =
     casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
-      ? casesheetInfo.getCaseSheet.patientDetails.gender
-      : Gender.OTHER;
+      ? _startCase(_toLower(casesheetInfo.getCaseSheet.patientDetails.gender))
+      : '';
 
   const patientAppointmentId =
     (casesheetInfo &&
@@ -519,20 +562,6 @@ export const JDConsultRoom: React.FC = () => {
     }
   }, [appointmentId, client, isSignedIn]);
 
-  // useEffect(() => {
-  //   if (appointmentId !== paramId && paramId !== '' && currentPatient && currentPatient.id !== '') {
-  //     setAppointmentId(paramId);
-  //     setpatientId(params.patientId);
-  //     setdoctorId(currentPatient.id);
-
-  //   }
-  //   return () => {
-  //     console.log('in return...');
-  //     const cookieStr = `action=`;
-  //     document.cookie = cookieStr + ';path=/;';
-  //   };
-  // }, [paramId, appointmentId]);
-
   const saveCasesheetAction = (flag: boolean) => {
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
@@ -558,16 +587,17 @@ export const JDConsultRoom: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
-          console.log(_data!.data!.updateCaseSheet!.blobName);
-          const url =
-            'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
-            _data!.data!.updateCaseSheet!.blobName;
-          setPrescriptionPdf(url);
-        }
-        if (!flag) {
-          setIsPopoverOpen(true);
-        }
+        console.log('in save case sheet action......');
+        // if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
+        //   console.log(_data!.data!.updateCaseSheet!.blobName);
+        //   const url =
+        //     'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
+        //     _data!.data!.updateCaseSheet!.blobName;
+        //   setPrescriptionPdf(url);
+        // }
+        // if (!flag) {
+        //   setIsPopoverOpen(true);
+        // }
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -578,63 +608,9 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const endConsultAction = () => {
+    mutationRemoveConsult().then();
+    setIsDialogOpen(true);
     saveCasesheetAction(false);
-    // client
-    //   .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-    //     mutation: UPDATE_CASESHEET,
-    //     variables: {
-    //       UpdateCaseSheetInput: {
-    //         symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-    //         notes,
-    //         diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
-    //         diagnosticPrescription:
-    //           diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
-    //         followUp: followUp[0],
-    //         followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
-    //         followUpAfterInDays:
-    //           followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
-    //         otherInstructions:
-    //           otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
-    //         medicinePrescription:
-    //           medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
-    //         id: caseSheetId,
-    //       },
-    //     },
-    //     fetchPolicy: 'no-cache',
-    //   })
-    //   .then((_data) => {
-    //     console.log('_data', _data);
-    //     endConsultActionFinal();
-    //   })
-    //   .catch((e) => {
-    //     console.log('Error occured while update casesheet', e);
-    //   });
-  };
-
-  const endConsultActionFinal = () => {
-    client
-      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
-        mutation: END_APPOINTMENT_SESSION,
-        variables: {
-          endAppointmentSessionInput: {
-            appointmentId: appointmentId,
-            status: STATUS.COMPLETED,
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        // setIsPopoverOpen(true);
-        setIsEnded(true);
-        console.log('_data', _data);
-      })
-      .catch((e) => {
-        console.log('Error occured while End casesheet', e);
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        console.log('Error occured while End casesheet', errorMessage, error);
-        alert(errorMessage);
-      });
   };
 
   const createSessionAction = () => {
@@ -714,6 +690,12 @@ export const JDConsultRoom: React.FC = () => {
             <div className={classes.pageContainer}>
               {/* patient and doctors details start */}
               <div className={classes.pageHeader}>
+                <div className={classes.backArrow}>
+                  <Link to={clientRoutes.juniorDoctor()}>
+                    <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                    <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                  </Link>
+                </div>
                 <div className={classes.patientSection}>
                   <div className={classes.patientImage}>
                     <img
@@ -782,7 +764,7 @@ export const JDConsultRoom: React.FC = () => {
                   <div className={classes.blockGroup}>
                     <div className={classes.blockHeader}>Case Sheet</div>
                     <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 440px' }}>
+                      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 430px' }}>
                         <div className={classes.customScroll}>
                           {casesheetInfo ? <CaseSheet /> : ''}
                         </div>
@@ -810,7 +792,7 @@ export const JDConsultRoom: React.FC = () => {
           </div>
         </CaseSheetContext.Provider>
       )}
-      <Modal
+      {/* <Modal
         open={isPopoverOpen}
         onClose={() => setIsPopoverOpen(false)}
         disableBackdropClick
@@ -829,7 +811,7 @@ export const JDConsultRoom: React.FC = () => {
           <div className={classes.tabBody}>
             {}
             <h3>
-              You're ending your consult with{' '}
+              You're ending your consult with
               {casesheetInfo &&
                 casesheetInfo !== null &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
@@ -864,13 +846,36 @@ export const JDConsultRoom: React.FC = () => {
             </Button>
           </div>
         </Paper>
-      </Modal>
+      </Modal> */}
 
       {isEnded && (
         <div className={classes.tabPdfBody}>
           <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
         </div>
       )}
+
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogContent>
+          <DialogContentText>Casesheet has been successfully submitted.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsDialogOpen(false);
+              window.location.href = clientRoutes.juniorDoctor();
+            }}
+            autoFocus
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
