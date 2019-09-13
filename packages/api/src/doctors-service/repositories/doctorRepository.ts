@@ -8,7 +8,7 @@ import {
   ConsultModeAvailability,
   AppointmentDateTime,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
-import { format, differenceInMinutes, differenceInHours, addMinutes } from 'date-fns';
+import { format, differenceInMinutes, addMinutes, addDays } from 'date-fns';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
@@ -238,8 +238,13 @@ export class DoctorRepository extends Repository<Doctor> {
       doctor.consultHours.forEach((day) => {
         //logic when availableNow filter is selected
         if (now) {
-          const nowDate = format(now.startDateTime, 'yyyy-MM-dd');
+          let nowDate = format(now.startDateTime, 'yyyy-MM-dd');
+          const nowStartTime = format(now.startDateTime, 'HH:mm');
+          if (nowStartTime >= '18:30') {
+            nowDate = format(addDays(now.startDateTime, 1), 'yyyy-MM-dd');
+          }
           const nowDay = format(new Date(nowDate), 'EEEE').toUpperCase();
+
           if (day.weekDay == nowDay) {
             const alignedStartTime = this.getNextAlignedSlot(now.startDateTime);
             const alignedEndTime = this.getNextAlignedSlot(now.endDateTime);
@@ -314,38 +319,45 @@ export class DoctorRepository extends Repository<Doctor> {
     return doctorAvailability;
   }
 
+  getDateObjectsFromTimes(startTime: string, endTime: string) {
+    const referenceDate = new Date();
+    //start Date should be changed to previous day Date if times overlap b/w two days
+    const startDateTime =
+      startTime > endTime
+        ? `${format(addDays(referenceDate, -1), 'yyyy-MM-dd')} ${startTime.toString()}`
+        : `${format(referenceDate, 'yyyy-MM-dd')} ${startTime.toString()}`;
+    const endDateTime = `${format(referenceDate, 'yyyy-MM-dd')} ${endTime.toString()}`;
+
+    const startDateObj = new Date(startDateTime);
+    const endDateObj = new Date(endDateTime);
+    return { startDateObj, endDateObj };
+  }
+
   //returns number of time slots between any two times in a day
   getNumberOfIntervalSlots(startTime: string, endTime: string) {
-    const dayStartTime = `${format(new Date(), 'yyyy-MM-dd')} ${startTime.toString()}`;
-    const dayEndTime = `${format(new Date(), 'yyyy-MM-dd')} ${endTime.toString()}`;
-    const startDateTime = new Date(dayStartTime);
-    const endDateTime = new Date(dayEndTime);
-    const slotsCount = Math.ceil(Math.abs(differenceInMinutes(endDateTime, startDateTime)) / 15);
+    const { startDateObj, endDateObj } = this.getDateObjectsFromTimes(startTime, endTime);
+    const slotsCount = Math.ceil(Math.abs(differenceInMinutes(endDateObj, startDateObj)) / 15);
     return slotsCount;
   }
 
   //return all time slots between any two times in a day
   getSlotsInBetween(startTime: string, endTime: string) {
-    const startDateTimeString = `${format(new Date(), 'yyyy-MM-dd')} ${startTime.toString()}`;
-    const endDateTimeString = `${format(new Date(), 'yyyy-MM-dd')} ${endTime.toString()}`;
-    const startDateTime = new Date(startDateTimeString);
-    const endDateTime = new Date(endDateTimeString);
+    const { startDateObj, endDateObj } = this.getDateObjectsFromTimes(startTime, endTime);
+    const slotsCount = Math.ceil(Math.abs(differenceInMinutes(endDateObj, startDateObj))) / 15;
 
-    const slotsCount = Math.ceil(Math.abs(differenceInHours(endDateTime, startDateTime))) * 4;
-
-    const slotTime = startDateTime.getHours() + ':' + startDateTime.getMinutes();
-    let slotDateTime = new Date(format(startDateTime, 'yyyy-MM-dd') + ' ' + slotTime);
+    const slotTime = startDateObj.getUTCHours() + ':' + startDateObj.getUTCMinutes();
+    let slotDateTime = new Date(format(startDateObj, 'yyyy-MM-dd') + ' ' + slotTime);
     const availableSlots = Array(slotsCount)
       .fill(0)
       .map(() => {
         const tempSlotTime = slotDateTime;
         slotDateTime = addMinutes(slotDateTime, 15);
         const stTimeHours = tempSlotTime
-          .getHours()
+          .getUTCHours()
           .toString()
           .padStart(2, '0');
         const stTimeMins = tempSlotTime
-          .getMinutes()
+          .getUTCMinutes()
           .toString()
           .padStart(2, '0');
         return `${stTimeHours}:${stTimeMins}`;
@@ -355,8 +367,8 @@ export class DoctorRepository extends Repository<Doctor> {
 
   //get time with minutes aligned to next 15 multiple
   getNextAlignedSlot(curDate: Date) {
-    let nextHour = curDate.getHours();
-    let nextMin = this.getNextMins(curDate.getMinutes());
+    let nextHour = curDate.getUTCHours();
+    let nextMin = this.getNextMins(curDate.getUTCMinutes());
     if (nextMin === 60) {
       nextHour++;
       nextMin = 0;
