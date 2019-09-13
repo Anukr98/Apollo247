@@ -3,6 +3,8 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { useCurrentPatient } from 'hooks/authHooks';
+import { DoctorType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -44,23 +46,32 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const Navigation: React.FC = (props) => {
   const classes = useStyles();
+
+  // TODO remove currentPatient and name it as currentDoctor
+  const currentDoctor = useCurrentPatient();
+  const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
+
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
       <Link
         title="Home"
         to={clientRoutes.welcome()}
-        className={`${window.location.href.toLowerCase().includes('/calendar') &&
+        className={` ${(window.location.href.toLowerCase().includes('/calendar') ||
+          window.location.href.toLowerCase().includes('/junior-doctor') ||
+          window.location.href.toLowerCase().includes('/jd-consultroom')) &&
           classes.menuItemActive}`}
       >
         Home
       </Link>
-      <Link
-        title="Patients"
-        className={`${window.location.href.includes('/patientlog') && classes.menuItemActive}`}
-        to={clientRoutes.PatientLog()}
-      >
-        Patients
-      </Link>
+      {!isJuniorDoctor ? (
+        <Link
+          title="Patients"
+          className={`${window.location.href.includes('/patientlog') && classes.menuItemActive}`}
+          to={clientRoutes.PatientLog()}
+        >
+          Patients
+        </Link>
+      ) : null}
     </div>
   );
 };

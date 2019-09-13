@@ -59,6 +59,8 @@ export type PushNotificationSuccessMessage = {
 export enum NotificationType {
   INITIATE_RESCHEDULE = 'INITIATE_RESCHEDULE',
   INITIATE_TRANSFER = 'INITIATE_TRANSFER',
+  INITIATE_JUNIOR_APPT_SESSION = 'INITIATE_JUNIOR_APPT_SESSION',
+  INITIATE_SENIOR_APPT_SESSION = 'INITIATE_SENIOR_APPT_SESSION',
 }
 
 export enum NotificationPriority {
@@ -119,6 +121,22 @@ export async function sendNotification(
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
     notificationTitle = ApiConstants.TRANSFER_INITIATION_TITLE;
     notificationBody = ApiConstants.TRANSFER_INITIATION_BODY.replace(
+      '{0}',
+      appointment.displayId + ''
+    );
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.INITIATE_JUNIOR_APPT_SESSION
+  ) {
+    notificationTitle = ApiConstants.JUNIOR_APPT_SESSION_TITLE;
+    notificationBody = ApiConstants.JUNIOR_APPT_SESSION_BODY.replace(
+      '{0}',
+      appointment.displayId + ''
+    );
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
+  ) {
+    notificationTitle = ApiConstants.SENIOR_APPT_SESSION_TITLE;
+    notificationBody = ApiConstants.SENIOR_APPT_SESSION_BODY.replace(
       '{0}',
       appointment.displayId + ''
     );

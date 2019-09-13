@@ -6,7 +6,6 @@ import {
   ListItemText,
   Theme,
   Paper,
-  Grid,
   FormHelperText,
   Modal,
   Button,
@@ -208,7 +207,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   nodatafound: {
     fontSize: 14,
-    margin: '10px 0 10px 4px',
   },
   symptomCaption: {
     marginLeft: 20,

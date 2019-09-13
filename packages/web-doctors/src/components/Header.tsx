@@ -16,6 +16,9 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
+import { useCurrentPatient } from 'hooks/authHooks';
+import { DoctorType } from 'graphql/types/globalTypes';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -154,6 +157,10 @@ export const Header: React.FC = (props) => {
   const [selectedTab, setSelectedTab] = React.useState(0);
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
+  // TODO remove currentPatient and name it as currentDoctor
+  const currentDoctor = useCurrentPatient();
+  const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
+
   return (
     <header className={classes.header}>
       <div className={classes.container}>
@@ -167,7 +174,7 @@ export const Header: React.FC = (props) => {
           !window.location.href.includes('/profile') &&
           !window.location.href.includes('/patientlogdetailspage') && <Navigation />}
         <div className={`${classes.userAccount} ${classes.userAccountLogin}`}>
-          {/* <DoctorOnlineStatusButton /> */}
+          {isJuniorDoctor ? <DoctorOnlineStatusButton /> : null}
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (
               <div className={`${!isSignedIn ? classes.userCircle : ''}`} ref={avatarRef}>
@@ -196,13 +203,15 @@ export const Header: React.FC = (props) => {
                     </div>
                   ) : (
                     <div>
-                      <span title="Inbox">
-                        <img
-                          className={`${selectedTab === 3 && classes.menuItemActive}`}
-                          onClick={() => setSelectedTab(3)}
-                          src={require('images/ic_inbox.svg')}
-                        />
-                      </span>
+                      {!isJuniorDoctor ? (
+                        <span title="Inbox">
+                          <img
+                            className={`${selectedTab === 3 && classes.menuItemActive}`}
+                            onClick={() => setSelectedTab(3)}
+                            src={require('images/ic_inbox.svg')}
+                          />
+                        </span>
+                      ) : null}
                       <span title="Notification">
                         <img
                           className={`${selectedTab === 4 && classes.menuItemActive}`}
@@ -220,18 +229,31 @@ export const Header: React.FC = (props) => {
                           src={require('images/ic_help.svg')}
                         />
                       </span>
-                      <span
-                        title="My Account"
-                        className={`${window.location.href.includes('/myaccount') &&
-                          classes.menuItemActive}`}
-                      >
-                        <Link to="/myaccount">
-                          <img
-                            onClick={() => setSelectedTab(6)}
-                            src={require('images/ic_profile.svg')}
-                          />
-                        </Link>
-                      </span>
+
+                      {isJuniorDoctor ? (
+                        <span title="My Profile">
+                          <Link to={clientRoutes.juniorDoctorProfile()}>
+                            <img
+                              onClick={() => setSelectedTab(6)}
+                              src={require('images/ic_profile.svg')}
+                            />
+                          </Link>
+                        </span>
+                      ) : (
+                        <span
+                          title="My Account"
+                          className={`${window.location.href.includes('/myaccount') &&
+                            classes.menuItemActive}`}
+                        >
+                          <Link to="/myaccount">
+                            <img
+                              onClick={() => setSelectedTab(6)}
+                              src={require('images/ic_profile.svg')}
+                            />
+                          </Link>
+                        </span>
+                      )}
+
                       {/* <span>
                         <img
                           className={classes.userActiveDark}
