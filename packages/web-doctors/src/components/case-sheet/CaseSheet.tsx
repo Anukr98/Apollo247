@@ -222,7 +222,6 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     }
   };
 
-
   const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContext);
   return (
     <div className={classes.container}>

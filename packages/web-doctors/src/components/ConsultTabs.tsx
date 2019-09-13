@@ -507,7 +507,7 @@ export const ConsultTabs: React.FC = () => {
 
   const startAppointmentClick = (startAppointment: boolean) => {
     setStartAppointment(startAppointment);
-  }
+  };
 
   return (
     <div className={classes.consultRoom}>
@@ -594,7 +594,7 @@ export const ConsultTabs: React.FC = () => {
                   </div>
                   <TabContainer>
                     <div className={tabValue !== 0 ? classes.none : classes.block}>
-                      {casesheetInfo ? <CaseSheet startAppointment={startAppointment}/> : ''}
+                      {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
                     </div>
                   </TabContainer>
                   <TabContainer>

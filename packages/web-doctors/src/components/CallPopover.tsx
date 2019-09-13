@@ -485,7 +485,7 @@ interface CallPopoverProps {
   createSessionAction: () => void;
   saveCasesheetAction: (onlySave: boolean) => void;
   endConsultAction: () => void;
-  startAppointmentClick:(startAppointment: boolean)=> void;
+  startAppointmentClick: (startAppointment: boolean) => void;
   startAppointment: boolean;
   appointmentId: string;
   appointmentDateTime: string;
@@ -907,7 +907,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   useEffect(() => {
     if (props.isEnded) {
       onStopConsult();
-      props.startAppointmentClick(!(props.startAppointment));
+      props.startAppointmentClick(!props.startAppointment);
       setStartAppointmentButton(true);
     }
   }, [props.isEnded]);
@@ -1266,9 +1266,9 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     appointmentInfo!.status !== STATUS.PENDING)
                 }
                 onClick={() => {
-                  !(props.startAppointment) ? onStartConsult() : onStopConsult();
-                  !(props.startAppointment) ? startInterval(900) : stopInterval();
-                  props.startAppointmentClick(!(props.startAppointment));
+                  !props.startAppointment ? onStartConsult() : onStopConsult();
+                  !props.startAppointment ? startInterval(900) : stopInterval();
+                  props.startAppointmentClick(!props.startAppointment);
                   props.createSessionAction();
                   setCaseSheetEdit(true);
                 }}
@@ -1386,7 +1386,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   >
                     Transfer Consult
                   </li>
-                  {!(props.startAppointment) && appointmentInfo!.status === STATUS.PENDING && (
+                  {!props.startAppointment && appointmentInfo!.status === STATUS.PENDING && (
                     <li
                       onClick={() => {
                         handleCloseThreeDots();
