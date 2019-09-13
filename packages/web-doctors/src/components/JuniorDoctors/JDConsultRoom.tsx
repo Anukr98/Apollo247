@@ -46,6 +46,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -69,6 +70,7 @@ const useStyles = makeStyles((theme: Theme) => {
     pageHeader: {
       backgroundColor: theme.palette.common.white,
       display: 'flex',
+      position: 'relative',
     },
     patientSection: {
       width: '50%',
@@ -115,8 +117,8 @@ const useStyles = makeStyles((theme: Theme) => {
     avatar: {
       width: 60,
       height: 60,
+      backgroundColor: '#f7f8f5',
     },
-
     doctorInfo: {
       paddingRight: 55,
       fontWeight: 500,
@@ -289,6 +291,38 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.2)',
       '&:hover': {
         backgroundColor: '#fff',
+      },
+    },
+    backArrow: {
+      cursor: 'pointer',
+      marginRight: 50,
+      position: 'absolute',
+      left: 20,
+      top: 20,
+      [theme.breakpoints.up(1220)]: {
+        left: -62,
+        top: 0,
+        width: 48,
+        height: 48,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    blackArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up(1220)]: {
+        display: 'none',
       },
     },
   };
@@ -656,6 +690,12 @@ export const JDConsultRoom: React.FC = () => {
             <div className={classes.pageContainer}>
               {/* patient and doctors details start */}
               <div className={classes.pageHeader}>
+                <div className={classes.backArrow}>
+                  <Link to={clientRoutes.juniorDoctor()}>
+                    <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                    <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                  </Link>
+                </div>
                 <div className={classes.patientSection}>
                   <div className={classes.patientImage}>
                     <img
@@ -724,7 +764,7 @@ export const JDConsultRoom: React.FC = () => {
                   <div className={classes.blockGroup}>
                     <div className={classes.blockHeader}>Case Sheet</div>
                     <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 440px' }}>
+                      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 430px' }}>
                         <div className={classes.customScroll}>
                           {casesheetInfo ? <CaseSheet /> : ''}
                         </div>
