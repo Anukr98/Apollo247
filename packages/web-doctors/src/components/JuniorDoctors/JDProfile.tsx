@@ -4,6 +4,10 @@ import { Header } from 'components/Header';
 import React from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import { AphButton } from '@aph/web-ui-components';
+import { useAuth } from 'hooks/authHooks';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
+import LinearProgress from '@material-ui/core/LinearProgress';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -71,7 +75,28 @@ const useStyles = makeStyles((theme: Theme) => {
 export const JDProfile: React.FC = (props) => {
   const classes = useStyles();
 
-  return (
+  const { currentPatient: currentDoctor, signOut, isSigningIn } = useAuth();
+
+  const doctorFirstName =
+    currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
+  const doctorLastName =
+    currentDoctor && currentDoctor.lastName ? _startCase(_toLower(currentDoctor.lastName)) : '';
+  const doctorMobileNumber =
+    currentDoctor && currentDoctor.mobileNumber
+      ? _startCase(_toLower(currentDoctor.mobileNumber))
+      : '';
+  const doctorSalutation =
+    currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
+  const doctorSpecialty =
+    currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
+      ? _startCase(_toLower(currentDoctor.specialty.name))
+      : '';
+  const doctorPhotoUrl =
+    currentDoctor && currentDoctor.photoUrl ? _startCase(_toLower(currentDoctor.photoUrl)) : '';
+
+  return isSigningIn ? (
+    <LinearProgress />
+  ) : (
     <div className={classes.root}>
       <div className={classes.headerSticky}>
         <Header />
@@ -80,19 +105,24 @@ export const JDProfile: React.FC = (props) => {
         <div className={classes.pageContainer}>
           <div className={classes.profileBlock}>
             <div className={classes.doctorImg}>
-              <img src="https://via.placeholder.com/328x228" alt="" />
+              <img
+                src={doctorPhotoUrl !== '' ? doctorPhotoUrl : 'https://via.placeholder.com/328x228'}
+                alt="Doctor Profile Image"
+              />
             </div>
             <div className={classes.doctorInfo}>
               <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 474px' }}>
                 <div className={classes.customScroll}>
-                  <div className={classes.doctorName}>Seema Singh</div>
-                  <div className={classes.doctorType}>MBBS, Internal Medicine</div>
-                  <div className={classes.contactNo}>+91 98765 43210</div>
+                  <div
+                    className={classes.doctorName}
+                  >{`${doctorSalutation} ${doctorFirstName} ${doctorLastName}`}</div>
+                  <div className={classes.doctorType}>{doctorSpecialty}</div>
+                  <div className={classes.contactNo}>{doctorMobileNumber}</div>
                 </div>
               </Scrollbars>
             </div>
             <div className={classes.bottomActions}>
-              <AphButton color="primary" fullWidth>
+              <AphButton color="primary" fullWidth onClick={() => signOut()}>
                 Logout
               </AphButton>
             </div>

@@ -12,6 +12,7 @@ import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetCons
 import _isEmpty from 'lodash/isEmpty';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { useAuth } from 'hooks/authHooks';
 import { AphLinearProgress } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -111,6 +112,8 @@ const useStyles = makeStyles((theme: Theme) => {
 export const JuniorDoctor: React.FC = (props) => {
   const classes = useStyles();
   const currentDoctor = useCurrentPatient();
+  const { isSigningIn } = useAuth();
+
   const { data, loading, error } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
     GET_CONSULT_QUEUE,
     {
@@ -183,7 +186,9 @@ export const JuniorDoctor: React.FC = (props) => {
     ];
   }
 
-  return (
+  return isSigningIn ? (
+    <AphLinearProgress />
+  ) : (
     <div className={classes.root}>
       <div className={classes.headerSticky}>
         <Header />
