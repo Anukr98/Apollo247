@@ -1,6 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE, CaseSheet, APPOINTMENT_STATE } from 'consults-service/entities';
+import {
+  STATUS,
+  APPOINTMENT_TYPE,
+  CaseSheet,
+  APPOINTMENT_STATE,
+  CONSULTS_RX_SEARCH_FILTER,
+} from 'consults-service/entities';
 import { MedicineOrders } from 'profiles-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -15,6 +21,12 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
   enum MEDICINE_ORDER_TYPE {
     UPLOAD_PRESCRIPTION
     CART_ORDER
+  }
+
+  enum CONSULTS_RX_SEARCH_FILTER {
+    ONLINE
+    PHYSICAL
+    PRESCRIPTION
   }
 
   enum MEDICINE_ORDER_STATUS {
@@ -37,6 +49,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
 
   input PatientConsultsAndOrdersInput {
     patient: ID!
+    filter: [CONSULTS_RX_SEARCH_FILTER!]
     offset: Int
     limit: Int
   }
@@ -95,6 +108,12 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
   }
 `;
 
+const hasFilter = (type: CONSULTS_RX_SEARCH_FILTER, filter?: CONSULTS_RX_SEARCH_FILTER[]) => {
+  if (!filter || filter.length === 0 || (filter && filter.includes(type))) {
+    return true;
+  }
+};
+
 type ConsultRecord = {
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
@@ -119,6 +138,7 @@ type PatientConsultsAndOrders = {
 
 type PatientConsultsAndOrdersInput = {
   patient: string;
+  filter?: CONSULTS_RX_SEARCH_FILTER[];
   offset?: number;
   limit?: number;
 };
@@ -131,12 +151,28 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
   ConsultServiceContext,
   PatientConsultsAndOrders
 > = async (parent, { consultsAndOrdersInput }, { consultsDb, doctorsDb, patientsDb }) => {
-  const { patient, offset, limit } = consultsAndOrdersInput;
+  const { patient, filter, offset, limit } = consultsAndOrdersInput;
 
-  const appts = consultsDb.getCustomRepository(AppointmentRepository);
-  const patientAppointments = await appts.getPatientPastAppointments(patient, offset, limit);
+  const apptsRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  let patientAppointments: ConsultRecord[] = [];
+  if (
+    hasFilter(CONSULTS_RX_SEARCH_FILTER.ONLINE, filter) ||
+    hasFilter(CONSULTS_RX_SEARCH_FILTER.PHYSICAL, filter)
+  ) {
+    patientAppointments = await apptsRepo.getPatientPastAppointments(
+      patient,
+      filter,
+      offset,
+      limit
+    );
+  }
+
   const medicineOrdersRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
-  const patientMedicineOrders = await medicineOrdersRepo.findByPatientId(patient, offset, limit);
+  let patientMedicineOrders: MedicineOrders[] = [];
+  if (hasFilter(CONSULTS_RX_SEARCH_FILTER.PRESCRIPTION, filter)) {
+    patientMedicineOrders = await medicineOrdersRepo.findByPatientId(patient, offset, limit);
+  }
+
   return { consults: patientAppointments, medicineOrders: patientMedicineOrders };
 };
 
