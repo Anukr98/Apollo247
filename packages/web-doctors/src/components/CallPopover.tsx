@@ -583,6 +583,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [searchKeyWord, setSearchKeyword] = React.useState('');
   const [noteKeyword, setNoteKeyword] = React.useState('');
   const [isDoctorOrSpeciality, setIsDoctorOrSpeciality] = useState(false);
+  const [isDoctorSelected, setIsDoctorSelected] = useState(false);
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<any>([]);
   const [filterSpeciality, setFilterSpeciality] = useState<any>([]);
   const {
@@ -1621,6 +1622,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 classes={{ root: classes.searchInput }}
                 placeholder="Search for Doctor/Speciality"
                 onChange={(e: any) => {
+                  setIsDoctorSelected(false);
                   setSearchKeyword(e.target.value);
                   if (e.target.value.length > 1) {
                     doctorSpeciality(e.target.value);
@@ -1650,6 +1652,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           key={idx}
                           onClick={() => {
                             handleDoctorClick(item);
+                            setIsDoctorSelected(true);
                           }}
                         >
                           {props.doctorId !== item.id &&
@@ -1670,6 +1673,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                           key={idx}
                           onClick={() => {
                             handleSpecialityClick(item);
+                            setIsDoctorSelected(true);
                           }}
                         >
                           {item.name}
@@ -1705,9 +1709,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               </Button>
               <Button
                 className={classes.ResheduleCosultButton}
-                disabled={
-                  (textOtherTransfer && otherTextTransferValue === '') || searchKeyWord == ''
-                }
+                disabled={(textOtherTransfer && otherTextTransferValue === '') || !isDoctorSelected}
                 onClick={() => {
                   //setIsTransferPopoverOpen(false);
                   //resheduleCosult();
