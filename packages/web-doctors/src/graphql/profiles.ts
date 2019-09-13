@@ -536,6 +536,8 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
   query SearchDoctorAndSpecialtyByName($searchText: String!) {
     SearchDoctorAndSpecialtyByName(searchText: $searchText) {
       doctors {
+        id
+        salutation
         firstName
         lastName
         specialty {

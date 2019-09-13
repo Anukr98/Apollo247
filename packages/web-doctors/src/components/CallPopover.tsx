@@ -619,6 +619,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       message: stopcallMsg,
       isTyping: true,
     };
+
     pubnub.publish(
       {
         channel: channel,
@@ -1518,7 +1519,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   src={require('images/ic_cross.svg')}
                   alt=""
                   onClick={() => {
-                    clearTransferField();
                     setIsTransferPopoverOpen(false);
                   }}
                 />
@@ -1613,7 +1613,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 placeholder="Search for Doctor/Speciality"
                 onChange={(e: any) => {
                   setSearchKeyword(e.target.value);
-                  if (e.target.value.length > 2) {
+                  if (e.target.value.length > 1) {
                     doctorSpeciality(e.target.value);
                   }
                   setSelectedDoctor('');
@@ -1631,7 +1631,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   Please select doctor or speciality
                 </FormHelperText>
               )}
-              {isDoctorOrSpeciality && searchKeyWord.length > 2 && (
+              {isDoctorOrSpeciality && searchKeyWord.length > 1 && (
                 <span className={classes.doctorSearch}>
                   <h6>Doctor(s)</h6>
                   {filteredStarDoctors!.length > 0 ? (
@@ -1643,7 +1643,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                             handleDoctorClick(item);
                           }}
                         >
-                          {item.firstName} {item.lastName}
+                          {props.doctorId !== item.id &&
+                            `${item.salutation.charAt(0).toUpperCase()}${item.salutation
+                              .slice(1)
+                              .toLowerCase()}. ${item.firstName} ${item.lastName}`}
                         </li>
                       ))}
                     </ul>
@@ -1687,7 +1690,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.cancelConsult}
                 onClick={() => {
                   setIsTransferPopoverOpen(false);
-                  clearTransferField();
                 }}
               >
                 Cancel
