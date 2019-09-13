@@ -1,7 +1,6 @@
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -225,6 +224,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           value={state}
           onChangeText={(state) => setstate(state)}
           placeholder={'State'}
+          textInputprops={{
+            onSubmitEditing: () => {
+              if (isAddressValid) {
+                onSavePress();
+              }
+            },
+            returnKeyType: 'done',
+          }}
         />
       </View>
     );

@@ -1,3 +1,4 @@
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
@@ -116,6 +117,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     return (
       <View style={styles.bottonButtonContainer}>
         <Button
+          onPress={() => props.navigation.navigate(AppRoutes.MobileHelp)}
           title="NEED HELP"
           style={styles.bottomButtonStyle}
           titleTextStyle={{ color: '#fc9916' }}

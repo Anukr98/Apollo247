@@ -11,14 +11,7 @@ import Autosuggest from 'react-autosuggest';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SEARCH_DIAGNOSTIC } from 'graphql/profiles';
 import { SearchDiagnostic } from 'graphql/types/SearchDiagnostic';
-// import {
-//   GetJuniorDoctorCaseSheet,
-//   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
-// } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import {
-  GetCaseSheet,
-  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
-} from 'graphql/types/GetCaseSheet';
+import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 interface OptionType {
@@ -370,7 +363,7 @@ export const DiagnosticPrescription: React.FC = () => {
             inputProps={{
               classes,
               id: 'react-autosuggest-simple',
-              placeholder: 'Search Diagnostics',
+              placeholder: 'Search Tests',
               value: state.single,
               onChange: handleChange('single'),
             }}

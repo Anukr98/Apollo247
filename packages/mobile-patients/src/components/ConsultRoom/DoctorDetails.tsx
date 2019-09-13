@@ -156,7 +156,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY] = useState(new Animated.Value(0));
   const [availableInMin, setavailableInMin] = useState<Number>();
-  const [availableTime, setavailableTime] = useState<string>('');
+  // const [availableTime, setavailableTime] = useState<string>('');
   const [availableInMinPhysical, setavailableInMinPhysical] = useState<Number>();
 
   const headMov = scrollY.interpolate({
@@ -251,9 +251,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       console.log(nextSlot, 'nextSlot', nextPhysicalSlot);
       if (nextSlot) {
         const timeDiff: Number = timeDiffFromNow(nextSlot);
-        if (timeDiff < 0) {
-          setavailableTime(Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('h:mm A'));
-        }
         setavailableInMin(timeDiff);
       }
       if (nextPhysicalSlot) {
@@ -272,13 +269,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const renderDoctorDetails = () => {
-    console.log(
-      doctorDetails,
-      'renderDoctorDetails',
-      availableTime,
-      'availableInMin',
-      availableInMin
-    );
+    console.log(doctorDetails, 'renderDoctorDetails', 'availableInMin', availableInMin);
     if (doctorDetails) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
         console.log(item, item.facility);
@@ -322,12 +313,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <Text style={styles.onlineConsultAmount}>
                     Rs. {doctorDetails.onlineConsultationFees}
                   </Text>
-                  {availableInMin && availableInMin < 60 && availableInMin > 0 && (
+                  {availableInMin && availableInMin < 60 && availableInMin > 0 ? (
                     <CapsuleView
                       title={`AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`}
                       isActive={availableInMin <= 15 ? true : false}
                     />
-                  )}
+                  ) : null}
                 </View>
                 {doctorDetails.doctorType !== DoctorType.PAYROLL && (
                   <View style={styles.horizontalSeparatorStyle} />
@@ -340,15 +331,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         Rs. {doctorDetails.physicalConsultationFees}
                       </Text>
                       {availableInMinPhysical &&
-                        availableInMinPhysical < 60 &&
-                        availableInMinPhysical > 0 && (
-                          <CapsuleView
-                            title={`AVAILABLE IN ${availableInMinPhysical} MIN${
-                              availableInMinPhysical > 1 ? 'S' : ''
-                            }`}
-                            isActive={availableInMinPhysical <= 15 ? true : false}
-                          />
-                        )}
+                      availableInMinPhysical < 60 &&
+                      availableInMinPhysical > 0 ? (
+                        <CapsuleView
+                          title={`AVAILABLE IN ${availableInMinPhysical} MIN${
+                            availableInMinPhysical > 1 ? 'S' : ''
+                          }`}
+                          isActive={availableInMinPhysical <= 15 ? true : false}
+                        />
+                      ) : null}
                     </>
                   )}
                 </View>
@@ -640,7 +631,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     }
   };
 
-  console.log(displayoverlay, 'displayoverlay', doctorDetails, 'availableTime', availableTime);
+  console.log(displayoverlay, 'displayoverlay', doctorDetails);
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView
