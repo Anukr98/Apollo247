@@ -553,7 +553,7 @@ export class PatientFamilyHistory extends BaseEntity {
   patient: Patient;
 
   @Column({ nullable: true })
-  relation: string;
+  relation: Relation;
 
   @Column({ type: 'timestamp', nullable: true })
   updatedDate: Date;
