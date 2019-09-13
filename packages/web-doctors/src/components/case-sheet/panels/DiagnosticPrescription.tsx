@@ -363,7 +363,7 @@ export const DiagnosticPrescription: React.FC = () => {
             inputProps={{
               classes,
               id: 'react-autosuggest-simple',
-              placeholder: 'Search Diagnostics',
+              placeholder: 'Search Tests',
               value: state.single,
               onChange: handleChange('single'),
             }}
