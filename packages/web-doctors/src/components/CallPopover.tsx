@@ -507,7 +507,7 @@ let transferObject: any = {
   specilty: '',
   facilityId: '',
   transferId: '',
-  transferDoctorObj: '',
+  doctorInfo: '',
 };
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
@@ -849,7 +849,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       specilty: value.name,
       facilityId: '',
       transferId: '',
-      transferDoctorObj: '',
+      doctorInfo: '',
     };
     clearError();
   };
@@ -868,7 +868,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       specilty: value.specialty.name,
       facilityId: value!.doctorHospital[0]!.facility.id,
       transferId: '',
-      transferDoctorObj: value,
+      doctorInfo: value,
     };
     clearError();
   };
