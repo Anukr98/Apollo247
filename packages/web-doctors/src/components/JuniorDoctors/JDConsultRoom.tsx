@@ -350,17 +350,14 @@ export const JDConsultRoom: React.FC = () => {
   const doctorLastName =
     currentDoctor && currentDoctor.lastName ? _startCase(_toLower(currentDoctor.lastName)) : '';
   const doctorMobileNumber =
-    currentDoctor && currentDoctor.mobileNumber
-      ? _startCase(_toLower(currentDoctor.mobileNumber))
-      : '';
+    currentDoctor && currentDoctor.mobileNumber ? currentDoctor.mobileNumber : '';
   const doctorSalutation =
     currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
   const doctorSpecialty =
     currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
       ? _startCase(_toLower(currentDoctor.specialty.name))
       : '';
-  const doctorPhotoUrl =
-    currentDoctor && currentDoctor.photoUrl ? _startCase(_toLower(currentDoctor.photoUrl)) : '';
+  const doctorPhotoUrl = currentDoctor && currentDoctor.photoUrl ? currentDoctor.photoUrl : '';
 
   //     setAppointmentId(paramId);
   //     setpatientId(params.patientId);
@@ -459,12 +456,12 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo.getCaseSheet.patientDetails &&
     !isNull(casesheetInfo.getCaseSheet.patientDetails.photoUrl)
       ? casesheetInfo.getCaseSheet.patientDetails.photoUrl
-      : '';
+      : require('images/PatientImage.png');
 
   if (patientAppointmentTimeUtc !== '') {
     appointmentDateIST = format(
       new Date(patientAppointmentTimeUtc).getTime(),
-      'dd-MM-yyyy hh:mm a'
+      'dd/MM/yyyy hh:mm a'
     );
   }
 
@@ -719,11 +716,8 @@ export const JDConsultRoom: React.FC = () => {
                 <div className={classes.patientSection}>
                   <div className={classes.patientImage}>
                     <img
-                      src={
-                        patientPhotoUrl !== ''
-                          ? patientPhotoUrl
-                          : 'https://via.placeholder.com/132x132'
-                      }
+                      style={{ width: '100px' }}
+                      src={patientPhotoUrl}
                       alt="Patient Profile Photo"
                     />
                   </div>
