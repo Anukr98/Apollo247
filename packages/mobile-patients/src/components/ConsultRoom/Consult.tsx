@@ -291,6 +291,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   if (error) {
     console.log('error', error);
+    setshowSpinner(false);
   } else {
     console.log(data, 'GET_PATIENT_APPOINTMENTS');
     if (
