@@ -371,6 +371,7 @@ export const JDConsultRoom: React.FC = () => {
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
+  const [saving, setSaving] = useState<boolean>(false);
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -401,7 +402,6 @@ export const JDConsultRoom: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   /* case sheet data*/
 
   /* need to be worked later */
@@ -579,6 +579,7 @@ export const JDConsultRoom: React.FC = () => {
   }, [appointmentId, client, isSignedIn]);
 
   const saveCasesheetAction = (flag: boolean) => {
+    setSaving(true);
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
         mutation: UPDATE_CASESHEET,
@@ -604,21 +605,13 @@ export const JDConsultRoom: React.FC = () => {
       })
       .then((_data) => {
         console.log('in save case sheet action......');
-        // if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
-        //   console.log(_data!.data!.updateCaseSheet!.blobName);
-        //   const url =
-        //     'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
-        //     _data!.data!.updateCaseSheet!.blobName;
-        //   setPrescriptionPdf(url);
-        // }
-        // if (!flag) {
-        //   setIsPopoverOpen(true);
-        // }
+        setSaving(false);
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         alert(errorMessage);
+        setSaving(false);
         console.log('Error occured while update casesheet', e);
       });
   };
@@ -770,6 +763,7 @@ export const JDConsultRoom: React.FC = () => {
                 prescriptionPdf={prescriptionPdf}
                 sessionId={sessionId}
                 token={token}
+                saving={saving}
               />
               <div className={classes.contentGroup}>
                 <div className={classes.leftSection}>
@@ -859,12 +853,6 @@ export const JDConsultRoom: React.FC = () => {
           </div>
         </Paper>
       </Modal> */}
-
-      {isEnded && (
-        <div className={classes.tabPdfBody}>
-          <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
-        </div>
-      )}
 
       <Dialog
         open={isDialogOpen}
