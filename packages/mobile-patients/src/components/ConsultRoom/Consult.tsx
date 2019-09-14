@@ -720,7 +720,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 title={string.home.consult_doctor}
                 style={styles.buttonStyles}
                 onPress={() => {
-                  // props.navigation.navigate(AppRoutes.DoctorSearch);
+                  props.navigation.navigate(AppRoutes.SymptomChecker);
                 }}
               />
             </View>
