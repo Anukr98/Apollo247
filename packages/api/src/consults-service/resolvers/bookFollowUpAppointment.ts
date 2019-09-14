@@ -77,6 +77,7 @@ type FollowUpAppointmentBooking = {
   appointmentState: APPOINTMENT_STATE;
   isFollowUp: Boolean;
   followUpParentId: string;
+  isFollowPaid: Boolean;
 };
 
 type FollowUpAppointmentInputArgs = { followUpAppointmentInput: BookFollowUpAppointmentInput };
@@ -142,12 +143,15 @@ const bookFollowUpAppointment: Resolver<
   if (apptCount > 0) {
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
-
+  let isFollowPaid: Boolean = false;
+  const followUpCount = await appts.followUpBookedCount(followUpAppointmentInput.followUpParentId);
+  isFollowPaid = followUpCount > 1 ? true : false;
   const appointmentAttrs: Omit<FollowUpAppointmentBooking, 'id'> = {
     ...followUpAppointmentInput,
     status: STATUS.PENDING,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     isFollowUp: true,
+    isFollowPaid,
     appointmentState: APPOINTMENT_STATE.NEW,
     appointmentDateTime: new Date(followUpAppointmentInput.appointmentDateTime.toISOString()),
   };

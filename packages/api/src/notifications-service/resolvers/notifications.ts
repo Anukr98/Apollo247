@@ -75,6 +75,14 @@ type PushNotificationInput = {
 
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
 
+export async function sendSMS(message: string) {
+  const smsResp = await fetch(
+    'http://bulkpush.mytoday.com/BulkSms/SingleMsgApi?feedid=370454&username=7993961498&password=popcorn123$$&To=9657585411&Text=' +
+      message
+  );
+  console.log(smsResp, 'sms resp');
+}
+
 export async function sendNotification(
   pushNotificationInput: PushNotificationInput,
   patientsDb: Connection,
