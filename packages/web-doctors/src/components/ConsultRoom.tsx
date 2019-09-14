@@ -462,7 +462,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <div>
                 {rowData.message === documentUpload ? (
                   <div>
-                    <img src={rowData.url} />
+                    <a href={rowData.url} target="_blank">
+                      <img src={rowData.url} alt={rowData.url} />
+                    </a>
                   </div>
                 ) : (
                   <span>{rowData.message}</span>
