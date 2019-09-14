@@ -1129,72 +1129,73 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     }
   };
   const rescheduleConsultAction = () => {
+    console.log('reschedule not available');
     // do api call
     //setIsLoading(true);
-    if (reason === 'Other' && isEmpty(otherTextValue)) {
-      setErrorStateReshedule({
-        ...errorStateReshedule,
-        otherError: true,
-      });
-    } else {
-      setErrorStateReshedule({
-        ...errorStateReshedule,
-        otherError: false,
-      });
-      client
-        .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
-          mutation: INITIATE_RESCHDULE_APPONITMENT,
-          variables: {
-            RescheduleAppointmentInput: {
-              appointmentId: props.appointmentId,
-              rescheduleReason: reason === 'Other' ? otherTextValue : reason,
-              rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
-              rescheduleInitiatedId: props.doctorId,
-              rescheduledDateTime: '2019-09-09T09:00:00.000Z',
-              autoSelectSlot: 0,
-            },
-          },
-        })
-        .then((_data) => {
-          //setIsLoading(false);
-          console.log('data', _data);
-          const reschduleObject: any = {
-            appointmentId: props.appointmentId,
-            transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
-              .rescheduledDateTime,
-            doctorId: props.doctorId,
-            reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
-            reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
-          };
-          console.log('reschduleObject', reschduleObject);
-          pubnub.publish(
-            {
-              message: {
-                id: props.doctorId,
-                message: rescheduleconsult,
-                transferInfo: reschduleObject,
-              },
-              channel: channel, //chanel
-              storeInHistory: true,
-            },
-            (status, response) => {}
-          );
-          setIsPopoverOpen(false);
-          setDisableOnTransfer(true);
-        })
-        .catch((e) => {
-          //setIsLoading(false);
-          console.log('Error occured while searching for Initiate reschdule apppointment', e);
-          const error = JSON.parse(JSON.stringify(e));
-          const errorMessage = error && error.message;
-          console.log(
-            'Error occured while searching for Initiate reschdule apppointment',
-            errorMessage,
-            error
-          );
-          alert(errorMessage);
-        });
-    }
+    // if (reason === 'Other' && isEmpty(otherTextValue)) {
+    //   setErrorStateReshedule({
+    //     ...errorStateReshedule,
+    //     otherError: true,
+    //   });
+    // } else {
+    //   setErrorStateReshedule({
+    //     ...errorStateReshedule,
+    //     otherError: false,
+    //   });
+    //   client
+    //     .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
+    //       mutation: INITIATE_RESCHDULE_APPONITMENT,
+    //       variables: {
+    //         RescheduleAppointmentInput: {
+    //           appointmentId: props.appointmentId,
+    //           rescheduleReason: reason === 'Other' ? otherTextValue : reason,
+    //           rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+    //           rescheduleInitiatedId: props.doctorId,
+    //           rescheduledDateTime: '2019-09-09T09:00:00.000Z',
+    //           autoSelectSlot: 0,
+    //         },
+    //       },
+    //     })
+    //     .then((_data) => {
+    //       //setIsLoading(false);
+    //       console.log('data', _data);
+    //       const reschduleObject: any = {
+    //         appointmentId: props.appointmentId,
+    //         transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
+    //           .rescheduledDateTime,
+    //         doctorId: props.doctorId,
+    //         reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
+    //         reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
+    //       };
+    //       console.log('reschduleObject', reschduleObject);
+    //       pubnub.publish(
+    //         {
+    //           message: {
+    //             id: props.doctorId,
+    //             message: rescheduleconsult,
+    //             transferInfo: reschduleObject,
+    //           },
+    //           channel: channel, //chanel
+    //           storeInHistory: true,
+    //         },
+    //         (status, response) => {}
+    //       );
+    //       setIsPopoverOpen(false);
+    //       setDisableOnTransfer(true);
+    //     })
+    //     .catch((e) => {
+    //       //setIsLoading(false);
+    //       console.log('Error occured while searching for Initiate reschdule apppointment', e);
+    //       const error = JSON.parse(JSON.stringify(e));
+    //       const errorMessage = error && error.message;
+    //       console.log(
+    //         'Error occured while searching for Initiate reschdule apppointment',
+    //         errorMessage,
+    //         error
+    //       );
+    //       alert(errorMessage);
+    //     });
+    // }
   };
   const getTimerText = () => {
     const now = new Date();
@@ -1285,13 +1286,13 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           <AphButton
             className={classes.iconButton}
             aria-describedby={idThreeDots}
-            // disabled={
-            //   startAppointmentButton ||
-            //   disableOnTransfer ||
-            //   appointmentInfo!.appointmentState !== 'NEW' ||
-            //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-            //     appointmentInfo!.status !== STATUS.PENDING)
-            // }
+            disabled={
+              // startAppointmentButton ||
+              disableOnTransfer ||
+              appointmentInfo!.appointmentState !== 'NEW' ||
+              (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                appointmentInfo!.status !== STATUS.PENDING)
+            }
             onClick={(e) => handleClickThreeDots(e)}
           >
             <img src={require('images/ic_more.svg')} />
