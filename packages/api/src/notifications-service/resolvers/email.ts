@@ -11,6 +11,8 @@ export const emailTypeDefs = gql`
 `;
 
 export async function sendMail(emailContent: EmailMessage) {
+  let ccEmailList = [];
+  ccEmailList = emailContent.ccEmail.split(',');
   const lib = require('pepipost');
   const controller = lib.EmailController;
   const apiKey = ApiConstants.PEPIPOST_API_KEY;
@@ -18,6 +20,7 @@ export async function sendMail(emailContent: EmailMessage) {
   body.personalizations = [];
   body.personalizations[0] = new lib.Personalizations();
   body.personalizations[0].recipient = emailContent.toEmail;
+  body.personalizations[0].recipientCc = ccEmailList;
   body.from = new lib.From();
   body.from.fromEmail = emailContent.fromEmail;
   body.from.fromName = emailContent.fromName;

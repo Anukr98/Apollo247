@@ -1,7 +1,7 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { Check, CheckedIcon, CrossYellow, PrescriptionIcon } from './Icons';
+import { CheckedIcon, CrossYellow, PrescriptionIcon, UnCheck } from './Icons';
 
 const styles = StyleSheet.create({});
 
@@ -63,7 +63,7 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
             }}
             style={{ flex: 1, alignItems: 'flex-end' }}
           >
-            {actionType == 'removal' ? <CrossYellow /> : isSelected ? <CheckedIcon /> : <Check />}
+            {actionType == 'removal' ? <CrossYellow /> : isSelected ? <CheckedIcon /> : <UnCheck />}
           </TouchableOpacity>
         </View>
         <View style={{ paddingLeft: 43 }}>

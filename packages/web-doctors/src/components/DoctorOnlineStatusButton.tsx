@@ -82,21 +82,20 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
             }}
           >
             <ToggleButton
-              key={AWAY}
-              value={AWAY}
-              disabled={loading}
-              className={isSelected(AWAY) ? classes.toggleBtnSelected : classes.toggleBtn}
-            >
-              Away
-            </ToggleButton>
-
-            <ToggleButton
               key={ONLINE}
               value={ONLINE}
               disabled={loading}
               className={isSelected(ONLINE) ? classes.toggleBtnSelected : classes.toggleBtn}
             >
               Online
+            </ToggleButton>
+            <ToggleButton
+              key={AWAY}
+              value={AWAY}
+              disabled={loading}
+              className={isSelected(AWAY) ? classes.toggleBtnSelected : classes.toggleBtn}
+            >
+              Away
             </ToggleButton>
           </ToggleButtonGroup>
         </>

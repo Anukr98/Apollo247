@@ -20,7 +20,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetCaseSheet';
-import { REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, Gender } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -397,17 +397,14 @@ export const JDConsultRoom: React.FC = () => {
   const doctorLastName =
     currentDoctor && currentDoctor.lastName ? _startCase(_toLower(currentDoctor.lastName)) : '';
   const doctorMobileNumber =
-    currentDoctor && currentDoctor.mobileNumber
-      ? _startCase(_toLower(currentDoctor.mobileNumber))
-      : '';
+    currentDoctor && currentDoctor.mobileNumber ? currentDoctor.mobileNumber : '';
   const doctorSalutation =
     currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
   const doctorSpecialty =
     currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
       ? _startCase(_toLower(currentDoctor.specialty.name))
       : '';
-  const doctorPhotoUrl =
-    currentDoctor && currentDoctor.photoUrl ? _startCase(_toLower(currentDoctor.photoUrl)) : '';
+  const doctorPhotoUrl = currentDoctor && currentDoctor.photoUrl ? currentDoctor.photoUrl : '';
 
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
@@ -417,6 +414,7 @@ export const JDConsultRoom: React.FC = () => {
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
+  const [saving, setSaving] = useState<boolean>(false);
 
   const [allergies, setPatientAllergies] = useState<string>('');
   const [lifeStyle, setPatientLifeStyle] = useState<string>('');
@@ -442,6 +440,7 @@ export const JDConsultRoom: React.FC = () => {
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
+  const [userCardStrip, setUserCardStrip] = useState<string>('');
 
   const [notes, setNotes] = useState<string | null>(null);
 
@@ -484,16 +483,6 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
       ? casesheetInfo.getCaseSheet.patientDetails.relation
       : '';
-  const patientDob =
-    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
-      ? casesheetInfo.getCaseSheet.patientDetails.dateOfBirth
-      : new Date();
-  const patientAge = differenceInYears(new Date(), parseISO(patientDob));
-  const patientGender =
-    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
-      ? _startCase(_toLower(casesheetInfo.getCaseSheet.patientDetails.gender))
-      : '';
-
   const patientAppointmentId =
     (casesheetInfo &&
       casesheetInfo.getCaseSheet &&
@@ -514,16 +503,17 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo.getCaseSheet.patientDetails &&
     !isNull(casesheetInfo.getCaseSheet.patientDetails.photoUrl)
       ? casesheetInfo.getCaseSheet.patientDetails.photoUrl
-      : '';
+      : require('images/PatientImage.png');
+
   if (patientAppointmentTimeUtc !== '') {
     appointmentDateIST = format(
       new Date(patientAppointmentTimeUtc).getTime(),
-      'dd-MM-yyyy hh:mm a'
+      'dd/MM/yyyy, hh:mm a'
     );
   }
   // console.log('patient details....', casesheetInfo.getCaseSheet.patientDetails);
   const patientRelationHeader =
-    patientRelation === Relation.ME ? 'Self' : _startCase(_toLower(patientRelation));
+    patientRelation === Relation.ME ? ' Self' : _startCase(_toLower(patientRelation));
 
   // console.log(patientAllergies, '--------------');
 
@@ -669,6 +659,34 @@ export const JDConsultRoom: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
           }
+          const cardStripArr = [];
+          if (
+            _data!.data!.getCaseSheet!.patientDetails!.dateOfBirth &&
+            _data!.data!.getCaseSheet!.patientDetails!.dateOfBirth !== null &&
+            _data!.data!.getCaseSheet!.patientDetails!.dateOfBirth !== ''
+          ) {
+            cardStripArr.push(
+              Math.abs(
+                new Date(Date.now()).getUTCFullYear() -
+                  new Date(_data!.data!.getCaseSheet!.patientDetails!.dateOfBirth).getUTCFullYear()
+              ).toString()
+            );
+          }
+          if (
+            _data!.data!.getCaseSheet!.patientDetails!.gender &&
+            _data!.data!.getCaseSheet!.patientDetails!.gender !== null
+          ) {
+            if (_data!.data!.getCaseSheet!.patientDetails!.gender === Gender.FEMALE) {
+              cardStripArr.push('F');
+            }
+            if (_data!.data!.getCaseSheet!.patientDetails!.gender === Gender.MALE) {
+              cardStripArr.push('M');
+            }
+            if (_data!.data!.getCaseSheet!.patientDetails!.gender === Gender.OTHER) {
+              cardStripArr.push('O');
+            }
+          }
+          setUserCardStrip(cardStripArr.join(', '));
         })
         .catch((e: any) => {
           setError('Error occured in getcasesheet api');
@@ -686,6 +704,7 @@ export const JDConsultRoom: React.FC = () => {
   }, [appointmentId, client, isSignedIn]);
 
   const saveCasesheetAction = (flag: boolean) => {
+    setSaving(true);
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
         mutation: UPDATE_CASESHEET,
@@ -712,11 +731,14 @@ export const JDConsultRoom: React.FC = () => {
         savePatientAllergiesMutation();
         savePatientFamilyHistoryMutation();
         savePatientLifeStyleMutation();
+        setSaving(false);
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         alert(errorMessage);
+        setSaving(false);
+        console.log('Error occured while update casesheet', e);
       });
   };
 
@@ -730,6 +752,7 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const createSessionAction = () => {
+    setSaving(true);
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
         mutation: CREATE_APPOINTMENT_SESSION,
@@ -745,6 +768,7 @@ export const JDConsultRoom: React.FC = () => {
         settoken(_data.data.createAppointmentSession.appointmentToken);
         setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
         setError('');
+        setSaving(false);
       })
       .catch((e: any) => {
         setError('Error occured creating session');
@@ -753,6 +777,7 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const setStartConsultAction = (flag: boolean) => {
+    alert('111111111');
     setStartConsult('');
     const cookieStr = `action=${flag ? 'videocall' : 'audiocall'}`;
     document.cookie = cookieStr + ';path=/;';
@@ -760,6 +785,7 @@ export const JDConsultRoom: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
+
   return !loaded ? (
     <LinearProgress />
   ) : (
@@ -815,20 +841,15 @@ export const JDConsultRoom: React.FC = () => {
                 <div className={classes.patientSection}>
                   <div className={classes.patientImage}>
                     <img
-                      src={
-                        patientPhotoUrl !== ''
-                          ? patientPhotoUrl
-                          : 'https://via.placeholder.com/132x132'
-                      }
+                      style={{ width: '100px' }}
+                      src={patientPhotoUrl}
                       alt="Patient Profile Photo"
                     />
                   </div>
                   <div className={classes.patientInfo}>
                     <div className={classes.patientName}>
                       {patientFirstName} {patientLastName}
-                      <span>
-                        ({isNull(patientAge) ? patientAge : ''}, {patientGender})
-                      </span>
+                      <span>({userCardStrip})</span>
                     </div>
                     <div className={classes.patientTextInfo}>
                       <label>UHID:</label> {patientUhid} | <label>Relation:</label>
@@ -874,6 +895,7 @@ export const JDConsultRoom: React.FC = () => {
                 prescriptionPdf={prescriptionPdf}
                 sessionId={sessionId}
                 token={token}
+                saving={saving}
               />
               <div className={classes.contentGroup}>
                 <div className={classes.leftSection}>
@@ -919,11 +941,62 @@ export const JDConsultRoom: React.FC = () => {
           </div>
         </CaseSheetContext.Provider>
       )}
-      {isEnded && (
-        <div className={classes.tabPdfBody}>
-          <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
-        </div>
-      )}
+      {/* <Modal
+        open={isPopoverOpen}
+        onClose={() => setIsPopoverOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <Paper className={classes.modalBox}>
+          <div className={classes.tabHeader}>
+            <Button className={classes.cross}>
+              <img
+                src={require('images/ic_cross.svg')}
+                alt=""
+                onClick={() => setIsPopoverOpen(false)}
+              />
+            </Button>
+          </div>
+          <div className={classes.tabBody}>
+            {}
+            <h3>
+              You're ending your consult with
+              {casesheetInfo &&
+                casesheetInfo !== null &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.firstName !== '' &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
+                casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
+                  <span>
+                    {` ${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
+                      casesheetInfo!.getCaseSheet!.patientDetails!.lastName
+                    }.`}
+                  </span>
+                )}
+            </h3>
+            <Button
+              className={classes.consultButton}
+              //disabled={startAppointmentButton}
+              onClick={() => {
+                setIsPopoverOpen(false);
+                endConsultActionFinal();
+                setCaseSheetEdit(false);
+              }}
+            >
+              Preview Prescription
+            </Button>
+            <Button
+              className={classes.cancelConsult}
+              onClick={() => {
+                setIsPopoverOpen(false);
+              }}
+            >
+              Edit Case Sheet
+            </Button>
+          </div>
+        </Paper>
+      </Modal> */}
+
       <Dialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}

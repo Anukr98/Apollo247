@@ -13,7 +13,6 @@ import { ApiConstants } from 'ApiConstants';
 import { EmailMessage } from 'types/notificationMessageTypes';
 import { MEDICINE_ORDER_PAYMENT_TYPE } from 'profiles-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 
 export const helpTypeDefs = gql`
   input HelpEmailInput {
@@ -66,13 +65,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     endDate
   );
 
-  const client = new AphStorageClient(
-    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-    process.env.AZURE_STORAGE_CONTAINER_NAME
-  );
-
   type appointmentStore = {
-    eprescriptionURL: string;
     doctorName: string;
     appointmentDateTime: Date;
     appointmentMode: string;
@@ -86,7 +79,6 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
   if (appointmentDetails.length > 0) {
     appointmentDetails.forEach((appointment) => {
       const data: appointmentStore = {
-        eprescriptionURL: '',
         doctorName: '',
         appointmentDateTime: new Date(),
         appointmentMode: '',
@@ -94,17 +86,6 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
         doctorId: '',
       };
       appointment.appointmentDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
-      if (appointment.caseSheet.length > 0) {
-        appointment.caseSheet.forEach((caseSheet) => {
-          if (
-            caseSheet.doctorType == 'JUNIOR' &&
-            caseSheet.blobName &&
-            caseSheet.blobName.length > 0
-          ) {
-            data.eprescriptionURL = client.getBlobUrl(caseSheet.blobName);
-          }
-        });
-      }
       data.doctorName = '';
       data.appointmentDateTime = appointment.appointmentDateTime;
       data.appointmentMode = appointment.appointmentType;
@@ -190,8 +171,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     <ul>
      <li>Doctor's Name : <%- appointment.doctorName %> </li>
      <li>Appointment DateTime : <%- appointment.appointmentDateTime %> </li>
-     <li>Appointment Mode : <%- appointment.appointmentMode %> </li>
-     <li>E prescription  :  <%- appointment.eprescriptionURL %> </li>
+     <li>Appointment Mode : <%- appointment.appointmentMode %> </li>  
      <li>DoctorType : <%- appointment.doctorType %> </li>    
     </ul>    
     </li>
@@ -227,16 +207,35 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     appointmentList,
   });
 
+  const subject =
+    process.env.NODE_ENV == 'production'
+      ? ApiConstants.PATIENT_HELP_SUBJECT
+      : ApiConstants.PATIENT_HELP_SUBJECT + ' from ' + process.env.NODE_ENV;
+
+  const toEmailId =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_HELP_SUPPORT_EMAILID
+      : ApiConstants.PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION;
+
+  const ccEmailIds =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_HELP_SUPPORT_CC_EMAILID
+      : ApiConstants.PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION;
+
   const emailContent: EmailMessage = {
-    subject: <string>ApiConstants.PATIENT_HELP_SUBJECT,
+    subject: subject,
     fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
     fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
     messageContent: <string>mailContent,
-    toEmail: <string>ApiConstants.PATIENT_HELP_SUPPORT_EMAILID,
+    toEmail: <string>toEmailId,
+    ccEmail: <string>ccEmailIds,
   };
 
   const mailStatus = await sendMail(emailContent);
-
   return mailStatus.message;
 };
 

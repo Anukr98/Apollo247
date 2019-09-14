@@ -20,6 +20,12 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum CONSULTS_RX_SEARCH_FILTER {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+  PRESCRIPTION = "PRESCRIPTION",
+}
+
 export enum ConsultMode {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
@@ -320,6 +326,7 @@ export interface PatientAppointmentsInput {
 
 export interface PatientConsultsAndOrdersInput {
   patient: string;
+  filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
   offset?: number | null;
   limit?: number | null;
 }
