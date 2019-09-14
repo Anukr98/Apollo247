@@ -25,6 +25,11 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
+  async isJuniorDoctor(id: string) {
+    const count = await this.count({ where: { id, doctorType: DoctorType.JUNIOR } });
+    return count > 0 ? true : false;
+  }
+
   searchDoctorByMobileNumber(mobileNumber: string, isActive: Boolean) {
     return this.findOne({
       where: [{ mobileNumber, isActive }],
@@ -94,15 +99,20 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctor.consultHours', 'consultHours')
       .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
       .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
-      .where('LOWER(doctor.firstName) LIKE :searchString', {
-        searchString: `${searchString}%`,
-      })
-      .orWhere('LOWER(doctor.lastName) LIKE :searchString', {
-        searchString: `${searchString}%`,
-      })
-      .orWhere("LOWER(doctor.firstName || ' ' || doctor.lastName) LIKE :searchString", {
-        searchString: `${searchString}%`,
-      })
+      .where('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.andWhere('LOWER(doctor.firstName) LIKE :searchString', {
+            searchString: `${searchString}%`,
+          });
+          qb.orWhere('LOWER(doctor.lastName) LIKE :searchString', {
+            searchString: `${searchString}%`,
+          });
+          qb.orWhere("LOWER(doctor.firstName || ' ' || doctor.lastName) LIKE :searchString", {
+            searchString: `${searchString}%`,
+          });
+        })
+      )
       .orderBy('doctor.experience', 'DESC')
       .getMany();
   }
@@ -116,6 +126,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .where('doctor.specialty = :specialtyId', {
         specialtyId,
       })
+      .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
       .orderBy('doctor.experience', 'DESC')
       .getMany();
   }
@@ -129,6 +140,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .where('doctor.specialty = :specialtyId', {
         specialtyId,
       })
+      .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
       .andWhere('doctor.id NOT IN (:doctorId)', { doctorId })
       .orderBy('doctor.experience', 'DESC')
       .getMany();
@@ -162,7 +174,8 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctor.consultHours', 'consultHours')
       .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
       .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
-      .where('doctor.specialty = :specialty', { specialty });
+      .where('doctor.specialty = :specialty', { specialty })
+      .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR });
 
     if (city && city.length > 0) {
       queryBuilder.andWhere('doctor.city IN (:...city)', { city });
