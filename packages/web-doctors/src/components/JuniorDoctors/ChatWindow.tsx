@@ -202,6 +202,7 @@ interface MessagesObjectProps {
   username: string;
   text: string;
   duration: string;
+  url: string;
 }
 interface ConsultRoomProps {
   startConsult: string;
@@ -233,6 +234,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const acceptcallMsg = '^^callme`accept^^';
   const startConsult = '^^#startconsult';
   const stopConsult = '^^#stopconsult';
+  const documentUpload = '^^#DocumentUpload';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
@@ -475,7 +477,16 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                   />
                 </div>
               )}
-              {rowData.message}
+              {rowData.message === documentUpload ? (
+                <div>
+                  <a href={rowData.url} target="_blank">
+                    <img src={rowData.url} alt={rowData.url} />
+                  </a>
+                </div>
+              ) : (
+                <span>{rowData.message}</span>
+              )}
+              {/* {rowData.message} */}
             </div>
           )}
         </div>
@@ -531,7 +542,20 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                   />
                 </div>
               )}
-              {rowData.message}
+              {rowData.message === documentUpload ? (
+                <div style={{ width: '50px', height: '50px' }}>
+                  <a href={rowData.url} target="_blank">
+                    <img
+                      style={{ width: '50px', height: '50px' }}
+                      src={rowData.url}
+                      alt={rowData.url}
+                    />
+                  </a>
+                </div>
+              ) : (
+                <span>{rowData.message}</span>
+              )}
+              {/* {rowData.message} */}
             </div>
           )}
         </div>
