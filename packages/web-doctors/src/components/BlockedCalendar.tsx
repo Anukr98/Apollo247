@@ -11,35 +11,42 @@ import {
   FormControlLabel,
   TextField,
 } from '@material-ui/core';
+import _isEmpty from 'lodash/isEmpty';
 import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { GetBlockedCalendar, GetBlockedCalendarVariables } from 'graphql/types/GetBlockedCalendar';
-import { GET_BLOCKED_CALENDAR } from 'graphql/doctors';
+import { GET_BLOCKED_CALENDAR, ADD_BLOCKED_CALENDAR_ITEM } from 'graphql/doctors';
 import { format } from 'date-fns';
 import { DialogProps } from '@material-ui/core/Dialog';
 import { AphRadio } from '@aph/web-ui-components';
+import { Mutation } from 'react-apollo';
+import {
+  AddBlockedCalendarItem,
+  AddBlockedCalendarItemVariables,
+} from 'graphql/types/AddBlockedCalendarItem';
 
 const useBlockedCalendarAddModalStyles = makeStyles((theme: Theme) => {
   return {};
 });
 interface BlockedCalendarAddModalProps {
-  dialogProps: DialogProps & Required<Pick<DialogProps, 'onClose'>>;
+  dialogProps: DialogProps & { onClose: () => void };
+  doctorId: string;
 }
 const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (props) => {
   enum RadioValues {
     DAY = 'DAY',
     DURATION = 'DURATION',
   }
-  const { dialogProps } = props;
+  const { dialogProps, doctorId } = props;
   const classes = useBlockedCalendarAddModalStyles();
   const [selectedValue, setSelectedValue] = useState(RadioValues.DAY);
   const [startDateTime, setStartDateTime] = useState('');
   const [endDateTime, setEndDateTime] = useState('');
-  console.log(startDateTime, endDateTime);
+  const invalid = _isEmpty(startDateTime) || _isEmpty(endDateTime);
   return (
     <Dialog {...dialogProps}>
       <DialogTitle style={{ color: 'black' }}>BLOCK CALENDAR</DialogTitle>
-      <DialogContent>
+      <DialogContent style={{ color: 'black' }}>
         <RadioGroup
           value={selectedValue}
           onChange={(e) => setSelectedValue((e.target as HTMLInputElement).value as RadioValues)}
@@ -78,10 +85,33 @@ const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (props) 
         </div>
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" onClick={(e) => dialogProps.onClose(e, 'escapeKeyDown')}>
+        <Button variant="contained" onClick={(e) => dialogProps.onClose()}>
           CANCEL
         </Button>
-        <Button variant="contained">BLOCK CALENDAR</Button>
+        <Mutation<AddBlockedCalendarItem, AddBlockedCalendarItemVariables>
+          mutation={ADD_BLOCKED_CALENDAR_ITEM}
+          onCompleted={() => dialogProps.onClose()}
+        >
+          {(addBlockedCalendarItem, { loading }) => (
+            <Button
+              disabled={loading || invalid}
+              variant="contained"
+              onClick={() => {
+                addBlockedCalendarItem({
+                  variables: {
+                    doctorId,
+                    start: `${startDateTime}:00Z`,
+                    end: `${endDateTime}:00Z`,
+                  },
+                  refetchQueries: [{ query: GET_BLOCKED_CALENDAR, variables: { doctorId } }],
+                  awaitRefetchQueries: true,
+                });
+              }}
+            >
+              {loading && <CircularProgress size={20} />} BLOCK CALENDAR
+            </Button>
+          )}
+        </Mutation>
       </DialogActions>
     </Dialog>
   );
@@ -147,6 +177,7 @@ export const BlockedCalendar: React.FC<BlockedCalendarProps> = (props) => {
   return (
     <div>
       <BlockedCalendarAddModal
+        doctorId={doctorId}
         dialogProps={{
           open: showAddModal,
           onClose: () => setShowAddModal(false),
