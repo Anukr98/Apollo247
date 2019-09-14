@@ -570,7 +570,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           onUpdateCartItem(medicine, unit);
         }}
         isCardExpanded={!!foundMedicineInCart}
-        isInStock={medicine.status == 1}
+        isInStock={medicine.is_in_stock}
         packOfCount={(medicine.mou && parseInt(medicine.mou)) || undefined}
         isPrescriptionRequired={medicine.is_prescription_required == '1'}
         subscriptionStatus={'unsubscribed'}

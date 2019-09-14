@@ -497,22 +497,11 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   };
 
   const renderOrderInfoPopup = () => {
-    const navigateOnSuccess = () => {
+    const navigateOnSuccess = (showOrderSummaryTab: boolean) => {
       props.navigation.navigate(AppRoutes.OrderDetailsScene, {
         goToHomeOnBack: true,
+        showOrderSummaryTab,
         orderAutoId: orderInfo.orderAutoId,
-        orderDetails: [
-          {
-            id: `1`,
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
-            statusDate: new Date().toString(),
-          },
-          {
-            id: `2`,
-            orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
-            statusDate: new Date().toString(),
-          },
-        ] as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[],
       });
     };
 
@@ -600,12 +589,12 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               }}
             /> */}
             <View style={styles.popupButtonStyle}>
-              <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateOnSuccess()}>
+              <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateOnSuccess(true)}>
                 <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ flex: 1, alignItems: 'flex-end' }}
-                onPress={() => navigateOnSuccess()}
+                onPress={() => navigateOnSuccess(false)}
               >
                 <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
               </TouchableOpacity>
