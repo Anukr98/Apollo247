@@ -262,7 +262,7 @@ const bookRescheduleAppointment: Resolver<
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const apptDetails = await appointmentRepo.findById(bookRescheduleAppointmentInput.appointmentId);
-
+  let finalAppointmentId = bookRescheduleAppointmentInput.appointmentId;
   if (!apptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -280,12 +280,39 @@ const bookRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
 
-  await appointmentRepo.rescheduleAppointment(
-    bookRescheduleAppointmentInput.appointmentId,
-    bookRescheduleAppointmentInput.newDateTimeslot,
-    apptDetails.rescheduleCount + 1,
-    APPOINTMENT_STATE.RESCHEDULE
-  );
+  if (
+    bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT &&
+    apptDetails.rescheduleCount == 3
+  ) {
+    //cancel and book new appt
+    appointmentRepo.cancelAppointment(
+      bookRescheduleAppointmentInput.appointmentId,
+      TRANSFER_INITIATED_TYPE.PATIENT,
+      apptDetails.patientId
+    );
+
+    const appointmentAttrs = {
+      patientId: apptDetails.patientId,
+      doctorId: apptDetails.doctorId,
+      status: STATUS.PENDING,
+      patientName: apptDetails.patientName,
+      appointmentDateTime: new Date(bookRescheduleAppointmentInput.newDateTimeslot.toISOString()),
+      appointmentState: APPOINTMENT_STATE.NEW,
+      isFollowUp: apptDetails.isFollowUp,
+      isFollowPaid: apptDetails.isFollowPaid,
+      followUpParentId: apptDetails.followUpParentId,
+      appointmentType: apptDetails.appointmentType,
+    };
+    const appointment = await appointmentRepo.saveAppointment(appointmentAttrs);
+    finalAppointmentId = appointment.id;
+  } else {
+    await appointmentRepo.rescheduleAppointment(
+      bookRescheduleAppointmentInput.appointmentId,
+      bookRescheduleAppointmentInput.newDateTimeslot,
+      apptDetails.rescheduleCount + 1,
+      APPOINTMENT_STATE.RESCHEDULE
+    );
+  }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
     const rescheduleAppointmentAttrs: Omit<RescheduleAppointment, 'id'> = {
@@ -306,9 +333,7 @@ const bookRescheduleAppointment: Resolver<
     );
   }
 
-  const appointmentDetails = await appointmentRepo.findById(
-    bookRescheduleAppointmentInput.appointmentId
-  );
+  const appointmentDetails = await appointmentRepo.findById(finalAppointmentId);
   if (!appointmentDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
