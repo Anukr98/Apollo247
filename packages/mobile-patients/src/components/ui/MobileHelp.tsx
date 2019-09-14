@@ -26,6 +26,8 @@ import {
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
+import { BottomPopUp } from './BottomPopUp';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   showPopUp: {
@@ -124,6 +126,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const [selectedQuery, setSelectedQuery] = useState<string>('');
   const [isDropdownOpen, setDropdownOpen] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
+  const [mobileFollowup, setMobileFollowup] = useState<boolean>(false);
   const client = useApolloClient();
 
   useEffect(() => {
@@ -286,11 +289,12 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
     submit(helpCategory, selectedQuery, comment)
       .then(() => {
         setShowSpinner(false);
-        Alert.alert(
-          'Alert',
-          'Thank you for reaching out. Our team will call you back within 3 hours.',
-          [{ text: 'OK, GOT IT', onPress: () => props.navigation.goBack() }]
-        );
+        setMobileFollowup(true);
+        // Alert.alert(
+        //   'Alert',
+        //   'Thank you for reaching out. Our team will call you back within 3 hours.',
+        //   [{ text: 'OK, GOT IT', onPress: () => props.navigation.goBack() }]
+        // );
       })
       .catch((e) => {
         setShowSpinner(false);
@@ -343,6 +347,35 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
           <Mascot style={styles.mascotIconStyle} />
         </View>
       </View>
+      {mobileFollowup && (
+        <BottomPopUp
+          title={'Hi:)'}
+          description="Thank you for reaching out. Our team will call you back within 3 hours."
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setMobileFollowup(false);
+                props.navigation.replace(AppRoutes.TabBar);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
     </View>
   );
 };
