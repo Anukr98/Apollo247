@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { FlatList, SafeAreaView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Alert } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { GET_MEDICAL_RECORD } from '../../graphql/profiles';
 import {
   getPatientMedicalRecords,
@@ -16,6 +16,7 @@ import { Button } from '../ui/Button';
 import { EPrescriptionCard } from '../ui/EPrescriptionCard';
 import { Header } from '../ui/Header';
 import { Spinner } from '../ui/Spinner';
+import moment from 'moment';
 
 const styles = StyleSheet.create({});
 
@@ -29,8 +30,7 @@ export interface SelectEPrescriptionModalModalProps extends NavigationScreenProp
 export const SelectEPrescriptionModalModal: React.FC<SelectEPrescriptionModalModalProps> = (
   props
 ) => {
-  // const [selectedPrescription, setSelectedPrescription] = useState<{ [key: string]: boolean }>({});
-  const [selectedPrescription, setSelectedPrescription] = useState<boolean>(false);
+  const [selectedPrescription, setSelectedPrescription] = useState<{ [key: string]: boolean }>({});
   const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export const SelectEPrescriptionModalModal: React.FC<SelectEPrescriptionModalMod
     fetchPolicy: 'no-cache',
   });
   const ePrescriptions = g(data, 'getPatientMedicalRecords', 'medicalRecords')! || [];
-  console.log({ ePrescriptions });
+  console.log(JSON.stringify({ ePrescriptions }));
 
   const renderEPrescription = (
     item: getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
@@ -57,26 +57,24 @@ export const SelectEPrescriptionModalModal: React.FC<SelectEPrescriptionModalMod
     return (
       <EPrescriptionCard
         actionType="selection"
-        // isSelected={!!selectedPrescription[item.id]}
-        isSelected={selectedPrescription}
-        date={item.testDate}
+        isSelected={!!selectedPrescription[item.id]}
+        date={moment(item.testDate).format('DD MMMM YYYY')}
         doctorName={item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''}
         forPatient={(currentPatient && currentPatient.firstName) || ''}
+        medicines={item!.testName || ''}
         style={{
-          // marginTop: 20,
           marginTop: i === 0 ? 20 : 4,
           marginBottom: arrayLength === i + 1 ? 16 : 4,
         }}
         onSelect={(isSelected) => {
-          console.log({ isSelected });
-
-          setSelectedPrescription(
-            !selectedPrescription
-            //   {
-            //   ...selectedPrescription,
-            //   [item.id]: isSelected,
-            // }
-          );
+          if (!item!.documentURLs) {
+            Alert.alert('Alert', 'This prescription has no uploaded documents.');
+          } else {
+            setSelectedPrescription({
+              ...selectedPrescription,
+              [item.id]: isSelected,
+            });
+          }
         }}
       />
     );
@@ -107,7 +105,12 @@ export const SelectEPrescriptionModalModal: React.FC<SelectEPrescriptionModalMod
             }}
             onPressLeftIcon={() => props.navigation.goBack()}
           />
-          <FlatList
+          <ScrollView bounces={false}>
+            {ePrescriptions.map((item, index, ePrescriptions) => {
+              return renderEPrescription(item!, index, ePrescriptions.length);
+            })}
+          </ScrollView>
+          {/* <FlatList
             bounces={false}
             data={ePrescriptions}
             renderItem={({ item, index }) =>
@@ -115,12 +118,12 @@ export const SelectEPrescriptionModalModal: React.FC<SelectEPrescriptionModalMod
             }
             keyExtractor={(_, index) => index.toString()}
             showsHorizontalScrollIndicator={false}
-          />
+          /> */}
           <View style={{ justifyContent: 'center', alignItems: 'center', marginHorizontal: 60 }}>
             <Button
               title={'UPLOAD'}
               onPress={() => {
-                props.onSubmit(ePrescriptions.filter((item) => selectedPrescription));
+                props.onSubmit(ePrescriptions.filter((item) => selectedPrescription[item!.id]));
               }}
               style={{ marginHorizontal: 60, marginVertical: 20 }}
             />
