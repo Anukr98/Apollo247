@@ -425,9 +425,12 @@ export const DiagnosticPrescription: React.FC = () => {
         {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
           <div>
             <span>
-              {`do you want to add ${otherDiagnostic} in Tests ?`}
-              <Button
-                className={classes.chatSubmitBtn}
+              {`do you want to add '${otherDiagnostic}' in Tests ?`}
+              {'  '}
+              <AphButton
+                className={classes.btnAddDoctor}
+                variant="contained"
+                color="primary"
                 onClick={() => {
                   if (otherDiagnostic.trim() !== '') {
                     selectedValues!.splice(idx, 0, {
@@ -446,8 +449,8 @@ export const DiagnosticPrescription: React.FC = () => {
                   }
                 }}
               >
-                <img src={require('images/ic_plus.png')} alt="" />
-              </Button>
+                <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TEST
+              </AphButton>
             </span>
           </div>
         )}
