@@ -506,9 +506,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 );
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
           const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
-          console.log('appointmentDateTime', moment(appointmentDateTime));
-          console.log('new Date()', moment(new Date()));
-          console.log('dateIsAfterconsult', dateIsAfterconsult);
+          // console.log('appointmentDateTime', moment(appointmentDateTime));
+          //console.log('new Date()', moment(new Date()));
+          //console.log('dateIsAfterconsult', dateIsAfterconsult);
           return (
             <View style={{}}>
               {/* <View style={{ width: 312 }}> */}
@@ -720,7 +720,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 title={string.home.consult_doctor}
                 style={styles.buttonStyles}
                 onPress={() => {
-                  // props.navigation.navigate(AppRoutes.DoctorSearch);
+                  props.navigation.navigate(AppRoutes.SymptomChecker);
                 }}
               />
             </View>

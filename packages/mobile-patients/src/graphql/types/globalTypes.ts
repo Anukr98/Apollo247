@@ -20,6 +20,12 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum CONSULTS_RX_SEARCH_FILTER {
+  ONLINE = "ONLINE",
+  PHYSICAL = "PHYSICAL",
+  PRESCRIPTION = "PRESCRIPTION",
+}
+
 export enum ConsultMode {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
@@ -62,8 +68,10 @@ export enum MEDICINE_ORDER_PAYMENT_TYPE {
 
 export enum MEDICINE_ORDER_STATUS {
   CANCELLED = "CANCELLED",
+  CANCEL_REQUEST = "CANCEL_REQUEST",
   DELIVERED = "DELIVERED",
   ITEMS_RETURNED = "ITEMS_RETURNED",
+  ORDER_CONFIRMED = "ORDER_CONFIRMED",
   ORDER_FAILED = "ORDER_FAILED",
   ORDER_PLACED = "ORDER_PLACED",
   ORDER_VERIFIED = "ORDER_VERIFIED",
@@ -318,6 +326,7 @@ export interface PatientAppointmentsInput {
 
 export interface PatientConsultsAndOrdersInput {
   patient: string;
+  filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
   offset?: number | null;
   limit?: number | null;
 }

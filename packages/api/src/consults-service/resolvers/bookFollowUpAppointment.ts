@@ -46,6 +46,10 @@ export const bookFollowUpAppointmentTypeDefs = gql`
       followUpAppointmentInput: BookFollowUpAppointmentInput
     ): BookFollowUpAppointmentResult!
   }
+
+  extend type Query {
+    checkIfFollowUpBooked(appointmentId: String): Int!
+  }
 `;
 
 type BookFollowUpAppointmentResult = {
@@ -163,8 +167,22 @@ const bookFollowUpAppointment: Resolver<
   return { appointment };
 };
 
+const checkIfFollowUpBooked: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  number
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const followUpCount = await appointmentRepo.followUpBookedCount(args.appointmentId);
+  return followUpCount;
+};
+
 export const bookFollowUpAppointmentResolvers = {
   Mutation: {
     bookFollowUpAppointment,
+  },
+  Query: {
+    checkIfFollowUpBooked,
   },
 };

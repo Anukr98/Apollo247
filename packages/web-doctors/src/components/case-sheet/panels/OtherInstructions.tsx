@@ -159,7 +159,7 @@ export const OtherInstructions: React.FC = () => {
           <Button
             className={classes.chatSubmitBtn}
             onClick={() => {
-              if (otherInstruct !== '') {
+              if (otherInstruct.trim() !== '') {
                 selectedValues!.splice(idx, 0, {
                   instruction: otherInstruct,
                   __typename: 'OtherInstructions',
@@ -169,6 +169,8 @@ export const OtherInstructions: React.FC = () => {
                 setTimeout(() => {
                   setOtherInstruct('');
                 }, 10);
+              } else {
+                setOtherInstruct('');
               }
             }}
           >

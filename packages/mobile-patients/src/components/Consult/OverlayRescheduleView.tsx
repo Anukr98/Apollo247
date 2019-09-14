@@ -9,6 +9,7 @@ import {
   GET_AVAILABLE_SLOTS,
   BOOK_APPOINTMENT_RESCHEDULE,
   CHECK_IF_RESCHDULE,
+  BOOK_FOLLOWUP_APPOINTMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { bookRescheduleAppointment } from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
@@ -27,7 +28,15 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { Mutation } from 'react-apollo';
 import { useQuery, useApolloClient } from 'react-apollo-hooks';
-import { Dimensions, Platform, Text, TouchableOpacity, View, Alert } from 'react-native';
+import {
+  Dimensions,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+  AsyncStorage,
+} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -36,12 +45,25 @@ import {
   checkIfRescheduleVariables,
 } from '../../graphql/types/checkIfReschedule';
 
+import {
+  BookFollowUpAppointment,
+  BookFollowUpAppointmentVariables,
+} from '../../graphql/types/BookFollowUpAppointment';
+
 const { width, height } = Dimensions.get('window');
 
 type TimeArray = {
   label: string;
   time: string[];
 }[];
+
+type rescheduleType = {
+  rescheduleCount: number;
+  appointmentState: string;
+  isCancel: number;
+  isFollowUp: number;
+  isPaid: number;
+};
 
 export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   renderTab: string;
@@ -50,9 +72,12 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   doctorId: string;
-  rescheduleCount: number;
+  rescheduleCount: rescheduleType;
   appointmentId: string;
   data: any;
+  bookFollowUp: boolean;
+  KeyFollow: string;
+  isfollowupcount: number;
   // availableSlots: string[] | null;
 }
 export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (props) => {
@@ -84,7 +109,11 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
 
   const availableDate = date.toISOString().split('T')[0];
 
-  // console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
+  console.log(props.bookFollowUp, 'bookFollowUp');
+  console.log(props.rescheduleCount, 'rescheduleCount');
+  console.log(props.data, 'back');
+
+  console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
   const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
     fetchPolicy: 'no-cache',
     variables: {
@@ -159,11 +188,17 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
           {(mutate, { loading, data, error }) => (
             <Button
               title={
-                props.rescheduleCount === 3
-                  ? `PAY Rs. ${props.data.doctorInfo &&
-                      props.data.doctorInfo.onlineConsultationFees &&
-                      props.data.doctorInfo.onlineConsultationFees}`
-                  : `CONFIRM RESCHEDULE`
+                props.KeyFollow == 'RESCHEDULE'
+                  ? props.rescheduleCount.isPaid === 1
+                    ? `PAY Rs. ${props.data.doctorInfo &&
+                        props.data.doctorInfo.onlineConsultationFees &&
+                        props.data.doctorInfo.onlineConsultationFees}`
+                    : `CONFIRM RESCHEDULE`
+                  : props.isfollowupcount === 1
+                  ? `PAY Rs. ${props.doctor &&
+                      props.doctor.onlineConsultationFees &&
+                      props.doctor.onlineConsultationFees}`
+                  : `BOOK FOLLOWUP`
               }
               disabled={
                 tabs[0].title === selectedTab &&
@@ -176,30 +211,74 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   : false
               }
               onPress={() => {
-                setshowSpinner(true);
-                const timeSlot =
-                  tabs[0].title === selectedTab &&
-                  isConsultOnline &&
-                  availableInMin! <= 15 &&
-                  0 < availableInMin!
-                    ? nextAvailableSlot
-                    : selectedTimeSlot;
+                if (props.KeyFollow) {
+                  const timeSlot =
+                    tabs[0].title === selectedTab &&
+                    isConsultOnline &&
+                    availableInMin! <= 15 &&
+                    0 < availableInMin!
+                      ? nextAvailableSlot
+                      : selectedTimeSlot;
+                  console.log('bookfollowupapicalled');
+                  const input = {
+                    patientId: props.patientId,
+                    doctorId: props.doctorId,
+                    appointmentDateTime: timeSlot,
+                    appointmentType: APPOINTMENT_TYPE.ONLINE,
+                    hospitalId: '',
+                    followUpParentId: props.appointmentId,
+                  };
+                  console.log('inputfollowup', props.appointmentId);
+                  console.log('uin', input);
+                  client
+                    .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
+                      mutation: BOOK_FOLLOWUP_APPOINTMENT,
+                      variables: {
+                        followUpAppointmentInput: input,
+                      },
+                      fetchPolicy: 'no-cache',
+                    })
+                    .then((_data: any) => {
+                      console.log('BookFollowUpAppointment', _data);
+                      props.navigation.navigate(AppRoutes.Consult);
+                    })
+                    .catch((e: any) => {
+                      const error = JSON.parse(JSON.stringify(e));
+                      const errorMessage = error && error.message;
+                      console.log(
+                        'Error occured while BookFollowUpAppointment ',
+                        errorMessage,
+                        error
+                      );
+                      Alert.alert('Error', errorMessage);
+                    });
+                } else {
+                  setshowSpinner(true);
+                  AsyncStorage.setItem('showbookfollowup', 'true');
+                  const timeSlot =
+                    tabs[0].title === selectedTab &&
+                    isConsultOnline &&
+                    availableInMin! <= 15 &&
+                    0 < availableInMin!
+                      ? nextAvailableSlot
+                      : selectedTimeSlot;
 
-                const appointmentInput: BookRescheduleAppointmentInput = {
-                  appointmentId: props.appointmentId,
-                  doctorId: props.doctorId,
-                  newDateTimeslot: timeSlot,
-                  initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-                  initiatedId: props.patientId,
-                  patientId: props.patientId,
-                  rescheduledId: '',
-                };
-                console.log(appointmentInput, 'appointmentInput');
-                mutate({
-                  variables: {
-                    bookRescheduleAppointmentInput: appointmentInput,
-                  },
-                });
+                  const appointmentInput: BookRescheduleAppointmentInput = {
+                    appointmentId: props.appointmentId,
+                    doctorId: props.doctorId,
+                    newDateTimeslot: timeSlot,
+                    initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+                    initiatedId: props.patientId,
+                    patientId: props.patientId,
+                    rescheduledId: '',
+                  };
+                  console.log(appointmentInput, 'appointmentInput');
+                  mutate({
+                    variables: {
+                      bookRescheduleAppointmentInput: appointmentInput,
+                    },
+                  });
+                }
               }}
             >
               {data

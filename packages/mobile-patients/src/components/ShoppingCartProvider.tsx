@@ -26,6 +26,18 @@ export interface PhysicalPrescription {
   uploadedUrl?: string;
 }
 
+export interface EPrescription {
+  id: string;
+  uploadedUrl?: string;
+}
+
+type EPrescriptionType = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
+
+export interface LastSelectedPrescription {
+  cart?: EPrescriptionType;
+  'non-cart'?: EPrescriptionType;
+}
+
 export interface ShoppingCartContextProps {
   cartItems: ShoppingCartItem[];
   setCartItems: ((items: ShoppingCartItem[]) => void) | null;
@@ -43,6 +55,10 @@ export interface ShoppingCartContextProps {
 
   stores: Store[];
   setStores: ((store: Store[]) => void) | null;
+
+  ePrescriptions: EPrescription[];
+  setEPrescriptions: ((items: EPrescription[]) => void) | null;
+  removeEPrescription: ((id: EPrescription['id']) => void) | null;
 
   addPhysicalPrescription: ((item: PhysicalPrescription) => void) | null;
   setPhysicalPrescriptions: ((items: PhysicalPrescription[]) => void) | null;
@@ -73,6 +89,8 @@ export interface ShoppingCartContextProps {
 
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
   clearCartInfo: (() => void) | null;
+  lastSelectedprescription: LastSelectedPrescription;
+  setLastSelectedprescription: ((itemsToUpdate: LastSelectedPrescription) => void) | null;
 }
 
 export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
@@ -87,6 +105,11 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   deliveryCharges: 0,
   grandTotal: 0,
   uploadPrescriptionRequired: false,
+
+  ePrescriptions: [],
+  setEPrescriptions: null,
+  removeEPrescription: null,
+
   setPhysicalPrescriptions: null,
   addPhysicalPrescription: null,
   updatePhysicalPrescription: null,
@@ -111,6 +134,9 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   setStoreId: null,
   deliveryType: null,
   clearCartInfo: null,
+
+  lastSelectedprescription: {},
+  setLastSelectedprescription: null,
 });
 
 export const ShoppingCartProvider: React.FC = (props) => {
@@ -133,6 +159,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [physicalPrescriptions, setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
   >([]);
+
+  const [ePrescriptions, setEPrescriptions] = useState<ShoppingCartContextProps['ePrescriptions']>(
+    []
+  );
+
+  const [lastSelectedprescription, setLastSelectedprescription] = useState<
+    ShoppingCartContextProps['lastSelectedprescription']
+  >({});
 
   const saveCartItems = (cartItems: ShoppingCartItem[]) => {
     AsyncStorage.setItem('cartItems', JSON.stringify(cartItems)).catch(() => {
@@ -219,14 +253,23 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setPhysicalPrescriptions([...newItems]);
   };
 
+  const removeEPrescription: ShoppingCartContextProps['removeEPrescription'] = (id) => {
+    const newItems = ePrescriptions.filter((item) => item.id !== id);
+    setEPrescriptions([...newItems]);
+  };
+
   const clearCartInfo = () => {
     AsyncStorage.setItem('cartItems', '').catch(() => {
       Alert.alert('Alert', 'Failed to clear cart items from local storage.');
     });
     setPhysicalPrescriptions([]);
+    setEPrescriptions([]);
     setCartItems([]);
     setDeliveryAddressId('');
     setStoreId('');
+    setPinCode('');
+    setStores([]);
+    setAddresses([]);
     setCoupon(null);
   };
 
@@ -283,6 +326,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
         deliveryCharges,
         uploadPrescriptionRequired,
 
+        ePrescriptions,
+        removeEPrescription,
+        setEPrescriptions,
+
         physicalPrescriptions,
         setPhysicalPrescriptions,
         addPhysicalPrescription,
@@ -308,6 +355,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
         deliveryType,
         clearCartInfo,
+
+        lastSelectedprescription,
+        setLastSelectedprescription,
       }}
     >
       {props.children}
