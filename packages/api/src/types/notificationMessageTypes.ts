@@ -15,4 +15,5 @@ export interface EmailMessage {
   fromName: string;
   toEmail: string;
   subject: string;
+  ccEmail: string;
 }
