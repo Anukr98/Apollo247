@@ -83,6 +83,7 @@ const removeBlockedCalendarItem: Resolver<
   const item = await bciRepo.findOneOrFail(id);
   const { doctorId } = item;
   checkAuth(doctorId, context);
+  await bciRepo.delete(item);
   const blockedCalendar = await bciRepo.find({ doctorId });
   return { blockedCalendar };
 };
