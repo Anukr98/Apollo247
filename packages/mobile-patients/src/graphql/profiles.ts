@@ -983,3 +983,9 @@ export const ADD_TO_CONSULT_QUEUE = gql`
     }
   }
 `;
+
+export const CHECK_IF_FOLLOWUP_BOOKED = gql`
+  query checkIfFollowUpBooked($appointmentId: String!) {
+    checkIfFollowUpBooked(appointmentId: $appointmentId)
+  }
+`;

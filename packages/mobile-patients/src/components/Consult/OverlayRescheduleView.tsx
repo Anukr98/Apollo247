@@ -76,7 +76,8 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   appointmentId: string;
   data: any;
   bookFollowUp: boolean;
-  // KeyFollow: string;
+  KeyFollow: string;
+  isfollowupcount: number;
   // availableSlots: string[] | null;
 }
 export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (props) => {
@@ -193,7 +194,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                         props.data.doctorInfo.onlineConsultationFees &&
                         props.data.doctorInfo.onlineConsultationFees}`
                     : `CONFIRM RESCHEDULE`
-                  : props.rescheduleCount.isPaid === 1
+                  : props.isfollowupcount === 1
                   ? `PAY Rs. ${props.doctor &&
                       props.doctor.onlineConsultationFees &&
                       props.doctor.onlineConsultationFees}`

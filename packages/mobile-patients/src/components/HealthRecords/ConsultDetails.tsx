@@ -4,6 +4,7 @@ import {
   GET_CASESHEET_DETAILS,
   GET_APPOINTMENT_DATA,
   CHECK_IF_RESCHDULE,
+  CHECK_IF_FOLLOWUP_BOOKED,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getCaseSheet,
@@ -38,6 +39,7 @@ import {
   checkIfReschedule,
   checkIfRescheduleVariables,
 } from '../../graphql/types/checkIfReschedule';
+import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -132,10 +134,10 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       .then((_data) => {
         setLoading(false);
         console.log('GET_CASESHEET_DETAILS', _data!);
-        console.log(
-          'isfollowupcasesheet',
-          _data!.data!.getCaseSheet!.caseSheetDetails!.isFollowUp!
-        );
+        // console.log(
+        //   'isfollowupcasesheet',
+        //   _data!.data!.getCaseSheet!.caseSheetDetails!.isFollowUp!
+        // );
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
       })
       .catch((error) => {
@@ -482,16 +484,17 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                     console.log('follwup', caseSheetDetails!.followUp);
                     console.log('appointmentType', props.navigation.state.params!.appointmentType);
                     client
-                      .query<getAppointmentData>({
-                        query: GET_APPOINTMENT_DATA,
+                      .query<checkIfFollowUpBooked>({
+                        query: CHECK_IF_FOLLOWUP_BOOKED,
                         variables: {
                           appointmentId: props.navigation.state.params!.CaseSheet,
                         },
                         fetchPolicy: 'no-cache',
                       })
                       .then(({ data }) => {
-                        console.log('getAppointmentData', data);
-
+                        console.log('checkIfFollowUpBooked', data);
+                        console.log('checkIfFollowUpBookedcount', data.checkIfFollowUpBooked);
+                        setIsfollowucount(data.checkIfFollowUpBooked);
                         // setBookFollowUp(
                         //   data!.getAppointmentData &&
                         //     data!.getAppointmentData!.appointmentsHistory[0].isFollowUp!
@@ -592,6 +595,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               bookFollowUp={bookFollowUp}
               data={data}
               KeyFollow={'Followup'}
+              isfollowupcount={isfollowcount}
             />
           )}
         </SafeAreaView>

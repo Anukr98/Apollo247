@@ -89,6 +89,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         variables: {
           consultsAndOrdersInput: {
             patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+            //filter: ['PHYSICAL'],
           },
         },
       })
@@ -280,9 +281,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         >
           <AddFileIcon />
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
+        {/* <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     );
   };
@@ -378,6 +379,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       {displayFilter && (
         <FilterScene
           onClickClose={(data: filterDataType[]) => {
+            console.log('filterDataType', data[0].selectedOptions);
             setDisplayFilter(false);
             setFilterData(data);
           }}

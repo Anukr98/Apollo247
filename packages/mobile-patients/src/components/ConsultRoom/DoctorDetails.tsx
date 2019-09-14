@@ -213,12 +213,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   if (error) {
     console.log('error', error);
   } else {
-    console.log('getDoctorDetailsById', data);
-    if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
-      setDoctorDetails(data.getDoctorDetailsById);
-      setDoctorId(data.getDoctorDetailsById.id);
-      setshowSpinner(false);
-    }
+    try {
+      console.log('getDoctorDetailsById', data);
+      if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
+        setDoctorDetails(data.getDoctorDetailsById);
+        setDoctorId(data.getDoctorDetailsById.id);
+        setshowSpinner(false);
+      }
+    } catch {}
   }
 
   const todayDate = new Date().toISOString().slice(0, 10);
