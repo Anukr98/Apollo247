@@ -173,7 +173,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     {props.PastData.isFollowUp ? (
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <Text style={styles.descriptionTextStyles}>
-                          Follow-up to {props.PastData.followUpTo}
+                          Follow-up {props.PastData.followUpTo}
                         </Text>
                         <OnlineConsult />
                       </View>
@@ -215,21 +215,21 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                   <TouchableOpacity
                     activeOpacity={1}
                     //style={[styles.cardContainerStyle]}
-                    onPress={() => {
-                      console.log('doctorid', props.PastData.doctorInfo.id);
-                      console.log('patientid', props.PastData.patientId);
-                      console.log('appointmentid', props.PastData.id);
-                      props.navigation.navigate(AppRoutes.DoctorDetails, {
-                        doctorId: props.PastData.doctorInfo.id,
-                        PatientId: props.PastData.patientId,
-                        FollowUp: props.PastData.isFollowUp,
-                        appointmentType: props.PastData.appointmentType,
-                        appointmentId: props.PastData.id,
-                        showBookAppointment: true,
-                      });
-                    }}
+                    // onPress={() => {
+                    //   console.log('doctorid', props.PastData.doctorInfo.id);
+                    //   console.log('patientid', props.PastData.patientId);
+                    //   console.log('appointmentid', props.PastData.id);
+                    //   props.navigation.navigate(AppRoutes.DoctorDetails, {
+                    //     doctorId: props.PastData.doctorInfo.id,
+                    //     PatientId: props.PastData.patientId,
+                    //     FollowUp: props.PastData.isFollowUp,
+                    //     appointmentType: props.PastData.appointmentType,
+                    //     appointmentId: props.PastData.id,
+                    //     showBookAppointment: true,
+                    //   });
+                    // }}
                   >
-                    <Text style={styles.yellowTextStyle}>BOOK FOLLOW-UP</Text>
+                    <Text style={styles.yellowTextStyle}></Text>
                   </TouchableOpacity>
                 ) : (
                   <Text></Text>

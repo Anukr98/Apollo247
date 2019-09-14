@@ -395,6 +395,7 @@ export const JDConsultRoom: React.FC = () => {
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
+  const [userCardStrip, setUserCardStrip] = useState<string>('');
 
   const [notes, setNotes] = useState<string | null>(null);
 
@@ -438,16 +439,6 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
       ? casesheetInfo.getCaseSheet.patientDetails.relation
       : '';
-  const patientDob =
-    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
-      ? casesheetInfo.getCaseSheet.patientDetails.dateOfBirth
-      : new Date();
-  const patientAge = differenceInYears(new Date(), parseISO(patientDob));
-  const patientGender =
-    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
-      ? _startCase(_toLower(casesheetInfo.getCaseSheet.patientDetails.gender))
-      : '';
-
   const patientAppointmentId =
     (casesheetInfo &&
       casesheetInfo.getCaseSheet &&
@@ -478,7 +469,7 @@ export const JDConsultRoom: React.FC = () => {
   }
 
   const patientRelationHeader =
-    patientRelation === Relation.ME ? 'Self' : _startCase(_toLower(patientRelation));
+    patientRelation === Relation.ME ? ' Self' : _startCase(_toLower(patientRelation));
 
   useEffect(() => {
     if (isSignedIn) {
@@ -546,6 +537,34 @@ export const JDConsultRoom: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
           }
+          const cardStripArr = [];
+          if (
+            _data!.data!.getCaseSheet!.patientDetails!.dateOfBirth &&
+            _data!.data!.getCaseSheet!.patientDetails!.dateOfBirth !== null &&
+            _data!.data!.getCaseSheet!.patientDetails!.dateOfBirth !== ''
+          ) {
+            cardStripArr.push(
+              Math.abs(
+                new Date(Date.now()).getUTCFullYear() -
+                  new Date(_data!.data!.getCaseSheet!.patientDetails!.dateOfBirth).getUTCFullYear()
+              ).toString()
+            );
+          }
+          if (
+            _data!.data!.getCaseSheet!.patientDetails!.gender &&
+            _data!.data!.getCaseSheet!.patientDetails!.gender !== null
+          ) {
+            if (_data!.data!.getCaseSheet!.patientDetails!.gender === Gender.FEMALE) {
+              cardStripArr.push('F');
+            }
+            if (_data!.data!.getCaseSheet!.patientDetails!.gender === Gender.MALE) {
+              cardStripArr.push('M');
+            }
+            if (_data!.data!.getCaseSheet!.patientDetails!.gender === Gender.OTHER) {
+              cardStripArr.push('O');
+            }
+          }
+          setUserCardStrip(cardStripArr.join(', '));
         })
         .catch((e: any) => {
           setError('Error occured in getcasesheet api');
@@ -644,6 +663,7 @@ export const JDConsultRoom: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
+
   return !loaded ? (
     <LinearProgress />
   ) : (
@@ -710,9 +730,7 @@ export const JDConsultRoom: React.FC = () => {
                   <div className={classes.patientInfo}>
                     <div className={classes.patientName}>
                       {patientFirstName} {patientLastName}
-                      <span>
-                        ({isNull(patientAge) ? patientAge : ''}, {patientGender})
-                      </span>
+                      <span>({userCardStrip})</span>
                     </div>
                     <div className={classes.patientTextInfo}>
                       <label>UHID:</label> {patientUhid} | <label>Relation:</label>

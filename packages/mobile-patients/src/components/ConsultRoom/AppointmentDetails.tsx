@@ -27,6 +27,7 @@ import {
   CANCEL_APPOINTMENT,
   NEXT_AVAILABLE_SLOT,
   BOOK_APPOINTMENT_RESCHEDULE,
+  CHECK_IF_RESCHDULE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   cancelAppointment,
@@ -39,6 +40,10 @@ import {
   bookRescheduleAppointmentVariables,
 } from '../../graphql/types/bookRescheduleAppointment';
 import { Spinner } from '../ui/Spinner';
+import {
+  checkIfReschedule,
+  checkIfRescheduleVariables,
+} from '../../graphql/types/checkIfReschedule';
 
 const { width, height } = Dimensions.get('window');
 
@@ -88,6 +93,14 @@ const styles = StyleSheet.create({
   },
 });
 
+type rescheduleType = {
+  rescheduleCount: number;
+  appointmentState: string;
+  isCancel: number;
+  isFollowUp: number;
+  isPaid: number;
+};
+
 export interface AppointmentDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
@@ -110,8 +123,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const [rescheduleApICalled, setRescheduleApICalled] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
   const [belowThree, setBelowThree] = useState<boolean>(false);
+  const [newRescheduleCount, setNewRescheduleCount] = useState<rescheduleType>();
 
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const client = useApolloClient();
@@ -130,6 +143,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     }
 
     setNewRescheduleCount(calculateCount);
+
+    checkIfReschedule();
   });
 
   useEffect(() => {
@@ -173,6 +188,47 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     console.log(availability.data!, 'availabilityData', 'availableSlots');
     //setNexttime(availability.data.getDoctorAvailableSlots)
   }
+
+  const checkIfReschedule = () => {
+    try {
+      // setshowSpinner(true);
+      client
+        .query<checkIfReschedule, checkIfRescheduleVariables>({
+          query: CHECK_IF_RESCHDULE,
+          variables: {
+            existAppointmentId: data.id,
+            rescheduleDate: data.appointmentDateTime,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((_data: any) => {
+          const result = _data.data.checkIfReschedule;
+          console.log('checfReschedulesuccess', result);
+          // setshowSpinner(false);
+
+          try {
+            const data: rescheduleType = {
+              rescheduleCount: result.rescheduleCount + 1,
+              appointmentState: result.appointmentState,
+              isCancel: result.isCancel,
+              isFollowUp: result.isFollowUp,
+              isPaid: result.isPaid,
+            };
+            setNewRescheduleCount(data);
+          } catch (error) {}
+        })
+        .catch((e: any) => {
+          // setshowSpinner(false);
+
+          const error = JSON.parse(JSON.stringify(e));
+          console.log('Error occured while checkIfRescheduleprofile', error);
+          Alert.alert('Error', error.message);
+        });
+    } catch (error) {
+      console.log(error, 'error');
+    }
+  };
+
   const rescheduleAPI = (availability: any) => {
     const bookRescheduleInput = {
       appointmentId: data.id,
@@ -545,9 +601,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
             doctorId={doctorDetails && doctorDetails.id}
             renderTab={'Visit Clinic'}
-            rescheduleCount={newRescheduleCount}
+            rescheduleCount={newRescheduleCount!}
             appointmentId={data.id}
             data={data}
+            bookFollowUp={false}
+            KeyFollow={'RESCHEDULE'}
+            isfollowupcount={0}
           />
         )}
         {resheduleoverlay && doctorDetails && (
@@ -563,7 +622,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             acceptChange={() => acceptChange()}
             appadatetime={props.navigation.state.params!.data.appointmentDateTime}
             reschduleDateTime={availability.data}
-            rescheduleCount={newRescheduleCount}
+            rescheduleCount={newRescheduleCount!.rescheduleCount}
             data={data}
           />
         )}
