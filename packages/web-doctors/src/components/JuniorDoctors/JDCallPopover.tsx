@@ -1243,6 +1243,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               <AphButton
                 color="primary"
                 className={classes.submitBtn}
+                disabled={props.saving}
                 onClick={() => {
                   stopInterval();
                   props.endConsultAction();

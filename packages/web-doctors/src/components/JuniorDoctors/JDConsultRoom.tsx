@@ -461,7 +461,7 @@ export const JDConsultRoom: React.FC = () => {
   if (patientAppointmentTimeUtc !== '') {
     appointmentDateIST = format(
       new Date(patientAppointmentTimeUtc).getTime(),
-      'dd/MM/yyyy hh:mm a'
+      'dd/MM/yyyy, hh:mm a'
     );
   }
 
@@ -623,6 +623,7 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const createSessionAction = () => {
+    setSaving(true);
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
         mutation: CREATE_APPOINTMENT_SESSION,
@@ -638,6 +639,7 @@ export const JDConsultRoom: React.FC = () => {
         settoken(_data.data.createAppointmentSession.appointmentToken);
         setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
         setError('');
+        setSaving(false);
       })
       .catch((e: any) => {
         setError('Error occured creating session');
@@ -646,6 +648,7 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const setStartConsultAction = (flag: boolean) => {
+    alert('111111111');
     setStartConsult('');
     const cookieStr = `action=${flag ? 'videocall' : 'audiocall'}`;
     document.cookie = cookieStr + ';path=/;';
