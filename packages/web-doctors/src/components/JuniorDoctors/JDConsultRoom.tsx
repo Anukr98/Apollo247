@@ -777,7 +777,6 @@ export const JDConsultRoom: React.FC = () => {
   };
 
   const setStartConsultAction = (flag: boolean) => {
-    alert('111111111');
     setStartConsult('');
     const cookieStr = `action=${flag ? 'videocall' : 'audiocall'}`;
     document.cookie = cookieStr + ';path=/;';
