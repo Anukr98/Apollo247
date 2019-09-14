@@ -6,10 +6,10 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
   DialogActions,
   RadioGroup,
   FormControlLabel,
+  TextField,
 } from '@material-ui/core';
 import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
@@ -23,7 +23,7 @@ const useBlockedCalendarAddModalStyles = makeStyles((theme: Theme) => {
   return {};
 });
 interface BlockedCalendarAddModalProps {
-  dialogProps: DialogProps;
+  dialogProps: DialogProps & Required<Pick<DialogProps, 'onClose'>>;
 }
 const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (props) => {
   enum RadioValues {
@@ -33,27 +33,54 @@ const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (props) 
   const { dialogProps } = props;
   const classes = useBlockedCalendarAddModalStyles();
   const [selectedValue, setSelectedValue] = useState(RadioValues.DAY);
+  const [startDateTime, setStartDateTime] = useState('');
+  const [endDateTime, setEndDateTime] = useState('');
+  console.log(startDateTime, endDateTime);
   return (
     <Dialog {...dialogProps}>
       <DialogTitle style={{ color: 'black' }}>BLOCK CALENDAR</DialogTitle>
       <DialogContent>
-        <DialogContentText style={{ color: 'black' }}>
-          <RadioGroup
-            value={selectedValue}
-            onChange={(e) => setSelectedValue((e.target as HTMLInputElement).value as RadioValues)}
-            row
-          >
-            <FormControlLabel value={RadioValues.DAY} label="For a day" control={<AphRadio />} />
-            <FormControlLabel
-              value={RadioValues.DURATION}
-              label="For a duration"
-              control={<AphRadio />}
-            />
-          </RadioGroup>
-        </DialogContentText>
+        <RadioGroup
+          value={selectedValue}
+          onChange={(e) => setSelectedValue((e.target as HTMLInputElement).value as RadioValues)}
+          row
+        >
+          <FormControlLabel
+            value={RadioValues.DAY}
+            label="For a day"
+            control={<AphRadio title="For a day" />}
+          />
+          <FormControlLabel
+            value={RadioValues.DURATION}
+            label="For a duration"
+            control={<AphRadio title="For a duration" />}
+          />
+        </RadioGroup>
+        <div>
+          <TextField
+            onChange={(e) => setStartDateTime(e.currentTarget.value)}
+            value={startDateTime}
+            label="Start"
+            type="datetime-local"
+            InputLabelProps={{ shrink: true }}
+            InputProps={{ style: { color: 'black ' } }}
+          />
+        </div>
+        <div>
+          <TextField
+            onChange={(e) => setEndDateTime(e.currentTarget.value)}
+            value={endDateTime}
+            label="End"
+            type="datetime-local"
+            InputLabelProps={{ shrink: true }}
+            InputProps={{ style: { color: 'black ' } }}
+          />
+        </div>
       </DialogContent>
       <DialogActions>
-        <Button variant="contained">CANCEL</Button>
+        <Button variant="contained" onClick={(e) => dialogProps.onClose(e, 'escapeKeyDown')}>
+          CANCEL
+        </Button>
         <Button variant="contained">BLOCK CALENDAR</Button>
       </DialogActions>
     </Dialog>
@@ -115,11 +142,16 @@ export const BlockedCalendar: React.FC<BlockedCalendarProps> = (props) => {
       start: new Date(item.start),
       end: new Date(item.end),
     }));
-    content = blockedCalendar.map((item) => <BlockedCalendarItem item={item} />);
+    content = blockedCalendar.map((item) => <BlockedCalendarItem key={item.id} item={item} />);
   }
   return (
     <div>
-      <BlockedCalendarAddModal dialogProps={{ open: showAddModal }} />
+      <BlockedCalendarAddModal
+        dialogProps={{
+          open: showAddModal,
+          onClose: () => setShowAddModal(false),
+        }}
+      />
       <h2>Blocked Calendar</h2>
       <div>{content}</div>
       <div>
