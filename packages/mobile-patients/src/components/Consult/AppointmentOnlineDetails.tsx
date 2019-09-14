@@ -94,6 +94,14 @@ const styles = StyleSheet.create({
   },
 });
 
+type rescheduleType = {
+  rescheduleCount: number;
+  appointmentState: string;
+  isCancel: number;
+  isFollowUp: number;
+  isPaid: number;
+};
+
 export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 
 export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
@@ -114,8 +122,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const [rescheduleApICalled, setRescheduleApICalled] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
   const [belowThree, setBelowThree] = useState<boolean>(false);
+  const [newRescheduleCount, setNewRescheduleCount] = useState<rescheduleType>();
 
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
@@ -141,6 +149,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       setAppointmentTime(time);
     }
 
+    checkIfReschedule();
     // availabilitySlots();
   }, []);
 
@@ -196,7 +205,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     }
   };
 
-  const rescheduleAPI = (availability: any, newRescheduleCount: number) => {
+  const rescheduleAPI = (availability: any) => {
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
@@ -235,7 +244,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               props.navigation.state.params!.data &&
               props.navigation.state.params!.data.doctorInfo &&
               props.navigation.state.params!.data.doctorInfo.firstName,
-            //newRescheduleCount: newRescheduleCount,
           });
         })
         .catch((e: string) => {
@@ -251,6 +259,47 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         });
     }
   };
+
+  const checkIfReschedule = () => {
+    try {
+      // setshowSpinner(true);
+      client
+        .query<checkIfReschedule, checkIfRescheduleVariables>({
+          query: CHECK_IF_RESCHDULE,
+          variables: {
+            existAppointmentId: data.id,
+            rescheduleDate: data.appointmentDateTime,
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((_data: any) => {
+          const result = _data.data.checkIfReschedule;
+          console.log('checfReschedulesuccess', result);
+          // setshowSpinner(false);
+
+          try {
+            const data: rescheduleType = {
+              rescheduleCount: result.rescheduleCount + 1,
+              appointmentState: result.appointmentState,
+              isCancel: result.isCancel,
+              isFollowUp: result.isFollowUp,
+              isPaid: result.isPaid,
+            };
+            setNewRescheduleCount(data);
+          } catch (error) {}
+        })
+        .catch((e: any) => {
+          // setshowSpinner(false);
+
+          const error = JSON.parse(JSON.stringify(e));
+          console.log('Error occured while checkIfRescheduleprofile', error);
+          Alert.alert('Error', error.message);
+        });
+    } catch (error) {
+      console.log(error, 'error');
+    }
+  };
+
   const acceptChange = () => {
     try {
       console.log('acceptChange');
@@ -269,8 +318,18 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         .then((_data: any) => {
           const result = _data.data.checkIfReschedule;
           console.log('checfReschedulesuccess', result);
-          setNewRescheduleCount(result.rescheduleCount + 1);
-          rescheduleAPI(availability, newRescheduleCount);
+          try {
+            const data: rescheduleType = {
+              rescheduleCount: result.rescheduleCount + 1,
+              appointmentState: result.appointmentState,
+              isCancel: result.isCancel,
+              isFollowUp: result.isFollowUp,
+              isPaid: result.isPaid,
+            };
+            setNewRescheduleCount(data);
+          } catch (error) {}
+
+          rescheduleAPI(availability);
           if (result.isPaid == 1) {
             setshowSpinner(false);
             Alert.alert('Payment Integration');
@@ -542,9 +601,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             clinics={doctorDetails.doctorHospital ? doctorDetails.doctorHospital : []}
             doctorId={doctorDetails && doctorDetails.id}
             renderTab={'Consult Online'}
-            rescheduleCount={newRescheduleCount}
+            rescheduleCount={newRescheduleCount!}
             appointmentId={data.id}
             data={data}
+            bookFollowUp={false}
           />
         )}
 
@@ -561,7 +621,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             acceptChange={() => acceptChange()}
             appadatetime={props.navigation.state.params!.data.appointmentDateTime}
             reschduleDateTime={availability.data}
-            rescheduleCount={newRescheduleCount}
+            rescheduleCount={newRescheduleCount!.rescheduleCount}
             data={data}
           />
         )}

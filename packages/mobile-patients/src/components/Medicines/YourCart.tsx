@@ -43,6 +43,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import { ImagePickerResponse } from 'react-native-image-picker';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -324,18 +325,21 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const updatePhysicalPrescriptions = (images: ImagePickerResponse[]) => {
-    const prescriptions = images.map(
-      (item) =>
-        ({
-          base64: item.data,
-          path: item.path,
-          title: item.path!.substring(
-            item.path!.lastIndexOf('/') + 1,
-            item.path!.lastIndexOf('.') || undefined
-          ),
-          fileType: item.path!.substring(item.path!.lastIndexOf('.') + 1),
-        } as PhysicalPrescription)
-    );
+    console.log({ images });
+    const prescriptions = images.map((item) => {
+      const path =
+        item!.uri ||
+        item!.path ||
+        `folder/${Math.random()
+          .toString(36)
+          .slice(-10)}.jpg`;
+      return {
+        base64: item.data,
+        path: path,
+        title: path!.substring(path!.lastIndexOf('/') + 1, path!.lastIndexOf('.') || undefined),
+        fileType: path!.substring(path!.lastIndexOf('.') + 1),
+      } as PhysicalPrescription;
+    });
 
     const itemsToAdd = prescriptions.filter(
       (p) => !physicalPrescriptions.find((pToFind) => pToFind.base64 == p.base64)
@@ -572,7 +576,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       .then(({ data: { Availability } }) => {
         console.log({ Availability });
         setCheckingServicability(false);
-        if (Availability) {
+        if (Platform.OS == 'android' ? true : Availability) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
           Alert.alert(

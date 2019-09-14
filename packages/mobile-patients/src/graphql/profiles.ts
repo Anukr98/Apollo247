@@ -974,3 +974,12 @@ export const GET_APPOINTMENT_DATA = gql`
     }
   }
 `;
+
+export const ADD_TO_CONSULT_QUEUE = gql`
+  mutation addToConsultQueue($appointmentId: String!) {
+    addToConsultQueue(appointmentId: $appointmentId) {
+      id
+      doctorId
+    }
+  }
+`;
