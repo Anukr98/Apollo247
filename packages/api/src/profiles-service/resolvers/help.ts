@@ -97,7 +97,7 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
       if (appointment.caseSheet.length > 0) {
         appointment.caseSheet.forEach((caseSheet) => {
           if (
-            caseSheet.doctorType == 'JUNIOR' &&
+            caseSheet.doctorType != 'JUNIOR' &&
             caseSheet.blobName &&
             caseSheet.blobName.length > 0
           ) {
@@ -227,16 +227,35 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     appointmentList,
   });
 
+  const subject =
+    process.env.NODE_ENV == 'production'
+      ? ApiConstants.PATIENT_HELP_SUBJECT
+      : ApiConstants.PATIENT_HELP_SUBJECT + ' from ' + process.env.NODE_ENV;
+
+  const toEmailId =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_HELP_SUPPORT_EMAILID
+      : ApiConstants.PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION;
+
+  const ccEmailIds =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_HELP_SUPPORT_CC_EMAILID
+      : ApiConstants.PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION;
+
   const emailContent: EmailMessage = {
-    subject: <string>ApiConstants.PATIENT_HELP_SUBJECT,
+    subject: subject,
     fromEmail: <string>ApiConstants.PATIENT_HELP_FROM_EMAILID,
     fromName: <string>ApiConstants.PATIENT_HELP_FROM_NAME,
     messageContent: <string>mailContent,
-    toEmail: <string>ApiConstants.PATIENT_HELP_SUPPORT_EMAILID,
+    toEmail: <string>toEmailId,
+    ccEmail: <string>ccEmailIds,
   };
 
   const mailStatus = await sendMail(emailContent);
-
   return mailStatus.message;
 };
 
