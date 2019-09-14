@@ -568,6 +568,7 @@ interface CallPopoverProps {
   prescriptionPdf: string;
   sessionId: string;
   token: string;
+  saving: boolean;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -1231,6 +1232,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
             <span>
               <AphButton
                 className={classes.saveBtn}
+                disabled={props.saving}
                 onClick={() => {
                   props.saveCasesheetAction(true);
                 }}
