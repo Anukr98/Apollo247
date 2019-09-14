@@ -1,103 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Chip, Theme, MenuItem, Paper, TextField } from '@material-ui/core';
-import DoneIcon from '@material-ui/icons/Done';
+import React, { useState, useContext } from 'react';
+import { Typography, Chip, Theme } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import AddCircle from '@material-ui/icons/AddCircle';
-import { AphButton, AphTextField } from '@aph/web-ui-components';
-import deburr from 'lodash/deburr';
-import match from 'autosuggest-highlight/match';
-import parse from 'autosuggest-highlight/parse';
-import Autosuggest from 'react-autosuggest';
+import { InputBase, Button } from '@material-ui/core';
+import { AphButton } from '@aph/web-ui-components';
 // import {
 //   GetJuniorDoctorCaseSheet,
 //   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions,
 // } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import {
-  GetCaseSheet,
-  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_otherInstructions,
-} from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-// interface OptionType {
-//   instruction: string,
-//   __typename: "OtherInstructions"
-// }
-
-interface OptionType {
-  instruction: string;
-  __typename: 'OtherInstructions';
-}
-
-let suggestions: OptionType[] = [
-  { instruction: 'Drink more water in a day.', __typename: 'OtherInstructions' },
-  { instruction: 'Eat 1 apple every morning.', __typename: 'OtherInstructions' },
-  { instruction: 'Eat more fruits.', __typename: 'OtherInstructions' },
-  { instruction: 'Do some exercise in morning.', __typename: 'OtherInstructions' },
-];
-
-// const suggestions: OptionType[] = [];
-
-function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
-
-  return (
-    <AphTextField
-      fullWidth
-      InputProps={{
-        inputRef: (node) => {
-          ref(node);
-          inputRef(node);
-        },
-        classes: {
-          root: classes.inputRoot,
-        },
-      }}
-      {...other}
-    />
-  );
-}
-
-function renderSuggestion(
-  suggestion: OptionType,
-  { query, isHighlighted }: Autosuggest.RenderSuggestionParams
-) {
-  const matches = match(suggestion.instruction, query);
-  const parts = parse(suggestion.instruction, matches);
-
-  return (
-    <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map((part) => (
-          <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
-            {part.text}
-          </span>
-        ))}
-      </div>
-    </MenuItem>
-  );
-}
-
-function getSuggestions(value: string) {
-  const inputValue = deburr(value.trim()).toLowerCase();
-  const inputLength = inputValue.length;
-  let count = 0;
-
-  return inputLength === 0
-    ? []
-    : suggestions.filter((suggestion) => {
-        const keep =
-          count < 5 && suggestion.instruction.slice(0, inputLength).toLowerCase() === inputValue;
-
-        if (keep) {
-          count += 1;
-        }
-
-        return keep;
-      });
-}
-
-function getSuggestionValue(suggestion: OptionType) {
-  return suggestion.instruction;
-}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -105,37 +15,35 @@ const useStyles = makeStyles((theme: Theme) =>
       height: 250,
       flexGrow: 1,
     },
-    container: {
-      position: 'relative',
-    },
-    suggestionsContainerOpen: {
-      position: 'absolute',
-      zIndex: 1,
-      marginTop: theme.spacing(1),
-      left: 0,
-      right: 0,
-    },
-    suggestion: {
-      display: 'block',
-      overflow: 'hidden',
-      borderBottom: '1px solid rgba(2,71,91,0.1)',
-      '&:hover': {
-        '& div': {
-          backgroundColor: '#f0f4f5 !important',
+    textFieldColor: {
+      '& input': {
+        color: 'initial',
+        '& :before': {
+          border: 0,
         },
       },
     },
-    suggestionsList: {
-      margin: 0,
-      padding: 0,
-      listStyleType: 'none',
+    textFieldWrapper: {
+      border: 'solid 1px #30c1a3',
       borderRadius: 10,
-    },
-    divider: {
-      height: theme.spacing(2),
-    },
-    mainContainer: {
       width: '100%',
+      padding: 16,
+      color: '#01475b',
+      fontSize: 14,
+      fontWeight: 500,
+      position: 'relative',
+      paddingRight: 48,
+    },
+    chatSubmitBtn: {
+      position: 'absolute',
+      top: '50%',
+      marginTop: -18,
+      right: 10,
+      minWidth: 'auto',
+      padding: 0,
+      '& img': {
+        maxWidth: 36,
+      },
     },
     contentContainer: {
       display: 'flex',
@@ -150,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     column: {
-      width: '49%',
+      width: '100%',
       display: 'flex',
       marginRight: '1%',
       flexDirection: 'column',
@@ -160,16 +68,10 @@ const useStyles = makeStyles((theme: Theme) =>
       display: 'flex',
       flexFlow: 'column',
     },
-    icon: {
-      color: '#00b38e',
-    },
-    textFieldContainer: {
-      width: '100%',
-    },
     othersBtn: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
       backgroundColor: 'rgba(0,0,0,0.02)',
-      height: 44,
+      height: 'auto',
       marginBottom: 12,
       borderRadius: 5,
       fontWeight: 600,
@@ -182,6 +84,8 @@ const useStyles = makeStyles((theme: Theme) =>
         display: 'inline-block',
         width: '100%',
         textAlign: 'left',
+        whiteSpace: 'normal',
+        padding: 10,
       },
     },
     btnAddDoctor: {
@@ -199,33 +103,6 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
-    searchpopup: {
-      borderRadius: 10,
-      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
-      marginTop: 2,
-    },
-    inputRoot: {
-      '&:before': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '&:after': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '& input': {
-        fontSize: 16,
-        fontWeight: 500,
-        color: '#01475b',
-        paddingTop: 0,
-      },
-      '&:hover': {
-        '&:before': {
-          borderBottom: '2px solid #00b38e !important',
-        },
-        '&:after': {
-          borderBottom: '2px solid #00b38e !important',
-        },
-      },
-    },
   })
 );
 
@@ -234,65 +111,12 @@ export const OtherInstructions: React.FC = () => {
   const { otherInstructions: selectedValues, setOtherInstructions: setSelectedValues } = useContext(
     CaseSheetContext
   );
+
+  const [otherInstruct, setOtherInstruct] = useState('');
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [idx, setIdx] = React.useState();
-
-  useEffect(() => {
-    if (idx >= 0) {
-      setSelectedValues(selectedValues);
-      suggestions!.map((item, idx) => {
-        selectedValues!.map((val) => {
-          if (item.instruction === val.instruction) {
-            const indexDelete = suggestions.indexOf(item);
-            suggestions!.splice(indexDelete, 1);
-          }
-        });
-      });
-    }
-  }, [selectedValues, idx]);
-
-  const [favoriteDiagnostics, setFavoriteDiagnostics] = useState<OptionType[]>([
-    { instruction: 'Use sunscreen everyday', __typename: 'OtherInstructions' },
-    { instruction: 'Avoid outside food for a few days', __typename: 'OtherInstructions' },
-    { instruction: 'Avoid stepping out with wet hair', __typename: 'OtherInstructions' },
-  ]);
-  const [state, setState] = React.useState({
-    single: '',
-    popper: '',
-  });
-  const [stateSuggestions, setSuggestions] = React.useState<OptionType[]>([]);
-
-  const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
-    setSuggestions(getSuggestions(value));
-  };
-
-  const handleSuggestionsClearRequested = () => {
-    setSuggestions([]);
-  };
-
-  const handleChange = (name: keyof typeof state) => (
-    event: React.ChangeEvent<{}>,
-    { newValue }: Autosuggest.ChangeEvent
-  ) => {
-    setState({
-      ...state,
-      [name]: newValue,
-    });
-  };
-  const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
-  const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
-
-  const autosuggestProps = {
-    renderInputComponent,
-    suggestions: stateSuggestions,
-    onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
-    onSuggestionsClearRequested: handleSuggestionsClearRequested,
-    getSuggestionValue,
-    renderSuggestion,
-  };
+  const [showAddInputText, setShowAddInputText] = useState<boolean>(false);
   const handleDelete = (item: any, idx: number) => {
-    console.log(item);
-    suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
     setSelectedValues(selectedValues);
     const sum = idx + Math.random();
@@ -321,51 +145,49 @@ export const OtherInstructions: React.FC = () => {
             ))}
         </Typography>
       </Typography>
-      <Typography component="div" className={classes.textFieldContainer}>
-        {!showAddCondition && caseSheetEdit && (
-          <AphButton
-            className={classes.btnAddDoctor}
-            variant="contained"
-            color="primary"
-            onClick={() => showAddConditionHandler(true)}
+      {showAddInputText && (
+        <Typography component="div" className={classes.textFieldWrapper}>
+          <InputBase
+            fullWidth
+            className={classes.textFieldColor}
+            placeholder="Enter instruction here.."
+            value={otherInstruct}
+            onChange={(e) => {
+              setOtherInstruct(e.target.value);
+            }}
+          ></InputBase>
+          <Button
+            className={classes.chatSubmitBtn}
+            onClick={() => {
+              if (otherInstruct.trim() !== '') {
+                selectedValues!.splice(idx, 0, {
+                  instruction: otherInstruct,
+                  __typename: 'OtherInstructions',
+                });
+                setSelectedValues(selectedValues);
+                setIdx(selectedValues!.length + 1);
+                setTimeout(() => {
+                  setOtherInstruct('');
+                }, 10);
+              } else {
+                setOtherInstruct('');
+              }
+            }}
           >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD INSTRUCTIONS
-          </AphButton>
-        )}
-        {showAddCondition && (
-          <Autosuggest
-            onSuggestionSelected={(e, { suggestion }) => {
-              selectedValues!.push(suggestion);
-              setSelectedValues(selectedValues);
-              setShowAddCondition(false);
-              suggestions = suggestions.filter((val) => !selectedValues!.includes(val));
-              setState({
-                single: '',
-                popper: '',
-              });
-            }}
-            {...autosuggestProps}
-            inputProps={{
-              classes,
-              id: 'react-autosuggest-simple',
-              placeholder: 'Search Instructions',
-              value: state.single,
-              onChange: handleChange('single'),
-            }}
-            theme={{
-              container: classes.container,
-              suggestionsContainerOpen: classes.suggestionsContainerOpen,
-              suggestionsList: classes.suggestionsList,
-              suggestion: classes.suggestion,
-            }}
-            renderSuggestionsContainer={(options) => (
-              <Paper {...options.containerProps} square className={classes.searchpopup}>
-                {options.children}
-              </Paper>
-            )}
-          />
-        )}
-      </Typography>
+            <img src={require('images/ic_plus.png')} alt="" />
+          </Button>
+        </Typography>
+      )}
+      {!showAddInputText && caseSheetEdit && (
+        <AphButton
+          className={classes.btnAddDoctor}
+          variant="contained"
+          color="primary"
+          onClick={() => setShowAddInputText(true)}
+        >
+          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD INSTRUCTIONS
+        </AphButton>
+      )}
     </Typography>
   );
 };
