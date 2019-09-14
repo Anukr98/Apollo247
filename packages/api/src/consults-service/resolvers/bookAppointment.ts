@@ -143,6 +143,12 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   }
 
+  //check if doctor is junior doctor
+  const isJunior = await doctor.isJuniorDoctor(appointmentInput.doctorId);
+  if (isJunior) {
+    throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+  }
+
   //check if docotr and hospital are matched
   const facilityId = appointmentInput.hospitalId;
   if (facilityId) {

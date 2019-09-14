@@ -25,8 +25,9 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
-  isJuniorDoctor(id: string) {
-    return this.count({ where: { id, doctorType: DoctorType.JUNIOR } });
+  async isJuniorDoctor(id: string) {
+    const count = await this.count({ where: { id, doctorType: DoctorType.JUNIOR } });
+    return count > 0 ? true : false;
   }
 
   searchDoctorByMobileNumber(mobileNumber: string, isActive: Boolean) {
