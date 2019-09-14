@@ -134,6 +134,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fc9916',
       },
+      '&:disabled': {
+        backgroundColor: 'rgba(252,153,22,0.3)',
+      },
     },
     cancelConsult: {
       minWidth: 120,
@@ -308,7 +311,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalBoxTransfer: {
       maxWidth: 480,
-      minHeight: 480,
+      minHeight: 515,
       margin: 'auto',
       marginTop: 88,
       backgroundColor: '#eeeeee',
@@ -422,6 +425,8 @@ const useStyles = makeStyles((theme: Theme) => {
         marginTop: 5,
         color: 'initial',
         border: '2px solid #00b38e ',
+        paddingTop: '15px',
+        paddingBottom: '15px',
         borderRadius: 10,
         paddingLeft: 10,
         '& :before': {
@@ -430,12 +435,15 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     doctorSearch: {
-      position: 'relative',
       display: 'block',
       padding: 10,
       zIndex: 9,
       backgroundColor: '#fff',
       borderRadius: 10,
+      position: 'absolute',
+      width: '95%',
+      maxHeight: 200,
+      overflow: 'auto',
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
       '& h6': {
         color: 'rgba(2,71,91,0.3)',
@@ -1215,6 +1223,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const ConsultMinutes = 2;
   const ConsultSeconds = 10;
+  const [isDoctorSelected, setIsDoctorSelected] = useState(false);
   return (
     <div>
       <div className={classes.pageSubHeader}>
@@ -1505,7 +1514,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 src={require('images/ic_cross.svg')}
                 alt=""
                 onClick={() => {
-                  clearTransferField();
                   setIsTransferPopoverOpen(false);
                 }}
               />
@@ -1599,8 +1607,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               classes={{ root: classes.searchInput }}
               placeholder="Search for Doctor/Speciality"
               onChange={(e: any) => {
+                setIsDoctorSelected(false);
                 setSearchKeyword(e.target.value);
-                if (e.target.value.length > 2) {
+                if (e.target.value.length > 1) {
                   doctorSpeciality(e.target.value);
                 }
                 setSelectedDoctor('');
@@ -1618,7 +1627,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 Please select doctor or speciality
               </FormHelperText>
             )}
-            {isDoctorOrSpeciality && searchKeyWord.length > 2 && (
+            {isDoctorOrSpeciality && searchKeyWord.length > 1 && (
               <span className={classes.doctorSearch}>
                 <h6>Doctor(s)</h6>
                 {filteredStarDoctors!.length > 0 ? (
@@ -1628,9 +1637,13 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                         key={idx}
                         onClick={() => {
                           handleDoctorClick(item);
+                          setIsDoctorSelected(true);
                         }}
                       >
-                        {item.firstName} {item.lastName}
+                        {props.doctorId !== item.id &&
+                          `${item.salutation.charAt(0).toUpperCase()}${item.salutation
+                            .slice(1)
+                            .toLowerCase()}. ${item.firstName} ${item.lastName}`}
                       </li>
                     ))}
                   </ul>
@@ -1645,6 +1658,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                         key={idx}
                         onClick={() => {
                           handleSpecialityClick(item);
+                          setIsDoctorSelected(true);
                         }}
                       >
                         {item.name}
@@ -1674,13 +1688,13 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.cancelConsult}
               onClick={() => {
                 setIsTransferPopoverOpen(false);
-                clearTransferField();
               }}
             >
               Cancel
             </Button>
             <Button
               className={classes.ResheduleCosultButton}
+              disabled={(textOtherTransfer && otherTextTransferValue === '') || !isDoctorSelected}
               onClick={() => {
                 //setIsTransferPopoverOpen(false);
                 //resheduleCosult();
