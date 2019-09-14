@@ -1011,7 +1011,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       (status, response) => {}
     );
 
-    let folloupDateTime = '';
+    let folloupDateTime = new Date(
+      new Date(props.appointmentDateTime).getTime() +
+        parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
+    ).toISOString();
     if (
       followUp[0] &&
       followUpDate &&
@@ -1034,7 +1037,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       doctorInfo: currentPatient,
       pdfUrl: props.prescriptionPdf,
     };
-    if (followUp[0] && folloupDateTime !== '') {
+    if (folloupDateTime !== '') {
       setTimeout(() => {
         pubnub.publish(
           {
@@ -1276,13 +1279,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             ) : (
               <Button
                 className={classes.consultButton}
-                disabled={
-                  startAppointmentButton ||
-                  disableOnTransfer ||
-                  appointmentInfo!.appointmentState !== 'NEW' ||
-                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                    appointmentInfo!.status !== STATUS.PENDING)
-                }
                 onClick={() => {
                   !props.startAppointment ? onStartConsult() : onStopConsult();
                   !props.startAppointment ? startInterval(900) : stopInterval();
