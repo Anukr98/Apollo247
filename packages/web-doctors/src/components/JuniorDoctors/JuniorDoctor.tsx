@@ -208,7 +208,7 @@ export const JuniorDoctor: React.FC = (props) => {
                   {isActiveConsultsAvailable ? (
                     content[0]
                   ) : (
-                    <div className={classes.noData}>No Active Patients are available.</div>
+                    <div className={classes.noData}>No Active Patient is available.</div>
                   )}
                 </div>
               </div>
@@ -221,7 +221,7 @@ export const JuniorDoctor: React.FC = (props) => {
                   {isPastConsultsAvailable ? (
                     content[1]
                   ) : (
-                    <div className={classes.noData}>No Past Consults are available.</div>
+                    <div className={classes.noData}>No Past Consult is available.</div>
                   )}
                 </div>
               </div>

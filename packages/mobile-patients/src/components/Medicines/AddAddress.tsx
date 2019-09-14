@@ -14,7 +14,15 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+} from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { PatientAddressInput } from '../../graphql/types/globalTypes';
 import { pinCodeServiceabilityApi } from '../../helpers/apiCalls';
@@ -112,7 +120,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
       addAddress && addAddress(address);
 
-      if (pinAvailabilityResult.data.Availability || addOnly) {
+      if ((Platform.OS == 'android' ? true : pinAvailabilityResult.data.Availability) || addOnly) {
         setDeliveryAddressId && setDeliveryAddressId(address.id || '');
         props.navigation.goBack();
       } else {

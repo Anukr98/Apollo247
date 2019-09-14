@@ -263,9 +263,13 @@ export const ShoppingCartProvider: React.FC = (props) => {
       Alert.alert('Alert', 'Failed to clear cart items from local storage.');
     });
     setPhysicalPrescriptions([]);
+    setEPrescriptions([]);
     setCartItems([]);
     setDeliveryAddressId('');
     setStoreId('');
+    setPinCode('');
+    setStores([]);
+    setAddresses([]);
     setCoupon(null);
   };
 
