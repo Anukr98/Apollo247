@@ -11992,17 +11992,9 @@
               "kind": "NON_NULL",
               "name": null,
               "ofType": {
-                "kind": "LIST",
-                "name": null,
-                "ofType": {
-                  "kind": "NON_NULL",
-                  "name": null,
-                  "ofType": {
-                    "kind": "OBJECT",
-                    "name": "BlockedCalendarItem",
-                    "ofType": null
-                  }
-                }
+                "kind": "OBJECT",
+                "name": "BlockedCalendarResult",
+                "ofType": null
               }
             },
             "isDeprecated": false,

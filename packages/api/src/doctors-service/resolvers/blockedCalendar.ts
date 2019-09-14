@@ -26,8 +26,7 @@ export const blockedCalendarTypeDefs = gql`
       doctorId: String!
       start: DateTime!
       end: DateTime!
-    ): [BlockedCalendarItem!]!
-
+    ): BlockedCalendarResult!
     removeBlockedCalendarItem(id: Int!): BlockedCalendarResult!
   }
 `;
