@@ -337,7 +337,7 @@ export const DiagnosticPrescription: React.FC = () => {
                 label={item!.itemname}
                 onDelete={() => handleDelete(item, idx)}
                 deleteIcon={
-                  <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+                  <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
                 }
               />
             ))}

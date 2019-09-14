@@ -32,7 +32,6 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import isNull from 'lodash/isNull';
 import { parseISO, format } from 'date-fns';
-import { Gender } from 'graphql/types/globalTypes';
 import differenceInYears from 'date-fns/differenceInYears';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
@@ -47,6 +46,36 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { Link } from 'react-router-dom';
+
+/* patient related queries and mutations */
+// import { useQueryWithSkip } from 'hooks/apolloHooks';
+import {
+  SAVE_PATIENT_FAMILY_HISTORY,
+  // GET_PATIENT_FAMILY_HISTORY,
+  SAVE_PATIENT_LIFE_STYLE,
+  // GET_PATIENT_LIFE_STYLE,
+  UPDATE_PATIENT_ALLERGIES,
+} from 'graphql/consults';
+import {
+  SavePatientFamilyHistory,
+  SavePatientFamilyHistoryVariables,
+} from 'graphql/types/SavePatientFamilyHistory';
+// import {
+//   GetPatientFamilyHistoryList,
+//   GetPatientFamilyHistoryListVariables,
+// } from 'graphql/types/GetPatientFamilyHistoryList';
+import {
+  SavePatientLifeStyle,
+  SavePatientLifeStyleVariables,
+} from 'graphql/types/SavePatientLifeStyle';
+// import {
+//   GetPatientLifeStyleList,
+//   GetPatientLifeStyleListVariables,
+// } from 'graphql/types/GetPatientLifeStyleList';
+import {
+  UpdatePatientAllergies,
+  UpdatePatientAllergiesVariables,
+} from 'graphql/types/UpdatePatientAllergies';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -345,6 +374,24 @@ export const JDConsultRoom: React.FC = () => {
     },
   });
 
+  // const {
+  //   data: patientFamilyHistoryData,
+  //   loading: patientFamilyHistoryLoading,
+  //   error: patientFamilyHistoryError,
+  // } = useQueryWithSkip<GetPatientFamilyHistoryList, GetPatientFamilyHistoryListVariables>(
+  //   GET_PATIENT_FAMILY_HISTORY,
+  //   { variables: { patientId: patientId } }
+  // );
+
+  // const {
+  //   data: patientLifeStyleListData,
+  //   loading: patientLifeStyleLoading,
+  //   error: patientLifeStyleError,
+  // } = useQueryWithSkip<GetPatientLifeStyleList, GetPatientLifeStyleListVariables>(
+  //   GET_PATIENT_LIFE_STYLE,
+  //   { variables: { patientId: patientId } }
+  // );
+
   const doctorFirstName =
     currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
   const doctorLastName =
@@ -362,10 +409,6 @@ export const JDConsultRoom: React.FC = () => {
   const doctorPhotoUrl =
     currentDoctor && currentDoctor.photoUrl ? _startCase(_toLower(currentDoctor.photoUrl)) : '';
 
-  //     setAppointmentId(paramId);
-  //     setpatientId(params.patientId);
-  //     setdoctorId(currentPatient.id);
-
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
@@ -374,6 +417,10 @@ export const JDConsultRoom: React.FC = () => {
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
+
+  const [allergies, setPatientAllergies] = useState<string>('');
+  const [lifeStyle, setPatientLifeStyle] = useState<string>('');
+  const [familyHistory, setFamilyHistory] = useState<string>('');
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -403,7 +450,6 @@ export const JDConsultRoom: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   /* case sheet data*/
 
   /* need to be worked later */
@@ -469,16 +515,52 @@ export const JDConsultRoom: React.FC = () => {
     !isNull(casesheetInfo.getCaseSheet.patientDetails.photoUrl)
       ? casesheetInfo.getCaseSheet.patientDetails.photoUrl
       : '';
-
   if (patientAppointmentTimeUtc !== '') {
     appointmentDateIST = format(
       new Date(patientAppointmentTimeUtc).getTime(),
       'dd-MM-yyyy hh:mm a'
     );
   }
-
+  // console.log('patient details....', casesheetInfo.getCaseSheet.patientDetails);
   const patientRelationHeader =
     patientRelation === Relation.ME ? 'Self' : _startCase(_toLower(patientRelation));
+
+  // console.log(patientAllergies, '--------------');
+
+  const savePatientAllergiesMutation = useMutation<
+    UpdatePatientAllergies,
+    UpdatePatientAllergiesVariables
+  >(UPDATE_PATIENT_ALLERGIES, {
+    variables: {
+      patientId: patientId,
+      allergies: allergies,
+    },
+  });
+
+  const savePatientLifeStyleMutation = useMutation<
+    SavePatientLifeStyle,
+    SavePatientLifeStyleVariables
+  >(SAVE_PATIENT_LIFE_STYLE, {
+    variables: {
+      patientLifeStyleInput: {
+        patientId: patientId,
+        description: lifeStyle,
+      },
+    },
+  });
+
+  const savePatientFamilyHistoryMutation = useMutation<
+    SavePatientFamilyHistory,
+    SavePatientFamilyHistoryVariables
+  >(SAVE_PATIENT_FAMILY_HISTORY, {
+    variables: {
+      patientFamilyHistoryInput: {
+        patientId: patientId,
+        description: familyHistory,
+        relation: Relation.ME,
+      },
+    },
+  });
 
   useEffect(() => {
     if (isSignedIn) {
@@ -491,6 +573,39 @@ export const JDConsultRoom: React.FC = () => {
         .then((_data) => {
           setCasesheetInfo(_data.data);
           setError('');
+
+          //TO DO. this must be altered later
+          //in effiecient way of loading the data as api needs to be revamped based on the UI.
+          _data!.data!.getCaseSheet!.patientDetails!.allergies
+            ? setPatientAllergies(_data!.data!.getCaseSheet!.patientDetails!.allergies)
+            : '';
+
+          const patientFamilyHistory =
+            _data!.data!.getCaseSheet!.patientDetails &&
+            _data!.data!.getCaseSheet!.patientDetails!.familyHistory
+              ? _data!.data!.getCaseSheet!.patientDetails!.familyHistory[
+                  _data!.data!.getCaseSheet!.patientDetails!.familyHistory.length - 1
+                ]
+              : null;
+
+          const patientLifeStyle =
+            _data!.data!.getCaseSheet!.patientDetails &&
+            _data!.data!.getCaseSheet!.patientDetails!.lifeStyle
+              ? _data!.data!.getCaseSheet!.patientDetails!.lifeStyle[
+                  _data!.data!.getCaseSheet!.patientDetails!.lifeStyle.length - 1
+                ]
+              : null;
+
+          setFamilyHistory(
+            patientFamilyHistory && patientFamilyHistory!.description
+              ? patientFamilyHistory!.description
+              : ''
+          );
+
+          setPatientLifeStyle(
+            patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
+          );
+
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
                 .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
@@ -534,6 +649,14 @@ export const JDConsultRoom: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
+
+          /* patient personal data state vars */
+          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
+            ? setFollowUpDate(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
+              ] as unknown) as string[])
+            : setFollowUpDate([]);
+
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -569,14 +692,13 @@ export const JDConsultRoom: React.FC = () => {
         variables: {
           UpdateCaseSheetInput: {
             symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-            notes: customNotes,
+            notes: customNotes.length > 0 ? customNotes : null,
             diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
             diagnosticPrescription:
               diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
-            followUp: followUp[0],
-            followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
-            followUpAfterInDays:
-              followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
+            followUp: false,
+            followUpDate: '',
+            followUpAfterInDays: '',
             otherInstructions:
               otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
             medicinePrescription:
@@ -587,28 +709,22 @@ export const JDConsultRoom: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('in save case sheet action......');
-        // if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
-        //   console.log(_data!.data!.updateCaseSheet!.blobName);
-        //   const url =
-        //     'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
-        //     _data!.data!.updateCaseSheet!.blobName;
-        //   setPrescriptionPdf(url);
-        // }
-        // if (!flag) {
-        //   setIsPopoverOpen(true);
-        // }
+        savePatientAllergiesMutation();
+        savePatientFamilyHistoryMutation();
+        savePatientLifeStyleMutation();
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         alert(errorMessage);
-        console.log('Error occured while update casesheet', e);
       });
   };
 
   const endConsultAction = () => {
-    mutationRemoveConsult().then();
+    mutationRemoveConsult();
+    savePatientAllergiesMutation();
+    savePatientFamilyHistoryMutation();
+    savePatientLifeStyleMutation();
     setIsDialogOpen(true);
     saveCasesheetAction(false);
   };
@@ -766,7 +882,18 @@ export const JDConsultRoom: React.FC = () => {
                     <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
                       <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 430px' }}>
                         <div className={classes.customScroll}>
-                          {casesheetInfo ? <CaseSheet /> : ''}
+                          {casesheetInfo ? (
+                            <CaseSheet
+                              lifeStyle={lifeStyle}
+                              allergies={allergies}
+                              familyHistory={familyHistory}
+                              setLifeStyle={(lifeStyle: string) => setPatientLifeStyle(lifeStyle)}
+                              setAllergies={(allergies: string) => setPatientAllergies(allergies)}
+                              setFamilyHistory={(familyHistory: string) =>
+                                setFamilyHistory(familyHistory)
+                              }
+                            />
+                          ) : null}
                         </div>
                       </Scrollbars>
                     </div>
@@ -792,68 +919,11 @@ export const JDConsultRoom: React.FC = () => {
           </div>
         </CaseSheetContext.Provider>
       )}
-      {/* <Modal
-        open={isPopoverOpen}
-        onClose={() => setIsPopoverOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <Paper className={classes.modalBox}>
-          <div className={classes.tabHeader}>
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => setIsPopoverOpen(false)}
-              />
-            </Button>
-          </div>
-          <div className={classes.tabBody}>
-            {}
-            <h3>
-              You're ending your consult with
-              {casesheetInfo &&
-                casesheetInfo !== null &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.firstName !== '' &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
-                  <span>
-                    {` ${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
-                      casesheetInfo!.getCaseSheet!.patientDetails!.lastName
-                    }.`}
-                  </span>
-                )}
-            </h3>
-            <Button
-              className={classes.consultButton}
-              //disabled={startAppointmentButton}
-              onClick={() => {
-                setIsPopoverOpen(false);
-                endConsultActionFinal();
-                setCaseSheetEdit(false);
-              }}
-            >
-              Preview Prescription
-            </Button>
-            <Button
-              className={classes.cancelConsult}
-              onClick={() => {
-                setIsPopoverOpen(false);
-              }}
-            >
-              Edit Case Sheet
-            </Button>
-          </div>
-        </Paper>
-      </Modal> */}
-
       {isEnded && (
         <div className={classes.tabPdfBody}>
           <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
         </div>
       )}
-
       <Dialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}

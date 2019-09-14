@@ -20,6 +20,7 @@ import {
   OtherInstructions,
 } from 'components/JuniorDoctors/JDCaseSheet/panels';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { AphTextField } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -110,7 +111,16 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CaseSheet: React.FC = () => {
+interface CaseSheetProps {
+  lifeStyle: string;
+  allergies: string;
+  familyHistory: string;
+  setFamilyHistory: (familyHistory: string) => void;
+  setAllergies: (allergies: string) => void;
+  setLifeStyle: (lifeStyle: string) => void;
+}
+
+export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
   const classes = useStyles();
   const [expanded, setExpanded] = useState<string | boolean>(false);
   const handlePanelExpansion = (panelName: string) => (
@@ -119,6 +129,7 @@ export const CaseSheet: React.FC = () => {
   ) => setExpanded(isExpanded ? panelName : false);
 
   const { setCasesheetNotes, notes } = useContext(CaseSheetContext);
+  const { setFamilyHistory, setAllergies, setLifeStyle } = props;
 
   return (
     <div className={classes.root}>
@@ -229,15 +240,40 @@ export const CaseSheet: React.FC = () => {
         <ExpansionPanelDetails className={classes.panelDetails}>
           <div className={classes.sectionTitle}>Family History</div>
           <div className={classes.historyBox}>
-            Father: Cardiac patient
-            <br /> Mother: Severe diabetes
-            <br /> Married, No kids
+            <AphTextField
+              fullWidth
+              className={classes.textFieldColor}
+              value={props.familyHistory}
+              onChange={(e) => {
+                setFamilyHistory(e.target.value);
+              }}
+              multiline
+            />
           </div>
-          <div className={classes.sectionTitle}>Allergies</div>
-          <div className={classes.historyBox}>Paracetamol, Dairy, Dust</div>
+
+          <div className={classes.sectionTitle}>Allergies{}</div>
+          <div className={classes.historyBox}>
+            <AphTextField
+              fullWidth
+              value={props.allergies}
+              onChange={(e) => {
+                setAllergies(e.target.value);
+              }}
+              multiline
+            />
+          </div>
+
           <div className={classes.sectionTitle}>Lifestyle & Habits</div>
           <div className={`${classes.historyBox} ${classes.marginNone}`}>
-            Patient doesn’t smoke, She recovered from chickenpox 6 months ago
+            <AphTextField
+              fullWidth
+              className={classes.textFieldColor}
+              value={props.lifeStyle}
+              onChange={(e) => {
+                setLifeStyle(e.target.value);
+              }}
+              multiline
+            />
           </div>
         </ExpansionPanelDetails>
       </ExpansionPanel>
@@ -255,6 +291,7 @@ export const CaseSheet: React.FC = () => {
             onChange={(e) => {
               setCasesheetNotes(e.target.value);
             }}
+            multiline
           />
         </Typography>
       </div>

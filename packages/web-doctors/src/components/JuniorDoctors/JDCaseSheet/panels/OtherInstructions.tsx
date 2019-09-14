@@ -315,7 +315,7 @@ export const OtherInstructions: React.FC = () => {
                 label={item!.instruction}
                 onDelete={() => handleDelete(item, idx)}
                 deleteIcon={
-                  <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+                  <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
                 }
               />
             ))}
