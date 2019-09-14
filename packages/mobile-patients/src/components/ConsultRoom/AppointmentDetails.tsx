@@ -605,6 +605,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             appointmentId={data.id}
             data={data}
             bookFollowUp={false}
+            KeyFollow={'RESCHEDULE'}
+            isfollowupcount={0}
           />
         )}
         {resheduleoverlay && doctorDetails && (

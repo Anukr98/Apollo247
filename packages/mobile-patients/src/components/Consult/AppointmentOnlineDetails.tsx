@@ -605,6 +605,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             appointmentId={data.id}
             data={data}
             bookFollowUp={false}
+            KeyFollow={'RESCHEDULE'}
+            isfollowupcount={0}
           />
         )}
 

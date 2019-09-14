@@ -104,6 +104,14 @@ export interface ConsultDetailsProps extends NavigationScreenProps {
   appointmentDate: any;
 }
 
+type rescheduleType = {
+  rescheduleCount: number;
+  appointmentState: string;
+  isCancel: number;
+  isFollowUp: number;
+  isPaid: number;
+};
+
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   console.log('consulcasesheetid', props.navigation.state.params!.CaseSheet);
   console.log('DoctorInfo', props.navigation.state.params!.DoctorInfo);
@@ -120,6 +128,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [bookFollowUp, setBookFollowUp] = useState<boolean>(true);
   const [isfollowcount, setIsfollowucount] = useState<number>(0);
+  const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
+
   const { currentPatient } = useAllCurrentPatients();
   useEffect(() => {
     setLoading(true);
@@ -590,7 +600,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 props.navigation.state.params!.DoctorInfo.id
               }
               renderTab={'Consult Online'}
-              rescheduleCount={isfollowcount}
+              rescheduleCount={rescheduleType!}
               appointmentId={props.navigation.state.params!.CaseSheet}
               bookFollowUp={bookFollowUp}
               data={data}

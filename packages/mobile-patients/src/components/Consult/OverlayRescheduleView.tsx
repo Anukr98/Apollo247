@@ -188,7 +188,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
           {(mutate, { loading, data, error }) => (
             <Button
               title={
-                props.KeyFollow == 'FollowUp'
+                props.KeyFollow == 'RESCHEDULE'
                   ? props.rescheduleCount.isPaid === 1
                     ? `PAY Rs. ${props.data.doctorInfo &&
                         props.data.doctorInfo.onlineConsultationFees &&

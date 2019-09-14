@@ -3127,6 +3127,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           appointmentId={transferData.appointmentId}
           data={transferData}
           bookFollowUp={false}
+          KeyFollow={'RESCHEDULE'}
+          isfollowupcount={0}
         />
       )}
       <View>

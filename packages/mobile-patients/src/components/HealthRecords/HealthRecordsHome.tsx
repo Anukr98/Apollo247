@@ -129,7 +129,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           };
         });
 
-        console.log({ consultsAndMedOrders });
+        // console.log({ consultsAndMedOrders });
         setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
         setLoading(false);
       })
@@ -151,7 +151,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .then(({ data }) => {
         const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
-        console.log('getPatientMedicalRecords', data, records);
+        // console.log('getPatientMedicalRecords', data, records);
         setmedicalRecords(records);
         setTabs([
           ...tabs.map((item) =>
@@ -170,8 +170,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   }, []);
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      console.log('didFocus', payload);
-      console.log('api call back', payload);
+      //console.log('didFocus', payload);
+      //console.log('api call back', payload);
       fetchData();
     });
   }, [props.navigation, fetchData]);
@@ -184,10 +184,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('renderDeleteMedicalOrder', _data);
-        console.log('Before', medicalRecords);
+        //console.log('renderDeleteMedicalOrder', _data);
+        // console.log('Before', medicalRecords);
         const newRecords = medicalRecords!.filter((record: any) => record!.id != MedicaId);
-        console.log('After', { newRecords });
+        // console.log('After', { newRecords });
         setmedicalRecords(newRecords);
         setTabs([
           ...tabs.map((item) =>
@@ -379,7 +379,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       {displayFilter && (
         <FilterScene
           onClickClose={(data: filterDataType[]) => {
-            console.log('filterDataType', data[0].selectedOptions);
+            // console.log('filterDataType', data[0].selectedOptions);
             setDisplayFilter(false);
             setFilterData(data);
           }}
