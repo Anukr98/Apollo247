@@ -12,14 +12,17 @@ import {
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlotVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
-import { useQuery } from 'react-apollo-hooks';
+import { useQuery, useApolloClient } from 'react-apollo-hooks';
 import Moment from 'moment';
 import { StyleSheet, Text, View } from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
-import { timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { timeTo12HrFormat, divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -44,6 +47,11 @@ const styles = StyleSheet.create({
     color: theme.colors.APP_GREEN,
     ...theme.fonts.IBMPlexSansMedium(15),
   },
+  ctaTextStyle: {
+    color: theme.colors.APP_GREEN,
+    ...theme.fonts.IBMPlexSansMedium(16),
+    letterSpacing: -0.36,
+  },
 });
 
 type TimeArray = {
@@ -64,6 +72,8 @@ export interface ConsultDoctorOnlineProps {
   availableInMin: Number;
   setselectedTimeSlot: (arg0: string) => void;
   selectedTimeSlot: string;
+  setshowSpinner?: (arg0: boolean) => void;
+  availableSlots?: [];
 }
 export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) => {
   const timings = [
@@ -96,69 +106,72 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
 
   const [date, setDate] = useState<Date>(props.date);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
-
-  //   const [availableSlot, setavailableSlot] = useState<string>('');
+  const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
 
   useEffect(() => {
     if (date !== props.date) {
       setDate(props.date);
     }
-  }, [props.date]);
+    checkAvailabilitySlot();
+    // if (availableSlots !== props.availableSlots && props.availableSlots) {
+    //   setTimeArrayData(props.availableSlots, props.date);
+    //   setavailableSlots(props.availableSlots);
+    // }
+  }, [props.date, date]);
 
   const todayDate = new Date().toISOString().slice(0, 10);
-  const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-    // fetchPolicy: 'no-cache',
-    variables: {
-      DoctorNextAvailableSlotInput: {
-        doctorIds: props.doctor ? [props.doctor.id] : [],
-        availableDate: todayDate,
-      },
-    },
-  });
 
-  if (availability.error) {
-    console.log('error', availability.error);
-  } else {
-    console.log(availability.data, 'availabilityData', 'availableSlots');
-    if (
-      availability &&
-      availability.data &&
-      availability.data.getDoctorNextAvailableSlot &&
-      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
-      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
-      availableInMin === 0
-    ) {
-      const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
-        .availableSlot;
-      // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
-      console.log(nextSlot, new Date(nextSlot));
-      const formatedTime = Moment(new Date(nextSlot), 'HH:mm:ss.SSSz').format('HH:mm');
-      console.log(formatedTime, 'formatedTime');
-      let timeDiff: Number = 0;
-      const time = formatedTime.split(':');
-      const today: Date = new Date();
-      const date2: Date = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        Number(time[0]),
-        Number(time[1])
-      );
-      if (date2 && today) {
-        timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
-      }
-      console.log(timeDiff, 'timeDiff');
+  const client = useApolloClient();
 
-      props.setNextAvailableSlot(nextSlot);
-      props.setavailableInMin(timeDiff);
-      setavailableInMin(timeDiff);
-    }
-  }
+  const checkAvailabilitySlot = () => {
+    console.log('checkAvailabilitySlot consult online');
+
+    client
+      .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
+        query: NEXT_AVAILABLE_SLOT,
+        variables: {
+          DoctorNextAvailableSlotInput: {
+            doctorIds: props.doctor ? [props.doctor.id] : [],
+            availableDate: todayDate,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((availability: any) => {
+        if (
+          availability &&
+          availability.data &&
+          availability.data.getDoctorNextAvailableSlot &&
+          availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+          availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
+          availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+          availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
+          availableInMin === 0
+        ) {
+          const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
+            .availableSlot;
+          // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
+          let timeDiff: Number = 0;
+          const today: Date = new Date();
+          const date2: Date = new Date(nextSlot);
+          if (date2 && today) {
+            timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+          }
+          console.log(timeDiff, 'timeDiff');
+
+          props.setNextAvailableSlot(nextSlot);
+          props.setavailableInMin(timeDiff);
+          setavailableInMin(timeDiff);
+          setNextAvailableSlot(nextSlot);
+        }
+      })
+      .catch((e: any) => {
+        console.log('error', e);
+      });
+  };
 
   const renderTimings = () => {
-    // console.log(timeArray, 'timeArray123456789', selectedtiming);
+    console.log(props.timeArray, 'timeArray123456789', selectedtiming);
     return (
       <View>
         <TabsComponent
@@ -179,12 +192,6 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
         <View style={styles.optionsView}>
           {props.timeArray && props.timeArray.length > 0
             ? props.timeArray.map((value) => {
-                console.log(
-                  value,
-                  selectedtiming,
-                  value.label === selectedtiming,
-                  'selectedtiming'
-                );
                 if (value.label === selectedtiming) {
                   if (value.time.length > 0) {
                     return value.time.map((name: string, index: number) => (
@@ -214,7 +221,7 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
                         }}
                       >
                         {`Dr. ${
-                          props.doctor!.firstName
+                          props.doctor ? props.doctor.firstName : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
                     );
@@ -231,9 +238,16 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
     return (
       <CalendarView
         date={date}
-        onPressDate={(date) => {
+        onPressDate={(selectedDate) => {
           // setDate(date);
-          props.setDate(date);
+          console.log('selectedDate', selectedDate !== date, selectedDate, date);
+
+          if (
+            Moment(selectedDate).format('YYYY-MM-DD') !== Moment(date).format('YYYY-MM-DD') &&
+            props.setshowSpinner
+          )
+            props.setshowSpinner(true);
+          props.setDate(selectedDate);
           props.setselectedTimeSlot('');
         }}
         calendarType={type}
@@ -245,30 +259,27 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
     );
   };
 
-  console.log(availableInMin, 'availableInMin');
   return (
-    <View>
-      <View
-        style={{
-          ...theme.viewStyles.cardContainer,
-          paddingHorizontal: 0,
-          paddingTop: 0,
-          paddingBottom: 0,
-          marginTop: 20,
-          marginBottom: 16,
-        }}
-      >
-        <View>
-          {renderCalendar()}
-          <View
-            style={{
-              ...theme.viewStyles.cardContainer,
-              paddingHorizontal: 16,
-              marginTop: 16,
-            }}
-          >
-            {renderTimings()}
-          </View>
+    <View
+      style={{
+        ...theme.viewStyles.cardContainer,
+        paddingHorizontal: 0,
+        paddingTop: 0,
+        paddingBottom: 0,
+        marginTop: 20,
+        marginBottom: 16,
+      }}
+    >
+      <View>
+        {renderCalendar()}
+        <View
+          style={{
+            ...theme.viewStyles.cardContainer,
+            paddingHorizontal: 16,
+            marginTop: 16,
+          }}
+        >
+          {renderTimings()}
         </View>
       </View>
     </View>

@@ -45,6 +45,8 @@ import {
   checkIfReschedule,
   checkIfRescheduleVariables,
 } from '../../graphql/types/checkIfReschedule';
+import { StackActions } from 'react-navigation';
+import { NavigationActions } from 'react-navigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -195,7 +197,13 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         .then((data: any) => {
           setshowSpinner(false);
           console.log(data, 'data');
-          props.navigation.replace(AppRoutes.TabBar);
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+            })
+          );
         })
         .catch((e: string) => {
           setshowSpinner(false);
@@ -221,7 +229,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     };
 
     console.log(bookRescheduleInput, 'bookRescheduleInput');
+
     if (!rescheduleApICalled) {
+      setshowSpinner(true);
       setRescheduleApICalled(true);
       client
         .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
@@ -234,16 +244,27 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         .then((data: any) => {
           console.log(data, 'data reschedule');
           setshowSpinner(false);
-          props.navigation.replace(AppRoutes.TabBar, {
-            Data:
-              data.data &&
-              data.data.bookRescheduleAppointment &&
-              data.data.bookRescheduleAppointment.appointmentDetails,
-            DoctorName:
-              props.navigation.state.params!.data &&
-              props.navigation.state.params!.data.doctorInfo &&
-              props.navigation.state.params!.data.doctorInfo.firstName,
-          });
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [
+                NavigationActions.navigate({
+                  routeName: AppRoutes.TabBar,
+                  params: {
+                    Data:
+                      data.data &&
+                      data.data.bookRescheduleAppointment &&
+                      data.data.bookRescheduleAppointment.appointmentDetails,
+                    DoctorName:
+                      props.navigation.state.params!.data &&
+                      props.navigation.state.params!.data.doctorInfo &&
+                      props.navigation.state.params!.data.doctorInfo.firstName,
+                  },
+                }),
+              ],
+            })
+          );
         })
         .catch((e: string) => {
           setshowSpinner(false);
@@ -312,6 +333,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     setdisplayoverlay(true), setResheduleoverlay(false);
   };
 
+  const navigateToView = () => {};
+
   if (data.doctorInfo)
     return (
       <View
@@ -323,7 +346,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           style={{
             flex: 1,
             zIndex: -1,
-            //elevation: 100,
           }}
         >
           <Header
@@ -379,7 +401,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   }}
                 >
                   <Text style={styles.descriptionStyle}>Amount Paid</Text>
-                  <Text style={styles.descriptionStyle}>299</Text>
+                  <Text style={styles.descriptionStyle}>
+                    {data.doctorInfo.onlineConsultationFees}
+                  </Text>
                 </View>
               </View>
               <View style={styles.imageView}>

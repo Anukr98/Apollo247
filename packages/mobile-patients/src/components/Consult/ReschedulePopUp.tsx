@@ -28,12 +28,12 @@ export interface ReschedulePopUpProps extends NavigationScreenProps {
 }
 export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  console.log('doctorreschdule', props.doctor);
-  console.log('rescheduleCount', props.rescheduleCount);
-  console.log(
-    'reschduleDateTime',
-    props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
-  );
+  // console.log('doctorreschdule', props.doctor);
+  // console.log('rescheduleCount', props.rescheduleCount);
+  // console.log(
+  //   'reschduleDateTime',
+  //   props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
+  // );
   // console.log('isbelowthree', props.isbelowthree);
 
   return (
@@ -181,7 +181,10 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
               >
                 {`Next slot for Dr. ${props.doctor && props.doctor.firstName} is available on —`}
               </Text>
-              {props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+              {props.reschduleDateTime &&
+              props.reschduleDateTime.getDoctorNextAvailableSlot &&
+              props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+              props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
                 .availableSlot ? (
                 <Text
                   style={{
@@ -194,8 +197,11 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                   }}
                 >
                   {moment(
-                    props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                      .availableSlot
+                    props.reschduleDateTime &&
+                      props.reschduleDateTime.getDoctorNextAvailableSlot &&
+                      props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+                      props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                        .availableSlot
                   ).format(' DD MMMM YYYY HH:mm A')}
                 </Text>
               ) : (

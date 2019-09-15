@@ -38,6 +38,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginHorizontal: 25,
     marginBottom: 14,
+    flex: 0.5,
   },
   medicineSubView: {
     justifyContent: 'space-between',
@@ -89,7 +90,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) 
     }`;
     return (
       <View key={item.medicineSKU!} style={styles.medicineOrders}>
-        <Text style={[styles.medicineText, { marginLeft: 5 }]}>{medicineName}</Text>
+        <Text style={[styles.medicineText, { marginLeft: 5, width: 100 }]} numberOfLines={2}>
+          {medicineName}
+        </Text>
         <View style={styles.medicineSubView}>
           <Text style={styles.medicineText}>{item.quantity}</Text>
           <Text style={[styles.medicineText, { marginRight: 5 }]}>Rs.{item.price}</Text>

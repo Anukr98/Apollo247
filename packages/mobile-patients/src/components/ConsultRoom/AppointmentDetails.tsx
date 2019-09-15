@@ -15,7 +15,7 @@ import {
   AsyncStorage,
   Alert,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
@@ -33,7 +33,10 @@ import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelAppointment';
-import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlotVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   bookRescheduleAppointment,
@@ -106,7 +109,7 @@ export interface AppointmentDetailsProps extends NavigationScreenProps {}
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
   const data = props.navigation.state.params!.data;
   const doctorDetails = data.doctorInfo;
-  console.log('doctorDetails', doctorDetails);
+  // console.log('doctorDetails', doctorDetails);
 
   // console.log(
   //   props.navigation.state.params!.data,
@@ -125,27 +128,15 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [belowThree, setBelowThree] = useState<boolean>(false);
   const [newRescheduleCount, setNewRescheduleCount] = useState<any>();
+  const [availability, setAvailability] = useState<any>();
 
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const client = useApolloClient();
 
   useEffect(() => {
-    console.log('calculateCount');
-
-    let calculateCount = data.rescheduleCount ? data.rescheduleCount : '';
-
-    if (calculateCount > 3) {
-      calculateCount = Math.floor(calculateCount / 3);
-      setBelowThree(true);
-      console.log('calculateCount', calculateCount);
-    } else {
-      setBelowThree(false);
-    }
-
-    setNewRescheduleCount(calculateCount);
-
     checkIfReschedule();
-  });
+    nextAvailableSlot();
+  }, []);
 
   useEffect(() => {
     const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
@@ -170,24 +161,37 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const todayDate = moment
     .utc(data.appointmentDateTime)
     .local()
-    .format('YYYY-MM-DD'); //data.appointmentDateTime; //
-  console.log('todayDate', todayDate);
+    .format('YYYY-MM-DD');
 
-  const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-    fetchPolicy: 'no-cache',
-    variables: {
-      DoctorNextAvailableSlotInput: {
-        doctorIds: doctorDetails ? [doctorDetails.id] : [],
-        availableDate: todayDate,
-      },
-    },
-  });
-  if (availability.error) {
-    console.log('error', availability.error);
-  } else {
-    console.log(availability.data!, 'availabilityData', 'availableSlots');
-    //setNexttime(availability.data.getDoctorAvailableSlots)
-  }
+  const nextAvailableSlot = () => {
+    client
+      .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
+        query: NEXT_AVAILABLE_SLOT,
+        variables: {
+          DoctorNextAvailableSlotInput: {
+            doctorIds: doctorDetails ? [doctorDetails.id] : [],
+            availableDate: todayDate,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((availabilitySlot) => {
+        if (
+          availabilitySlot &&
+          availabilitySlot.data &&
+          availabilitySlot.data.getDoctorNextAvailableSlot &&
+          availabilitySlot.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+          availabilitySlot.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
+          availabilitySlot.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+          availabilitySlot.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot
+        ) {
+          setAvailability(availabilitySlot);
+        }
+      })
+      .catch((e: any) => {
+        console.log('error', e);
+      });
+  };
 
   const checkIfReschedule = () => {
     try {
@@ -246,6 +250,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
     console.log(bookRescheduleInput, 'bookRescheduleInput');
     if (!rescheduleApICalled) {
+      setshowSpinner(true);
       setRescheduleApICalled(true);
       client
         .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
@@ -258,23 +263,30 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         .then((data: any) => {
           console.log(data, 'data');
           setshowSpinner(false);
-          props.navigation.replace(AppRoutes.TabBar, {
-            Data:
-              data.data &&
-              data.data.bookRescheduleAppointment &&
-              data.data.bookRescheduleAppointment.appointmentDetails,
-          });
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [
+                NavigationActions.navigate({
+                  routeName: AppRoutes.TabBar,
+                  params: {
+                    Data:
+                      data.data &&
+                      data.data.bookRescheduleAppointment &&
+                      data.data.bookRescheduleAppointment.appointmentDetails,
+                    DoctorName:
+                      props.navigation.state.params!.data &&
+                      props.navigation.state.params!.data.doctorInfo &&
+                      props.navigation.state.params!.data.doctorInfo.firstName,
+                  },
+                }),
+              ],
+            })
+          );
         })
         .catch((e: string) => {
           setBottompopup(true);
-          // console.log('Error occured while accept appid', e);
-          // const error = JSON.parse(JSON.stringify(e));
-          // const errorMessage = error && error.message;
-          // console.log('Error occured while accept appid', errorMessage, error);
-          // Alert.alert(
-          //   'Error',
-          //   'Opps ! The selected slot is unavailable. Please choose a different one'
-          // );
         });
     }
   };
@@ -283,7 +295,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       console.log('acceptChange');
       setResheduleoverlay(false);
       AsyncStorage.setItem('showSchduledPopup', 'true');
-      setshowSpinner(true);
+
       rescheduleAPI(availability);
     } catch (error) {
       console.log(error, 'error');
@@ -316,7 +328,13 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         .then((data: any) => {
           setshowSpinner(false);
           console.log(data, 'data');
-          props.navigation.replace(AppRoutes.TabBar);
+          props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+            })
+          );
         })
         .catch((e: string) => {
           setshowSpinner(false);
@@ -332,7 +350,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           ...theme.viewStyles.container,
         }}
       >
-        <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1, zIndex: -1 }}>
           <Header
             title="UPCOMING CLINIC VISIT"
             leftIcon="backArrow"
@@ -404,7 +422,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   }}
                 >
                   <Text style={styles.descriptionStyle}>Advance Paid</Text>
-                  <Text style={styles.descriptionStyle}>200</Text>
+                  <Text style={styles.descriptionStyle}>0</Text>
                 </View>
                 <View
                   style={{
@@ -413,7 +431,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   }}
                 >
                   <Text style={styles.descriptionStyle}>Balance Remaining</Text>
-                  <Text style={styles.descriptionStyle}>299</Text>
+                  <Text style={styles.descriptionStyle}>
+                    {data.doctorInfo.onlineConsultationFees}
+                  </Text>
                 </View>
               </View>
               <View style={styles.imageView}>
@@ -590,6 +610,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             </View>
           </BottomPopUp>
         )}
+        <View
+          style={{
+            zIndex: 1,
+            elevation: 100,
+          }}
+        ></View>
 
         {displayoverlay && doctorDetails && (
           <OverlayRescheduleView

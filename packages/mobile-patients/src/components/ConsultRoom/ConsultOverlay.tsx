@@ -41,8 +41,9 @@ import {
   View,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationActions } from 'react-navigation';
 import moment from 'moment';
+import { StackActions } from 'react-navigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -407,7 +408,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               style={styles.gotItStyles}
               onPress={() => {
                 setshowSuccessPopUp(false);
-                props.navigation.push(AppRoutes.TabBar);
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                  })
+                );
               }}
             >
               <Text style={styles.gotItTextStyles}>GO TO CONSULT ROOM</Text>
