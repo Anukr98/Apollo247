@@ -10,11 +10,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
-import {
-  NotificationType,
-  sendNotification,
-  PushNotificationSuccessMessage,
-} from 'notifications-service/resolvers/notifications';
+import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
