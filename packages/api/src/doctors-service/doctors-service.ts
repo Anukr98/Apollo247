@@ -56,6 +56,7 @@ import {
   doctorOnlineStatusTypeDefs,
   doctorOnlineStatusResolvers,
 } from 'doctors-service/resolvers/doctorOnlineStatus';
+import { doctorDataTypeDefs, doctorDataResolvers } from 'doctors-service/resolvers/doctorData';
 
 (async () => {
   await connect();
@@ -143,6 +144,10 @@ import {
       {
         typeDefs: doctorOnlineStatusTypeDefs,
         resolvers: doctorOnlineStatusResolvers,
+      },
+      {
+        typeDefs: doctorDataTypeDefs,
+        resolvers: doctorDataResolvers,
       },
     ]),
   });
