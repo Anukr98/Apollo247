@@ -48,7 +48,7 @@ import {
   saveDoctorDeviceTokenTypeDefs,
   saveDoctorDeviceTokenResolvers,
 } from 'doctors-service/resolvers/saveDoctorDeviceToken';
-import { GraphQLTime, GraphQLDate } from 'graphql-iso-date';
+import { GraphQLDateTime, GraphQLTime, GraphQLDate } from 'graphql-iso-date';
 import gql from 'graphql-tag';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
@@ -56,6 +56,10 @@ import {
   doctorOnlineStatusTypeDefs,
   doctorOnlineStatusResolvers,
 } from 'doctors-service/resolvers/doctorOnlineStatus';
+import {
+  blockedCalendarTypeDefs,
+  blockedCalendarResolvers,
+} from 'doctors-service/resolvers/blockedCalendar';
 
 (async () => {
   await connect();
@@ -86,10 +90,12 @@ import {
         typeDefs: gql`
           scalar Date
           scalar Time
+          scalar DateTime
         `,
         resolvers: {
           Date: GraphQLDate,
           Time: GraphQLTime,
+          DateTime: GraphQLDateTime,
         },
       },
       {
@@ -143,6 +149,10 @@ import {
       {
         typeDefs: doctorOnlineStatusTypeDefs,
         resolvers: doctorOnlineStatusResolvers,
+      },
+      {
+        typeDefs: blockedCalendarTypeDefs,
+        resolvers: blockedCalendarResolvers,
       },
     ]),
   });
