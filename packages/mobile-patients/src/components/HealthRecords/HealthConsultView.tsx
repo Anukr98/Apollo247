@@ -15,6 +15,7 @@ import moment from 'moment';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NavigationScreenProps } from 'react-navigation';
 import { g } from '../../helpers/helperFunctions';
+import { ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -123,6 +124,7 @@ export interface HealthConsultViewProps extends NavigationScreenProps {
 
 export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   //console.log('PastData', props.PastData);
+  const { setCartItems } = useShoppingCart();
   return (
     <View style={styles.viewStyle}>
       <View style={styles.trackerViewStyle}>
@@ -234,7 +236,28 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                 ) : (
                   <Text></Text>
                 )}
-                <Text style={styles.yellowTextStyle} onPress={props.onPressOrder}>
+                <Text
+                  style={styles.yellowTextStyle}
+                  // onPress={() => {
+                  //   console.log('passdata', props.PastData);
+                  //   console.log('medicine', props.PastData.medicineOrderLineItems);
+                  //   const medicines: ShoppingCartItem[] =
+                  //     props.PastData.medicineOrderLineItems &&
+                  //     props.PastData.medicineOrderLineItems.map(
+                  //       (item: any) =>
+                  //         ({
+                  //           id: item!.id!,
+                  //           mou: '10',
+                  //           name: item!.medicineName!,
+                  //           price: 50,
+                  //           quantity: parseInt(item!.medicineDosage!),
+                  //           prescriptionRequired: false,
+                  //         } as ShoppingCartItem)
+                  //     );
+                  //   setCartItems && setCartItems(medicines);
+                  //   props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+                  // }}
+                >
                   ORDER MEDS & TESTS
                 </Text>
               </View>

@@ -99,6 +99,8 @@ import {
 } from '../../graphql/types/addToConsultQueue';
 import ImagePicker from 'react-native-image-picker';
 import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
+import { StackActions } from 'react-navigation';
+import { NavigationActions } from 'react-navigation';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -1848,10 +1850,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTransferAccept(false);
           }, 1000);
         AsyncStorage.setItem('showTransferPopup', 'true');
-        props.navigation.replace(AppRoutes.TabBar, {
-          TransferData: rowData.transferInfo,
-          TranferDateTime: data.data.bookTransferAppointment.appointment.appointmentDateTime,
-        });
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.TabBar,
+                params: {
+                  TransferData: rowData.transferInfo,
+                  TranferDateTime:
+                    data.data.bookTransferAppointment.appointment.appointmentDateTime,
+                },
+              }),
+            ],
+          })
+        );
       })
       .catch((e: string) => {
         setLoading(false);
@@ -1974,12 +1988,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .then((data: any) => {
         console.log(data, 'data');
         setLoading(false);
-        props.navigation.replace(AppRoutes.TabBar, {
-          Data:
-            data.data &&
-            data.data.bookRescheduleAppointment &&
-            data.data.bookRescheduleAppointment.appointmentDetails,
-        });
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.TabBar,
+                params: {
+                  Data:
+                    data.data &&
+                    data.data.bookRescheduleAppointment &&
+                    data.data.bookRescheduleAppointment.appointmentDetails,
+                },
+              }),
+            ],
+          })
+        );
       })
       .catch((e: string) => {
         console.log(e, 'error');
@@ -2276,6 +2301,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       borderRadius: 30,
     });
     Keyboard.dismiss();
+    setDropdownVisible(false)
   };
 
   const renderAudioCallButtons = () => {
@@ -3042,6 +3068,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 returnKeyType="send"
                 onChangeText={(value) => {
                   setMessageText(value);
+                  setDropdownVisible(false);
                 }}
                 onSubmitEditing={() => {
                   const textMessage = messageText.trim();
@@ -3108,7 +3135,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               onPress={() => {
                 setBottompopup(false);
-                props.navigation.replace(AppRoutes.TabBar);
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.TabBar,
+                      }),
+                    ],
+                  })
+                );
               }}
             >
               <Text
@@ -3168,12 +3205,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onPress: () => {
                     try {
                       setDropdownVisible(false);
-                      Keyboard.dismiss()
+                      Keyboard.dismiss();
                       ImagePicker.launchCamera(options, (response) => {
                         uploadDocument(response);
                       });
-                    } catch (error) {
-                    }
+                    } catch (error) {}
                   },
                 },
                 {
@@ -3181,13 +3217,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   onPress: () => {
                     try {
                       setDropdownVisible(false);
-                      Keyboard.dismiss()
+                      Keyboard.dismiss();
                       ImagePicker.launchImageLibrary(options, (response) => {
                         console.log('response', response);
                         uploadDocument(response);
                       });
-                    } catch (error) {
-                    }
+                    } catch (error) {}
                   },
                 },
               ]}

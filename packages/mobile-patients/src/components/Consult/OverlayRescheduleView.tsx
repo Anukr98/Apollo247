@@ -49,6 +49,8 @@ import {
   BookFollowUpAppointment,
   BookFollowUpAppointmentVariables,
 } from '../../graphql/types/BookFollowUpAppointment';
+import { StackActions } from 'react-navigation';
+import { NavigationActions } from 'react-navigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -57,14 +59,6 @@ type TimeArray = {
   time: string[];
 }[];
 
-type rescheduleType = {
-  rescheduleCount: number;
-  appointmentState: string;
-  isCancel: number;
-  isFollowUp: number;
-  isPaid: number;
-};
-
 export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   renderTab: string;
   setdisplayoverlay: (arg0: boolean) => void;
@@ -72,7 +66,7 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   doctorId: string;
-  rescheduleCount: rescheduleType;
+  rescheduleCount: any;
   appointmentId: string;
   data: any;
   bookFollowUp: boolean;
@@ -142,37 +136,15 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
     }
   }
 
-  // const rescheduleAPI = () => {
-  //   const appointmentTransferInput = {
-  //     appointmentId: data.id,
-  //     doctorId: doctorDetails.id,
-  //     newDateTimeslot: '',
-  //     initiatedBy: 'PATIENT',
-  //     initiatedId: data.patientId,
-  //     patientId: data.patientId,
-  //     rescheduledId: '',
-  //   };
-
-  //   console.log(appointmentTransferInput, 'appointmentTransferInput');
-  //   if (!rescheduleApICalled) {
-  //     setRescheduleApICalled(true);
-  //     client
-  //       .mutate<bookTransferAppointment, bookTransferAppointmentVariables>({
-  //         mutation: BOOK_APPOINTMENT_RESCHEDULE,
-  //         variables: {
-  //           bookRescheduleAppointmentInput: appointmentTransferInput,
-  //         },
-  //         fetchPolicy: 'no-cache',
-  //       })
-  //       .then((data: any) => {
-  //         console.log(data, 'data');
-  //         props.navigation.replace(AppRoutes.Consult);
-  //       })
-  //       .catch((e: string) => {
-  //         console.log('Error occured while adding Doctor', e);
-  //       });
-  //   }
-  // };
+  const navigateToView = () => {
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+      })
+    );
+  };
 
   const renderBottomButton = () => {
     return (
@@ -211,7 +183,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   : false
               }
               onPress={() => {
-                if (props.KeyFollow) {
+                if (props.KeyFollow !== 'RESCHEDULE') {
                   const timeSlot =
                     tabs[0].title === selectedTab &&
                     isConsultOnline &&
@@ -240,7 +212,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                     })
                     .then((_data: any) => {
                       console.log('BookFollowUpAppointment', _data);
-                      props.navigation.navigate(AppRoutes.Consult);
+                      navigateToView();
                     })
                     .catch((e: any) => {
                       const error = JSON.parse(JSON.stringify(e));
@@ -277,6 +249,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                     variables: {
                       bookRescheduleAppointmentInput: appointmentInput,
                     },
+                    fetchPolicy: 'no-cache',
                   });
                 }
               }}
@@ -286,7 +259,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   props.setdisplayoverlay(false),
                   setshowSpinner(false),
                   setshowSuccessPopUp(true),
-                  props.navigation.replace(AppRoutes.Consult))
+                  navigateToView())
                 : null}
               {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
               {error ? console.log('bookAppointment error', error, setshowSpinner(false)) : null}
