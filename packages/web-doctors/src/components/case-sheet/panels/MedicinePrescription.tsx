@@ -339,7 +339,7 @@ const useStyles = makeStyles((theme: Theme) =>
       '& input': {
         fontSize: 15,
         fontWeight: 500,
-        color: '#02475b',
+        color: '#02475b !important',
         paddingTop: 0,
       },
       '&:hover': {
