@@ -171,6 +171,7 @@ export interface GetCaseSheet_getCaseSheet {
   patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null;
   caseSheetDetails: GetCaseSheet_getCaseSheet_caseSheetDetails | null;
   pastAppointments: (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null;
+  juniorDoctorNotes: string | null;
 }
 
 export interface GetCaseSheet {
