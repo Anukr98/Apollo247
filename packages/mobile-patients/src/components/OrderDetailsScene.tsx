@@ -211,7 +211,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             );
           })}
         </View>
-        <NeedHelpAssistant containerStyle={{ marginVertical: 20 }} navigation={props.navigation} />
+        <NeedHelpAssistant
+          containerStyle={{ marginTop: 20, marginBottom: 30 }}
+          navigation={props.navigation}
+        />
       </View>
     );
   };
