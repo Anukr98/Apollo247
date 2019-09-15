@@ -3,19 +3,16 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   Check,
-  CheckedIcon,
   CheckUnselectedIcon,
   MedicineIcon,
   OneApollo,
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
-  UnCheck,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   MedicineCartItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
-  MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveMedicineOrder,
@@ -45,7 +42,6 @@ import { handleGraphQlError } from '../helpers/helperFunctions';
 import { AppRoutes } from './NavigatorContainer';
 import { BottomPopUp } from './ui/BottomPopUp';
 import { Spinner } from './ui/Spinner';
-import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '../graphql/types/GetMedicineOrdersList';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
