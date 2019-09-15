@@ -360,7 +360,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           title={'DOCTORS / SPECIALITIES'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.replace(AppRoutes.SymptomChecker)}
+          onPressLeftIcon={() => props.navigation.goBack()}
         />
         <View style={styles.searchView}>
           <TextInputComponent
