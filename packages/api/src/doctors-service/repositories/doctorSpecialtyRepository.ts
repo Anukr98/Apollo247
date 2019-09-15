@@ -52,4 +52,30 @@ export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
         });
       });
   }
+
+  async insertOrUpdateAllSpecialties(specialties: Partial<DoctorSpecialty>[]) {
+    //get all the existing specialties
+    const allExistingSpecialties = await this.findAll();
+
+    specialties.forEach((specialty) => {
+      allExistingSpecialties.forEach((existingSpecialty) => {
+        if (
+          specialty.name &&
+          specialty.name.toLowerCase() == existingSpecialty.name.toLowerCase()
+        ) {
+          specialty.id = existingSpecialty.id;
+          specialty.updatedDate = new Date();
+        } else {
+          specialty.createdDate = new Date();
+        }
+      });
+    });
+
+    //insert/update new specialties
+    this.save(specialties).catch((saveSpecialtiesError) => {
+      throw new AphError(AphErrorMessages.SAVE_SPECIALTIES_ERROR, undefined, {
+        saveSpecialtiesError,
+      });
+    });
+  }
 }

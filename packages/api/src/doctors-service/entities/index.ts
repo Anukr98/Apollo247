@@ -388,6 +388,15 @@ export class DoctorSpecialty extends BaseEntity {
   doctor: Doctor[];
 
   @Column({ nullable: true })
+  specialistSingularTerm: string;
+
+  @Column({ nullable: true })
+  specialistPluralTerm: string;
+
+  @Column({ nullable: true, type: 'text' })
+  userFriendlyNomenclature: string;
+
+  @Column({ nullable: true })
   updatedDate: Date;
 
   @BeforeInsert()
