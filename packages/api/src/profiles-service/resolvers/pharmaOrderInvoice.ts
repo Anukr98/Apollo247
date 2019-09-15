@@ -120,7 +120,7 @@ const SaveMedicineOrderInvoice: Resolver<
     throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
   }
 
-  const orderInoviceAttrs: Partial<MedicineOrderInvoice> = {
+  const orderInvoiceAttrs: Partial<MedicineOrderInvoice> = {
     orderNo: medicineOrderInvoiceInput.orderId,
     otp: medicineOrderInvoiceInput.otp,
     docnum: medicineOrderInvoiceInput.docnum,
@@ -134,7 +134,7 @@ const SaveMedicineOrderInvoice: Resolver<
     medicineOrders,
   };
 
-  await medicineOrderRepo.saveMedicineOrderInvoice(orderInoviceAttrs);
+  await medicineOrderRepo.saveMedicineOrderInvoice(orderInvoiceAttrs);
 
   return {
     requestStatus: 'success',
