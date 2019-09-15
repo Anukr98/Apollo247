@@ -10,7 +10,6 @@ import {
   Paper,
   FormHelperText,
 } from '@material-ui/core';
-import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
@@ -505,6 +504,16 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 175,
       borderRadius: 10,
       color: '#fc9916',
+      padding: '9px 13px 9px 13px',
+      boxShadow: '0 2px 5px 0 rgba(0, 0, 0, 0.2)',
+      '&:hover': {
+        backgroundColor: theme.palette.common.white,
+        color: '#fc9916',
+      },
+    },
+    saveBtnDisabled: {
+      opacity: 0.5,
+      color: '#fc9916 !important',
     },
     submitBtn: {
       minWidth: 216,
@@ -1241,7 +1250,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           {startAppointment ? (
             <span>
               <AphButton
-                className={classes.saveBtn}
+                classes={{ root: classes.saveBtn, disabled: classes.saveBtnDisabled }}
                 disabled={props.saving}
                 onClick={() => {
                   props.saveCasesheetAction(true);
