@@ -85,7 +85,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const sku = props.navigation.getParam('sku');
   const { addCartItem, cartItems } = useShoppingCart();
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
-  const isOutOfStock = medicineDetails!.status != 1;
+  const isOutOfStock = !medicineDetails!.is_in_stock;
 
   useEffect(() => {
     getMedicineDetailsApi(sku)
@@ -126,7 +126,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         <Button
           onPress={() => onAddCartItem(medicineDetails)}
           title={
-            isMedicineAddedToCart ? 'ADDED TO CART' : isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART'
+            loading
+              ? 'ADD TO CART'
+              : isMedicineAddedToCart
+              ? 'ADDED TO CART'
+              : isOutOfStock
+              ? 'OUT OF STOCK'
+              : 'ADD TO CART'
           }
           disabled={isMedicineAddedToCart || isOutOfStock}
           style={{ flex: 1 }}

@@ -109,17 +109,11 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   };
 
   const renderOrderInfoPopup = () => {
-    const navigateOnSuccess = () => {
+    const navigateOnSuccess = (showOrderSummaryTab: boolean) => {
       props.navigation.replace(AppRoutes.OrderDetailsScene, {
         goToHomeOnBack: true,
+        showOrderSummaryTab,
         orderAutoId,
-        orderDetails: [
-          {
-            id: orderAutoId,
-            orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
-            statusDate: new Date().toString(),
-          },
-        ] as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[],
       });
     };
 
@@ -208,12 +202,12 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
               }}
             /> */}
             <View style={styles.popupButtonStyle}>
-              <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateOnSuccess()}>
+              <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateOnSuccess(true)}>
                 <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ flex: 1, alignItems: 'flex-end' }}
-                onPress={() => navigateOnSuccess()}
+                onPress={() => navigateOnSuccess(false)}
               >
                 <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
               </TouchableOpacity>
