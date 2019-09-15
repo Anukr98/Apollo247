@@ -21,21 +21,26 @@ export interface ShoppingCartItem {
 export interface PhysicalPrescription {
   title: string;
   fileType: string;
-  path: string;
+  // path: string;
   base64: string;
   uploadedUrl?: string;
 }
 
 export interface EPrescription {
   id: string;
-  uploadedUrl?: string;
+  uploadedUrl: string;
+  // forPatientId?: string;
+  forPatient: string;
+  date: string;
+  medicines: string;
+  doctorName: string;
 }
 
-type EPrescriptionType = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
+export type EPrescriptionDisableOption = 'CAMERA_AND_GALLERY' | 'E-PRESCRIPTION' | 'NONE';
 
 export interface LastSelectedPrescription {
-  cart?: EPrescriptionType;
-  'non-cart'?: EPrescriptionType;
+  cart?: EPrescriptionDisableOption;
+  'non-cart'?: EPrescriptionDisableOption;
 }
 
 export interface ShoppingCartContextProps {
@@ -64,10 +69,10 @@ export interface ShoppingCartContextProps {
   setPhysicalPrescriptions: ((items: PhysicalPrescription[]) => void) | null;
   updatePhysicalPrescription:
     | ((
-        itemUpdates: Partial<PhysicalPrescription> & { path: PhysicalPrescription['path'] }
+        itemUpdates: Partial<PhysicalPrescription> & { base64: PhysicalPrescription['base64'] }
       ) => void)
     | null;
-  removePhysicalPrescription: ((path: string) => void) | null;
+  removePhysicalPrescription: ((base64: string) => void) | null;
   physicalPrescriptions: PhysicalPrescription[];
 
   addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
@@ -166,7 +171,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   const [lastSelectedprescription, setLastSelectedprescription] = useState<
     ShoppingCartContextProps['lastSelectedprescription']
-  >({});
+  >({ 'non-cart': 'NONE', cart: 'NONE' });
 
   const saveCartItems = (cartItems: ShoppingCartItem[]) => {
     AsyncStorage.setItem('cartItems', JSON.stringify(cartItems)).catch(() => {

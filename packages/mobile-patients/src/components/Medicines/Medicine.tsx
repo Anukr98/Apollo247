@@ -29,7 +29,8 @@ import {
   Platform,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { useShoppingCart } from '../ShoppingCartProvider';
+import { useShoppingCart, EPrescriptionDisableOption } from '../ShoppingCartProvider';
+import { SelectEPrescriptionModal } from './SelectEPrescriptionModal';
 
 const styles = StyleSheet.create({
   separatorStyle: {
@@ -102,6 +103,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
+  const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
 
   const { cartItems } = useShoppingCart();
   const cartItemsCount = cartItems.length;
@@ -255,6 +257,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderPrescriptionModal = () => {
+    return (
+      <SelectEPrescriptionModal
+        onSubmit={(selectedEPres) => {
+          console.log({ selectedEPres });
+          setSelectPrescriptionVisible(false);
+          if (selectedEPres.length == 0) return;
+          props.navigation.navigate(AppRoutes.UploadPrescription, {
+            disabledOption: 'CAMERA_AND_GALLERY' as EPrescriptionDisableOption,
+            phyPrescriptionsProp: selectedEPres,
+          });
+        }}
+        isVisible={isSelectPrescriptionVisible}
+      />
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
@@ -300,17 +319,31 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           )}
         </ScrollView>
       </SafeAreaView>
-      {ShowPopop && (
-        <UploadPrescriprionPopup
-          onClickClose={() => setShowPopop(false)}
-          getData={(images) => {
-            console.log(images);
-            setShowPopop(false);
-            props.navigation.navigate(AppRoutes.UploadPrescription, { images });
-          }}
-          navigation={props.navigation}
-        />
-      )}
+      {renderPrescriptionModal()}
+      <UploadPrescriprionPopup
+        isVisible={ShowPopop}
+        disabledOption="NONE"
+        type="nonCartFlow"
+        optionTexts={{
+          camera: 'TAKE A PHOTO',
+          gallery: 'CHOOSE\nFROM GALLERY',
+          prescription: 'SELECT FROM\nE-PRESCRIPTION',
+        }}
+        onClickClose={() => setShowPopop(false)}
+        onResponse={(selectedType, response) => {
+          console.log(response);
+          setShowPopop(false);
+          if (selectedType == 'CAMERA_AND_GALLERY') {
+            if (response.length == 0) return;
+            props.navigation.navigate(AppRoutes.UploadPrescription, {
+              disabledOption: 'E-PRESCRIPTION' as EPrescriptionDisableOption,
+              phyPrescriptionsProp: response,
+            });
+          } else {
+            setSelectPrescriptionVisible(true);
+          }
+        }}
+      />
     </View>
   );
 };

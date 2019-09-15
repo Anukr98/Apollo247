@@ -1,73 +1,88 @@
-import React, { useEffect, useState } from 'react';
+import moment from 'moment';
+import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Alert } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { ScrollView } from 'react-navigation';
 import { GET_MEDICAL_RECORD } from '../../graphql/profiles';
 import {
-  getPatientMedicalRecords,
-  getPatientMedicalRecordsVariables,
-  getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
-} from '../../graphql/types/getPatientMedicalRecords';
+  getPatientPastConsultsAndPrescriptions,
+  getPatientPastConsultsAndPrescriptionsVariables,
+} from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { g } from '../../helpers/helperFunctions';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { theme } from '../../theme/theme';
+import { EPrescription } from '../ShoppingCartProvider';
 import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
 import { EPrescriptionCard } from '../ui/EPrescriptionCard';
 import { Header } from '../ui/Header';
 import { Spinner } from '../ui/Spinner';
-import moment from 'moment';
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  noDataCard: {
+    height: 'auto',
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowColor: 'white',
+    elevation: 0,
+  },
+});
 
-export interface SelectEPrescriptionModalModalProps extends NavigationScreenProps {
-  onSubmit: (
-    prescriptions: (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[]
-  ) => void;
+export interface SelectEPrescriptionModalProps {
+  onSubmit: (prescriptions: EPrescription[]) => void;
   isVisible: boolean;
 }
 
-export const SelectEPrescriptionModalModal: React.FC<SelectEPrescriptionModalModalProps> = (
-  props
-) => {
+export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
   const [selectedPrescription, setSelectedPrescription] = useState<{ [key: string]: boolean }>({});
   const { currentPatient } = useAllCurrentPatients();
 
-  useEffect(() => {
-    console.log({ selectedPrescription });
-  }, [selectedPrescription]);
-
   const { data, loading, error } = useQuery<
-    getPatientMedicalRecords,
-    getPatientMedicalRecordsVariables
+    getPatientPastConsultsAndPrescriptions,
+    getPatientPastConsultsAndPrescriptionsVariables
   >(GET_MEDICAL_RECORD, {
     variables: {
-      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+      consultsAndOrdersInput: {
+        patient: currentPatient && currentPatient.id ? currentPatient.id : '',
+      },
     },
     fetchPolicy: 'no-cache',
   });
-  const ePrescriptions = g(data, 'getPatientMedicalRecords', 'medicalRecords')! || [];
-  console.log(JSON.stringify({ ePrescriptions }));
+  const ePrescriptions = g(data, 'getPatientPastConsultsAndPrescriptions', 'medicineOrders')! || [];
+  const formattedEPrescriptions = ePrescriptions.map(
+    (item) =>
+      ({
+        id: item!.id,
+        date: moment(item!.orderDateTime).format('DD MMMM YYYY'),
+        uploadedUrl: item!.prescriptionImageUrl,
+        doctorName: '', // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
+        forPatient: (currentPatient && currentPatient.firstName) || '',
+        medicines: (item!.medicineOrderLineItems || [])
+          .filter((item) => item!.medicineName)
+          .join(', '),
+      } as EPrescription)
+  );
 
-  const renderEPrescription = (
-    item: getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
-    i: number,
-    arrayLength: number
-  ) => {
+  // const filteredEPrescriptions = ePrescriptions.filter((item) => item!.prescriptionImageUrl);
+  console.log(JSON.stringify({ ePrescriptions }));
+  // console.log(JSON.stringify({ filteredEPrescriptions }));
+
+  const renderEPrescription = (item: EPrescription, i: number, arrayLength: number) => {
     return (
       <EPrescriptionCard
         actionType="selection"
         isSelected={!!selectedPrescription[item.id]}
-        date={moment(item.testDate).format('DD MMMM YYYY')}
-        doctorName={item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''}
-        forPatient={(currentPatient && currentPatient.firstName) || ''}
-        medicines={item!.testName || ''}
+        date={item.date}
+        doctorName={item.doctorName}
+        forPatient={item.forPatient}
+        medicines={item.medicines}
         style={{
           marginTop: i === 0 ? 20 : 4,
           marginBottom: arrayLength === i + 1 ? 16 : 4,
         }}
         onSelect={(isSelected) => {
-          if (!item!.documentURLs) {
+          if (!item.uploadedUrl) {
             Alert.alert('Alert', 'This prescription has no uploaded documents.');
           } else {
             setSelectedPrescription({
@@ -78,6 +93,20 @@ export const SelectEPrescriptionModalModal: React.FC<SelectEPrescriptionModalMod
         }}
       />
     );
+  };
+
+  const renderNoPrescriptions = () => {
+    if (!loading && formattedEPrescriptions.length == 0) {
+      return (
+        <Card
+          cardContainer={[styles.noDataCard]}
+          heading={'Uh oh! :('}
+          description={'No Records Found!'}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      );
+    }
   };
 
   return (
@@ -103,27 +132,25 @@ export const SelectEPrescriptionModalModal: React.FC<SelectEPrescriptionModalMod
             container={{
               ...theme.viewStyles.cardContainer,
             }}
-            onPressLeftIcon={() => props.navigation.goBack()}
+            onPressLeftIcon={() => props.onSubmit([])}
           />
           <ScrollView bounces={false}>
-            {ePrescriptions.map((item, index, ePrescriptions) => {
-              return renderEPrescription(item!, index, ePrescriptions.length);
+            {renderNoPrescriptions()}
+            {formattedEPrescriptions.map((item, index, array) => {
+              return renderEPrescription(item, index, array.length);
             })}
           </ScrollView>
-          {/* <FlatList
-            bounces={false}
-            data={ePrescriptions}
-            renderItem={({ item, index }) =>
-              renderEPrescription(item!, index, ePrescriptions.length)
-            }
-            keyExtractor={(_, index) => index.toString()}
-            showsHorizontalScrollIndicator={false}
-          /> */}
           <View style={{ justifyContent: 'center', alignItems: 'center', marginHorizontal: 60 }}>
             <Button
               title={'UPLOAD'}
+              disabled={
+                Object.keys(selectedPrescription).filter((item) => selectedPrescription[item])
+                  .length == 0
+              }
               onPress={() => {
-                props.onSubmit(ePrescriptions.filter((item) => selectedPrescription[item!.id]));
+                props.onSubmit(
+                  formattedEPrescriptions.filter((item) => selectedPrescription[item!.id])
+                );
               }}
               style={{ marginHorizontal: 60, marginVertical: 20 }}
             />

@@ -1,20 +1,29 @@
 import {
+  EPrescriptionDisableOption,
+  PhysicalPrescription,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
   CameraIcon,
   CrossPopup,
   GalleryIcon,
-  PrescriptionIcon,
   Path,
+  PrescriptionIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import ImagePicker from 'react-native-image-crop-picker';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Image as PickerImage } from 'react-native-image-crop-picker';
-
-const { width, height } = Dimensions.get('window');
+import {
+  Dimensions,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
+import { Overlay } from 'react-native-elements';
+import ImagePicker, { ImagePickerResponse } from 'react-native-image-picker';
+import { ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -67,99 +76,179 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface UploadPrescriprionPopupProps extends NavigationScreenProps {
+export interface UploadPrescriprionPopupProps {
+  type?: 'cartOrMedicineFlow' | 'nonCartFlow';
+  isVisible: boolean;
+  disabledOption: EPrescriptionDisableOption;
+  optionTexts: {
+    camera: string;
+    gallery: string;
+    prescription: string;
+  };
   onClickClose: () => void;
-  getData: (arg0: (PickerImage | PickerImage[])[]) => void;
+  onResponse: (
+    selectedType: EPrescriptionDisableOption,
+    response: (PhysicalPrescription)[]
+  ) => void;
 }
+
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
+  const formatResponse = (response: ImagePickerResponse) => {
+    const imageUri = response!.uri || response!.path || 'folder/img.jpg';
+    const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+    return response.data
+      ? [
+          {
+            base64: response.data,
+            fileType: imageUri.substring(imageUri.lastIndexOf('.') + 1),
+            title: `IMG_${random8DigitNumber}`,
+          } as PhysicalPrescription,
+        ]
+      : [];
+  };
+
   const onClickTakePhoto = () => {
-    console.log('onClickTakePhoto');
-    ImagePicker.openCamera({
-      width: 400,
-      height: 400,
-      cropping: false,
-      // useFrontCamera: true,
-    }).then((image) => {
-      console.log(image, typeof image);
-      props.getData([image]);
-    });
+    setshowSpinner(true);
+    ImagePicker.launchCamera(
+      {
+        quality: 0.2,
+      },
+      (response) => {
+        setshowSpinner(false);
+        props.onResponse('CAMERA_AND_GALLERY', formatResponse(response));
+      }
+    );
   };
 
   const onClickGallery = () => {
-    console.log('onClickGallery');
-    ImagePicker.openPicker({
-      width: 400,
-      height: 400,
-      cropping: false,
-      multiple: true,
-    }).then((image) => {
-      console.log(image, typeof image);
-      props.getData(image as PickerImage[]);
-    });
+    setshowSpinner(true);
+    ImagePicker.launchImageLibrary(
+      {
+        quality: 0.2,
+      },
+      (response) => {
+        setshowSpinner(false);
+        props.onResponse('CAMERA_AND_GALLERY', formatResponse(response));
+      }
+    );
+  };
+
+  const isOptionDisabled = (type: EPrescriptionDisableOption) => props.disabledOption == type;
+  const getOptionStyle = (type: EPrescriptionDisableOption): StyleProp<ViewStyle> => {
+    return props.disabledOption == type
+      ? {
+          backgroundColor: '#f0f1ec',
+        }
+      : {};
+  };
+
+  const renderSimpleStepsOrder = () => {
+    return (
+      <View
+        style={{
+          height: 101,
+          paddingHorizontal: 16,
+          paddingBottom: 16,
+          backgroundColor: theme.colors.SKY_BLUE,
+        }}
+      >
+        <Text
+          style={{
+            paddingTop: 13,
+            paddingBottom: 12,
+            color: theme.colors.WHITE,
+            ...theme.fonts.IBMPlexSansMedium(14),
+          }}
+        >
+          Order medicines in 2 simple steps —
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}
+        >
+          <View style={styles.cardViewStyle}>
+            <Text style={styles.cardTextStyle}>{`UPLOAD\nYOUR PRESCRIPTION`}</Text>
+          </View>
+          <View
+            style={{
+              // alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Path />
+          </View>
+          <View style={styles.cardViewStyle}>
+            <Text style={styles.cardTextStyle}>ORDER THROUGH OUR CUSTOMER CARE</Text>
+          </View>
+        </View>
+      </View>
+    );
   };
 
   return (
-    <View
-      style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, .8)',
-        paddingHorizontal: showSpinner ? 0 : 20,
-        zIndex: 15,
-        elevation: 15,
+    <Overlay
+      isVisible={props.isVisible}
+      windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
+      containerStyle={{ alignSelf: 'flex-start' }}
+      overlayStyle={{
+        padding: 0,
+        margin: 0,
+        width: '88.88%',
+        height: 'auto',
+        // maxHeight: '75%',
+        borderRadius: 10,
+        overflow: 'hidden',
       }}
     >
       <View
         style={{
-          // backgroundColor: 'white',
-          alignItems: 'flex-end',
-        }}
-      >
-        <TouchableOpacity activeOpacity={1}
-          onPress={() => props.onClickClose()}
-          style={{
-            marginTop: Platform.OS === 'ios' ? 38 : 14,
-            backgroundColor: 'white',
-            height: 28,
-            width: 28,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 14,
-            marginRight: showSpinner ? 20 : 0,
-          }}
-        >
-          <CrossPopup />
-        </TouchableOpacity>
-      </View>
-      <View
-        style={{
-          alignItems: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          overflow: 'hidden',
         }}
       >
         <View
           style={{
+            alignSelf: 'flex-end',
+            backgroundColor: 'transparent',
+            // marginTop: -42,
+          }}
+        >
+          <TouchableOpacity onPress={() => props.onClickClose()}>
+            <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+          </TouchableOpacity>
+        </View>
+
+        <View
+          style={{
+            backgroundColor: 'transparent',
+            height: 16,
+          }}
+        />
+
+        <View
+          style={{
+            alignItems: 'center',
             backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-            marginTop: 16,
-            width: width - 40,
-            height: 'auto',
-            maxHeight: height - 98,
-            padding: 0,
-            // margin: 0,
-            borderRadius: 10,
-            overflow: 'hidden',
+            borderTopRightRadius: 10,
+            borderTopLeftRadius: 10,
+            borderBottomRightRadius: 10,
+            borderBottomLeftRadius: 10,
           }}
         >
           <View
             style={{
-              height: 60,
+              ...theme.viewStyles.cardContainer,
+              borderTopRightRadius: 10,
+              borderTopLeftRadius: 10,
+              backgroundColor: theme.colors.WHITE,
               alignItems: 'center',
               justifyContent: 'center',
+              paddingVertical: 23,
+              width: '100%',
             }}
           >
             <Text
@@ -172,47 +261,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             </Text>
           </View>
           <ScrollView bounces={false}>
-            <View
-              style={{
-                height: 101,
-                paddingHorizontal: 16,
-                paddingBottom: 16,
-                backgroundColor: theme.colors.SKY_BLUE,
-              }}
-            >
-              <Text
-                style={{
-                  paddingTop: 13,
-                  paddingBottom: 12,
-                  color: theme.colors.WHITE,
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                }}
-              >
-                Order medicines in 2 simple steps —
-              </Text>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <View style={styles.cardViewStyle}>
-                  <Text style={styles.cardTextStyle}>{`UPLOAD\nYOUR PRESCRIPTION`}</Text>
-                </View>
-                <View
-                  style={{
-                    // alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Path />
-                </View>
-                <View style={styles.cardViewStyle}>
-                  <Text style={styles.cardTextStyle}>ORDER THROUGH OUR CUSTOMER CARE</Text>
-                </View>
-              </View>
-            </View>
-
+            {props.type == 'nonCartFlow' && renderSimpleStepsOrder()}
             <View
               style={{
                 flexDirection: 'row',
@@ -222,23 +271,35 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
                 marginHorizontal: 13,
               }}
             >
-              <TouchableOpacity activeOpacity={1} style={styles.cardContainer} onPress={onClickTakePhoto}>
+              <TouchableOpacity
+                disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
+                activeOpacity={1}
+                style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
+                onPress={onClickTakePhoto}
+              >
                 <CameraIcon />
-                <Text style={styles.yelloTextStyle}>TAKE A PHOTO</Text>
+                <Text style={styles.yelloTextStyle}>{props.optionTexts.camera}</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity activeOpacity={1} style={styles.cardContainer} onPress={onClickGallery}>
+              <TouchableOpacity
+                disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
+                activeOpacity={1}
+                style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
+                onPress={onClickGallery}
+              >
                 <GalleryIcon />
-                <Text style={styles.yelloTextStyle}>{`CHOOSE\nFROM GALLERY`}</Text>
+                <Text style={styles.yelloTextStyle}>{props.optionTexts.gallery}</Text>
               </TouchableOpacity>
-              <TouchableOpacity activeOpacity={1}
-                style={styles.cardContainer}
+              <TouchableOpacity
+                disabled={isOptionDisabled('E-PRESCRIPTION')}
+                activeOpacity={1}
+                style={[styles.cardContainer, getOptionStyle('E-PRESCRIPTION')]}
                 onPress={() => {
-                  props.navigation.navigate(AppRoutes.UploadPrescription);
+                  props.onResponse('E-PRESCRIPTION', []);
                 }}
               >
                 <PrescriptionIcon />
-                <Text style={styles.yelloTextStyle}>{`SELECT FROM\nE-PRESCRIPTION`}</Text>
+                <Text style={styles.yelloTextStyle}>{props.optionTexts.prescription}</Text>
               </TouchableOpacity>
             </View>
             <View
@@ -284,8 +345,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             </View>
           </ScrollView>
         </View>
+        {showSpinner && <Spinner />}
       </View>
-      {showSpinner && <Spinner />}
-    </View>
+    </Overlay>
   );
 };

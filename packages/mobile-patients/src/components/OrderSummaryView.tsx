@@ -81,6 +81,12 @@ export interface OrderSummaryViewProps {
 
 export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) => {
   const medicineOrderLineItems = orderDetails!.medicineOrderLineItems || [];
+  const subtotal = medicineOrderLineItems.reduce(
+    (acc, currentVal) => acc + currentVal!.price! * currentVal!.quantity!,
+    0
+  );
+  const discount = orderDetails!.devliveryCharges! + subtotal - orderDetails.estimatedAmount!;
+
   const renderMedicineRow = (
     item: GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderLineItems
   ) => {
@@ -95,7 +101,9 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) 
         </Text>
         <View style={styles.medicineSubView}>
           <Text style={styles.medicineText}>{item.quantity}</Text>
-          <Text style={[styles.medicineText, { marginRight: 5 }]}>Rs.{item.price}</Text>
+          <Text style={[styles.medicineText, { marginRight: 5 }]}>
+            Rs.{(item.price! * item.quantity! || 0).toFixed(2)}
+          </Text>
         </View>
       </View>
     );
@@ -149,17 +157,24 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) 
       <View style={styles.commonTax}>
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.commonText}>Subtotal</Text>
-          <Text style={styles.paid}>
-            Rs.{orderDetails.estimatedAmount! - orderDetails.devliveryCharges! || (0).toFixed(2)}
-          </Text>
+          <Text style={styles.paid}>Rs.{subtotal.toFixed(2)}</Text>
         </View>
       </View>
       <View style={styles.commonTax}>
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.commonText}>Delivery Charges</Text>
-          <Text style={styles.paid}>+ Rs.{orderDetails.devliveryCharges || (0).toFixed(2)}</Text>
+          <Text style={styles.paid}>+ Rs.{(orderDetails.devliveryCharges || 0).toFixed(2)}</Text>
         </View>
       </View>
+
+      {discount > 0 && (
+        <View style={styles.commonTax}>
+          <View style={{ flexDirection: 'row' }}>
+            <Text style={styles.commonText}>Discount</Text>
+            <Text style={styles.paid}>- Rs.{discount.toFixed(2)}</Text>
+          </View>
+        </View>
+      )}
       {/* <View style={styles.commonTax}>
         <View style={{ flexDirection: 'row' }}>
           <Text style={styles.commonText}>Taxes</Text>

@@ -1,19 +1,13 @@
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
-  EPrescription,
   PhysicalPrescription,
   ShoppingCartItem,
   useShoppingCart,
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  ArrowRight,
-  CouponIcon,
-  CrossYellow,
-  MedicineIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
@@ -37,23 +31,17 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   Alert,
-  Image,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Platform,
 } from 'react-native';
-import { ImagePickerResponse } from 'react-native-image-picker';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '../../graphql/types/getPatientMedicalRecords';
 import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
 import { handleGraphQlError } from '../../helpers/helperFunctions';
-import { EPrescriptionCard } from '../ui/EPrescriptionCard';
-import { SelectEPrescriptionModalModal } from './SelectEPrescriptionModal';
-import { UploadPrescriprionPopupForMedicine } from './UploadPrescriprionPopupForMedicine';
-import moment from 'moment';
+import { MedicineUploadPrescriptionView } from './MedicineUploadPrescriptionView';
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -120,21 +108,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     grandTotal,
     coupon,
     uploadPrescriptionRequired,
-    addPhysicalPrescription,
     setPhysicalPrescriptions,
     physicalPrescriptions,
-    removePhysicalPrescription,
     pinCode,
     setPinCode,
     stores,
     setStores,
 
     ePrescriptions,
-    setEPrescriptions,
-    removeEPrescription,
-
-    setLastSelectedprescription,
-    lastSelectedprescription,
   } = useShoppingCart();
 
   useEffect(() => {
@@ -306,256 +287,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         })}
       </View>
     );
-  };
-
-  const updateEPrescriptions = (
-    newPrescriptions: (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[]
-  ) => {
-    const formattedPrescriptions = newPrescriptions.map(
-      (item) =>
-        ({
-          ...item,
-          id: item!.id,
-          uploadedUrl: item!.documentURLs,
-        } as EPrescription)
-    );
-
-    setEPrescriptions && setEPrescriptions([...formattedPrescriptions]);
-  };
-
-  const updatePhysicalPrescriptions = (images: ImagePickerResponse[]) => {
-    const formattedPrescriptions = images.map((item) => {
-      const path =
-        item!.uri ||
-        item!.path ||
-        `folder/${Math.random()
-          .toString(36)
-          .slice(-10)}.jpg`;
-      return {
-        base64: item.data,
-        path: path,
-        title: path!.substring(path!.lastIndexOf('/') + 1, path!.lastIndexOf('.') || undefined),
-        fileType: path!.substring(path!.lastIndexOf('.') + 1),
-      } as PhysicalPrescription;
-    });
-
-    const itemsToAdd = formattedPrescriptions.filter(
-      (p) => !physicalPrescriptions.find((pToFind) => pToFind.base64 == p.base64)
-    );
-    setPhysicalPrescriptions && setPhysicalPrescriptions([...itemsToAdd, ...physicalPrescriptions]);
-  };
-
-  const [showPopup, setShowPopup] = useState(false);
-  const uploadPrescriptionPopup = () => {
-    return (
-      showPopup && (
-        <UploadPrescriprionPopupForMedicine
-          onClickClose={() => setShowPopup(false)}
-          onResponse={(selectedType, response) => {
-            setShowPopup(false);
-            if (lastSelectedprescription.cart == 'NONE') {
-              setLastSelectedprescription &&
-                setLastSelectedprescription({
-                  ...lastSelectedprescription,
-                  cart: selectedType == 'cameraOrGallery' ? 'CAMERA_AND_GALLERY' : 'E-PRESCRIPTION',
-                });
-            }
-            if (selectedType == 'cameraOrGallery') {
-              const images = response as ImagePickerResponse[];
-              updatePhysicalPrescriptions(images);
-            } else {
-              setSelectPrescriptionVisible(true);
-            }
-          }}
-          navigation={props.navigation}
-        />
-      )
-    );
-  };
-
-  const renderEPrescription = (item: any, i: number, arrayLength: number) => {
-    return (
-      <EPrescriptionCard
-        style={{
-          marginTop: i === 0 ? 20 : 4,
-          marginBottom: arrayLength === i + 1 ? 16 : 4,
-        }}
-        medicines={item!.testName || ''}
-        actionType="removal"
-        date={moment(item!.testDate).format('DD MMMM YYYY')}
-        doctorName={item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''}
-        forPatient={(currentPatient && currentPatient.lastName) || ''}
-        onRemove={() => {
-          removeEPrescription && removeEPrescription(item.id);
-        }}
-      />
-    );
-  };
-
-  const renderPhysicalPrescriptionRow = (
-    item: PhysicalPrescription,
-    i: number,
-    arrayLength: number
-  ) => {
-    return (
-      <View key={i} style={{}}>
-        <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
-          <View
-            style={{
-              ...theme.viewStyles.cardViewStyle,
-              shadowRadius: 4,
-              height: 56,
-              marginHorizontal: 20,
-              backgroundColor: theme.colors.WHITE,
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginTop: i === 0 ? 16 : 4,
-              marginBottom: arrayLength === i + 1 ? 16 : 4,
-            }}
-            key={i}
-          >
-            <View
-              style={{
-                paddingLeft: 8,
-                paddingRight: 16,
-                width: 54,
-              }}
-            >
-              <Image
-                style={{
-                  height: 40,
-                  width: 30,
-                  borderRadius: 5,
-                }}
-                source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
-                // source={{ uri: item.path }}
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <TextInputComponent
-                textInputprops={{ editable: false }}
-                inputStyle={{
-                  marginTop: 3,
-                }}
-                value={item.title}
-              />
-            </View>
-            <TouchableOpacity
-              activeOpacity={1}
-              style={{
-                width: 40,
-                paddingHorizontal: 8,
-              }}
-              onPress={() => {
-                removePhysicalPrescription && removePhysicalPrescription(item.title);
-              }}
-            >
-              <CrossYellow />
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
-  const rendePrescriptions = (
-    _prescriptions = physicalPrescriptions,
-    _ePrescriptions = ePrescriptions
-  ) => {
-    console.log({ _ePrescriptions });
-
-    const cardContainerStyle = {
-      ...theme.viewStyles.cardViewStyle,
-      marginHorizontal: 20,
-      marginVertical: 16,
-      marginBottom: 24,
-      paddingTop: 16,
-    };
-    return (
-      <View>
-        <View style={cardContainerStyle}>
-          {_prescriptions.length > 0 && (
-            <View>
-              {renderLabel(`Physical Prescription${_prescriptions.length == 1 ? '' : 's'}`)}
-              <ScrollView>
-                {_prescriptions.map((item, index, array) => {
-                  return renderPhysicalPrescriptionRow(item, index, array.length);
-                })}
-              </ScrollView>
-            </View>
-          )}
-          {_ePrescriptions.length > 0 && (
-            <View>
-              {renderLabel(
-                `Prescription${_ePrescriptions.length == 1 ? '' : 's'} From Health Records`
-              )}
-              <ScrollView>
-                {_ePrescriptions.map((item, index, array) => {
-                  return renderEPrescription(item, index, array.length);
-                })}
-              </ScrollView>
-            </View>
-          )}
-        </View>
-        <Text
-          style={{
-            ...theme.fonts.IBMPlexSansBold(13),
-            color: theme.colors.APP_YELLOW,
-            lineHeight: 24,
-            paddingRight: 24,
-            paddingBottom: 16,
-            textAlign: 'right',
-          }}
-          onPress={() => setShowPopup(true)}
-        >
-          ADD MORE PRESCRIPTIONS
-        </Text>
-      </View>
-    );
-  };
-
-  const renderUploadPrescription = () => {
-    if (uploadPrescriptionRequired) {
-      return (
-        <View>
-          {renderLabel('UPLOAD PRESCRIPTION')}
-          {physicalPrescriptions.length == 0 && ePrescriptions.length == 0 ? (
-            <TouchableOpacity
-              activeOpacity={1}
-              style={{
-                ...theme.viewStyles.cardViewStyle,
-                marginHorizontal: 20,
-                marginTop: 15,
-                marginBottom: 24,
-              }}
-              onPress={() => setShowPopup(true)}
-            >
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                  lineHeight: 24,
-                  color: theme.colors.SKY_BLUE,
-                  padding: 16,
-                }}
-              >
-                {`Some of your medicines require prescription to make a purchase.\nPlease upload the necessary prescriptions.`}
-              </Text>
-              <Text
-                style={{
-                  ...styles.yellowTextStyle,
-                  paddingTop: 0,
-                  textAlign: 'right',
-                }}
-              >
-                UPLOAD
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            rendePrescriptions()
-          )}
-        </View>
-      );
-    }
   };
 
   const [checkingServicability, setCheckingServicability] = useState(false);
@@ -956,22 +687,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
-  const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
-
-  const renderPrescriptionModal = () => {
-    return (
-      <SelectEPrescriptionModalModal
-        navigation={props.navigation}
-        onSubmit={(p) => {
-          console.log({ p });
-          setSelectPrescriptionVisible(false);
-          updateEPrescriptions(p as any);
-        }}
-        isVisible={isSelectPrescriptionVisible}
-      />
-    );
-  };
-
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -979,7 +694,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
-            {renderUploadPrescription()}
+            <MedicineUploadPrescriptionView />
             {renderDelivery()}
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
@@ -995,8 +710,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
-      {renderPrescriptionModal()}
-      {uploadPrescriptionPopup()}
       {showSpinner && <Spinner />}
     </View>
   );
