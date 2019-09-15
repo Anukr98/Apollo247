@@ -324,8 +324,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   };
 
   const updatePhysicalPrescriptions = (images: ImagePickerResponse[]) => {
-    console.log({ images });
-    const prescriptions = images.map((item) => {
+    const formattedPrescriptions = images.map((item) => {
       const path =
         item!.uri ||
         item!.path ||
@@ -340,7 +339,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       } as PhysicalPrescription;
     });
 
-    const itemsToAdd = prescriptions.filter(
+    const itemsToAdd = formattedPrescriptions.filter(
       (p) => !physicalPrescriptions.find((pToFind) => pToFind.base64 == p.base64)
     );
     setPhysicalPrescriptions && setPhysicalPrescriptions([...itemsToAdd, ...physicalPrescriptions]);
@@ -966,7 +965,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         onSubmit={(p) => {
           console.log({ p });
           setSelectPrescriptionVisible(false);
-          updateEPrescriptions(p);
+          updateEPrescriptions(p as any);
         }}
         isVisible={isSelectPrescriptionVisible}
       />
@@ -976,7 +975,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
-        {renderPrescriptionModal()}
         {renderHeader()}
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
@@ -997,6 +995,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
+      {renderPrescriptionModal()}
       {uploadPrescriptionPopup()}
       {showSpinner && <Spinner />}
     </View>

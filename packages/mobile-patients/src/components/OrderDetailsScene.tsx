@@ -32,6 +32,7 @@ import { OrderSummary } from './OrderSummaryView';
 import { OrderCardProps } from './ui/OrderCard';
 import { Spinner } from './ui/Spinner';
 import { TabsComponent } from './ui/TabsComponent';
+import { NeedHelpAssistant } from './ui/NeedHelpAssistant';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -193,21 +194,24 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const renderOrderHistory = () => {
     return (
-      <View style={{ margin: 20 }}>
-        {orderStatusList.map((order, index, array) => {
-          return (
-            <OrderProgressCard
-              style={index < array.length - 1 ? { marginBottom: 8 } : {}}
-              key={index}
-              description={''}
-              status={getStatusType(order!.orderStatus!)}
-              date={getFormattedDate(order!.statusDate)}
-              time={getFormattedTime(order!.statusDate)}
-              isStatusDone={true}
-              nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
-            />
-          );
-        })}
+      <View>
+        <View style={{ margin: 20 }}>
+          {orderStatusList.map((order, index, array) => {
+            return (
+              <OrderProgressCard
+                style={index < array.length - 1 ? { marginBottom: 8 } : {}}
+                key={index}
+                description={''}
+                status={getStatusType(order!.orderStatus!)}
+                date={getFormattedDate(order!.statusDate)}
+                time={getFormattedTime(order!.statusDate)}
+                isStatusDone={true}
+                nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
+              />
+            );
+          })}
+        </View>
+        <NeedHelpAssistant containerStyle={{ marginVertical: 20 }} navigation={props.navigation} />
       </View>
     );
   };
@@ -302,11 +306,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             leftIcon="backArrow"
             title={`ORDER #${orderAutoId}`}
             container={{ borderBottomWidth: 0 }}
-            rightComponent={
-              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-                <More />
-              </TouchableOpacity>
-            }
+            // rightComponent={
+            //   <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            //     <More />
+            //   </TouchableOpacity>
+            // }
             onPressLeftIcon={() => {
               handleBack();
             }}
