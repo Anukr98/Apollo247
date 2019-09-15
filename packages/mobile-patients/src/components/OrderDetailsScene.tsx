@@ -97,6 +97,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     'orderDetails'
   );
 
+  console.log('orderDetails', orderDetails);
   const handleBack = () => {
     if (goToHomeOnBack) {
       props.navigation.dispatch(

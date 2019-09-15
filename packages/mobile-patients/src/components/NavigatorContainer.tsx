@@ -47,6 +47,7 @@ import { CheckoutScene } from '@aph/mobile-patients/src/components/CheckoutScene
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
 import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
+
 export enum AppRoutes {
   Onboarding = 'Onboarding',
   Login = 'Login',
