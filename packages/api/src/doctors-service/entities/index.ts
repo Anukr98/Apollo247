@@ -73,6 +73,33 @@ export enum DOCTOR_ONLINE_STATUS {
   AWAY = 'AWAY',
 }
 
+///////////////////////////////////////////////////////////
+// BlockedCalendarItem
+///////////////////////////////////////////////////////////
+@Entity()
+export class BlockedCalendarItem extends BaseEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  doctorId: string;
+
+  @Column({ type: 'timestamp with time zone' })
+  start: Date;
+
+  @Column({ type: 'timestamp with time zone' })
+  end: Date;
+
+  @Column()
+  createdDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+}
+///////////////////////////////////////////////////////////
+
 //consult Hours starts
 @Entity()
 export class ConsultHours extends BaseEntity {

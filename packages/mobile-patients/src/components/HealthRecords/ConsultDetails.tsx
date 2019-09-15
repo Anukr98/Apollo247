@@ -26,7 +26,12 @@ import {
   View,
   AsyncStorage,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationScreenProps,
+  ScrollView,
+  StackActions,
+  NavigationActions,
+} from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
 import { ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
 import { Spinner } from '../ui/Spinner';
@@ -244,6 +249,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             </Text>
             <Text
               style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
+              onPress={() => {
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                  })
+                );
+              }}
             >
               {strings.health_records_home.view_consult}
             </Text>
@@ -310,7 +324,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.medicinePrescription &&
-            caseSheetDetails!.medicinePrescription.length == 0 ? (
+            caseSheetDetails!.medicinePrescription.length !== 0 ? (
               <View>
                 {caseSheetDetails!.medicinePrescription.map((item) => {
                   if (item)
@@ -397,7 +411,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           onPress={() => setshowPrescription(!showPrescription)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.diagnosis && caseSheetDetails!.diagnosis! == null ? (
+            {caseSheetDetails!.diagnosis && caseSheetDetails!.diagnosis! !== null ? (
               <View>
                 <Text style={styles.labelStyle}>
                   {caseSheetDetails!.diagnosis!.map((item) => item && item.name).join(', ')}
@@ -427,7 +441,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           onPress={() => setshowPrescription(!showPrescription)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.otherInstructions && caseSheetDetails!.otherInstructions == null ? (
+            {caseSheetDetails!.otherInstructions && caseSheetDetails!.otherInstructions !== null ? (
               <View>
                 <Text style={styles.labelStyle}>
                   {caseSheetDetails!

@@ -15,6 +15,11 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { sendSMS } from 'notifications-service/resolvers/notifications';
 import { ApiConstants } from 'ApiConstants';
 import { addMilliseconds, format } from 'date-fns';
+import {
+  sendNotification,
+  PushNotificationSuccessMessage,
+  NotificationType,
+} from 'notifications-service/resolvers/notifications';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -205,6 +210,18 @@ const bookAppointment: Resolver<
   smsMessage = smsMessage.replace('at {4}', '');
   console.log(smsMessage, 'sms message');
   sendSMS(smsMessage);
+  // send notification
+  const pushNotificationInput = {
+    appointmentId: appointment.id,
+    notificationType: NotificationType.BOOK_APPOINTMENT,
+  };
+  const notificationResult = await sendNotification(
+    pushNotificationInput,
+    patientsDb,
+    consultsDb,
+    doctorsDb
+  );
+  console.log(notificationResult, 'book appt notification');
   //message queue starts
   /*const doctorName = docDetails.firstName + '' + docDetails.lastName;
   const speciality = docDetails.specialty.name;

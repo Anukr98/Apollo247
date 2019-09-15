@@ -441,6 +441,7 @@ export const GET_CASESHEET = gql`
           }
         }
       }
+      juniorDoctorNotes
     }
   }
 `;

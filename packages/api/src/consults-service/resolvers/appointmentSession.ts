@@ -10,11 +10,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
-import {
-  NotificationType,
-  sendNotification,
-  PushNotificationSuccessMessage,
-} from 'notifications-service/resolvers/notifications';
+import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -154,7 +150,8 @@ const createJuniorAppointmentSession: Resolver<
     const notificationResult = await sendNotification(
       pushNotificationInput,
       patientsDb,
-      consultsDb
+      consultsDb,
+      doctorsDb
     );
     console.log(notificationResult, 'notificationResult');
     return {
@@ -191,7 +188,12 @@ const createJuniorAppointmentSession: Resolver<
     appointmentId: createAppointmentSessionInput.appointmentId,
     notificationType: NotificationType.INITIATE_JUNIOR_APPT_SESSION,
   };
-  const notificationResult = await sendNotification(pushNotificationInput, patientsDb, consultsDb);
+  const notificationResult = await sendNotification(
+    pushNotificationInput,
+    patientsDb,
+    consultsDb,
+    doctorsDb
+  );
   console.log(notificationResult, 'notificationResult');
   return {
     sessionId: sessionId,
@@ -282,7 +284,8 @@ const createAppointmentSession: Resolver<
     const notificationResult = await sendNotification(
       pushNotificationInput,
       patientsDb,
-      consultsDb
+      consultsDb,
+      doctorsDb
     );
     console.log(notificationResult, 'notificationResult');
     return {
@@ -327,7 +330,12 @@ const createAppointmentSession: Resolver<
     appointmentId: createAppointmentSessionInput.appointmentId,
     notificationType: NotificationType.INITIATE_SENIOR_APPT_SESSION,
   };
-  const notificationResult = await sendNotification(pushNotificationInput, patientsDb, consultsDb);
+  const notificationResult = await sendNotification(
+    pushNotificationInput,
+    patientsDb,
+    consultsDb,
+    doctorsDb
+  );
   console.log(notificationResult, 'notificationResult');
   return {
     sessionId: sessionId,

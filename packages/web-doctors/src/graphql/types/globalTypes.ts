@@ -142,6 +142,17 @@ export interface EndAppointmentSessionInput {
   status: STATUS;
 }
 
+export interface PatientFamilyHistoryInput {
+  patientId: string;
+  description: string;
+  relation: Relation;
+}
+
+export interface PatientLifeStyleInput {
+  patientId: string;
+  description: string;
+}
+
 export interface RescheduleAppointmentInput {
   appointmentId: string;
   rescheduleReason: string;

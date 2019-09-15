@@ -106,6 +106,10 @@ import {
   patientFamilyHistoryTypeDefs,
   patientFamilyHistoryResolvers,
 } from 'profiles-service/resolvers/patientFamilyHistory';
+import {
+  saveMedicineOrderInvoiceTypeDefs,
+  saveMedicineOrderInvoiceResolvers,
+} from 'profiles-service/resolvers/pharmaOrderInvoice';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -261,6 +265,10 @@ import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
       {
         typeDefs: patientFamilyHistoryTypeDefs,
         resolvers: patientFamilyHistoryResolvers,
+      },
+      {
+        typeDefs: saveMedicineOrderInvoiceTypeDefs,
+        resolvers: saveMedicineOrderInvoiceResolvers,
       },
     ]),
   });

@@ -68,7 +68,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       color: '#02475b',
       textTransform: 'uppercase',
-      position: 'relative',
       display: 'flex',
       alignItems: 'center',
       lineHeight: 1.86,
@@ -484,6 +483,13 @@ const useStyles = makeStyles((theme: Theme) => {
     posRelative: {
       position: 'relative',
     },
+    stickyHeader: {
+      position: 'sticky',
+      top: 0,
+      zIndex: 1,
+      backgroundColor: '#f7f7f7',
+      boxShadow: 'inset 0px -1px 6px 0 rgba(128,128,128,0.2)',
+    },
   };
 });
 
@@ -653,7 +659,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const stoptext = {
       id: props.doctorId,
       //message: `Audio call ended`,
-      message: `${setIsVideoCall ? 'Video' : 'Audio'} call ended`,
+      message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
       } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
@@ -1011,7 +1017,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       (status, response) => {}
     );
 
-    let folloupDateTime = '';
+    let folloupDateTime = new Date(
+      new Date(props.appointmentDateTime).getTime() +
+        parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
+    ).toISOString();
     if (
       followUp[0] &&
       followUpDate &&
@@ -1034,7 +1043,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       doctorInfo: currentPatient,
       pdfUrl: props.prescriptionPdf,
     };
-    if (followUp[0] && folloupDateTime !== '') {
+    if (folloupDateTime !== '') {
       setTimeout(() => {
         pubnub.publish(
           {
@@ -1213,7 +1222,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     return '';
   };
   return (
-    <div>
+    <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
         <div>
           <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>

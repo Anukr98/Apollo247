@@ -290,6 +290,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
 }) => {
   const classes = useStyles();
   const [appointments, setAppointments] = useState<Appointment[]>(values);
+  console.log(appointments);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
@@ -356,175 +357,187 @@ export const Appointments: React.FC<AppointmentsProps> = ({
           }
           className={classes.calendarContent}
         >
-          {appointments.map((appointment, idx) => (
-            <Step
-              key={idx}
-              active={true}
-              className={
-                appointment.status === STATUS.NO_SHOW
-                  ? classes.missing
-                  : activeStep - 1 >= idx
-                  ? classes.completed
-                  : activeStep === idx
-                  ? 'upcoming'
-                  : ''
-              }
-              classes={{
-                root: classes.step,
-              }}
-            >
-              <StepLabel
-                classes={{ iconContainer: classes.iconContainer }}
-                StepIconProps={{
-                  classes: {
-                    root: 'stepIcon',
-                  },
+          {appointments.map((appointment, idx) =>
+            appointment.caseSheet.length > 0 ? (
+              <Step
+                key={idx}
+                active={true}
+                className={
+                  appointment.status === STATUS.NO_SHOW
+                    ? classes.missing
+                    : activeStep - 1 >= idx
+                    ? classes.completed
+                    : activeStep === idx
+                    ? 'upcoming'
+                    : ''
+                }
+                classes={{
+                  root: classes.step,
                 }}
               >
-                <Typography
-                  variant="h5"
-                  className={classes.AppointmentTime}
-                  classes={{
-                    root: 'AppointmentTimeupcoming',
+                {console.log(appointment.caseSheet.length)};
+                <StepLabel
+                  classes={{ iconContainer: classes.iconContainer }}
+                  StepIconProps={{
+                    classes: {
+                      root: 'stepIcon',
+                    },
                   }}
                 >
-                  <span>
-                    {`${activeStep === idx ? 'UP NEXT: ' : ''}${format(
-                      appointment.startTime,
-                      'h:mm'
-                    )} - ${format(appointment.endTime, 'h:mm aa')}`}
-                  </span>
-                </Typography>
-              </StepLabel>
-              <StepContent
-                classes={{
-                  root: 'stepContent',
-                }}
-              >
-                <div>
-                  {appointment!.caseSheet &&
-                    appointment!.caseSheet !== null &&
-                    appointment!.caseSheet.length > 0 && (
-                      <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}`}>
-                        <Card
-                          className={classes.card}
-                          ref={activeStep === idx ? upcomingElement : null}
-                          classes={{
-                            root: 'cardRow',
-                          }}
-                        >
-                          <CardContent>
-                            <Grid item xs={12}>
-                              <Grid item container spacing={2}>
-                                <Grid item lg={5} sm={5} xs={12} key={1} container>
-                                  <Grid sm={3} xs={2} key={5} item>
-                                    <Avatar
-                                      alt={appointment.details.patientName}
-                                      src={appointment.details.avatar}
-                                      className={classes.bigAvatar}
-                                    />
+                  <Typography
+                    variant="h5"
+                    className={classes.AppointmentTime}
+                    classes={{
+                      root: 'AppointmentTimeupcoming',
+                    }}
+                  >
+                    <span>
+                      {`${activeStep === idx ? 'UP NEXT: ' : ''}${format(
+                        appointment.startTime,
+                        'h:mm'
+                      )} - ${format(appointment.endTime, 'h:mm aa')}`}
+                    </span>
+                  </Typography>
+                </StepLabel>
+                <StepContent
+                  classes={{
+                    root: 'stepContent',
+                  }}
+                >
+                  <div>
+                    {appointment!.caseSheet &&
+                      appointment!.caseSheet !== null &&
+                      appointment!.caseSheet.length > 0 && (
+                        <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}`}>
+                          <Card
+                            className={classes.card}
+                            ref={activeStep === idx ? upcomingElement : null}
+                            classes={{
+                              root: 'cardRow',
+                            }}
+                          >
+                            <CardContent>
+                              <Grid item xs={12}>
+                                <Grid item container spacing={2}>
+                                  <Grid item lg={5} sm={5} xs={12} key={1} container>
+                                    <Grid sm={3} xs={2} key={5} item>
+                                      <Avatar
+                                        alt={appointment.details.patientName}
+                                        src={appointment.details.avatar}
+                                        className={classes.bigAvatar}
+                                      />
+                                    </Grid>
+                                    <Grid sm={9} xs={10} key={6} item className={classes.valign}>
+                                      <div className={classes.section2}>
+                                        {appointment.isNew && (
+                                          <Typography
+                                            gutterBottom
+                                            variant="caption"
+                                            className={classes.newAppointment}
+                                          >
+                                            New
+                                          </Typography>
+                                        )}
+                                        <Typography
+                                          gutterBottom
+                                          variant="body1"
+                                          className={classes.mainHeading}
+                                        >
+                                          {appointment.details.patientName}
+                                        </Typography>
+                                      </div>
+                                    </Grid>
                                   </Grid>
-                                  <Grid sm={9} xs={10} key={6} item className={classes.valign}>
-                                    <div className={classes.section2}>
-                                      {appointment.isNew && (
+                                  {!!appointment.details.checkups &&
+                                  !!appointment.details.checkups.symptoms &&
+                                  !!appointment.details.checkups.symptoms.length ? (
+                                    <Grid
+                                      lg={5}
+                                      sm={5}
+                                      xs={8}
+                                      key={2}
+                                      item
+                                      className={classes.valign}
+                                    >
+                                      <div className={classes.section1}>
+                                        {(appointment.details.checkups.symptoms.length > 2
+                                          ? appointment.details.checkups.symptoms.slice(0, 2)
+                                          : appointment.details.checkups.symptoms
+                                        ).map((checkup: any, idx: any) => (
+                                          <Chip
+                                            key={idx}
+                                            className={classes.chip}
+                                            label={checkup.symptom.toUpperCase()}
+                                          />
+                                        ))}
+                                        {appointment.details.checkups.symptoms.length > 2 &&
+                                          getSymptomTooltip(
+                                            appointment,
+                                            appointment.details.checkups.symptoms
+                                          )}
+                                      </div>
+                                    </Grid>
+                                  ) : (
+                                    <Grid
+                                      lg={5}
+                                      sm={5}
+                                      xs={8}
+                                      key={2}
+                                      item
+                                      className={classes.valign}
+                                    >
+                                      <div className={classes.section1}>
                                         <Typography
                                           gutterBottom
                                           variant="caption"
-                                          className={classes.newAppointment}
-                                        >
-                                          New
-                                        </Typography>
-                                      )}
-                                      <Typography
-                                        gutterBottom
-                                        variant="body1"
-                                        className={classes.mainHeading}
-                                      >
-                                        {appointment.details.patientName}
-                                      </Typography>
-                                    </div>
-                                  </Grid>
-                                </Grid>
-                                {!!appointment.details.checkups &&
-                                !!appointment.details.checkups.symptoms &&
-                                !!appointment.details.checkups.symptoms.length ? (
+                                          className={classes.bold}
+                                        ></Typography>
+                                      </div>
+                                    </Grid>
+                                  )}
                                   <Grid
-                                    lg={5}
-                                    sm={5}
-                                    xs={8}
-                                    key={2}
-                                    item
+                                    lg={2}
+                                    sm={2}
+                                    xs={3}
+                                    key={3}
                                     className={classes.valign}
+                                    item
                                   >
-                                    <div className={classes.section1}>
-                                      {(appointment.details.checkups.symptoms.length > 2
-                                        ? appointment.details.checkups.symptoms.slice(0, 2)
-                                        : appointment.details.checkups.symptoms
-                                      ).map((checkup: any, idx: any) => (
-                                        <Chip
-                                          key={idx}
-                                          className={classes.chip}
-                                          label={checkup.symptom.toUpperCase()}
-                                        />
-                                      ))}
-                                      {appointment.details.checkups.symptoms.length > 2 &&
-                                        getSymptomTooltip(
-                                          appointment,
-                                          appointment.details.checkups.symptoms
+                                    <div className={`${classes.section2} ${classes.videoIcomm}`}>
+                                      <IconButton aria-label="Video call">
+                                        {appointment.type === APPOINTMENT_TYPE.ONLINE ? (
+                                          <img src={require('images/ic_video.svg')} alt="" />
+                                        ) : (
+                                          <img
+                                            src={require('images/ic_physical_consult.svg')}
+                                            alt=""
+                                          />
                                         )}
-                                    </div>
-                                  </Grid>
-                                ) : (
-                                  <Grid
-                                    lg={5}
-                                    sm={5}
-                                    xs={8}
-                                    key={2}
-                                    item
-                                    className={classes.valign}
-                                  >
-                                    <div className={classes.section1}>
-                                      <Typography
-                                        gutterBottom
-                                        variant="caption"
-                                        className={classes.bold}
-                                      ></Typography>
-                                    </div>
-                                  </Grid>
-                                )}
-                                <Grid lg={2} sm={2} xs={3} key={3} className={classes.valign} item>
-                                  <div className={`${classes.section2} ${classes.videoIcomm}`}>
-                                    <IconButton aria-label="Video call">
-                                      {appointment.type === APPOINTMENT_TYPE.ONLINE ? (
-                                        <img src={require('images/ic_video.svg')} alt="" />
-                                      ) : (
-                                        <img
-                                          src={require('images/ic_physical_consult.svg')}
-                                          alt=""
-                                        />
-                                      )}
-                                    </IconButton>
-                                    {/* {appointment!.caseSheet &&
+                                      </IconButton>
+                                      {/* {appointment!.caseSheet &&
                                 appointment!.caseSheet !== null &&
                                 appointment!.caseSheet.length > 0 && (
                                   <Link
                                     to={`/consulttabs/${appointment.id}/${appointment.patientId}`}
                                   > */}
-                                    <IconButton aria-label="Navigate next">
-                                      <NavigateNextIcon />
-                                    </IconButton>
-                                  </div>
+                                      <IconButton aria-label="Navigate next">
+                                        <NavigateNextIcon />
+                                      </IconButton>
+                                    </div>
+                                  </Grid>
                                 </Grid>
                               </Grid>
-                            </Grid>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    )}
-                </div>
-              </StepContent>
-            </Step>
-          ))}
+                            </CardContent>
+                          </Card>
+                        </Link>
+                      )}
+                  </div>
+                </StepContent>
+              </Step>
+            ) : (
+              <div>&nbsp;</div>
+            )
+          )}
         </Stepper>
       </div>
     );

@@ -125,6 +125,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         appointmentDateTime: LessThan(inputStartDate),
         status: Not(STATUS.CANCELLED),
       },
+      order: { appointmentDateTime: 'DESC' },
     });
   }
 

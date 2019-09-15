@@ -3,19 +3,16 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   Check,
-  CheckedIcon,
   CheckUnselectedIcon,
   MedicineIcon,
   OneApollo,
   RadioButtonIcon,
   RadioButtonUnselectedIcon,
-  UnCheck,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   MedicineCartItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
-  MEDICINE_ORDER_STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveMedicineOrder,
@@ -45,7 +42,6 @@ import { handleGraphQlError } from '../helpers/helperFunctions';
 import { AppRoutes } from './NavigatorContainer';
 import { BottomPopUp } from './ui/BottomPopUp';
 import { Spinner } from './ui/Spinner';
-import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '../graphql/types/GetMedicineOrdersList';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -497,22 +493,11 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   };
 
   const renderOrderInfoPopup = () => {
-    const navigateOnSuccess = () => {
+    const navigateOnSuccess = (showOrderSummaryTab: boolean) => {
       props.navigation.navigate(AppRoutes.OrderDetailsScene, {
         goToHomeOnBack: true,
+        showOrderSummaryTab,
         orderAutoId: orderInfo.orderAutoId,
-        orderDetails: [
-          {
-            id: `1`,
-            orderStatus: MEDICINE_ORDER_STATUS.ORDER_PLACED,
-            statusDate: new Date().toString(),
-          },
-          {
-            id: `2`,
-            orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
-            statusDate: new Date().toString(),
-          },
-        ] as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[],
       });
     };
 
@@ -600,12 +585,12 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               }}
             /> */}
             <View style={styles.popupButtonStyle}>
-              <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateOnSuccess()}>
+              <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateOnSuccess(true)}>
                 <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ flex: 1, alignItems: 'flex-end' }}
-                onPress={() => navigateOnSuccess()}
+                onPress={() => navigateOnSuccess(false)}
               >
                 <Text style={styles.popupButtonTextStyle}>TRACK ORDER</Text>
               </TouchableOpacity>

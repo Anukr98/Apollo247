@@ -585,10 +585,20 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
       MedicineOrderDetails {
         id
         orderAutoId
+        devliveryCharges
         estimatedAmount
         medicineOrdersStatus {
           id
           orderStatus
+          statusDate
+        }
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          quantity
+          isMedicine
+          mou
         }
       }
     }

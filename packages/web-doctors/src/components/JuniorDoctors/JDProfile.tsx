@@ -91,8 +91,7 @@ export const JDProfile: React.FC = (props) => {
     currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
       ? _startCase(_toLower(currentDoctor.specialty.name))
       : '';
-  const doctorPhotoUrl =
-    currentDoctor && currentDoctor.photoUrl ? _startCase(_toLower(currentDoctor.photoUrl)) : '';
+  const doctorPhotoUrl = currentDoctor && currentDoctor.photoUrl ? currentDoctor.photoUrl : '';
 
   return isSigningIn ? (
     <LinearProgress />
@@ -106,7 +105,7 @@ export const JDProfile: React.FC = (props) => {
           <div className={classes.profileBlock}>
             <div className={classes.doctorImg}>
               <img
-                src={doctorPhotoUrl !== '' ? doctorPhotoUrl : 'https://via.placeholder.com/328x228'}
+                src={doctorPhotoUrl !== '' ? doctorPhotoUrl : require('images/doctor_02.png')}
                 alt="Doctor Profile Image"
               />
             </div>

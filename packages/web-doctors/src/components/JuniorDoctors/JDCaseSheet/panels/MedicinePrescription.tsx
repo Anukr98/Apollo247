@@ -15,9 +15,10 @@ import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components'
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import { isEmpty, debounce, trim, deburr } from 'lodash';
+import { isEmpty, trim, deburr } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import _uniqueId from 'lodash/uniqueId';
 
 const apiDetails = {
   url: 'http://13.126.95.18/searchprd_api.php',
@@ -620,7 +621,7 @@ export const MedicinePrescription: React.FC = () => {
           <AphButton
             variant="contained"
             color="primary"
-            key={`del ${index}`}
+            key={_uniqueId('ok_')}
             classes={{ root: classes.updateSymptom }}
             onClick={() => updateMedicine(index)}
           >
@@ -629,11 +630,11 @@ export const MedicinePrescription: React.FC = () => {
           <AphButton
             variant="contained"
             color="primary"
-            key={`del ${index}`}
+            key={_uniqueId('cancel_')}
             classes={{ root: classes.deleteSymptom }}
             onClick={() => deletemedicine(index)}
           >
-            <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+            <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
           </AphButton>
         </div>
       );
