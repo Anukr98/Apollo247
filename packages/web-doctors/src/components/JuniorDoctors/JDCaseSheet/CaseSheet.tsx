@@ -7,16 +7,13 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
-  InputBase,
 } from '@material-ui/core';
 import {
   Symptoms,
   HealthVault,
-  DoctorsNotes,
   Diagnosis,
   MedicinePrescription,
   DiagnosticPrescription,
-  FollowUp,
   OtherInstructions,
 } from 'components/JuniorDoctors/JDCaseSheet/panels';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -103,6 +100,9 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 5,
       border: 'solid 1px rgba(2, 71, 91, 0.15)',
       backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      marginBottom: 16,
+    },
+    inputFieldGroup: {
       marginBottom: 16,
     },
     marginNone: {
@@ -239,10 +239,9 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.panelDetails}>
           <div className={classes.sectionTitle}>Family History</div>
-          <div className={classes.historyBox}>
+          <div className={classes.inputFieldGroup}>
             <AphTextField
               fullWidth
-              className={classes.textFieldColor}
               value={props.familyHistory}
               onChange={(e) => {
                 setFamilyHistory(e.target.value);
@@ -250,9 +249,8 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
               multiline
             />
           </div>
-
-          <div className={classes.sectionTitle}>Allergies{}</div>
-          <div className={classes.historyBox}>
+          <div className={classes.sectionTitle}>Allergies</div>
+          <div className={classes.inputFieldGroup}>
             <AphTextField
               fullWidth
               value={props.allergies}
@@ -262,12 +260,10 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
               multiline
             />
           </div>
-
           <div className={classes.sectionTitle}>Lifestyle & Habits</div>
-          <div className={`${classes.historyBox} ${classes.marginNone}`}>
+          <div className={`${classes.inputFieldGroup} ${classes.marginNone}`}>
             <AphTextField
               fullWidth
-              className={classes.textFieldColor}
               value={props.lifeStyle}
               onChange={(e) => {
                 setLifeStyle(e.target.value);
@@ -282,18 +278,15 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
         <Typography component="h4" variant="h4" className={classes.notesHeader}>
           Notes
         </Typography>
-        <Typography component="div" className={classes.textFieldWrapper}>
-          <InputBase
-            fullWidth
-            className={classes.textFieldColor}
-            placeholder="What you enter here won't be shown to the patient.."
-            defaultValue={notes}
-            onChange={(e) => {
-              setCasesheetNotes(e.target.value);
-            }}
-            multiline
-          />
-        </Typography>
+        <AphTextField
+          fullWidth
+          placeholder="What you enter here won't be shown to the patient.."
+          defaultValue={notes}
+          onChange={(e) => {
+            setCasesheetNotes(e.target.value);
+          }}
+          multiline
+        />
       </div>
     </div>
   );
