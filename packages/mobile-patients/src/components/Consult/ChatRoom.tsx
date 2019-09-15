@@ -136,7 +136,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   //     });
   // }, []);
   const appointmentData = props.navigation.state.params!.data;
-  console.log('appointmentData', appointmentData);
+  // console.log('appointmentData', appointmentData);
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -242,6 +242,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [transferData, setTransferData] = useState<any>([]);
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
+  const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -278,6 +279,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   useEffect(() => {
     console.log('didmout');
     Platform.OS === 'android' && requestReadSmsPermission();
+    KeepAwake.activate();
   }, []);
 
   const client = useApolloClient();
@@ -454,10 +456,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setIsAudioCall(false);
       stopTimer();
       setCallAccepted(false);
-      setHideStatusBar(false);
+      setHideStatusBar(true);
       console.log('session stream connectionDestroyed!', event);
       setConvertVideo(false);
-      KeepAwake.deactivate();
+      KeepAwake.activate();
       setTimerStyles({
         position: 'absolute',
         marginHorizontal: 20,
@@ -528,9 +530,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', keyboardDidHide);
 
     return function cleanup() {
+      console.log('didmount clean up');
       pubnub.unsubscribe({ channels: [channel] });
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
+      KeepAwake.deactivate();
     };
   }, []);
 
@@ -742,6 +746,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ? height - e.endCoordinates.height - 185
         : height - e.endCoordinates.height - 185
     );
+    setDropDownBottomStyle(isIphoneX() ? 50 : height - e.endCoordinates.height - 190);
+
     setTimeout(() => {
       flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: false });
     }, 500);
@@ -749,6 +755,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const keyboardDidHide = () => {
     setHeightList(isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185);
+    setDropDownBottomStyle(isIphoneX() ? 50 : 15);
   };
 
   const send = () => {
@@ -2534,6 +2541,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
     setChatReceived(false);
     Keyboard.dismiss();
+    setDropdownVisible(false);
   };
 
   const renderChatNotificationIcon = () => {
@@ -2790,7 +2798,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             changeAudioStyles();
             setConvertVideo(false);
             changeVideoStyles();
-            KeepAwake.activate();
+            setDropdownVisible(false);
+
             if (token) {
               PublishAudioVideo();
             } else {
@@ -2903,9 +2912,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             },
             (status, response) => {}
           );
+          KeepAwake.activate();
         })
         .catch((e) => {
           setLoading(false);
+          KeepAwake.activate();
 
           console.log('upload data error', e);
         });
@@ -3136,7 +3147,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           <View
             style={{
               width: 200,
-              bottom: 15,
+              bottom: dropDownBottomStyle,
               position: 'absolute',
               right: 15,
               shadowColor: '#808080',
@@ -3155,20 +3166,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 {
                   optionText: 'Camera',
                   onPress: () => {
-                    setDropdownVisible(false);
-                    ImagePicker.launchCamera(options, (response) => {
-                      uploadDocument(response);
-                    });
+                    try {
+                      setDropdownVisible(false);
+                      Keyboard.dismiss()
+                      ImagePicker.launchCamera(options, (response) => {
+                        uploadDocument(response);
+                      });
+                    } catch (error) {
+                    }
                   },
                 },
                 {
                   optionText: 'Gallery',
                   onPress: () => {
-                    setDropdownVisible(false);
-                    ImagePicker.launchImageLibrary(options, (response) => {
-                      console.log('response', response);
-                      uploadDocument(response);
-                    });
+                    try {
+                      setDropdownVisible(false);
+                      Keyboard.dismiss()
+                      ImagePicker.launchImageLibrary(options, (response) => {
+                        console.log('response', response);
+                        uploadDocument(response);
+                      });
+                    } catch (error) {
+                    }
                   },
                 },
               ]}

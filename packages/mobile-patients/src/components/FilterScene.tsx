@@ -91,6 +91,7 @@ export interface FilterSceneProps {
   onClickClose: (arg0: filterDataType[]) => void;
   data: filterDataType[];
   setData: (arg0: filterDataType[]) => void;
+  filterLength: () => void;
 }
 export const FilterScene: React.FC<FilterSceneProps> = (props) => {
   const [data, setData] = useState<filterDataType[]>(props.data);
@@ -318,6 +319,9 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
       if (item.selectedOptions) length += item.selectedOptions.length;
     });
     console.log(length, 'length');
+    if (length == 0) {
+      props.filterLength();
+    }
     return (
       <StickyBottomComponent defaultBG>
         <Button
