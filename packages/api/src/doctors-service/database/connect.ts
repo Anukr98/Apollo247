@@ -19,6 +19,7 @@ import {
   Facility,
   Packages,
   StarTeam,
+  BlockedCalendarItem,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -36,6 +37,7 @@ import {
   PatientLifeStyle,
   PatientNotificationSettings,
   SearchHistory,
+  MedicineOrderInvoice,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -53,6 +55,7 @@ export const connect = async () => {
         DoctorBankAccounts,
         Packages,
         DoctorDeviceTokens,
+        BlockedCalendarItem,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -101,6 +104,7 @@ export const connect = async () => {
         PatientNotificationSettings,
         MedicalRecords,
         MedicalRecordParameters,
+        MedicineOrderInvoice,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

@@ -5,6 +5,7 @@ import {
   MedicineOrderPayments,
   MedicineOrdersStatus,
   MEDICINE_ORDER_STATUS,
+  MedicineOrderInvoice,
 } from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -83,6 +84,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
+        'medicineOrderInvoice',
         'patient',
       ],
     });
@@ -95,6 +97,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
         'medicineOrderLineItems',
         'medicineOrderPayments',
         'medicineOrdersStatus',
+        'medicineOrderInvoice',
         'patient',
       ],
     });
@@ -143,5 +146,9 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
   updateOrderFullfillment(orderAutoId: number, id: string, apOrderNo: string) {
     this.update({ id, orderAutoId }, { apOrderNo });
+  }
+
+  saveMedicineOrderInvoice(orderInvoiceAttrs: Partial<MedicineOrderInvoice>) {
+    return MedicineOrderInvoice.create(orderInvoiceAttrs).save();
   }
 }

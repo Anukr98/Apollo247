@@ -7,6 +7,7 @@ import {
   Brackets,
   Not,
   Connection,
+  In,
 } from 'typeorm';
 import {
   Appointment,
@@ -16,7 +17,9 @@ import {
   patientLogSort,
   patientLogType,
   APPOINTMENT_STATE,
+  APPOINTMENT_TYPE,
   TRANSFER_INITIATED_TYPE,
+  CONSULTS_RX_SEARCH_FILTER,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -66,7 +69,11 @@ export class AppointmentRepository extends Repository<Appointment> {
     console.log(inputStartDate, 'inputStartDate find by date doctor id');
     const startDate = new Date(inputStartDate + 'T18:30');
     return this.find({
-      where: { doctorId, appointmentDateTime: Between(startDate, endDate) },
+      where: {
+        doctorId,
+        appointmentDateTime: Between(startDate, endDate),
+        status: Not(STATUS.CANCELLED),
+      },
     });
   }
 
@@ -118,16 +125,27 @@ export class AppointmentRepository extends Repository<Appointment> {
         appointmentDateTime: LessThan(inputStartDate),
         status: Not(STATUS.CANCELLED),
       },
+      order: { appointmentDateTime: 'DESC' },
     });
   }
 
-  getPatientPastAppointments(patientId: string, offset?: number, limit?: number) {
+  getPatientPastAppointments(
+    patientId: string,
+    filter?: CONSULTS_RX_SEARCH_FILTER[],
+    offset?: number,
+    limit?: number
+  ) {
+    const whereClause = {
+      patientId,
+      appointmentDateTime: LessThan(new Date()),
+      status: Not(STATUS.CANCELLED),
+      appointmentType: In([APPOINTMENT_TYPE.ONLINE, APPOINTMENT_TYPE.PHYSICAL]),
+    };
+    if (filter && filter.length > 0) {
+      whereClause.appointmentType = In(filter);
+    }
     return this.find({
-      where: {
-        patientId,
-        appointmentDateTime: LessThan(new Date()),
-        status: Not(STATUS.CANCELLED),
-      },
+      where: whereClause,
       relations: ['caseSheet'],
       skip: offset,
       take: limit,
@@ -602,5 +620,9 @@ export class AppointmentRepository extends Repository<Appointment> {
       relations: ['caseSheet'],
       order: { appointmentDateTime: 'ASC' },
     });
+  }
+
+  followUpBookedCount(id: string) {
+    return this.count({ where: { followUpParentId: id } });
   }
 }

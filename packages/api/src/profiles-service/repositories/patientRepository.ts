@@ -40,4 +40,8 @@ export class PatientRepository extends Repository<Patient> {
       ],
     });
   }
+
+  updatePatientAllergies(id: string, allergies: string) {
+    return this.update(id, { allergies });
+  }
 }

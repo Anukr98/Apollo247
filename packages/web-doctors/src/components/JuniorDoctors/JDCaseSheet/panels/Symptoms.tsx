@@ -6,7 +6,6 @@ import {
   ListItemText,
   Theme,
   Paper,
-  Grid,
   FormHelperText,
   Modal,
   Button,
@@ -17,6 +16,7 @@ import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components'
 
 import { isEmpty, debounce, trim } from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import _uniqueId from 'lodash/uniqueId';
 
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
@@ -208,7 +208,6 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   nodatafound: {
     fontSize: 14,
-    margin: '10px 0 10px 4px',
   },
   symptomCaption: {
     marginLeft: 20,
@@ -360,7 +359,7 @@ export const Symptoms: React.FC = (props) => {
                     classes={{ root: classes.deleteSymptom }}
                     onClick={() => deleteSymptom(idx)}
                   >
-                    <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+                    <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
                   </AphButton>
                   <Fragment>
                     <List>

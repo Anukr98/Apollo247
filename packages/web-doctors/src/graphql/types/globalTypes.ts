@@ -66,6 +66,7 @@ export enum MEDICINE_TO_BE_TAKEN {
 
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
+  JUNIOR = "JUNIOR",
   PATIENT = "PATIENT",
 }
 
@@ -139,6 +140,17 @@ export interface CreateAppointmentSessionInput {
 export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
+}
+
+export interface PatientFamilyHistoryInput {
+  patientId: string;
+  description: string;
+  relation: Relation;
+}
+
+export interface PatientLifeStyleInput {
+  patientId: string;
+  description: string;
 }
 
 export interface RescheduleAppointmentInput {

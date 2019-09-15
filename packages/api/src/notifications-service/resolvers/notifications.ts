@@ -8,6 +8,8 @@ import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { addMilliseconds, format } from 'date-fns';
 
 export const getNotificationsTypeDefs = gql`
   type PushNotificationMessage {
@@ -59,6 +61,9 @@ export type PushNotificationSuccessMessage = {
 export enum NotificationType {
   INITIATE_RESCHEDULE = 'INITIATE_RESCHEDULE',
   INITIATE_TRANSFER = 'INITIATE_TRANSFER',
+  INITIATE_JUNIOR_APPT_SESSION = 'INITIATE_JUNIOR_APPT_SESSION',
+  INITIATE_SENIOR_APPT_SESSION = 'INITIATE_SENIOR_APPT_SESSION',
+  BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
 }
 
 export enum NotificationPriority {
@@ -73,15 +78,28 @@ type PushNotificationInput = {
 
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
 
+export async function sendSMS(message: string) {
+  const smsResp = await fetch(
+    'http://bulkpush.mytoday.com/BulkSms/SingleMsgApi?feedid=370454&username=7993961498&password=popcorn123$$&To=9657585411&Text=' +
+      message
+  );
+  console.log(smsResp, 'sms resp');
+}
+
 export async function sendNotification(
   pushNotificationInput: PushNotificationInput,
   patientsDb: Connection,
-  consultsDb: Connection
+  consultsDb: Connection,
+  doctorsDb: Connection
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
   if (appointment == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
+  //get doctor details
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorDetails = await doctorRepo.findById(appointment.doctorId);
+  if (doctorDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
   //check patient existence and get his details
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
@@ -122,6 +140,35 @@ export async function sendNotification(
       '{0}',
       appointment.displayId + ''
     );
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.INITIATE_JUNIOR_APPT_SESSION
+  ) {
+    notificationTitle = ApiConstants.JUNIOR_APPT_SESSION_TITLE;
+    notificationBody = ApiConstants.JUNIOR_APPT_SESSION_BODY.replace(
+      '{0}',
+      appointment.displayId + ''
+    );
+  } else if (
+    pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
+  ) {
+    notificationTitle = ApiConstants.SENIOR_APPT_SESSION_TITLE;
+    notificationBody = ApiConstants.SENIOR_APPT_SESSION_BODY.replace(
+      '{0}',
+      appointment.displayId + ''
+    );
+  } else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
+    let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    smsMessage = smsMessage.replace('{1}', appointment.displayId.toString());
+    smsMessage = smsMessage.replace('{2}', doctorDetails.firstName + ' ' + doctorDetails.lastName);
+    const istDateTime = addMilliseconds(appointment.appointmentDateTime, 19800000);
+    const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
+    smsMessage = smsMessage.replace('{3}', smsDate.toString());
+    smsMessage = smsMessage.replace('at {4}', '');
+    notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
+    notificationBody = smsMessage;
   }
 
   //building payload
@@ -163,8 +210,8 @@ const sendPushNotification: Resolver<
   PushNotificationInputArgs,
   NotificationsServiceContext,
   PushNotificationSuccessMessage | undefined
-> = async (parent, { pushNotificationInput }, { patientsDb, consultsDb }) => {
-  return sendNotification(pushNotificationInput, patientsDb, consultsDb);
+> = async (parent, { pushNotificationInput }, { patientsDb, consultsDb, doctorsDb }) => {
+  return sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
 };
 export const getNotificationsResolvers = {
   Query: { sendPushNotification },

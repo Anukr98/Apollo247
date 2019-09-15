@@ -152,6 +152,7 @@ interface MessagesObjectProps {
   username: string;
   text: string;
   duration: string;
+  url: string;
 }
 interface ConsultRoomProps {
   startConsult: string;
@@ -186,6 +187,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
+  const documentUpload = '^^#DocumentUpload';
   const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
   const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = props.doctorId;
@@ -458,13 +460,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </div>
             ) : (
               <div>
-                <span>
-                  {isURL(rowData.message) ? (
-                    <a href={rowData.message}> {rowData.message}</a>
-                  ) : (
-                    rowData.message
-                  )}
-                </span>
+                {rowData.message === documentUpload ? (
+                  <div style={{ width: '50px', height: '50px' }}>
+                    <a href={rowData.url} target="_blank">
+                      <img
+                        style={{ width: '50px', height: '50px' }}
+                        src={rowData.url}
+                        alt={rowData.url}
+                      />
+                    </a>
+                  </div>
+                ) : (
+                  <span>{rowData.message}</span>
+                )}
               </div>
             )}
           </div>

@@ -12,6 +12,14 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 //import { addMinutes, format, addMilliseconds } from 'date-fns';
+import { sendSMS } from 'notifications-service/resolvers/notifications';
+import { ApiConstants } from 'ApiConstants';
+import { addMilliseconds, format } from 'date-fns';
+import {
+  sendNotification,
+  PushNotificationSuccessMessage,
+  NotificationType,
+} from 'notifications-service/resolvers/notifications';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -116,11 +124,6 @@ const bookAppointment: Resolver<
   ConsultServiceContext,
   BookAppointmentResult
 > = async (parent, { appointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
-  console.log('current date', new Date());
-  console.log(appointmentInput.appointmentDateTime, 'input date time');
-  console.log(appointmentInput.appointmentDateTime.toISOString(), 'iso string');
-  console.log(new Date(appointmentInput.appointmentDateTime.toISOString()), 'iso to date');
-
   //check if patient id is valid
   const patient = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patient.findById(appointmentInput.patientId);
@@ -128,18 +131,24 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
 
-  if (patientDetails.dateOfBirth == null || !patientDetails.dateOfBirth) {
+  /*if (patientDetails.dateOfBirth == null || !patientDetails.dateOfBirth) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
 
   if (patientDetails.lastName == null || !patientDetails.lastName) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  }
+  }*/
 
   //check if docotr id is valid
   const doctor = doctorsDb.getCustomRepository(DoctorRepository);
   const docDetails = await doctor.findById(appointmentInput.doctorId);
   if (!docDetails) {
+    throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
+  }
+
+  //check if doctor is junior doctor
+  const isJunior = await doctor.isJuniorDoctor(appointmentInput.doctorId);
+  if (isJunior) {
     throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   }
 
@@ -181,8 +190,6 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.OUT_OF_CONSULT_HOURS, undefined, {});
   }
 
-  console.log(checkHours, 'check hours');
-
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
     ...appointmentInput,
     status: STATUS.PENDING,
@@ -191,10 +198,34 @@ const bookAppointment: Resolver<
     appointmentState: APPOINTMENT_STATE.NEW,
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
+  let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
+    '{0}',
+    patientDetails.firstName
+  );
+  smsMessage = smsMessage.replace('{1}', appointment.displayId.toString());
+  smsMessage = smsMessage.replace('{2}', docDetails.firstName + ' ' + docDetails.lastName);
+  const istDateTime = addMilliseconds(appointmentInput.appointmentDateTime, 19800000);
+  const smsDate = format(istDateTime, 'dd-MM-yyyy HH:mm');
+  smsMessage = smsMessage.replace('{3}', smsDate.toString());
+  smsMessage = smsMessage.replace('at {4}', '');
+  console.log(smsMessage, 'sms message');
+  sendSMS(smsMessage);
+  // send notification
+  const pushNotificationInput = {
+    appointmentId: appointment.id,
+    notificationType: NotificationType.BOOK_APPOINTMENT,
+  };
+  const notificationResult = await sendNotification(
+    pushNotificationInput,
+    patientsDb,
+    consultsDb,
+    doctorsDb
+  );
+  console.log(notificationResult, 'book appt notification');
   //message queue starts
   /*const doctorName = docDetails.firstName + '' + docDetails.lastName;
   const speciality = docDetails.specialty.name;
-  const istDateTime = addMilliseconds(appointmentInput.appointmentDateTime, 19800000);
+  
   const aptEndTime = addMinutes(istDateTime, 15);
   console.log(istDateTime, aptEndTime);
   const slotTime = format(istDateTime, 'HH:mm') + '-' + format(aptEndTime, 'HH:mm');

@@ -98,6 +98,18 @@ import {
   medicineOrderCancelTypeDefs,
   medicineOrderCancelResolvers,
 } from 'profiles-service/resolvers/cancelMedicineOrder';
+import {
+  patientLifeStyleTypeDefs,
+  patientLifeStyleResolvers,
+} from 'profiles-service/resolvers/patientLifeStyle';
+import {
+  patientFamilyHistoryTypeDefs,
+  patientFamilyHistoryResolvers,
+} from 'profiles-service/resolvers/patientFamilyHistory';
+import {
+  saveMedicineOrderInvoiceTypeDefs,
+  saveMedicineOrderInvoiceResolvers,
+} from 'profiles-service/resolvers/pharmaOrderInvoice';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -245,6 +257,18 @@ import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
       {
         typeDefs: helpTypeDefs,
         resolvers: helpResolvers,
+      },
+      {
+        typeDefs: patientLifeStyleTypeDefs,
+        resolvers: patientLifeStyleResolvers,
+      },
+      {
+        typeDefs: patientFamilyHistoryTypeDefs,
+        resolvers: patientFamilyHistoryResolvers,
+      },
+      {
+        typeDefs: saveMedicineOrderInvoiceTypeDefs,
+        resolvers: saveMedicineOrderInvoiceResolvers,
       },
     ]),
   });

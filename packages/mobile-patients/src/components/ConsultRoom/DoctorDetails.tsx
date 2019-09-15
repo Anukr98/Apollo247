@@ -192,15 +192,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   if (appointmentData.error) {
     console.log('error', appointmentData.error);
   } else {
-    console.log(appointmentData, '00000000000');
-    if (
-      appointmentData &&
-      appointmentData.data &&
-      appointmentData.data.getAppointmentHistory &&
-      appointmentHistory !== appointmentData.data.getAppointmentHistory.appointmentsHistory
-    ) {
-      setAppointmentHistory(appointmentData.data.getAppointmentHistory.appointmentsHistory);
-    }
+    // console.log(appointmentData, '00000000000');
+    try {
+      if (
+        appointmentData &&
+        appointmentData.data &&
+        appointmentData.data.getAppointmentHistory &&
+        appointmentHistory !== appointmentData.data.getAppointmentHistory.appointmentsHistory
+      ) {
+        setAppointmentHistory(appointmentData.data.getAppointmentHistory.appointmentsHistory);
+      }
+    } catch {}
   }
 
   const { data, error } = useQuery<getDoctorDetailsById>(GET_DOCTOR_DETAILS_BY_ID, {
@@ -211,12 +213,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   if (error) {
     console.log('error', error);
   } else {
-    console.log('getDoctorDetailsById', data);
-    if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
-      setDoctorDetails(data.getDoctorDetailsById);
-      setDoctorId(data.getDoctorDetailsById.id);
-      setshowSpinner(false);
-    }
+    try {
+      console.log('getDoctorDetailsById', data);
+      if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
+        setDoctorDetails(data.getDoctorDetailsById);
+        setDoctorId(data.getDoctorDetailsById.id);
+        setshowSpinner(false);
+      }
+    } catch {}
   }
 
   const todayDate = new Date().toISOString().slice(0, 10);
@@ -234,30 +238,32 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   if (availability.error) {
     console.log('error', availability.error);
   } else {
-    console.log(availability.data, 'availabilityData', 'availableSlots');
-    const doctorAvailalbeSlots = g(
-      availability,
-      'data',
-      'getDoctorNextAvailableSlot',
-      'doctorAvailalbeSlots'
-    );
-    console.log(doctorAvailalbeSlots, '1234567');
-    if (doctorAvailalbeSlots && availableInMin === undefined) {
-      const nextSlot = doctorAvailalbeSlots ? g(doctorAvailalbeSlots[0], 'availableSlot') : null;
-      const nextPhysicalSlot = doctorAvailalbeSlots
-        ? g(doctorAvailalbeSlots[0], 'physicalAvailableSlot')
-        : null;
+    try {
+      // console.log(availability.data, 'availabilityData', 'availableSlots');
+      const doctorAvailalbeSlots = g(
+        availability,
+        'data',
+        'getDoctorNextAvailableSlot',
+        'doctorAvailalbeSlots'
+      );
+      // console.log(doctorAvailalbeSlots, '1234567');
+      if (doctorAvailalbeSlots && availableInMin === undefined) {
+        const nextSlot = doctorAvailalbeSlots ? g(doctorAvailalbeSlots[0], 'availableSlot') : null;
+        const nextPhysicalSlot = doctorAvailalbeSlots
+          ? g(doctorAvailalbeSlots[0], 'physicalAvailableSlot')
+          : null;
 
-      console.log(nextSlot, 'nextSlot', nextPhysicalSlot);
-      if (nextSlot) {
-        const timeDiff: Number = timeDiffFromNow(nextSlot);
-        setavailableInMin(timeDiff);
+        // console.log(nextSlot, 'nextSlot', nextPhysicalSlot);
+        if (nextSlot) {
+          const timeDiff: Number = timeDiffFromNow(nextSlot);
+          setavailableInMin(timeDiff);
+        }
+        if (nextPhysicalSlot) {
+          const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
+          setavailableInMinPhysical(timeDiff);
+        }
       }
-      if (nextPhysicalSlot) {
-        const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
-        setavailableInMinPhysical(timeDiff);
-      }
-    }
+    } catch (error) {}
   }
 
   const formatTime = (time: string) => {
@@ -269,10 +275,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const renderDoctorDetails = () => {
-    console.log(doctorDetails, 'renderDoctorDetails', 'availableInMin', availableInMin);
+    // console.log(doctorDetails, 'renderDoctorDetails', 'availableInMin', availableInMin);
     if (doctorDetails) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
-        console.log(item, item.facility);
+        // console.log(item, item.facility);
         return item.facility.facilityType === 'HOSPITAL';
       });
       const clinicAddress = doctorClinics.length
@@ -315,7 +321,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   </Text>
                   {availableInMin && availableInMin < 60 && availableInMin > 0 ? (
                     <CapsuleView
-                      title={`AVAILABLE IN ${availableInMin} MIN${availableInMin > 1 ? 'S' : ''}`}
+                      title={`AVAILABLE IN ${availableInMin} MIN${availableInMin == 1 ? '' : 'S'}`}
                       isActive={availableInMin <= 15 ? true : false}
                     />
                   ) : null}
@@ -335,7 +341,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       availableInMinPhysical > 0 ? (
                         <CapsuleView
                           title={`AVAILABLE IN ${availableInMinPhysical} MIN${
-                            availableInMinPhysical > 1 ? 'S' : ''
+                            availableInMinPhysical == 1 ? '' : 'S'
                           }`}
                           isActive={availableInMinPhysical <= 15 ? true : false}
                         />
@@ -382,7 +388,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                             hours.facility.id === item.facility.id
                         )
                       : [];
-                  console.log(clinicHours, 'clinicHours');
+                  // console.log(clinicHours, 'clinicHours');
                   return (
                     <View>
                       <View
@@ -508,7 +514,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               bounces={false}
               numColumns={doctorDetails.starTeam ? Math.ceil(doctorDetails.starTeam.length / 2) : 0}
               renderItem={({ item }) => {
-                console.log(item, 'itemitemitemitem');
+                // console.log(item, 'itemitemitemitem');
                 if (item && item.associatedDoctor && item.associatedDoctor.id)
                   return (
                     <View style={{ width: width - 50 }} key={item.associatedDoctor.id}>
@@ -631,7 +637,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     }
   };
 
-  console.log(displayoverlay, 'displayoverlay', doctorDetails);
+  // console.log(displayoverlay, 'displayoverlay', doctorDetails);
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView

@@ -75,6 +75,23 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    textAreaRoot: {
+      padding: 0,
+      '&:before': {
+        display: 'none',
+      },
+      '&:after': {
+        display: 'none',
+      },
+      '& textarea': {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#01475b',
+        border: '1px solid #00b38e',
+        padding: 16,
+        borderRadius: 10,
+      },
+    },
     selectRoot: {
       fontSize: 16,
       fontWeight: 500,
@@ -102,6 +119,7 @@ const AphTextField: React.FC<TextFieldProps> = (props) => {
           focused: classes.inputFocused,
           error: classes.inputError,
           disabled: classes.inputDisabled,
+          multiline: classes.textAreaRoot,
         },
       }}
       SelectProps={{ classes: { root: classes.selectRoot } }}

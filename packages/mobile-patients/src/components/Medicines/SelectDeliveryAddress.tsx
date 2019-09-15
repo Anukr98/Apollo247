@@ -5,7 +5,7 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Alert, Platform } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Spinner } from '../ui/Spinner';
 import { pinCodeServiceabilityApi } from '../../helpers/apiCalls';
@@ -41,7 +41,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
             pinCodeServiceabilityApi(selectedPinCode, 'PHARMA')
               .then(({ data: { Availability } }) => {
                 setLoading(false);
-                if (Availability) {
+                if (Platform.OS == 'android' ? true : Availability) {
                   setSelectedAddressId && setSelectedAddressId(selectedId);
                   props.navigation.goBack();
                 } else {

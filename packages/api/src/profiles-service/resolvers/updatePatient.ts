@@ -6,6 +6,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { validate } from 'class-validator';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const updatePatientTypeDefs = gql`
   input UpdatePatientInput {
@@ -20,12 +21,18 @@ export const updatePatientTypeDefs = gql`
     relation: Relation
   }
 
+  input UpdatePatientAllergiesInput {
+    id: ID!
+    allergies: String!
+  }
+
   type UpdatePatientResult {
     patient: Patient
   }
 
   extend type Mutation {
     updatePatient(patientInput: UpdatePatientInput): UpdatePatientResult!
+    updatePatientAllergies(patientId: String!, allergies: String!): UpdatePatientResult!
   }
 `;
 
@@ -65,8 +72,23 @@ const updatePatient: Resolver<
   return { patient };
 };
 
+const updatePatientAllergies: Resolver<
+  null,
+  { patientId: string; allergies: string },
+  ProfilesServiceContext,
+  UpdatePatientResult
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const updateAllergies = await patientRepo.updatePatientAllergies(args.patientId, args.allergies);
+  console.log(updateAllergies, 'updateAllergies');
+  const patient = await patientRepo.findById(args.patientId);
+  if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  return { patient };
+};
+
 export const updatePatientResolvers = {
   Mutation: {
     updatePatient,
+    updatePatientAllergies,
   },
 };

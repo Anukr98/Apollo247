@@ -463,6 +463,7 @@ export const GET_CASESHEET_DETAILS = gql`
           patientId
           parentId
           status
+          isFollowUp
         }
         consultType
         diagnosis {
@@ -584,10 +585,20 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
       MedicineOrderDetails {
         id
         orderAutoId
+        devliveryCharges
         estimatedAmount
         medicineOrdersStatus {
           id
           orderStatus
+          statusDate
+        }
+        medicineOrderLineItems {
+          medicineSKU
+          medicineName
+          price
+          quantity
+          isMedicine
+          mou
         }
       }
     }
@@ -952,5 +963,39 @@ export const CHECK_IF_RESCHDULE = gql`
       appointmentState
       rescheduleCount
     }
+  }
+`;
+
+export const GET_APPOINTMENT_DATA = gql`
+  query getAppointmentData($appointmentId: String!) {
+    getAppointmentData(appointmentId: $appointmentId) {
+      appointmentsHistory {
+        id
+        doctorId
+        appointmentState
+        isFollowUp
+        doctorInfo {
+          id
+          firstName
+
+          lastName
+        }
+      }
+    }
+  }
+`;
+
+export const ADD_TO_CONSULT_QUEUE = gql`
+  mutation addToConsultQueue($appointmentId: String!) {
+    addToConsultQueue(appointmentId: $appointmentId) {
+      id
+      doctorId
+    }
+  }
+`;
+
+export const CHECK_IF_FOLLOWUP_BOOKED = gql`
+  query checkIfFollowUpBooked($appointmentId: String!) {
+    checkIfFollowUpBooked(appointmentId: $appointmentId)
   }
 `;

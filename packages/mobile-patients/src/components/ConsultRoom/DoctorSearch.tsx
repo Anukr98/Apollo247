@@ -125,7 +125,7 @@ export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const params = props.navigation.state.params ? props.navigation.state.params.searchText : '';
-  console.log(params, 'params');
+  //console.log(params, 'params');
 
   const [searchText, setSearchText] = useState<string>(params);
   const [pastSearch, setPastSearch] = useState<boolean>(true);
@@ -155,7 +155,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
   const fetchNextSlots = (doctorIds: (string | undefined)[]) => {
-    console.log(doctorIds, 'doctorIds fetchNextSlots');
+    //console.log(doctorIds, 'doctorIds fetchNextSlots');
     const todayDate = new Date().toISOString().slice(0, 10);
     const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
       fetchPolicy: 'no-cache',
@@ -170,7 +170,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     if (availability.error) {
       console.log('error', availability.error);
     } else {
-      console.log('doctorIds fetchNextSlots result', availability);
+      //console.log('doctorIds fetchNextSlots result', availability);
       if (
         availability &&
         availability.data &&
@@ -196,7 +196,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   if (newData.error) {
     console.log('newData.error', JSON.stringify(newData.error));
   } else {
-    console.log('newData.data doctor', newData.data);
+    // console.log('newData.data doctor', newData.data);
     // let doctorIds: (string | null)[] = [];
     let isNewDoctor = false;
 
@@ -210,11 +210,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             if (item) return item.id;
           })
         : [];
-      console.log(
-        doctorIds,
-        'doctorIds doctor',
-        newData.data.SearchDoctorAndSpecialtyByName.doctors
-      );
+      // console.log(
+      //   doctorIds,
+      //   'doctorIds doctor',
+      //   newData.data.SearchDoctorAndSpecialtyByName.doctors
+      // );
       isNewDoctor = true;
       setdoctorsList(newData.data.SearchDoctorAndSpecialtyByName.doctors);
       // searchText === '' && setallDoctors(newData.data.SearchDoctorAndSpecialtyByName.doctors)
@@ -234,11 +234,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       doctorIds.push(...ids);
       isNewDoctor = true;
 
-      console.log(
-        doctorIds,
-        'doctorIds possibleMatches',
-        newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
-      );
+      // console.log(
+      //   doctorIds,
+      //   'doctorIds possibleMatches',
+      //   newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
+      // );
       setpossibleMatches(newData.data.SearchDoctorAndSpecialtyByName.possibleMatches);
     }
     if (
@@ -262,11 +262,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       doctorIds.push(...ids);
       isNewDoctor = true;
 
-      console.log(
-        doctorIds,
-        'doctorIds otherDoctors',
-        newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
-      );
+      // console.log(
+      //   doctorIds,
+      //   'doctorIds otherDoctors',
+      //   newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
+      // );
       setotherDoctors(newData.data.SearchDoctorAndSpecialtyByName.otherDoctors);
     }
     // if (isNewDoctor)
@@ -317,7 +317,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       fetchPolicy: 'no-cache',
     }
   );
-  console.log(getData.loading, 'getData.loading');
+  //console.log(getData.loading, 'getData.loading');
   if (getData.error) {
     console.log('getData.error', getData.error);
   } else {
@@ -326,12 +326,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       getData.data.getAllSpecialties &&
       Specialities !== getData.data.getAllSpecialties
     ) {
-      console.log('getData.data', getData.data.getAllSpecialties);
+      // console.log('getData.data', getData.data.getAllSpecialties);
       setSpecialities(getData.data.getAllSpecialties);
       setshowSpinner(false);
     }
   }
-  console.log(currentPatient && currentPatient.id ? currentPatient.id : '', 'currentPatient');
+  //console.log(currentPatient && currentPatient.id ? currentPatient.id : '', 'currentPatient');
 
   const pastData = useQuery<getPatientPastSearches>(GET_PATIENT_PAST_SEARCHES, {
     fetchPolicy: 'no-cache',
@@ -342,13 +342,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   if (pastData.error) {
     console.log('pastData.error', pastData.error);
   } else {
-    console.log(pastData, 'pastDatapastDatapastData');
+    //console.log(pastData, 'pastDatapastDatapastData');
     if (
       pastData.data &&
       pastData.data.getPatientPastSearches &&
       PastSearches !== pastData.data.getPatientPastSearches
     ) {
-      console.log('pastData.data', pastData.data.getPatientPastSearches);
+      //console.log('pastData.data', pastData.data.getPatientPastSearches);
       setPastSearches(pastData.data.getPatientPastSearches);
     }
   }
@@ -360,7 +360,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           title={'DOCTORS / SPECIALITIES'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => props.navigation.replace(AppRoutes.SymptomChecker)}
         />
         <View style={styles.searchView}>
           <TextInputComponent
@@ -496,7 +496,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     // const SpecialitiesList = Specialities;
 
     const SpecialitiesList = searchText.length > 2 ? searchSpecialities : Specialities;
-    console.log(SpecialitiesList, 'SpecialitiesList');
+    //  console.log(SpecialitiesList, 'SpecialitiesList');
     if (SpecialitiesList && SpecialitiesList.length > 0 && displaySpeialist) {
       return (
         <View>
@@ -612,7 +612,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderDoctorSearches = () => {
-    console.log('doctorsList aaaa', doctorsList);
+    // console.log('doctorsList aaaa', doctorsList);
 
     if (searchText.length > 2 && doctorsList && doctorsList.length > 0) {
       console.log('doctorsList');

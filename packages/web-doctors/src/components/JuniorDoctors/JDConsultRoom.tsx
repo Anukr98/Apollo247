@@ -1,29 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Theme, Button, Modal, Avatar } from '@material-ui/core';
+import { Theme, Button, Avatar } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import Paper from '@material-ui/core/Paper';
 import { JDCallPopover } from 'components/JuniorDoctors/JDCallPopover';
 import Typography from '@material-ui/core/Typography';
 import { useApolloClient } from 'react-apollo-hooks';
-import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/createAppointmentSession';
-import {
-  EndAppointmentSession,
-  EndAppointmentSessionVariables,
-} from 'graphql/types/EndAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
-
-import {
-  CREATE_APPOINTMENT_SESSION,
-  GET_CASESHEET,
-  UPDATE_CASESHEET,
-  END_APPOINTMENT_SESSION,
-} from 'graphql/profiles';
+import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
@@ -32,7 +20,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetCaseSheet';
-import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, Gender } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -44,7 +32,6 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import isNull from 'lodash/isNull';
 import { parseISO, format } from 'date-fns';
-import { Gender } from 'graphql/types/globalTypes';
 import differenceInYears from 'date-fns/differenceInYears';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
@@ -58,6 +45,37 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { Link } from 'react-router-dom';
+
+/* patient related queries and mutations */
+// import { useQueryWithSkip } from 'hooks/apolloHooks';
+import {
+  SAVE_PATIENT_FAMILY_HISTORY,
+  // GET_PATIENT_FAMILY_HISTORY,
+  SAVE_PATIENT_LIFE_STYLE,
+  // GET_PATIENT_LIFE_STYLE,
+  UPDATE_PATIENT_ALLERGIES,
+} from 'graphql/consults';
+import {
+  SavePatientFamilyHistory,
+  SavePatientFamilyHistoryVariables,
+} from 'graphql/types/SavePatientFamilyHistory';
+// import {
+//   GetPatientFamilyHistoryList,
+//   GetPatientFamilyHistoryListVariables,
+// } from 'graphql/types/GetPatientFamilyHistoryList';
+import {
+  SavePatientLifeStyle,
+  SavePatientLifeStyleVariables,
+} from 'graphql/types/SavePatientLifeStyle';
+// import {
+//   GetPatientLifeStyleList,
+//   GetPatientLifeStyleListVariables,
+// } from 'graphql/types/GetPatientLifeStyleList';
+import {
+  UpdatePatientAllergies,
+  UpdatePatientAllergiesVariables,
+} from 'graphql/types/UpdatePatientAllergies';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -81,6 +99,7 @@ const useStyles = makeStyles((theme: Theme) => {
     pageHeader: {
       backgroundColor: theme.palette.common.white,
       display: 'flex',
+      position: 'relative',
     },
     patientSection: {
       width: '50%',
@@ -127,8 +146,8 @@ const useStyles = makeStyles((theme: Theme) => {
     avatar: {
       width: 60,
       height: 60,
+      backgroundColor: '#f7f8f5',
     },
-
     doctorInfo: {
       paddingRight: 55,
       fontWeight: 500,
@@ -303,6 +322,38 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
       },
     },
+    backArrow: {
+      cursor: 'pointer',
+      marginRight: 50,
+      position: 'absolute',
+      left: 20,
+      top: 20,
+      [theme.breakpoints.up(1220)]: {
+        left: -62,
+        top: 0,
+        width: 48,
+        height: 48,
+        lineHeight: '36px',
+        borderRadius: '50%',
+        textAlign: 'center',
+        backgroundColor: '#02475b',
+      },
+      '& img': {
+        verticalAlign: 'bottom',
+      },
+    },
+    whiteArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.down(1220)]: {
+        display: 'none',
+      },
+    },
+    blackArrow: {
+      verticalAlign: 'middle',
+      [theme.breakpoints.up(1220)]: {
+        display: 'none',
+      },
+    },
   };
 });
 
@@ -323,26 +374,37 @@ export const JDConsultRoom: React.FC = () => {
     },
   });
 
+  // const {
+  //   data: patientFamilyHistoryData,
+  //   loading: patientFamilyHistoryLoading,
+  //   error: patientFamilyHistoryError,
+  // } = useQueryWithSkip<GetPatientFamilyHistoryList, GetPatientFamilyHistoryListVariables>(
+  //   GET_PATIENT_FAMILY_HISTORY,
+  //   { variables: { patientId: patientId } }
+  // );
+
+  // const {
+  //   data: patientLifeStyleListData,
+  //   loading: patientLifeStyleLoading,
+  //   error: patientLifeStyleError,
+  // } = useQueryWithSkip<GetPatientLifeStyleList, GetPatientLifeStyleListVariables>(
+  //   GET_PATIENT_LIFE_STYLE,
+  //   { variables: { patientId: patientId } }
+  // );
+
   const doctorFirstName =
     currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
   const doctorLastName =
     currentDoctor && currentDoctor.lastName ? _startCase(_toLower(currentDoctor.lastName)) : '';
   const doctorMobileNumber =
-    currentDoctor && currentDoctor.mobileNumber
-      ? _startCase(_toLower(currentDoctor.mobileNumber))
-      : '';
+    currentDoctor && currentDoctor.mobileNumber ? currentDoctor.mobileNumber : '';
   const doctorSalutation =
     currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
   const doctorSpecialty =
     currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
       ? _startCase(_toLower(currentDoctor.specialty.name))
       : '';
-  const doctorPhotoUrl =
-    currentDoctor && currentDoctor.photoUrl ? _startCase(_toLower(currentDoctor.photoUrl)) : '';
-
-  //     setAppointmentId(paramId);
-  //     setpatientId(params.patientId);
-  //     setdoctorId(currentPatient.id);
+  const doctorPhotoUrl = currentDoctor && currentDoctor.photoUrl ? currentDoctor.photoUrl : '';
 
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
@@ -352,6 +414,11 @@ export const JDConsultRoom: React.FC = () => {
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
+  const [saving, setSaving] = useState<boolean>(false);
+
+  const [allergies, setPatientAllergies] = useState<string>('');
+  const [lifeStyle, setPatientLifeStyle] = useState<string>('');
+  const [familyHistory, setFamilyHistory] = useState<string>('');
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
@@ -373,6 +440,7 @@ export const JDConsultRoom: React.FC = () => {
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
+  const [userCardStrip, setUserCardStrip] = useState<string>('');
 
   const [notes, setNotes] = useState<string | null>(null);
 
@@ -381,7 +449,6 @@ export const JDConsultRoom: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   /* case sheet data*/
 
   /* need to be worked later */
@@ -416,16 +483,6 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
       ? casesheetInfo.getCaseSheet.patientDetails.relation
       : '';
-  const patientDob =
-    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
-      ? casesheetInfo.getCaseSheet.patientDetails.dateOfBirth
-      : new Date();
-  const patientAge = differenceInYears(new Date(), parseISO(patientDob));
-  const patientGender =
-    casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
-      ? _startCase(_toLower(casesheetInfo.getCaseSheet.patientDetails.gender))
-      : '';
-
   const patientAppointmentId =
     (casesheetInfo &&
       casesheetInfo.getCaseSheet &&
@@ -446,17 +503,54 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo.getCaseSheet.patientDetails &&
     !isNull(casesheetInfo.getCaseSheet.patientDetails.photoUrl)
       ? casesheetInfo.getCaseSheet.patientDetails.photoUrl
-      : '';
+      : require('images/PatientImage.png');
 
   if (patientAppointmentTimeUtc !== '') {
     appointmentDateIST = format(
       new Date(patientAppointmentTimeUtc).getTime(),
-      'dd-MM-yyyy hh:mm a'
+      'dd/MM/yyyy, hh:mm a'
     );
   }
-
+  // console.log('patient details....', casesheetInfo.getCaseSheet.patientDetails);
   const patientRelationHeader =
-    patientRelation === Relation.ME ? 'Self' : _startCase(_toLower(patientRelation));
+    patientRelation === Relation.ME ? ' Self' : _startCase(_toLower(patientRelation));
+
+  // console.log(patientAllergies, '--------------');
+
+  const savePatientAllergiesMutation = useMutation<
+    UpdatePatientAllergies,
+    UpdatePatientAllergiesVariables
+  >(UPDATE_PATIENT_ALLERGIES, {
+    variables: {
+      patientId: patientId,
+      allergies: allergies,
+    },
+  });
+
+  const savePatientLifeStyleMutation = useMutation<
+    SavePatientLifeStyle,
+    SavePatientLifeStyleVariables
+  >(SAVE_PATIENT_LIFE_STYLE, {
+    variables: {
+      patientLifeStyleInput: {
+        patientId: patientId,
+        description: lifeStyle,
+      },
+    },
+  });
+
+  const savePatientFamilyHistoryMutation = useMutation<
+    SavePatientFamilyHistory,
+    SavePatientFamilyHistoryVariables
+  >(SAVE_PATIENT_FAMILY_HISTORY, {
+    variables: {
+      patientFamilyHistoryInput: {
+        patientId: patientId,
+        description: familyHistory,
+        relation: Relation.ME,
+      },
+    },
+  });
 
   useEffect(() => {
     if (isSignedIn) {
@@ -469,6 +563,39 @@ export const JDConsultRoom: React.FC = () => {
         .then((_data) => {
           setCasesheetInfo(_data.data);
           setError('');
+
+          //TO DO. this must be altered later
+          //in effiecient way of loading the data as api needs to be revamped based on the UI.
+          _data!.data!.getCaseSheet!.patientDetails!.allergies
+            ? setPatientAllergies(_data!.data!.getCaseSheet!.patientDetails!.allergies)
+            : '';
+
+          const patientFamilyHistory =
+            _data!.data!.getCaseSheet!.patientDetails &&
+            _data!.data!.getCaseSheet!.patientDetails!.familyHistory
+              ? _data!.data!.getCaseSheet!.patientDetails!.familyHistory[
+                  _data!.data!.getCaseSheet!.patientDetails!.familyHistory.length - 1
+                ]
+              : null;
+
+          const patientLifeStyle =
+            _data!.data!.getCaseSheet!.patientDetails &&
+            _data!.data!.getCaseSheet!.patientDetails!.lifeStyle
+              ? _data!.data!.getCaseSheet!.patientDetails!.lifeStyle[
+                  _data!.data!.getCaseSheet!.patientDetails!.lifeStyle.length - 1
+                ]
+              : null;
+
+          setFamilyHistory(
+            patientFamilyHistory && patientFamilyHistory!.description
+              ? patientFamilyHistory!.description
+              : ''
+          );
+
+          setPatientLifeStyle(
+            patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
+          );
+
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
                 .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
@@ -512,6 +639,14 @@ export const JDConsultRoom: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
+
+          /* patient personal data state vars */
+          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
+            ? setFollowUpDate(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
+              ] as unknown) as string[])
+            : setFollowUpDate([]);
+
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -524,6 +659,34 @@ export const JDConsultRoom: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
           }
+          const cardStripArr = [];
+          if (
+            _data!.data!.getCaseSheet!.patientDetails!.dateOfBirth &&
+            _data!.data!.getCaseSheet!.patientDetails!.dateOfBirth !== null &&
+            _data!.data!.getCaseSheet!.patientDetails!.dateOfBirth !== ''
+          ) {
+            cardStripArr.push(
+              Math.abs(
+                new Date(Date.now()).getUTCFullYear() -
+                  new Date(_data!.data!.getCaseSheet!.patientDetails!.dateOfBirth).getUTCFullYear()
+              ).toString()
+            );
+          }
+          if (
+            _data!.data!.getCaseSheet!.patientDetails!.gender &&
+            _data!.data!.getCaseSheet!.patientDetails!.gender !== null
+          ) {
+            if (_data!.data!.getCaseSheet!.patientDetails!.gender === Gender.FEMALE) {
+              cardStripArr.push('F');
+            }
+            if (_data!.data!.getCaseSheet!.patientDetails!.gender === Gender.MALE) {
+              cardStripArr.push('M');
+            }
+            if (_data!.data!.getCaseSheet!.patientDetails!.gender === Gender.OTHER) {
+              cardStripArr.push('O');
+            }
+          }
+          setUserCardStrip(cardStripArr.join(', '));
         })
         .catch((e: any) => {
           setError('Error occured in getcasesheet api');
@@ -541,20 +704,20 @@ export const JDConsultRoom: React.FC = () => {
   }, [appointmentId, client, isSignedIn]);
 
   const saveCasesheetAction = (flag: boolean) => {
+    setSaving(true);
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
         mutation: UPDATE_CASESHEET,
         variables: {
           UpdateCaseSheetInput: {
             symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-            notes: customNotes,
+            notes: customNotes.length > 0 ? customNotes : null,
             diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
             diagnosticPrescription:
               diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
-            followUp: followUp[0],
-            followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
-            followUpAfterInDays:
-              followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
+            followUp: false,
+            followUpDate: '',
+            followUpAfterInDays: '',
             otherInstructions:
               otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
             medicinePrescription:
@@ -565,33 +728,31 @@ export const JDConsultRoom: React.FC = () => {
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        console.log('in save case sheet action......');
-        // if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
-        //   console.log(_data!.data!.updateCaseSheet!.blobName);
-        //   const url =
-        //     'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
-        //     _data!.data!.updateCaseSheet!.blobName;
-        //   setPrescriptionPdf(url);
-        // }
-        // if (!flag) {
-        //   setIsPopoverOpen(true);
-        // }
+        savePatientAllergiesMutation();
+        savePatientFamilyHistoryMutation();
+        savePatientLifeStyleMutation();
+        setSaving(false);
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         alert(errorMessage);
+        setSaving(false);
         console.log('Error occured while update casesheet', e);
       });
   };
 
   const endConsultAction = () => {
-    mutationRemoveConsult().then();
+    mutationRemoveConsult();
+    savePatientAllergiesMutation();
+    savePatientFamilyHistoryMutation();
+    savePatientLifeStyleMutation();
     setIsDialogOpen(true);
     saveCasesheetAction(false);
   };
 
   const createSessionAction = () => {
+    setSaving(true);
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
         mutation: CREATE_APPOINTMENT_SESSION,
@@ -607,6 +768,7 @@ export const JDConsultRoom: React.FC = () => {
         settoken(_data.data.createAppointmentSession.appointmentToken);
         setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
         setError('');
+        setSaving(false);
       })
       .catch((e: any) => {
         setError('Error occured creating session');
@@ -622,6 +784,7 @@ export const JDConsultRoom: React.FC = () => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
     }, 10);
   };
+
   return !loaded ? (
     <LinearProgress />
   ) : (
@@ -668,23 +831,24 @@ export const JDConsultRoom: React.FC = () => {
             <div className={classes.pageContainer}>
               {/* patient and doctors details start */}
               <div className={classes.pageHeader}>
+                <div className={classes.backArrow}>
+                  <Link to={clientRoutes.juniorDoctor()}>
+                    <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                    <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
+                  </Link>
+                </div>
                 <div className={classes.patientSection}>
                   <div className={classes.patientImage}>
                     <img
-                      src={
-                        patientPhotoUrl !== ''
-                          ? patientPhotoUrl
-                          : 'https://via.placeholder.com/132x132'
-                      }
+                      style={{ width: '100px' }}
+                      src={patientPhotoUrl}
                       alt="Patient Profile Photo"
                     />
                   </div>
                   <div className={classes.patientInfo}>
                     <div className={classes.patientName}>
                       {patientFirstName} {patientLastName}
-                      <span>
-                        ({isNull(patientAge) ? patientAge : ''}, {patientGender})
-                      </span>
+                      <span>({userCardStrip})</span>
                     </div>
                     <div className={classes.patientTextInfo}>
                       <label>UHID:</label> {patientUhid} | <label>Relation:</label>
@@ -730,15 +894,27 @@ export const JDConsultRoom: React.FC = () => {
                 prescriptionPdf={prescriptionPdf}
                 sessionId={sessionId}
                 token={token}
+                saving={saving}
               />
               <div className={classes.contentGroup}>
                 <div className={classes.leftSection}>
                   <div className={classes.blockGroup}>
                     <div className={classes.blockHeader}>Case Sheet</div>
                     <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 440px' }}>
+                      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 430px' }}>
                         <div className={classes.customScroll}>
-                          {casesheetInfo ? <CaseSheet /> : ''}
+                          {casesheetInfo ? (
+                            <CaseSheet
+                              lifeStyle={lifeStyle}
+                              allergies={allergies}
+                              familyHistory={familyHistory}
+                              setLifeStyle={(lifeStyle: string) => setPatientLifeStyle(lifeStyle)}
+                              setAllergies={(allergies: string) => setPatientAllergies(allergies)}
+                              setFamilyHistory={(familyHistory: string) =>
+                                setFamilyHistory(familyHistory)
+                              }
+                            />
+                          ) : null}
                         </div>
                       </Scrollbars>
                     </div>
@@ -819,12 +995,6 @@ export const JDConsultRoom: React.FC = () => {
           </div>
         </Paper>
       </Modal> */}
-
-      {isEnded && (
-        <div className={classes.tabPdfBody}>
-          <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
-        </div>
-      )}
 
       <Dialog
         open={isDialogOpen}

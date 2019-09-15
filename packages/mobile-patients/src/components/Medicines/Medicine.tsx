@@ -258,7 +258,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
-        <ScrollView style={{ flex: 1 }}>
+        <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderTopView()}
           {tabs[0].title === selectedTab ? (
             <View>

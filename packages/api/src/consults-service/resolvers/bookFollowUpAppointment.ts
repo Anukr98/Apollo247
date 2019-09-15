@@ -46,6 +46,10 @@ export const bookFollowUpAppointmentTypeDefs = gql`
       followUpAppointmentInput: BookFollowUpAppointmentInput
     ): BookFollowUpAppointmentResult!
   }
+
+  extend type Query {
+    checkIfFollowUpBooked(appointmentId: String): Int!
+  }
 `;
 
 type BookFollowUpAppointmentResult = {
@@ -73,6 +77,7 @@ type FollowUpAppointmentBooking = {
   appointmentState: APPOINTMENT_STATE;
   isFollowUp: Boolean;
   followUpParentId: string;
+  isFollowPaid: Boolean;
 };
 
 type FollowUpAppointmentInputArgs = { followUpAppointmentInput: BookFollowUpAppointmentInput };
@@ -138,12 +143,15 @@ const bookFollowUpAppointment: Resolver<
   if (apptCount > 0) {
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
-
+  let isFollowPaid: Boolean = false;
+  const followUpCount = await appts.followUpBookedCount(followUpAppointmentInput.followUpParentId);
+  isFollowPaid = followUpCount > 1 ? true : false;
   const appointmentAttrs: Omit<FollowUpAppointmentBooking, 'id'> = {
     ...followUpAppointmentInput,
     status: STATUS.PENDING,
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
     isFollowUp: true,
+    isFollowPaid,
     appointmentState: APPOINTMENT_STATE.NEW,
     appointmentDateTime: new Date(followUpAppointmentInput.appointmentDateTime.toISOString()),
   };
@@ -163,8 +171,22 @@ const bookFollowUpAppointment: Resolver<
   return { appointment };
 };
 
+const checkIfFollowUpBooked: Resolver<
+  null,
+  { appointmentId: string },
+  ConsultServiceContext,
+  number
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const followUpCount = await appointmentRepo.followUpBookedCount(args.appointmentId);
+  return followUpCount;
+};
+
 export const bookFollowUpAppointmentResolvers = {
   Mutation: {
     bookFollowUpAppointment,
+  },
+  Query: {
+    checkIfFollowUpBooked,
   },
 };

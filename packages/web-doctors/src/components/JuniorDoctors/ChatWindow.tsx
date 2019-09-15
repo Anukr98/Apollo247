@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Theme, Button } from '@material-ui/core';
+import { Theme, Button, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
@@ -24,7 +24,8 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
     },
     customScroll: {
-      padding: '10px 20px',
+      padding: '0 20px',
+      paddingBottom: 20,
     },
     petient: {
       color: '#0087ba',
@@ -128,6 +129,71 @@ const useStyles = makeStyles((theme: Theme) => {
     none: {
       display: 'none',
     },
+    doctorChatRow: {
+      paddingBottom: 8,
+      textAlign: 'right',
+    },
+    chatBubble: {
+      backgroundColor: '#f7f7f7',
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
+      borderRadius: 10,
+      padding: '9px 16px',
+      color: '#02475b',
+      fontSize: 15,
+      lineHeight: 1.47,
+      letterSpacing: 'normal',
+      opacity: 0.8,
+      display: 'inline-block',
+      maxWidth: 236,
+      textAlign: 'left',
+    },
+    patientBubble: {
+      backgroundColor: theme.palette.common.white,
+      position: 'relative',
+    },
+    callStatusMessage: {
+      paddingTop: 12,
+    },
+    messageText: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
+      '& span:first-child': {
+        paddingRight: 12,
+        '& img': {
+          verticalAlign: 'middle',
+        },
+      },
+    },
+    callDuration: {
+      textAlign: 'right',
+      fontSize: 10,
+      fontWeight: 500,
+      color: '#02475b',
+    },
+    patientChatRow: {
+      paddingBottom: 8,
+      textAlign: 'right',
+    },
+    patientAvatar: {
+      position: 'absolute',
+      left: -40,
+      bottom: 0,
+    },
+    avatar: {
+      width: 32,
+      height: 32,
+    },
+    customScrollWrap: {
+      marginBottom: -37,
+      '& >div': {
+        top: '10px !important',
+        bottom: '10px !important',
+      },
+    },
   };
 });
 interface MessagesObjectProps {
@@ -136,6 +202,7 @@ interface MessagesObjectProps {
   username: string;
   text: string;
   duration: string;
+  url: string;
 }
 interface ConsultRoomProps {
   startConsult: string;
@@ -167,6 +234,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const acceptcallMsg = '^^callme`accept^^';
   const startConsult = '^^#startconsult';
   const stopConsult = '^^#stopconsult';
+  const documentUpload = '^^#DocumentUpload';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
@@ -374,34 +442,53 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       leftComponent++;
       rightComponent = 0;
       return (
-        <div className={classes.docterChat}>
-          <div className={rowData.duration ? classes.callMsg : classes.doctor}>
-            {leftComponent == 1 && <span className={classes.boldTxt}></span>}
-            {rowData.duration === '00 : 00' ? (
-              <span className={classes.none}>
-                <img src={require('images/ic_missedcall.svg')} />
-                {rowData.message.toLocaleLowerCase() === 'video call ended'
-                  ? 'You missed a video call'
-                  : 'You missed a voice call'}
-              </span>
-            ) : rowData.duration ? (
-              <div>
-                <img src={require('images/ic_round_call.svg')} />
-                <span>{rowData.message}</span>
-                <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
-              </div>
-            ) : (
-              <div>
+        <div className={classes.doctorChatRow}>
+          {rowData.duration === '00 : 00' ? (
+            <div className={classes.callStatusMessage}>
+              <div className={classes.messageText}>
                 <span>
-                  {isURL(rowData.message) ? (
-                    <a href={rowData.message}> {rowData.message}</a>
-                  ) : (
-                    rowData.message
-                  )}
+                  <img src={require('images/ic_missedcall.svg')} />
+                </span>
+                <span>
+                  {rowData.message.toLocaleLowerCase() === 'video call ended'
+                    ? 'You missed a video call'
+                    : 'You missed a voice call'}
                 </span>
               </div>
-            )}
-          </div>
+            </div>
+          ) : rowData.duration ? (
+            <div className={classes.callStatusMessage}>
+              <div className={classes.messageText}>
+                <span>
+                  <img src={require('images/ic_round_call.svg')} />
+                </span>
+                <span>{rowData.message}</span>
+              </div>
+              <div className={classes.callDuration}>Duration- {rowData.duration}</div>
+            </div>
+          ) : (
+            <div className={classes.chatBubble}>
+              {leftComponent == 1 && !rowData.duration && (
+                <div className={classes.patientAvatar}>
+                  <Avatar
+                    className={classes.avatar}
+                    src={require('images/ic_patientchat.png')}
+                    alt=""
+                  />
+                </div>
+              )}
+              {rowData.message === documentUpload ? (
+                <div>
+                  <a href={rowData.url} target="_blank">
+                    <img src={rowData.url} alt={rowData.url} />
+                  </a>
+                </div>
+              ) : (
+                <span>{rowData.message}</span>
+              )}
+              {/* {rowData.message} */}
+            </div>
+          )}
         </div>
       );
     }
@@ -420,38 +507,57 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       leftComponent = 0;
       rightComponent++;
       return (
-        <div className={classes.patientChat}>
-          <div className={rowData.duration ? classes.callMsg : classes.petient}>
-            {rightComponent == 1 && !rowData.duration && (
-              <span className={classes.boldTxt}>
-                <img src={require('images/ic_patientchat.png')} />
-              </span>
-            )}
-            {rowData.duration === '00 : 00' ? (
-              <span className={classes.missCall}>
-                <img src={require('images/ic_missedcall.svg')} />
-                {rowData.message.toLocaleLowerCase() === 'video call ended'
-                  ? 'You missed a video call'
-                  : 'You missed a voice call'}
-              </span>
-            ) : rowData.duration ? (
-              <div>
-                <img src={require('images/ic_round_call.svg')} />
-                <span>{rowData.message}</span>
-                <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
-              </div>
-            ) : (
-              <div>
+        <div className={classes.patientChatRow}>
+          {rowData.duration === '00 : 00' ? (
+            <div className={classes.callStatusMessage}>
+              <div className={classes.messageText}>
                 <span>
-                  {isURL(rowData.message) ? (
-                    <a href={rowData.message}> {rowData.message}</a>
-                  ) : (
-                    rowData.message
-                  )}
+                  <img src={require('images/ic_missedcall.svg')} />
+                </span>
+                <span>
+                  {rowData.message.toLocaleLowerCase() === 'video call ended'
+                    ? 'You missed a video call'
+                    : 'You missed a voice call'}
                 </span>
               </div>
-            )}
-          </div>
+            </div>
+          ) : rowData.duration ? (
+            <div className={classes.callStatusMessage}>
+              <div className={classes.messageText}>
+                <span>
+                  <img src={require('images/ic_round_call.svg')} />
+                </span>
+                <span>{rowData.message}</span>
+              </div>
+              <div className={classes.callDuration}>Duration- {rowData.duration}</div>
+            </div>
+          ) : (
+            <div className={`${classes.chatBubble} ${classes.patientBubble}`}>
+              {rightComponent == 1 && !rowData.duration && (
+                <div className={classes.patientAvatar}>
+                  <Avatar
+                    className={classes.avatar}
+                    src={require('images/ic_patientchat.png')}
+                    alt=""
+                  />
+                </div>
+              )}
+              {rowData.message === documentUpload ? (
+                <div style={{ width: '50px', height: '50px' }}>
+                  <a href={rowData.url} target="_blank">
+                    <img
+                      style={{ width: '50px', height: '50px' }}
+                      src={rowData.url}
+                      alt={rowData.url}
+                    />
+                  </a>
+                </div>
+              ) : (
+                <span>{rowData.message}</span>
+              )}
+              {/* {rowData.message} */}
+            </div>
+          )}
         </div>
       );
     }
@@ -580,10 +686,14 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         )}
         {(!showVideo || showVideoChat) && (
           <div className={classes.chatBody}>
-            <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 540px' }}>
+            <Scrollbars
+              className={classes.customScrollWrap}
+              autoHide={true}
+              style={{ height: 'calc(100vh - 505px' }}
+            >
               <div className={classes.customScroll}>
                 {messagessHtml}
-                <span id="scrollDiv"></span>
+                <div id="scrollDiv"></div>
               </div>
             </Scrollbars>
           </div>

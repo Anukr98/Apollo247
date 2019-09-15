@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ImagePicker, { ImagePickerResponse } from 'react-native-image-picker';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '../../graphql/types/getPatientMedicalRecords';
 
 const { width, height } = Dimensions.get('window');
 
@@ -66,9 +67,14 @@ const styles = StyleSheet.create({
 
 export interface UploadPrescriprionPopupForMedicineProps extends NavigationScreenProps {
   onClickClose: () => void;
-  onResponse: (response: ImagePickerResponse[]) => void;
+  onResponse: (
+    selectedType: 'cameraOrGallery' | 'e-prescriptions',
+    response: (
+      | ImagePickerResponse
+      | getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords)[]
+  ) => void;
 }
-export const UploadPrescriprionPopupForMedicineForMedicine: React.FC<
+export const UploadPrescriprionPopupForMedicine: React.FC<
   UploadPrescriprionPopupForMedicineProps
 > = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
@@ -82,7 +88,8 @@ export const UploadPrescriprionPopupForMedicineForMedicine: React.FC<
       },
       (response) => {
         setshowSpinner(false);
-        props.onResponse([response]);
+        const responseToReturn = response.data ? [response] : [];
+        props.onResponse('cameraOrGallery', responseToReturn);
       }
     );
   };
@@ -96,7 +103,8 @@ export const UploadPrescriprionPopupForMedicineForMedicine: React.FC<
       },
       (response) => {
         setshowSpinner(false);
-        props.onResponse([response]);
+        const responseToReturn = response.data ? [response] : [];
+        props.onResponse('cameraOrGallery', responseToReturn);
       }
     );
   };
@@ -206,6 +214,7 @@ export const UploadPrescriprionPopupForMedicineForMedicine: React.FC<
                 activeOpacity={1}
                 style={styles.cardContainer}
                 onPress={() => {
+                  props.onResponse('e-prescriptions', []);
                   // props.navigation.navigate(AppRoutes.UploadPrescription);
                 }}
               >
