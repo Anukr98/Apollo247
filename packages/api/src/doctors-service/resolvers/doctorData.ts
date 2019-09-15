@@ -2,6 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
+import { DoctorSpecialty } from 'doctors-service/entities';
 
 export const doctorDataTypeDefs = gql`
   extend type Query {
@@ -76,18 +77,41 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   //Specialty starts
   const specialtyRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
   const existingSpecialties = await specialtyRepo.findAll();
-  const existingSpecialtyNames = existingSpecialties.map((row: any) => {
+
+  const existingSpecialtyNames = existingSpecialties.map((row: DoctorSpecialty) => {
     return row.name;
   });
-  console.log('existingSpecialtyNames', existingSpecialtyNames);
 
-  const newSpecialties = specialtyData.filter((e: any) => existingSpecialtyNames.indexOf(e) == -1);
-  console.log('newSpecialty', newSpecialties);
-  //insert new specialty and get all IDS
+  const newSpecialties = specialtyData.filter(
+    (e: DoctorSpecialty) => existingSpecialtyNames.indexOf(e.name) == -1
+  );
+
+  const partialSpecialtyList = existingSpecialties.map((element) => {
+    return { id: element.id, name: element.name };
+  });
+
+  const addedSpecialty = await specialtyRepo.insertOrUpdateAllSpecialties(newSpecialties);
+  const partialAddedSpecialtyList = addedSpecialty.map((element) => {
+    return { id: element.id, name: element.name };
+  });
+
+  const finalSpecialtiesList = Object.assign(partialSpecialtyList, partialAddedSpecialtyList);
+
+  console.log(finalSpecialtiesList);
   //specialty ends
 
+  //insert doctor starts
+  doctorData.forEach((element: any) => {
+    const filteredSpecialty = finalSpecialtiesList.filter(
+      (specialty) => element.SPECIALITY == specialty.name
+    );
+    if (filteredSpecialty.length > 0) element.SPECIALITY = filteredSpecialty[0].id;
+  });
+  console.log(doctorData);
+  //insert doctor ends
+
   //hospital details starts
-  const hospitals = doctorData.map((row: any) => {
+  /*const hospitals = doctorData.map((row: any) => {
     return {
       name: row.PHYSICALCONSULTATIONLOCATIONNAME,
       streetLine1: row.PHYSICALCONSULTATIONLOCATIONADDRESS,
@@ -96,8 +120,8 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
       country: row.PHYSICALCONSULTATIONLOCATIONCOUNTRY,
     };
   });
-  const uniqueHospitals = Array.from(new Set(hospitals));
-  console.log('uniqueHospitals', uniqueHospitals);
+  const uniqueHospitals = Array.from(new Set(hospitals)); */
+  //console.log('uniqueHospitals', uniqueHospitals);
   //hospital details ends
 
   return "I'm in progress";

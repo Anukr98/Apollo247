@@ -72,7 +72,7 @@ export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
     });
 
     //insert/update new specialties
-    this.save(specialties).catch((saveSpecialtiesError) => {
+    return this.save(specialties).catch((saveSpecialtiesError) => {
       throw new AphError(AphErrorMessages.SAVE_SPECIALTIES_ERROR, undefined, {
         saveSpecialtiesError,
       });
