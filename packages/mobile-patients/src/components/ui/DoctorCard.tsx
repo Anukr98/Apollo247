@@ -253,7 +253,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
 
   if (rowData) {
-    console.log(availableInMin, 'availableInMin', rowData.firstName, availableTime);
+    //console.log(availableInMin, 'availableInMin', rowData.firstName, availableTime);
 
     return (
       <TouchableOpacity

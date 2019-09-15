@@ -386,6 +386,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setData={(data) => {
             setFilterData(data);
           }}
+          filterLength={() => {}}
           data={FilterData}
         />
       )}
