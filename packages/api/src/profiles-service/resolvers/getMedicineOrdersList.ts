@@ -30,7 +30,18 @@ export const getMedicineOrdersListTypeDefs = gql`
     medicineOrderLineItems: [MedicineOrderLineItems]
     medicineOrdersStatus: [MedicineOrdersStatus]
     medicineOrderPayments: [MedicineOrderPayments]
+    medicineOrderInvoice: [MedicineOrderInvoice]
     patient: Patient
+  }
+
+  type MedicineOrderInvoice {
+    id: ID!
+    siteId: String
+    remarks: String
+    requestType: String
+    vendorName: String
+    billDetails: String
+    itemDetails: String
   }
 
   type MedicineOrderLineItems {

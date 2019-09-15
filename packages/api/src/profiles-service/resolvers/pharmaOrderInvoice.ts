@@ -1,160 +1,144 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
-import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import {
-  MedicineOrders,
-  MEDICINE_DELIVERY_TYPE,
-  MEDICINE_ORDER_TYPE,
-  MedicineOrderLineItems,
-  MEDICINE_ORDER_STATUS,
-  MedicineOrdersStatus,
-} from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
+import { MedicineOrderInvoice } from 'profiles-service/entities';
 
 export const saveMedicineOrderInvoiceTypeDefs = gql`
-  input MedicineCartInput {
-    quoteId: String
-    shopId: String
-    estimatedAmount: Float
-    patientId: ID!
-    medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
-    patientAddressId: ID!
-    devliveryCharges: Float
-    prescriptionImageUrl: String
-    items: [MedicineCartItem]
+  input MedicineOrderInvoiceInput {
+    orderId: Int
+    empId: String
+    siteId: String
+    docnum: String
+    remarks: String
+    requestType: String
+    vendorName: String
+    otp: String
+    billDetails: BillDetails
+    itemDetails: [ItemDetails]
   }
 
-  input MedicineCartItem {
-    medicineSKU: String
-    medicineName: String
-    price: Float
-    quantity: Int
+  input BillDetails {
+    billDateTime: String
+    billNumber: String
+    billedBy: String
+    invoiceValue: Float
+    cashValue: Float
+    creditValue: Float
+  }
+
+  input ItemDetails {
+    itemId: String
+    itemName: String
+    batchId: String
+    reqQty: Int
+    issuedQty: Int
     mrp: Float
-    isPrescriptionNeeded: Int
-    prescriptionImageUrl: String
-    mou: Int
-    isMedicine: String
+    isSubstitute: Boolean
+    substitute: [Substitute]
   }
 
-  type SaveMedicineOrderResult {
-    errorCode: Int
-    errorMessage: String
-    orderId: ID!
-    orderAutoId: Int!
+  input Substitute {
+    substituteItemId: String
+    substituteItemName: String
+    substituteBatchId: String
+    issuedQty: Int
+  }
+
+  type SaveMedicineOrderInvoiceResult {
+    requestStatus: String
+    requestMessage: String
   }
 
   extend type Mutation {
-    SaveMedicineOrder(MedicineCartInput: MedicineCartInput): SaveMedicineOrderResult!
+    SaveMedicineOrderInvoice(
+      medicineOrderInvoiceInput: MedicineOrderInvoiceInput
+    ): SaveMedicineOrderInvoiceResult!
   }
 `;
 
-type MedicineCartInput = {
-  quoteId: string;
-  shopId: string;
-  estimatedAmount: number;
-  patientId: string;
-  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
-  patientAddressId: string;
-  devliveryCharges: number;
-  prescriptionImageUrl: string;
-  items: MedicineCartItem[];
+type MedicineOrderInvoiceInput = {
+  orderId: number;
+  empId: string;
+  siteId: string;
+  docnum: string;
+  remarks: string;
+  requestType: string;
+  vendorName: string;
+  otp: string;
+  billDetails: BillDetails;
+  itemDetails: ItemDetails[];
 };
 
-type MedicineCartItem = {
-  medicineSku: string;
-  medicineName: string;
-  price: number;
-  quantity: number;
+type BillDetails = {
+  billDateTime: string;
+  billNumber: string;
+  billedBy: string;
+  invoiceValue: number;
+  cashValue: number;
+  creditValue: number;
+};
+
+type ItemDetails = {
+  itemId: string;
+  itemName: string;
+  batchId: string;
+  reqQty: number;
+  issuedQty: number;
   mrp: number;
-  isPrescriptionNeeded: number;
-  prescriptionImageUrl: string;
-  mou: number;
-  isMedicine: string;
+  isSubstitute: boolean;
+  substitute: Substitute[];
 };
 
-type SaveMedicineOrderResult = {
-  errorCode: number;
-  errorMessage: string;
-  orderId: string;
-  orderAutoId: number;
+type Substitute = {
+  substituteItemId: string;
+  substituteItemName: string;
+  substituteBatchId: string;
+  issuedQty: number;
 };
 
-type MedicineCartInputInputArgs = { MedicineCartInput: MedicineCartInput };
+type SaveMedicineOrderInvoiceResult = {
+  requestStatus: string;
+  requestMessage: string;
+};
+type MedicineOrderInvoiceInputInputArgs = { medicineOrderInvoiceInput: MedicineOrderInvoiceInput };
 
 const SaveMedicineOrderInvoice: Resolver<
   null,
-  MedicineCartInputInputArgs,
+  MedicineOrderInvoiceInputInputArgs,
   ProfilesServiceContext,
-  SaveMedicineOrderResult
-> = async (parent, { MedicineCartInput }, { profilesDb }) => {
-  const errorCode = 0,
-    errorMessage = '';
+  SaveMedicineOrderInvoiceResult
+> = async (parent, { medicineOrderInvoiceInput }, { profilesDb }) => {
+  const medicineOrderRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
+  const medicineOrders = await medicineOrderRepo.getMedicineOrderDetails(
+    medicineOrderInvoiceInput.orderId
+  );
 
-  if (!MedicineCartInput.items || MedicineCartInput.items.length == 0) {
-    throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
-  }
-  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.findById(MedicineCartInput.patientId);
-  if (!patientDetails) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
-  }
-  if (MedicineCartInput.patientAddressId != '' && MedicineCartInput.patientAddressId != null) {
-    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
-    const patientAddressDetails = await patientAddressRepo.findById(
-      MedicineCartInput.patientAddressId
-    );
-    if (!patientAddressDetails) {
-      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
-    }
+  if (medicineOrders == null) {
+    throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {});
   }
 
-  const medicineOrderattrs: Partial<MedicineOrders> = {
-    patient: patientDetails,
-    estimatedAmount: MedicineCartInput.estimatedAmount,
-    orderType: MEDICINE_ORDER_TYPE.CART_ORDER,
-    shopId: MedicineCartInput.shopId,
-    quoteDateTime: new Date(),
-    devliveryCharges: MedicineCartInput.devliveryCharges,
-    deliveryType: MedicineCartInput.medicineDeliveryType,
-    quoteId: MedicineCartInput.quoteId,
-    prescriptionImageUrl: MedicineCartInput.prescriptionImageUrl,
-    currentStatus: MEDICINE_ORDER_STATUS.QUOTE,
-    patientAddressId: MedicineCartInput.patientAddressId,
+  const orderInoviceAttrs: Partial<MedicineOrderInvoice> = {
+    orderNo: medicineOrderInvoiceInput.orderId,
+    otp: medicineOrderInvoiceInput.otp,
+    docnum: medicineOrderInvoiceInput.docnum,
+    empId: medicineOrderInvoiceInput.empId,
+    siteId: medicineOrderInvoiceInput.siteId,
+    remarks: medicineOrderInvoiceInput.remarks,
+    requestType: medicineOrderInvoiceInput.requestType,
+    vendorName: medicineOrderInvoiceInput.vendorName,
+    billDetails: JSON.stringify(medicineOrderInvoiceInput.billDetails),
+    itemDetails: JSON.stringify(medicineOrderInvoiceInput.itemDetails),
+    medicineOrders,
   };
 
-  const medicineOrdersRepo = profilesDb.getCustomRepository(MedicineOrdersRepository);
-  const saveOrder = await medicineOrdersRepo.saveMedicineOrder(medicineOrderattrs);
-  if (saveOrder) {
-    MedicineCartInput.items.map(async (item) => {
-      const orderItemAttrs: Partial<MedicineOrderLineItems> = {
-        medicineOrders: saveOrder,
-        ...item,
-      };
-      const lineItemOrder = await medicineOrdersRepo.saveMedicineOrderLineItem(orderItemAttrs);
-      console.log(lineItemOrder);
-    });
-
-    //save in order status table
-    const medicineOrderStatusAttrs: Partial<MedicineOrdersStatus> = {
-      medicineOrders: saveOrder,
-      orderStatus: MEDICINE_ORDER_STATUS.QUOTE,
-      statusDate: new Date(),
-    };
-    await medicineOrdersRepo.saveMedicineOrderStatus(
-      medicineOrderStatusAttrs,
-      saveOrder.orderAutoId
-    );
-  }
+  await medicineOrderRepo.saveMedicineOrderInvoice(orderInoviceAttrs);
 
   return {
-    errorCode,
-    errorMessage,
-    orderId: saveOrder.id,
-    orderAutoId: saveOrder.orderAutoId,
+    requestStatus: 'success',
+    requestMessage: 'updated invoice',
   };
 };
 

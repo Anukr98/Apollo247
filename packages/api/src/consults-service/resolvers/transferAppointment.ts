@@ -324,7 +324,12 @@ const initiateTransferAppointment: Resolver<
     appointmentId: appointment.id,
     notificationType: NotificationType.INITIATE_TRANSFER,
   };
-  const notificationResult = await sendNotification(pushNotificationInput, patientsDb, consultsDb);
+  const notificationResult = await sendNotification(
+    pushNotificationInput,
+    patientsDb,
+    consultsDb,
+    doctorsDb
+  );
   return { transferAppointment, doctorNextSlot: slot, notificationResult };
 };
 

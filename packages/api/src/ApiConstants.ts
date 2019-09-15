@@ -32,4 +32,5 @@ export enum ApiConstants {
   SENIOR_APPT_SESSION_BODY = 'Doctor has started the consult for your appointment {0}',
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
+  BOOK_APPOINTMENT_TITLE = 'your appointment is confirmed',
 }

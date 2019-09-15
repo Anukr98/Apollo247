@@ -183,6 +183,12 @@ export class MedicineOrders extends BaseEntity {
   medicineOrderLineItems: MedicineOrderLineItems[];
 
   @OneToMany(
+    (type) => MedicineOrderInvoice,
+    (medicineOrderInvoice) => medicineOrderInvoice.medicineOrders
+  )
+  medicineOrderInvoice: MedicineOrderInvoice[];
+
+  @OneToMany(
     (type) => MedicineOrderPayments,
     (medicineOrderPayments) => medicineOrderPayments.medicineOrders
   )
@@ -336,6 +342,55 @@ export class MedicineOrdersStatus extends BaseEntity {
   }
 }
 //medicine orders status ends
+
+//medicine orders invoice starts
+@Entity()
+export class MedicineOrderInvoice extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @ManyToOne((type) => MedicineOrders, (medicineOrders) => medicineOrders.medicineOrderInvoice)
+  medicineOrders: MedicineOrders;
+
+  @Column()
+  orderNo: number;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  empId: string;
+
+  @Column({ nullable: true })
+  siteId: string;
+
+  @Column({ nullable: true })
+  docnum: string;
+
+  @Column({ nullable: true })
+  remarks: string;
+
+  @Column({ nullable: true })
+  requestType: string;
+
+  @Column({ nullable: true })
+  vendorName: string;
+
+  @Column({ nullable: true })
+  otp: string;
+
+  @Column({ nullable: true, type: 'json' })
+  billDetails: string;
+
+  @Column({ nullable: true, type: 'json' })
+  itemDetails: string;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+}
+//medicine orders invoice ends
 
 //patient device tokens starts
 @Entity()
