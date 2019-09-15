@@ -57,14 +57,6 @@ type TimeArray = {
   time: string[];
 }[];
 
-type rescheduleType = {
-  rescheduleCount: number;
-  appointmentState: string;
-  isCancel: number;
-  isFollowUp: number;
-  isPaid: number;
-};
-
 export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   renderTab: string;
   setdisplayoverlay: (arg0: boolean) => void;
@@ -72,7 +64,7 @@ export interface OverlayRescheduleViewProps extends NavigationScreenProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   doctorId: string;
-  rescheduleCount: rescheduleType;
+  rescheduleCount: any;
   appointmentId: string;
   data: any;
   bookFollowUp: boolean;
