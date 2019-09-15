@@ -10,7 +10,6 @@ import {
   Paper,
   FormHelperText,
 } from '@material-ui/core';
-import { Link } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
@@ -27,17 +26,11 @@ import {
   SearchDoctorAndSpecialtyByNameVariables,
 } from 'graphql/types/SearchDoctorAndSpecialtyByName';
 import {
-  InitiateRescheduleAppointment,
-  InitiateRescheduleAppointmentVariables,
-} from 'graphql/types/InitiateRescheduleAppointment';
-import {
   INITIATE_TRANSFER_APPONITMENT,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
-  INITIATE_RESCHDULE_APPONITMENT,
 } from 'graphql/profiles';
 import { TRANSFER_INITIATED_TYPE, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import { relative } from 'path';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -505,6 +498,16 @@ const useStyles = makeStyles((theme: Theme) => {
       minWidth: 175,
       borderRadius: 10,
       color: '#fc9916',
+      padding: '9px 13px 9px 13px',
+      boxShadow: '0 2px 5px 0 rgba(0, 0, 0, 0.2)',
+      '&:hover': {
+        backgroundColor: theme.palette.common.white,
+        color: '#fc9916',
+      },
+    },
+    saveBtnDisabled: {
+      opacity: 0.5,
+      color: '#fc9916 !important',
     },
     submitBtn: {
       minWidth: 216,
@@ -592,6 +595,9 @@ let transferObject: any = {
   facilityId: '',
   transferId: '',
 };
+let timerIntervalId: any;
+let stoppedConsulTimer: number;
+
 export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
@@ -611,6 +617,23 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+
+  const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
+  const [startingTime, setStartingTime] = useState<number>(0);
+  // timer for audio/video call start
+  const timerMinuts = Math.floor(startingTime / 60);
+  const timerSeconds = startingTime - timerMinuts * 60;
+  const timerLastMinuts = Math.floor(startingTime / 60);
+  const timerLastSeconds = startingTime - timerMinuts * 60;
+  const startIntervalTimer = (timer: number) => {
+    setstartTimerAppoinment(true);
+    timerIntervalId = setInterval(() => {
+      timer = timer + 1;
+      stoppedConsulTimer = timer;
+      setStartingTime(timer);
+    }, 1000);
+  };
+  // timer for audio/video call end
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
@@ -679,12 +702,12 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     );
     const stoptext = {
       id: props.doctorId,
-      message: `Audio call ended`,
-      //message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
-      // duration: `${
-      //   timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      // } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
-      duration: `10:00`,
+      //message: `Audio call ended`,
+      message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
+      duration: `${
+        timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      //duration: `10:00`,
       isTyping: true,
     };
     pubnub.publish(
@@ -803,7 +826,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     const addedMinutes = year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
     const addedTime = new Date(addedMinutes);
     if (current > consult && addedTime > current) {
-      const now = new Date();
       const diffrent = current.getTime() - consult.getTime();
       timer = 900 - Math.floor(diffrent / 1000);
     }
@@ -980,6 +1002,20 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        if (
+          !showVideoChat &&
+          message.message.message !== videoCallMsg &&
+          message.message.message !== audioCallMsg &&
+          message.message.message !== stopcallMsg &&
+          message.message.message !== acceptcallMsg &&
+          message.message.message !== startConsult &&
+          message.message.message !== stopConsult &&
+          message.message.message !== transferconsult &&
+          message.message.message !== rescheduleconsult &&
+          message.message.message !== followupconsult
+        ) {
+          setIsNewMsg(true);
+        }
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
         }
@@ -1138,72 +1174,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const rescheduleConsultAction = () => {
     console.log('reschedule not available');
-    // do api call
-    //setIsLoading(true);
-    // if (reason === 'Other' && isEmpty(otherTextValue)) {
-    //   setErrorStateReshedule({
-    //     ...errorStateReshedule,
-    //     otherError: true,
-    //   });
-    // } else {
-    //   setErrorStateReshedule({
-    //     ...errorStateReshedule,
-    //     otherError: false,
-    //   });
-    //   client
-    //     .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
-    //       mutation: INITIATE_RESCHDULE_APPONITMENT,
-    //       variables: {
-    //         RescheduleAppointmentInput: {
-    //           appointmentId: props.appointmentId,
-    //           rescheduleReason: reason === 'Other' ? otherTextValue : reason,
-    //           rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
-    //           rescheduleInitiatedId: props.doctorId,
-    //           rescheduledDateTime: '2019-09-09T09:00:00.000Z',
-    //           autoSelectSlot: 0,
-    //         },
-    //       },
-    //     })
-    //     .then((_data) => {
-    //       //setIsLoading(false);
-    //       console.log('data', _data);
-    //       const reschduleObject: any = {
-    //         appointmentId: props.appointmentId,
-    //         transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
-    //           .rescheduledDateTime,
-    //         doctorId: props.doctorId,
-    //         reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
-    //         reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
-    //       };
-    //       console.log('reschduleObject', reschduleObject);
-    //       pubnub.publish(
-    //         {
-    //           message: {
-    //             id: props.doctorId,
-    //             message: rescheduleconsult,
-    //             transferInfo: reschduleObject,
-    //           },
-    //           channel: channel, //chanel
-    //           storeInHistory: true,
-    //         },
-    //         (status, response) => {}
-    //       );
-    //       setIsPopoverOpen(false);
-    //       setDisableOnTransfer(true);
-    //     })
-    //     .catch((e) => {
-    //       //setIsLoading(false);
-    //       console.log('Error occured while searching for Initiate reschdule apppointment', e);
-    //       const error = JSON.parse(JSON.stringify(e));
-    //       const errorMessage = error && error.message;
-    //       console.log(
-    //         'Error occured while searching for Initiate reschdule apppointment',
-    //         errorMessage,
-    //         error
-    //       );
-    //       alert(errorMessage);
-    //     });
-    // }
   };
   const getTimerText = () => {
     const now = new Date();
@@ -1241,7 +1211,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           {startAppointment ? (
             <span>
               <AphButton
-                className={classes.saveBtn}
+                classes={{ root: classes.saveBtn, disabled: classes.saveBtnDisabled }}
                 disabled={props.saving}
                 onClick={() => {
                   props.saveCasesheetAction(true);
@@ -1718,8 +1688,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               isVideoCall={isVideoCall}
               sessionId={props.sessionId}
               token={props.token}
-              timerMinuts={ConsultMinutes}
-              timerSeconds={ConsultSeconds}
+              timerMinuts={timerMinuts}
+              timerSeconds={timerSeconds}
               isCallAccepted={isCallAccepted}
               isNewMsg={isNewMsg}
               convertCall={() => convertCall()}

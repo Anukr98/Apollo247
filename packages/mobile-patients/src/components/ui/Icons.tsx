@@ -632,3 +632,15 @@ export const HelpDrop: React.FC<IconProps> = (props) => (
 export const NoData: React.FC<IconProps> = (props) => (
   <IconBase style={{ height: 80, width: 80 }} {...props} source={require('./icons/no_data.png')} />
 );
+
+export const Delivery: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 26, width: 33 }} {...props} source={require('./icons/delivery.png')} />
+);
+
+export const Pharamacy: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 43, width: 43 }}
+    {...props}
+    source={require('./icons/pharamacy.png')}
+  />
+);

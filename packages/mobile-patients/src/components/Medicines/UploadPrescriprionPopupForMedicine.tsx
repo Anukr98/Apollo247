@@ -88,7 +88,8 @@ export const UploadPrescriprionPopupForMedicine: React.FC<
       },
       (response) => {
         setshowSpinner(false);
-        props.onResponse('cameraOrGallery', [response]);
+        const responseToReturn = response.data ? [response] : [];
+        props.onResponse('cameraOrGallery', responseToReturn);
       }
     );
   };
@@ -102,7 +103,8 @@ export const UploadPrescriprionPopupForMedicine: React.FC<
       },
       (response) => {
         setshowSpinner(false);
-        props.onResponse('cameraOrGallery', [response]);
+        const responseToReturn = response.data ? [response] : [];
+        props.onResponse('cameraOrGallery', responseToReturn);
       }
     );
   };

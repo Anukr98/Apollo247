@@ -313,6 +313,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     },
   });
   if (error) {
+    setshowSpinner(false);
     console.log('error', error);
   } else {
     console.log('getDoctorsBySpecialtyAndFilters ', data);
@@ -774,8 +775,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             setDisplayFilter(false);
           }}
           setData={(selecteddata) => {
+            console.log('selecteddata', selecteddata);
             setshowSpinner(true);
             setFilterData(selecteddata);
+          }}
+          filterLength={() => {
+            setTimeout(() => {
+              setshowSpinner(false);
+            }, 500);
           }}
           data={[...FilterData]}
         />

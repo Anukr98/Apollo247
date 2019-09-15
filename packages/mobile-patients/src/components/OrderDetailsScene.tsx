@@ -10,6 +10,7 @@ import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { useQuery } from 'react-apollo-hooks';
 import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import {
@@ -18,12 +19,20 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '../graphql/types/GetMedicineOrdersList';
+import { GET_MEDICINE_ORDER_DETAILS } from '../graphql/profiles';
+import {
+  GetMedicineOrderDetails,
+  GetMedicineOrderDetailsVariables,
+} from '../graphql/types/GetMedicineOrderDetails';
 import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
+import { g } from '../helpers/helperFunctions';
 import { useAllCurrentPatients } from '../hooks/authHooks';
 import { AppRoutes } from './NavigatorContainer';
+import { OrderSummary } from './OrderSummaryView';
 import { OrderCardProps } from './ui/OrderCard';
+import { Spinner } from './ui/Spinner';
 import { TabsComponent } from './ui/TabsComponent';
+import { NeedHelpAssistant } from './ui/NeedHelpAssistant';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -71,33 +80,38 @@ const _list = [
 
 export interface OrderDetailsSceneProps extends NavigationScreenProps {
   orderAutoId: string;
-  orderDetails: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[];
+  showOrderSummaryTab: boolean;
   goToHomeOnBack: boolean;
 }
 {
 }
 
 export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
-  const [selectedTab, setSelectedTab] = useState<string>(string.orders.trackOrder);
-  const [isReturnVisible, setReturnVisible] = useState(false);
-  const orderId = props.navigation.getParam('orderAutoId');
-  const { currentPatient } = useAllCurrentPatients();
+  const orderAutoId = props.navigation.getParam('orderAutoId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
+  const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
 
-  // const { data, error, loading } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(
-  //   GET_MEDICINE_ORDER_DETAILS,
-  //   { variables: { patientId: currentPatient && currentPatient.id } }
-  // );
+  const [selectedTab, setSelectedTab] = useState<string>(
+    showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
+  );
+  const [isReturnVisible, setReturnVisible] = useState(false);
 
-  // const orders = (!loading && data && data.getMedicineOrdersList.MedicineOrdersList!) || [];
-  // !loading && console.log({ orders });
+  const { currentPatient } = useAllCurrentPatients();
+  const { data, loading } = useQuery<GetMedicineOrderDetails, GetMedicineOrderDetailsVariables>(
+    GET_MEDICINE_ORDER_DETAILS,
+    {
+      variables: { patientId: currentPatient && currentPatient.id, orderAutoId: orderAutoId },
+    }
+  );
+  const order = g(data, 'getMedicineOrderDetails', 'MedicineOrderDetails');
+  const orderDetails = (!loading && order) || {};
+  const orderStatusList = (!loading && order && order.medicineOrdersStatus) || [];
+
+  // !loading && console.log({ orderDetails });
   // !loading && error && console.error({ error });
 
-  const orderDetails: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus[] = props.navigation.getParam(
-    'orderDetails'
-  );
-
-  const handleBack = () => {
+  const handleBack = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
     if (goToHomeOnBack) {
       props.navigation.dispatch(
         StackActions.reset({
@@ -109,14 +123,21 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     } else {
       props.navigation.goBack();
     }
+    return false;
   };
 
   useEffect(() => {
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      handleBack();
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
     });
-    return function cleanup() {
-      backHandler.remove();
+
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
     };
   }, []);
 
@@ -173,21 +194,24 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const renderOrderHistory = () => {
     return (
-      <View style={{ margin: 20 }}>
-        {(orderDetails || []).map((order, index, array) => {
-          return (
-            <OrderProgressCard
-              style={index < array.length - 1 ? { marginBottom: 8 } : {}}
-              key={index}
-              description={''}
-              status={getStatusType(order!.orderStatus!)}
-              date={getFormattedDate(order!.statusDate)}
-              time={getFormattedTime(order!.statusDate)}
-              isStatusDone={true}
-              nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
-            />
-          );
-        })}
+      <View>
+        <View style={{ margin: 20 }}>
+          {orderStatusList.map((order, index, array) => {
+            return (
+              <OrderProgressCard
+                style={index < array.length - 1 ? { marginBottom: 8 } : {}}
+                key={index}
+                description={''}
+                status={getStatusType(order!.orderStatus!)}
+                date={getFormattedDate(order!.statusDate)}
+                time={getFormattedTime(order!.statusDate)}
+                isStatusDone={true}
+                nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
+              />
+            );
+          })}
+        </View>
+        <NeedHelpAssistant containerStyle={{ marginVertical: 20 }} navigation={props.navigation} />
       </View>
     );
   };
@@ -269,43 +293,43 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const renderOrderSummary = () => {
+    return <OrderSummary orderDetails={orderDetails as any} />;
+  };
+
   return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      {renderReturnOrderOverlay()}
-      <View style={styles.headerShadowContainer}>
-        <Header
-          leftIcon="backArrow"
-          title={`ORDER #${orderId}`}
-          container={{ borderBottomWidth: 0 }}
-          rightComponent={
-            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-              <More />
-            </TouchableOpacity>
-          }
-          onPressLeftIcon={() => {
-            handleBack();
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={theme.viewStyles.container}>
+        {renderReturnOrderOverlay()}
+        <View style={styles.headerShadowContainer}>
+          <Header
+            leftIcon="backArrow"
+            title={`ORDER #${orderAutoId}`}
+            container={{ borderBottomWidth: 0 }}
+            // rightComponent={
+            //   <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            //     <More />
+            //   </TouchableOpacity>
+            // }
+            onPressLeftIcon={() => {
+              handleBack();
+            }}
+          />
+        </View>
+
+        <TabsComponent
+          style={styles.tabsContainer}
+          onChange={(title) => {
+            setSelectedTab(title);
           }}
+          data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
+          selectedTab={selectedTab}
         />
-      </View>
-
-      {/* {loading && (
-        <ActivityIndicator
-          style={{ flex: 1, alignItems: 'center' }}
-          animating={loading}
-          size="large"
-          color="green"
-        />
-      )} */}
-
-      <TabsComponent
-        style={styles.tabsContainer}
-        onChange={(title) => {
-          setSelectedTab(title);
-        }}
-        data={[{ title: string.orders.trackOrder }, { title: string.orders.viewBill }]}
-        selectedTab={selectedTab}
-      />
-      <ScrollView bounces={false}>{renderOrderHistory()}</ScrollView>
-    </SafeAreaView>
+        <ScrollView bounces={false}>
+          {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
+        </ScrollView>
+      </SafeAreaView>
+      {loading && <Spinner />}
+    </View>
   );
 };

@@ -653,7 +653,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     const stoptext = {
       id: props.doctorId,
       //message: `Audio call ended`,
-      message: `${setIsVideoCall ? 'Video' : 'Audio'} call ended`,
+      message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
       } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,

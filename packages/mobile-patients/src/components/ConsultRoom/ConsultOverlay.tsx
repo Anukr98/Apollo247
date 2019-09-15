@@ -191,15 +191,17 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         console.log('bookAppointment data', data), setshowSpinner(false), setshowSuccessPopUp(true);
       })
       .catch((error) => {
-        console.log(
-          'bookAppointment error',
-          // error.graphQLErrors,
-          error.message.split(':')[1]
-        ),
-          setshowSpinner(false),
-          error.message.split(':')[1].trim() == 'APPOINTMENT_EXIST_ERROR' ||
-            (error.message.split(':')[1].trim() === 'APPOINTMENT_BOOK_DATE_ERROR' &&
-              setAppointmentExistAlert(true));
+        try {
+          console.log(
+            'bookAppointment error',
+            // error.graphQLErrors,
+            error.message.split(':')[1]
+          ),
+            setshowSpinner(false),
+            error.message.split(':')[1].trim() == 'APPOINTMENT_EXIST_ERROR' ||
+              (error.message.split(':')[1].trim() === 'APPOINTMENT_BOOK_DATE_ERROR' &&
+                setAppointmentExistAlert(true));
+        } catch (error) {}
       });
   };
 
