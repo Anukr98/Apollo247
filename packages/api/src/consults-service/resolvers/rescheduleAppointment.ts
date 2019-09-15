@@ -237,7 +237,12 @@ const initiateRescheduleAppointment: Resolver<
     appointmentId: appointment.id,
     notificationType: NotificationType.INITIATE_RESCHEDULE,
   };
-  const notificationResult = await sendNotification(pushNotificationInput, patientsDb, consultsDb);
+  const notificationResult = await sendNotification(
+    pushNotificationInput,
+    patientsDb,
+    consultsDb,
+    doctorsDb
+  );
 
   const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
   await appointmentRepo.updateTransferState(
