@@ -150,7 +150,7 @@ const useStyles = makeStyles((theme: Theme) =>
     othersBtn: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
       backgroundColor: 'rgba(0,0,0,0.02)',
-      height: 44,
+      height: 'auto',
       marginBottom: 12,
       borderRadius: 5,
       fontWeight: 600,
@@ -165,6 +165,7 @@ const useStyles = makeStyles((theme: Theme) =>
         width: '100%',
         textAlign: 'left',
         whiteSpace: 'normal',
+        padding: 10,
       },
     },
     textFieldColor: {

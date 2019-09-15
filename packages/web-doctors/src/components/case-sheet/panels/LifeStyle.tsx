@@ -19,7 +19,7 @@ const useStyles = makeStyles(() => ({
     borderRadius: '5px',
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    width: '90%',
+    width: '100%',
   },
   textContent: {
     color: '#01475b',
@@ -33,6 +33,10 @@ const useStyles = makeStyles(() => ({
     marginTop: 16,
     fontWeight: 500,
   },
+  mainContainer: {
+    display: 'inline-block',
+    width: '100%',
+  },
 }));
 
 export const LifeStyle: React.FC = () => {
@@ -41,7 +45,7 @@ export const LifeStyle: React.FC = () => {
   return loading && !patientDetails ? (
     <div></div>
   ) : (
-    <Typography component="div" className={classes.container}>
+    <Typography component="div" className={classes.mainContainer}>
       {patientDetails &&
       patientDetails!.familyHistory &&
       patientDetails!.familyHistory.length > 0 &&
@@ -54,7 +58,7 @@ export const LifeStyle: React.FC = () => {
             patientDetails!.familyHistory &&
             patientDetails!.familyHistory !== null &&
             patientDetails!.familyHistory.length > 0 && (
-              <Typography className={classes.column} component="div">
+              <Typography className={classes.mainContainer} component="div">
                 <Typography component="h5" variant="h5" className={classes.header}>
                   Family History
                 </Typography>
@@ -77,7 +81,7 @@ export const LifeStyle: React.FC = () => {
             patientDetails!.lifeStyle &&
             patientDetails!.lifeStyle !== null &&
             patientDetails!.lifeStyle.length > 0 && (
-              <Typography className={classes.column} component="div">
+              <Typography component="div">
                 <Typography component="h5" variant="h5" className={classes.header}>
                   Lifestyle & Habits
                 </Typography>
@@ -97,7 +101,7 @@ export const LifeStyle: React.FC = () => {
               </Typography>
             )}
           {patientDetails && patientDetails!.allergies && patientDetails!.allergies !== null && (
-            <Typography className={classes.column} component="div">
+            <Typography component="div">
               <Typography component="h5" variant="h5" className={classes.header}>
                 Allergies
               </Typography>
