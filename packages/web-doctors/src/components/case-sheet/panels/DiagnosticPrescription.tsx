@@ -351,7 +351,7 @@ export const DiagnosticPrescription: React.FC = () => {
   };
   return (
     <Typography component="div" className={classes.contentContainer}>
-      <Typography component="div" className={classes.column}>
+      <Typography component="div">
         <Typography component="h5" variant="h5">
           Tests
         </Typography>

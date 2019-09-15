@@ -68,7 +68,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       color: '#02475b',
       textTransform: 'uppercase',
-      position: 'relative',
       display: 'flex',
       alignItems: 'center',
       lineHeight: 1.86,
@@ -483,6 +482,13 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     posRelative: {
       position: 'relative',
+    },
+    stickyHeader: {
+      position: 'sticky',
+      top: 0,
+      zIndex: 1,
+      backgroundColor: '#f7f7f7',
+      boxShadow: 'inset 0px -1px 6px 0 rgba(128,128,128,0.2)',
     },
   };
 });
@@ -1216,7 +1222,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     return '';
   };
   return (
-    <div>
+    <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
         <div>
           <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
