@@ -87,11 +87,17 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   //specialty ends
 
   //hospital details starts
-  const hospitals = rowData.sheet1.map((row: any) => {
-    return row.PHYSICALCONSULTATIONLOCATION;
+  const hospitals = doctorData.map((row: any) => {
+    return {
+      name: row.PHYSICALCONSULTATIONLOCATIONNAME,
+      streetLine1: row.PHYSICALCONSULTATIONLOCATIONADDRESS,
+      city: row.PHYSICALCONSULTATIONLOCATIONCITY,
+      state: row.PHYSICALCONSULTATIONLOCATIONSTATE,
+      country: row.PHYSICALCONSULTATIONLOCATIONCOUNTRY,
+    };
   });
   const uniqueHospitals = Array.from(new Set(hospitals));
-  console.log(uniqueHospitals);
+  console.log('uniqueHospitals', uniqueHospitals);
   //hospital details ends
 
   return "I'm in progress";
