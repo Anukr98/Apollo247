@@ -96,8 +96,6 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   });
 
   const finalSpecialtiesList = Object.assign(partialSpecialtyList, partialAddedSpecialtyList);
-
-  console.log(finalSpecialtiesList);
   //specialty ends
 
   //insert doctor starts
@@ -105,8 +103,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     const filteredSpecialty = finalSpecialtiesList.filter(
       (specialty) => element.SPECIALITY == specialty.name
     );
-    //if (filteredSpecialty.length > 0) element.SPECIALITY = filteredSpecialty[0].id;
-    element.SPECIALITY = filteredSpecialty[0].id;
+    if (filteredSpecialty.length > 0) element.SPECIALITY = filteredSpecialty[0].id;
   });
   //console.log(doctorData);
 
@@ -114,6 +111,29 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     const DoctorDetails: Partial<Doctor> = {};
     DoctorDetails.salutation = element.TITLE;
     DoctorDetails.fullName = element.FULLNAME;
+    DoctorDetails.doctorType = element.TYPE;
+    DoctorDetails.firstName = element.FIRSTNAME;
+    DoctorDetails.middleName = element.MIDDLENAME == 'undefined' ? '' : element.SECRETARYNUMBER;
+    DoctorDetails.lastName = element.LASTNAME;
+    DoctorDetails.doctorType = element.GENDER;
+    DoctorDetails.gender = element.TYPE;
+    DoctorDetails.qualification = element.EDUCATION;
+    DoctorDetails.experience = element.EXPERIRNCE;
+    DoctorDetails.languages = element.LANGUAGES;
+    DoctorDetails.isActive = true;
+    DoctorDetails.onlineConsultationFees = element.ONLINECONSULTATIONFEES;
+    DoctorDetails.physicalConsultationFees = element.PHYSICALCONSULTATIONFEES;
+    DoctorDetails.registrationNumber = element.MCINO;
+    DoctorDetails.awards = element.AWARDS;
+    DoctorDetails.mobileNumber = element.PHONE;
+    DoctorDetails.emailAddress = '';
+    if (element.EMAIL != '')
+      DoctorDetails.emailAddress =
+        process.env.NODE_ENV === 'production' ? element.EMAIL : element.EMAIL + ' .popcornapps.com';
+    DoctorDetails.delegateName = element.SECRETARYNAME == 'undefined' ? '' : element.SECRETARYNAME;
+    DoctorDetails.delegateNumber =
+      element.SECRETARYNUMBER == 'undefined' ? '' : element.SECRETARYNUMBER;
+    return DoctorDetails;
   });
 
   console.log(formatedDoctorData);

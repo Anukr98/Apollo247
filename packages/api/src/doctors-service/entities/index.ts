@@ -3,7 +3,6 @@ import {
   Column,
   PrimaryGeneratedColumn,
   BaseEntity,
-  BeforeInsert,
   BeforeUpdate,
   ManyToOne,
   OneToMany,
@@ -176,13 +175,16 @@ export class Doctor extends BaseEntity {
   doctorType: DoctorType;
 
   @Column({ nullable: true })
+  delegateName: string;
+
+  @Column({ nullable: true })
   delegateNumber: string;
 
   @Column({ nullable: true, type: 'text' })
   @Validate(EmailValidator)
   emailAddress: string;
 
-  @Column()
+  @Column({ nullable: true })
   fullName: string;
 
   @Column({ nullable: true })
@@ -211,7 +213,7 @@ export class Doctor extends BaseEntity {
   @Validate(NameValidator)
   lastName: string;
 
-  @Column()
+  @Column({ nullable: true })
   middleName: string;
 
   @Column()
