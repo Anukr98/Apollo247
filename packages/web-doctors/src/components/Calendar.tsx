@@ -234,9 +234,9 @@ export const Calendar: React.FC = () => {
             </Typography>
             {viewSelection === 'day' ? (
               <p>
-                {`here’s your schedule for ${isToday(selectedDate) ? 'today, ' : ''} ${format(
+                {`Here’s your schedule for ${isToday(selectedDate) ? ' the day - ' : ''} ${format(
                   selectedDate,
-                  isToday(selectedDate) ? 'dd MMM yyyy' : 'MMM, dd'
+                  isToday(selectedDate) ? 'dd MMM,  yyyy' : 'MMM, dd'
                 )}`}
               </p>
             ) : (
