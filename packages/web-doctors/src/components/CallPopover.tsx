@@ -159,6 +159,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'capitalize',
       position: 'relative',
       top: -1,
+      display: 'none',
     },
     backArrow: {
       cursor: 'pointer',
