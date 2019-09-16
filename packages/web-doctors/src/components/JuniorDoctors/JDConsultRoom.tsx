@@ -449,6 +449,7 @@ export const JDConsultRoom: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
+  const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
   /* case sheet data*/
 
   /* need to be worked later */
@@ -619,6 +620,10 @@ export const JDConsultRoom: React.FC = () => {
           _data!.data!.getCaseSheet!.caseSheetDetails!.notes
             ? setNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
             : setNotes('');
+          _data!.data!.getCaseSheet!.juniorDoctorNotes
+            ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
+            : setJuniorDoctorNotes('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
                 _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
@@ -804,6 +809,7 @@ export const JDConsultRoom: React.FC = () => {
             setSymptoms,
             notes,
             setNotes,
+            juniorDoctorNotes,
             diagnosis,
             setDiagnosis,
             otherInstructions,
