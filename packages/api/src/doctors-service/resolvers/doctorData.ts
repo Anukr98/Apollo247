@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
-import { DoctorSpecialty } from 'doctors-service/entities';
+import { DoctorSpecialty, Doctor } from 'doctors-service/entities';
 
 export const doctorDataTypeDefs = gql`
   extend type Query {
@@ -105,9 +105,18 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     const filteredSpecialty = finalSpecialtiesList.filter(
       (specialty) => element.SPECIALITY == specialty.name
     );
-    if (filteredSpecialty.length > 0) element.SPECIALITY = filteredSpecialty[0].id;
+    //if (filteredSpecialty.length > 0) element.SPECIALITY = filteredSpecialty[0].id;
+    element.SPECIALITY = filteredSpecialty[0].id;
   });
-  console.log(doctorData);
+  //console.log(doctorData);
+
+  const formatedDoctorData = doctorData.map((element: any) => {
+    const DoctorDetails: Partial<Doctor> = {};
+    DoctorDetails.salutation = element.TITLE;
+    DoctorDetails.fullName = element.FULLNAME;
+  });
+
+  console.log(formatedDoctorData);
   //insert doctor ends
 
   //hospital details starts

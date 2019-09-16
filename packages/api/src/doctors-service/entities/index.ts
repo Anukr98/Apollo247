@@ -90,13 +90,8 @@ export class BlockedCalendarItem extends BaseEntity {
   @Column({ type: 'timestamp with time zone' })
   end: Date;
 
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
-
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
 }
 ///////////////////////////////////////////////////////////
 
@@ -109,7 +104,7 @@ export class ConsultHours extends BaseEntity {
   @Column()
   consultType: ConsultType;
 
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @ManyToOne((type) => Doctor, (doctor) => doctor.consultHours)
@@ -139,11 +134,6 @@ export class ConsultHours extends BaseEntity {
   @Column()
   weekDay: WeekDay;
 
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
-
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -172,7 +162,7 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   country: string;
 
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @Column({ nullable: true })
@@ -191,6 +181,9 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   @Validate(EmailValidator)
   emailAddress: string;
+
+  @Column()
+  fullName: string;
 
   @Column({ nullable: true })
   experience: Number;
@@ -217,6 +210,9 @@ export class Doctor extends BaseEntity {
   @Column()
   @Validate(NameValidator)
   lastName: string;
+
+  @Column()
+  middleName: string;
 
   @Column()
   @Validate(MobileNumberValidator)
@@ -273,11 +269,6 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   zip: string;
 
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
-
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -291,7 +282,7 @@ export class DoctorAndHospital extends BaseEntity {
   @OneToMany((type) => ConsultHours, (consultHours) => consultHours.doctorHospital)
   consultHours: ConsultHours[];
 
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @ManyToOne((type) => Doctor, (doctor) => doctor.doctorHospital)
@@ -305,11 +296,6 @@ export class DoctorAndHospital extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
-
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
 
   @BeforeUpdate()
   updateDateUpdate() {
@@ -336,7 +322,7 @@ export class DoctorBankAccounts extends BaseEntity {
   @Column({ nullable: true })
   city: string;
 
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @ManyToOne((type) => Doctor, (doctor) => doctor.bankAccount)
@@ -357,11 +343,6 @@ export class DoctorBankAccounts extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
-
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -372,7 +353,7 @@ export class DoctorBankAccounts extends BaseEntity {
 //doctorSpecialty starts
 @Entity()
 export class DoctorSpecialty extends BaseEntity {
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @PrimaryGeneratedColumn('uuid')
@@ -399,11 +380,6 @@ export class DoctorSpecialty extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
-
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -423,7 +399,7 @@ export class Facility extends BaseEntity {
   @Column({ nullable: true })
   country: string;
 
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @OneToMany((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.doctor)
@@ -460,11 +436,6 @@ export class Facility extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
-
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -475,7 +446,7 @@ export class Facility extends BaseEntity {
 //packages starts
 @Entity()
 export class Packages extends BaseEntity {
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @ManyToOne((type) => Doctor, (doctor) => doctor.packages)
@@ -493,11 +464,6 @@ export class Packages extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
-
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
@@ -512,7 +478,7 @@ export class StarTeam extends BaseEntity {
   @JoinColumn()
   associatedDoctor: Doctor;
 
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
   @PrimaryGeneratedColumn('uuid')
@@ -526,11 +492,6 @@ export class StarTeam extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
-
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
 
   @BeforeUpdate()
   updateDateUpdate() {
@@ -562,11 +523,6 @@ export class DoctorDeviceTokens extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
-
-  @BeforeInsert()
-  updateDateCreation() {
-    this.createdDate = new Date();
-  }
 
   @BeforeUpdate()
   updateDateUpdate() {
