@@ -134,9 +134,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) 
         <View style={styles.subView}>
           <Text style={styles.orderName}>Date</Text>
           <Text style={[styles.orderName, styles.hideText]}>
-            {getFormattedDateTime(
-              ((g(orderDetails, 'medicineOrdersStatus') || [])[0] || {}).statusDate
-            )}
+            {getFormattedDateTime((g(orderDetails, 'medicineOrdersStatus') || [])[0]!.statusDate)}
           </Text>
         </View>
       </View>
@@ -201,7 +199,10 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) 
         ]}
       >
         Disclaimer:{' '}
-        <Text style={{ fontStyle: 'italic' }}>This is a description of the disclaimer</Text>
+        <Text style={{ fontStyle: 'italic' }}>
+          The prescription has been issued based on your inputs during chat/call with the doctor. In
+          case of emergency please visit a nearby hospital.
+        </Text>
       </Text>
     </View>
   );

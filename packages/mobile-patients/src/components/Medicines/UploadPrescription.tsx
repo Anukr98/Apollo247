@@ -118,7 +118,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   ) => {
     return (
       <View key={i} style={{}}>
-        <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
+        <TouchableOpacity activeOpacity={1} key={i}>
           <View
             style={{
               ...theme.viewStyles.cardViewStyle,
@@ -166,7 +166,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 paddingHorizontal: 8,
               }}
               onPress={() => {
-                item.title;
+                const filteredPres = PhysicalPrescriptions.filter(
+                  (_item) => _item.title != item.title
+                );
+                setPhysicalPrescriptions([...filteredPres]);
               }}
             >
               <CrossYellow />
@@ -226,11 +229,14 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     return (
       <SelectEPrescriptionModal
         onSubmit={(selectedEPres) => {
-          console.log({ selectedEPres });
           setSelectPrescriptionVisible(false);
+          if (selectedEPres.length == 0) {
+            return;
+          }
           setEPrescriptions([...selectedEPres]);
         }}
         isVisible={isSelectPrescriptionVisible}
+        selectedEprescriptionIds={EPrescriptions.map((item) => item.id)}
       />
     );
   };
@@ -307,7 +313,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           container={{ ...theme.viewStyles.shadowStyle, zIndex: 1 }}
           onPressLeftIcon={() => props.navigation.goBack()}
         />
-        <ScrollView style={{ flex: 1 }}>
+        <ScrollView bounces={false} style={{ flex: 1 }}>
           {renderDeliveryPinCode()}
           {renderPhysicalPrescriptions()}
           {renderEPrescriptions()}
@@ -339,7 +345,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       {renderPrescriptionModal()}
       <UploadPrescriprionPopup
         isVisible={ShowPopop}
-        disabledOption={disabledOption}
+        disabledOption={
+          EPrescriptions.length == 0 && PhysicalPrescriptions.length == 0 ? 'NONE' : disabledOption
+        }
         type="nonCartFlow"
         optionTexts={{
           camera: 'TAKE A PHOTO',

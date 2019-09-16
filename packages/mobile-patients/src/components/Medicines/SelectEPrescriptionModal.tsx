@@ -1,13 +1,14 @@
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { ScrollView } from 'react-navigation';
-import { GET_MEDICAL_RECORD } from '../../graphql/profiles';
+import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '../../graphql/profiles';
 import {
   getPatientPastConsultsAndPrescriptions,
   getPatientPastConsultsAndPrescriptionsVariables,
+  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
 } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { g } from '../../helpers/helperFunctions';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
@@ -32,6 +33,7 @@ const styles = StyleSheet.create({
 export interface SelectEPrescriptionModalProps {
   onSubmit: (prescriptions: EPrescription[]) => void;
   isVisible: boolean;
+  selectedEprescriptionIds?: EPrescription['id'][];
 }
 
 export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
@@ -41,7 +43,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const { data, loading, error } = useQuery<
     getPatientPastConsultsAndPrescriptions,
     getPatientPastConsultsAndPrescriptionsVariables
-  >(GET_MEDICAL_RECORD, {
+  >(GET_PAST_CONSULTS_PRESCRIPTIONS, {
     variables: {
       consultsAndOrdersInput: {
         patient: currentPatient && currentPatient.id ? currentPatient.id : '',
@@ -49,24 +51,39 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     },
     fetchPolicy: 'no-cache',
   });
+  console.log({ data, loading, error });
+
+  useEffect(() => {
+    const pIds = props.selectedEprescriptionIds;
+    const selectedPrescr = {} as typeof selectedPrescription;
+    if (pIds) {
+      pIds!.forEach((id) => {
+        selectedPrescr[id] = true;
+      });
+      setSelectedPrescription(selectedPrescr);
+    }
+  }, [props.selectedEprescriptionIds]);
+
+  const getMedicines = (
+    medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
+  ) =>
+    medicines
+      .filter((item) => item!.medicineName)
+      .map((item) => item!.medicineName)
+      .join(', ');
+
   const ePrescriptions = g(data, 'getPatientPastConsultsAndPrescriptions', 'medicineOrders')! || [];
   const formattedEPrescriptions = ePrescriptions.map(
     (item) =>
       ({
         id: item!.id,
-        date: moment(item!.orderDateTime).format('DD MMMM YYYY'),
+        date: moment(item!.quoteDateTime).format('DD MMMM YYYY'),
         uploadedUrl: item!.prescriptionImageUrl,
         doctorName: '', // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
         forPatient: (currentPatient && currentPatient.firstName) || '',
-        medicines: (item!.medicineOrderLineItems || [])
-          .filter((item) => item!.medicineName)
-          .join(', '),
+        medicines: getMedicines(item!.medicineOrderLineItems! || []),
       } as EPrescription)
   );
-
-  // const filteredEPrescriptions = ePrescriptions.filter((item) => item!.prescriptionImageUrl);
-  console.log(JSON.stringify({ ePrescriptions }));
-  // console.log(JSON.stringify({ filteredEPrescriptions }));
 
   const renderEPrescription = (item: EPrescription, i: number, arrayLength: number) => {
     return (

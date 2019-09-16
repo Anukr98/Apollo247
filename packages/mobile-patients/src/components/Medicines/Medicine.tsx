@@ -261,14 +261,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <SelectEPrescriptionModal
         onSubmit={(selectedEPres) => {
-          console.log({ selectedEPres });
           setSelectPrescriptionVisible(false);
-          if (selectedEPres.length == 0) return;
+          if (selectedEPres.length == 0) {
+            return;
+          }
           props.navigation.navigate(AppRoutes.UploadPrescription, {
             disabledOption: 'CAMERA_AND_GALLERY' as EPrescriptionDisableOption,
-            phyPrescriptionsProp: selectedEPres,
+            ePrescriptionsProp: selectedEPres,
           });
         }}
+        selectedEprescriptionIds={[]}
         isVisible={isSelectPrescriptionVisible}
       />
     );
@@ -331,7 +333,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         onClickClose={() => setShowPopop(false)}
         onResponse={(selectedType, response) => {
-          console.log(response);
           setShowPopop(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;

@@ -12,15 +12,7 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import {
-  Dimensions,
-  StyleProp,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { ImagePickerResponse } from 'react-native-image-picker';
 import { ScrollView } from 'react-navigation';
@@ -305,6 +297,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             <View
               style={{
                 marginHorizontal: 16,
+                justifyContent: 'center',
               }}
             >
               <View style={styles.separatorStyle} />
@@ -313,7 +306,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.instructionsStyle}>1.</Text>
                 <Text style={[styles.instructionsStyle, { paddingLeft: 16 }]}>
-                  Take clear Picture of your entire prescription.
+                  Take clear picture of your entire prescription.
                 </Text>
               </View>
               <View style={{ flexDirection: 'row' }}>
@@ -325,7 +318,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.instructionsStyle}>3.</Text>
                 <Text style={[styles.instructionsStyle, { paddingLeft: 16, paddingBottom: 15 }]}>
-                  Medicines will be dispensed as per prescription.
+                  Only JPG / PNG files up to 2mb will be allowed
                 </Text>
               </View>
               <View style={styles.separatorStyle} />

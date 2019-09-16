@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ImagePickerResponse } from 'react-native-image-picker';
 import { ScrollView } from 'react-navigation';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { theme } from '../../theme/theme';
@@ -42,15 +41,12 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
 
   const {
     uploadPrescriptionRequired,
-    addPhysicalPrescription,
     setPhysicalPrescriptions,
     physicalPrescriptions,
     removePhysicalPrescription,
     ePrescriptions,
     setEPrescriptions,
     removeEPrescription,
-    setLastSelectedprescription,
-    lastSelectedprescription,
   } = useShoppingCart();
 
   const renderLabel = (label: string, rightText?: string) => {
@@ -73,13 +69,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     return (
       <UploadPrescriprionPopup
         isVisible={showPopup}
-        disabledOption={
-          [...physicalPrescriptions, ...ePrescriptions].length === 0
-            ? 'NONE'
-            : lastSelectedprescription.cart == 'E-PRESCRIPTION'
-            ? 'CAMERA_AND_GALLERY'
-            : 'E-PRESCRIPTION'
-        }
+        disabledOption={'NONE'}
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'UPLOAD FROM\nGALLERY',
@@ -88,13 +78,6 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
         onClickClose={() => setShowPopup(false)}
         onResponse={(selectedType, response) => {
           setShowPopup(false);
-          if (lastSelectedprescription.cart == 'NONE') {
-            setLastSelectedprescription &&
-              setLastSelectedprescription({
-                ...lastSelectedprescription,
-                cart: selectedType,
-              });
-          }
           if (selectedType == 'CAMERA_AND_GALLERY') {
             updatePhysicalPrescriptions(response);
           } else {
@@ -175,10 +158,10 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     return (
       <SelectEPrescriptionModal
         onSubmit={(selectedEPres) => {
-          console.log({ selectedEPres });
           setSelectPrescriptionVisible(false);
           setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
+        selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
         isVisible={isSelectPrescriptionVisible}
       />
     );
@@ -207,8 +190,6 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     _prescriptions = physicalPrescriptions,
     _ePrescriptions = ePrescriptions
   ) => {
-    console.log({ _ePrescriptions });
-
     const cardContainerStyle = {
       ...theme.viewStyles.cardViewStyle,
       marginHorizontal: 20,
