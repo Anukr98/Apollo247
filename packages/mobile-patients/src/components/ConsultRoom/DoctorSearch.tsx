@@ -125,7 +125,8 @@ export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const params = props.navigation.state.params ? props.navigation.state.params.searchText : '';
-  //console.log(params, 'params');
+  const MoveDoctor = props.navigation.state.params ? props.navigation.state.params.MoveDoctor : '';
+  console.log(MoveDoctor, 'MoveDoctor');
 
   const [searchText, setSearchText] = useState<string>(params);
   const [pastSearch, setPastSearch] = useState<boolean>(true);
@@ -354,7 +355,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       setPastSearches(pastData.data.getPatientPastSearches);
     }
   }
-
+  const backDataFunctionality = (movedata: string) => {
+    if (movedata == 'MoveDoctor') {
+      props.navigation.push(AppRoutes.SymptomChecker);
+    } else {
+      props.navigation.goBack();
+    }
+  };
   const renderSearch = () => {
     return (
       <View style={styles.searchContainer}>
@@ -362,7 +369,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           title={'DOCTORS / SPECIALITIES'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() =>
+            backDataFunctionality(
+              props.navigation.state.params ? props.navigation.state.params.MoveDoctor : ''
+            )
+          }
         />
         <View style={styles.searchView}>
           <TextInputComponent
@@ -793,7 +804,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         {doctorsList && renderSearch()}
         {showSpinner === 0 ? (
           <ScrollView style={{ flex: 1 }} bounces={false} keyboardDismissMode="on-drag">
-            {renderPastSearch()}
+            {props.navigation.state.params!.MoveDoctor == 'MoveDoctor' ? null : renderPastSearch()}
             {renderDoctorSearches()}
             {renderSpecialist()}
             {searchText.length > 2 &&

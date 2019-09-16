@@ -8,7 +8,7 @@ import {
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import moment from 'moment';
 
@@ -147,9 +147,9 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             style={[styles.cardContainerStyle]}
-            // onPress={() => {
-            //   props.onClickCard ? props.onClickCard() : null;
-            // }}
+            onPress={() => {
+              props.onClickCard ? props.onClickCard() : null;
+            }}
           >
             <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
               <View style={{ flexDirection: 'row' }}>
@@ -163,9 +163,9 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                 <View style={{ flex: 1 }}>
                   <TouchableOpacity
                     activeOpacity={1}
-                    onPress={() => {
-                      props.onClickCard ? props.onClickCard() : null;
-                    }}
+                    // onPress={() => {
+                    //   props.onClickCard ? props.onClickCard() : null;
+                    // }}
                   >
                     <Text style={styles.doctorNameStyles}>
                       Dr. {props.PastData.doctorInfo.firstName} {props.PastData.doctorInfo.lastName}
@@ -238,25 +238,39 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                 )}
                 <Text
                   style={styles.yellowTextStyle}
-                  // onPress={() => {
-                  //   console.log('passdata', props.PastData);
-                  //   console.log('medicine', props.PastData.medicineOrderLineItems);
-                  //   const medicines: ShoppingCartItem[] =
-                  //     props.PastData.medicineOrderLineItems &&
-                  //     props.PastData.medicineOrderLineItems.map(
-                  //       (item: any) =>
-                  //         ({
-                  //           id: item!.id!,
-                  //           mou: '10',
-                  //           name: item!.medicineName!,
-                  //           price: 50,
-                  //           quantity: parseInt(item!.medicineDosage!),
-                  //           prescriptionRequired: false,
-                  //         } as ShoppingCartItem)
-                  //     );
-                  //   setCartItems && setCartItems(medicines);
-                  //   props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
-                  // }}
+                  onPress={() => {
+                    console.log('passdata2', props.PastData.caseSheet);
+                    if (
+                      props.PastData.caseSheet.length == [] ||
+                      props.PastData.caseSheet.length == 1
+                    ) {
+                      Alert.alert('No medicines');
+                    } else if (
+                      props.PastData.caseSheet &&
+                      props.PastData.caseSheet[1] &&
+                      props.PastData.caseSheet[1].medicinePrescription == null
+                    ) {
+                      Alert.alert('No medicines');
+                    } else {
+                      const medicines: ShoppingCartItem[] =
+                        props.PastData.caseSheet &&
+                        props.PastData.caseSheet[1] &&
+                        props.PastData.caseSheet[1].medicinePrescription &&
+                        props.PastData.caseSheet[1].medicinePrescription.map(
+                          (item: any) =>
+                            ({
+                              id: item!.id!,
+                              mou: '10',
+                              name: item!.medicineName!,
+                              price: 50,
+                              quantity: parseInt(item!.medicineDosage!),
+                              prescriptionRequired: false,
+                            } as ShoppingCartItem)
+                        );
+                      setCartItems && setCartItems(medicines);
+                      props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+                    }
+                  }}
                 >
                   ORDER MEDS & TESTS
                 </Text>

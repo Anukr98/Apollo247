@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, STATUS, Salutation, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from "./globalTypes";
+import { PatientConsultsAndOrdersInput, APPOINTMENT_TYPE, APPOINTMENT_STATE, DoctorType, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN, STATUS, Salutation, MEDICINE_DELIVERY_TYPE, MEDICINE_ORDER_STATUS, MEDICINE_ORDER_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatientPastConsultsAndPrescriptions
@@ -43,6 +43,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   diagnosis: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosis | null)[] | null;
   diagnosticPrescription: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription | null)[] | null;
   doctorId: string | null;
+  doctorType: DoctorType | null;
   followUp: boolean | null;
   followUpAfterInDays: string | null;
   followUpDate: any | null;
