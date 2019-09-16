@@ -17,10 +17,15 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: '16px 8px',
         textAlign: 'center',
         fontSize: 12,
+        fontWeight: 500,
         color: '#02475b',
-        width: '32%',
+        width: '30%',
+        '& div': {
+          color: '#02475b !important',
+        },
         '&:last-child': {
           borderRight: 'none',
+          width: '40%',
         },
         '& h4': {
           color: '#0087ba',
@@ -118,7 +123,7 @@ export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => 
           </span>
           <span>
             <h4>N/A</h4>
-            <div>PRESCRIPTION</div>
+            <div>PRESCRIPTIONS</div>
           </span>
         </div>
       </CardContent>

@@ -181,6 +181,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     step: {
       marginTop: -8,
+      position: 'relative',
       '& .stepContent': {
         borderLeft: '2px solid #0087ba',
         marginTop: 0,
@@ -268,20 +269,25 @@ const useStyles = makeStyles((theme: Theme) =>
       minHeight: 330,
       paddingTop: 100,
     },
+    completedIcon: {
+      position: 'absolute',
+      left: 21,
+      top: 2,
+    },
   })
 );
 
 const checkIfComplete = (status: string) =>
   status === STATUS.COMPLETED || status === STATUS.NO_SHOW;
 
-const getActiveStep = (appointments: Appointment[]) =>
-  appointments.reduce((acc, appointment) => {
+const getActiveStep = (appointments: Appointment[]) => {
+  return appointments.reduce((acc, appointment) => {
     if (checkIfComplete(appointment.status)) {
       return ++acc;
     }
-
     return acc;
   }, 0);
+};
 
 export const Appointments: React.FC<AppointmentsProps> = ({
   values,
@@ -290,10 +296,10 @@ export const Appointments: React.FC<AppointmentsProps> = ({
 }) => {
   const classes = useStyles();
   const [appointments, setAppointments] = useState<Appointment[]>(values);
-  console.log(appointments);
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
+
   const upcomingElement = useRef(null);
 
   useImperativeHandle(upcomingElement, () => {
@@ -305,6 +311,13 @@ export const Appointments: React.FC<AppointmentsProps> = ({
 
     return null;
   });
+
+  const getAppointmentStatusClass = (appointmentStatus: string) => {
+    if (appointmentStatus === STATUS.NO_SHOW) return classes.missing;
+    if (appointmentStatus === STATUS.COMPLETED) return classes.completed;
+    return '';
+  };
+
   const getSymptomTooltip = (appointment: any, symptomArr: any) => {
     let symptms: any = [];
     symptomArr.filter((value: any, index: number) => {
@@ -323,7 +336,6 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   useEffect(() => {
     let activeStep = getActiveStep(values);
     activeStep = activeStep < 0 ? 0 : activeStep;
-
     setAppointments(values);
     setActiveStep(activeStep);
   }, [values]);
@@ -363,19 +375,26 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                 key={idx}
                 active={true}
                 className={
-                  appointment.status === STATUS.NO_SHOW
-                    ? classes.missing
-                    : activeStep - 1 >= idx
-                    ? classes.completed
-                    : activeStep === idx
-                    ? 'upcoming'
-                    : ''
+                  // appointment.status === STATUS.NO_SHOW
+                  //   ? classes.missing
+                  //   : appointment.status === STATUS.COMPLETED
+                  //   ? ''
+                  //   : activeStep === idx
+                  //   ? 'upcoming'
+                  //   : ''
+                  getAppointmentStatusClass(appointment.status)
                 }
                 classes={{
                   root: classes.step,
                 }}
               >
-                {console.log(appointment.caseSheet.length)};
+                {appointment.status === STATUS.COMPLETED && (
+                  <img
+                    className={classes.completedIcon}
+                    src={require('images/ic_completed.svg')}
+                    alt=""
+                  />
+                )}
                 <StepLabel
                   classes={{ iconContainer: classes.iconContainer }}
                   StepIconProps={{

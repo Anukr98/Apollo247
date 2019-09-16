@@ -361,14 +361,11 @@ export class DoctorSpecialty extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  name: string;
-
   @Column({ nullable: true, type: 'text' })
   image: string;
 
-  @OneToMany((type) => Doctor, (doctor) => doctor.specialty)
-  doctor: Doctor[];
+  @Column()
+  name: string;
 
   @Column({ nullable: true })
   specialistSingularTerm: string;
@@ -381,6 +378,8 @@ export class DoctorSpecialty extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+  @OneToMany((type) => Doctor, (doctor) => doctor.specialty)
+  doctor: Doctor[];
 
   @BeforeUpdate()
   updateDateUpdate() {

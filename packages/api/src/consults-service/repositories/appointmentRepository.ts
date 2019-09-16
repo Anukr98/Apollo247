@@ -20,6 +20,7 @@ import {
   APPOINTMENT_TYPE,
   TRANSFER_INITIATED_TYPE,
   CONSULTS_RX_SEARCH_FILTER,
+  AppointmentDocuments,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -99,7 +100,9 @@ export class AppointmentRepository extends Repository<Appointment> {
     return AppointmentSessions.create(appointmentSessionAttrs)
       .save()
       .catch((createErrors) => {
-        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_ERROR, undefined, { createErrors });
+        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_SESSION_ERROR, undefined, {
+          createErrors,
+        });
       });
   }
 
@@ -624,5 +627,15 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
+  }
+
+  saveDocument(documentAttrs: Partial<AppointmentDocuments>) {
+    return AppointmentDocuments.create(documentAttrs)
+      .save()
+      .catch((createErrors) => {
+        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_DOCUMENT_ERROR, undefined, {
+          createErrors,
+        });
+      });
   }
 }

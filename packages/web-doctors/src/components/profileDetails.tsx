@@ -187,6 +187,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h6': {
         fontSize: 15,
       },
+      '& h4': {
+        fontSize: 22,
+        fontWeight: 600,
+      },
     },
     doctorPanelLeft: {
       marginBottom: 20,

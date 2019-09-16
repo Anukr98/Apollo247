@@ -15,11 +15,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { sendSMS } from 'notifications-service/resolvers/notifications';
 import { ApiConstants } from 'ApiConstants';
 import { addMilliseconds, format } from 'date-fns';
-import {
-  sendNotification,
-  PushNotificationSuccessMessage,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {

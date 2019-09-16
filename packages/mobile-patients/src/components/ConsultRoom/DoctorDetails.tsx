@@ -211,6 +211,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     variables: { id: doctorId },
   });
   if (error) {
+    setshowSpinner(false);
     console.log('error', error);
   } else {
     try {

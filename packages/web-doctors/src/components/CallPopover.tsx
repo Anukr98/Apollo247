@@ -516,6 +516,7 @@ interface CallPopoverProps {
   startAppointment: boolean;
   sessionId: string;
   token: string;
+  saving: boolean;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -1247,6 +1248,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <span>
                 <Button
                   className={classes.backButton}
+                  disabled={props.saving}
                   onClick={() => {
                     props.saveCasesheetAction(true);
                   }}
@@ -1255,6 +1257,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 </Button>
                 <Button
                   className={classes.endconsultButton}
+                  disabled={props.saving}
                   onClick={() => {
                     //onStopConsult();
                     //setStartAppointment(!startAppointment);

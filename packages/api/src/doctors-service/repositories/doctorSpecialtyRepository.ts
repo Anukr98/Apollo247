@@ -61,7 +61,7 @@ export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
       allExistingSpecialties.forEach((existingSpecialty) => {
         if (
           specialty.name &&
-          specialty.name.toLowerCase() == existingSpecialty.name.toLowerCase()
+          specialty.name.trim().toLowerCase() == existingSpecialty.name.trim().toLowerCase()
         ) {
           specialty.id = existingSpecialty.id;
           specialty.updatedDate = new Date();
