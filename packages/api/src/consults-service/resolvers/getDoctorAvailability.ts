@@ -41,7 +41,7 @@ const getDoctorAvailableSlots: Resolver<
   const weekDay = format(DoctorAvailabilityInput.availableDate, 'EEEE').toUpperCase();
   const timeSlots = await consultHourRep.getConsultHours(DoctorAvailabilityInput.doctorId, weekDay);
   const availableSlots: string[] = [];
-  let availableSlots1: string[] = [];
+  let availableSlotsReturn: string[] = [];
   if (timeSlots && timeSlots.length > 0) {
     timeSlots.map((timeSlot) => {
       let st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlot.startTime.toString()}`;
@@ -61,7 +61,7 @@ const getDoctorAvailableSlots: Resolver<
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
       console.log(slotsCount, 'slots count');
       console.log(startTime, 'slot start time');
-      availableSlots1 = Array(slotsCount)
+      availableSlotsReturn = Array(slotsCount)
         .fill(0)
         .map(() => {
           const stTime = startTime;
@@ -82,7 +82,7 @@ const getDoctorAvailableSlots: Resolver<
         });
     });
   }
-  console.log(availableSlots, 'availableSlots', availableSlots1);
+  console.log(availableSlots, 'availableSlots', availableSlotsReturn);
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const apptSlots = await appts.findByDateDoctorId(
     DoctorAvailabilityInput.doctorId,
