@@ -213,7 +213,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     userName = userName.toLowerCase();
     setuserName(userName);
     currentPatient && setshowSpinner(false);
-    // console.log('consult room', currentPatient);
+
     analytics.setCurrentScreen(AppRoutes.ConsultRoom);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 

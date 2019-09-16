@@ -22,4 +22,8 @@ export class TransferAppointmentRepository extends Repository<TransferAppointmen
   updateTransfer(id: string, transferStatus: TRANSFER_STATUS) {
     return this.update(id, { transferStatus });
   }
+
+  getTransferDetails(appointment: string) {
+    return this.findOne({ where: { appointment, transferStatus: TRANSFER_STATUS.INITIATED } });
+  }
 }
