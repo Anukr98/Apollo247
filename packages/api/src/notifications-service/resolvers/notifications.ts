@@ -79,10 +79,11 @@ type PushNotificationInput = {
 type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput };
 
 export async function sendSMS(message: string) {
-  const smsResp = await fetch(
-    'http://bulkpush.mytoday.com/BulkSms/SingleMsgApi?feedid=370454&username=7993961498&password=popcorn123$$&To=9657585411&Text=' +
-      message
-  );
+  const smsUrl = process.env.SMS_GATEWAY_URL ? process.env.SMS_GATEWAY_URL : '';
+  if (smsUrl == '') {
+    throw new AphError(AphErrorMessages.SMS_GATEWAY_URL, undefined, {});
+  }
+  const smsResp = await fetch(smsUrl + '&To=9657585411&Text=' + message);
   console.log(smsResp, 'sms resp');
 }
 
