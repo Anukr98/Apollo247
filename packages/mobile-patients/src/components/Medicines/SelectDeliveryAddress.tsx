@@ -38,10 +38,10 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={() => {
             setLoading(true);
-            pinCodeServiceabilityApi(selectedPinCode, 'PHARMA')
+            pinCodeServiceabilityApi(selectedPinCode)
               .then(({ data: { Availability } }) => {
                 setLoading(false);
-                if (Platform.OS == 'android' ? true : Availability) {
+                if (Availability) {
                   setSelectedAddressId && setSelectedAddressId(selectedId);
                   props.navigation.goBack();
                 } else {

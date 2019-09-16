@@ -27,6 +27,9 @@ import { BottomPopUp } from '../ui/BottomPopUp';
 import { EPrescriptionCard } from '../ui/EPrescriptionCard';
 import { Spinner } from '../ui/Spinner';
 import { SelectEPrescriptionModal } from './SelectEPrescriptionModal';
+import { Mutation } from 'react-apollo';
+import { UPLOAD_FILE } from '../../graphql/profiles';
+import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -334,11 +337,15 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         </ScrollView>
       </SafeAreaView>
       <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
-        <Button
-          title={'SUBMIT PRESCRIPTION'}
-          onPress={onPressSubmit}
-          style={{ marginHorizontal: 60, flex: 1 }}
-        />
+        <Mutation<uploadFile, uploadFileVariables> mutation={UPLOAD_FILE}>
+          {(mutate, { loading, data, error }) => (
+            <Button
+              title={'SUBMIT PRESCRIPTION'}
+              onPress={onPressSubmit}
+              style={{ marginHorizontal: 60, flex: 1 }}
+            />
+          )}
+        </Mutation>
       </StickyBottomComponent>
       {showSpinner && <Spinner />}
       {renderSuccessDialog()}
