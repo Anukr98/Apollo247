@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NavigatorSDK, $Generator } from 'praktice-navigator-react-native-sdk';
 // import { Generator } from 'praktice-navigator-react-native-sdk';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationActions } from 'react-navigation';
 import { SafeAreaView, View, Text } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -9,20 +9,24 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import Moment from 'moment';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { StackActions } from 'react-navigation';
 
 export interface CustomComponentProps extends NavigationScreenProps {}
 
 export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
+  const Consult = props.navigation.state.params ? props.navigation.state.params.Consult : '';
+  console.log(Consult, 'Consultval');
   const onSubmitClick = async () => {
     const ss = await $Generator({ type: 'showSpeciality' });
-    console.log(ss, 'ssssss');
+
     let speciality = '';
     if (ss && ss.specialists && ss.specialists.length) {
       console.log(ss.specialists[0].speciality);
       speciality = ss.specialists[0].speciality;
     }
-    props.navigation.navigate(AppRoutes.DoctorSearch, {
+    props.navigation.push(AppRoutes.DoctorSearch, {
       searchText: speciality,
+      MoveDoctor: 'MoveDoctor',
     });
   };
   // return <Button title={'show speciality'} onPress={onSubmitClick} />;
@@ -44,7 +48,9 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   );
 };
 
-export interface SymptomCheckerProps extends NavigationScreenProps {}
+export interface SymptomCheckerProps extends NavigationScreenProps {
+  ConsultRoom: string;
+}
 
 export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
@@ -66,7 +72,15 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
         <Header
           title={`${userName.toUpperCase()}’S SYMPTOMS`}
           leftIcon="backArrow"
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() =>
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+              })
+            )
+          }
         />
 
         <NavigatorSDK

@@ -83,8 +83,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   >(currentPatient);
   const { signOut } = useAuth();
 
-  console.log(currentPatient, 'currentPatient');
-
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
     outputRange: [0, -105, -105],
@@ -109,7 +107,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   }, [currentPatient, profileDetails]);
 
   const renderDetails = () => {
-    console.log(profileDetails, 'profileDetails');
     if (profileDetails)
       return (
         <View style={styles.topView}>

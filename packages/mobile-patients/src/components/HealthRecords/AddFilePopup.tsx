@@ -203,25 +203,30 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
               <Text style={styles.lableStyle}>Instructions For Uploading Files</Text>
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.instructionsStyle}>1.</Text>
-                <Text style={[styles.instructionsStyle, { paddingLeft: 16 }]}>
+                <Text style={[styles.instructionsStyle, { paddingLeft: 16, paddingRight: 16 }]}>
                   Take clear Picture of your entire file.
                 </Text>
               </View>
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.instructionsStyle}>2.</Text>
-                <Text style={[styles.instructionsStyle, { paddingLeft: 16 }]}>
+                <Text style={[styles.instructionsStyle, { paddingLeft: 16, paddingRight: 16 }]}>
                   Doctor details & date of the prescription should be clearly visible.
                 </Text>
               </View>
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.instructionsStyle}>3.</Text>
-                <Text style={[styles.instructionsStyle, { paddingLeft: 16 }]}>
+                <Text style={[styles.instructionsStyle, { paddingLeft: 16, paddingRight: 16 }]}>
                   Use JPG and PNG file format only.
                 </Text>
               </View>
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.instructionsStyle}>4.</Text>
-                <Text style={[styles.instructionsStyle, { paddingLeft: 16, paddingBottom: 15 }]}>
+                <Text
+                  style={[
+                    styles.instructionsStyle,
+                    { paddingLeft: 16, paddingBottom: 15, paddingRight: 16 },
+                  ]}
+                >
                   File should not be of more than 5mb.
                 </Text>
               </View>

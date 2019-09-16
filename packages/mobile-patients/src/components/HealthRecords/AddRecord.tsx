@@ -37,6 +37,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -139,6 +140,7 @@ const MedicalRecordInitialValues: AddMedicalRecordParametersInput = {
 export interface AddRecordProps extends NavigationScreenProps {}
 
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
+  var fin = '';
   const [showImages, setshowImages] = useState<boolean>(true);
   const [showRecordDetails, setshowRecordDetails] = useState<boolean>(true);
   const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
@@ -260,6 +262,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const renderImagesRow = (data: PickerImage, i: number) => {
+    var base64Icon = 'data:image/png;base64,';
+    fin = base64Icon.concat(data.data!);
+    console.log('imageCOPYImages', fin);
+
     return (
       <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
         <View
@@ -283,7 +289,18 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               width: 54,
             }}
           >
-            <PrescriptionThumbnail />
+            {fin == '' ? (
+              <PrescriptionThumbnail />
+            ) : (
+              <Image
+                style={{
+                  height: 40,
+                  width: 30,
+                }}
+                source={{ uri: fin }}
+              />
+            )}
+            {/* <PrescriptionThumbnail /> */}
           </View>
           <View style={{ flex: 1 }}>
             <Text>

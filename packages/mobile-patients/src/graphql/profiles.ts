@@ -480,6 +480,7 @@ export const GET_CASESHEET_DETAILS = gql`
         followUp
         followUpAfterInDays
         followUpDate
+        doctorType
         id
         medicinePrescription {
           medicineConsumptionDurationInDays
@@ -837,6 +838,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             itemname
           }
           doctorId
+          doctorType
           followUp
           followUpAfterInDays
           followUpDate
