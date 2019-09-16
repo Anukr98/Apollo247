@@ -9,10 +9,20 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  Platform,
+  Alert,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
+import RNFetchBlob from 'react-native-fetch-blob';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -85,6 +95,7 @@ export interface RecordDetailsProps extends NavigationScreenProps {}
 export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const [showtopLine, setshowtopLine] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   console.log(data, 'data');
 
@@ -243,7 +254,57 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                 {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
                   <ShareGreen />
                 </TouchableOpacity> */}
-                <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    console.log('pdf url', data.documentURLs);
+
+                    let dirs = RNFetchBlob.fs.dirs;
+                    console.log('dirs', dirs);
+                    if (Platform.OS == 'ios') {
+                    }
+
+                    console.log(
+                      'pdf downloadDest',
+                      data.documentURLs && data.documentURLs.split('/').pop()
+                    );
+
+                    setLoading(true);
+                    RNFetchBlob.config({
+                      fileCache: true,
+                      addAndroidDownloads: {
+                        useDownloadManager: true,
+                        notification: false,
+                        mime: 'application/pdf',
+                        //path:  RNFetchBlob.fs.dirs.DownloadDir + rowData.transferInfo.pdfUrl &&
+                        //rowData.transferInfo.pdfUrl.split('/').pop(),
+                        path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+                        description: 'File downloaded by download manager.',
+                      },
+                    })
+                      .fetch('GET', data.documentURLs, {
+                        //some headers ..
+                      })
+                      .then((res) => {
+                        setLoading(false);
+                        // the temp file path
+                        console.log('The file saved to res ', res);
+                        console.log('The file saved to ', res.path());
+
+                        // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                        // RNFetchBlob.ios.openDocument(res.path());
+                        Alert.alert('Download Complete');
+                        Platform.OS === 'ios'
+                          ? RNFetchBlob.ios.previewDocument(res.path())
+                          : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                      })
+                      .catch((err) => {
+                        console.log('error ', err);
+                        setLoading(false);
+                        // ...
+                      });
+                  }}
+                >
                   <Download />
                 </TouchableOpacity>
               </View>
@@ -255,6 +316,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
             {renderData()}
             {false && renderRecordDetails()}
           </ScrollView>
+          {loading && <Spinner />}
         </SafeAreaView>
       </View>
     );

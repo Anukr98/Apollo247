@@ -67,7 +67,11 @@ const getCurrentPatients: Resolver<
   ProfilesServiceContext,
   GetCurrentPatientsResult
 > = async (parent, args, { firebaseUid, mobileNumber }) => {
-  const prismBaseUrl = 'http://blue.phrdemo.com/ui/data';
+  const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
+  if (prismUrl == '') {
+    throw new AphError(AphErrorMessages.INVALID_PRISM_URL, undefined, {});
+  }
+  const prismBaseUrl = prismUrl + '/ui/data';
   const prismHeaders = { method: 'get', headers: { Host: 'blue.phrdemo.com' } };
 
   const prismAuthToken = await fetch(

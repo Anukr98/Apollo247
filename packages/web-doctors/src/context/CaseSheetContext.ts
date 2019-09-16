@@ -26,6 +26,7 @@ export interface CaseSheetContextProps {
     | (() => void);
   notes: string | null;
   setNotes: React.Dispatch<React.SetStateAction<string | null>> | (() => void);
+  juniorDoctorNotes: string | null;
   diagnosis: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null;
   setDiagnosis:
     | React.Dispatch<
@@ -80,6 +81,7 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setSymptoms: () => {},
   notes: null,
   setNotes: () => {},
+  juniorDoctorNotes: null,
   diagnosis: null,
   setDiagnosis: () => {},
   otherInstructions: null,

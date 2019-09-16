@@ -192,32 +192,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
   const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
 
-  console.log('Backdata', props.navigation.getParam('Data'));
-
   const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
   const [followupdone, setFollowupDone] = useState<boolean>(false);
-  const locationPermission = () => {
-    console.log('123456789');
-    Permissions.checkMultiple([
-      'camera',
-      'photo',
-      'location',
-      'microphone',
-      'readSms',
-      'receiveSms',
-    ])
-      .then((response) => {
-        console.log(response, 'permission response');
-        //response is an object mapping type to permission
-        // this.setState({
-        //   cameraPermission: response.camera,
-        //   photoPermission: response.photo,
-        // });
-      })
-      .catch((error) => {
-        console.log(error, 'error permission');
-      });
-  };
 
   useEffect(() => {
     setNewAppointmentTime(
@@ -246,7 +222,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
-    // console.log('consult room', currentPatient);
     analytics.setCurrentScreen(AppRoutes.Consult);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
@@ -256,14 +231,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       if (showSchduledPopup == 'true') {
         setShowSchdulesView(true);
       }
-      console.log(props.navigation.getParam('TransferData'), 'TransferData');
-      console.log(props.navigation.getParam('TranferDateTime'), 'TranferDateTime');
-      console.log(props.navigation.getParam('FollowupData'), 'FollowupData');
-      console.log(props.navigation.getParam('FollowupDateTime'), 'FollowupDateTime');
       const showTransferPopup = await AsyncStorage.getItem('showTransferPopup');
       const showFollowUpPopup = await AsyncStorage.getItem('showFollowUpPopup');
-      console.log(showTransferPopup, 'showTransferPopup');
-      console.log(showFollowUpPopup, 'showFollowUpPopup');
       if (showTransferPopup == 'true') {
         setTransferfollowup(true);
       }
@@ -272,16 +241,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
-    // locationPermission();
   }, []);
 
   const inputData = {
-    // patientId: "ac24883c-4f7c-4e46-a9e4-155e4092263c",
-    // appointmentDate: "2019-08-08"
     patientId: currentPatient ? currentPatient!.id : '',
     appointmentDate: moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'),
   };
-  console.log(inputData, 'inputData');
+
   const { data, error } = useQuery<getPatinetAppointments>(GET_PATIENT_APPOINTMENTS, {
     fetchPolicy: 'no-cache',
     variables: {
@@ -507,9 +473,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 );
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
           const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
-          // console.log('appointmentDateTime', moment(appointmentDateTime));
-          //console.log('new Date()', moment(new Date()));
-          //console.log('dateIsAfterconsult', dateIsAfterconsult);
+          var day1 = moment(appointmentDateTime)
+            .add(7, 'days')
+            .format('DD');
+          var day2 = moment(new Date()).format('DD');
+
+          var difference = function(day1: number, day2: number) {
+            return Math.abs(day1 - day2);
+          };
+
           return (
             <View style={{}}>
               {/* <View style={{ width: 312 }}> */}
@@ -631,11 +603,86 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   </View>
                   <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
                   {item.isFollowUp == 'true' ? (
-                    <Text style={styles.prepareForConsult}>BOOK FOLLOW-UP</Text>
+                    <View>
+                      <Text style={styles.prepareForConsult}>SCHEDULE FOLLOW-UP</Text>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignSelf: 'flex-end',
+                          paddingBottom: -16,
+                          marginTop: -16,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansMedium(12),
+                            color: '#02475b',
+                            opacity: 0.6,
+                            letterSpacing: 0.04,
+                            textAlign: 'right',
+                            paddingBottom: 16,
+                          }}
+                        >
+                          You can avail
+                        </Text>
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansSemiBold(12),
+                            color: '#02475b',
+                            opacity: 0.6,
+                            letterSpacing: 0.04,
+                            textAlign: 'right',
+                            paddingBottom: 16,
+                            marginRight: 15,
+                            paddingLeft: 3,
+                          }}
+                        >
+                          1 free follow-up!
+                        </Text>
+                      </View>
+                    </View>
                   ) : dateIsAfterconsult ? (
                     <Text style={styles.prepareForConsult}>{string.common.prepareForConsult}</Text>
                   ) : (
-                    <Text style={styles.prepareForConsult}>FOLLOW UP</Text>
+                    <View>
+                      <Text style={[styles.prepareForConsult, { paddingBottom: -16 }]}>
+                        CHAT WITH DOCTOR
+                      </Text>
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignSelf: 'flex-end',
+                          paddingBottom: -16,
+                        }}
+                      >
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansMedium(12),
+                            color: '#02475b',
+                            opacity: 0.6,
+                            letterSpacing: 0.04,
+                            textAlign: 'right',
+                            paddingBottom: 16,
+                          }}
+                        >
+                          You can chat with the doctor
+                        </Text>
+                        <Text
+                          style={{
+                            ...theme.fonts.IBMPlexSansSemiBold(12),
+                            color: '#02475b',
+                            opacity: 0.6,
+                            letterSpacing: 0.04,
+                            textAlign: 'right',
+                            paddingBottom: 16,
+                            marginRight: 15,
+                            paddingLeft: 3,
+                          }}
+                        >
+                          {parseInt(day1) - parseInt(day2)} more days
+                        </Text>
+                      </View>
+                    </View>
                   )}
                 </View>
               </TouchableOpacity>
@@ -650,7 +697,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     const todayConsults = consultations.filter(
       (item) => item.appointmentDateTime.split('T')[0] === new Date().toISOString().split('T')[0]
     );
-    console.log(todayConsults, 'todayConsults');
     return (
       <View style={{ width: '100%' }}>
         <View style={styles.viewName}>
@@ -691,9 +737,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
           <Text style={styles.descriptionTextStyle}>
             {consultations.length > 0
-              ? `You have ${consultations.length} upcoming consultation${
-                  consultations.length > 1 ? 's' : ''
-                }!`
+              ? 'Here are your recent and upcoming consultations'
               : string.consult_room.description}
           </Text>
           <View
@@ -721,7 +765,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 title={string.home.consult_doctor}
                 style={styles.buttonStyles}
                 onPress={() => {
-                  props.navigation.navigate(AppRoutes.SymptomChecker);
+                  props.navigation.navigate(AppRoutes.SymptomChecker, { Consult: 'Consult' });
                 }}
               />
             </View>

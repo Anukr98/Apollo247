@@ -105,7 +105,7 @@ const slides: Slide[] = [
   {
     key: 'somethun-dos',
     title: 'health records',
-    text: 'Keep all your medical records in one digital vault, with you controlling access',
+    text: 'Keep all your medical records in one place',
     image: require('@aph/mobile-patients/src/images/onboard/onboard.png'),
     backgroundColor: '#FBFCFD',
     index: 2,
@@ -114,7 +114,7 @@ const slides: Slide[] = [
   {
     key: 'somethun1',
     title: 'at your doorstep',
-    text: 'Order medicines, tests and health checkups from the comfort of your home',
+    text: 'Order medicines from the comfort of your home. Tests and health check-ups coming soon!',
     image: require('@aph/mobile-patients/src/images/onboard/onboard.png'),
     backgroundColor: '#FBFCFD',
     index: 3,
@@ -122,8 +122,8 @@ const slides: Slide[] = [
   },
   {
     key: 'somethun2',
-    title: 'star doctors',
-    text: 'Leverage the Apollo expertise using our Star Doctors',
+    title: 'care programs',
+    text: 'Learn about Special Care Programs by Apollo. Coming soon!',
     image: require('@aph/mobile-patients/src/images/onboard/onboard.png'),
     backgroundColor: '#FBFCFD',
     index: 4,
@@ -154,7 +154,8 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                   <Text style={styles.titleStyle}>{item.title}</Text>
                   <Text style={styles.descptionText}>{item.text}</Text>
                 </View>
-                <TouchableOpacity activeOpacity={1}
+                <TouchableOpacity
+                  activeOpacity={1}
                   onPress={() => {
                     if (item.index === slides.length) {
                       AsyncStorage.setItem('onboarding', 'true');

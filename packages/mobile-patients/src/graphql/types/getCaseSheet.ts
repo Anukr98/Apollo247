@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getCaseSheet
@@ -66,6 +66,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails {
   followUp: boolean | null;
   followUpAfterInDays: string | null;
   followUpDate: any | null;
+  doctorType: DoctorType | null;
   id: string | null;
   medicinePrescription: (getCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
   notes: string | null;
