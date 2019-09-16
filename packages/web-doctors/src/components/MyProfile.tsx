@@ -143,7 +143,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     awardsSection: {
-      padding: '10px 20px 10px 20px',
+      padding: '16px 20px 10px 20px',
       marginBottom: 20,
     },
     tabRightcontent: {
