@@ -183,6 +183,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const stopcallMsg = '^^callme`stop^^';
   const acceptcallMsg = '^^callme`accept^^';
   const startConsult = '^^#startconsult';
+  const startConsultjr = '^^#startconsultJr';
   const stopConsult = '^^#stopconsult';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
@@ -200,6 +201,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
   let leftComponent = 0;
   let rightComponent = 0;
+  let jrDrComponent = 0;
   const pubnub = new Pubnub(config);
   let insertText: MessagesObjectProps[] = [];
 
@@ -274,6 +276,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
           message.message.message !== startConsult &&
+          message.message.message !== startConsultjr &&
           message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
@@ -384,6 +387,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== startConsult &&
+      rowData.message !== startConsultjr &&
       rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
@@ -391,6 +395,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     ) {
       leftComponent++;
       rightComponent = 0;
+      jrDrComponent = 0;
       return (
         <div className={classes.docterChat}>
           <div className={rowData.duration ? classes.callMsg : classes.doctor}>
@@ -429,12 +434,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== startConsult &&
+      rowData.message !== startConsultjr &&
       rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
     ) {
       leftComponent = 0;
+      jrDrComponent = 0;
       rightComponent++;
       return (
         <div className={classes.patientChat}>
@@ -483,12 +490,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== startConsult &&
+      rowData.message !== startConsultjr &&
       rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
     ) {
-      leftComponent++;
+      jrDrComponent++;
+      leftComponent = 0;
       rightComponent = 0;
       return (
         <div className={classes.docterChat}>
