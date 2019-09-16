@@ -172,8 +172,31 @@ export class Appointment extends BaseEntity {
     (appointmentPayments) => appointmentPayments.appointment
   )
   appointmentPayments: AppointmentPayments[];
+
+  @OneToMany(
+    (type) => AppointmentDocuments,
+    (appointmentDocuments) => appointmentDocuments.appointment
+  )
+  appointmentDocuments: AppointmentDocuments[];
 }
 //Appointment ends
+
+//AppointmentDocuments starts
+@Entity()
+export class AppointmentDocuments extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  documentPath: string;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentDocuments)
+  appointment: Appointment;
+}
+//AppointmentDocuments ends
 
 //AppointmentPayments starts
 @Entity()

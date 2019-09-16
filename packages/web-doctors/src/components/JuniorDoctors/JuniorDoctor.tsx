@@ -197,7 +197,7 @@ export const JuniorDoctor: React.FC = (props) => {
         <div className={classes.pageContainer}>
           <div className={classes.pageHeader}>
             <h2>hello doc :)</h2>
-            <p>manage your new and old patients easily here</p>
+            <p>Easily manage all your old and new patients here</p>
           </div>
           <div className={classes.contentGroup}>
             <div className={classes.leftSection}>

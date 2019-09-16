@@ -159,7 +159,7 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments {
   appointmentDateTime: any;
   appointmentState: string | null;
   doctorId: string;
-  hospitalId: string;
+  hospitalId: string | null;
   patientId: string;
   parentId: string | null;
   status: STATUS;
