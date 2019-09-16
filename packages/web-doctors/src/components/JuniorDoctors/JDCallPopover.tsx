@@ -972,7 +972,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   useEffect(() => {
     const apptClosedTime = moment(new Date(props.appointmentDateTime));
     const presentTime = moment(new Date());
-    apptClosedTime.diff(presentTime) > 0 ? setDisableStartConsult(false) : setDisableStartConsult(true);
+    apptClosedTime.diff(presentTime) > 0
+      ? setDisableStartConsult(false)
+      : setDisableStartConsult(true);
   });
   useEffect(() => {
     if (props.isEnded) {
