@@ -18,6 +18,7 @@ import { PatientAddressRepository } from 'profiles-service/repositories/patientA
 import { PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import fetch from 'node-fetch';
 import { differenceInYears } from 'date-fns';
+import { ApiConstants } from 'ApiConstants';
 
 export const savePrescriptionMedicineOrderTypeDefs = gql`
   input PrescriptionMedicineInput {
@@ -203,7 +204,7 @@ const SavePrescriptionMedicineOrder: Resolver<
     const pharmaResp = await fetch(placeOrderUrl, {
       method: 'POST',
       body: JSON.stringify(medicineOrderPharma),
-      headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
+      headers: { 'Content-Type': 'application/json', Token: ApiConstants.PHARMA_TOKEN.toString() },
     });
 
     if (pharmaResp.status == 400) {

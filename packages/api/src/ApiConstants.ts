@@ -33,4 +33,6 @@ export enum ApiConstants {
 
   BOOK_APPOINTMENT_SMS_MESSAGE = 'Thanks for choosing Apollo24x7, {0} :) Your appointment {1} with Dr. {2} is confirmed for {3} at {4}. Call us at 18605000101 for any questions',
   BOOK_APPOINTMENT_TITLE = 'your appointment is confirmed',
+
+  PHARMA_TOKEN = '9f15bdd0fcd5423190c2e877ba0228A24',
 }

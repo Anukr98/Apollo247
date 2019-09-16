@@ -58,7 +58,7 @@ export const getCurrentPatientsTypeDefs = gql`
 `;
 
 type GetCurrentPatientsResult = {
-  patients: Patient[] | null;
+  patients: Object[] | null;
 };
 
 const getCurrentPatients: Resolver<
@@ -67,12 +67,14 @@ const getCurrentPatients: Resolver<
   ProfilesServiceContext,
   GetCurrentPatientsResult
 > = async (parent, args, { firebaseUid, mobileNumber }) => {
+  let isPrismWorking = 1;
   const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
   if (prismUrl == '') {
-    throw new AphError(AphErrorMessages.INVALID_PRISM_URL, undefined, {});
+    //throw new AphError(AphErrorMessages.INVALID_PRISM_URL, undefined, {});
+    isPrismWorking = 0;
   }
   const prismBaseUrl = prismUrl + '/ui/data';
-  const prismHeaders = { method: 'get', headers: { Host: 'blue.phrdemo.com' } };
+  const prismHeaders = { method: 'get', headers: { Host: 'blue.phrdemo.com' }, timeOut: 10000 };
 
   const prismAuthToken = await fetch(
     `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`,
@@ -80,21 +82,25 @@ const getCurrentPatients: Resolver<
   )
     .then((res) => res.json() as Promise<PrismGetAuthTokenResponse>)
     .catch((prismGetAuthTokenError: PrismGetAuthTokenError) => {
-      throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {
-        prismGetAuthTokenError,
-      });
+      // throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {
+      //   prismGetAuthTokenError,
+      // });
+      isPrismWorking = 0;
     });
-
-  const uhids = await fetch(
-    `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`,
-    prismHeaders
-  )
-    .then((res) => res.json() as Promise<PrismGetUsersResponse>)
-    .catch((prismGetUsersError: PrismGetUsersError) => {
-      throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {
-        prismGetUsersError,
+  let uhids;
+  if (prismAuthToken != null) {
+    uhids = await fetch(
+      `${prismBaseUrl}/getusers?authToken=${prismAuthToken.response}&mobile=${mobileNumber}`,
+      prismHeaders
+    )
+      .then((res) => res.json() as Promise<PrismGetUsersResponse>)
+      .catch((prismGetUsersError: PrismGetUsersError) => {
+        // throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR, undefined, {
+        //   prismGetUsersError,
+        // });
+        isPrismWorking = 0;
       });
-    });
+  }
 
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
@@ -106,36 +112,39 @@ const getCurrentPatients: Resolver<
       return existingPatient || Patient.create(createOptions).save();
     });
   };
-
-  const isPatientInPrism = uhids.response && uhids.response.signUpUserData;
-
-  const patientPromises = isPatientInPrism
-    ? uhids.response!.signUpUserData.map((data) => {
-        return findOrCreatePatient(
-          { uhid: data.uhid, mobileNumber },
-          {
-            firebaseUid,
-            firstName: data.userName,
-            lastName: '',
-            gender: undefined,
-            mobileNumber,
-            uhid: data.UHID,
-          }
-        );
-      })
-    : [
-        findOrCreatePatient(
-          { uhid: '', mobileNumber },
-          {
-            firebaseUid,
-            firstName: '',
-            lastName: '',
-            gender: undefined,
-            mobileNumber,
-            uhid: '',
-          }
-        ),
-      ];
+  let patientPromises: Object[] = [];
+  if (uhids != null) {
+    isPrismWorking = 1;
+    //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
+    patientPromises = uhids.response!.signUpUserData.map((data) => {
+      return findOrCreatePatient(
+        { uhid: data.uhid, mobileNumber },
+        {
+          firebaseUid,
+          firstName: data.userName,
+          lastName: '',
+          gender: undefined,
+          mobileNumber,
+          uhid: data.UHID,
+        }
+      );
+    });
+  }
+  if (isPrismWorking == 0) {
+    patientPromises = [
+      findOrCreatePatient(
+        { uhid: '', mobileNumber },
+        {
+          firebaseUid,
+          firstName: '',
+          lastName: '',
+          gender: undefined,
+          mobileNumber,
+          uhid: '',
+        }
+      ),
+    ];
+  }
 
   const patients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
