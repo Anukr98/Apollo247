@@ -65,8 +65,8 @@ export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
         ) {
           specialty.id = existingSpecialty.id;
           specialty.updatedDate = new Date();
+          return;
         }
-        return;
       });
     });
 
