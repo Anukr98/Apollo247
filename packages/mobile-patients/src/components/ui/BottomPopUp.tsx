@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, StyleProp, ViewStyle } from 'react-native';
 import { theme } from '../../theme/theme';
 import { Mascot } from './Icons';
 
@@ -43,12 +43,13 @@ const styles = StyleSheet.create({
 export interface ButtonProps {
   title?: string;
   description?: string;
+  style?: StyleProp<ViewStyle>;
   children?: React.ReactNode;
 }
 
 export const BottomPopUp: React.FC<ButtonProps> = (props) => {
   return (
-    <View style={styles.showPopUp}>
+    <View style={[styles.showPopUp, props.style]}>
       <View style={styles.subViewPopup}>
         <Text style={styles.congratulationsTextStyle}>{props.title}</Text>
         <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
