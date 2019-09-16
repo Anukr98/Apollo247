@@ -18,7 +18,7 @@ export enum ApiConstants {
   PATIENT_HELP_SUPPORT_CC_EMAILID = 'sriram.kanchan@popcornapps.com,sumeeth.kumar@popcornapps.com',
   PATIENT_HELP_FROM_EMAILID = 'info@pepisandbox.com',
   PATIENT_HELP_FROM_NAME = 'Apollo24*7',
-  PATIENT_HELP_SUBJECT = 'Patient Help Form',
+  PATIENT_HELP_SUBJECT = 'Issue raised by customer : {0} - {1}, {2}',
 
   PATIENT_HELP_SUPPORT_EMAILID_PRODUCTION = 'Apurva_Agarwal@mckinsey.com',
   PATIENT_HELP_SUPPORT_CC_EMAILID_PRODUCTION = 'Vikas_Siddeshwar@mckinsey.com,prashant_sharma@apollohospitals.com,sumeeth.kumar@popcornapps.com,sushma.voleti@popcornapps.com,raj@popcornapps.com',
