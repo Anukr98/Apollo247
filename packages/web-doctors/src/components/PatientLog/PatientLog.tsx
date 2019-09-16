@@ -277,7 +277,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
   const client = useApolloClient();
-  const limit = 10;
+  const limit = 50;
   useEffect(() => {
     setLoading(true);
     const selectedTab = tabsArray[selectedTabIndex];
