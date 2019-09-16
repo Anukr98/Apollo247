@@ -19,11 +19,9 @@ const useStyles = makeStyles(() => ({
 export const DoctorsNotes: React.FC = (props) => {
   const classes = useStyles();
 
-  const { notes } = useContext(CaseSheetContext);
-
   return (
     <Typography component="div" className={classes.container}>
-      {notes && notes.length > 0 ? notes : 'No notes'}
+      {'No notes'}
     </Typography>
   );
 };
