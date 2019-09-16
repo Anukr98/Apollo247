@@ -81,7 +81,7 @@ type PushNotificationInputArgs = { pushNotificationInput: PushNotificationInput 
 export async function sendSMS(message: string) {
   const smsUrl = process.env.SMS_GATEWAY_URL ? process.env.SMS_GATEWAY_URL : '';
   if (smsUrl == '') {
-    throw new AphError(AphErrorMessages.SMS_GATEWAY_URL, undefined, {});
+    throw new AphError(AphErrorMessages.INVALID_SMS_GATEWAY_URL, undefined, {});
   }
   const smsResp = await fetch(smsUrl + '&To=9657585411&Text=' + message);
   console.log(smsResp, 'sms resp');
