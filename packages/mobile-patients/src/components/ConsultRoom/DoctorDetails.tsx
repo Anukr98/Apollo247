@@ -211,6 +211,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     variables: { id: doctorId },
   });
   if (error) {
+    setshowSpinner(false);
     console.log('error', error);
   } else {
     try {
@@ -281,9 +282,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         // console.log(item, item.facility);
         return item.facility.facilityType === 'HOSPITAL';
       });
-      const clinicAddress = doctorClinics.length
-        ? `${doctorClinics[0].facility.name}, ${doctorClinics[0].facility.city}`
-        : '';
+      const clinicAddress =
+        doctorClinics.length > 0 && doctorDetails.doctorType !== DoctorType.PAYROLL
+          ? `${doctorClinics[0].facility.name}, ${doctorClinics[0].facility.city}`
+          : '';
 
       return (
         <View style={styles.topView}>
@@ -359,7 +361,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   };
 
   const renderDoctorClinic = () => {
-    if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
+    if (
+      doctorDetails &&
+      doctorDetails.doctorHospital &&
+      doctorDetails.doctorHospital.length > 0 &&
+      doctorDetails.doctorType !== DoctorType.PAYROLL
+    ) {
       const doctorClinics = doctorDetails.doctorHospital;
       if (doctorClinics.length > 0)
         return (

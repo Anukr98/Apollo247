@@ -66,10 +66,17 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
             {actionType == 'removal' ? <CrossYellow /> : isSelected ? <CheckedIcon /> : <UnCheck />}
           </TouchableOpacity>
         </View>
-        <View style={{ paddingLeft: 43 }}>
-          <View style={{ flexDirection: 'row', paddingTop: 5, paddingBottom: 3.5 }}>
+        <View style={{ marginLeft: 43 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              paddingTop: 5,
+              paddingBottom: 3.5,
+            }}
+          >
             <Text
               style={{
+                flex: 1,
                 color: theme.colors.TEXT_LIGHT_BLUE,
                 textAlign: 'left',
                 ...theme.fonts.IBMPlexSansMedium(14),
@@ -82,12 +89,15 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
             <View
               style={{
                 borderRightWidth: 0.5,
-                borderBottomColor: 'rgba(2, 71, 91, 0.3)',
-                paddingLeft: 24,
+                // borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+                borderBottomColor: '#02475b',
+                opacity: 0.2,
+                marginHorizontal: 12,
               }}
             />
             <Text
               style={{
+                flex: 1,
                 paddingLeft: 19,
                 color: theme.colors.TEXT_LIGHT_BLUE,
                 textAlign: 'left',
@@ -99,10 +109,11 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
               {forPatient}
             </Text>
           </View>
+
           <View
             style={{
               borderBottomWidth: 0.5,
-              borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+              borderBottomColor: 'rgba(2, 71, 91, 0.2)',
             }}
           />
           <Text

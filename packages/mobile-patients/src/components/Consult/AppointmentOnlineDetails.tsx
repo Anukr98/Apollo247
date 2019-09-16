@@ -391,7 +391,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
                 <View style={styles.labelViewStyle}>
                   <Text style={styles.labelStyle}>Payment</Text>
-                  <Text style={theme.viewStyles.yellowTextStyle}>BILL</Text>
+                  <Text style={theme.viewStyles.yellowTextStyle}>ORDER SUMMARY</Text>
                 </View>
                 <View style={styles.separatorStyle} />
                 <View
@@ -523,7 +523,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                         textAlign: 'center',
                       }}
                     >
-                      Cancel Appointment
+                      Cancel
                     </Text>
                   </View>
                 </TouchableOpacity>

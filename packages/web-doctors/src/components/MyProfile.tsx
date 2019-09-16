@@ -143,7 +143,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     awardsSection: {
-      padding: '10px 20px 10px 20px',
+      padding: '16px 20px 10px 20px',
       marginBottom: 20,
     },
     tabRightcontent: {
@@ -812,18 +812,20 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
             </Grid>
           )}
 
-          <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-            <Paper className={classes.serviceItem}>
-              <Typography variant="h5">In-person Consult Location</Typography>
-              {clinics.map((clinic, index) => (
-                <Typography variant="h3" key={index} className={index > 0 ? classes.none : ''}>
-                  {clinic.facility.name}, {clinic.facility.streetLine1}
-                  {clinic.facility.streetLine2}
-                  {clinic.facility.streetLine3}, {clinic.facility.city}
-                </Typography>
-              ))}
-            </Paper>
-          </Grid>
+          {doctorProfile.doctorType !== 'PAYROLL' && (
+            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+              <Paper className={classes.serviceItem}>
+                <Typography variant="h5">In-person Consult Location</Typography>
+                {clinics.map((clinic, index) => (
+                  <Typography variant="h3" key={index} className={index > 0 ? classes.none : ''}>
+                    {clinic.facility.name}, {clinic.facility.streetLine1}
+                    {clinic.facility.streetLine2}
+                    {clinic.facility.streetLine3}, {clinic.facility.city}
+                  </Typography>
+                ))}
+              </Paper>
+            </Grid>
+          )}
         </Grid>
       </div>
 

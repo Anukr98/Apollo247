@@ -36,7 +36,7 @@
   },
   "home": {
     "hi": "hi",
-    "description": "Are you not feeling well today?",
+    "description": "Are you feeling unwell?",
     "consult_doctor": "CONSULT A DOCTOR",
     "start_doctor_title": "Learn about Apollo Star Doctor Program",
     "doctors_label": "Doctors",
@@ -46,13 +46,13 @@
       {
         "id": 1,
         "title": "Are you looking for a particular doctor?",
-        "descripiton": "SEARCH SPECIALIST",
+        "descripiton": "FIND SPECIALIST",
         "image": "require('@aph/mobile-patients/src/images/home/doctor.png')"
       },
       {
         "id": 2,
         "title": "Do you want to buy some medicines?",
-        "descripiton": "SEARCH MEDICINE",
+        "descripiton": "FIND MEDICINE",
         "image": "require('@aph/mobile-patients/src/images/home/medicine.png')"
       },
       {
@@ -217,13 +217,13 @@
     "viewBill": "View Order Summary"
   },
   "health_records_home": {
-    "description": "Find all your health record & prescription in one place.",
+    "description": "Find all your consults, prescriptions and health records right here!",
     "view_consult": "VIEW CONSULT",
     "order_medicine": "ORDER MEDICINES",
     "book_follow_up": "BOOK FOLLOW-UP",
     "tabs": [
       {
-        "title": "Consults & Rx",
+        "title": "Consults/Prescriptions",
         "count": "0"
       },
       {

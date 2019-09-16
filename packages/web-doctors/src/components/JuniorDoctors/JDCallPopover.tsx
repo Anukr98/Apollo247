@@ -677,6 +677,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     setShowVideoChat(!showVideoChat);
     //srollToBottomAction();
   };
+  const [disableStartConsult, setDisableStartConsult] = useState<boolean>(false);
   useEffect(() => {
     if (isCallAccepted) {
       startIntervalTimer(0);
@@ -973,6 +974,13 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const { setCaseSheetEdit } = useContext(CaseSheetContext);
   useEffect(() => {
+    const apptClosedTime = moment(new Date(props.appointmentDateTime));
+    const presentTime = moment(new Date());
+    apptClosedTime.diff(presentTime) > 0
+      ? setDisableStartConsult(false)
+      : setDisableStartConsult(true);
+  });
+  useEffect(() => {
     if (props.isEnded) {
       onStopConsult();
       setStartAppointment(!startAppointment);
@@ -1239,13 +1247,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <AphButton
               className={classes.consultButton}
-              // disabled={
-              //   startAppointmentButton ||
-              //   disableOnTransfer ||
-              //   appointmentInfo!.appointmentState !== 'NEW' ||
-              //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-              //     appointmentInfo!.status !== STATUS.PENDING)
-              // }
+              disabled={disableStartConsult}
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();

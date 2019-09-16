@@ -9,6 +9,9 @@ export const getAllSpecialtiesTypeDefs = gql`
     id: ID!
     name: String!
     image: String
+    specialistSingularTerm: String
+    specialistPluralTerm: String
+    userFriendlyNomenclature: String
   }
   extend type Query {
     getAllSpecialties: [DoctorSpecialty!]!

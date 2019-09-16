@@ -376,6 +376,10 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         doctorId
         availableModes
       }
+      specialty {
+        specialistSingularTerm
+        specialistPluralTerm
+      }
     }
   }
 `;
@@ -476,6 +480,7 @@ export const GET_CASESHEET_DETAILS = gql`
         followUp
         followUpAfterInDays
         followUpDate
+        doctorType
         id
         medicinePrescription {
           medicineConsumptionDurationInDays
@@ -609,6 +614,18 @@ export const UPLOAD_FILE = gql`
   mutation uploadFile($fileType: String, $base64FileInput: String) {
     uploadFile(fileType: $fileType, base64FileInput: $base64FileInput) {
       filePath
+    }
+  }
+`;
+
+export const SAVE_PRESCRIPTION_MEDICINE_ORDER = gql`
+  mutation SavePrescriptionMedicineOrder($prescriptionMedicineInput: PrescriptionMedicineInput) {
+    SavePrescriptionMedicineOrder(prescriptionMedicineInput: $prescriptionMedicineInput) {
+      status
+      orderId
+      orderAutoId
+      errorCode
+      errorMessage
     }
   }
 `;
@@ -833,6 +850,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             itemname
           }
           doctorId
+          doctorType
           followUp
           followUpAfterInDays
           followUpDate
@@ -997,5 +1015,17 @@ export const ADD_TO_CONSULT_QUEUE = gql`
 export const CHECK_IF_FOLLOWUP_BOOKED = gql`
   query checkIfFollowUpBooked($appointmentId: String!) {
     checkIfFollowUpBooked(appointmentId: $appointmentId)
+  }
+`;
+
+export const UPLOAD_CHAT_FILE = gql`
+  mutation uploadChatDocument($fileType: String, $base64FileInput: String, $appointmentId: String) {
+    uploadChatDocument(
+      fileType: $fileType
+      base64FileInput: $base64FileInput
+      appointmentId: $appointmentId
+    ) {
+      filePath
+    }
   }
 `;

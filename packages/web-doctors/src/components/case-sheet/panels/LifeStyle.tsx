@@ -64,15 +64,18 @@ export const LifeStyle: React.FC = () => {
                 </Typography>
                 <Typography component="div" className={classes.content}>
                   <List>
-                    {patientDetails!.familyHistory!.map((item, idx) => (
-                      <ListItem key={idx}>
-                        <Fragment>
-                          <Typography component="p" className={classes.textContent}>
-                            {item!.relation}: {item!.description}
-                          </Typography>
-                        </Fragment>
-                      </ListItem>
-                    ))}
+                    {patientDetails!.familyHistory!.map(
+                      (item, idx) =>
+                        item!.description!.length > 0 && (
+                          <ListItem key={idx}>
+                            <Fragment>
+                              <Typography component="p" className={classes.textContent}>
+                                {item!.relation}: {item!.description}
+                              </Typography>
+                            </Fragment>
+                          </ListItem>
+                        )
+                    )}
                   </List>
                 </Typography>
               </Typography>
@@ -87,15 +90,18 @@ export const LifeStyle: React.FC = () => {
                 </Typography>
                 <Typography component="div" className={classes.content}>
                   <List>
-                    {patientDetails!.lifeStyle!.map((item, idx) => (
-                      <ListItem key={idx}>
-                        <Fragment>
-                          <Typography component="p" className={classes.textContent}>
-                            {item!.description}
-                          </Typography>
-                        </Fragment>
-                      </ListItem>
-                    ))}
+                    {patientDetails!.lifeStyle!.map(
+                      (item, idx) =>
+                        item!.description!.length > 0 && (
+                          <ListItem key={idx}>
+                            <Fragment>
+                              <Typography component="p" className={classes.textContent}>
+                                {item!.description}
+                              </Typography>
+                            </Fragment>
+                          </ListItem>
+                        )
+                    )}
                   </List>
                 </Typography>
               </Typography>

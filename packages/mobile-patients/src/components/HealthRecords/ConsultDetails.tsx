@@ -475,7 +475,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           onPress={() => setshowPrescription(!showPrescription)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails && caseSheetDetails!.followUp ? (
+            {caseSheetDetails &&
+            caseSheetDetails!.followUp &&
+            caseSheetDetails!.doctorType == 'STAR_APOLLO' ? (
               <View>
                 <View>
                   <View style={styles.labelViewStyle}>

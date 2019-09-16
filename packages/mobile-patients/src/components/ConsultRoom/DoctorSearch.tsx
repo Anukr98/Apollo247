@@ -125,7 +125,8 @@ export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const params = props.navigation.state.params ? props.navigation.state.params.searchText : '';
-  //console.log(params, 'params');
+  const MoveDoctor = props.navigation.state.params ? props.navigation.state.params.MoveDoctor : '';
+  console.log(MoveDoctor, 'MoveDoctor');
 
   const [searchText, setSearchText] = useState<string>(params);
   const [pastSearch, setPastSearch] = useState<boolean>(true);
@@ -139,7 +140,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [doctorsList, setdoctorsList] = useState<
     (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null)[] | null
   >([]);
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [showSpinner, setshowSpinner] = useState<number>(2);
   const [possibleMatches, setpossibleMatches] = useState<
     SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches
   >();
@@ -319,6 +320,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   );
   //console.log(getData.loading, 'getData.loading');
   if (getData.error) {
+    setshowSpinner(showSpinner - 1);
     console.log('getData.error', getData.error);
   } else {
     if (
@@ -326,9 +328,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       getData.data.getAllSpecialties &&
       Specialities !== getData.data.getAllSpecialties
     ) {
-      // console.log('getData.data', getData.data.getAllSpecialties);
+      console.log('getData.data', getData.data.getAllSpecialties);
       setSpecialities(getData.data.getAllSpecialties);
-      setshowSpinner(false);
+      setshowSpinner(showSpinner - 1);
     }
   }
   //console.log(currentPatient && currentPatient.id ? currentPatient.id : '', 'currentPatient');
@@ -348,11 +350,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       pastData.data.getPatientPastSearches &&
       PastSearches !== pastData.data.getPatientPastSearches
     ) {
+      setshowSpinner(showSpinner - 1);
       //console.log('pastData.data', pastData.data.getPatientPastSearches);
       setPastSearches(pastData.data.getPatientPastSearches);
     }
   }
-
+  const backDataFunctionality = (movedata: string) => {
+    if (movedata == 'MoveDoctor') {
+      props.navigation.push(AppRoutes.SymptomChecker);
+    } else {
+      props.navigation.goBack();
+    }
+  };
   const renderSearch = () => {
     return (
       <View style={styles.searchContainer}>
@@ -360,7 +369,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           title={'DOCTORS / SPECIALITIES'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() =>
+            backDataFunctionality(
+              props.navigation.state.params ? props.navigation.state.params.MoveDoctor : ''
+            )
+          }
         />
         <View style={styles.searchView}>
           <TextInputComponent
@@ -789,9 +802,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {doctorsList && renderSearch()}
-        {showSpinner ? null : (
+        {showSpinner === 0 ? (
           <ScrollView style={{ flex: 1 }} bounces={false} keyboardDismissMode="on-drag">
-            {renderPastSearch()}
+            {props.navigation.state.params!.MoveDoctor == 'MoveDoctor' ? null : renderPastSearch()}
             {renderDoctorSearches()}
             {renderSpecialist()}
             {searchText.length > 2 &&
@@ -808,9 +821,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               renderOtherSUggestedDoctors()}
             {renderHelpView()}
           </ScrollView>
-        )}
+        ) : null}
       </SafeAreaView>
-      {showSpinner && <Spinner />}
+      {showSpinner !== 0 && <Spinner />}
     </View>
   );
 };

@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '& img': {
         margin: 'auto',
-        width: 24,
+        width: 30,
       },
     },
     moreIcon: {
@@ -156,7 +156,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
         fontSize: 18,
         lineHeight: '24px',
-        padding: 24,
+        padding: 18,
         backgroundColor: '#f7f7f7',
       },
       '& .calenderHeader img': {

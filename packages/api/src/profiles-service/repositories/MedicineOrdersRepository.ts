@@ -27,7 +27,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return MedicineOrderLineItems.create(lineItemAttrs)
       .save()
       .catch((medicineOrderError) => {
-        throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {
+        throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_LINE_ERROR, undefined, {
           medicineOrderError,
         });
       });
@@ -37,7 +37,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
     return MedicineOrderPayments.create(paymentAttrs)
       .save()
       .catch((medicineOrderError) => {
-        throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_ERROR, undefined, {
+        throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_PAYMENT_ERROR, undefined, {
           medicineOrderError,
         });
       });
@@ -57,7 +57,13 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
   }
 
   saveMedicineOrderStatus(orderStatusAttrs: Partial<MedicineOrdersStatus>, orderAutoId: number) {
-    return MedicineOrdersStatus.create(orderStatusAttrs).save();
+    return MedicineOrdersStatus.create(orderStatusAttrs)
+      .save()
+      .catch((medicineOrderError) => {
+        throw new AphError(AphErrorMessages.SAVE_MEDICINE_ORDER_STATUS_ERROR, undefined, {
+          medicineOrderError,
+        });
+      });
   }
 
   findByPatientId(patient: string, offset?: number, limit?: number) {

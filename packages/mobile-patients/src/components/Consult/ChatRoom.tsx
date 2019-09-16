@@ -15,24 +15,24 @@ import {
   FrontCameraIcon,
   FullScreenIcon,
   Loader,
+  Mascot,
   MissedCallIcon,
   MuteIcon,
   PickCallIcon,
   UnMuteIcon,
   VideoOffIcon,
   VideoOnIcon,
-  Mascot,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  ADD_TO_CONSULT_QUEUE,
+  BOOK_APPOINTMENT_RESCHEDULE,
   BOOK_APPOINTMENT_TRANSFER,
-  UPDATE_APPOINTMENT_SESSION,
   CHECK_IF_RESCHDULE,
   NEXT_AVAILABLE_SLOT,
-  BOOK_APPOINTMENT_RESCHEDULE,
-  ADD_TO_CONSULT_QUEUE,
-  UPLOAD_FILE,
+  UPDATE_APPOINTMENT_SESSION,
+  UPLOAD_CHAT_FILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookTransferAppointment,
@@ -63,6 +63,7 @@ import {
   KeyboardAvoidingView,
   KeyboardEvent,
   NativeModules,
+  PermissionsAndroid,
   Platform,
   SafeAreaView,
   StatusBar,
@@ -70,37 +71,34 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  PermissionsAndroid,
 } from 'react-native';
-import DocumentPicker from 'react-native-document-picker';
-import InCallManager from 'react-native-incall-manager';
-import { NavigationScreenProps } from 'react-navigation';
 import RNFetchBlob from 'react-native-fetch-blob';
-import { Spinner } from '../ui/Spinner';
+import ImagePicker from 'react-native-image-picker';
+import InCallManager from 'react-native-incall-manager';
+import KeepAwake from 'react-native-keep-awake';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import {
+  addToConsultQueue,
+  addToConsultQueueVariables,
+} from '../../graphql/types/addToConsultQueue';
+import {
+  bookRescheduleAppointment,
+  bookRescheduleAppointmentVariables,
+} from '../../graphql/types/bookRescheduleAppointment';
 import {
   checkIfReschedule,
   checkIfRescheduleVariables,
-  checkIfReschedule_checkIfReschedule,
 } from '../../graphql/types/checkIfReschedule';
-
-import KeepAwake from 'react-native-keep-awake';
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
 } from '../../graphql/types/GetDoctorNextAvailableSlot';
 import {
-  bookRescheduleAppointment,
-  bookRescheduleAppointmentVariables,
-} from '../../graphql/types/bookRescheduleAppointment';
+  uploadChatDocument,
+  uploadChatDocumentVariables,
+} from '../../graphql/types/uploadChatDocument';
+import { Spinner } from '../ui/Spinner';
 import { OverlayRescheduleView } from './OverlayRescheduleView';
-import {
-  addToConsultQueue,
-  addToConsultQueueVariables,
-} from '../../graphql/types/addToConsultQueue';
-import ImagePicker from 'react-native-image-picker';
-import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
-import { StackActions } from 'react-navigation';
-import { NavigationActions } from 'react-navigation';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -2301,7 +2299,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       borderRadius: 30,
     });
     Keyboard.dismiss();
-    setDropdownVisible(false)
+    setDropdownVisible(false);
   };
 
   const renderAudioCallButtons = () => {
@@ -2910,12 +2908,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       setLoading(true);
 
       client
-        .mutate<uploadFile, uploadFileVariables>({
-          mutation: UPLOAD_FILE,
+        .mutate<uploadChatDocument, uploadChatDocumentVariables>({
+          mutation: UPLOAD_CHAT_FILE,
           fetchPolicy: 'no-cache',
           variables: {
             fileType: fileType,
             base64FileInput: resource.data,
+            appointmentId: channel,
           },
         })
         .then((data) => {
@@ -2926,7 +2925,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             id: patientId,
             message: imageconsult,
             fileType: 'image',
-            url: data.data && data.data.uploadFile.filePath,
+            url: data.data && data.data.uploadChatDocument.filePath,
           };
 
           pubnub.publish(

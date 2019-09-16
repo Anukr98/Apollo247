@@ -122,9 +122,9 @@ const useStyles = makeStyles((theme: Theme) => {
       '& h3': {
         lineHeight: '22px',
         padding: '3px 5px 5px 0',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: theme.typography.fontWeightMedium,
-        color: '#01475b',
+        color: '#02475b',
         margin: 0,
       },
       '& h4': {
@@ -186,6 +186,10 @@ const useStyles = makeStyles((theme: Theme) => {
       marginLeft: 20,
       '& h6': {
         fontSize: 15,
+      },
+      '& h4': {
+        fontSize: 22,
+        fontWeight: 600,
       },
     },
     doctorPanelLeft: {
