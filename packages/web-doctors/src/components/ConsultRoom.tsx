@@ -422,8 +422,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </div>
         </div>
       );
-    }
-    if (
+    } else if (
       rowData.id === patientId &&
       rowData.message !== videoCallMsg &&
       rowData.message !== audioCallMsg &&
@@ -478,10 +477,54 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           </div>
         </div>
       );
+    } else if (
+      rowData.message !== videoCallMsg &&
+      rowData.message !== audioCallMsg &&
+      rowData.message !== stopcallMsg &&
+      rowData.message !== acceptcallMsg &&
+      rowData.message !== startConsult &&
+      rowData.message !== stopConsult &&
+      rowData.message !== transferconsult &&
+      rowData.message !== rescheduleconsult &&
+      rowData.message !== followupconsult
+    ) {
+      leftComponent++;
+      rightComponent = 0;
+      return (
+        <div className={classes.docterChat}>
+          <div className={rowData.duration ? classes.callMsg : classes.doctor}>
+            {leftComponent == 1 && <span className={classes.boldTxt}></span>}
+            {rowData.duration === '00 : 00' ? (
+              <span className={classes.none}>
+                <img src={require('images/ic_missedcall.svg')} />
+                {rowData.message.toLocaleLowerCase() === 'video call ended'
+                  ? 'You missed a video call'
+                  : 'You missed a voice call'}
+              </span>
+            ) : rowData.duration ? (
+              <div>
+                <img src={require('images/ic_round_call.svg')} />
+                <span>{rowData.message}</span>
+                <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+              </div>
+            ) : (
+              <div>
+                <span>
+                  {isURL(rowData.message) ? (
+                    <a href={rowData.message}> {rowData.message}</a>
+                  ) : (
+                    rowData.message
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
     }
-    if (rowData.id !== patientId && rowData.id !== doctorId) {
-      return '';
-    }
+    // if (rowData.id !== patientId && rowData.id !== doctorId) {
+    //   return '';
+    // }
   };
   const messagessHtml =
     messages && messages.length > 0

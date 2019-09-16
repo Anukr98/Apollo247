@@ -677,7 +677,11 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     setShowVideoChat(!showVideoChat);
     //srollToBottomAction();
   };
-
+  useEffect(() => {
+    if (isCallAccepted) {
+      startIntervalTimer(0);
+    }
+  }, [isCallAccepted]);
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
