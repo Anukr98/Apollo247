@@ -376,6 +376,10 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         doctorId
         availableModes
       }
+      specialty {
+        specialistSingularTerm
+        specialistPluralTerm
+      }
     }
   }
 `;

@@ -365,7 +365,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             />
             <InputDropdown
               setShowPopup={(showpopup) => setshowRecordTypePopup(showpopup)}
-              label={typeofRecord}
+              label={typeofRecord ? typeofRecord.toLowerCase().replace('_', ' ') : ''}
               containerStyle={{
                 paddingBottom: 10,
               }}
