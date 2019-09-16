@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     borderBottomWidth: 2,
-    paddingTop: 7,
+    // paddingTop: 7,
     paddingBottom: 3,
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
   },

@@ -139,7 +139,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [doctorsList, setdoctorsList] = useState<
     (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null)[] | null
   >([]);
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [showSpinner, setshowSpinner] = useState<number>(2);
   const [possibleMatches, setpossibleMatches] = useState<
     SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches
   >();
@@ -327,9 +327,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       getData.data.getAllSpecialties &&
       Specialities !== getData.data.getAllSpecialties
     ) {
-      // console.log('getData.data', getData.data.getAllSpecialties);
+      console.log('getData.data', getData.data.getAllSpecialties);
       setSpecialities(getData.data.getAllSpecialties);
-      setshowSpinner(false);
+      setshowSpinner(showSpinner - 1);
     }
   }
   //console.log(currentPatient && currentPatient.id ? currentPatient.id : '', 'currentPatient');
@@ -349,6 +349,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       pastData.data.getPatientPastSearches &&
       PastSearches !== pastData.data.getPatientPastSearches
     ) {
+      setshowSpinner(showSpinner - 1);
       //console.log('pastData.data', pastData.data.getPatientPastSearches);
       setPastSearches(pastData.data.getPatientPastSearches);
     }
@@ -790,7 +791,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {doctorsList && renderSearch()}
-        {showSpinner ? null : (
+        {showSpinner === 0 ? (
           <ScrollView style={{ flex: 1 }} bounces={false} keyboardDismissMode="on-drag">
             {renderPastSearch()}
             {renderDoctorSearches()}
@@ -809,9 +810,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               renderOtherSUggestedDoctors()}
             {renderHelpView()}
           </ScrollView>
-        )}
+        ) : null}
       </SafeAreaView>
-      {showSpinner && <Spinner />}
+      {showSpinner !== 0 && <Spinner />}
     </View>
   );
 };
