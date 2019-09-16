@@ -8,6 +8,7 @@ import { Connection } from 'typeorm';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ApiConstants } from 'ApiConstants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { addMilliseconds, format } from 'date-fns';
 
@@ -83,7 +84,7 @@ export async function sendSMS(message: string) {
   if (smsUrl == '') {
     throw new AphError(AphErrorMessages.INVALID_SMS_GATEWAY_URL, undefined, {});
   }
-  const smsResp = await fetch(smsUrl + '&To=9657585411&Text=' + message);
+  const smsResp = fetch(smsUrl + '&To=9657585411&Text=' + message);
   console.log(smsResp, 'sms resp');
 }
 
@@ -133,13 +134,30 @@ export async function sendNotification(
     notificationTitle = ApiConstants.RESCHEDULE_INITIATION_TITLE;
     notificationBody = ApiConstants.RESCHEDULE_INITIATION_BODY.replace(
       '{0}',
-      appointment.displayId + ''
+      patientDetails.firstName
+    );
+    notificationBody = notificationBody.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
   } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_TRANSFER) {
+    const transferRepo = consultsDb.getCustomRepository(TransferAppointmentRepository);
+    const transferApptDetails = await transferRepo.getTransferDetails(
+      pushNotificationInput.appointmentId
+    );
+    if (transferApptDetails == null) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+    }
+    const transferDoctorDetails = await doctorRepo.findById(
+      transferApptDetails.transferredDoctorId
+    );
+    if (transferDoctorDetails == null) {
+      throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+    }
     notificationTitle = ApiConstants.TRANSFER_INITIATION_TITLE;
     notificationBody = ApiConstants.TRANSFER_INITIATION_BODY.replace(
       '{0}',
-      appointment.displayId + ''
+      transferDoctorDetails.firstName + ' ' + transferDoctorDetails.lastName
     );
   } else if (
     pushNotificationInput.notificationType == NotificationType.INITIATE_JUNIOR_APPT_SESSION
@@ -147,7 +165,15 @@ export async function sendNotification(
     notificationTitle = ApiConstants.JUNIOR_APPT_SESSION_TITLE;
     notificationBody = ApiConstants.JUNIOR_APPT_SESSION_BODY.replace(
       '{0}',
-      appointment.displayId + ''
+      patientDetails.firstName
+    );
+    notificationBody = notificationBody.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
+    notificationBody = notificationBody.replace(
+      '{2}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
   } else if (
     pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
@@ -155,7 +181,11 @@ export async function sendNotification(
     notificationTitle = ApiConstants.SENIOR_APPT_SESSION_TITLE;
     notificationBody = ApiConstants.SENIOR_APPT_SESSION_BODY.replace(
       '{0}',
-      appointment.displayId + ''
+      patientDetails.firstName
+    );
+    notificationBody = notificationBody.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
     );
   } else if (pushNotificationInput.notificationType == NotificationType.BOOK_APPOINTMENT) {
     let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
