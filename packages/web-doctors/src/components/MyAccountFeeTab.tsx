@@ -280,11 +280,19 @@ export const MyAccountFeeTab: React.FC<FeesProps> = (props) => {
               <Typography className={classes.subtitle1} variant="h3">
                 What are your online consultation fees?
               </Typography>
-              <Typography className={classes.bold}>Rs. {data.onlineConsultationFees}</Typography>
+              <Typography className={classes.bold}>
+                {parseInt(data.onlineConsultationFees, 10) !== 0
+                  ? `Rs. ${data.onlineConsultationFees}`
+                  : 'N/A'}
+              </Typography>
               <Typography className={classes.subtitle1} variant="h3">
                 What are your physical consultation fees?
               </Typography>
-              <Typography className={classes.bold}>Rs. {data.physicalConsultationFees}</Typography>
+              <Typography className={classes.bold}>
+                {parseInt(data.physicalConsultationFees, 10) !== 0
+                  ? `Rs. ${data.physicalConsultationFees}`
+                  : 'N/A'}
+              </Typography>
               <Typography className={classes.subtitle1} variant="h3">
                 What packages do you offer your patients?
               </Typography>
@@ -335,7 +343,9 @@ export const MyAccountFeeTab: React.FC<FeesProps> = (props) => {
                     <div className={classes.topBorder}>
                       <Grid container alignItems="flex-start" spacing={0}>
                         <Grid item lg={12} sm={12} xs={12}>
-                          <div className={classes.accountDetailsHeading}>Account Holder’s Name</div>
+                          <div className={classes.accountDetailsHeading}>
+                            Account Holder’s Name
+                          </div>
                           <Typography className={classes.accountDetails}>
                             {data.bankAccount[0]!.accountHolderName}
                           </Typography>
