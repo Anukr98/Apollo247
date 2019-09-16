@@ -320,7 +320,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   );
   //console.log(getData.loading, 'getData.loading');
   if (getData.error) {
-    setshowSpinner(false);
+    setshowSpinner(showSpinner - 1);
     console.log('getData.error', getData.error);
   } else {
     if (
