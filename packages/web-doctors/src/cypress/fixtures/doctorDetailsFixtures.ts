@@ -41,7 +41,7 @@ export const jrKabir: Doctor = {
     name: 'Codez',
   },
   doctorHospital: [],
-  starTeam: null,
+  starTeam: [],
 };
 
 export const srKabir = {

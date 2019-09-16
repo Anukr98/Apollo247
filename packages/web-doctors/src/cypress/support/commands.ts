@@ -2,7 +2,6 @@ import 'cypress-graphql-mock';
 import { AllAphOperations } from 'cypress/types/AllAphOperations';
 import { clientBaseUrl } from 'helpers/clientRoutes';
 import schema from '@aph/api-schema/schema.json';
-import { jrKabir, srKabir } from 'cypress/fixtures/doctorDetailsFixtures';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 
 // ***********************************************
@@ -43,19 +42,6 @@ Cypress.Commands.add('mockAphGraphqlOps', (options) => (cy as any).mockGraphqlOp
 Cypress.Commands.add('clearFirebaseDb', () =>
   window.indexedDB.deleteDatabase('firebaseLocalStorageDb')
 );
-Cypress.Commands.add('signInJr', (patients) => {
-  cy.clearFirebaseDb();
-  cy.server();
-  (cy as any).mockAphGraphql({ schema });
-  (cy as any).mockAphGraphqlOps({
-    operations: {
-      GetDoctorDetails: {
-        __typename: 'GetDoctorDetails',
-        getDoctorDetails: jrKabir,
-      },
-    },
-  });
-});
 Cypress.Commands.add('signIn', (doctor) => {
   cy.clearFirebaseDb();
   cy.server();
@@ -89,7 +75,7 @@ declare global {
     interface Chainable {
       foo: () => string;
       clearFirebaseDb: () => void;
-      signIn: (currentPatients: GetDoctorDetails_getDoctorDetails | null) => Cypress.Chainable;
+      signIn: (doctor: GetDoctorDetails_getDoctorDetails | null) => Cypress.Chainable;
       signOut: () => void;
       visitAph: (route: string) => Cypress.Chainable;
       mockAphGraphql(options?: MockAphGraphQLOptions<AllAphOperations>): Cypress.Chainable;
