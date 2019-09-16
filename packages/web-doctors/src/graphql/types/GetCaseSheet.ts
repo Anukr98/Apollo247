@@ -95,6 +95,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescripti
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   __typename: "CaseSheet";
   id: string | null;
+  doctorId: string | null;
   appointment: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
   medicinePrescription: (GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
   otherInstructions: (GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions | null)[] | null;
