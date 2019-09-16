@@ -1472,29 +1472,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             borderRadius: 10,
           }}
         >
-          {rowData.message != imageconsult ? (
-            <Image
-              source={{ uri: rowData.url }}
-              style={{
-                flex: 1,
-                resizeMode: 'contain',
-                width: 200,
-                height: 200,
-              }}
-            />
-          ) : (
-            <Text
-              style={{
-                color: '#0087ba',
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                ...theme.fonts.IBMPlexSansMedium(16),
-                textAlign: 'left',
-              }}
-            >
-              {rowData.message}
-            </Text>
-          )}
+          <Text
+            style={{
+              color: '#0087ba',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              textAlign: 'left',
+            }}
+          >
+            {rowData.message}
+          </Text>
         </View>
       </View>
     );
@@ -1684,23 +1672,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             </View>
           </View>
         )}
-      </>
-    );
-  };
-
-  const showUploadImageview = (rowData: any, index: number) => {
-    console.log('showUploadImageview');
-    return (
-      <>
-        <Image
-          source={{ uri: rowData.url }}
-          style={{
-            flex: 1,
-            resizeMode: 'contain',
-            width: 200,
-            height: 200,
-          }}
-        />
       </>
     );
   };
