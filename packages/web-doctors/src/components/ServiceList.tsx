@@ -120,27 +120,27 @@ export const ServiceList: React.FC = () => {
   const classes = useStyles();
   const serviceItems: ServiceItem[] = [
     {
-      title: 'higher revenues',
+      title: 'increased exposure',
       image: require('images/ic_higher_revenues.svg'),
-      content: `Get more patients and higher utilisation`,
+      content: `Consult with more patients `,
       action: { link: '', content: 'Find specialist' },
     },
     {
-      title: `easy follow ups`,
+      title: `easy follow-ups`,
       image: require('images/ic_easy_followups.svg'),
-      content: 'Follow up with your patients virtually and whenever you want',
+      content: 'Virtual follow-ups with your patients, whenever you want',
       action: { link: '', content: 'Search Medicine' },
     },
     {
-      title: 'anytime anywhere',
+      title: 'anytime, anywhere',
       image: require('images/ic_anytime.svg'),
-      content: 'Consult virtually, at a time of your convenience',
+      content: 'Choose timings that suit you',
       action: { link: '', content: 'Book a test' },
     },
     {
       title: 'medico-legal assistance',
       image: require('images/ic_medico_assistance.svg'),
-      content: 'Get immediate help from our expert medico legal team',
+      content: 'Get immediate help from our expert medico-legal team',
       action: { link: '', content: 'Who are star doctors' },
     },
   ];

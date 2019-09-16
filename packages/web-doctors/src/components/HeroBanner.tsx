@@ -147,8 +147,7 @@ export const HeroBanner: React.FC = () => {
       <div className={classes.bannerInfo}>
         <p>
           The best way to connect with your patients, grow your practice and enhance your
-          professional network;
-          <span>anytime, anywhere :)</span>
+          professional network -<span>anytime, anywhere :)</span>
         </p>
         <ProtectedWithLoginPopup>
           {({ protectWithLoginPopup }) => (

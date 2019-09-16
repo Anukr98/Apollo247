@@ -278,9 +278,17 @@ export const FeesTab: React.FC<FeesProps> = (props) => {
           <div className={classes.tabContent}>
             <Paper className={classes.serviceItem}>
               <Typography variant="subtitle1">What are your online consultation fees?</Typography>
-              <Typography className={classes.bold}>Rs. {data.onlineConsultationFees}</Typography>
+              <Typography className={classes.bold}>
+                {parseInt(data.onlineConsultationFees, 10) !== 0
+                  ? `Rs. ${data.onlineConsultationFees}`
+                  : 'N/A'}
+              </Typography>
               <Typography variant="subtitle1">What are your physical consultation fees?</Typography>
-              <Typography className={classes.bold}>Rs. {data.physicalConsultationFees}</Typography>
+              <Typography className={classes.bold}>
+                {parseInt(data.physicalConsultationFees, 10) !== 0
+                  ? `Rs. ${data.physicalConsultationFees}`
+                  : 'N/A'}
+              </Typography>
               <Typography variant="subtitle1">What packages do you offer your patients?</Typography>
               <Typography className={classes.bold}>
                 {data.packages &&

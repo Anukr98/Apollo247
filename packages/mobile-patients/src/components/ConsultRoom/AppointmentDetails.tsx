@@ -616,7 +616,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             elevation: 100,
           }}
         ></View>
-
         {displayoverlay && doctorDetails && (
           <OverlayRescheduleView
             setdisplayoverlay={() => setdisplayoverlay(false)}

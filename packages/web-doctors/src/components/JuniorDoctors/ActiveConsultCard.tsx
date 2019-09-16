@@ -176,7 +176,7 @@ export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
           </div>
           <div className={classes.userId}>UHID: {patient.uhid}</div>
         </div>
-        {patient.queueNumber > 1 && <div className={classes.queueCount}>{patient.queueNumber}</div>}
+        {/* {patient.queueNumber > 1 && <div className={classes.queueCount}>{patient.queueNumber}</div>} */}
       </div>
     </div>
   );

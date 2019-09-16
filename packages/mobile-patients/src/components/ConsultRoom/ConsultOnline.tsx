@@ -125,7 +125,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
 
   const checkAvailabilitySlot = () => {
     console.log('checkAvailabilitySlot consult online');
-
+    props.setshowSpinner && props.setshowSpinner(true);
     client
       .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
         query: NEXT_AVAILABLE_SLOT,
@@ -138,6 +138,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((availability: any) => {
+        props.setshowSpinner && props.setshowSpinner(false);
         if (
           availability &&
           availability.data &&

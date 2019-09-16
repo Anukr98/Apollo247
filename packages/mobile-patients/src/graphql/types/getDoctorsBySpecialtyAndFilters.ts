@@ -41,10 +41,17 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   availableModes: (ConsultMode | null)[] | null;
 }
 
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty {
+  __typename: "DoctorSpecialty";
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+}
+
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters {
   __typename: "FilterDoctorsResult";
   doctors: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[] | null;
   doctorsAvailability: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[] | null;
+  specialty: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty | null;
 }
 
 export interface getDoctorsBySpecialtyAndFilters {

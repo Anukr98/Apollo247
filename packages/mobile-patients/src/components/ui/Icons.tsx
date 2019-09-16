@@ -644,3 +644,19 @@ export const Pharamacy: React.FC<IconProps> = (props) => (
     source={require('./icons/pharamacy.png')}
   />
 );
+
+export const ToggleOff: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 32, width: 32 }}
+    {...props}
+    source={require('./icons/ic_toggle_off.png')}
+  />
+);
+
+export const ToggleOn: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 32, width: 32 }}
+    {...props}
+    source={require('./icons/ic_toggle_on.png')}
+  />
+);

@@ -232,6 +232,7 @@ export const ConsultTabs: React.FC = () => {
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
 
   const [loaded, setLoaded] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const TabContainer: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
@@ -256,7 +257,7 @@ export const ConsultTabs: React.FC = () => {
   >(null);
 
   const [notes, setNotes] = useState<string | null>(null);
-
+  const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
@@ -306,6 +307,10 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.getCaseSheet!.caseSheetDetails!.notes
             ? setNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
             : setNotes('');
+          _data!.data!.getCaseSheet!.juniorDoctorNotes
+            ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
+            : setJuniorDoctorNotes('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
                 _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
@@ -369,6 +374,7 @@ export const ConsultTabs: React.FC = () => {
   // }, [paramId, appointmentId]);
 
   const saveCasesheetAction = (flag: boolean) => {
+    setSaving(true);
     client
       .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
         mutation: UPDATE_CASESHEET,
@@ -399,6 +405,7 @@ export const ConsultTabs: React.FC = () => {
             'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
             _data!.data!.updateCaseSheet!.blobName;
           setPrescriptionPdf(url);
+          setSaving(false);
         }
         if (!flag) {
           setIsPopoverOpen(true);
@@ -408,6 +415,7 @@ export const ConsultTabs: React.FC = () => {
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         alert(errorMessage);
+        setSaving(false);
         console.log('Error occured while update casesheet', e);
       });
   };
@@ -474,6 +482,7 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const createSessionAction = () => {
+    setSaving(true);
     client
       .mutate<CreateAppointmentSession, CreateAppointmentSessionVariables>({
         mutation: CREATE_APPOINTMENT_SESSION,
@@ -489,10 +498,12 @@ export const ConsultTabs: React.FC = () => {
         settoken(_data.data.createAppointmentSession.appointmentToken);
         setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
         setError('');
+        setSaving(false);
       })
       .catch((e: any) => {
         setError('Error occured creating session');
         console.log('Error occured creating session', e);
+        setSaving(false);
       });
   };
 
@@ -526,6 +537,7 @@ export const ConsultTabs: React.FC = () => {
             setSymptoms,
             notes,
             setNotes,
+            juniorDoctorNotes,
             diagnosis,
             setDiagnosis,
             otherInstructions,
@@ -566,6 +578,7 @@ export const ConsultTabs: React.FC = () => {
                 token={token}
                 startAppointment={startAppointment}
                 startAppointmentClick={startAppointmentClick}
+                saving={saving}
               />
               <div>
                 {/* <Document file="https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/1132ed6b-6505-495a-a4b0-43a75af23ee0.pdf"></Document> */}

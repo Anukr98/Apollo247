@@ -49,3 +49,87 @@ export const REMOVE_BLOCKED_CALENDAR_ITEM = gql`
     }
   }
 `;
+
+/* get doctor details by doctor id */
+export const GET_DOCTOR_DETAILS_BY_ID = gql`
+  query GetDoctorDetailsById($id: String!) {
+    getDoctorDetailsById(id: $id) {
+      id
+      salutation
+      firstName
+      lastName
+      mobileNumber
+      experience
+      specialization
+      languages
+      city
+      awards
+      photoUrl
+      registrationNumber
+      onlineConsultationFees
+      physicalConsultationFees
+      qualification
+      doctorType
+      starTeam {
+        associatedDoctor {
+          firstName
+          lastName
+          experience
+          qualification
+          id
+          photoUrl
+          specialty {
+            id
+            name
+            image
+          }
+          doctorHospital {
+            facility {
+              name
+              facilityType
+              streetLine1
+              streetLine2
+              streetLine3
+              city
+              country
+              latitude
+              longitude
+              id
+            }
+          }
+        }
+      }
+      specialty {
+        id
+        image
+        name
+      }
+      zip
+      doctorType
+      doctorHospital {
+        facility {
+          city
+          country
+          facilityType
+          latitude
+          longitude
+          name
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          id
+        }
+      }
+      consultHours {
+        consultMode
+        consultType
+        endTime
+        id
+        startTime
+        weekDay
+        isActive
+      }
+    }
+  }
+`;

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
@@ -120,159 +120,173 @@ interface CaseSheetProps {
   setLifeStyle: (lifeStyle: string) => void;
 }
 
+interface HistoryAndLifeStyleProps {
+  lifeStyle: string;
+  allergies: string;
+  familyHistory: string;
+  setFamilyHistory: (familyHistory: string) => void;
+  setAllergies: (allergies: string) => void;
+  setLifeStyle: (lifeStyle: string) => void;
+}
+
+const HistoryAndLifeStyle: React.FC<HistoryAndLifeStyleProps> = (props) => {
+  const classes = useStyles();
+  const { setFamilyHistory, setAllergies, setLifeStyle } = props;
+  return (
+    <>
+      <div className={classes.sectionTitle}>Family History</div>
+      <div className={classes.inputFieldGroup}>
+        <AphTextField
+          fullWidth
+          value={props.familyHistory}
+          onChange={(e) => {
+            setFamilyHistory(e.target.value);
+          }}
+          multiline
+        />
+      </div>
+      <div className={classes.sectionTitle}>Allergies</div>
+      <div className={classes.inputFieldGroup}>
+        <AphTextField
+          fullWidth
+          value={props.allergies}
+          onChange={(e) => {
+            setAllergies(e.target.value);
+          }}
+          multiline
+        />
+      </div>
+      <div className={classes.sectionTitle}>Lifestyle & Habits</div>
+      <div className={`${classes.inputFieldGroup} ${classes.marginNone}`}>
+        <AphTextField
+          fullWidth
+          value={props.lifeStyle}
+          onChange={(e) => {
+            setLifeStyle(e.target.value);
+          }}
+          multiline
+        />
+      </div>
+    </>
+  );
+};
+
 export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
   const classes = useStyles();
-  const [expanded, setExpanded] = useState<string | boolean>(false);
+  const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContext);
+  const [symptoms, setSymptoms] = useState<boolean>(caseSheetEdit);
+  const [healthVault, setHealthVault] = useState<boolean>(caseSheetEdit);
+  const [diagnosis, setDiagnosis] = useState<boolean>(caseSheetEdit);
+  const [medicinePrescription, setMedicinePrescription] = useState<boolean>(caseSheetEdit);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(caseSheetEdit);
+  const [otherInstructions, setOtherInstructions] = useState<boolean>(caseSheetEdit);
+  const [patientHistory, setPatientHistory] = useState<boolean>(caseSheetEdit);
+
+  useEffect(() => {
+    if (caseSheetEdit) {
+      setSymptoms(true);
+      setHealthVault(true);
+      setDiagnosis(true);
+      setMedicinePrescription(true);
+      setDiagnosticPrescription(true);
+      setOtherInstructions(true);
+      setPatientHistory(true);
+    }
+  }, [caseSheetEdit]);
+
+  const items = [
+    { key: 'symptoms', value: 'Symptoms', state: symptoms, component: <Symptoms /> },
+    {
+      key: 'healthVault',
+      value: 'Patient Health Vault',
+      state: healthVault,
+      component: <HealthVault />,
+    },
+    { key: 'diagnosis', value: 'Diagnosis', state: diagnosis, component: <Diagnosis /> },
+    {
+      key: 'medicinePrescription',
+      value: 'Medicine Prescription',
+      state: medicinePrescription,
+      component: <MedicinePrescription />,
+    },
+    {
+      key: 'diagnosticPrescription',
+      value: 'Diagnostic Prescription',
+      state: diagnosticPrescription,
+      component: <DiagnosticPrescription />,
+    },
+    {
+      key: 'otherInstructions',
+      value: 'Other Instructions',
+      state: otherInstructions,
+      component: <OtherInstructions />,
+    },
+    {
+      key: 'patientHistory&Lifestyle',
+      value: 'Patient History & Lifestyle',
+      state: patientHistory,
+      component: (
+        <HistoryAndLifeStyle
+          lifeStyle={props.lifeStyle}
+          allergies={props.allergies}
+          familyHistory={props.familyHistory}
+          setFamilyHistory={props.setFamilyHistory}
+          setAllergies={props.setAllergies}
+          setLifeStyle={props.setLifeStyle}
+        />
+      ),
+    },
+  ];
+
   const handlePanelExpansion = (panelName: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
-  ) => setExpanded(isExpanded ? panelName : false);
-
-  const { setCasesheetNotes, notes } = useContext(CaseSheetContext);
-  const { setFamilyHistory, setAllergies, setLifeStyle } = props;
+  ) => {
+    switch (panelName) {
+      case 'symptoms':
+        setSymptoms(isExpanded);
+        break;
+      case 'healthVault':
+        setHealthVault(isExpanded);
+        break;
+      case 'diagnosis':
+        setDiagnosis(isExpanded);
+        break;
+      case 'medicinePrescription':
+        setMedicinePrescription(isExpanded);
+        break;
+      case 'diagnosticPrescription':
+        setDiagnosticPrescription(isExpanded);
+        break;
+      case 'otherInstructions':
+        setOtherInstructions(isExpanded);
+        break;
+      case 'patientHistory&Lifestyle':
+        setPatientHistory(isExpanded);
+        break;
+    }
+  };
 
   return (
     <div className={classes.root}>
-      {/* Symptoms Panel */}
-      <ExpansionPanel defaultExpanded={true} className={classes.panelRoot}>
-        <ExpansionPanelSummary
-          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+      {items.map((item) => (
+        <ExpansionPanel
+          expanded={item.state}
+          onChange={handlePanelExpansion(item.key)}
+          className={classes.panelRoot}
         >
-          Symptoms
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
-          <Symptoms />
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
+          <ExpansionPanelSummary
+            classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
+            expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+          >
+            {item.value}
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails className={classes.panelDetails}>
+            {item.component}
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+      ))}
 
-      {/* Patient Health Vault Panel */}
-      <ExpansionPanel
-        expanded={expanded === 'healthVault'}
-        onChange={handlePanelExpansion('healthVault')}
-        className={classes.panelRoot}
-      >
-        <ExpansionPanelSummary
-          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
-        >
-          Patient Health Vault
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
-          <HealthVault />
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-
-      {/* Diagnosis Panel */}
-      <ExpansionPanel
-        expanded={expanded === 'diagnosis'}
-        onChange={handlePanelExpansion('diagnosis')}
-        className={classes.panelRoot}
-      >
-        <ExpansionPanelSummary
-          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
-        >
-          Diagnosis
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
-          <Diagnosis />
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-
-      {/* Medicine Prescription Panel */}
-      <ExpansionPanel
-        expanded={expanded === 'medicinePrescription'}
-        onChange={handlePanelExpansion('medicinePrescription')}
-        className={classes.panelRoot}
-      >
-        <ExpansionPanelSummary
-          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
-        >
-          Medicine Prescription
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
-          <MedicinePrescription />
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-
-      {/* Diagnostic Prescription Panel */}
-      <ExpansionPanel
-        expanded={expanded === 'diagnosticPrescription'}
-        onChange={handlePanelExpansion('diagnosticPrescription')}
-        className={classes.panelRoot}
-      >
-        <ExpansionPanelSummary
-          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
-        >
-          Diagnostic Prescription
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
-          <DiagnosticPrescription />
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-
-      {/* Other Instructions Panel */}
-      <ExpansionPanel
-        expanded={expanded === 'otherInstructions'}
-        onChange={handlePanelExpansion('otherInstructions')}
-        className={classes.panelRoot}
-      >
-        <ExpansionPanelSummary
-          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
-        >
-          Other Instructions
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
-          <OtherInstructions />
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
-      <ExpansionPanel className={classes.panelRoot} defaultExpanded={true}>
-        <ExpansionPanelSummary
-          expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
-          classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-        >
-          Patient History & Lifestyle
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.panelDetails}>
-          <div className={classes.sectionTitle}>Family History</div>
-          <div className={classes.inputFieldGroup}>
-            <AphTextField
-              fullWidth
-              value={props.familyHistory}
-              onChange={(e) => {
-                setFamilyHistory(e.target.value);
-              }}
-              multiline
-            />
-          </div>
-          <div className={classes.sectionTitle}>Allergies</div>
-          <div className={classes.inputFieldGroup}>
-            <AphTextField
-              fullWidth
-              value={props.allergies}
-              onChange={(e) => {
-                setAllergies(e.target.value);
-              }}
-              multiline
-            />
-          </div>
-          <div className={classes.sectionTitle}>Lifestyle & Habits</div>
-          <div className={`${classes.inputFieldGroup} ${classes.marginNone}`}>
-            <AphTextField
-              fullWidth
-              value={props.lifeStyle}
-              onChange={(e) => {
-                setLifeStyle(e.target.value);
-              }}
-              multiline
-            />
-          </div>
-        </ExpansionPanelDetails>
-      </ExpansionPanel>
       <Divider className={classes.divider} />
       <div className={classes.notesBox}>
         <Typography component="h4" variant="h4" className={classes.notesHeader}>
