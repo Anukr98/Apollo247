@@ -100,7 +100,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     return AppointmentSessions.create(appointmentSessionAttrs)
       .save()
       .catch((createErrors) => {
-        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_SESION_ERROR, undefined, {
+        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_SESSION_ERROR, undefined, {
           createErrors,
         });
       });
