@@ -257,7 +257,7 @@ export const ConsultTabs: React.FC = () => {
   >(null);
 
   const [notes, setNotes] = useState<string | null>(null);
-
+  const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
@@ -307,6 +307,10 @@ export const ConsultTabs: React.FC = () => {
           _data!.data!.getCaseSheet!.caseSheetDetails!.notes
             ? setNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
             : setNotes('');
+          _data!.data!.getCaseSheet!.juniorDoctorNotes
+            ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
+                .juniorDoctorNotes as unknown) as string)
+            : setJuniorDoctorNotes('');
           _data!.data!.getCaseSheet!.caseSheetDetails!.consultType
             ? setConsultType(([
                 _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
@@ -533,6 +537,7 @@ export const ConsultTabs: React.FC = () => {
             setSymptoms,
             notes,
             setNotes,
+            juniorDoctorNotes,
             diagnosis,
             setDiagnosis,
             otherInstructions,
