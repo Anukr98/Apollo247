@@ -16,6 +16,7 @@
 #import "RNSplashScreen.h"  // here
 #import "RNFirebaseNotifications.h"
 #import "RNFirebaseMessaging.h"
+#import <React/RCTLinkingManager.h>
 
 @implementation AppDelegate
 
@@ -94,6 +95,26 @@ fetchCompletionHandler:(nonnull void (^)(UIBackgroundFetchResult))completionHand
   
   [[NSUserDefaults standardUserDefaults]setObject:pushToken forKey:@"deviceToken"];
   [[NSUserDefaults standardUserDefaults]synchronize];
+}
+
+#pragma mark - Open URL / deep link
+- (BOOL)application:(UIApplication *)application
+            openURL:(NSURL *)url
+            options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
+{
+  [RCTLinkingManager application:application
+                         openURL:url
+               sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
+                      annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
+  return YES;
+}
+
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler
+{
+  [RCTLinkingManager application:application
+            continueUserActivity:userActivity
+              restorationHandler:restorationHandler];
+  return true;
 }
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge

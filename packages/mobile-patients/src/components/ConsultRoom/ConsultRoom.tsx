@@ -26,6 +26,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Linking,
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
@@ -230,6 +231,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     callDeviceTokenAPI();
   });
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      Linking.getInitialURL().then((url) => {
+        // this.navigate(url);
+      });
+    } else {
+      console.log('linking');
+      Linking.addEventListener('url', handleOpenURL);
+    }
+  }, []);
+
+  const handleOpenURL = (event: any) => {
+    console.log('event', event);
+    const route = event.url.replace('apollopatients://', '');
+
+    if (route == 'ConsultRoom') {
+      console.log('ConsultRoom');
+      // props.navigation.replace(AppRoutes.ConsultRoom);
+    }
+    console.log('route', route);
+  };
 
   const client = useApolloClient();
 

@@ -67,7 +67,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     { variables: { patientId: currentPatient && currentPatient.id }, fetchPolicy: 'no-cache' }
   );
 
-  const orders = (!loading && data && data.getMedicineOrdersList.MedicineOrdersList!) || [];
+  const orders = (!loading && g(data, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
   // !loading && console.log({ orders });
   // !loading && error && console.error({ error });
 
