@@ -422,7 +422,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   }}
                 >
                   <Text style={styles.descriptionStyle}>Advance Paid</Text>
-                  <Text style={styles.descriptionStyle}>0</Text>
+                  <Text style={styles.descriptionStyle}>
+                    {data.doctorInfo.onlineConsultationFees}
+                  </Text>
                 </View>
                 <View
                   style={{
@@ -431,9 +433,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   }}
                 >
                   <Text style={styles.descriptionStyle}>Balance Remaining</Text>
-                  <Text style={styles.descriptionStyle}>
-                    {data.doctorInfo.onlineConsultationFees}
-                  </Text>
+                  <Text style={styles.descriptionStyle}>0</Text>
                 </View>
               </View>
               <View style={styles.imageView}>

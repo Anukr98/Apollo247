@@ -4,6 +4,7 @@ import { AuthContext } from '@aph/mobile-patients/src/components/AuthProvider';
 // import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 // import { GET_CURRENT_PATIENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AsyncStorage } from 'react-native';
 
 const useAuthContext = () => useContext(AuthContext);
 
@@ -75,7 +76,7 @@ export const useAllCurrentPatients = () => {
       allCurrentPatients.find((patient) => patient.relation === Relation.ME)
     : null;
 
-  // console.log('currentPatient', currentPatient);
+  console.log('currentPatient', currentPatient);
   // console.log('allCurrentPatients', allCurrentPatients);
   useEffect(() => {
     if (!currentPatientId) {

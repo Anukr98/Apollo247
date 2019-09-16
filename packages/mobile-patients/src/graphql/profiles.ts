@@ -999,3 +999,15 @@ export const CHECK_IF_FOLLOWUP_BOOKED = gql`
     checkIfFollowUpBooked(appointmentId: $appointmentId)
   }
 `;
+
+export const UPLOAD_CHAT_FILE = gql`
+  mutation uploadChatDocument($fileType: String, $base64FileInput: String, $appointmentId: String) {
+    uploadChatDocument(
+      fileType: $fileType
+      base64FileInput: $base64FileInput
+      appointmentId: $appointmentId
+    ) {
+      filePath
+    }
+  }
+`;
