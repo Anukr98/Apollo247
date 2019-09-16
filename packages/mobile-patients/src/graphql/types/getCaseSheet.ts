@@ -15,7 +15,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   appointmentState: string | null;
   appointmentType: APPOINTMENT_TYPE;
   doctorId: string;
-  hospitalId: string;
+  hospitalId: string | null;
   patientId: string;
   parentId: string | null;
   status: STATUS;

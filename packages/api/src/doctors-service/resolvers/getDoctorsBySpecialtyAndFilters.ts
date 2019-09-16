@@ -1,8 +1,9 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Doctor, ConsultMode } from 'doctors-service/entities/';
+import { Doctor, DoctorSpecialty, ConsultMode } from 'doctors-service/entities/';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { format, addMinutes, addDays } from 'date-fns';
 
 import { AphError } from 'AphError';
@@ -13,6 +14,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   type FilterDoctorsResult {
     doctors: [DoctorDetails]
     doctorsAvailability: [DoctorConsultModeAvailability]
+    specialty: DoctorSpecialty
   }
   type DoctorConsultModeAvailability {
     doctorId: ID
@@ -42,6 +44,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
 type FilterDoctorsResult = {
   doctors: Doctor[];
   doctorsAvailability: DoctorConsultModeAvailability[];
+  specialty: DoctorSpecialty;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -83,12 +86,20 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 > = async (parent, args, { doctorsDb, consultsDb }) => {
   let filteredDoctors;
   const doctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
+  let specialtyDetails;
 
   try {
+    const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
+    specialtyDetails = await specialtiesRepo.findById(args.filterInput.specialty);
+    if (!specialtyDetails) {
+      throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
+    }
+
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const consultsRepo = consultsDb.getCustomRepository(AppointmentRepository);
     filteredDoctors = await doctorRepository.filterDoctors(args.filterInput);
     // console.log('basic filtered doctors: ',filteredDoctors)
+
     //apply sort algorithm
     if (filteredDoctors.length > 1) {
       //get patient and matched doctors previous appointments starts here
@@ -148,7 +159,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     );
 
     //get filtered doctors appointments
-
     if (doctorIds.length > 0) {
       const doctorsAppointments = await consultsRepo.findByDoctorIdsAndDateTimes(
         doctorIds,
@@ -231,7 +241,11 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     });
   });
 
-  return { doctors: finalDoctorsList, doctorsAvailability: doctorsConsultModeAvailability };
+  return {
+    doctors: finalDoctorsList,
+    doctorsAvailability: doctorsConsultModeAvailability,
+    specialty: specialtyDetails,
+  };
 };
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {

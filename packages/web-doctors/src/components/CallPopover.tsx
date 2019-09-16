@@ -488,7 +488,7 @@ const useStyles = makeStyles((theme: Theme) => {
       top: 0,
       zIndex: 1,
       backgroundColor: '#f7f7f7',
-      boxShadow: 'inset 0px -1px 6px 0 rgba(128,128,128,0.2)',
+      boxShadow: 'inset 0px 0px 10px 0 rgba(128,128,128,0.2)',
     },
   };
 });
