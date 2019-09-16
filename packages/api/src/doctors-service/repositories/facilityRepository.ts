@@ -48,10 +48,6 @@ export class FacilityRepository extends Repository<Facility> {
           return;
         }
       });
-
-      if (!facility.id) {
-        facility.createdDate = new Date();
-      }
     });
 
     //insert/update new facilities
