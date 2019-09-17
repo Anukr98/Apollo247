@@ -161,6 +161,7 @@ export const AuthProvider: React.FC = (props) => {
       setAllPatients(null);
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.removeItem('currentPatient');
+      AsyncStorage.removeItem('deviceToken');
       console.log('authprovider signOut');
     } catch (error) {
       console.log('signOut error', error);

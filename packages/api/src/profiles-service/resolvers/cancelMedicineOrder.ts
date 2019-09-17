@@ -7,6 +7,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import fetch from 'node-fetch';
 import { PharmaCancelResponse } from 'types/medicineOrderTypes';
+import { ApiConstants } from 'ApiConstants';
 
 export const medicineOrderCancelTypeDefs = gql`
   input MedicineOrderCancelInput {
@@ -54,14 +55,19 @@ const cancelMedicineOrder: Resolver<
     OrderNo: medicineOrderCancelInput.orderNo,
     Remarks: 'MCCR0037',
   };
-  const pharmaResp = await fetch(
-    'http://online.apollopharmacy.org:51/POPCORN/OrderPlace.svc/cancelorders ',
-    {
-      method: 'POST',
-      body: JSON.stringify(cancelOrderInput),
-      headers: { 'Content-Type': 'application/json', Token: '9f15bdd0fcd5423190c2e877ba0228A24' },
-    }
-  );
+
+  const cancelOrderUrl = process.env.PHARMACY_MED_CANCEL_ORDERS
+    ? process.env.PHARMACY_MED_CANCEL_ORDERS
+    : '';
+  const placeOrderToken = process.env.PHARMACY_ORDER_TOKEN ? process.env.PHARMACY_ORDER_TOKEN : '';
+  if (cancelOrderUrl == '' || placeOrderToken == '') {
+    throw new AphError(AphErrorMessages.INVALID_PHARMA_ORDER_URL, undefined, {});
+  }
+  const pharmaResp = await fetch(cancelOrderUrl, {
+    method: 'POST',
+    body: JSON.stringify(cancelOrderInput),
+    headers: { 'Content-Type': 'application/json', Token: ApiConstants.PHARMA_TOKEN.toString() },
+  });
 
   if (pharmaResp.status == 400) {
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});

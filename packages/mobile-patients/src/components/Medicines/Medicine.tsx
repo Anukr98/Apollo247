@@ -192,7 +192,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <View
         style={{
-          height: 225,
+          height: 225 - 54,
           justifyContent: 'space-between',
         }}
       >
@@ -240,7 +240,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             </View>
           </UserIntro>
         </View>
-        <TabsComponent
+        {/* <TabsComponent
           height={44}
           style={{
             marginTop: Platform.OS === 'ios' ? 181 : 191,
@@ -252,7 +252,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setselectedTab(selectedTab);
           }}
           selectedTab={selectedTab}
-        />
+        /> */}
       </View>
     );
   };

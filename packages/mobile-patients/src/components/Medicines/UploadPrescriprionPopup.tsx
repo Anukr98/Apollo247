@@ -318,7 +318,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
               <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.instructionsStyle}>3.</Text>
                 <Text style={[styles.instructionsStyle, { paddingLeft: 16, paddingBottom: 15 }]}>
-                  Only JPG / PNG files up to 2mb will be allowed
+                  Only JPG / PNG files up to 2mb will be allowed.
                 </Text>
               </View>
               <View style={styles.separatorStyle} />

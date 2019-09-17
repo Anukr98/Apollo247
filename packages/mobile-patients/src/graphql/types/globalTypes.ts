@@ -331,6 +331,25 @@ export interface PatientConsultsAndOrdersInput {
   limit?: number | null;
 }
 
+export interface PrescriptionMedicineInput {
+  quoteId?: string | null;
+  shopId?: string | null;
+  patientId: string;
+  medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
+  patinetAddressId?: string | null;
+  prescriptionImageUrl: string;
+  appointmentId?: string | null;
+  payment?: PrescriptionMedicinePaymentDetails | null;
+}
+
+export interface PrescriptionMedicinePaymentDetails {
+  paymentType?: MEDICINE_ORDER_PAYMENT_TYPE | null;
+  amountPaid?: number | null;
+  paymentRefId?: string | null;
+  paymentStatus?: string | null;
+  paymentDateTime?: any | null;
+}
+
 export interface Range {
   minimum?: number | null;
   maximum?: number | null;

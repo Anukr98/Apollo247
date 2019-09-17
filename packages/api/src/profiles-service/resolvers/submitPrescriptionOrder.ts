@@ -13,6 +13,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 import { PharmaLineItem, PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import { differenceInYears } from 'date-fns';
+import { ApiConstants } from 'ApiConstants';
 
 export const submitPrescriptionOrderTypeDefs = gql`
   input SubmitPrescriptionOrderInput {
@@ -175,15 +176,18 @@ const submitPrescriptionOrder: Resolver<
   };
 
   console.log('medicineOrderPharma', medicineOrderPharma);
-
-  const pharmaResp = await fetch(
-    'http://online.apollopharmacy.org:51/POPCORN/OrderPlace.svc/Place_orders',
-    {
-      method: 'POST',
-      body: JSON.stringify(medicineOrderPharma),
-      headers: { 'Content-Type': 'application/json', Token: '9f15bdd0fcd5423190c2e877ba0228A24' },
-    }
-  );
+  const placeOrderUrl = process.env.PHARMACY_MED_PLACE_ORDERS
+    ? process.env.PHARMACY_MED_PLACE_ORDERS
+    : '';
+  const placeOrderToken = process.env.PHARMACY_ORDER_TOKEN ? process.env.PHARMACY_ORDER_TOKEN : '';
+  if (placeOrderUrl == '' || placeOrderToken == '') {
+    throw new AphError(AphErrorMessages.INVALID_PHARMA_ORDER_URL, undefined, {});
+  }
+  const pharmaResp = await fetch(placeOrderUrl, {
+    method: 'POST',
+    body: JSON.stringify(medicineOrderPharma),
+    headers: { 'Content-Type': 'application/json', Token: ApiConstants.PHARMA_TOKEN.toString() },
+  });
 
   if (pharmaResp.status == 400) {
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});

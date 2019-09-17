@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
   titleTextStyle: {
     ...theme.fonts.IBMPlexSansBold(14),
     color: theme.colors.BUTTON_TEXT,
+    textAlign: 'center',
   },
 });
 

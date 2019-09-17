@@ -144,7 +144,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [messages, setMessages] = useState([]);
   const [messageText, setMessageText] = useState<string>('');
   const [heightList, setHeightList] = useState<number>(
-    isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185
+    isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141
   );
 
   const [sessionId, setsessionId] = useState<string>('');
@@ -243,6 +243,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [doctorScheduleId, setDoctorScheduleId] = useState<string>('');
   const [dropDownBottomStyle, setDropDownBottomStyle] = useState<number>(isIphoneX() ? 50 : 15);
+  const [jrDoctorJoined, setjrDoctorJoined] = useState<boolean>(false);
 
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
@@ -257,6 +258,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const rescheduleConsultMsg = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
   const imageconsult = '^^#DocumentUpload';
+  const startConsultjr = '^^#startconsultJr';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -580,6 +582,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let insertText: object[] = [];
 
   const getHistory = (timetoken: number) => {
+    setLoading(true);
     pubnub.history(
       {
         channel: channel,
@@ -600,11 +603,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             newmessage[index] = element.entry;
           });
           console.log('res', res);
+          setLoading(false);
 
           if (messages.length !== newmessage.length) {
             if (newmessage[newmessage.length - 1].message === startConsultMsg) {
               updateSessionAPI();
               checkingAppointmentDates();
+              setjrDoctorJoined(false);
+            }
+
+            if (newmessage[newmessage.length - 1].message === startConsultjr) {
+              updateSessionAPI();
+              checkingAppointmentDates();
+              setjrDoctorJoined(true);
             }
 
             insertText = newmessage;
@@ -620,6 +631,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }, 1000);
           }
         } catch (error) {
+          setLoading(false);
           console.log('error', error);
         }
       }
@@ -657,31 +669,33 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   // getAllMessages(0);
 
   const checkingAppointmentDates = () => {
-    const currentTime = moment(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(
-      'YYYY-MM-DD HH:mm:ss'
-    );
+    try {
+      const currentTime = moment(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").format(
+        'YYYY-MM-DD HH:mm:ss'
+      );
 
-    const appointmentTime = moment
-      .utc(appointmentData.appointmentDateTime)
-      .format('YYYY-MM-DD HH:mm:ss');
+      const appointmentTime = moment
+        .utc(appointmentData.appointmentDateTime)
+        .format('YYYY-MM-DD HH:mm:ss');
 
-    const diff = moment.duration(moment(appointmentTime).diff(currentTime));
-    diffInHours = diff.asMinutes();
-    console.log('duration', diffInHours);
-    console.log('appointmentTime', appointmentTime);
-
-    if (diffInHours > 0) {
-    } else {
-      diffInHours = diffInHours * 60;
+      const diff = moment.duration(moment(appointmentTime).diff(currentTime));
+      diffInHours = diff.asMinutes();
       console.log('duration', diffInHours);
+      console.log('appointmentTime', appointmentTime);
 
-      const startingTime = 900 + diffInHours;
-      console.log('startingTime', startingTime);
+      if (diffInHours > 0) {
+      } else {
+        diffInHours = diffInHours * 60;
+        console.log('duration', diffInHours);
 
-      if (startingTime > 0) {
-        startInterval(startingTime);
+        const startingTime = 900 + diffInHours;
+        console.log('startingTime', startingTime);
+
+        if (startingTime > 0) {
+          startInterval(startingTime);
+        }
       }
-    }
+    } catch (error) {}
   };
 
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
@@ -741,10 +755,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const keyboardDidShow = (e: KeyboardEvent) => {
     setHeightList(
       isIphoneX()
-        ? height - e.endCoordinates.height - 210
+        ? height - e.endCoordinates.height - 166
         : Platform.OS === 'ios'
-        ? height - e.endCoordinates.height - 185
-        : height - e.endCoordinates.height - 185
+        ? height - e.endCoordinates.height - 141
+        : height - e.endCoordinates.height - 141
     );
     setDropDownBottomStyle(isIphoneX() ? 50 : height - e.endCoordinates.height - 190);
 
@@ -754,7 +768,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const keyboardDidHide = () => {
-    setHeightList(isIphoneX() ? height - 210 : Platform.OS === 'ios' ? height - 185 : height - 185);
+    setHeightList(isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141);
     setDropDownBottomStyle(isIphoneX() ? 50 : 15);
   };
 
@@ -1687,7 +1701,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === endCallMsg ||
       rowData.message === audioCallMsg ||
       rowData.message === videoCallMsg ||
-      rowData.message === acceptedCallMsg
+      rowData.message === acceptedCallMsg ||
+      rowData.message === startConsultjr
     ) {
       return null;
     }
@@ -3003,51 +3018,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 marginLeft: 20,
               }}
             >
-              Dr. {appointmentData.doctorInfo.firstName} has joined!
+              {jrDoctorJoined
+                ? `Junior doctor has joined`
+                : `Dr. ${appointmentData.doctorInfo.firstName} has joined!`}
             </Text>
           </View>
-        ) : (
-          <View
-            style={{
-              width: width,
-              height: 44,
-              flexDirection: 'row',
-              alignItems: 'center',
-              ...theme.viewStyles.cardViewStyle,
-              borderRadius: 0,
-              shadowOffset: { width: 0, height: 0 },
-              shadowRadius: 2,
-              elevation: 2,
-              zIndex: 100,
-              backgroundColor: '#f7f8f5',
-            }}
-          >
-            {consultStarted ? (
-              <Text
-                style={{
-                  color: '#0087ba',
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                  marginLeft: 20,
-                }}
-              >
-                Time Remaining — {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                {seconds.toString().length < 2 ? '0' + seconds : seconds}
-              </Text>
-            ) : (
-              <Text
-                style={{
-                  color: '#0087ba',
-                  ...theme.fonts.IBMPlexSansMedium(14),
-                  marginLeft: 20,
-                }}
-              >
-                Consultation ended in — {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
-                {seconds.toString().length < 2 ? '0' + seconds : seconds} min
-                {minutes > 1 ? 's' : ''}
-              </Text>
-            )}
-          </View>
-        )}
+        ) : null}
         {renderChatView()}
         <KeyboardAvoidingView behavior="padding" enabled>
           <View style={textinputStyles}>

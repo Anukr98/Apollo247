@@ -68,7 +68,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   city: string | null;
   photoUrl: string | null;
   qualification: string | null;
-  specialty: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo_specialty;
+  specialty: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo_specialty | null;
 }
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults {
