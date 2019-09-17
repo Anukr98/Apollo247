@@ -45,7 +45,7 @@ export const BlockedCalendar: React.FC<BlockedCalendarProps> = (props) => {
     ));
   }
   return (
-    <div>
+    <div data-cypress="BlockedCalendar">
       <BlockedCalendarAddModal
         doctorId={doctorId}
         dialogProps={{
