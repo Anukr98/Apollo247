@@ -111,12 +111,14 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
       facilityType: FacilityType.HOSPITAL,
     };
   });
+
   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
   const facilitiesResult = await facilityRepo.insertOrUpdateAllFacilities(hospitals);
+  console.log(facilitiesResult);
   //hospital details ends
 
   //insert doctor starts
-  await doctorData.map((element: any) => {
+  /*await doctorData.map((element: any) => {
     //mapping specialties
     finalSpecialtiesList.forEach((specialty) => {
       if (element.SPECIALITY == specialty.name) {
@@ -125,8 +127,6 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
       }
     });
   });
-
-  //console.log('after update', doctorData);
 
   const formatedDoctorData = doctorData.map((element: any) => {
     const DoctorDetails: Partial<Doctor> = {};
@@ -150,7 +150,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     DoctorDetails.mobileNumber = element.PHONE;
     DoctorDetails.specialty = element.SPECIALITY;
     DoctorDetails.emailAddress = '';
-    if (element.EMAIL != '')
+    if (element.EMAIL && element.EMAIL.length > 0)
       DoctorDetails.emailAddress =
         process.env.NODE_ENV === 'production' ? element.EMAIL : element.EMAIL + ' .popcornapps.com';
     DoctorDetails.delegateName = element.SECRETARYNAME == 'undefined' ? '' : element.SECRETARYNAME;
@@ -162,10 +162,48 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   //Doctor starts
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorInsertResult = await doctorRepo.insertOrUpdateAllDoctors(formatedDoctorData);
-  console.log('docotors insert result------', doctorInsertResult[0]);
-  //insert doctor ends
+  //doctor Hospital
 
-  //doctorInsertResult.map((doctor) => {});
+  await doctorData.map((element: any) => {
+    //mapping specialties
+    doctorInsertResult.forEach((doctor) => {
+      if (element.PHONE == doctor.mobileNumber) {
+        element.FULLNAME = doctor.id;
+        return;
+      }
+    });
+  });
+
+  await doctorData.map((element: any) => {
+    //mapping specialties
+    facilitiesResult.forEach((facility) => {
+      if (element.PHYSICALCONSULTATIONLOCATIONNAME == facility.name) {
+        element.PHYSICALCONSULTATIONLOCATIONNAME = facility.id;
+        return;
+      }
+    });
+  });
+
+  console.log(doctorData[1]);
+
+  const dostorHospital = await doctorData.map((element: any) => {
+    return {
+      doctorId: element.FULLNAME,
+      facilityId: element.PHYSICALCONSULTATIONLOCATIONNAME,
+    };
+  });
+
+  console.log(dostorHospital);  */
+
+  /*const consultHours = await doctorData.map((element: any) => {
+    return {
+      consultMode: element.CONSULTATIONMODE,
+      availability: element.AVAILABILITY,
+      weekDays: element.WEEKDAYS,
+    };
+  });
+  //insert doctor ends
+  console.log(consultHours); */
 
   return "I'm in progress";
 };

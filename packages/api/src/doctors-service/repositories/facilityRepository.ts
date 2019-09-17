@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Facility } from 'doctors-service/entities';
+import { Facility, FacilityType } from 'doctors-service/entities';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -17,9 +17,11 @@ export class FacilityRepository extends Repository<Facility> {
   }
 
   getFacilityUniqueTerm(facility: Partial<Facility>) {
-    if (facility.name && facility.streetLine1)
-      return facility.name.trim().toLowerCase() + '_' + facility.streetLine1.trim().toLowerCase();
-    else return '';
+    let facilityName = '';
+    if (facility.name) facilityName = facility.name.trim().toLowerCase();
+    if (facility.streetLine1)
+      facilityName = facilityName + '_' + facility.streetLine1.trim().toLowerCase();
+    return facilityName;
   }
 
   getUniqueFacilities(duplicateFacilities: Partial<Facility>[]) {
@@ -49,6 +51,16 @@ export class FacilityRepository extends Repository<Facility> {
         }
       });
     });
+
+    uniqueFacilities.push({
+      name: '',
+      streetLine1: '',
+      city: '',
+      state: '',
+      country: '',
+      facilityType: FacilityType.HOSPITAL,
+    });
+    console.log('-----------', uniqueFacilities);
 
     //insert/update new facilities
     return this.save(uniqueFacilities).catch((saveFacilitiesError) => {
