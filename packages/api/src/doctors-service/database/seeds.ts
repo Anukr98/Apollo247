@@ -95,11 +95,17 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
     emailAddress: 'kabir@sarink.net',
     specialty: _sample(doctorSpecialties),
     doctorType: DoctorType.JUNIOR,
-    mobileNumber: '+919999999999', // OTP is 999999
     delegateNumber: '+91123456789',
     isActive: true, // Don't forget to set this to true or you won't be able to log in!
     onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
-    firebaseToken: 'dJYFTV7MJGWK2EdziTtr5zUPm243', // This is actually the firebaseuid, not the token
+
+    // kabir
+    // firebaseToken: 'dJYFTV7MJGWK2EdziTtr5zUPm243', // This is actually the firebaseuid, not the token
+    // mobileNumber: '+919999999999', // OTP is 999999
+
+    // sankeerth
+    mobileNumber: '+919296858696', // OTP is 772345
+    firebaseToken: 'gnUQsiiGlrS0NuGgF62RsmvG1HF3',
   });
   const staticDoctorObjs = [jrKabir];
   const staticDoctors = await Promise.all(staticDoctorObjs.map((doc) => doctorRepo.save(doc)));
