@@ -10,12 +10,16 @@ export const jrKabir: Doctor = {
   lastName: 'Sarin',
   emailAddress: 'kabir@sarink.net',
   doctorType: DoctorType.JUNIOR,
-  // mobileNumber: '+919999999999', // OTP is 999999
-  mobileNumber: '+919296858696', // OTP is 772345
   delegateNumber: '+91123456789',
   isActive: true, // Don't forget to set this to true or you won't be able to log in!
   onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+
+  // kabir
+  // mobileNumber: '+919999999999', // OTP is 999999
   // firebaseToken: 'dJYFTV7MJGWK2EdziTtr5zUPm243', // This is actually the firebaseuid, not the token
+
+  // sankeerth
+  mobileNumber: '+919296858696', // OTP is 772345
   firebaseToken: 'gnUQsiiGlrS0NuGgF62RsmvG1HF3',
 
   awards: '',
