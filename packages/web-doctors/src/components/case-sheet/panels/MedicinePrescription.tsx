@@ -440,7 +440,8 @@ export const MedicinePrescription: React.FC = () => {
     },
   ]);
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
-
+  const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
+  const [medicine, setMedicine] = useState('');
   const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
     const inputValue = deburr(value.trim()).toLowerCase();
@@ -486,7 +487,12 @@ export const MedicinePrescription: React.FC = () => {
         setSearchInput(value);
         setLoading(false);
       })
-      .catch();
+      .catch((error) => {
+        if (error.toString().includes('404')) {
+          setIsSuggestionFetched(false);
+          setLoading(false);
+        }
+      });
     setLoading(false);
   };
   const deletemedicine = (idx: any) => {
@@ -781,6 +787,7 @@ export const MedicinePrescription: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
+    setMedicine(newValue);
     setLoading(false);
     if (newValue.length > 2) {
       fetchMedicines(newValue);
@@ -860,6 +867,7 @@ export const MedicinePrescription: React.FC = () => {
                       setSelectedValue(suggestion.label);
                       setSelectedId(suggestion.sku);
                       setLoading(false);
+                      setMedicine('');
                     }}
                     {...autosuggestProps}
                     inputProps={{
@@ -883,6 +891,31 @@ export const MedicinePrescription: React.FC = () => {
                       </Paper>
                     )}
                   />
+                  {medicine.length > 2 && !isSuggestionFetched && (
+                    <div>
+                      <span>
+                        {`do you want to add '${medicine}' in Tests ?`}
+                        <AphButton
+                          className={classes.btnAddDoctor}
+                          variant="contained"
+                          color="primary"
+                          onClick={() => {
+                            setState({
+                              single: '',
+                              popper: '',
+                            });
+                            setShowDosage(true);
+                            setSelectedValue(medicine);
+                            setSelectedId('IB01');
+                            setLoading(false);
+                            setMedicine('');
+                          }}
+                        >
+                          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD MEDICINE
+                        </AphButton>
+                      </span>
+                    </div>
+                  )}
                   {loading ? <CircularProgress className={classes.loader} /> : null}
                 </div>
               </div>
