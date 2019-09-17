@@ -282,7 +282,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           onPress={() => setshowsymptoms(!showsymptoms)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.symptoms && caseSheetDetails!.symptoms == null ? (
+            {caseSheetDetails!.symptoms && caseSheetDetails!.symptoms !== null ? (
               <View>
                 {caseSheetDetails!.symptoms!.map((item) => {
                   if (item && item.symptom)
@@ -324,7 +324,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.medicinePrescription &&
-            caseSheetDetails!.medicinePrescription.length !== 0 ? (
+            caseSheetDetails!.medicinePrescription.length !== 0 &&
+            caseSheetDetails!.doctorType == 'STAR_APOLLO' ? (
               <View>
                 {caseSheetDetails!.medicinePrescription.map((item) => {
                   if (item)

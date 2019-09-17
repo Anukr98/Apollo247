@@ -596,7 +596,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
               onPress={() => {
-                props.navigation.navigate(AppRoutes.SymptomChecker);
+                props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
               }}
             />
           </View>
@@ -648,7 +648,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   key={i}
                   onPress={() => {
                     if (i === 0) {
-                      props.navigation.navigate(AppRoutes.DoctorSearch);
+                      props.navigation.navigate(AppRoutes.DoctorSearch, {
+                        MoveDoctor: '',
+                        searchText: '',
+                      });
                     } else if (i == 1) {
                       props.navigation.navigate(AppRoutes.SearchMedicineScene);
                     }
