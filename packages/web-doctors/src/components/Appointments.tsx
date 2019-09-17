@@ -20,6 +20,7 @@ import { format, isToday } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { STATUS, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { CircularProgress } from '@material-ui/core';
+import _uniqueId from 'lodash/uniqueId';
 
 export interface Appointment {
   id: string;
@@ -239,13 +240,26 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     completed: {
       '& .stepIcon': {
-        color: '#0087ba',
-        border: 'none',
+        color: '#fff',
+        border: '2px solid #ff748e',
       },
       '& .cardRow': {
         backgroundColor: '#f0f4f5',
         border: 'solid 1px rgba(2, 71, 91, 0.1)',
         boxShadow: 'none',
+      },
+    },
+    upcoming: {
+      '& .stepIcon': {
+        color: '#fff',
+        border: '2px solid #ff748e',
+      },
+      '& .cardRow': {
+        backgroundColor: '#fff',
+        border: '1px solid #ff748e',
+      },
+      '& h5': {
+        color: '#ff748e',
       },
     },
     missing: {},
@@ -312,6 +326,17 @@ export const Appointments: React.FC<AppointmentsProps> = ({
     return null;
   });
 
+  let upcomingNextRendered: boolean = false;
+
+  const showUpNext = (aptTime: number) => {
+    if (aptTime > new Date().getTime() && !upcomingNextRendered) {
+      upcomingNextRendered = true;
+      return true;
+    } else {
+      return false;
+    }
+  };
+
   const getAppointmentStatusClass = (appointmentStatus: string) => {
     if (appointmentStatus === STATUS.NO_SHOW) return classes.missing;
     if (appointmentStatus === STATUS.COMPLETED) return classes.completed;
@@ -369,10 +394,10 @@ export const Appointments: React.FC<AppointmentsProps> = ({
           }
           className={classes.calendarContent}
         >
-          {appointments.map((appointment, idx) =>
-            appointment.caseSheet.length > 0 ? (
+          {appointments.map((appointment, idx) => {
+            return appointment.caseSheet.length > 0 ? (
               <Step
-                key={idx}
+                key={_uniqueId('apt_')}
                 active={true}
                 className={
                   // appointment.status === STATUS.NO_SHOW
@@ -382,7 +407,9 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   //   : activeStep === idx
                   //   ? 'upcoming'
                   //   : ''
-                  getAppointmentStatusClass(appointment.status)
+                  appointment.startTime > new Date().getTime() && !upcomingNextRendered
+                    ? classes.upcoming
+                    : getAppointmentStatusClass(appointment.status)
                 }
                 classes={{
                   root: classes.step,
@@ -411,7 +438,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                     }}
                   >
                     <span>
-                      {`${activeStep === idx ? 'UP NEXT: ' : ''}${format(
+                      {`${showUpNext(appointment.startTime) ? 'UP NEXT: ' : ''}${format(
                         appointment.startTime,
                         'h:mm'
                       )} - ${format(appointment.endTime, 'h:mm aa')}`}
@@ -484,7 +511,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                                           : appointment.details.checkups.symptoms
                                         ).map((checkup: any, idx: any) => (
                                           <Chip
-                                            key={idx}
+                                            key={_uniqueId('chkup_')}
                                             className={classes.chip}
                                             label={checkup.symptom.toUpperCase()}
                                           />
@@ -555,8 +582,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
               </Step>
             ) : (
               <div>&nbsp;</div>
-            )
-          )}
+            );
+          })}
         </Stepper>
       </div>
     );
@@ -568,8 +595,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
         <div>
           <img src={require('images/no_data.svg')} alt="" />
         </div>
-        No consults scheduled{' '}
-        {isToday(selectedDate) ? 'today' : `for ${format(selectedDate, 'MMM, dd')}`}!
+        No consults scheduled
+        {isToday(selectedDate) ? ' today' : ` for ${format(selectedDate, 'MMM, dd')}`}!
       </div>
     </div>
   );
