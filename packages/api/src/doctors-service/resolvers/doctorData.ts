@@ -233,7 +233,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   const consultHoursResult = await consultHoursRepo.insertOrUpdateAllConsultHours(consultHours);
 
   console.log('ConsultHoursLength: ', consultHoursResult.length);
-  console.log('Feference ConsultHours Record:', consultHoursResult[0]);
+  console.log('Reference ConsultHours Record:', consultHoursResult[0]);
   return 'Data Insertion Completed :)';
 };
 //insert data features ends here
