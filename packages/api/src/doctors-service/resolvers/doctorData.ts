@@ -216,7 +216,6 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     //mapping specialties
     doctorHospitalResult.forEach((docFacility) => {
       if (element.FULLNAME == docFacility.doctor) {
-        console.log(element.FULLNAME + ' == ' + docFacility.doctor);
         consultHours.push({
           doctor: element.FULLNAME,
           doctorHospital: docFacility.id,
