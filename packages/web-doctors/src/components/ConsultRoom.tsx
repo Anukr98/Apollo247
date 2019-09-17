@@ -194,9 +194,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: subscribeKey,
-    publishKey: publishKey,
+    subscribeKey: subscribekey,
+    publishKey: publishkey,
     ssl: true,
   };
   let leftComponent = 0;
