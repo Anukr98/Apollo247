@@ -228,10 +228,11 @@ const SaveMedicineOrderPayment: Resolver<
     headers: { 'Content-Type': 'application/json', Token: ApiConstants.PHARMA_TOKEN.toString() },
   });
 
-  if (pharmaResp.status == 400) {
+  if (pharmaResp.status == 400 || pharmaResp.status == 404) {
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
   }
 
+  console.log(pharmaResp, 'pharmaResp');
   const textRes = await pharmaResp.text();
   const orderResp: PharmaResponse = JSON.parse(textRes);
   console.log(orderResp, 'respp', orderResp.ordersResult.Message);
