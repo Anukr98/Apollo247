@@ -108,6 +108,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [date, setDate] = useState<Date>(new Date());
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
   const [AppointmentExistAlert, setAppointmentExistAlert] = useState<boolean>(false);
+  const scrollViewRef = React.useRef<any>(null);
 
   const todayDate = new Date().toDateString().split('T')[0];
   console.log(todayDate, 'todayDatetodayDate', new Date().toDateString());
@@ -163,7 +164,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
     const timeSlot =
       tabs[0].title === selectedTab &&
       isConsultOnline &&
-      availableInMin! <= 15 &&
+      availableInMin! <= 60 &&
       0 < availableInMin!
         ? nextAvailableSlot
         : selectedTimeSlot;
@@ -225,7 +226,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           disabled={
             tabs[0].title === selectedTab &&
             isConsultOnline &&
-            availableInMin! <= 15 &&
+            availableInMin! <= 60 &&
             0 < availableInMin!
               ? false
               : selectedTimeSlot === ''
@@ -238,7 +239,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               const timeSlot =
                 tabs[0].title === selectedTab &&
                 isConsultOnline &&
-                availableInMin! <= 15 &&
+                availableInMin! <= 60 &&
                 0 < availableInMin!
                   ? nextAvailableSlot
                   : selectedTimeSlot;
@@ -360,13 +361,22 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               }}
               selectedTab={selectedTab}
             />
-            <ScrollView bounces={false}>
+            <ScrollView
+              bounces={false}
+              // ref={scrollViewRef}
+            >
               {selectedTab === tabs[0].title ? (
                 <ConsultOnline
                   doctor={props.doctor}
                   timeArray={timeArray}
                   date={date}
-                  setDate={setDate}
+                  setDate={(date) => {
+                    console.log(scrollViewRef, 'scrollViewRef');
+                    setDate(date);
+                    // scrollViewRef.current &&
+                    //   scrollViewRef.current.scrollTo &&
+                    //   scrollViewRef.current.scrollTo({ x: 0, y: 510, animated: true });
+                  }}
                   nextAvailableSlot={nextAvailableSlot}
                   setNextAvailableSlot={setNextAvailableSlot}
                   isConsultOnline={isConsultOnline}
@@ -381,7 +391,13 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 <ConsultPhysical
                   doctor={props.doctor}
                   clinics={props.clinics}
-                  setDate={setDate}
+                  setDate={(date) => {
+                    console.log(scrollViewRef, 'scrollViewRef');
+                    setDate(date);
+                    // scrollViewRef.current &&
+                    //   scrollViewRef.current.scrollTo &&
+                    //   scrollViewRef.current.scrollTo({ x: 0, y: 465, animated: true });
+                  }}
                   setselectedTimeSlot={setselectedTimeSlot}
                   selectedTimeSlot={selectedTimeSlot}
                   timeArray={timeArray}

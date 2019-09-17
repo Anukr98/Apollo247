@@ -127,7 +127,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const [locationSearchList, setlocationSearchList] = useState<string[]>([]);
+  const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
+    []
+  );
   const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
     (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
   >([]);
@@ -361,16 +363,37 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         if (obj.data.predictions) {
           const address = obj.data.predictions.map(
             (item: {
+              place_id: string;
               structured_formatting: {
                 main_text: string;
               };
             }) => {
-              return item.structured_formatting.main_text;
+              return { name: item.structured_formatting.main_text, placeId: item.place_id };
             }
           );
           console.log(address, 'address');
           setlocationSearchList(address);
           // setcurrentLocation(address.toUpperCase());
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const saveLatlong = (placeId: string) => {
+    axios
+      .get(`https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${key}`)
+      .then((obj) => {
+        try {
+          console.log(obj, 'places details');
+          if (obj.data.result.geometry && obj.data.result.geometry.location) {
+            console.log(obj.data.result.geometry.location, 'obj.data.geometry.location');
+
+            AsyncStorage.setItem('location', JSON.stringify(obj.data.result.geometry.location));
+          }
+        } catch (error) {
+          console.log(error);
         }
       })
       .catch((error) => {
@@ -386,7 +409,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       if (latlong) {
         findAddressFromLocationString(`${latlong.lat}, ${latlong.lng}`, key)
           .then((response: any) => {
-            console.log(response);
+            console.log(response, 'lat long');
             if (
               response.data.results.length &&
               response.data.results[0].address_components.length
@@ -643,7 +666,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderPopup = () => {
-    console.log(showLocationpopup, 'showLocationpopup');
+    console.log(showLocationpopup, 'showLocationpopup', locationSearchList);
     if (showLocationpopup) {
       return (
         <TouchableOpacity
@@ -679,7 +702,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flex: 7 }}>
                 <TextInputComponent
-                  conatinerstyles={{ flex: 1 }}
+                  // conatinerstyles={{ flex: 1, height: 64 }}
                   value={currentLocation}
                   onChangeText={(value) => {
                     setcurrentLocation(value);
@@ -699,7 +722,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               </View>
             </View>
             <View>
-              {locationSearchList.map((name, i) => (
+              {locationSearchList.map((item, i) => (
                 <View
                   key={i}
                   style={{
@@ -714,11 +737,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                       ...theme.fonts.IBMPlexSansMedium(18),
                     }}
                     onPress={() => {
-                      setcurrentLocation(name);
+                      setcurrentLocation(item.name);
+                      saveLatlong(item.placeId);
                       setshowLocationpopup(false);
                     }}
                   >
-                    {name}
+                    {item.name}
                   </Text>
                 </View>
               ))}
