@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
-import { DoctorSpecialty, Doctor, FacilityType } from 'doctors-service/entities';
+import { DoctorSpecialty, Doctor, FacilityType, DoctorAndHospital } from 'doctors-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 
@@ -100,14 +100,33 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   const finalSpecialtiesList = Object.assign(partialSpecialtyList, partialAddedSpecialtyList);
   //specialty ends
 
-  //insert doctor starts
-  doctorData.forEach((element: any) => {
-    const filteredSpecialty = finalSpecialtiesList.filter(
-      (specialty) => element.SPECIALITY == specialty.name
-    );
-    if (filteredSpecialty.length > 0) element.SPECIALITY = filteredSpecialty[0].id;
+  //hospital details starts
+  const hospitals = doctorData.map((row: any) => {
+    return {
+      name: row.PHYSICALCONSULTATIONLOCATIONNAME,
+      streetLine1: row.PHYSICALCONSULTATIONLOCATIONADDRESS,
+      city: row.PHYSICALCONSULTATIONLOCATIONCITY,
+      state: row.PHYSICALCONSULTATIONLOCATIONSTATE,
+      country: row.PHYSICALCONSULTATIONLOCATIONCOUNTRY,
+      facilityType: FacilityType.HOSPITAL,
+    };
   });
-  //console.log(doctorData);
+  const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+  const facilitiesResult = await facilityRepo.insertOrUpdateAllFacilities(hospitals);
+  //hospital details ends
+
+  //insert doctor starts
+  await doctorData.map((element: any) => {
+    //mapping specialties
+    finalSpecialtiesList.forEach((specialty) => {
+      if (element.SPECIALITY == specialty.name) {
+        element.SPECIALITY = specialty.id;
+        return;
+      }
+    });
+  });
+
+  //console.log('after update', doctorData);
 
   const formatedDoctorData = doctorData.map((element: any) => {
     const DoctorDetails: Partial<Doctor> = {};
@@ -129,6 +148,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
       !element.MCINO || element.MCINO == 'undefined' ? '' : element.MCINO;
     DoctorDetails.awards = element.AWARDS;
     DoctorDetails.mobileNumber = element.PHONE;
+    DoctorDetails.specialty = element.SPECIALITY;
     DoctorDetails.emailAddress = '';
     if (element.EMAIL != '')
       DoctorDetails.emailAddress =
@@ -142,24 +162,10 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   //Doctor starts
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorInsertResult = await doctorRepo.insertOrUpdateAllDoctors(formatedDoctorData);
-  console.log('docotorsdata------', doctorInsertResult);
+  console.log('docotors insert result------', doctorInsertResult[0]);
   //insert doctor ends
 
-  //hospital details starts
-  const hospitals = doctorData.map((row: any) => {
-    return {
-      name: row.PHYSICALCONSULTATIONLOCATIONNAME,
-      streetLine1: row.PHYSICALCONSULTATIONLOCATIONADDRESS,
-      city: row.PHYSICALCONSULTATIONLOCATIONCITY,
-      state: row.PHYSICALCONSULTATIONLOCATIONSTATE,
-      country: row.PHYSICALCONSULTATIONLOCATIONCOUNTRY,
-      facilityType: FacilityType.HOSPITAL,
-    };
-  });
-  const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
-  const facilitiesResult = await facilityRepo.insertOrUpdateAllFacilities(hospitals);
-  console.log('inserted facilities: ', facilitiesResult);
-  //hospital details ends
+  //doctorInsertResult.map((doctor) => {});
 
   return "I'm in progress";
 };
