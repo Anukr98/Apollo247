@@ -40,7 +40,7 @@ type BlockedCalendarItem = {
 type BlockedCalendarResult = { blockedCalendar: BlockedCalendarItem[] };
 
 const checkAuth = (doctorId: string, context: DoctorsServiceContext) => {
-  if (doctorId !== context.currentUser.id)
+  if (context && context.currentUser && context.currentUser.id !== doctorId)
     throw new AphAuthenticationError(AphErrorMessages.UNAUTHORIZED);
 };
 
