@@ -433,6 +433,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           doctorsList &&
           doctorsList.length === 0 &&
           searchSpecialities &&
+          !showSpinner &&
           searchSpecialities.length === 0 ? (
             <Text
               style={{

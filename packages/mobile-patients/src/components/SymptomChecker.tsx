@@ -62,9 +62,18 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
     }
   }, [currentPatient, userName, props.navigation.state.params]);
 
-  const patientAge = currentPatient
-    ? { patientAge: Math.round(Moment().diff(currentPatient.dateOfBirth, 'years', true)) }
-    : {};
+  const patientAge =
+    currentPatient && currentPatient.dateOfBirth
+      ? { patientAge: Math.round(Moment().diff(currentPatient.dateOfBirth, 'years', true)) }
+      : {};
+  const patientGender =
+    currentPatient &&
+    currentPatient.gender &&
+    (currentPatient.gender === Gender.MALE || currentPatient.gender === Gender.FEMALE)
+      ? {
+          patientGender: currentPatient.gender === Gender.MALE ? 'male' : 'female',
+        }
+      : {};
 
   return (
     <View style={{ flex: 1 }}>
@@ -82,13 +91,10 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
             )
           }
         />
-
         <NavigatorSDK
           clientId="4A8C9CCC-C5A3-11E9-9A19-8C85900A8328"
           showDocBtn={() => <CustomComponent navigation={props.navigation} />}
-          patientGender={
-            currentPatient && currentPatient.gender === Gender.MALE ? 'male' : 'female'
-          }
+          {...patientGender}
           {...patientAge}
         />
       </SafeAreaView>

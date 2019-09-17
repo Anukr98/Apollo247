@@ -219,8 +219,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               }}
             >
               <TouchableOpacity
+                activeOpacity={1}
                 style={{ marginTop: 20 }}
-                onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+                onPress={() => {
+                  props.navigation.replace(AppRoutes.ConsultRoom);
+                }}
               >
                 <ApolloLogo />
               </TouchableOpacity>
@@ -230,19 +233,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             </View>
           </UserIntro>
         </View>
-        <View>
-          <TabsComponent
-            style={{
-              marginTop: 226,
-              backgroundColor: theme.colors.CARD_BG,
-              ...theme.viewStyles.shadowStyle,
-            }}
-            height={44}
-            data={tabs}
-            onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-            selectedTab={selectedTab}
-          />
-        </View>
+        <TabsComponent
+          style={{
+            marginTop: 226,
+            backgroundColor: theme.colors.CARD_BG,
+            ...theme.viewStyles.shadowStyle,
+          }}
+          height={44}
+          data={tabs}
+          onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+          selectedTab={selectedTab}
+        />
       </View>
     );
   };
