@@ -159,6 +159,9 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
       <SelectEPrescriptionModal
         onSubmit={(selectedEPres) => {
           setSelectPrescriptionVisible(false);
+          if (selectedEPres.length == 0) {
+            return;
+          }
           setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
         selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}

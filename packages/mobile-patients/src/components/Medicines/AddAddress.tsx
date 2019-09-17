@@ -113,14 +113,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     try {
       const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
         saveAddress(addressInput),
-        pinCodeServiceabilityApi(pincode, 'PHARMA'),
+        pinCodeServiceabilityApi(pincode),
       ]);
 
       setshowSpinner(false);
       const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
       addAddress && addAddress(address);
 
-      if ((Platform.OS == 'android' ? true : pinAvailabilityResult.data.Availability) || addOnly) {
+      if (pinAvailabilityResult.data.Availability || addOnly) {
         setDeliveryAddressId && setDeliveryAddressId(address.id || '');
         props.navigation.goBack();
       } else {
