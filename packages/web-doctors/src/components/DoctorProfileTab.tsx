@@ -632,7 +632,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 {doctor.salutation!.slice(1).toLowerCase()}. {doctor.firstName} {doctor.lastName}
               </Typography>
               <Typography variant="h6">
-                {(doctor.specialty.name || '').toUpperCase()} <span> | </span>
+                {((doctor && doctor.specialty && doctor.specialty.name) || '').toUpperCase()}{' '}
+                <span> | </span>
                 <span> {doctor.experience}YRS </span>
               </Typography>
             </Paper>
