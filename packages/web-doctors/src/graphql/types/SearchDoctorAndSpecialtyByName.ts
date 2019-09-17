@@ -31,7 +31,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   salutation: Salutation | null;
   firstName: string;
   lastName: string;
-  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty;
+  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty | null;
   specialization: string | null;
   photoUrl: string | null;
   experience: string | null;

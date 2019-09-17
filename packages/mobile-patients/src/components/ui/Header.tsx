@@ -80,7 +80,15 @@ export const Header: React.FC<HeaderProps> = (props) => {
             </Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity activeOpacity={1} onPress={props.onPressLeftIcon} style={{}}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={props.onPressLeftIcon}
+            style={{
+              height: 35,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {leftIcon === 'backArrow' && <BackArrow />}
             {leftIcon === 'close' && <Remove />}
             {leftIcon === 'backArrowWhite' && <BackArrowWhite />}

@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
 });
 
 export interface MedicalRecordsProps extends NavigationScreenProps {
-  onTabCount: (count: number) => void;
+  //onTabCount: (count: number) => void;
   MedicalRecordData: any;
   renderDeleteMedicalOrder: (id: string) => void;
 }
@@ -38,7 +38,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   // console.log('MedicalRecordData', props.MedicalRecordData);
   useEffect(() => {
-    props.onTabCount(props.MedicalRecordData.length);
+    //props.onTabCount(props.MedicalRecordData.length);
   }, [currentPatient, client]);
 
   const renderFilter = () => {

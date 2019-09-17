@@ -177,7 +177,16 @@ export const JuniorDoctor: React.FC = (props) => {
             {pastConsults.map(({ id, patient, appointment }) => {
               isPastConsultsAvailable = true;
               return (
-                <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
+                <Link
+                  key={id}
+                  to={clientRoutes.JDConsultRoom({
+                    appointmentId: appointment.id,
+                    patientId: patient.id,
+                    queueId: String(id),
+                  })}
+                >
+                  <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
+                </Link>
               );
             })}
           </div>
@@ -208,7 +217,11 @@ export const JuniorDoctor: React.FC = (props) => {
                   {isActiveConsultsAvailable ? (
                     content[0]
                   ) : (
-                    <div className={classes.noData}>No Active Patient is available.</div>
+                    <>
+                      {!loading ? (
+                        <div className={classes.noData}>No Patients in your queue.</div>
+                      ) : null}
+                    </>
                   )}
                 </div>
               </div>
@@ -221,7 +234,9 @@ export const JuniorDoctor: React.FC = (props) => {
                   {isPastConsultsAvailable ? (
                     content[1]
                   ) : (
-                    <div className={classes.noData}>No Past Consult is available.</div>
+                    <>
+                      {!loading ? <div className={classes.noData}>No data available.</div> : null}
+                    </>
                   )}
                 </div>
               </div>

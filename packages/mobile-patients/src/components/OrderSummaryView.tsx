@@ -109,8 +109,12 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) 
     );
   };
 
-  const getFormattedDateTime = (time: string) => {
-    return moment(time).format('D MMM YYYY | hh:mm a');
+  const getFormattedDateTime = (
+    orderDetails: GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails
+  ) => {
+    const medicineOrdersStatus = g(orderDetails, 'medicineOrdersStatus') || [];
+    const statusDate = g(medicineOrdersStatus[0], 'statusDate');
+    return moment(statusDate).format('D MMM YYYY | hh:mm a');
   };
 
   return (
@@ -134,7 +138,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) 
         <View style={styles.subView}>
           <Text style={styles.orderName}>Date</Text>
           <Text style={[styles.orderName, styles.hideText]}>
-            {getFormattedDateTime((g(orderDetails, 'medicineOrdersStatus') || [])[0]!.statusDate)}
+            {getFormattedDateTime(orderDetails)}
           </Text>
         </View>
       </View>

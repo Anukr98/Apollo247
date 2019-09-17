@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, AsyncStorage, Platform, ActivityIndicator, Linking } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { SplashLogo } from '@aph/mobile-patients/src/components/SplashLogo';
 import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -22,6 +22,28 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { signInError, signOut } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      Linking.getInitialURL().then((url) => {
+        // this.navigate(url);
+      });
+    } else {
+      console.log('linking');
+      Linking.addEventListener('url', handleOpenURL);
+    }
+  }, []);
+
+  const handleOpenURL = (event: any) => {
+    console.log('event', event);
+    const route = event.url.replace('apollopatients://', '');
+
+    if (route == 'ConsultRoom') {
+      console.log('ConsultRoom');
+      // props.navigation.replace(AppRoutes.ConsultRoom);
+    }
+    console.log('route', route);
+  };
 
   useEffect(() => {
     async function fetchData() {

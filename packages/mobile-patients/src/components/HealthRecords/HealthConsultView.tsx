@@ -240,35 +240,38 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                   style={styles.yellowTextStyle}
                   onPress={() => {
                     console.log('passdata2', props.PastData.caseSheet);
-                    if (
-                      props.PastData.caseSheet.length == [] ||
-                      props.PastData.caseSheet.length == 1
-                    ) {
-                      Alert.alert('No medicines');
-                    } else if (
+                    let refIndex;
+                    let item =
                       props.PastData.caseSheet &&
-                      props.PastData.caseSheet[1] &&
-                      props.PastData.caseSheet[1].medicinePrescription == null
-                    ) {
-                      Alert.alert('No medicines');
+                      props.PastData.caseSheet.find((obj: any) => {
+                        console.log('doctorType', obj);
+                        return obj.doctorType === 'STAR_APOLLO';
+                      });
+
+                    console.log('resultsenior', item);
+                    if (item == undefined) {
+                      Alert.alert('No Medicines');
                     } else {
-                      const medicines: ShoppingCartItem[] =
-                        props.PastData.caseSheet &&
-                        props.PastData.caseSheet[1] &&
-                        props.PastData.caseSheet[1].medicinePrescription &&
-                        props.PastData.caseSheet[1].medicinePrescription.map(
-                          (item: any) =>
-                            ({
-                              id: item!.id!,
-                              mou: '10',
-                              name: item!.medicineName!,
-                              price: 50,
-                              quantity: parseInt(item!.medicineDosage!),
-                              prescriptionRequired: false,
-                            } as ShoppingCartItem)
-                        );
-                      setCartItems && setCartItems(medicines);
-                      props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+                      console.log('doctorTypesenior', item.doctorType, item.medicinePrescription);
+                      if (item.medicinePrescription != null) {
+                        const medicines: ShoppingCartItem[] =
+                          item.medicinePrescription &&
+                          item.medicinePrescription.map(
+                            (item: any) =>
+                              ({
+                                id: item!.id!,
+                                mou: '10',
+                                name: item!.medicineName!,
+                                price: 50,
+                                quantity: parseInt(item!.medicineDosage!),
+                                prescriptionRequired: false,
+                              } as ShoppingCartItem)
+                          );
+                        setCartItems && setCartItems(medicines);
+                        props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+                      } else {
+                        Alert.alert('No Medicines');
+                      }
                     }
                   }}
                 >
