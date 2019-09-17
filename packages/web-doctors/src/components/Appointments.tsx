@@ -20,7 +20,7 @@ import { format, isToday } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { STATUS, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { CircularProgress } from '@material-ui/core';
-import { number } from 'prop-types';
+import _uniqueId from 'lodash/uniqueId';
 
 export interface Appointment {
   id: string;
@@ -240,8 +240,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     completed: {
       '& .stepIcon': {
-        color: '#0087ba',
-        border: 'none',
+        color: '#fff',
+        border: '2px solid #ff748e',
       },
       '& .cardRow': {
         backgroundColor: '#f0f4f5',
@@ -251,13 +251,15 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     upcoming: {
       '& .stepIcon': {
-        color: '#0087ba',
-        border: 'none',
+        color: '#fff',
+        border: '2px solid #ff748e',
       },
       '& .cardRow': {
-        backgroundColor: '#f0f4f5',
-        border: 'solid 1px rgba(2, 71, 91, 0.1)',
-        boxShadow: 'none',
+        backgroundColor: '#fff',
+        border: '1px solid #ff748e',
+      },
+      '& h5': {
+        color: '#ff748e',
       },
     },
     missing: {},
@@ -311,11 +313,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
-  const [upcomingIndex, setUpcomingIndex] = useState<number>(-1);
 
   const upcomingElement = useRef(null);
-
-  console.log('upcoming index is.....', upcomingIndex);
 
   useImperativeHandle(upcomingElement, () => {
     if (upcomingElement.current) {
@@ -398,7 +397,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
           {appointments.map((appointment, idx) => {
             return appointment.caseSheet.length > 0 ? (
               <Step
-                key={idx}
+                key={_uniqueId('apt_')}
                 active={true}
                 className={
                   // appointment.status === STATUS.NO_SHOW
@@ -512,7 +511,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                                           : appointment.details.checkups.symptoms
                                         ).map((checkup: any, idx: any) => (
                                           <Chip
-                                            key={idx}
+                                            key={_uniqueId('chkup_')}
                                             className={classes.chip}
                                             label={checkup.symptom.toUpperCase()}
                                           />
@@ -596,8 +595,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
         <div>
           <img src={require('images/no_data.svg')} alt="" />
         </div>
-        No consults scheduled{' '}
-        {isToday(selectedDate) ? 'today' : `for ${format(selectedDate, 'MMM, dd')}`}!
+        No consults scheduled
+        {isToday(selectedDate) ? ' today' : ` for ${format(selectedDate, 'MMM, dd')}`}!
       </div>
     </div>
   );
