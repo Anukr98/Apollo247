@@ -1,18 +1,16 @@
 import { add } from 'cypress/support/add';
-import { clientBaseUrl } from 'helpers/clientRoutes';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 // brings type definition from @types/chai
 // declare const expect: Chai.ExpectStatic
-describe('TypeScript', () => {
+describe('Example', () => {
   it('works', () => {
     // note TypeScript definition
     const x: number = 42; // eslint-disable-line @typescript-eslint/no-unused-vars
   });
 
   it('can visit our app', () => {
-    cy.request({ url: clientBaseUrl() }).then((resp) => {
-      expect(resp.status).to.eq(200);
-    });
+    cy.visitAph(clientRoutes.welcome()).contains('GET STARTED');
   });
 
   it('checks shape of an object', () => {
