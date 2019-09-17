@@ -20,6 +20,7 @@ import { format, isToday } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { STATUS, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { CircularProgress } from '@material-ui/core';
+import { number } from 'prop-types';
 
 export interface Appointment {
   id: string;
@@ -248,6 +249,17 @@ const useStyles = makeStyles((theme: Theme) =>
         boxShadow: 'none',
       },
     },
+    upcoming: {
+      '& .stepIcon': {
+        color: '#0087ba',
+        border: 'none',
+      },
+      '& .cardRow': {
+        backgroundColor: '#f0f4f5',
+        border: 'solid 1px rgba(2, 71, 91, 0.1)',
+        boxShadow: 'none',
+      },
+    },
     missing: {},
     hide: {
       display: 'none',
@@ -299,8 +311,11 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
+  const [upcomingIndex, setUpcomingIndex] = useState<number>(-1);
 
   const upcomingElement = useRef(null);
+
+  console.log('upcoming index is.....', upcomingIndex);
 
   useImperativeHandle(upcomingElement, () => {
     if (upcomingElement.current) {
@@ -311,6 +326,17 @@ export const Appointments: React.FC<AppointmentsProps> = ({
 
     return null;
   });
+
+  let upcomingNextRendered: boolean = false;
+
+  const showUpNext = (aptTime: number) => {
+    if (aptTime > new Date().getTime() && !upcomingNextRendered) {
+      upcomingNextRendered = true;
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   const getAppointmentStatusClass = (appointmentStatus: string) => {
     if (appointmentStatus === STATUS.NO_SHOW) return classes.missing;
@@ -369,8 +395,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
           }
           className={classes.calendarContent}
         >
-          {appointments.map((appointment, idx) =>
-            appointment.caseSheet.length > 0 ? (
+          {appointments.map((appointment, idx) => {
+            return appointment.caseSheet.length > 0 ? (
               <Step
                 key={idx}
                 active={true}
@@ -382,7 +408,9 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   //   : activeStep === idx
                   //   ? 'upcoming'
                   //   : ''
-                  getAppointmentStatusClass(appointment.status)
+                  appointment.startTime > new Date().getTime() && !upcomingNextRendered
+                    ? classes.upcoming
+                    : getAppointmentStatusClass(appointment.status)
                 }
                 classes={{
                   root: classes.step,
@@ -411,7 +439,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                     }}
                   >
                     <span>
-                      {`${activeStep === idx ? 'UP NEXT: ' : ''}${format(
+                      {`${showUpNext(appointment.startTime) ? 'UP NEXT: ' : ''}${format(
                         appointment.startTime,
                         'h:mm'
                       )} - ${format(appointment.endTime, 'h:mm aa')}`}
@@ -555,8 +583,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
               </Step>
             ) : (
               <div>&nbsp;</div>
-            )
-          )}
+            );
+          })}
         </Stepper>
       </div>
     );
