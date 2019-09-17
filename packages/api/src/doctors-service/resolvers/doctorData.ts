@@ -7,6 +7,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 
 export const doctorDataTypeDefs = gql`
   extend type Query {
@@ -192,13 +193,19 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     return {
       doctorId: element.FULLNAME,
       facilityId:
-        element.PHYSICALCONSULTATIONLOCATIONNAME == '' && virtualHospital != null
+        element.PHYSICALCONSULTATIONLOCATIONNAME == 'undefined'
           ? virtualHospital[0].id
           : element.PHYSICALCONSULTATIONLOCATIONNAME,
     };
   });
 
-  console.log(dostorHospital);
+  //DoctorAndHospital Map Table insertion
+  const doctorHospitalRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
+  const doctorHospitalResult = await doctorHospitalRepo.insertDoctorAndHospitals(dostorHospital);
+
+  console.log(doctorHospitalResult);
+
+  console.log('>>>>>>:: ', dostorHospital);
 
   /*const consultHours = await doctorData.map((element: any) => {
     return {
