@@ -81,5 +81,54 @@ describe('BlockedCalendar', () => {
     cy.contains(displayTimeIst).should('exist');
   });
 
-  it('Should send dates in UTC', () => {});
+  it('Should validate start/end dates', () => {
+    cy.contains(/add blocked hours/i).click();
+
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    const fillStart = (start: string) =>
+      cy
+        .get('[data-cypress="BlockedCalendarModal"]')
+        .contains('Start')
+        .parent()
+        .find('input')
+        .type(start);
+
+    const fillEnd = (end: string) =>
+      cy
+        .get('[data-cypress="BlockedCalendarModal"]')
+        .contains('End')
+        .parent()
+        .find('input')
+        .type(end);
+
+    fillStart('2019-09-18');
+    fillEnd('2019-09-19');
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .find('button[type="submit"]')
+      .should('be.enabled');
+
+    fillStart('2019-09-19');
+    fillEnd('2019-09-18');
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+  });
+
+  it('Should send dates in UTC', () => {
+    cy.contains(/add blocked hours/i).click();
+    cy.contains(/for a duration/i).should('exist');
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .contains('Start')
+      .parent()
+      .find('input')
+      .type('2019-09-18');
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .contains('End')
+      .parent()
+      .find('input')
+      .type('2019-09-19');
+  });
 });
