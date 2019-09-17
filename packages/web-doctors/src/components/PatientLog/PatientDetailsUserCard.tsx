@@ -119,7 +119,7 @@ export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => 
           </span>
           <span>
             <h4>{consultscount}</h4>
-            <div>CONSULT</div>
+            <div>CONSULTS</div>
           </span>
           <span>
             <h4>N/A</h4>
