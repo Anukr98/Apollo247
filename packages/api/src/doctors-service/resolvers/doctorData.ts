@@ -5,8 +5,7 @@ import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSp
 import { DoctorSpecialty, Doctor, FacilityType, DoctorAndHospital } from 'doctors-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { AphError } from 'AphError';
-import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 
 export const doctorDataTypeDefs = gql`
@@ -189,10 +188,10 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
 
   const virtualHospital = facilitiesResult.filter((element) => element.name == '');
 
-  const dostorHospital = await doctorData.map((element: any) => {
+  const dostorHospital: Partial<DoctorAndHospital>[] = await doctorData.map((element: any) => {
     return {
-      doctorId: element.FULLNAME,
-      facilityId:
+      doctor: element.FULLNAME,
+      facility:
         element.PHYSICALCONSULTATIONLOCATIONNAME == 'undefined'
           ? virtualHospital[0].id
           : element.PHYSICALCONSULTATIONLOCATIONNAME,
