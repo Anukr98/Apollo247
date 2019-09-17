@@ -130,6 +130,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const { patientDetails } = useContext(CaseSheetContext);
+  const apikey = process.env.OPENTOK_KEY;
   return (
     <div className={classes.consult}>
       <div>
@@ -159,7 +160,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
 
           {isCall && (
             <OTSession
-              apiKey="46401302"
+              apiKey={apikey}
               sessionId={props.sessionId}
               token={props.token}
               eventHandlers={{
