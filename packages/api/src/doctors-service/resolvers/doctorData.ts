@@ -152,8 +152,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     DoctorDetails.firstName = element.FIRSTNAME;
     DoctorDetails.middleName = element.MIDDLENAME == 'undefined' ? '' : element.MIDDLENAME;
     DoctorDetails.lastName = element.LASTNAME || '';
-    DoctorDetails.doctorType = element.GENDER;
-    DoctorDetails.gender = element.TYPE;
+    DoctorDetails.gender = element.GENDER;
     DoctorDetails.qualification = element.EDUCATION;
     DoctorDetails.experience = element.EXPERIRNCE;
     DoctorDetails.languages = element.LANGUAGES;
