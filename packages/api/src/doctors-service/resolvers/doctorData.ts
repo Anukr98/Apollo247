@@ -2,8 +2,9 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
-import { DoctorSpecialty, Doctor } from 'doctors-service/entities';
+import { DoctorSpecialty, Doctor, FacilityType } from 'doctors-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 
 export const doctorDataTypeDefs = gql`
   extend type Query {
@@ -114,8 +115,8 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     DoctorDetails.fullName = element.FULLNAME;
     DoctorDetails.doctorType = element.TYPE;
     DoctorDetails.firstName = element.FIRSTNAME;
-    DoctorDetails.middleName = element.MIDDLENAME == 'undefined' ? '' : element.SECRETARYNUMBER;
-    DoctorDetails.lastName = element.LASTNAME;
+    DoctorDetails.middleName = element.MIDDLENAME == 'undefined' ? '' : element.MIDDLENAME;
+    DoctorDetails.lastName = element.LASTNAME || '';
     DoctorDetails.doctorType = element.GENDER;
     DoctorDetails.gender = element.TYPE;
     DoctorDetails.qualification = element.EDUCATION;
@@ -123,8 +124,9 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     DoctorDetails.languages = element.LANGUAGES;
     DoctorDetails.isActive = true;
     DoctorDetails.onlineConsultationFees = element.ONLINECONSULTATIONFEES;
-    DoctorDetails.physicalConsultationFees = element.PHYSICALCONSULTATIONFEES;
-    DoctorDetails.registrationNumber = element.MCINO;
+    DoctorDetails.physicalConsultationFees = element.PHYSICALCONSULTATIONFEES || 0;
+    DoctorDetails.registrationNumber =
+      !element.MCINO || element.MCINO == 'undefined' ? '' : element.MCINO;
     DoctorDetails.awards = element.AWARDS;
     DoctorDetails.mobileNumber = element.PHONE;
     DoctorDetails.emailAddress = '';
@@ -144,17 +146,19 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   //insert doctor ends
 
   //hospital details starts
-  /*const hospitals = doctorData.map((row: any) => {
+  const hospitals = doctorData.map((row: any) => {
     return {
       name: row.PHYSICALCONSULTATIONLOCATIONNAME,
       streetLine1: row.PHYSICALCONSULTATIONLOCATIONADDRESS,
       city: row.PHYSICALCONSULTATIONLOCATIONCITY,
       state: row.PHYSICALCONSULTATIONLOCATIONSTATE,
       country: row.PHYSICALCONSULTATIONLOCATIONCOUNTRY,
+      facilityType: FacilityType.HOSPITAL,
     };
   });
-  const uniqueHospitals = Array.from(new Set(hospitals)); */
-  //console.log('uniqueHospitals', uniqueHospitals);
+  const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+  const facilitiesResult = await facilityRepo.insertOrUpdateAllFacilities(hospitals);
+  console.log('inserted facilities: ', facilitiesResult);
   //hospital details ends
 
   return "I'm in progress";
