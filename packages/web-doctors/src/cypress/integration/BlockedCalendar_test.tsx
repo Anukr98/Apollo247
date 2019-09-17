@@ -172,4 +172,41 @@ describe('BlockedCalendar', () => {
       });
     });
   });
+
+  it('Should allow Edit functionality', () => {
+    const doctorId = srKabir.id;
+    const startUtcFromDb = '2050-09-18T10:00:00.000Z';
+    const endUtcFromDb = '2050-09-18T11:00:00.000Z';
+    cy.mockAphGraphqlOps({
+      operations: {
+        GetBlockedCalendar: {
+          getBlockedCalendar: {
+            __typename: 'BlockedCalendarResult',
+            blockedCalendar: [
+              {
+                __typename: 'BlockedCalendarItem',
+                id: 1,
+                doctorId,
+                start: startUtcFromDb,
+                end: endUtcFromDb,
+              },
+            ],
+          },
+        },
+      },
+    });
+    cy.get('[data-cypress="BlockedCalendar"]')
+      .find('[class*="MuiCircularProgress"]')
+      .should('exist')
+      .find('[class*="MuiCircularProgress"]')
+      .should('not.exist');
+
+    cy.get('[data-cypress="BlockedCalendar"]')
+      .find('button:contains(EDIT)')
+      .click();
+
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .find('input[value="2050-09-18"]')
+      .should('exist');
+  });
 });
