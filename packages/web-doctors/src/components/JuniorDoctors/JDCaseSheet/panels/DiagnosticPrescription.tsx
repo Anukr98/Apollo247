@@ -338,7 +338,7 @@ export const DiagnosticPrescription: React.FC = () => {
   ) => {
     if (newValue.length > 2) fetchDignostic(newValue);
 
-    setOtherDiagnostic(newValue);
+    setOtherDiagnostic(newValue.trim());
     setState({
       ...state,
       [itemname]: newValue,
