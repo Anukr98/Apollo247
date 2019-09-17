@@ -12,7 +12,7 @@ import {
 } from 'doctors-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-
+import path from 'path';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
@@ -28,8 +28,14 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   { doctorsDb }
 ) => {
   const excelToJson = require('convert-excel-to-json');
+
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
+  console.log('assetsDirectory:', assetsDir);
   const rowData = excelToJson({
-    sourceFile: '/apollo-hospitals/data/doctorsData.xlsx',
+    sourceFile: assetsDir + '/doctorsData.xlsx',
     sheets: [
       {
         name: 'sheet1',
