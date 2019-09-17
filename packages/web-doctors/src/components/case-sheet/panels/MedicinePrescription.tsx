@@ -859,6 +859,7 @@ export const MedicinePrescription: React.FC = () => {
                       setShowDosage(true);
                       setSelectedValue(suggestion.label);
                       setSelectedId(suggestion.sku);
+                      setLoading(false);
                     }}
                     {...autosuggestProps}
                     inputProps={{

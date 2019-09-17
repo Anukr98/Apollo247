@@ -310,40 +310,21 @@ export const AvailabilityTab: React.FC<AvailabilityTabProps> = ({ values, onNext
               <Typography variant="h5" className={classes.consultForm}>
                 What type of consults will you be available for?
               </Typography>
-              <AphButton
-                variant="contained"
-                classes={{
-                  root:
-                    data.consultHours &&
-                    data.consultHours!.length > 0 &&
-                    data.consultHours!.some(
-                      (_item: GetDoctorDetails_getDoctorDetails_consultHours | null) =>
-                        _item!.consultMode === ConsultMode.PHYSICAL ||
-                        _item!.consultMode === ConsultMode.BOTH
-                    )
-                      ? classes.btnActive
-                      : classes.btnInactive,
-                }}
-              >
-                Physical
-              </AphButton>
-              <AphButton
-                variant="contained"
-                classes={{
-                  root:
-                    data.consultHours &&
-                    data.consultHours!.length > 0 &&
-                    data.consultHours!.some(
-                      (_item: GetDoctorDetails_getDoctorDetails_consultHours | null) =>
-                        _item!.consultMode === ConsultMode.ONLINE ||
-                        _item!.consultMode === ConsultMode.BOTH
-                    )
-                      ? classes.btnActive
-                      : classes.btnInactive,
-                }}
-              >
-                Online
-              </AphButton>
+              <div className={classes.btnActive}>
+                {data.consultHours!.some(
+                  (_item: GetDoctorDetails_getDoctorDetails_consultHours | null) =>
+                    _item!.consultMode === ConsultMode.PHYSICAL ||
+                    _item!.consultMode === ConsultMode.BOTH
+                ) && 'Physical, '}
+                {data.consultHours &&
+                  data.consultHours!.length > 0 &&
+                  data.consultHours!.some(
+                    (_item: GetDoctorDetails_getDoctorDetails_consultHours | null) =>
+                      _item!.consultMode === ConsultMode.ONLINE ||
+                      _item!.consultMode === ConsultMode.BOTH
+                  ) &&
+                  'Online'}
+              </div>
             </div>
           </div>
         </Grid>

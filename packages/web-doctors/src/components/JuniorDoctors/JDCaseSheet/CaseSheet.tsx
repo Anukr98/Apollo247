@@ -190,7 +190,7 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
           classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
           expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
         >
-          Medicine Prescription
+          Medicines
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.panelDetails}>
           <MedicinePrescription />
@@ -207,7 +207,7 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
           classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
           expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
         >
-          Diagnostic Prescription
+          Tests
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.panelDetails}>
           <DiagnosticPrescription />
