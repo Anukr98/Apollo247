@@ -5,7 +5,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { addDays, addMilliseconds } from 'date-fns';
+import { addDays, addMilliseconds, format } from 'date-fns';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
 import _ from 'lodash';
 import { sendMail } from 'notifications-service/resolvers/email';
@@ -207,10 +207,14 @@ const sendHelpEmail: Resolver<null, HelpEmailInputArgs, ProfilesServiceContext, 
     appointmentList,
   });
 
+  let subjectLine = ApiConstants.PATIENT_HELP_SUBJECT.replace('{1}', helpEmailInput.category);
+  subjectLine = subjectLine.replace('{0}', format(new Date(), 'yyMMddHHmmssSS'));
+  subjectLine = subjectLine.replace('{2}', helpEmailInput.reason);
+
   const subject =
     process.env.NODE_ENV == 'production'
-      ? ApiConstants.PATIENT_HELP_SUBJECT
-      : ApiConstants.PATIENT_HELP_SUBJECT + ' from ' + process.env.NODE_ENV;
+      ? subjectLine
+      : subjectLine + ' from ' + process.env.NODE_ENV;
 
   const toEmailId =
     process.env.NODE_ENV == 'dev' ||

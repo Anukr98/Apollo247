@@ -275,23 +275,56 @@ export const searchPickupStoresApi = async (
 };
 
 export const pinCodeServiceabilityApi = (
-  pinCode: string,
-  category: 'FMCG' | 'PHARMA'
-): Promise<AxiosResponse<{ Availability: boolean; catg: 'FMCG' | 'PHARMA' }>> => {
-  return Axios.post(
-    `http://uat.apollopharmacy.in/pincode_api.php`,
-    {
-      postalcode: pinCode,
-      skucategory: [
-        {
-          SKU: category,
+  pinCode: string
+): Promise<AxiosResponse<{ Availability: boolean }>> => {
+  return new Promise((res, rej) => {
+    Axios.post(
+      `${config.BASE_URL}/popcsrchpin_api.php`,
+      { params: pinCode },
+      {
+        headers: {
+          Authorization: config.AUTH_TOKEN,
         },
-      ],
-    },
-    {
-      headers: {
-        Authorization: config.AUTH_TOKEN_OLD,
-      },
-    }
-  );
+      }
+    )
+      .then(({ data }) => {
+        // const response = data as { Stores: Store[]; stores_count: number };
+        // const Availability = response.stores_count == 0 ? false : true;
+        // res(({ data: { Availability: Availability } } as any) as Promise<
+        //   AxiosResponse<{ Availability: boolean }>
+        // >);
+        // not checking serviceability because of Pharmacy API errors
+        res(({ data: { Availability: true } } as any) as Promise<
+          AxiosResponse<{ Availability: boolean }>
+        >);
+      })
+      .catch((e) => {
+        // rej(e);
+        res(({ data: { Availability: true } } as any) as Promise<
+          AxiosResponse<{ Availability: boolean }>
+        >);
+      });
+  });
 };
+
+// export const pinCodeServiceabilityApi = (
+//   pinCode: string
+//   category: 'FMCG' | 'PHARMA'
+// ): Promise<AxiosResponse<{ Availability: boolean; catg: 'FMCG' | 'PHARMA' }>> => {
+//   return Axios.post(
+//     `http://uat.apollopharmacy.in/pincode_api.php`,
+//     {
+//       postalcode: pinCode,
+//       skucategory: [
+//         {
+//           SKU: category,
+//         },
+//       ],
+//     },
+//     {
+//       headers: {
+//         Authorization: config.AUTH_TOKEN_OLD,
+//       },
+//     }
+//   );
+// };

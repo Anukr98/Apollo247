@@ -2,12 +2,7 @@ import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  Filter,
-  LocationOff,
-  LocationOn,
-  Location,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { Filter, LocationOff, LocationOn } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
@@ -16,11 +11,17 @@ import {
   NEXT_AVAILABLE_SLOT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
+} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import {
   getDoctorsBySpecialtyAndFilters,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability,
+  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { ConsultMode, Gender, Range } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios from 'axios';
@@ -29,6 +30,7 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import {
   Animated,
+  AsyncStorage,
   PermissionsAndroid,
   Platform,
   SafeAreaView,
@@ -36,15 +38,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  AsyncStorage,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
-} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   topView: {
@@ -81,15 +76,6 @@ export type filterDataType = {
 };
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
-  const specialityName: string = props.navigation.state.params
-    ? props.navigation.state.params!.specialityName
-    : '';
-  const specialities = AppConfig.Specialities[specialityName]
-    ? AppConfig.Specialities[specialityName]
-    : null;
-
-  console.log(specialities, 'specialitiessssss');
-
   const filterData: filterDataType[] = [
     {
       label: 'City',
@@ -146,6 +132,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
   >([]);
   const [doctorIds, setdoctorIds] = useState<(string | null)[]>([]);
+  const [
+    specialities,
+    setspecialities,
+  ] = useState<getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty | null>(
+    null
+  );
 
   const [scrollY] = useState(new Animated.Value(0));
   const { currentPatient } = useAllCurrentPatients();
@@ -317,38 +309,30 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     console.log('error', error);
   } else {
     console.log('getDoctorsBySpecialtyAndFilters ', data);
-    if (
-      data &&
-      data.getDoctorsBySpecialtyAndFilters &&
-      data.getDoctorsBySpecialtyAndFilters.doctors &&
-      doctorsList !== data.getDoctorsBySpecialtyAndFilters.doctors
-    ) {
-      const ids = data.getDoctorsBySpecialtyAndFilters.doctors
-        ? data.getDoctorsBySpecialtyAndFilters.doctors.map((item) => item && item.id)
-        : [];
+    const filterGetData =
+      data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
+    if (filterGetData && filterGetData.doctors && doctorsList !== filterGetData.doctors) {
+      const ids = filterGetData.doctors ? filterGetData.doctors.map((item) => item && item.id) : [];
       const prevIds = [...doctorIds];
       if (ids !== prevIds) {
         prevIds.push(...ids);
         setdoctorIds(prevIds);
       }
-
-      console.log(
-        doctorIds,
-        'doctorIds otherDoctors',
-        data.getDoctorsBySpecialtyAndFilters.doctors
-      );
-
-      setDoctorsList(data.getDoctorsBySpecialtyAndFilters.doctors);
+      console.log(doctorIds, 'doctorIds otherDoctors', filterGetData.doctors);
+      setDoctorsList(filterGetData.doctors);
       setshowSpinner(false);
     }
 
     if (
-      data &&
-      data.getDoctorsBySpecialtyAndFilters &&
-      data.getDoctorsBySpecialtyAndFilters.doctorsAvailability &&
-      doctorsAvailability !== data.getDoctorsBySpecialtyAndFilters.doctorsAvailability
+      filterGetData &&
+      filterGetData.doctorsAvailability &&
+      doctorsAvailability !== filterGetData.doctorsAvailability
     ) {
-      setdoctorsAvailability(data.getDoctorsBySpecialtyAndFilters.doctorsAvailability);
+      setdoctorsAvailability(filterGetData.doctorsAvailability);
+      setshowSpinner(false);
+    }
+    if (filterGetData && filterGetData.specialty && specialities !== filterGetData.specialty) {
+      setspecialities(filterGetData.specialty);
       setshowSpinner(false);
     }
   }
@@ -573,10 +557,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             description={
               filter === ConsultMode.PHYSICAL
                 ? `There is no ${
-                    specialities && specialities.length > 0 ? specialities[0] : ''
+                    specialities && specialities.specialistSingularTerm
+                      ? specialities.specialistSingularTerm
+                      : ''
                   } available for Physical Consult. Please you try Online Consultation.`
                 : `There is no ${
-                    specialities && specialities.length > 0 ? specialities[0] : ''
+                    specialities && specialities.specialistSingularTerm
+                      ? specialities.specialistSingularTerm
+                      : ''
                   } available to match your filters. Please try again with different filters.`
             }
             descriptionTextStyle={{ fontSize: 14 }}
@@ -636,7 +624,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <Text style={styles.headingText}>{string.common.okay}</Text>
           <Text style={styles.descriptionText}>
             {string.common.best_doctor_text}
-            {specialities && specialities.length > 0 ? specialities[1] : ''}
+            {specialities && specialities.specialistPluralTerm
+              ? specialities.specialistPluralTerm
+              : ''}
           </Text>
         </Animated.View>
 

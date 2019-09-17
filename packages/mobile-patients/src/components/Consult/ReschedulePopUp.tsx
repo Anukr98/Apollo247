@@ -5,7 +5,7 @@ import {
   getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import moment from 'moment';
@@ -28,6 +28,8 @@ export interface ReschedulePopUpProps extends NavigationScreenProps {
 }
 export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [rescheduleCounting, setRescheduleCounting] = useState<number>(1);
+
   // console.log('doctorreschdule', props.doctor);
   // console.log('rescheduleCount', props.rescheduleCount);
   // console.log(
@@ -35,6 +37,20 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   //   props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0].availableSlot
   // );
   // console.log('isbelowthree', props.isbelowthree);
+
+  useEffect(() => {
+    try {
+      let count = props.rescheduleCount - 1;
+
+      if (count <= 0) {
+        setRescheduleCounting(1);
+      } else {
+        setRescheduleCounting(count);
+      }
+    } catch (error) {
+      setRescheduleCounting(1);
+    }
+  });
 
   return (
     <View
@@ -149,7 +165,9 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     paddingHorizontal: 16,
                   }}
                 >
-                  {`We’re sorry that you have to reschedule.\nYou can reschedule up to ${props.rescheduleCount}  times for free.`}
+                  {`We’re sorry that you have to reschedule.\nYou can reschedule up to ${rescheduleCounting} ${
+                    rescheduleCounting == 1 ? 'time' : 'times'
+                  } for free.`}
                 </Text>
               ) : (
                 <Text

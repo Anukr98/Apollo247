@@ -124,8 +124,8 @@ let doctorIds: (string | undefined)[] = [];
 export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
-  const params = props.navigation.state.params ? props.navigation.state.params.searchText : '';
-  const MoveDoctor = props.navigation.state.params ? props.navigation.state.params.MoveDoctor : '';
+  const params = props.navigation.state.params ? props.navigation.state.params!.searchText : '';
+  const MoveDoctor = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
   console.log(MoveDoctor, 'MoveDoctor');
 
   const [searchText, setSearchText] = useState<string>(params);
@@ -371,7 +371,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() =>
             backDataFunctionality(
-              props.navigation.state.params ? props.navigation.state.params.MoveDoctor : ''
+              props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : ''
             )
           }
         />
@@ -433,6 +433,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           doctorsList &&
           doctorsList.length === 0 &&
           searchSpecialities &&
+          !showSpinner &&
           searchSpecialities.length === 0 ? (
             <Text
               style={{
@@ -804,7 +805,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         {doctorsList && renderSearch()}
         {showSpinner === 0 ? (
           <ScrollView style={{ flex: 1 }} bounces={false} keyboardDismissMode="on-drag">
-            {props.navigation.state.params!.MoveDoctor == 'MoveDoctor' ? null : renderPastSearch()}
+            {/* {props.navigation.state.params!.MoveDoctor == 'MoveDoctor' ? null : renderPastSearch()} */}
+            {renderPastSearch()}
             {renderDoctorSearches()}
             {renderSpecialist()}
             {searchText.length > 2 &&

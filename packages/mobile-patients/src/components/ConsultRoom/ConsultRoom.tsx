@@ -26,6 +26,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Linking,
 } from 'react-native';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
@@ -230,6 +231,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   useEffect(() => {
     callDeviceTokenAPI();
   });
+
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      Linking.getInitialURL().then((url) => {
+        // this.navigate(url);
+      });
+    } else {
+      console.log('linking');
+      Linking.addEventListener('url', handleOpenURL);
+    }
+  }, []);
+
+  const handleOpenURL = (event: any) => {
+    console.log('event', event);
+    const route = event.url.replace('apollopatients://', '');
+
+    if (route == 'ConsultRoom') {
+      console.log('ConsultRoom');
+      // props.navigation.replace(AppRoutes.ConsultRoom);
+    }
+    console.log('route', route);
+  };
 
   const client = useApolloClient();
 
@@ -573,7 +596,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
               onPress={() => {
-                props.navigation.navigate(AppRoutes.SymptomChecker);
+                props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
               }}
             />
           </View>
@@ -625,7 +648,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   key={i}
                   onPress={() => {
                     if (i === 0) {
-                      props.navigation.navigate(AppRoutes.DoctorSearch);
+                      props.navigation.navigate(AppRoutes.DoctorSearch, {
+                        MoveDoctor: '',
+                        searchText: '',
+                      });
                     } else if (i == 1) {
                       props.navigation.navigate(AppRoutes.SearchMedicineScene);
                     }

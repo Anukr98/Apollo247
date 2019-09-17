@@ -23,6 +23,8 @@ import {
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
+import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
+import { getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -99,7 +101,11 @@ type rowData = {
 };
 
 export interface DoctorCardProps extends NavigationScreenProps {
-  rowData: rowData | null;
+  rowData:
+    | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors
+    | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors
+    | any
+    | null;
   onPress?: (doctorId: string) => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;

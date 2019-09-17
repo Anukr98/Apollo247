@@ -105,6 +105,7 @@ export const caseSheetTypeDefs = gql`
     isTransfer: Int!
     transferParentId: String
     caseSheet: [CaseSheet!]
+    doctorInfo: Profile @provides(fields: "id")
   }
 
   type CaseSheetFullDetails {
@@ -465,6 +466,11 @@ const searchDiagnostic: Resolver<
 };
 
 export const caseSheetResolvers = {
+  Appointment: {
+    doctorInfo(appointments: Appointment) {
+      return { __typename: 'Profile', id: appointments.doctorId };
+    },
+  },
   Mutation: {
     createCaseSheet,
     updateCaseSheet,

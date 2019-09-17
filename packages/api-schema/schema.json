@@ -5291,13 +5291,9 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "OBJECT",
-                "name": "DoctorSpecialties",
-                "ofType": null
-              }
+              "kind": "OBJECT",
+              "name": "DoctorSpecialties",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -8028,6 +8024,18 @@
                   "ofType": null
                 }
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "doctorInfo",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Profile",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null

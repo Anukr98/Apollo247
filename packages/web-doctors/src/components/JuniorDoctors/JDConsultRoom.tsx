@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Theme, Button, Avatar } from '@material-ui/core';
+import { Theme, Button, Avatar, CircularProgress } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -31,8 +31,7 @@ import { Relation } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import isNull from 'lodash/isNull';
-import { parseISO, format } from 'date-fns';
-import differenceInYears from 'date-fns/differenceInYears';
+import { format } from 'date-fns';
 import { JDConsultRoomParams } from 'helpers/clientRoutes';
 import { useMutation } from 'react-apollo-hooks';
 import {
@@ -45,7 +44,6 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { Link } from 'react-router-dom';
 
 /* patient related queries and mutations */
 // import { useQueryWithSkip } from 'hooks/apolloHooks';
@@ -76,6 +74,13 @@ import {
   UpdatePatientAllergies,
   UpdatePatientAllergiesVariables,
 } from 'graphql/types/UpdatePatientAllergies';
+
+import {
+  GetDoctorDetailsById,
+  GetDoctorDetailsByIdVariables,
+} from 'graphql/types/GetDoctorDetailsById';
+import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import { useQueryWithSkip } from 'hooks/apolloHooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -392,19 +397,19 @@ export const JDConsultRoom: React.FC = () => {
   //   { variables: { patientId: patientId } }
   // );
 
-  const doctorFirstName =
-    currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
-  const doctorLastName =
-    currentDoctor && currentDoctor.lastName ? _startCase(_toLower(currentDoctor.lastName)) : '';
-  const doctorMobileNumber =
-    currentDoctor && currentDoctor.mobileNumber ? currentDoctor.mobileNumber : '';
-  const doctorSalutation =
-    currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
-  const doctorSpecialty =
-    currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
-      ? _startCase(_toLower(currentDoctor.specialty.name))
-      : '';
-  const doctorPhotoUrl = currentDoctor && currentDoctor.photoUrl ? currentDoctor.photoUrl : '';
+  // const doctorFirstName =
+  //   currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
+  // const doctorLastName =
+  //   currentDoctor && currentDoctor.lastName ? _startCase(_toLower(currentDoctor.lastName)) : '';
+  // const doctorMobileNumber =
+  //   currentDoctor && currentDoctor.mobileNumber ? currentDoctor.mobileNumber : '';
+  // const doctorSalutation =
+  //   currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
+  // const doctorSpecialty =
+  //   currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
+  //     ? _startCase(_toLower(currentDoctor.specialty.name))
+  //     : '';
+  // const doctorPhotoUrl = currentDoctor && currentDoctor.photoUrl ? currentDoctor.photoUrl : '';
 
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
@@ -443,6 +448,7 @@ export const JDConsultRoom: React.FC = () => {
   const [userCardStrip, setUserCardStrip] = useState<string>('');
 
   const [notes, setNotes] = useState<string | null>(null);
+  const [assignedDoctorId, setAssignedDoctorId] = useState<string | null>(null);
 
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
@@ -451,6 +457,59 @@ export const JDConsultRoom: React.FC = () => {
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
   /* case sheet data*/
+
+  let assignedDoctorFirstName = '',
+    assignedDoctorLastName = '',
+    assignedDoctorMobile = '',
+    assignedDoctorSpecialty = '',
+    assignedDoctorPhoto = '',
+    assignedDoctorSalutation = '';
+
+  const {
+    data: assignedDoctorDetailsData,
+    loading: assignedDoctorDetailsLoading,
+  } = useQueryWithSkip<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>(
+    GET_DOCTOR_DETAILS_BY_ID,
+    {
+      variables: { id: assignedDoctorId || '' },
+    }
+  );
+
+  if (!assignedDoctorDetailsLoading) {
+    assignedDoctorFirstName =
+      (assignedDoctorDetailsData &&
+        assignedDoctorDetailsData.getDoctorDetailsById &&
+        assignedDoctorDetailsData.getDoctorDetailsById.firstName) ||
+      '';
+    assignedDoctorLastName =
+      (assignedDoctorDetailsData &&
+        assignedDoctorDetailsData.getDoctorDetailsById &&
+        assignedDoctorDetailsData.getDoctorDetailsById.lastName) ||
+      '';
+    assignedDoctorMobile =
+      (assignedDoctorDetailsData &&
+        assignedDoctorDetailsData.getDoctorDetailsById &&
+        assignedDoctorDetailsData.getDoctorDetailsById.mobileNumber) ||
+      '';
+    assignedDoctorSpecialty =
+      (assignedDoctorDetailsData &&
+        assignedDoctorDetailsData.getDoctorDetailsById &&
+        assignedDoctorDetailsData.getDoctorDetailsById.specialty &&
+        assignedDoctorDetailsData.getDoctorDetailsById.specialty.name) ||
+      '';
+    assignedDoctorPhoto =
+      (assignedDoctorDetailsData &&
+        assignedDoctorDetailsData.getDoctorDetailsById &&
+        assignedDoctorDetailsData.getDoctorDetailsById.photoUrl) ||
+      '';
+    assignedDoctorSalutation =
+      (assignedDoctorDetailsData &&
+        assignedDoctorDetailsData.getDoctorDetailsById &&
+        assignedDoctorDetailsData.getDoctorDetailsById.salutation) ||
+      '';
+  }
+
+  // console.log(assignedDoctorDetailsData, assignedDoctorDetailsLoading, assignedDoctorDetailsError);
 
   /* need to be worked later */
   let customNotes = '';
@@ -644,6 +703,9 @@ export const JDConsultRoom: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.doctorId
+            ? setAssignedDoctorId(_data!.data!.getCaseSheet!.caseSheetDetails!.doctorId)
+            : setAssignedDoctorId(null);
 
           /* patient personal data state vars */
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate
@@ -701,7 +763,7 @@ export const JDConsultRoom: React.FC = () => {
           setLoaded(true);
         });
       return () => {
-        console.log('in return...');
+        // console.log('in return...');
         const cookieStr = `action=`;
         document.cookie = cookieStr + ';path=/;';
       };
@@ -838,10 +900,10 @@ export const JDConsultRoom: React.FC = () => {
               {/* patient and doctors details start */}
               <div className={classes.pageHeader}>
                 <div className={classes.backArrow}>
-                  <Link to={clientRoutes.juniorDoctor()}>
+                  <a href={clientRoutes.juniorDoctor()}>
                     <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                     <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-                  </Link>
+                  </a>
                 </div>
                 <div className={classes.patientSection}>
                   <div className={classes.patientImage}>
@@ -869,21 +931,31 @@ export const JDConsultRoom: React.FC = () => {
                   </div>
                 </div>
                 <div className={classes.doctorSection}>
-                  <div className={classes.doctorImg}>
-                    <Avatar
-                      src={doctorPhotoUrl !== '' ? doctorPhotoUrl : require('images/doctor_02.png')}
-                      alt="Doctor Profile Photo"
-                      className={classes.avatar}
-                    />
-                  </div>
-                  <div className={classes.doctorInfo}>
-                    <div className={classes.assign}>Assigned to:</div>
-                    <div
-                      className={classes.doctorName}
-                    >{`${doctorSalutation} ${doctorFirstName} ${doctorLastName}`}</div>
-                    <div className={classes.doctorType}>{doctorSpecialty}</div>
-                    <div className={classes.doctorContact}>{doctorMobileNumber}</div>
-                  </div>
+                  {assignedDoctorDetailsLoading ? (
+                    <CircularProgress />
+                  ) : (
+                    <>
+                      <div className={classes.doctorImg}>
+                        <Avatar
+                          src={
+                            assignedDoctorPhoto !== ''
+                              ? assignedDoctorPhoto
+                              : require('images/doctor_02.png')
+                          }
+                          alt="Doctor Profile Photo"
+                          className={classes.avatar}
+                        />
+                      </div>
+                      <div className={classes.doctorInfo}>
+                        <div className={classes.assign}>Assigned to:</div>
+                        <div
+                          className={classes.doctorName}
+                        >{`${assignedDoctorSalutation} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
+                        <div className={classes.doctorType}>{assignedDoctorSpecialty}</div>
+                        <div className={classes.doctorContact}>{assignedDoctorMobile}</div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
               {/* patient and doctors details end */}
