@@ -207,7 +207,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     return {
       doctor: element.FULLNAME,
       facility:
-        element.PHYSICALCONSULTATIONLOCATIONNAME == 'undefined'
+        typeof element.PHYSICALCONSULTATIONLOCATIONNAME == 'undefined'
           ? virtualHospital[0].id
           : element.PHYSICALCONSULTATIONLOCATIONNAME,
     };
