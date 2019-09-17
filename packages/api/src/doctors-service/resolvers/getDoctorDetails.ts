@@ -111,7 +111,7 @@ export const getDoctorDetailsTypeDefs = gql`
     consultHours: [ConsultHours]
     doctorHospital: [DoctorHospital!]!
     packages: [Packages]
-    specialty: DoctorSpecialties!
+    specialty: DoctorSpecialties
     starTeam: [StarTeam]
   }
   type DoctorHospital {
