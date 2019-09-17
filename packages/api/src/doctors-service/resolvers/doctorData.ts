@@ -2,11 +2,18 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
-import { DoctorSpecialty, Doctor, FacilityType, DoctorAndHospital } from 'doctors-service/entities';
+import {
+  DoctorSpecialty,
+  Doctor,
+  FacilityType,
+  DoctorAndHospital,
+  ConsultType,
+} from 'doctors-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
+import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
 export const doctorDataTypeDefs = gql`
   extend type Query {
@@ -206,16 +213,31 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
 
   console.log('>>>>>>:: ', dostorHospital);
 
-  /*const consultHours = await doctorData.map((element: any) => {
-    return {
-      consultMode: element.CONSULTATIONMODE,
-      availability: element.AVAILABILITY,
-      weekDays: element.WEEKDAYS,
-    };
+  const consultHours: any[] = [];
+  doctorData.forEach((element: any) => {
+    //mapping specialties
+    doctorHospitalResult.forEach((docFacility) => {
+      if (element.FULLNAME == docFacility.doctor) {
+        console.log(element.FULLNAME + ' == ' + docFacility.doctor);
+        consultHours.push({
+          doctor: element.FULLNAME,
+          doctorHospital: docFacility.id,
+          facility: element.PHYSICALCONSULTATIONLOCATIONNAME,
+          consultMode: element.CONSULTATIONMODE,
+          consultType: ConsultType.FIXED,
+          availability: element.AVAILABILITY,
+          weekDays: element.WEEKDAYS,
+        });
+      }
+    });
   });
-  //insert doctor ends
-  console.log(consultHours); */
+  console.log(consultHours);
 
+  const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+  const consultHoursResult = await consultHoursRepo.insertOrUpdateAllConsultHours(consultHours);
+
+  console.log(consultHoursResult.length);
+  console.log(consultHoursResult[0], consultHoursResult[500]);
   return "I'm in progress";
 };
 //insert data features ends here
