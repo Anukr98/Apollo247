@@ -113,11 +113,10 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   });
   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
   const facilitiesResult = await facilityRepo.insertOrUpdateAllFacilities(hospitals);
-  console.log('inserted facilities: ', facilitiesResult);
   //hospital details ends
 
   //insert doctor starts
-  doctorData.map((element: any) => {
+  await doctorData.map((element: any) => {
     //mapping specialties
     finalSpecialtiesList.forEach((specialty) => {
       if (element.SPECIALITY == specialty.name) {
@@ -127,7 +126,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     });
   });
 
-  console.log('after update', doctorData);
+  //console.log('after update', doctorData);
 
   const formatedDoctorData = doctorData.map((element: any) => {
     const DoctorDetails: Partial<Doctor> = {};
