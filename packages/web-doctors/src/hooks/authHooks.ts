@@ -8,7 +8,10 @@ const useAuthContext = () => useContext(AuthContext);
 
 export const useCurrentPatient = () => {
   const doctorFromAuthCache = useAuthContext().currentPatient;
-  const { data } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS, { skip: !!doctorFromAuthCache });
+  const isSigningIn = useAuthContext().isSigningIn;
+  const { data } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS, {
+    skip: !!doctorFromAuthCache || isSigningIn,
+  });
   const doctorFromQuery = data && data.getDoctorDetails ? data.getDoctorDetails : null;
   return doctorFromAuthCache || doctorFromQuery;
 };
