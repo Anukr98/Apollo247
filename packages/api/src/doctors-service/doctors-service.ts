@@ -56,6 +56,7 @@ import {
   doctorOnlineStatusTypeDefs,
   doctorOnlineStatusResolvers,
 } from 'doctors-service/resolvers/doctorOnlineStatus';
+import { doctorDataTypeDefs, doctorDataResolvers } from 'doctors-service/resolvers/doctorData';
 import {
   blockedCalendarTypeDefs,
   blockedCalendarResolvers,
@@ -153,6 +154,10 @@ import {
       {
         typeDefs: blockedCalendarTypeDefs,
         resolvers: blockedCalendarResolvers,
+      },
+      {
+        typeDefs: doctorDataTypeDefs,
+        resolvers: doctorDataResolvers,
       },
     ]),
   });
