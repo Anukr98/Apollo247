@@ -132,7 +132,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   consultHours: (GetDoctorDetails_getDoctorDetails_consultHours | null)[] | null;
   packages: (GetDoctorDetails_getDoctorDetails_packages | null)[] | null;
   bankAccount: (GetDoctorDetails_getDoctorDetails_bankAccount | null)[] | null;
-  specialty: GetDoctorDetails_getDoctorDetails_specialty;
+  specialty: GetDoctorDetails_getDoctorDetails_specialty | null;
   doctorHospital: GetDoctorDetails_getDoctorDetails_doctorHospital[];
   starTeam: (GetDoctorDetails_getDoctorDetails_starTeam | null)[] | null;
 }
