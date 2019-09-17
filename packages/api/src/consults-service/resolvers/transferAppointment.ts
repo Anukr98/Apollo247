@@ -19,11 +19,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 //import { MailMessage } from 'types/notificationMessageTypes';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { addDays } from 'date-fns';
-import {
-  NotificationType,
-  sendNotification,
-  PushNotificationSuccessMessage,
-} from 'notifications-service/resolvers/notifications';
+import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const transferAppointmentTypeDefs = gql`
@@ -92,7 +88,6 @@ export const transferAppointmentTypeDefs = gql`
   type TransferAppointmentResult {
     transferAppointment: TransferAppointment
     doctorNextSlot: String
-    notificationResult: NotificationSuccessMessage
   }
 
   type BookTransferAppointmentResult {
@@ -111,7 +106,6 @@ export const transferAppointmentTypeDefs = gql`
 type TransferAppointmentResult = {
   transferAppointment: TransferAppointment;
   doctorNextSlot: string;
-  notificationResult: PushNotificationSuccessMessage | undefined;
 };
 
 type TransferAppointmentInput = {
@@ -324,13 +318,14 @@ const initiateTransferAppointment: Resolver<
     appointmentId: appointment.id,
     notificationType: NotificationType.INITIATE_TRANSFER,
   };
-  const notificationResult = await sendNotification(
+  const notificationResult = sendNotification(
     pushNotificationInput,
     patientsDb,
     consultsDb,
     doctorsDb
   );
-  return { transferAppointment, doctorNextSlot: slot, notificationResult };
+  console.log(notificationResult, 'notificationResult');
+  return { transferAppointment, doctorNextSlot: slot };
 };
 
 export const transferAppointmentResolvers = {

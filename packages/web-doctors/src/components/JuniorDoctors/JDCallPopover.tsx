@@ -610,6 +610,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const stopcallMsg = '^^callme`stop^^';
   const acceptcallMsg = '^^callme`accept^^';
   const startConsult = '^^#startconsult';
+  const startConsultjr = '^^#startconsultJr';
   const stopConsult = '^^#stopconsult';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
@@ -678,7 +679,11 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     //srollToBottomAction();
   };
   const [disableStartConsult, setDisableStartConsult] = useState<boolean>(false);
-
+  useEffect(() => {
+    if (isCallAccepted) {
+      startIntervalTimer(0);
+    }
+  }, [isCallAccepted]);
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -1017,6 +1022,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
           message.message.message !== startConsult &&
+          message.message.message !== startConsultjr &&
           message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
@@ -1037,7 +1043,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const onStartConsult = () => {
     const text = {
       id: props.doctorId,
-      message: startConsult,
+      //message: startConsult,
+      message: startConsultjr,
       isTyping: true,
     };
     pubnub.publish(
@@ -1243,7 +1250,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <AphButton
               className={classes.consultButton}
-              disabled={disableStartConsult}
+              //disabled={disableStartConsult}
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();
