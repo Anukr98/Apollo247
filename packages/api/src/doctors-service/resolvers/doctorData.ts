@@ -123,7 +123,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
 
   const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
   const facilitiesResult = await facilityRepo.insertOrUpdateAllFacilities(hospitals);
-  console.log(facilitiesResult);
+  console.log('FacilityResult >>>>>>:: ', facilitiesResult);
   //hospital details ends
 
   //insert doctor starts
@@ -209,9 +209,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   const doctorHospitalRepo = doctorsDb.getCustomRepository(DoctorHospitalRepository);
   const doctorHospitalResult = await doctorHospitalRepo.insertDoctorAndHospitals(dostorHospital);
 
-  console.log(doctorHospitalResult);
-
-  console.log('>>>>>>:: ', dostorHospital);
+  console.log('DoctorHospitalResult >>>>>>:: ', dostorHospital);
 
   const consultHours: any[] = [];
   doctorData.forEach((element: any) => {
@@ -231,14 +229,13 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
       }
     });
   });
-  console.log(consultHours);
 
   const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
   const consultHoursResult = await consultHoursRepo.insertOrUpdateAllConsultHours(consultHours);
 
-  console.log(consultHoursResult.length);
-  console.log(consultHoursResult[0], consultHoursResult[500]);
-  return "I'm in progress";
+  console.log('ConsultHoursLength: ', consultHoursResult.length);
+  console.log('Feference ConsultHours Record:', consultHoursResult[0]);
+  return 'Data Insertion Completed :)';
 };
 //insert data features ends here
 

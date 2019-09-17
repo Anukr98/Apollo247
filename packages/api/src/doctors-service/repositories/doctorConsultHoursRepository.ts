@@ -53,8 +53,6 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
       const utcEndDate = addMilliseconds(istEndDate, -19800000);
       const utcStartTime = format(utcStartDate, 'HH:mm');
       const utcEndTime = format(utcEndDate, 'HH:mm');
-      console.log(utcStartTime, utcEndTime);
-      console.log('----------------------------------------');
       return {
         startTime: utcStartTime,
         endTime: utcEndTime,
@@ -83,8 +81,6 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
         });
       });
     });
-
-    console.log(consultHours.length);
 
     return this.save(consultHours).catch((saveConsultHoursError) => {
       throw new AphError(AphErrorMessages.SAVE_CONSULT_HOURS_ERROR, undefined, {
