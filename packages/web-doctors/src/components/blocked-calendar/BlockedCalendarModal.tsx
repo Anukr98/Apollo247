@@ -18,9 +18,9 @@ import {
   AddBlockedCalendarItem,
   AddBlockedCalendarItemVariables,
 } from 'graphql/types/AddBlockedCalendarItem';
-import _isEmpty from 'lodash/isEmpty';
 import React, { useState } from 'react';
 import { Mutation } from 'react-apollo';
+import { format, parse } from 'date-fns';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {};
@@ -29,6 +29,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export interface BlockedCalendarAddModalProps {
   dialogProps: DialogProps & { onClose: () => void };
   doctorId: string;
+  item?: { id: number; start: Date; end: Date };
 }
 
 export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (props) => {
@@ -36,14 +37,14 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     DAY = 'DAY',
     DURATION = 'DURATION',
   }
-  const { dialogProps, doctorId } = props;
+  const { item, dialogProps, doctorId } = props;
   const classes = useStyles();
-  const [selectedValue, setSelectedValue] = useState(RadioValues.DAY);
-  const [startDateTime, setStartDateTime] = useState('');
-  const [endDateTime, setEndDateTime] = useState('');
-  const invalid = _isEmpty(startDateTime) || _isEmpty(endDateTime);
+  const [selectedValue, setSelectedValue] = useState(RadioValues.DURATION);
+  const [start, setStart] = useState(item ? format(item.start, 'MM/dd/yyyy') : '');
+  const [end, setEnd] = useState(item ? format(item.end, 'MM/dd/yyyy') : '');
+  const invalid = !start || !end || new Date(end) < new Date(start);
   return (
-    <Dialog {...dialogProps}>
+    <Dialog {...dialogProps} data-cypress="BlockedCalendarModal">
       <DialogTitle style={{ color: 'black' }}>BLOCK CALENDAR</DialogTitle>
       <DialogContent style={{ color: 'black' }}>
         <RadioGroup
@@ -55,6 +56,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
             value={RadioValues.DAY}
             label="For a day"
             control={<AphRadio title="For a day" />}
+            disabled
           />
           <FormControlLabel
             value={RadioValues.DURATION}
@@ -64,20 +66,20 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         </RadioGroup>
         <div>
           <TextField
-            onChange={(e) => setStartDateTime(e.currentTarget.value)}
-            value={startDateTime}
+            onChange={(e) => setStart(e.currentTarget.value)}
+            value={start}
             label="Start"
-            type="datetime-local"
+            type="date"
             InputLabelProps={{ shrink: true }}
             InputProps={{ style: { color: 'black ' } }}
           />
         </div>
         <div>
           <TextField
-            onChange={(e) => setEndDateTime(e.currentTarget.value)}
-            value={endDateTime}
+            onChange={(e) => setEnd(e.currentTarget.value)}
+            value={end}
             label="End"
-            type="datetime-local"
+            type="date"
             InputLabelProps={{ shrink: true }}
             InputProps={{ style: { color: 'black ' } }}
           />
@@ -93,14 +95,25 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         >
           {(addBlockedCalendarItem, { loading }) => (
             <Button
+              type="submit"
               disabled={loading || invalid}
               variant="contained"
               onClick={() => {
+                if (!start || !end || invalid) return;
+                const startDate = parse(start, 'yyyy-MM-dd', new Date());
+                const endDate = parse(end, 'yyyy-MM-dd', new Date());
+                const sameDay = start === end;
+                if (sameDay) {
+                  startDate.setHours(0);
+                  startDate.setMinutes(0);
+                  endDate.setHours(23);
+                  endDate.setMinutes(59);
+                }
                 addBlockedCalendarItem({
                   variables: {
                     doctorId,
-                    start: new Date(startDateTime),
-                    end: new Date(endDateTime),
+                    start: startDate.toISOString(),
+                    end: endDate.toISOString(),
                   },
                   refetchQueries: [{ query: GET_BLOCKED_CALENDAR, variables: { doctorId } }],
                   awaitRefetchQueries: true,

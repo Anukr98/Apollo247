@@ -1,6 +1,22 @@
 import { clientRoutes } from 'helpers/clientRoutes';
 import { srKabir } from 'cypress/fixtures/doctorDetailsFixtures';
 
+const fillStart = (start: string) =>
+  cy
+    .get('[data-cypress="BlockedCalendarModal"]')
+    .contains('Start')
+    .parent()
+    .find('input')
+    .type(start);
+
+const fillEnd = (end: string) =>
+  cy
+    .get('[data-cypress="BlockedCalendarModal"]')
+    .contains('End')
+    .parent()
+    .find('input')
+    .type(end);
+
 describe('BlockedCalendar', () => {
   beforeEach(() => {
     cy.signIn(srKabir);
@@ -88,22 +104,6 @@ describe('BlockedCalendar', () => {
       .find('button[type="submit"]')
       .should('be.disabled');
 
-    const fillStart = (start: string) =>
-      cy
-        .get('[data-cypress="BlockedCalendarModal"]')
-        .contains('Start')
-        .parent()
-        .find('input')
-        .type(start);
-
-    const fillEnd = (end: string) =>
-      cy
-        .get('[data-cypress="BlockedCalendarModal"]')
-        .contains('End')
-        .parent()
-        .find('input')
-        .type(end);
-
     fillStart('2019-09-18');
     fillEnd('2019-09-19');
     cy.get('[data-cypress="BlockedCalendarModal"]')
@@ -119,16 +119,51 @@ describe('BlockedCalendar', () => {
 
   it('Should send dates in UTC', () => {
     cy.contains(/add blocked hours/i).click();
-    cy.contains(/for a duration/i).should('exist');
+    fillStart('2019-09-18');
+    fillEnd('2019-09-18');
+
+    const doctorId = srKabir.id;
+    const startUtc = '2019-09-17T18:30:00.000Z';
+    const endUtc = '2019-09-18T18:29:00.000Z';
+    const blockedCalendarResult = {
+      __typename: 'BlockedCalendarResult' as 'BlockedCalendarResult',
+      blockedCalendar: [
+        {
+          __typename: 'BlockedCalendarItem' as 'BlockedCalendarItem',
+          id: 1,
+          doctorId,
+          start: startUtc,
+          end: endUtc,
+        },
+      ],
+    };
+
+    cy.mockAphGraphqlOps({
+      operations: {
+        GetBlockedCalendar: {
+          getBlockedCalendar: blockedCalendarResult,
+        },
+        AddBlockedCalendarItem: {
+          addBlockedCalendarItem: blockedCalendarResult,
+        },
+      },
+    });
+
     cy.get('[data-cypress="BlockedCalendarModal"]')
-      .contains('Start')
-      .parent()
-      .find('input')
-      .type('2019-09-18');
-    cy.get('[data-cypress="BlockedCalendarModal"]')
-      .contains('End')
-      .parent()
-      .find('input')
-      .type('2019-09-19');
+      .find('button[type="submit"]')
+      .click();
+
+    cy.get('@fetchStub').should((fetchStub: any) => {
+      const fetchSpy = fetchStub.getCalls();
+      const addItemMutation = fetchSpy[fetchSpy.length - 2];
+      const addItemMutationArgs = addItemMutation.args[1];
+      const addItemMutationArgsBody = JSON.parse(addItemMutationArgs.body);
+      const addItemMutationInputVariables = addItemMutationArgsBody.variables;
+      expect(addItemMutationInputVariables).to.deep.equal({
+        doctorId,
+        start: startUtc,
+        end: endUtc,
+      });
+    });
   });
 });
