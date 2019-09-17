@@ -805,7 +805,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         {doctorsList && renderSearch()}
         {showSpinner === 0 ? (
           <ScrollView style={{ flex: 1 }} bounces={false} keyboardDismissMode="on-drag">
-            {props.navigation.state.params!.MoveDoctor == 'MoveDoctor' ? null : renderPastSearch()}
+            {/* {props.navigation.state.params!.MoveDoctor == 'MoveDoctor' ? null : renderPastSearch()} */}
+            {renderPastSearch()}
             {renderDoctorSearches()}
             {renderSpecialist()}
             {searchText.length > 2 &&
