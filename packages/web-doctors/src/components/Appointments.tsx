@@ -240,8 +240,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     completed: {
       '& .stepIcon': {
-        color: '#fff',
-        border: '2px solid #ff748e',
+        color: '#0087ba',
+        border: 'none',
       },
       '& .cardRow': {
         backgroundColor: '#f0f4f5',
