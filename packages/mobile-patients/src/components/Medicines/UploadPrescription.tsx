@@ -320,26 +320,28 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           {renderDeliveryPinCode()}
           {renderPhysicalPrescriptions()}
           {renderEPrescriptions()}
-          <Text
-            style={{
-              ...fonts.IBMPlexSansBold(13),
-              color: theme.colors.APP_YELLOW,
-              lineHeight: 24,
-              paddingBottom: 4,
-              marginBottom: 20,
-              paddingRight: 24,
-              textAlign: 'right',
-            }}
-            onPress={() => setShowPopop(true)}
-          >
-            ADD MORE PRESCRIPTIONS
-          </Text>
         </ScrollView>
       </SafeAreaView>
+      <Text
+        style={{
+          ...fonts.IBMPlexSansBold(13),
+          color: theme.colors.APP_YELLOW,
+          lineHeight: 24,
+          paddingBottom: 4,
+          marginBottom: 16,
+          paddingRight: 24,
+          paddingTop: 16,
+          textAlign: 'right',
+        }}
+        onPress={() => setShowPopop(true)}
+      >
+        ADD MORE PRESCRIPTIONS
+      </Text>
       <StickyBottomComponent style={{ position: 'relative' }} defaultBG>
         <Mutation<uploadFile, uploadFileVariables> mutation={UPLOAD_FILE}>
           {(mutate, { loading, data, error }) => (
             <Button
+              disabled={PhysicalPrescriptions.length == 0 && EPrescriptions.length == 0}
               title={'SUBMIT PRESCRIPTION'}
               onPress={onPressSubmit}
               style={{ marginHorizontal: 60, flex: 1 }}
