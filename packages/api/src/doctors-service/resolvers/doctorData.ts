@@ -8,10 +8,11 @@ import {
   FacilityType,
   DoctorAndHospital,
   ConsultType,
+  Salutation,
 } from 'doctors-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-
+import path from 'path';
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
@@ -27,8 +28,14 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   { doctorsDb }
 ) => {
   const excelToJson = require('convert-excel-to-json');
+
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
+  console.log('assetsDirectory:', assetsDir);
   const rowData = excelToJson({
-    sourceFile: '/apollo-hospitals/data/doctorsData.xlsx',
+    sourceFile: assetsDir + '/doctorsData.xlsx',
     sheets: [
       {
         name: 'sheet1',
@@ -139,18 +146,18 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
 
   const formatedDoctorData = doctorData.map((element: any) => {
     const DoctorDetails: Partial<Doctor> = {};
-    DoctorDetails.salutation = element.TITLE;
+    DoctorDetails.salutation = Salutation.DR;
     DoctorDetails.fullName = element.FULLNAME;
     DoctorDetails.doctorType = element.TYPE;
     DoctorDetails.firstName = element.FIRSTNAME;
     DoctorDetails.middleName = element.MIDDLENAME == 'undefined' ? '' : element.MIDDLENAME;
     DoctorDetails.lastName = element.LASTNAME || '';
-    DoctorDetails.doctorType = element.GENDER;
-    DoctorDetails.gender = element.TYPE;
+    DoctorDetails.gender = element.GENDER;
     DoctorDetails.qualification = element.EDUCATION;
     DoctorDetails.experience = element.EXPERIRNCE;
     DoctorDetails.languages = element.LANGUAGES;
     DoctorDetails.isActive = true;
+    DoctorDetails.photoUrl = 'https://apollouatstg.blob.core.windows.net/doctors/no_photo.png';
     DoctorDetails.onlineConsultationFees = element.ONLINECONSULTATIONFEES;
     DoctorDetails.physicalConsultationFees = element.PHYSICALCONSULTATIONFEES || 0;
     DoctorDetails.registrationNumber =
@@ -167,6 +174,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
       element.SECRETARYNUMBER == 'undefined' ? '' : element.SECRETARYNUMBER;
     return DoctorDetails;
   });
+  console.log('DoctorsData >>>>>>>', formatedDoctorData);
 
   //Doctor starts
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
