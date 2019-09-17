@@ -271,7 +271,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
       <View style={styles.containerStyle}>
         {NotificationArray.map((item, index) => {
           return (
-            <View>
+            <View key={index}>
               <View style={styles.viewRowStyle}>
                 <Text style={styles.textStyle}>{item.title}</Text>
                 {item.value ? (

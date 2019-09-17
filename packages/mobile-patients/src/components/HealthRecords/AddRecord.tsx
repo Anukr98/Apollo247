@@ -476,6 +476,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               </View>
               {medicalRecordParameters.map((item, i) => (
                 <View
+                  key={i}
                   style={{
                     marginTop: 16,
                     ...theme.viewStyles.cardViewStyle,
