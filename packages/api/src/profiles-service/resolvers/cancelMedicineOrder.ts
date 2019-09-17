@@ -69,7 +69,7 @@ const cancelMedicineOrder: Resolver<
     headers: { 'Content-Type': 'application/json', Token: ApiConstants.PHARMA_TOKEN.toString() },
   });
 
-  if (pharmaResp.status == 400) {
+  if (pharmaResp.status == 400 || pharmaResp.status == 404) {
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
   }
 

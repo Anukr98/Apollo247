@@ -10,6 +10,9 @@ import {
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { format, differenceInMinutes, addMinutes, addDays } from 'date-fns';
 
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
   getDoctorProfileData(id: string) {
@@ -397,5 +400,53 @@ export class DoctorRepository extends Repository<Doctor> {
     else if (min > 15 && min <= 30) return 30;
     else if (min > 30 && min <= 45) return 45;
     else return 60;
+  }
+
+  findAll() {
+    return this.createQueryBuilder('doctor')
+      .getMany()
+      .catch((getDoctorsError) => {
+        throw new AphError(AphErrorMessages.GET_DOCTORS_ERROR, undefined, {
+          getDoctorsError,
+        });
+      });
+  }
+
+  getDoctorUniqueTerm(doctor: Partial<Doctor>) {
+    if (doctor.registrationNumber && doctor.mobileNumber)
+      return (
+        doctor.registrationNumber
+          .toString()
+          .trim()
+          .toLowerCase() +
+        '_' +
+        doctor.mobileNumber
+          .toString()
+          .trim()
+          .toLowerCase()
+      );
+    else return '';
+  }
+
+  async insertOrUpdateAllDoctors(doctors: Partial<Doctor>[]) {
+    //get all the existing specialties
+    const allExistingSpecialties = await this.findAll();
+
+    doctors.forEach((doctor) => {
+      allExistingSpecialties.forEach((existingDoctor) => {
+        if (this.getDoctorUniqueTerm(doctor) == this.getDoctorUniqueTerm(existingDoctor)) {
+          doctor.id = existingDoctor.id;
+          doctor.updatedDate = new Date();
+          return;
+        }
+      });
+    });
+
+    //insert/update new doctors
+    return this.save(doctors).catch((saveDoctorsError) => {
+      throw new AphError(AphErrorMessages.SAVE_DOCTORS_ERROR, undefined, {
+        saveDoctorsError,
+      });
+    });
   }
 }

@@ -175,6 +175,10 @@ const SaveMedicineOrderPayment: Resolver<
   if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
     patientAge = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth));
   }
+  let payStatus = medicinePaymentInput.paymentStatus;
+  if (medicinePaymentInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
+    payStatus = '';
+  }
   const medicineOrderPharma = {
     tpdetails: {
       OrderId: orderDetails.orderAutoId,
@@ -205,7 +209,7 @@ const SaveMedicineOrderPayment: Resolver<
       PaymentDetails: {
         TotalAmount: medicinePaymentInput.amountPaid,
         PaymentSource: medicinePaymentInput.paymentType,
-        PaymentStatus: medicinePaymentInput.paymentStatus,
+        PaymentStatus: payStatus,
         PaymentOrderId: medicinePaymentInput.paymentRefId,
       },
       ItemDetails: orderLineItems,
@@ -228,10 +232,11 @@ const SaveMedicineOrderPayment: Resolver<
     headers: { 'Content-Type': 'application/json', Token: ApiConstants.PHARMA_TOKEN.toString() },
   });
 
-  if (pharmaResp.status == 400) {
+  if (pharmaResp.status == 400 || pharmaResp.status == 404) {
     throw new AphError(AphErrorMessages.SOMETHING_WENT_WRONG, undefined, {});
   }
 
+  console.log(pharmaResp, 'pharmaResp');
   const textRes = await pharmaResp.text();
   const orderResp: PharmaResponse = JSON.parse(textRes);
   console.log(orderResp, 'respp', orderResp.ordersResult.Message);

@@ -363,6 +363,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
   const renderSearch = () => {
+    const hasError =
+      searchText.length > 2 &&
+      doctorsList &&
+      doctorsList.length === 0 &&
+      !showSpinner &&
+      searchSpecialities &&
+      searchSpecialities.length === 0
+        ? true
+        : false;
     return (
       <View style={styles.searchContainer}>
         <Header
@@ -380,22 +389,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             conatinerstyles={{ paddingBottom: 0 }}
             inputStyle={[
               styles.searchValueStyle,
-              searchText.length > 2 &&
-              doctorsList &&
-              doctorsList.length === 0 &&
-              searchSpecialities &&
-              searchSpecialities.length === 0
+              hasError
                 ? {
                     borderBottomColor: '#e50000',
                   }
                 : {},
             ]}
             textInputprops={
-              searchText.length > 2 &&
-              doctorsList &&
-              doctorsList.length === 0 &&
-              searchSpecialities &&
-              searchSpecialities.length === 0
+              hasError
                 ? {
                     selectionColor: '#e50000',
                   }
@@ -429,12 +430,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               }
             }}
           />
-          {searchText.length > 2 &&
-          doctorsList &&
-          doctorsList.length === 0 &&
-          searchSpecialities &&
-          !showSpinner &&
-          searchSpecialities.length === 0 ? (
+          {hasError ? (
             <Text
               style={{
                 ...theme.fonts.IBMPlexSansMedium(12),

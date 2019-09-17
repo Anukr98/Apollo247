@@ -596,8 +596,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           flexWrap: 'wrap',
                         }}
                       >
-                        {['FEVER', 'COUGH & COLD'].map((name) => (
+                        {['FEVER', 'COUGH & COLD'].map((name, i) => (
                           <CapsuleView
+                            key={i}
                             title={name}
                             isActive={false}
                             style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
