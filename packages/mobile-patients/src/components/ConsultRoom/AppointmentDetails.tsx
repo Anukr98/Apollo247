@@ -218,6 +218,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               isFollowUp: result.isFollowUp,
               isPaid: result.isPaid,
             };
+            if (result.rescheduleCount < 3) {
+              setBelowThree(true);
+            } else {
+              setBelowThree(false);
+            }
             setNewRescheduleCount(data);
           } catch (error) {}
         })
