@@ -222,7 +222,7 @@ export async function sendNotification(
     registrationToken.push(values.deviceToken);
   });
 
-  await admin
+  admin
     .messaging()
     .sendToDevice(registrationToken, payload, options)
     .then((response: PushNotificationSuccessMessage) => {

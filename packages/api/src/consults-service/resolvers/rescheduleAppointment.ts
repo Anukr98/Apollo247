@@ -12,11 +12,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
-import {
-  sendNotification,
-  PushNotificationSuccessMessage,
-  NotificationType,
-} from 'notifications-service/resolvers/notifications';
+import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { differenceInDays } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
 
@@ -65,7 +61,6 @@ export const rescheduleAppointmentTypeDefs = gql`
   type RescheduleAppointmentResult {
     rescheduleAppointment: RescheduleAppointment
     rescheduleCount: Int
-    notificationResult: NotificationSuccessMessage
   }
 
   type BookRescheduleAppointmentResult {
@@ -100,7 +95,6 @@ export const rescheduleAppointmentTypeDefs = gql`
 type RescheduleAppointmentResult = {
   rescheduleAppointment: RescheduleAppointment;
   rescheduleCount: number;
-  notificationResult: PushNotificationSuccessMessage | undefined;
 };
 
 type RescheduleAppointment = {
@@ -237,12 +231,13 @@ const initiateRescheduleAppointment: Resolver<
     appointmentId: appointment.id,
     notificationType: NotificationType.INITIATE_RESCHEDULE,
   };
-  const notificationResult = await sendNotification(
+  const notificationResult = sendNotification(
     pushNotificationInput,
     patientsDb,
     consultsDb,
     doctorsDb
   );
+  console.log(notificationResult, 'notificationResult');
 
   const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
   await appointmentRepo.updateTransferState(
@@ -252,7 +247,6 @@ const initiateRescheduleAppointment: Resolver<
   return {
     rescheduleAppointment,
     rescheduleCount: appointment.rescheduleCount,
-    notificationResult,
   };
 };
 
