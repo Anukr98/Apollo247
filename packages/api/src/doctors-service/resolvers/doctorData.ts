@@ -5,6 +5,8 @@ import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSp
 import { DoctorSpecialty, Doctor, FacilityType, DoctorAndHospital } from 'doctors-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const doctorDataTypeDefs = gql`
   extend type Query {
@@ -118,7 +120,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   //hospital details ends
 
   //insert doctor starts
-  /*await doctorData.map((element: any) => {
+  await doctorData.map((element: any) => {
     //mapping specialties
     finalSpecialtiesList.forEach((specialty) => {
       if (element.SPECIALITY == specialty.name) {
@@ -184,16 +186,19 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     });
   });
 
-  console.log(doctorData[1]);
+  const virtualHospital = facilitiesResult.filter((element) => element.name == '');
 
   const dostorHospital = await doctorData.map((element: any) => {
     return {
       doctorId: element.FULLNAME,
-      facilityId: element.PHYSICALCONSULTATIONLOCATIONNAME,
+      facilityId:
+        element.PHYSICALCONSULTATIONLOCATIONNAME == '' && virtualHospital != null
+          ? virtualHospital[0].id
+          : element.PHYSICALCONSULTATIONLOCATIONNAME,
     };
   });
 
-  console.log(dostorHospital);  */
+  console.log(dostorHospital);
 
   /*const consultHours = await doctorData.map((element: any) => {
     return {

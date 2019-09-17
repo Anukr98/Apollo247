@@ -60,7 +60,6 @@ export class FacilityRepository extends Repository<Facility> {
       country: '',
       facilityType: FacilityType.HOSPITAL,
     });
-    console.log('-----------', uniqueFacilities);
 
     //insert/update new facilities
     return this.save(uniqueFacilities).catch((saveFacilitiesError) => {
