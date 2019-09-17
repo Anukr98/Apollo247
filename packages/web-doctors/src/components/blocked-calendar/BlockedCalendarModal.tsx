@@ -56,7 +56,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     setEnd(item ? format(item.end, 'yyyy-MM-dd') : '');
   }, [item]);
   const invalid = !start || !end || new Date() > new Date(start) || new Date(end) < new Date(start);
-  // console.log(!start, !end, new Date() > new Date(start), new Date(end) < new Date(start));
   return (
     <Dialog {...dialogProps} data-cypress="BlockedCalendarModal">
       <DialogTitle style={{ color: 'black' }}>BLOCK CALENDAR</DialogTitle>
