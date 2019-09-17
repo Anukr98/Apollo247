@@ -196,25 +196,31 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [followupdone, setFollowupDone] = useState<boolean>(false);
 
   useEffect(() => {
-    setNewAppointmentTime(
-      props.navigation.getParam('Data')
-        ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
-            'Do MMMM, dddd \nhh:mm a'
-          )
-        : ''
-    );
+    try {
+      setNewAppointmentTime(
+        props.navigation.getParam('Data')
+          ? moment(props.navigation.getParam('Data').appointmentDateTime).format(
+              'Do MMMM, dddd \nhh:mm a'
+            )
+          : ''
+      );
 
-    // let calculateCount = props.navigation.getParam('Data')
-    //   ? props.navigation.getParam('Data').rescheduleCount
-    //   : '';
+      console.log('props.navigation.getParam', props.navigation.getParam('Data'));
 
-    let calculateCount: number = 5;
+      let calculateCount = props.navigation.getParam('Data')
+        ? props.navigation.getParam('Data').rescheduleCount
+        : '';
 
-    if (calculateCount > 3) {
-      calculateCount = Math.floor(calculateCount / 3);
+      calculateCount = calculateCount - 1;
+
+      if (calculateCount <= 0) {
+        calculateCount = 1;
+      }
+
+      setNewRescheduleCount(calculateCount);
+    } catch (error) {
+      setNewRescheduleCount(1);
     }
-
-    setNewRescheduleCount(calculateCount);
   });
 
   useEffect(() => {
@@ -806,7 +812,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           title={'Hi! :)'}
           description={`Your appointment with Dr. ${props.navigation.getParam(
             'DoctorName'
-          )} \nhas been rescheduled for — ${newAppointmentTime}\n\nYou have ${newRescheduleCount} free reschedules left.`}
+          )} \nhas been rescheduled for — ${newAppointmentTime}\n\nYou have ${newRescheduleCount} free ${
+            newRescheduleCount == 1 ? 'reschedule' : 'reschedules'
+          } left.`}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
