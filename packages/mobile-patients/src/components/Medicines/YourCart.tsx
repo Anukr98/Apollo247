@@ -294,11 +294,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
     console.log({ address });
     setCheckingServicability(true);
-    pinCodeServiceabilityApi(address.zipcode!, 'PHARMA')
+    pinCodeServiceabilityApi(address.zipcode!)
       .then(({ data: { Availability } }) => {
         console.log({ Availability });
         setCheckingServicability(false);
-        if (Platform.OS == 'android' ? true : Availability) {
+        if (Availability) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
           Alert.alert(

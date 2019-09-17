@@ -431,10 +431,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     isValidPinCode(text) && setPinCode(text);
     if (text.length == 6) {
       // call api here
-      pinCodeServiceabilityApi(text, 'PHARMA')
+      pinCodeServiceabilityApi(text)
         .then(({ data: { Availability } }) => {
-          const isAndroid = Platform.OS == 'android';
-          if (!isAndroid && !Availability) {
+          if (!Availability) {
             Alert.alert('Alert', 'Sorry! This pincode is not serviceable.');
           }
         })

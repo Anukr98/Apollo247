@@ -87,7 +87,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById {
   city: string | null;
   awards: string | null;
   photoUrl: string | null;
-  specialty: getDoctorDetailsById_getDoctorDetailsById_specialty;
+  specialty: getDoctorDetailsById_getDoctorDetailsById_specialty | null;
   registrationNumber: string;
   onlineConsultationFees: string;
   physicalConsultationFees: string;

@@ -171,6 +171,13 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
       setplayNotificationSound(settings.playNotificationSound);
       setreScheduleAndCancellationNotification(settings.reScheduleAndCancellationNotification);
       setupcomingAppointmentReminders(settings.upcomingAppointmentReminders);
+    } else if (
+      showSpinner &&
+      data &&
+      data.getPatientNotificationSettings &&
+      data.getPatientNotificationSettings.notificationSettings === null
+    ) {
+      setshowSpinner(false);
     }
   }
 
@@ -243,11 +250,12 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
         <View style={styles.viewRowStyle}>
           <Text style={styles.textStyle}>{label}</Text>
           {/* <Switch value={value} onValueChange={(value) => setValue(value)} /> */}
-          {value ? (
+          {value && (
             <TouchableOpacity onPress={() => setValue(!value)}>
               <ToggleOn />
             </TouchableOpacity>
-          ) : (
+          )}
+          {!value && (
             <TouchableOpacity onPress={() => setValue(!value)}>
               <ToggleOff />
             </TouchableOpacity>
@@ -318,11 +326,11 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
           }}
           leftIcon="backArrow"
           title="NOTIFICATION SETTINGS"
-          rightComponent={
-            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-              <More />
-            </TouchableOpacity>
-          }
+          // rightComponent={
+          //   <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          //     <More />
+          //   </TouchableOpacity>
+          // }
           onPressLeftIcon={onPressBack}
         />
         <ScrollView bounces={false}>{renderNotificationView()}</ScrollView>
