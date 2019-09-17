@@ -3,6 +3,7 @@ import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import { useQuery } from 'react-apollo-hooks';
 import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { isTest } from 'helpers/testHelpers';
 
 const useAuthContext = () => useContext(AuthContext);
 
@@ -10,7 +11,7 @@ export const useCurrentPatient = () => {
   const doctorFromAuthCache = useAuthContext().currentPatient;
   const isSigningIn = useAuthContext().isSigningIn;
   const { data } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS, {
-    skip: !!doctorFromAuthCache || isSigningIn,
+    skip: !!doctorFromAuthCache || (!isTest() && isSigningIn),
   });
   const doctorFromQuery = data && data.getDoctorDetails ? data.getDoctorDetails : null;
   return doctorFromAuthCache || doctorFromQuery;
