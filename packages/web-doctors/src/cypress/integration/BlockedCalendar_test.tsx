@@ -31,9 +31,9 @@ describe('BlockedCalendar', () => {
 
   it('Should convert UTC dates to IST for display purposes (same-day)', () => {
     const doctorId = srKabir.id;
-    const startUtcFromDb = '2019-09-18T10:00:00.000Z';
-    const endUtcFromDb = '2019-09-18T11:00:00.000Z';
-    const displayDateIst = 'Wed, 09/18/2019';
+    const startUtcFromDb = '2050-09-18T10:00:00.000Z';
+    const endUtcFromDb = '2050-09-18T11:00:00.000Z';
+    const displayDateIst = 'Sun, 09/18/2050';
     const displayTimeIst = '3:30 PM - 4:30 PM';
     cy.mockAphGraphqlOps({
       operations: {
@@ -65,9 +65,9 @@ describe('BlockedCalendar', () => {
 
   it('Should display "All slots" for multi-day block', () => {
     const doctorId = srKabir.id;
-    const startUtcFromDb = '2019-09-18T10:00:00.000Z';
-    const endUtcFromDb = '2019-09-19T11:00:00.000Z';
-    const displayDateIst = '09/18/2019 - 09/19/2019';
+    const startUtcFromDb = '2050-09-18T10:00:00.000Z';
+    const endUtcFromDb = '2050-09-19T11:00:00.000Z';
+    const displayDateIst = '09/18/2050 - 09/19/2050';
     const displayTimeIst = 'All slots';
     cy.mockAphGraphqlOps({
       operations: {
@@ -104,14 +104,20 @@ describe('BlockedCalendar', () => {
       .find('button[type="submit"]')
       .should('be.disabled');
 
-    fillStart('2019-09-18');
-    fillEnd('2019-09-19');
+    fillStart('2050-09-18');
+    fillEnd('2050-09-19');
     cy.get('[data-cypress="BlockedCalendarModal"]')
       .find('button[type="submit"]')
       .should('be.enabled');
 
-    fillStart('2019-09-19');
-    fillEnd('2019-09-18');
+    fillStart('2050-09-19');
+    fillEnd('2050-09-18');
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .find('button[type="submit"]')
+      .should('be.disabled');
+
+    fillStart('1999-01-01');
+    fillEnd('2050-09-18');
     cy.get('[data-cypress="BlockedCalendarModal"]')
       .find('button[type="submit"]')
       .should('be.disabled');
@@ -119,12 +125,12 @@ describe('BlockedCalendar', () => {
 
   it('Should send dates in UTC', () => {
     cy.contains(/add blocked hours/i).click();
-    fillStart('2019-09-18');
-    fillEnd('2019-09-18');
+    fillStart('2050-09-18');
+    fillEnd('2050-09-18');
 
     const doctorId = srKabir.id;
-    const startUtc = '2019-09-17T18:30:00.000Z';
-    const endUtc = '2019-09-18T18:29:00.000Z';
+    const startUtc = '2050-09-17T18:30:00.000Z';
+    const endUtc = '2050-09-18T18:29:00.000Z';
     const blockedCalendarResult = {
       __typename: 'BlockedCalendarResult' as 'BlockedCalendarResult',
       blockedCalendar: [

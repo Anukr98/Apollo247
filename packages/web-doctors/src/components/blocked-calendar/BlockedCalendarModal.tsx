@@ -42,7 +42,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const [selectedValue, setSelectedValue] = useState(RadioValues.DURATION);
   const [start, setStart] = useState(item ? format(item.start, 'MM/dd/yyyy') : '');
   const [end, setEnd] = useState(item ? format(item.end, 'MM/dd/yyyy') : '');
-  const invalid = !start || !end || new Date(end) < new Date(start);
+  const invalid = !start || !end || new Date() > new Date(start) || new Date(end) < new Date(start);
   return (
     <Dialog {...dialogProps} data-cypress="BlockedCalendarModal">
       <DialogTitle style={{ color: 'black' }}>BLOCK CALENDAR</DialogTitle>
