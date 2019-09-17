@@ -1,6 +1,9 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { ConsultHours } from 'doctors-service/entities';
 
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+
 @EntityRepository(ConsultHours)
 export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
   getConsultHours(doctor: string, weekDay: string) {
@@ -29,5 +32,14 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
 
   checkByDoctorAndConsultMode(doctor: string, consultMode: string) {
     return this.count({ where: [{ doctor, consultMode }, { doctor, consultMode: 'BOTH' }] });
+  }
+
+  async insertOrUpdateAllConsultHours(consultHours: Partial<ConsultHours>[]) {
+    //insert/update new doctors
+    return this.save(consultHours).catch((saveConsultHoursError) => {
+      throw new AphError(AphErrorMessages.SAVE_CONSULT_HOURS_ERROR, undefined, {
+        saveConsultHoursError,
+      });
+    });
   }
 }

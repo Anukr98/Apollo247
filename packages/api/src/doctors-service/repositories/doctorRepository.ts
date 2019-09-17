@@ -415,9 +415,15 @@ export class DoctorRepository extends Repository<Doctor> {
   getDoctorUniqueTerm(doctor: Partial<Doctor>) {
     if (doctor.registrationNumber && doctor.mobileNumber)
       return (
-        doctor.registrationNumber.trim().toLowerCase() +
+        doctor.registrationNumber
+          .toString()
+          .trim()
+          .toLowerCase() +
         '_' +
-        doctor.mobileNumber.trim().toLowerCase()
+        doctor.mobileNumber
+          .toString()
+          .trim()
+          .toLowerCase()
       );
     else return '';
   }

@@ -3,6 +3,7 @@ import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { DoctorSpecialty, Doctor } from 'doctors-service/entities';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 
 export const doctorDataTypeDefs = gql`
   extend type Query {
@@ -136,7 +137,10 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     return DoctorDetails;
   });
 
-  console.log(formatedDoctorData);
+  //Doctor starts
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorInsertResult = await doctorRepo.insertOrUpdateAllDoctors(formatedDoctorData);
+  console.log('docotorsdata------', doctorInsertResult);
   //insert doctor ends
 
   //hospital details starts
