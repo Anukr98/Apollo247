@@ -101,7 +101,7 @@ const getCurrentPatients: Resolver<
         isPrismWorking = 0;
       });
   }
-
+  console.log(uhids, 'uhid');
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
@@ -113,7 +113,7 @@ const getCurrentPatients: Resolver<
     });
   };
   let patientPromises: Object[] = [];
-  if (uhids != null) {
+  if (uhids != null && uhids.response != null) {
     isPrismWorking = 1;
     //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
     patientPromises = uhids.response!.signUpUserData.map((data) => {
@@ -129,6 +129,8 @@ const getCurrentPatients: Resolver<
         }
       );
     });
+  } else {
+    isPrismWorking = 0;
   }
   if (isPrismWorking == 0) {
     patientPromises = [
