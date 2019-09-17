@@ -211,7 +211,7 @@ const bookAppointment: Resolver<
     appointmentId: appointment.id,
     notificationType: NotificationType.BOOK_APPOINTMENT,
   };
-  const notificationResult = await sendNotification(
+  const notificationResult = sendNotification(
     pushNotificationInput,
     patientsDb,
     consultsDb,
