@@ -175,6 +175,10 @@ const SaveMedicineOrderPayment: Resolver<
   if (patientDetails.dateOfBirth && patientDetails.dateOfBirth != null) {
     patientAge = Math.abs(differenceInYears(new Date(), patientDetails.dateOfBirth));
   }
+  let payStatus = medicinePaymentInput.paymentStatus;
+  if (medicinePaymentInput.paymentType == MEDICINE_ORDER_PAYMENT_TYPE.COD) {
+    payStatus = '';
+  }
   const medicineOrderPharma = {
     tpdetails: {
       OrderId: orderDetails.orderAutoId,
@@ -205,7 +209,7 @@ const SaveMedicineOrderPayment: Resolver<
       PaymentDetails: {
         TotalAmount: medicinePaymentInput.amountPaid,
         PaymentSource: medicinePaymentInput.paymentType,
-        PaymentStatus: medicinePaymentInput.paymentStatus,
+        PaymentStatus: payStatus,
         PaymentOrderId: medicinePaymentInput.paymentRefId,
       },
       ItemDetails: orderLineItems,
