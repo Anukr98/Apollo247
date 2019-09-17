@@ -36,7 +36,9 @@ import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetail
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 // add a custom command cy.foo()
 Cypress.Commands.add('foo', () => 'foo');
-Cypress.Commands.add('visitAph', (route) => cy.visit(`${clientBaseUrl()}${route}`));
+Cypress.Commands.add('visitAph', (route, options) =>
+  cy.visit(`${clientBaseUrl()}${route}`, options)
+);
 Cypress.Commands.add('mockAphGraphql', (options) => (cy as any).mockGraphql(options));
 Cypress.Commands.add('mockAphGraphqlOps', (options) => (cy as any).mockGraphqlOps(options));
 Cypress.Commands.add('clearFirebaseDb', () =>
@@ -77,7 +79,7 @@ declare global {
       clearFirebaseDb: () => void;
       signIn: (doctor: GetDoctorDetails_getDoctorDetails | null) => Cypress.Chainable;
       signOut: () => void;
-      visitAph: (route: string) => Cypress.Chainable;
+      visitAph: (route: string, options?: Partial<VisitOptions>) => Cypress.Chainable;
       mockAphGraphql(options?: MockAphGraphQLOptions<AllAphOperations>): Cypress.Chainable;
       mockAphGraphqlOps(options?: SetAphOperationsOpts<AllAphOperations>): Cypress.Chainable;
     }
