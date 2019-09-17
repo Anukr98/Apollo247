@@ -233,6 +233,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const stopcallMsg = '^^callme`stop^^';
   const acceptcallMsg = '^^callme`accept^^';
   const startConsult = '^^#startconsult';
+  const startConsultjr = '^^#startconsultJr';
   const stopConsult = '^^#stopconsult';
   const documentUpload = '^^#DocumentUpload';
   const transferconsult = '^^#transferconsult';
@@ -324,6 +325,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
           message.message.message !== startConsult &&
+          message.message.message !== startConsultjr &&
           message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
@@ -434,6 +436,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== startConsult &&
+      rowData.message !== startConsultjr &&
       rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
@@ -499,6 +502,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== startConsult &&
+      rowData.message !== startConsultjr &&
       rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
