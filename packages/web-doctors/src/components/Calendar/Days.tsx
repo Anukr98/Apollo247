@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { startOfWeek, endOfWeek, eachDayOfInterval, getDate, getDay, isToday } from 'date-fns';
 import { getTime } from 'date-fns/esm';
+import _uniqueId from 'lodash/uniqueId';
 
 const days: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
@@ -78,7 +79,7 @@ export const Days: React.FC<DaysProps> = ({ date, userSelection, handler, classN
         {range.map((date, idx) => (
           <li
             className={`${classes.days} ${currentSelection === idx ? 'highlight' : ''}`}
-            key={idx}
+            key={_uniqueId('week_')}
             onClick={(e) => (setUserSelectedDate(date), handler(e, date))}
           >
             <span className={classes.day}>{isToday(date) ? 'today' : days[getDay(date)]}</span>
