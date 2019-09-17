@@ -11,7 +11,6 @@ import {
   FileBig,
   Filter,
   NotificationIcon,
-  NoData,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -64,9 +63,13 @@ const filterData: filterDataType[] = [
 export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
-  const [tabs, setTabs] = useState(strings.health_records_home.tabs);
-  const [selectedTab, setselectedTab] = useState<string>(`${tabs[0].title} - ${tabs[0].count}`);
+  const tabs = strings.health_records_home.tabs;
 
+  const [medicalRecords, setmedicalRecords] = useState<
+    (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[] | null | undefined
+  >([]);
+
+  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
@@ -74,9 +77,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [pastarrya, setPastarrya] = useState<[]>([]);
   const [arrayValues, setarrayValues] = useState<any>();
-  const [medicalRecords, setmedicalRecords] = useState<
-    (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords | null)[] | null | undefined
-  >([]);
   const client = useApolloClient();
 
   useEffect(() => {
@@ -111,14 +111,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           };
         });
 
-        setTabs([
-          ...tabs.map((item) =>
-            item.title == tabs[0].title
-              ? { ...item, count: `${consults.length + medOrders.length}` }
-              : item
-          ),
-        ]);
-        setselectedTab(`${tabs[0].title} - ${consults.length + medOrders.length}`);
+        // setTabs([
+        //   ...tabs.map((item) =>
+        //     item.title == tabs[0].title
+        //       ? { ...item, count: `${consults.length + medOrders.length}` }
+        //       : item
+        //   ),
+        // ]);
+        setselectedTab(`${tabs[0].title}`);
 
         medOrders.forEach((c) => {
           consultsAndMedOrders[c!.quoteDateTime] = {
@@ -147,15 +147,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       })
       .then(({ data }) => {
         const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
-
+        console.log('records occured', { records });
         setmedicalRecords(records);
-        setTabs([
-          ...tabs.map((item) =>
-            item.title == tabs[1].title
-              ? { ...item, count: `${data.getPatientMedicalRecords!.medicalRecords!.length}` }
-              : item
-          ),
-        ]);
+        // setTabs([
+        //   ...tabs.map((item) =>
+        //     item.title == tabs[1].title
+        //       ? { ...item, count: `${data.getPatientMedicalRecords!.medicalRecords!.length}` }
+        //       : item
+        //   ),
+        // ]);
       })
       .catch((error) => {
         console.log('Error occured', { error });
@@ -180,11 +180,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .then((_data) => {
         const newRecords = medicalRecords!.filter((record: any) => record!.id != MedicaId);
         setmedicalRecords(newRecords);
-        setTabs([
-          ...tabs.map((item) =>
-            item.title == tabs[1].title ? { ...item, count: `${newRecords.length}` } : item
-          ),
-        ]);
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -193,7 +188,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         Alert.alert('Error', errorMessage);
       });
   };
-
   const renderTopView = () => {
     return (
       <View
@@ -244,24 +238,73 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               ...theme.viewStyles.shadowStyle,
             }}
             height={44}
-            data={tabs.map((item) => ({ title: `${item.title} - ${item.count}` }))}
+            data={tabs}
             onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-            selectedTab={`${
-              tabs.find(
-                (item) =>
-                  selectedTab.indexOf(item.title) > -1 || item.title.indexOf(selectedTab) > -1
-              )!.title
-            } - ${
-              tabs.find(
-                (item) =>
-                  selectedTab.indexOf(item.title) > -1 || item.title.indexOf(selectedTab) > -1
-              )!.count
-            }`}
+            selectedTab={selectedTab}
           />
         </View>
       </View>
     );
   };
+
+  // const renderTopView = () => {
+  //   return (
+  //     <View
+  //       style={{
+  //         height: 280,
+  //         // justifyContent: 'space-between',
+  //       }}
+  //     >
+  //       <View
+  //         style={{
+  //           position: 'absolute',
+  //           top: 0,
+  //           left: 0,
+  //           right: 0,
+  //         }}
+  //       >
+  //         <UserIntro
+  //           description={strings.health_records_home.description}
+  //           style={{
+  //             height: 236,
+  //           }}
+  //         >
+  //           <View
+  //             style={{
+  //               height: 83,
+  //               flexDirection: 'row',
+  //               justifyContent: 'space-between',
+  //               marginHorizontal: 20,
+  //             }}
+  //           >
+  //             <View style={{ marginTop: 20 }}>
+  //               <ApolloLogo />
+  //             </View>
+  //             <View style={{ flexDirection: 'row', marginTop: 16 }}>
+  //               <NotificationIcon />
+  //             </View>
+  //           </View>
+  //         </UserIntro>
+  //       </View>
+  //       <View>
+  //         <TabsComponent
+  //           style={{
+  //             height: 43,
+  //             marginTop: 236,
+  //             backgroundColor: theme.colors.CARD_BG,
+  //             ...theme.viewStyles.shadowStyle,
+  //           }}
+  //           textStyle={{
+  //             paddingTop: 12,
+  //           }}
+  //           data={tabs}
+  //           onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+  //           selectedTab={selectedTab}
+  //         />
+  //       </View>
+  //     </View>
+  //   );
+  // };
 
   const renderFilter = () => {
     return (
@@ -279,7 +322,36 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
+  // const consultionType = (id: string, filter: ConsultMode) => {
+  //   doctorsAvailability;
+  //   let filterType = false;
+  //   doctorsAvailability &&
+  //     doctorsAvailability.forEach((element) => {
+  //       if (
+  //         element &&
+  //         element.doctorId === id &&
+  //         element.availableModes &&
+  //         element.availableModes.includes(filter)
+  //       ) {
+  //         filterType = true;
+  //       }
+  //     });
+  //   return filterType;
+  // };
+
   const renderConsults = () => {
+    console.log('arrayValues', arrayValues);
+
+    // const arrayValuesFilter =
+    //   filterData[0].selectedOptions && filterData[0].selectedOptions.length
+    //     ? arrayValues.filter(
+    //         (item: any) => {
+    //           return consultionType(item.appointmentType);
+    //         }
+    //         // item && item.appointmentType && filterData[0].selectedOptions.split(' ') ===
+    //       )
+    //     : arrayValues;
+    // console.log(arrayValuesFilter, 'arrayValues', arrayValues);
     return (
       <View>
         {renderFilter()}
@@ -292,10 +364,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 height: 60,
                 justifyContent: 'center',
                 alignItems: 'center',
-                marginBottom: 25,
               }}
             >
-              <NoData />
+              <FileBig />
             </View>
             <Text
               style={{
@@ -348,25 +419,18 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderTopView()}
-          {selectedTab === `${tabs[0].title} - ${tabs[0].count}` ? (
+          {selectedTab === tabs[0].title ? (
             renderConsults()
           ) : (
             <MedicalRecords
               navigation={props.navigation}
-              onTabCount={(count) => {
-                setTabs([
-                  ...tabs.map((item) =>
-                    item.title == tabs[1].title ? { ...item, count: `${count}` } : item
-                  ),
-                ]);
-              }}
               MedicalRecordData={medicalRecords}
               renderDeleteMedicalOrder={renderDeleteMedicalOrder}
             />
           )}
         </ScrollView>
       </SafeAreaView>
-      {displayFilter && (
+      {/* {displayFilter && (
         <FilterScene
           onClickClose={(data: filterDataType[]) => {
             setDisplayFilter(false);
@@ -375,16 +439,17 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           setData={(data) => {
             setFilterData(data);
           }}
-          filterLength={() => {}}
           data={FilterData}
         />
-      )}
+      )} */}
       {displayOrderPopup && (
         <AddFilePopup
           onClickClose={() => {
             setdisplayOrderPopup(false);
           }}
-          getData={(data: (PickerImage | PickerImage[])[]) => {}}
+          getData={(data: (PickerImage | PickerImage[])[]) => {
+            console.log(data);
+          }}
         />
       )}
       {loading && <Spinner />}

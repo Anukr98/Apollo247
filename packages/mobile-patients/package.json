@@ -67,7 +67,7 @@
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "opentok-react-native": "^0.10.3",
-    "praktice-navigator-react-native-sdk": "^1.1.7",
+    "praktice-navigator-react-native-sdk": "^1.1.11",
     "pubnub": "^4.24.4",
     "pubnub-react": "^1.3.1",
     "react": "16.8.6",

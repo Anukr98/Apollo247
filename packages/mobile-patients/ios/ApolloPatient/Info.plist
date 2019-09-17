@@ -30,6 +30,14 @@
 				<string>com.googleusercontent.apps.537093214409-l1ffk0sjcbcf3jur708tvchlkd66gbp6</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>apolloPatients</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>12</string>

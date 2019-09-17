@@ -383,7 +383,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                     paddingBottom: 4,
                   }}
                 >
-                  #{data.id}
+                  #{data.id.slice(-4)}
                 </Text>
                 <View style={styles.separatorStyle} />
                 <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>

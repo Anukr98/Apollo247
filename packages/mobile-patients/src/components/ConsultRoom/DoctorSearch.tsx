@@ -124,8 +124,8 @@ let doctorIds: (string | undefined)[] = [];
 export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
-  const params = props.navigation.state.params ? props.navigation.state.params.searchText : '';
-  const MoveDoctor = props.navigation.state.params ? props.navigation.state.params.MoveDoctor : '';
+  const params = props.navigation.state.params ? props.navigation.state.params!.searchText : '';
+  const MoveDoctor = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
   console.log(MoveDoctor, 'MoveDoctor');
 
   const [searchText, setSearchText] = useState<string>(params);
@@ -371,7 +371,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() =>
             backDataFunctionality(
-              props.navigation.state.params ? props.navigation.state.params.MoveDoctor : ''
+              props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : ''
             )
           }
         />
