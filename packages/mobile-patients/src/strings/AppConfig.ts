@@ -5,6 +5,7 @@ const Configuration = {
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
+  PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
 };
 
 export const NeedHelp = [

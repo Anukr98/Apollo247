@@ -6,7 +6,7 @@ import {
   ArrowStep3,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
   Dimensions,
   Image,
@@ -134,29 +134,11 @@ const slides: Slide[] = [
 export interface OnboardingProps extends NavigationScreenProps {}
 export const Onboarding: React.FC<OnboardingProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
-  const [currentIndex, setcurrentIndex] = useState<number>(1);
 
   useEffect(() => {
     firebase.analytics().setCurrentScreen('Onboarding');
   });
-  console.log(currentIndex, 'currentIndex');
 
-  const renderSkipView = () => {
-    if (currentIndex !== slides.length)
-      return (
-        <View style={styles.skipView}>
-          <Text
-            style={styles.skipTextStyle}
-            onPress={() => {
-              AsyncStorage.setItem('onboarding', 'true');
-              props.navigation.replace(AppRoutes.Login);
-            }}
-          >
-            SKIP
-          </Text>
-        </View>
-      );
-  };
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.mainView}>
@@ -165,7 +147,6 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
             ref={appIntroSliderRef}
             hidePagination
             slides={slides}
-            onSlideChange={(index: number) => setcurrentIndex(index + 1)}
             renderItem={(item: Slide) => (
               <View style={styles.itemContainer}>
                 <Image source={item.image} style={styles.imageStyle} resizeMode="cover" />
@@ -176,13 +157,11 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
-                    console.log(item.index, appIntroSliderRef.current);
-                    setcurrentIndex(item.index + 1);
                     if (item.index === slides.length) {
                       AsyncStorage.setItem('onboarding', 'true');
                       props.navigation.replace(AppRoutes.Login);
                     } else {
-                      appIntroSliderRef.current && appIntroSliderRef.current.goToSlide(item.index);
+                      appIntroSliderRef.current!.goToSlide(item.index);
                     }
                   }}
                 >
@@ -193,7 +172,18 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
           />
         </View>
       </View>
-      {renderSkipView()}
+
+      <View style={styles.skipView}>
+        <Text
+          style={styles.skipTextStyle}
+          onPress={() => {
+            AsyncStorage.setItem('onboarding', 'true');
+            props.navigation.replace(AppRoutes.Login);
+          }}
+        >
+          SKIP
+        </Text>
+      </View>
     </SafeAreaView>
   );
 };
