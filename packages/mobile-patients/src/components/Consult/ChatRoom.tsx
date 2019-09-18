@@ -100,6 +100,7 @@ import {
 import { Spinner } from '../ui/Spinner';
 import { OverlayRescheduleView } from './OverlayRescheduleView';
 import SoftInputMode from 'react-native-set-soft-input-mode';
+import { AppConfig } from '../../strings/AppConfig';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -494,9 +495,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
   };
 
+  // const config: Pubnub.PubnubConfig = {
+  //   subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
+  //   publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+  //   ssl: true,
+  // };
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
-    publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+    subscribeKey: AppConfig.Configuration.PRO_PUBNUB_SUBSCRIBER,
+    publishKey: AppConfig.Configuration.PRO_PUBNUB_PUBLISH,
     ssl: true,
   };
   const pubnub = new Pubnub(config);
@@ -766,7 +772,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         : height - e.endCoordinates.height - 141
     );
     setDropDownBottomStyle(
-      isIphoneX() ? height - e.endCoordinates.height - 520 : Platform.OS === 'ios' ? height - e.endCoordinates.height - 190 : height - e.endCoordinates.height - 450
+      isIphoneX()
+        ? height - e.endCoordinates.height - 520
+        : Platform.OS === 'ios'
+        ? height - e.endCoordinates.height - 190
+        : height - e.endCoordinates.height - 450
     );
 
     setTimeout(() => {
@@ -2065,7 +2075,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         {isCall && (
           <View style={{ flex: 1, flexDirection: 'row' }}>
             <OTSession
-              apiKey={'46401302'}
+              // apiKey={'46401302'}
+              apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
               sessionId={sessionId}
               token={token}
               eventHandlers={sessionEventHandlers}
@@ -2171,7 +2182,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           }}
         />
         <OTSession
-          apiKey={'46401302'}
+          apiKey={AppConfig.Configuration.PRO_TOKBOX_KEY}
           sessionId={sessionId}
           token={token}
           eventHandlers={sessionEventHandlers}
