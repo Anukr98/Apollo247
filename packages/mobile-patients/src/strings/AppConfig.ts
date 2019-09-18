@@ -1,6 +1,7 @@
 const Configuration = {
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-  PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
+  PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //Production
+  // PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
@@ -9,6 +10,12 @@ const Configuration = {
   PRO_TOKBOX_KEY: '46422952',
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5',
+  // PHARMA_AUTH_TOKEN: 'dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+  PHARMA_AUTH_TOKEN: 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d', //Production
+  PHARMA_AUTH_TOKEN_OLD: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+  // PHARMA_BASE_URL: 'http://13.126.95.18',
+  PHARMA_BASE_URL: 'https://www.apollopharmacy.in', //Production
+  PHARMA_UAT_BASE_URL: 'http://uat.apollopharmacy.in',
 };
 
 export const NeedHelp = [
