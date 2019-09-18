@@ -1,5 +1,6 @@
 import Axios, { AxiosResponse } from 'axios';
 import { AsyncStorage } from 'react-native';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface MedicineProduct {
   description: string;
@@ -126,11 +127,7 @@ export interface Store {
 }
 // 9f15bdd0fcd5423190c2e877ba0228A24
 // const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
-const config = {
-  AUTH_TOKEN: 'dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-  BASE_URL: 'http://13.126.95.18',
-  AUTH_TOKEN_OLD: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-};
+const config = AppConfig.Configuration;
 
 export const getQuoteId = async () =>
   (await AsyncStorage.getItem('QUOTE_ID')) || (await generateAndSaveQuoteId()); // in-progress, need to optimize
@@ -175,11 +172,11 @@ export const getMedicineDetailsApi = (
   productSku: string
 ): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
   return Axios.post(
-    `${config.BASE_URL}/popcsrchpdp_api.php`,
+    `${config.PHARMA_BASE_URL}/popcsrchpdp_api.php`,
     { params: productSku },
     {
       headers: {
-        Authorization: config.AUTH_TOKEN,
+        Authorization: config.PHARMA_AUTH_TOKEN,
       },
     }
   );
@@ -194,11 +191,11 @@ export const searchMedicineApi = (
   cancel && cancel();
 
   return Axios.post(
-    `${config.BASE_URL}/popcsrchprd_api.php`,
+    `${config.PHARMA_BASE_URL}/popcsrchprd_api.php`,
     { params: searchText },
     {
       headers: {
-        Authorization: config.AUTH_TOKEN,
+        Authorization: config.PHARMA_AUTH_TOKEN,
         'Content-Type': 'application/json',
       },
       cancelToken: new CancelToken(function executor(c) {
@@ -264,11 +261,12 @@ export const searchPickupStoresApi = async (
   pincode: string
 ): Promise<AxiosResponse<{ Stores: Store[]; stores_count: number }>> => {
   return Axios.post(
-    `${config.BASE_URL}/popcsrchpin_api.php`,
+    // `${config.PHARMA_BASE_URL}/popcsrchpin_api.php`,
+    `${config.PHARMA_BASE_URL}/searchpin_api.php`, //Production
     { params: pincode },
     {
       headers: {
-        Authorization: config.AUTH_TOKEN,
+        Authorization: config.PHARMA_AUTH_TOKEN,
       },
     }
   );
@@ -277,42 +275,65 @@ export const searchPickupStoresApi = async (
 export const pinCodeServiceabilityApi = (
   pinCode: string
 ): Promise<AxiosResponse<{ Availability: boolean }>> => {
-  return new Promise((res, rej) => {
-    Axios.post(
-      `${config.BASE_URL}/popcsrchpin_api.php`,
-      { params: pinCode },
-      {
-        headers: {
-          Authorization: config.AUTH_TOKEN,
+  return Axios.post(
+    // `${config.PHARMA_UAT_BASE_URL}/pincode_api.php`,
+    `${config.PHARMA_BASE_URL}/servicability_api.php`, //Production
+    {
+      postalcode: pinCode,
+      skucategory: [
+        {
+          SKU: 'PHARMA',
         },
-      }
-    )
-      .then(({ data }) => {
-        // const response = data as { Stores: Store[]; stores_count: number };
-        // const Availability = response.stores_count == 0 ? false : true;
-        // res(({ data: { Availability: Availability } } as any) as Promise<
-        //   AxiosResponse<{ Availability: boolean }>
-        // >);
-        // not checking serviceability because of Pharmacy API errors
-        res(({ data: { Availability: true } } as any) as Promise<
-          AxiosResponse<{ Availability: boolean }>
-        >);
-      })
-      .catch((e) => {
-        // rej(e);
-        res(({ data: { Availability: true } } as any) as Promise<
-          AxiosResponse<{ Availability: boolean }>
-        >);
-      });
-  });
+      ],
+    },
+    {
+      headers: {
+        Authorization: config.PHARMA_AUTH_TOKEN,
+      },
+    }
+  );
 };
+
+// export const pinCodeServiceabilityApi = (
+//   pinCode: string
+// ): Promise<AxiosResponse<{ Availability: boolean }>> => {
+//   return new Promise((res, rej) => {
+//     Axios.post(
+//       // `${config.PHARMA_BASE_URL}/popcsrchpin_api.php`,
+//       `${config.PHARMA_BASE_URL}/popcsrchpin_api.php`, //Production
+//       { params: pinCode },
+//       {
+//         headers: {
+//           Authorization: config.PHARMA_AUTH_TOKEN,
+//         },
+//       }
+//     )
+//       .then(({ data }) => {
+//         // const response = data as { Stores: Store[]; stores_count: number };
+//         // const Availability = response.stores_count == 0 ? false : true;
+//         // res(({ data: { Availability: Availability } } as any) as Promise<
+//         //   AxiosResponse<{ Availability: boolean }>
+//         // >);
+//         // not checking serviceability because of Pharmacy API errors
+//         res(({ data: { Availability: true } } as any) as Promise<
+//           AxiosResponse<{ Availability: boolean }>
+//         >);
+//       })
+//       .catch((e) => {
+//         // rej(e);
+//         res(({ data: { Availability: true } } as any) as Promise<
+//           AxiosResponse<{ Availability: boolean }>
+//         >);
+//       });
+//   });
+// };
 
 // export const pinCodeServiceabilityApi = (
 //   pinCode: string
 //   category: 'FMCG' | 'PHARMA'
 // ): Promise<AxiosResponse<{ Availability: boolean; catg: 'FMCG' | 'PHARMA' }>> => {
 //   return Axios.post(
-//     `http://uat.apollopharmacy.in/pincode_api.php`,
+//     `${config.PHARMA_UAT_BASE_URL}/pincode_api.php`,
 //     {
 //       postalcode: pinCode,
 //       skucategory: [
