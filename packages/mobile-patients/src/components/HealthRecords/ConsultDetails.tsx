@@ -127,6 +127,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const client = useApolloClient();
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
+  const [showDiagnosis, setshowDiagnosis] = useState<boolean>(true);
+  const [showgeneral, setShowGeneral] = useState<boolean>(true);
+  const [showFollowUp, setshowFollowUpl] = useState<boolean>(true);
   const [caseSheetDetails, setcaseSheetDetails] = useState<
     getCaseSheet_getCaseSheet_caseSheetDetails
   >();
@@ -325,7 +328,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.medicinePrescription &&
             caseSheetDetails!.medicinePrescription.length !== 0 &&
-            caseSheetDetails!.doctorType == 'STAR_APOLLO' ? (
+            caseSheetDetails!.doctorType !== 'JUNIOR' ? (
               <View>
                 {caseSheetDetails!.medicinePrescription.map((item) => {
                   if (item)
@@ -408,8 +411,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       <View>
         <CollapseCard
           heading="DIAGNOSIS"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
+          collapse={showDiagnosis}
+          onPress={() => setshowDiagnosis(!showDiagnosis)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.diagnosis && caseSheetDetails!.diagnosis! !== null ? (
@@ -438,8 +441,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       <View>
         <CollapseCard
           heading="GENERAL ADVICE"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
+          collapse={showgeneral}
+          onPress={() => setShowGeneral(!showgeneral)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.otherInstructions && caseSheetDetails!.otherInstructions !== null ? (
@@ -472,13 +475,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       <View>
         <CollapseCard
           heading="FOLLOW-UP"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
+          collapse={showFollowUp}
+          onPress={() => setshowFollowUpl(!showFollowUp)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails &&
             caseSheetDetails!.followUp &&
-            caseSheetDetails!.doctorType == 'STAR_APOLLO' ? (
+            caseSheetDetails!.doctorType !== 'JUNIOR' ? (
               <View>
                 <View>
                   <View style={styles.labelViewStyle}>

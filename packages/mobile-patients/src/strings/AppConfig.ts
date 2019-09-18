@@ -6,7 +6,8 @@ const Configuration = {
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
-  PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  // PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', // PRO
   PRO_TOKBOX_KEY: '46422952',
   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef',
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5',
@@ -15,7 +16,7 @@ const Configuration = {
   PHARMA_AUTH_TOKEN_OLD: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
   // PHARMA_BASE_URL: 'http://13.126.95.18',
   PHARMA_BASE_URL: 'https://www.apollopharmacy.in', //Production
-  PHARMA_UAT_BASE_URL: 'http://uat.apollopharmacy.in',
+  // PHARMA_UAT_BASE_URL: 'http://uat.apollopharmacy.in',
 };
 
 export const NeedHelp = [

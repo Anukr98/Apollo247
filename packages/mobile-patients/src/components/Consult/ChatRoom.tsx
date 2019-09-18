@@ -1102,54 +1102,56 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
-                    console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
+                    try {
+                      console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
 
-                    let dirs = RNFetchBlob.fs.dirs;
-                    console.log('dirs', dirs);
-                    if (Platform.OS == 'ios') {
-                    }
+                      let dirs = RNFetchBlob.fs.dirs;
+                      console.log('dirs', dirs);
+                      if (Platform.OS == 'ios') {
+                      }
 
-                    console.log(
-                      'pdf downloadDest',
-                      rowData.transferInfo &&
-                        rowData.transferInfo.pdfUrl &&
-                        rowData.transferInfo.pdfUrl.split('/').pop()
-                    );
+                      console.log(
+                        'pdf downloadDest',
+                        rowData.transferInfo &&
+                          rowData.transferInfo.pdfUrl &&
+                          rowData.transferInfo.pdfUrl.split('/').pop()
+                      );
 
-                    setLoading(true);
-                    RNFetchBlob.config({
-                      fileCache: true,
-                      addAndroidDownloads: {
-                        useDownloadManager: true,
-                        notification: false,
-                        mime: 'application/pdf',
-                        //path:  RNFetchBlob.fs.dirs.DownloadDir + rowData.transferInfo.pdfUrl &&
-                        //rowData.transferInfo.pdfUrl.split('/').pop(),
-                        path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
-                        description: 'File downloaded by download manager.',
-                      },
-                    })
-                      .fetch('GET', rowData.transferInfo.pdfUrl, {
-                        //some headers ..
+                      setLoading(true);
+                      RNFetchBlob.config({
+                        fileCache: true,
+                        addAndroidDownloads: {
+                          useDownloadManager: true,
+                          notification: false,
+                          mime: 'application/pdf',
+                          //path:  RNFetchBlob.fs.dirs.DownloadDir + rowData.transferInfo.pdfUrl &&
+                          //rowData.transferInfo.pdfUrl.split('/').pop(),
+                          path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+                          description: 'File downloaded by download manager.',
+                        },
                       })
-                      .then((res) => {
-                        setLoading(false);
-                        // the temp file path
-                        console.log('The file saved to res ', res);
-                        console.log('The file saved to ', res.path());
+                        .fetch('GET', rowData.transferInfo.pdfUrl, {
+                          //some headers ..
+                        })
+                        .then((res) => {
+                          setLoading(false);
+                          // the temp file path
+                          console.log('The file saved to res ', res);
+                          console.log('The file saved to ', res.path());
 
-                        // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                        // RNFetchBlob.ios.openDocument(res.path());
-                        Alert.alert('Download Complete');
-                        Platform.OS === 'ios'
-                          ? RNFetchBlob.ios.previewDocument(res.path())
-                          : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                      })
-                      .catch((err) => {
-                        console.log('error ', err);
-                        setLoading(false);
-                        // ...
-                      });
+                          // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                          // RNFetchBlob.ios.openDocument(res.path());
+                          Alert.alert('Download Complete');
+                          Platform.OS === 'ios'
+                            ? RNFetchBlob.ios.previewDocument(res.path())
+                            : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                        })
+                        .catch((err) => {
+                          console.log('error ', err);
+                          setLoading(false);
+                          // ...
+                        });
+                    } catch (error) {}
                   }}
                 />
 

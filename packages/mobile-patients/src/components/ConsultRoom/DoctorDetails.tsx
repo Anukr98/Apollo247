@@ -277,10 +277,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
   const renderDoctorDetails = () => {
     // console.log(doctorDetails, 'renderDoctorDetails', 'availableInMin', availableInMin);
-    if (doctorDetails) {
+    if (doctorDetails && doctorDetails.doctorHospital && doctorDetails.doctorHospital.length > 0) {
       const doctorClinics = doctorDetails.doctorHospital.filter((item) => {
         // console.log(item, item.facility);
-        return item.facility.facilityType === 'HOSPITAL';
+        if (item && item.facility && item.facility.facilityType)
+          return item.facility.facilityType === 'HOSPITAL';
       });
       const clinicAddress =
         doctorClinics.length > 0 && doctorDetails.doctorType !== DoctorType.PAYROLL
@@ -289,7 +290,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
       return (
         <View style={styles.topView}>
-          {doctorDetails && doctorDetails && (
+          {doctorDetails && (
             <View style={styles.detailsViewStyle}>
               <Text style={styles.doctorNameStyles}>
                 Dr. {doctorDetails.firstName} {doctorDetails.lastName}

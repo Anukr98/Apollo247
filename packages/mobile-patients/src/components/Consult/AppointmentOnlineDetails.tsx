@@ -389,7 +389,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                     paddingBottom: 4,
                   }}
                 >
-                  #{data.id.slice(-4)}
+                  #{data.displayId}
                 </Text>
                 <View style={styles.separatorStyle} />
                 <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>
@@ -511,9 +511,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   <View
                     style={{
                       backgroundColor: 'white',
-                      width: 201,
-                      height: 55,
-                      marginLeft: width - 221,
+                      width: 100,
+                      height: 45,
+                      marginLeft: width - 120,
                       marginTop: 64,
                       borderRadius: 10,
                       alignItems: 'center',

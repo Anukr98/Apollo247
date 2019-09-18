@@ -11,8 +11,8 @@
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
 #import <Firebase.h>
-//#import <Fabric/Fabric.h>
-//#import <Crashlytics/Crashlytics.h>
+#import <Fabric/Fabric.h>
+#import <Crashlytics/Crashlytics.h>
 #import "RNSplashScreen.h"  // here
 #import "RNFirebaseNotifications.h"
 #import "RNFirebaseMessaging.h"
@@ -39,7 +39,7 @@
   
   [FIRApp configure];
   [RNFirebaseNotifications configure];
-  //  [Fabric with:@[[Crashlytics class]]];
+  [Fabric with:@[[Crashlytics class]]];
   
   //  [[UNUserNotificationCenter currentNotificationCenter] setDelegate:self];
   

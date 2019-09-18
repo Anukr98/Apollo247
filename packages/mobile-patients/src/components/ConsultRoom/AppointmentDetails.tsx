@@ -392,7 +392,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     paddingBottom: 4,
                   }}
                 >
-                  #{data.id.slice(-4)}
+                  #{data.displayId}
                 </Text>
                 <View style={styles.separatorStyle} />
                 <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>
@@ -548,9 +548,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   <View
                     style={{
                       backgroundColor: 'white',
-                      width: 201,
-                      height: 55,
-                      marginLeft: width - 221,
+                      width: 100,
+                      height: 45,
+                      marginLeft: width - 120,
                       marginTop: 64,
                       borderRadius: 10,
                       alignItems: 'center',
@@ -566,7 +566,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                         textAlign: 'center',
                       }}
                     >
-                      Cancel Appointment
+                      Cancel
                     </Text>
                   </View>
                 </TouchableOpacity>

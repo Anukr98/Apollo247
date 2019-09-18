@@ -356,7 +356,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const autoSearch = (searchText: string) => {
     axios
       .get(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&location=17.3355835,78.46756239999999&key=${key}`
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${key}`
       )
       .then((obj) => {
         console.log(obj, 'places');
