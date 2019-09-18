@@ -1299,7 +1299,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.consultButton}
                 disabled={
                   startAppointmentButton ||
-                  didisabledsableOnTransfer ||
+                  disableOnTransfer ||
                   appointmentInfo!.appointmentState !== 'NEW' ||
                   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                     appointmentInfo!.status !== STATUS.PENDING)

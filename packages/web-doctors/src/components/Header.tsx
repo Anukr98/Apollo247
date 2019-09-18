@@ -144,6 +144,9 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: '9px !important',
       marginRight: '0 !important',
     },
+    accontDiv: {
+      height: 40,
+    },
   };
 });
 
@@ -182,15 +185,17 @@ export const Header: React.FC = (props) => {
                   <CircularProgress />
                 ) : isSignedIn ? (
                   window.location.href.includes('/profile') ? (
-                    <div>
+                    <div
+                      className={classes.accontDiv}
+                      onClick={() => {
+                        isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                        setSelectedTab(5);
+                      }}
+                    >
                       <img
                         title="Help"
                         className={`${classes.accountIc} ${selectedTab === 5 &&
                           classes.menuItemActive}`}
-                        onClick={() => {
-                          isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
-                          setSelectedTab(5);
-                        }}
                         src={require('images/ic_help.svg')}
                       />
                       {/* <span>
