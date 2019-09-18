@@ -84,6 +84,18 @@ const useStyles = makeStyles((theme: Theme) =>
       left: 0,
       right: 0,
     },
+    textFieldWrapper: {
+      border: 'solid 1px #30c1a3',
+      borderRadius: 10,
+      width: '100%',
+      padding: 16,
+      color: '#01475b',
+      fontSize: 14,
+      fontWeight: 500,
+      position: 'relative',
+      paddingRight: 48,
+    },
+
     suggestion: {
       display: 'block',
       overflow: 'hidden',
@@ -100,6 +112,18 @@ const useStyles = makeStyles((theme: Theme) =>
       listStyleType: 'none',
       borderRadius: 10,
     },
+    chatSubmitBtn: {
+      position: 'absolute',
+      top: '50%',
+      marginTop: -18,
+      right: 10,
+      minWidth: 'auto',
+      padding: 0,
+      '& img': {
+        maxWidth: 36,
+      },
+    },
+
     divider: {
       height: theme.spacing(2),
     },
@@ -152,6 +176,14 @@ const useStyles = makeStyles((theme: Theme) =>
         width: '100%',
         textAlign: 'left',
         whiteSpace: 'normal',
+      },
+    },
+    textFieldColor: {
+      '& input': {
+        color: 'initial',
+        '& :before': {
+          border: 0,
+        },
       },
     },
     btnAddDoctor: {
@@ -210,6 +242,12 @@ export const DiagnosticPrescription: React.FC = () => {
   const client = useApolloClient();
   const { caseSheetEdit } = useContext(CaseSheetContext);
 
+  const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
+  const [showAddOtherTests, setShowAddOtherTests] = useState<boolean>(false);
+  const [otherDiagnostic, setOtherDiagnostic] = useState('');
+  const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
+  const [lengthOfSuggestions, setLengthOfSuggestions] = useState<number>(1);
+
   const fetchDignostic = async (value: string) => {
     client
       .query<SearchDiagnostic, any>({
@@ -228,6 +266,7 @@ export const DiagnosticPrescription: React.FC = () => {
           });
         });
         suggestions = filterVal;
+        setLengthOfSuggestions(suggestions.length);
         setSearchInput(value);
       })
       .catch((e) => {
@@ -293,19 +332,18 @@ export const DiagnosticPrescription: React.FC = () => {
   const handleSuggestionsClearRequested = () => {
     setSuggestions([]);
   };
-
   const handleChange = (itemname: keyof typeof state) => (
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
     if (newValue.length > 2) fetchDignostic(newValue);
+
+    setOtherDiagnostic(newValue.trim());
     setState({
       ...state,
       [itemname]: newValue,
     });
   };
-  const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
-  const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
   const handleDelete = (item: any, idx: number) => {
     // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
@@ -349,12 +387,18 @@ export const DiagnosticPrescription: React.FC = () => {
             className={classes.btnAddDoctor}
             variant="contained"
             color="primary"
-            onClick={() => showAddConditionHandler(true)}
+            onClick={() => {
+              showAddConditionHandler(true);
+              setState({
+                single: '',
+                popper: '',
+              });
+            }}
           >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD DIAGNOSTICS
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
           </AphButton>
         )}
-        {showAddCondition && (
+        {showAddCondition && !showAddOtherTests && (
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
               selectedValues!.push(suggestion);
@@ -365,12 +409,13 @@ export const DiagnosticPrescription: React.FC = () => {
                 single: '',
                 popper: '',
               });
+              setOtherDiagnostic('');
             }}
             {...autosuggestProps}
             inputProps={{
               classes,
               id: 'react-autosuggest-simple',
-              placeholder: 'Search Diagnostics',
+              placeholder: 'Search Tests',
               value: state.single,
               onChange: handleChange('single'),
             }}
@@ -386,6 +431,37 @@ export const DiagnosticPrescription: React.FC = () => {
               </Paper>
             )}
           />
+        )}
+        {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
+          <div>
+            <span>
+              {`do you want to add '${otherDiagnostic}' in Tests ?`}
+              <AphButton
+                className={classes.btnAddDoctor}
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  if (otherDiagnostic.trim() !== '') {
+                    selectedValues!.splice(idx, 0, {
+                      itemname: otherDiagnostic,
+                      __typename: 'DiagnosticPrescription',
+                    });
+                    setSelectedValues(selectedValues);
+                    setShowAddOtherTests(false);
+                    setShowAddCondition(false);
+                    setIdx(selectedValues!.length + 1);
+                    setTimeout(() => {
+                      setOtherDiagnostic('');
+                    }, 10);
+                  } else {
+                    setOtherDiagnostic('');
+                  }
+                }}
+              >
+                <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TEST
+              </AphButton>
+            </span>
+          </div>
         )}
       </Typography>
     </Typography>

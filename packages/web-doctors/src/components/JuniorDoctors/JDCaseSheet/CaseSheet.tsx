@@ -205,13 +205,13 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
     { key: 'diagnosis', value: 'Diagnosis', state: diagnosis, component: <Diagnosis /> },
     {
       key: 'medicinePrescription',
-      value: 'Medicine Prescription',
+      value: 'Medicines',
       state: medicinePrescription,
       component: <MedicinePrescription />,
     },
     {
       key: 'diagnosticPrescription',
-      value: 'Diagnostic Prescription',
+      value: 'Tests',
       state: diagnosticPrescription,
       component: <DiagnosticPrescription />,
     },
