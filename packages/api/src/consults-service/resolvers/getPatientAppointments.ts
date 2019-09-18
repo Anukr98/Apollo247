@@ -17,6 +17,7 @@ export const getPatinetAppointmentsTypeDefs = gql`
     rescheduleCount: Int
     isFollowUp: String!
     appointmentState: APPOINTMENT_STATE
+    displayId: Int
     doctorInfo: DoctorDetails @provides(fields: "id")
   }
 
@@ -60,6 +61,7 @@ type PatinetAppointments = {
   rescheduleCount: number;
   bookingDate: Date;
   isFollowUp: Boolean;
+  displayId: number;
   appointmentState: APPOINTMENT_STATE;
 };
 

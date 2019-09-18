@@ -89,22 +89,25 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         matchedDoctors[0].id
       );
 
-      //get patient and matched doctors previous appointments starts here
-      const otherDoctorsIds = otherDoctors.map((doctor) => {
-        return doctor.id;
-      });
-      const previousAppointments = await consultsRepository.getPatientAndDoctorsAppointments(
-        args.patientId,
-        otherDoctorsIds
-      );
-      const consultedDoctorIds = previousAppointments.map((appt) => {
-        return appt.doctorId;
-      });
-      //get patient and matched doctors previous appointments ends here
+      //apply sort algorithm
+      if (otherDoctors.length > 1) {
+        //get patient and matched doctors previous appointments starts here
+        const otherDoctorsIds = otherDoctors.map((doctor) => {
+          return doctor.id;
+        });
+        const previousAppointments = await consultsRepository.getPatientAndDoctorsAppointments(
+          args.patientId,
+          otherDoctorsIds
+        );
+        const consultedDoctorIds = previousAppointments.map((appt) => {
+          return appt.doctorId;
+        });
+        //get patient and matched doctors previous appointments ends here
 
-      otherDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-        return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
-      });
+        otherDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
+          return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
+        });
+      }
     }
 
     //fetch possible doctors only if there are not matched doctors and specialties
@@ -112,22 +115,24 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       possibleDoctors = await doctorRepository.searchByName('');
       possibleSpecialties = await specialtyRepository.searchByName('');
 
-      //get patient and matched doctors previous appointments starts here
-      const possibleDoctorIds = possibleDoctors.map((doctor) => {
-        return doctor.id;
-      });
-      const previousAppointments = await consultsRepository.getPatientAndDoctorsAppointments(
-        args.patientId,
-        possibleDoctorIds
-      );
-      const consultedDoctorIds = previousAppointments.map((appt) => {
-        return appt.doctorId;
-      });
-      //get patient and matched doctors previous appointments ends here
+      if (possibleDoctors.length > 1) {
+        //get patient and matched doctors previous appointments starts here
+        const possibleDoctorIds = possibleDoctors.map((doctor) => {
+          return doctor.id;
+        });
+        const previousAppointments = await consultsRepository.getPatientAndDoctorsAppointments(
+          args.patientId,
+          possibleDoctorIds
+        );
+        const consultedDoctorIds = previousAppointments.map((appt) => {
+          return appt.doctorId;
+        });
+        //get patient and matched doctors previous appointments ends here
 
-      possibleDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-        return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
-      });
+        possibleDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
+          return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
+        });
+      }
     }
   } catch (searchError) {
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });

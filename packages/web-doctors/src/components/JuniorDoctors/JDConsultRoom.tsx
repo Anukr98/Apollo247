@@ -979,7 +979,7 @@ export const JDConsultRoom: React.FC = () => {
                   <div className={classes.blockGroup}>
                     <div className={classes.blockHeader}>Case Sheet</div>
                     <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                      <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 430px' }}>
+                      <Scrollbars autoHide={false} style={{ height: 'calc(100vh - 430px' }}>
                         <div className={classes.customScroll}>
                           {casesheetInfo ? (
                             <CaseSheet

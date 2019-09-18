@@ -440,7 +440,8 @@ export const MedicinePrescription: React.FC = () => {
     },
   ]);
   const [selectedMedicines, setSelectedMedicines] = React.useState<MedicineObject[]>([]);
-
+  const [isSuggestionFetched, setIsSuggestionFetched] = useState(true);
+  const [medicine, setMedicine] = useState('');
   const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
     const inputValue = deburr(value.trim()).toLowerCase();
@@ -460,6 +461,16 @@ export const MedicinePrescription: React.FC = () => {
           return keep;
         });
   }
+
+  const toBeTaken = (value: any) => {
+    const arry: any = [];
+    value.map((slot: any) => {
+      const x = slot.replace('_', ' ').toLowerCase();
+      arry.push(x);
+    });
+    return arry;
+  };
+
   const fetchMedicines = async (value: any) => {
     setLoading(true);
     const FinalSearchdata: any = [];
@@ -486,7 +497,12 @@ export const MedicinePrescription: React.FC = () => {
         setSearchInput(value);
         setLoading(false);
       })
-      .catch();
+      .catch((error) => {
+        if (error.toString().includes('404')) {
+          setIsSuggestionFetched(false);
+          setLoading(false);
+        }
+      });
     setLoading(false);
   };
   const deletemedicine = (idx: any) => {
@@ -597,48 +613,55 @@ export const MedicinePrescription: React.FC = () => {
     });
     setToBeTakenSlots(slots);
   };
-  const selectedMedicinesHtml = selectedMedicines.map(
-    (_medicine: MedicineObject | null, index: number) => {
-      const medicine = _medicine!;
-      return (
-        <div key={index} style={{ position: 'relative' }}>
-          <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
-            <h5>{medicine.name}</h5>
-            <h6>
-              {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
-            </h6>
-            {/* <img
-            className={classes.checkImg}
-            src={
-              medicine.selected
-                ? require('images/ic_selected.svg')
-                : require('images/ic_unselected.svg')
-            }
-            alt="chkUncheck"
-          /> */}
-          </Paper>
-          <AphButton
-            variant="contained"
-            color="primary"
-            key={`del ${index}`}
-            classes={{ root: classes.updateSymptom }}
-            onClick={() => updateMedicine(index)}
-          >
-            <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
-          </AphButton>
-          <AphButton
-            variant="contained"
-            color="primary"
-            key={`del ${index}`}
-            classes={{ root: classes.deleteSymptom }}
-            onClick={() => deletemedicine(index)}
-          >
-            <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
-          </AphButton>
-        </div>
-      );
+
+  const selectedMedicinesHtml = selectedMedicinesArr!.map((_medicine: any, index: number) => {
+    const medicine = _medicine!;
+
+    const durationt = `${Number(medicine.medicineConsumptionDurationInDays)} days ${toBeTaken(
+      medicine.medicineToBeTaken
+    )
+      .join(',')
+      .toLowerCase()}`;
+
+    return (
+      <div key={index} style={{ position: 'relative' }}>
+        <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
+          <h5>{medicine.medicineName}</h5>
+          <h6>
+            {medicine.medicineTimings.length} times a day (
+            {medicine.medicineTimings.join(' , ').toLowerCase()}) for {durationt}
+          </h6>
+          {/* <img
+    className={classes.checkImg}
+    src={
+    medicine.selected
+    ? require('images/ic_selected.svg')
+    : require('images/ic_unselected.svg')
     }
-  );
+    alt="chkUncheck"
+    /> */}
+        </Paper>
+        <AphButton
+          variant="contained"
+          color="primary"
+          key={`del ${index}`}
+          classes={{ root: classes.updateSymptom }}
+          onClick={() => updateMedicine(index)}
+        >
+          <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
+        </AphButton>
+        <AphButton
+          variant="contained"
+          color="primary"
+          key={`del ${index}`}
+          classes={{ root: classes.deleteSymptom }}
+          onClick={() => deletemedicine(index)}
+        >
+          <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+        </AphButton>
+      </div>
+    );
+  });
   const daySlotsHtml = daySlots.map((_daySlotitem: SlotsObject | null, index: number) => {
     const daySlotitem = _daySlotitem!;
     return (
@@ -737,14 +760,6 @@ export const MedicinePrescription: React.FC = () => {
       setSelectedId('');
     }
   };
-  const toBeTaken = (value: any) => {
-    const arry: any = [];
-    value.map((slot: any) => {
-      const x = slot.replace('_', ' ').toLowerCase();
-      arry.push(x);
-    });
-    return arry;
-  };
 
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
     const tobeTakenitem = _tobeTakenitem!;
@@ -781,6 +796,7 @@ export const MedicinePrescription: React.FC = () => {
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
   ) => {
+    setMedicine(newValue);
     setLoading(false);
     if (newValue.length > 2) {
       fetchMedicines(newValue);
@@ -859,6 +875,8 @@ export const MedicinePrescription: React.FC = () => {
                       setShowDosage(true);
                       setSelectedValue(suggestion.label);
                       setSelectedId(suggestion.sku);
+                      setLoading(false);
+                      setMedicine('');
                     }}
                     {...autosuggestProps}
                     inputProps={{
@@ -882,6 +900,31 @@ export const MedicinePrescription: React.FC = () => {
                       </Paper>
                     )}
                   />
+                  {medicine.length > 2 && !isSuggestionFetched && (
+                    <div>
+                      <span>
+                        {`do you want to add '${medicine}' in Tests ?`}
+                        <AphButton
+                          className={classes.btnAddDoctor}
+                          variant="contained"
+                          color="primary"
+                          onClick={() => {
+                            setState({
+                              single: '',
+                              popper: '',
+                            });
+                            setShowDosage(true);
+                            setSelectedValue(medicine);
+                            setSelectedId('IB01');
+                            setLoading(false);
+                            setMedicine('');
+                          }}
+                        >
+                          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD MEDICINE
+                        </AphButton>
+                      </span>
+                    </div>
+                  )}
                   {loading ? <CircularProgress className={classes.loader} /> : null}
                 </div>
               </div>

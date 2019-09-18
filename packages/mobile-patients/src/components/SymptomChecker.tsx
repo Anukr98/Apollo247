@@ -10,6 +10,7 @@ import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import Moment from 'moment';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { StackActions } from 'react-navigation';
+import { AppConfig } from '../strings/AppConfig';
 
 export interface CustomComponentProps extends NavigationScreenProps {}
 
@@ -92,7 +93,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
           }
         />
         <NavigatorSDK
-          clientId="4A8C9CCC-C5A3-11E9-9A19-8C85900A8328"
+          clientId={AppConfig.Configuration.PRAKTISE_API_KEY}
           showDocBtn={() => <CustomComponent navigation={props.navigation} />}
           {...patientGender}
           {...patientAge}

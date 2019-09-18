@@ -233,6 +233,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const stopcallMsg = '^^callme`stop^^';
   const acceptcallMsg = '^^callme`accept^^';
   const startConsult = '^^#startconsult';
+  const startConsultjr = '^^#startconsultJr';
   const stopConsult = '^^#stopconsult';
   const documentUpload = '^^#DocumentUpload';
   const transferconsult = '^^#transferconsult';
@@ -243,9 +244,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: subscribeKey,
-    publishKey: publishKey,
+    subscribeKey: subscribekey,
+    publishKey: publishkey,
     ssl: true,
   };
   let leftComponent = 0;
@@ -324,6 +327,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
           message.message.message !== startConsult &&
+          message.message.message !== startConsultjr &&
           message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
@@ -434,6 +438,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== startConsult &&
+      rowData.message !== startConsultjr &&
       rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
@@ -499,6 +504,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
       rowData.message !== startConsult &&
+      rowData.message !== startConsultjr &&
       rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&

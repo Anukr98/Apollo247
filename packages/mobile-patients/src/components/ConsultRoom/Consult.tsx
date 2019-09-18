@@ -211,11 +211,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         ? props.navigation.getParam('Data').rescheduleCount
         : '';
 
-      calculateCount = calculateCount - 1;
+      calculateCount = 3 - calculateCount;
 
-      if (calculateCount <= 0) {
-        calculateCount = 1;
-      }
+      // if (calculateCount <= 0) {
+      //   calculateCount = 1;
+      // }
 
       setNewRescheduleCount(calculateCount);
     } catch (error) {
@@ -596,8 +596,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           flexWrap: 'wrap',
                         }}
                       >
-                        {['FEVER', 'COUGH & COLD'].map((name) => (
+                        {['FEVER', 'COUGH & COLD'].map((name, i) => (
                           <CapsuleView
+                            key={i}
                             title={name}
                             isActive={false}
                             style={{ width: 'auto', marginRight: 4, marginTop: 11 }}

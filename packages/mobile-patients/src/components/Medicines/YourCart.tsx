@@ -682,7 +682,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         })
         .catch((e) => {
           setshowSpinner(false);
-          Alert.alert('ALert', 'Error occurred while uploading prescriptions.');
+          Alert.alert('Alert', 'Error occurred while uploading prescriptions.');
         });
     }
   };

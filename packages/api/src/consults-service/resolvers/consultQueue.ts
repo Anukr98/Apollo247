@@ -107,6 +107,9 @@ const addToConsultQueue: Resolver<
 > = async (parent, { appointmentId }, context) => {
   const { cqRepo, docRepo, apptRepo } = getRepos(context);
   await apptRepo.findOneOrFail(appointmentId);
+  const existingQueueItem = cqRepo.findOne({ appointmentId, isActive: true });
+  if (existingQueueItem)
+    throw new AphError(AphErrorMessages.APPOINTMENT_ALREADY_ACTIVE_IN_CONSULT_QUEUE);
   const onlineJrDocs = await docRepo.find({
     onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
     doctorType: DoctorType.JUNIOR,

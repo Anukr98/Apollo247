@@ -7,7 +7,7 @@ import { ConsultationHours } from 'components/ConsultationHours';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { GetDoctorDetails_getDoctorDetails_consultHours } from 'graphql/types/GetDoctorDetails';
 import { ConsultMode } from 'graphql/types/globalTypes';
-import { BlockedCalendar } from 'components/BlockedCalendar';
+import { BlockedCalendar } from 'components/blocked-calendar/BlockedCalendar';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {

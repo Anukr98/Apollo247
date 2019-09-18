@@ -345,7 +345,7 @@ export const ConsultTabs: React.FC = () => {
           }
         })
         .catch((e: any) => {
-          setError('Error occured in getcasesheet api');
+          setError('Somthing went wrong, Please try again.');
           console.log('Error occured creating session', e);
         })
         .finally(() => {

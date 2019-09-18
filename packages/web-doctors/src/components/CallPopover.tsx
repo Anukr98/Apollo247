@@ -562,6 +562,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const stopcallMsg = '^^callme`stop^^';
   const acceptcallMsg = '^^callme`accept^^';
   const startConsult = '^^#startconsult';
+  const startConsultjr = '^^#startconsultJr';
   const stopConsult = '^^#stopconsult';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
@@ -923,9 +924,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const openThreeDots = Boolean(anchorElThreeDots);
   const idThreeDots = openThreeDots ? 'simple-three-dots' : undefined;
   const channel = props.appointmentId;
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
-    publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+    subscribeKey: subscribekey,
+    publishKey: publishkey,
     ssl: true,
   };
   const { setCaseSheetEdit } = useContext(CaseSheetContext);
@@ -970,6 +973,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
           message.message.message !== startConsult &&
+          message.message.message !== startConsultjr &&
           message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&

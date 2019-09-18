@@ -355,7 +355,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     // console.log(arrayValuesFilter, 'arrayValues', arrayValues);
     return (
       <View>
-        {renderFilter()}
+        {/* {renderFilter()} */}
 
         {arrayValues == 0 ? (
           <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
@@ -391,9 +391,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         ) : (
           <View>
             {arrayValues &&
-              arrayValues.map((item: any) => {
+              arrayValues.map((item: any, i: number) => {
                 return (
                   <HealthConsultView
+                    key={i}
                     onPressOrder={() => {
                       setdisplayOrderPopup(true);
                     }}

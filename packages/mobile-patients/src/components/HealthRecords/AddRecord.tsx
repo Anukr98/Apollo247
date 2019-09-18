@@ -257,7 +257,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         setshowSpinner(false);
         console.error({ e });
-        Alert.alert('ALert', 'Error occurred while uploading prescriptions.');
+        Alert.alert('Alert', 'Error occurred while uploading prescriptions.');
       });
   };
 
@@ -476,6 +476,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               </View>
               {medicalRecordParameters.map((item, i) => (
                 <View
+                  key={i}
                   style={{
                     marginTop: 16,
                     ...theme.viewStyles.cardViewStyle,

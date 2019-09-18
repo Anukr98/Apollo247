@@ -610,6 +610,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const stopcallMsg = '^^callme`stop^^';
   const acceptcallMsg = '^^callme`accept^^';
   const startConsult = '^^#startconsult';
+  const startConsultjr = '^^#startconsultJr';
   const stopConsult = '^^#stopconsult';
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
@@ -678,7 +679,11 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     //srollToBottomAction();
   };
   const [disableStartConsult, setDisableStartConsult] = useState<boolean>(false);
-
+  useEffect(() => {
+    if (isCallAccepted) {
+      startIntervalTimer(0);
+    }
+  }, [isCallAccepted]);
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -963,9 +968,11 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const openThreeDots = Boolean(anchorElThreeDots);
   const idThreeDots = openThreeDots ? 'simple-three-dots' : undefined;
   const channel = props.appointmentId;
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
-    publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+    subscribeKey: subscribekey,
+    publishKey: publishkey,
     ssl: true,
   };
   const { setCaseSheetEdit } = useContext(CaseSheetContext);
@@ -1017,6 +1024,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
           message.message.message !== startConsult &&
+          message.message.message !== startConsultjr &&
           message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
@@ -1037,7 +1045,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const onStartConsult = () => {
     const text = {
       id: props.doctorId,
-      message: startConsult,
+      //message: startConsult,
+      message: startConsultjr,
       isTyping: true,
     };
     pubnub.publish(
@@ -1064,44 +1073,44 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       (status, response) => {}
     );
 
-    let folloupDateTime = '';
-    if (
-      followUpDate &&
-      followUpDate.length > 0 &&
-      followUpDate[0] !== null &&
-      followUpDate[0] !== ''
-    ) {
-      folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
-    } else if (followUp[0] && followUpAfterInDays[0] !== 'Custom') {
-      const apptdateTime = new Date(props.appointmentDateTime);
-      folloupDateTime = new Date(
-        apptdateTime.getTime() + parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
-      ).toISOString();
-    }
-    const followupObj: any = {
-      appointmentId: props.appointmentId,
-      folloupDateTime: folloupDateTime,
-      doctorId: props.doctorId,
-      caseSheetId: props.caseSheetId,
-      doctorInfo: currentPatient,
-      pdfUrl: props.prescriptionPdf,
-    };
-    if (folloupDateTime !== '') {
-      setTimeout(() => {
-        pubnub.publish(
-          {
-            message: {
-              id: props.doctorId,
-              message: followupconsult,
-              transferInfo: followupObj,
-            },
-            channel: channel,
-            storeInHistory: true,
-          },
-          (status, response) => {}
-        );
-      }, 100);
-    }
+    // let folloupDateTime = '';
+    // if (
+    //   followUpDate &&
+    //   followUpDate.length > 0 &&
+    //   followUpDate[0] !== null &&
+    //   followUpDate[0] !== ''
+    // ) {
+    //   folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
+    // } else if (followUp[0] && followUpAfterInDays[0] !== 'Custom') {
+    //   const apptdateTime = new Date(props.appointmentDateTime);
+    //   folloupDateTime = new Date(
+    //     apptdateTime.getTime() + parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
+    //   ).toISOString();
+    // }
+    // const followupObj: any = {
+    //   appointmentId: props.appointmentId,
+    //   folloupDateTime: folloupDateTime,
+    //   doctorId: props.doctorId,
+    //   caseSheetId: props.caseSheetId,
+    //   doctorInfo: currentPatient,
+    //   pdfUrl: props.prescriptionPdf,
+    // };
+    // if (folloupDateTime !== '') {
+    //   setTimeout(() => {
+    //     pubnub.publish(
+    //       {
+    //         message: {
+    //           id: props.doctorId,
+    //           message: followupconsult,
+    //           transferInfo: followupObj,
+    //         },
+    //         channel: channel,
+    //         storeInHistory: true,
+    //       },
+    //       (status, response) => {}
+    //     );
+    //   }, 100);
+    // }
   };
   const transferConsultAction = () => {
     if (isEmpty(transferReason)) {
@@ -1243,7 +1252,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           ) : (
             <AphButton
               className={classes.consultButton}
-              disabled={disableStartConsult}
+              //disabled={disableStartConsult}
               onClick={() => {
                 !startAppointment ? onStartConsult() : onStopConsult();
                 !startAppointment ? startInterval(900) : stopInterval();

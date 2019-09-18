@@ -3,6 +3,7 @@ package com.apollopatient;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import io.github.mr03web.softinputmode.SoftInputModePackage;
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import com.corbt.keepawake.KCKeepAwakePackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
@@ -42,6 +43,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+            new SoftInputModePackage(),
             new PickerPackage(),
             new KCKeepAwakePackage(),
             new RNFetchBlobPackage(),
