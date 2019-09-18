@@ -2,12 +2,13 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { OrderCard, OrderCardProps } from '@aph/mobile-patients/src/components/ui/OrderCard';
+import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GET_MEDICINE_ORDERS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
+  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -33,30 +34,6 @@ const styles = StyleSheet.create({
   },
 });
 
-const list = [
-  {
-    title: 'Medicines',
-    description: 'Home Delivery',
-    orderId: 'A2472707936',
-    status: 'Order Placed',
-    dateTime: '9 Aug 19, 12:00 pm',
-  },
-  {
-    title: 'Medicines',
-    description: 'Return Order',
-    orderId: 'A2472707937',
-    status: 'Return Accepted',
-    dateTime: '9 Aug 19, 12:00 pm',
-  },
-  {
-    title: 'Medicines',
-    description: 'Return Order',
-    orderId: 'A2472707938',
-    status: 'Order Cancelled',
-    dateTime: '9 Aug 19, 12:00 pm',
-  },
-] as OrderCardProps[];
-
 export interface YourOrdersSceneProps extends NavigationScreenProps {}
 
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
@@ -69,7 +46,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
 
   const orders = (!loading && g(data, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
   // !loading && console.log({ orders });
-  // !loading && error && console.error({ error });
+  // !loading && error && console.log({ error });
 
   const getDeliverType = (type: MEDICINE_DELIVERY_TYPE) => {
     switch (type) {
@@ -80,22 +57,43 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         return 'Store Pickup';
         break;
       default:
-        return '';
+        return 'Unknown';
         break;
     }
   };
 
-  const getStatusType = (type: MEDICINE_ORDER_STATUS) => {
-    let status = '' as OrderCardProps['status'];
-    switch (type) {
+  const getStatusType = (
+    type: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
+  ) => {
+    // let _type = g(type[type.length - 1], 'orderStatus');
+    let _type = g(type[0], 'orderStatus');
+    return _type;
+  };
+
+  const getStatusDesc = (
+    type: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
+  ) => {
+    console.log({ type });
+
+    // let _type = g(type[type.length - 1], 'orderStatus');
+    let _type = g(type[0], 'orderStatus');
+    let status = '';
+
+    switch (_type) {
       case MEDICINE_ORDER_STATUS.CANCELLED:
         status = 'Order Cancelled';
+        break;
+      case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
+        status = 'Cancel Requested';
         break;
       case MEDICINE_ORDER_STATUS.DELIVERED:
         status = 'Order Delivered';
         break;
       case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
         status = 'Items Returned';
+        break;
+      case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
+        status = 'Order Confirmed';
         break;
       case MEDICINE_ORDER_STATUS.ORDER_FAILED:
         status = 'Order Failed';
@@ -111,6 +109,9 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         break;
       case MEDICINE_ORDER_STATUS.PICKEDUP:
         status = 'Order Picked Up';
+        break;
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
+        status = 'Prescription Cart Ready';
         break;
       case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
         status = 'Prescription Uploaded';
@@ -149,7 +150,8 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
               }}
               title={'Medicines'}
               description={getDeliverType(order!.deliveryType)}
-              status={getStatusType(g(order!.medicineOrdersStatus![0]!, 'orderStatus')!)}
+              statusDesc={getStatusDesc(g(order, 'medicineOrdersStatus')!)}
+              status={getStatusType(g(order, 'medicineOrdersStatus')!)!}
               dateTime={getFormattedTime(g(order!.medicineOrdersStatus![0]!, 'statusDate'))}
             />
           );
@@ -159,7 +161,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const renderNoOrders = () => {
-    if (!loading && orders.length == 0) {
+    if (!loading && !error && orders.length == 0) {
       return (
         <Card
           cardContainer={[styles.noDataCard]}
@@ -176,6 +178,20 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
             }}
           />
         </Card>
+      );
+    }
+  };
+
+  const renderError = () => {
+    if (!loading && error) {
+      return (
+        <Card
+          cardContainer={[styles.noDataCard]}
+          heading={'Uh oh! :('}
+          description={'Something went wrong.'}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
       );
     }
   };
@@ -197,6 +213,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         <ScrollView bounces={false}>
           {renderOrders()}
           {renderNoOrders()}
+          {renderError()}
         </ScrollView>
       </SafeAreaView>
       {loading && <Spinner />}

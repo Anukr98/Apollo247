@@ -1,38 +1,39 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossPopup, More } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  OrderProgressCard,
-  OrderProgressCardProps,
-} from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
+import { CrossPopup, DropdownGreen, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import {
+  GetMedicineOrderDetails,
+  GetMedicineOrderDetailsVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  saveOrderCancelStatus,
+  saveOrderCancelStatusVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveOrderCancelStatus';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { Mutation, MutationFn, MutationResult } from 'react-apollo';
 import { useQuery } from 'react-apollo-hooks';
 import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Overlay } from 'react-native-elements';
 import {
   NavigationActions,
   NavigationScreenProps,
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { GET_MEDICINE_ORDER_DETAILS } from '../graphql/profiles';
-import {
-  GetMedicineOrderDetails,
-  GetMedicineOrderDetailsVariables,
-} from '../graphql/types/GetMedicineOrderDetails';
-import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
-import { g } from '../helpers/helperFunctions';
-import { useAllCurrentPatients } from '../hooks/authHooks';
+import { GET_MEDICINE_ORDER_DETAILS, SAVE_ORDER_CANCEL_STATUS } from '../graphql/profiles';
 import { AppRoutes } from './NavigatorContainer';
 import { OrderSummary } from './OrderSummaryView';
-import { OrderCardProps } from './ui/OrderCard';
+import { DropDown } from './ui/DropDown';
+import { NeedHelpAssistant } from './ui/NeedHelpAssistant';
 import { Spinner } from './ui/Spinner';
 import { TabsComponent } from './ui/TabsComponent';
-import { NeedHelpAssistant } from './ui/NeedHelpAssistant';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -76,8 +77,7 @@ const _list = [
     nextItemStatus: 'NOT_EXIST',
     description: 'To Be Delivered Within — 2hrs',
   },
-] as OrderProgressCardProps[];
-
+] as any[];
 export interface OrderDetailsSceneProps extends NavigationScreenProps {
   orderAutoId: string;
   showOrderSummaryTab: boolean;
@@ -94,7 +94,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
-  const [isReturnVisible, setReturnVisible] = useState(false);
+  const [isCancelVisible, setCancelVisible] = useState(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { data, loading } = useQuery<GetMedicineOrderDetails, GetMedicineOrderDetailsVariables>(
@@ -142,16 +142,22 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   }, []);
 
   const getStatusType = (type: MEDICINE_ORDER_STATUS) => {
-    let status = '' as OrderCardProps['status'];
+    let status = type as any;
     switch (type) {
       case MEDICINE_ORDER_STATUS.CANCELLED:
         status = 'Order Cancelled';
+        break;
+      case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
+        status = 'Cancel Requested';
         break;
       case MEDICINE_ORDER_STATUS.DELIVERED:
         status = 'Order Delivered';
         break;
       case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
         status = 'Items Returned';
+        break;
+      case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
+        status = 'Order Confirmed';
         break;
       case MEDICINE_ORDER_STATUS.ORDER_FAILED:
         status = 'Order Failed';
@@ -167,6 +173,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         break;
       case MEDICINE_ORDER_STATUS.PICKEDUP:
         status = 'Order Picked Up';
+        break;
+      case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
+        status = 'Prescription Cart Ready';
         break;
       case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
         status = 'Prescription Uploaded';
@@ -219,7 +228,34 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
   };
 
+  const [selectedReason, setSelectedReason] = useState('');
+  const [overlayDropdown, setOverlayDropdown] = useState(false);
   const renderReturnOrderOverlay = () => {
+    const optionsDropdown = overlayDropdown && (
+      <View
+        style={{
+          position: 'absolute',
+          right: 16,
+          alignItems: 'center',
+          zIndex: 101,
+          top: 100,
+          // elevation: 100,
+        }}
+      >
+        <DropDown
+          options={[
+            {
+              optionText: 'Option 1',
+              onPress: () => {
+                setSelectedReason('Option1');
+                setOverlayDropdown(false);
+              },
+            },
+          ]}
+        />
+      </View>
+    );
+
     const heading = (
       <View
         style={{
@@ -245,10 +281,48 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
     const content = (
       <View style={{ paddingHorizontal: 16 }}>
-        <TextInputComponent
-          label={'Why are you cancelling this order?'}
-          placeholder={'Select reason for cancelling'}
-        />
+        <Text
+          style={[
+            {
+              marginBottom: 12,
+              color: '#0087ba',
+              ...theme.fonts.IBMPlexSansMedium(17),
+              lineHeight: 24,
+            },
+          ]}
+        >
+          Why are you cancelling this order?
+        </Text>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setOverlayDropdown(true);
+          }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text
+              style={{
+                opacity: 0.3,
+                flex: 0.9,
+                ...theme.fonts.IBMPlexSansMedium(18),
+                color: theme.colors.SHERPA_BLUE,
+              }}
+              numberOfLines={1}
+            >
+              {'Select reason for cancelling'}
+            </Text>
+            <View style={{ flex: 0.1 }}>
+              <DropdownGreen style={{ alignSelf: 'flex-end' }} />
+            </View>
+          </View>
+          <View
+            style={{
+              marginTop: 5,
+              backgroundColor: '#00b38e',
+              height: 2,
+            }}
+          />
+        </TouchableOpacity>
         <TextInputComponent
           label={'Add Comments (Optional)'}
           placeholder={'Enter your comments here…'}
@@ -256,43 +330,50 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       </View>
     );
 
-    const bottomButton = <Button title={'SUBMIT REQUEST'} />;
+    const bottomButton = (
+      <Button style={{ margin: 16, marginTop: 32, width: 'auto' }} title={'SUBMIT REQUEST'} />
+    );
 
     return (
-      <Overlay
-        windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
-        containerStyle={{ alignSelf: 'flex-start' }}
-        overlayStyle={{
-          padding: 0,
-          margin: 0,
-          width: '88.88%',
-          height: 'auto',
-          borderRadius: 10,
-        }}
-        isVisible={isReturnVisible}
-      >
-        <View>
-          <TouchableOpacity
-            style={{ marginTop: -42, alignSelf: 'flex-end' }}
-            onPress={() => setReturnVisible(!isReturnVisible)}
-          >
-            <CrossPopup />
-          </TouchableOpacity>
-          <View style={{ height: 16 }} />
-          <View
-            style={{
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-              borderTopLeftRadius: 10,
-              borderTopRightRadius: 10,
-              borderBottomRightRadius: 10,
-              borderBottomLeftRadius: 10,
-            }}
-          >
-            {heading}
-            {content}
+      isCancelVisible && (
+        <View
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            justifyContent: 'flex-start',
+            flex: 1,
+            left: 0,
+            right: 0,
+            zIndex: 100,
+          }}
+        >
+          <View style={{ marginHorizontal: 20 }}>
+            <TouchableOpacity
+              style={{ marginTop: 38, alignSelf: 'flex-end' }}
+              onPress={() => setCancelVisible(!isCancelVisible)}
+            >
+              <CrossPopup />
+            </TouchableOpacity>
+            <View style={{ height: 16 }} />
+            <View
+              style={{
+                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+                borderTopLeftRadius: 10,
+                borderTopRightRadius: 10,
+                borderBottomRightRadius: 10,
+                borderBottomLeftRadius: 10,
+              }}
+            >
+              {optionsDropdown}
+              {heading}
+              {content}
+              {bottomButton}
+            </View>
           </View>
         </View>
-      </Overlay>
+      )
     );
   };
 
@@ -300,17 +381,66 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return <OrderSummary orderDetails={orderDetails as any} />;
   };
 
+  const onCancelOrder = (
+    mutate: MutationFn<saveOrderCancelStatus, saveOrderCancelStatusVariables>,
+    mutateResult: MutationResult<saveOrderCancelStatus>
+  ) => {
+    setMenuOpen(false);
+    setCancelVisible(true);
+    console.log({ mutateResult });
+
+    // mutate({
+    //   variables: {
+    //     orderCancelInput: {
+    //       orderNo: 1,
+    //       remarksCode: '',
+    //     },
+    //   },
+    // });
+    // setShowSpinner(mutateResult.loading);
+  };
+
+  const [isMenuOpen, setMenuOpen] = useState(false);
+  const [showSpinner, setShowSpinner] = useState(false);
+  const renderMenuOptions = () => {
+    if (isMenuOpen) {
+      return (
+        <Mutation<saveOrderCancelStatus, saveOrderCancelStatusVariables>
+          mutation={SAVE_ORDER_CANCEL_STATUS}
+        >
+          {(mutate, mutateResult) => (
+            <View style={{ position: 'absolute', top: 0, right: 0 }}>
+              <DropDown
+                options={[
+                  {
+                    optionText: 'Cancel Order',
+                    onPress: () => onCancelOrder(mutate, mutateResult),
+                  },
+                ]}
+              />
+            </View>
+          )}
+        </Mutation>
+      );
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
+      {renderReturnOrderOverlay()}
       <SafeAreaView style={theme.viewStyles.container}>
-        {renderReturnOrderOverlay()}
         <View style={styles.headerShadowContainer}>
           <Header
             leftIcon="backArrow"
             title={`ORDER #${orderAutoId}`}
             container={{ borderBottomWidth: 0 }}
             // rightComponent={
-            //   <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            //   <TouchableOpacity
+            //     activeOpacity={1}
+            //     onPress={() => {
+            //       setMenuOpen(true);
+            //     }}
+            //   >
             //     <More />
             //   </TouchableOpacity>
             // }
@@ -318,6 +448,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
               handleBack();
             }}
           />
+          {renderMenuOptions()}
         </View>
 
         <TabsComponent
@@ -332,7 +463,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
         </ScrollView>
       </SafeAreaView>
-      {loading && <Spinner />}
+      {(loading || showSpinner) && <Spinner />}
     </View>
   );
 };
