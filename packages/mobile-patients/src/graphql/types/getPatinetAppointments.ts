@@ -57,6 +57,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
   doctorId: string;
   isFollowUp: string;
   rescheduleCount: number | null;
+  displayId: number | null;
   doctorInfo: getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo | null;
 }
 
