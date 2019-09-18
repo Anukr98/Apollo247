@@ -103,7 +103,7 @@ const theme = createMuiTheme({
   typography: {
     fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
     body2: {
-      fontSize: '10px',
+      fontSize: '12px',
       fontWeight: 500,
       lineHeight: 1.2,
       color: 'rgba(2, 71, 91, 0.6)',

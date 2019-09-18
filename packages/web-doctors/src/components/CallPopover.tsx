@@ -261,6 +261,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fff',
       },
+      '&:disabled': {
+        color: '#fc9916',
+        opacity: 0.7,
+      },
     },
     popOverUL: {
       listStyleType: 'none',
