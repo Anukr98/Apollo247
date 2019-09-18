@@ -43,6 +43,7 @@ import firebase from 'react-native-firebase';
 import DeviceInfo from 'react-native-device-info';
 import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -94,17 +95,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 13,
   },
-  needhelpbuttonStyles: {
-    backgroundColor: 'white',
-    height: 50,
-    width: 120,
-    marginTop: 5,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 15,
-  },
-  titleBtnStyles: {
-    color: theme.colors.SKY_BLUE,
-  },
   doctorView: {
     width: '100%',
     height: 277,
@@ -116,14 +106,6 @@ const styles = StyleSheet.create({
     color: '#02475b',
     ...theme.fonts.IBMPlexSansMedium(15),
   },
-  helpView: {
-    width: '100%',
-    height: 212,
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   textStyle: {
     color: '#01475b',
     ...theme.fonts.IBMPlexSansMedium(18),
@@ -229,6 +211,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    getNetStatus().then((item) => {
+      console.log(item, 'getNetStatus');
+    });
     callDeviceTokenAPI();
   });
 

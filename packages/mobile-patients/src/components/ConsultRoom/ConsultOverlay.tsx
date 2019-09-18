@@ -407,7 +407,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               )}
               <View style={{ height: 96 }} />
             </ScrollView>
-            {renderBottomButton()}
+            {props.doctor && renderBottomButton()}
           </View>
         </View>
       </View>

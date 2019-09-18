@@ -1,44 +1,42 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import {
   DoctorPlaceholder,
-  DropdownGreen,
-  PhysicalConsult,
-  OnlineConsult,
-  DoctorImage,
   Mascot,
+  OnlineConsult,
+  PhysicalConsult,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   getPatinetAppointments,
   getPatinetAppointments_getPatinetAppointments_patinetAppointments,
 } from '@aph/mobile-patients/src/graphql/types/getPatinetAppointments';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   AsyncStorage,
   Dimensions,
   Image,
   Platform,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
+  TouchableHighlight,
   TouchableOpacity,
   View,
-  TouchableHighlight,
-  ScrollView,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import Permissions from 'react-native-permissions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -194,6 +192,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
   const [followupdone, setFollowupDone] = useState<boolean>(false);
+  const client = useApolloClient();
 
   useEffect(() => {
     try {
@@ -221,7 +220,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     } catch (error) {
       setNewRescheduleCount(1);
     }
-  });
+  }, []);
 
   useEffect(() => {
     let userName =
@@ -247,6 +246,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       }
     }
     fetchData();
+    getNetStatus().then((status) => {
+      if (status) {
+        fetchAppointments();
+      } else {
+        setshowSpinner(false);
+      }
+    });
   }, []);
 
   const inputData = {
@@ -254,28 +260,55 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     appointmentDate: moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'),
   };
 
-  const { data, error } = useQuery<getPatinetAppointments>(GET_PATIENT_APPOINTMENTS, {
-    fetchPolicy: 'no-cache',
-    variables: {
-      patientAppointmentsInput: inputData,
-    },
-  });
+  const fetchAppointments = () => {
+    client
+      .query<getPatinetAppointments>({
+        query: GET_PATIENT_APPOINTMENTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientAppointmentsInput: inputData,
+        },
+      })
+      .then(({ data }) => {
+        console.log(data, 'GET_PATIENT_APPOINTMENTS');
+        if (
+          data &&
+          data.getPatinetAppointments &&
+          data.getPatinetAppointments.patinetAppointments &&
+          consultations !== data.getPatinetAppointments.patinetAppointments
+        ) {
+          setconsultations(data.getPatinetAppointments.patinetAppointments);
+          setshowSpinner(false);
+        }
+      })
+      .catch((e: string) => {
+        setshowSpinner(false);
+        console.log('Error occured', e);
+      });
 
-  if (error) {
-    console.log('error', error);
-    setshowSpinner(false);
-  } else {
-    console.log(data, 'GET_PATIENT_APPOINTMENTS');
-    if (
-      data &&
-      data.getPatinetAppointments &&
-      data.getPatinetAppointments.patinetAppointments &&
-      consultations !== data.getPatinetAppointments.patinetAppointments
-    ) {
-      setconsultations(data.getPatinetAppointments.patinetAppointments);
-      setshowSpinner(false);
-    }
-  }
+    // const { data, error } = useQuery<getPatinetAppointments>(GET_PATIENT_APPOINTMENTS, {
+    //   fetchPolicy: 'no-cache',
+    //   variables: {
+    //     patientAppointmentsInput: inputData,
+    //   },
+    // });
+
+    // if (error) {
+    //   console.log('error', error);
+    //   setshowSpinner(false);
+    // } else {
+    //   console.log(data, 'GET_PATIENT_APPOINTMENTS');
+    //   if (
+    //     data &&
+    //     data.getPatinetAppointments &&
+    //     data.getPatinetAppointments.patinetAppointments &&
+    //     consultations !== data.getPatinetAppointments.patinetAppointments
+    //   ) {
+    //     setconsultations(data.getPatinetAppointments.patinetAppointments);
+    //     setshowSpinner(false);
+    //   }
+    // }
+  };
 
   const Popup = () => (
     <TouchableOpacity
