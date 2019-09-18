@@ -172,21 +172,26 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       console.log('error', availability.error);
     } else {
       //console.log('doctorIds fetchNextSlots result', availability);
-      if (
-        availability &&
-        availability.data &&
-        availability.data.getDoctorNextAvailableSlot &&
-        availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-        doctorAvailalbeSlots !== availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-      ) {
-        console.log(
-          availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots,
-          'doctorIds fetchNextSlots doctorAvailalbeSlots'
-        );
-        setdoctorAvailalbeSlots(availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
+      if (availability.data) {
+        if (
+          availability &&
+          availability.data &&
+          availability.data.getDoctorNextAvailableSlot &&
+          availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+          doctorAvailalbeSlots !== availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+        ) {
+          console.log(
+            availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots,
+            'doctorIds fetchNextSlots doctorAvailalbeSlots'
+          );
+          setdoctorAvailalbeSlots(
+            availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+          );
+        }
       }
     }
   };
+
   const newData = useQuery<SearchDoctorAndSpecialtyByName>(SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME, {
     fetchPolicy: 'no-cache',
     variables: {
@@ -801,8 +806,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         {doctorsList && renderSearch()}
         {showSpinner === 0 ? (
           <ScrollView style={{ flex: 1 }} bounces={false} keyboardDismissMode="on-drag">
-            {/* {props.navigation.state.params!.MoveDoctor == 'MoveDoctor' ? null : renderPastSearch()} */}
-            {renderPastSearch()}
+            {props.navigation.state.params!.MoveDoctor == 'MoveDoctor' ? null : renderPastSearch()}
+            {/* {renderPastSearch()} */}
             {renderDoctorSearches()}
             {renderSpecialist()}
             {searchText.length > 2 &&

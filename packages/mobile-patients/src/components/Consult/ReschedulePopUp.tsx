@@ -40,7 +40,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
 
   useEffect(() => {
     try {
-      let count = props.rescheduleCount - 1;
+      let count = 4 - props.rescheduleCount;
 
       if (count <= 0) {
         setRescheduleCounting(1);
@@ -180,9 +180,8 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     paddingHorizontal: 16,
                   }}
                 >
-                  {`Since you hace already rescheduled ${
-                    props.rescheduleCount
-                  } times with Dr. ${props.doctor &&
+                  {`Since you hace already rescheduled ${props.rescheduleCount -
+                    1} times with Dr. ${props.doctor &&
                     props.doctor.firstName}, we will consider this a new paid appointment.`}
                 </Text>
               )}

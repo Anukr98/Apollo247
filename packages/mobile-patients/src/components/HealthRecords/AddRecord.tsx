@@ -257,7 +257,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       .catch((e) => {
         setshowSpinner(false);
         console.error({ e });
-        Alert.alert('ALert', 'Error occurred while uploading prescriptions.');
+        Alert.alert('Alert', 'Error occurred while uploading prescriptions.');
       });
   };
 

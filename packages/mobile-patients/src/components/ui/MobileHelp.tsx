@@ -41,6 +41,7 @@ const styles = StyleSheet.create({
     right: 0,
   },
   subViewPopup: {
+    marginTop: 120,
     backgroundColor: 'white',
     width: '100%',
     borderTopLeftRadius: 10,
