@@ -409,7 +409,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             isNoMedicinesFound ? { borderBottomColor: '#e50000' } : {},
           ]}
           textInputprops={isNoMedicinesFound ? { selectionColor: '#e50000' } : {}}
-          autoCorrect={false}
           value={searchText}
           placeholder="Enter name of the medicine"
           underlineColorAndroid="transparent"

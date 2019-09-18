@@ -13,6 +13,7 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { AsyncStorage } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -198,8 +199,9 @@ export const AuthProvider: React.FC = (props) => {
         apolloClient = buildApolloClient(jwt, () => signOut());
         authStateRegistered = false;
         setAuthToken(jwt);
-
-        getPatientApiCall();
+        getNetStatus().then((item) => {
+          item && getPatientApiCall();
+        });
       }
       setIsSigningIn(false);
     });

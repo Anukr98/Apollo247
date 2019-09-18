@@ -19,6 +19,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   console.log(Consult, 'Consultval');
   const onSubmitClick = async () => {
     const ss = await $Generator({ type: 'showSpeciality' });
+    console.log(ss, 'ssssssssssss');
 
     let speciality = '';
     if (ss && ss.specialists && ss.specialists.length) {

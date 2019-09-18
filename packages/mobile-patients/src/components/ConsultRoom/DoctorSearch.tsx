@@ -1,19 +1,26 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
   GET_ALL_SPECIALTIES,
   GET_PATIENT_PAST_SEARCHES,
+  NEXT_AVAILABLE_SLOT,
   SAVE_SEARCH,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
-  NEXT_AVAILABLE_SLOT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAllSpecialties,
   getAllSpecialties_getAllSpecialties,
 } from '@aph/mobile-patients/src/graphql/types/getAllSpecialties';
+import {
+  GetDoctorNextAvailableSlot,
+  GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
+} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { getPastSearches_getPastSearches } from '@aph/mobile-patients/src/graphql/types/getPastSearches';
 import { getPatientPastSearches } from '@aph/mobile-patients/src/graphql/types/getPatientPastSearches';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
@@ -26,13 +33,16 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors,
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import React, { useState } from 'react';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React, { useEffect, useState } from 'react';
 import { Mutation } from 'react-apollo';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   FlatList,
   Image,
+  Keyboard,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -40,15 +50,6 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
-import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
-} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -126,7 +127,6 @@ export interface DoctorSearchProps extends NavigationScreenProps {}
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const params = props.navigation.state.params ? props.navigation.state.params!.searchText : '';
   const MoveDoctor = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
-  console.log(MoveDoctor, 'MoveDoctor');
 
   const [searchText, setSearchText] = useState<string>(params);
   const [pastSearch, setPastSearch] = useState<boolean>(true);
@@ -140,7 +140,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [doctorsList, setdoctorsList] = useState<
     (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors | null)[] | null
   >([]);
-  const [showSpinner, setshowSpinner] = useState<number>(2);
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [possibleMatches, setpossibleMatches] = useState<
     SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches
   >();
@@ -179,10 +179,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
             doctorAvailalbeSlots !== data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
           ) {
-            console.log(
-              data.getDoctorNextAvailableSlot.doctorAvailalbeSlots,
-              'doctorIds fetchNextSlots doctorAvailalbeSlots'
-            );
             setdoctorAvailalbeSlots(data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
           }
         }
@@ -224,86 +220,118 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     // }
   };
 
-  const newData = useQuery<SearchDoctorAndSpecialtyByName>(SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME, {
-    fetchPolicy: 'no-cache',
-    variables: {
-      searchText: searchText,
-      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-    },
-  });
-  if (newData.error) {
-    console.log('newData.error', JSON.stringify(newData.error));
-  } else {
-    // console.log('newData.data doctor', newData.data);
-    // let doctorIds: (string | null)[] = [];
-    if (
-      newData.data &&
-      newData.data.SearchDoctorAndSpecialtyByName &&
-      doctorsList !== newData.data.SearchDoctorAndSpecialtyByName.doctors
-    ) {
-      doctorIds = newData.data.SearchDoctorAndSpecialtyByName.doctors
-        ? newData.data.SearchDoctorAndSpecialtyByName.doctors.map((item) => {
-            if (item) return item.id;
-          })
-        : [];
-      // console.log(
-      //   doctorIds,
-      //   'doctorIds doctor',
-      //   newData.data.SearchDoctorAndSpecialtyByName.doctors
-      // );
-      setdoctorsList(newData.data.SearchDoctorAndSpecialtyByName.doctors);
-      // searchText === '' && setallDoctors(newData.data.SearchDoctorAndSpecialtyByName.doctors)
-    }
-    if (
-      newData.data &&
-      newData.data.SearchDoctorAndSpecialtyByName &&
-      newData.data.SearchDoctorAndSpecialtyByName.possibleMatches &&
-      possibleMatches !== newData.data.SearchDoctorAndSpecialtyByName.possibleMatches
-    ) {
-      // doctorIds =
-      const ids = newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
-        ? newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors.map((item) => {
-            if (item) return item.id;
-          })
-        : [];
-      doctorIds.push(...ids);
+  const fetchSearchData = (searchText: string = '') => {
+    client
+      .query<SearchDoctorAndSpecialtyByName>({
+        query: SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
+        fetchPolicy: 'no-cache',
+        variables: {
+          searchText,
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+      })
+      .then(({ data }) => {
+        // console.log('newData.data doctor', newData.data);
+        const searchData =
+          data && data.SearchDoctorAndSpecialtyByName ? data.SearchDoctorAndSpecialtyByName : null;
+        if (searchData) {
+          if (doctorsList !== searchData.doctors) {
+            doctorIds = searchData.doctors
+              ? searchData.doctors.map((item) => {
+                  if (item) return item.id;
+                })
+              : [];
+            setdoctorsList(searchData.doctors);
+          }
+          if (searchData.possibleMatches && possibleMatches !== searchData.possibleMatches) {
+            const ids = searchData.possibleMatches.doctors
+              ? searchData.possibleMatches.doctors.map((item) => {
+                  if (item) return item.id;
+                })
+              : [];
+            doctorIds.push(...ids);
+            setpossibleMatches(searchData.possibleMatches);
+          }
+          if (searchSpecialities !== searchData.specialties) {
+            setsearchSpecialities(searchData.specialties);
+          }
+          if (searchData.otherDoctors && otherDoctors !== searchData.otherDoctors) {
+            const ids = searchData.otherDoctors
+              ? searchData.otherDoctors.map((item) => {
+                  if (item) return item.id;
+                })
+              : [];
+            doctorIds.push(...ids);
+            setotherDoctors(searchData.otherDoctors);
+          }
+          fetchNextSlots(doctorIds);
+        }
+      })
+      .catch((e: string) => {
+        console.log('Error occured while searching Doctor', e);
+      });
+  };
 
-      // console.log(
-      //   doctorIds,
-      //   'doctorIds possibleMatches',
-      //   newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
-      // );
-      setpossibleMatches(newData.data.SearchDoctorAndSpecialtyByName.possibleMatches);
-    }
-    if (
-      newData.data &&
-      newData.data.SearchDoctorAndSpecialtyByName &&
-      searchSpecialities !== newData.data.SearchDoctorAndSpecialtyByName.specialties
-    ) {
-      setsearchSpecialities(newData.data.SearchDoctorAndSpecialtyByName.specialties);
-    }
-    if (
-      newData.data &&
-      newData.data.SearchDoctorAndSpecialtyByName &&
-      newData.data.SearchDoctorAndSpecialtyByName.otherDoctors &&
-      otherDoctors !== newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
-    ) {
-      const ids = newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
-        ? newData.data.SearchDoctorAndSpecialtyByName.otherDoctors.map((item) => {
-            if (item) return item.id;
-          })
-        : [];
-      doctorIds.push(...ids);
-      // console.log(
-      //   doctorIds,
-      //   'doctorIds otherDoctors',
-      //   newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
-      // );
-      setotherDoctors(newData.data.SearchDoctorAndSpecialtyByName.otherDoctors);
-    }
-    // if (isNewDoctor)
-    fetchNextSlots(doctorIds);
-  }
+  // const newData = useQuery<SearchDoctorAndSpecialtyByName>(SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME, {
+  //   fetchPolicy: 'no-cache',
+  //   variables: {
+  //     searchText: searchText,
+  //     patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+  //   },
+  // });
+  // if (newData.error) {
+  //   console.log('newData.error', JSON.stringify(newData.error));
+  // } else {
+  //   // console.log('newData.data doctor', newData.data);
+  //   if (
+  //     newData.data &&
+  //     newData.data.SearchDoctorAndSpecialtyByName &&
+  //     doctorsList !== newData.data.SearchDoctorAndSpecialtyByName.doctors
+  //   ) {
+  //     doctorIds = newData.data.SearchDoctorAndSpecialtyByName.doctors
+  //       ? newData.data.SearchDoctorAndSpecialtyByName.doctors.map((item) => {
+  //           if (item) return item.id;
+  //         })
+  //       : [];
+  //     setdoctorsList(newData.data.SearchDoctorAndSpecialtyByName.doctors);
+  //   }
+  //   if (
+  //     newData.data &&
+  //     newData.data.SearchDoctorAndSpecialtyByName &&
+  //     newData.data.SearchDoctorAndSpecialtyByName.possibleMatches &&
+  //     possibleMatches !== newData.data.SearchDoctorAndSpecialtyByName.possibleMatches
+  //   ) {
+  //     const ids = newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors
+  //       ? newData.data.SearchDoctorAndSpecialtyByName.possibleMatches.doctors.map((item) => {
+  //           if (item) return item.id;
+  //         })
+  //       : [];
+  //     doctorIds.push(...ids);
+  //     setpossibleMatches(newData.data.SearchDoctorAndSpecialtyByName.possibleMatches);
+  //   }
+  //   if (
+  //     newData.data &&
+  //     newData.data.SearchDoctorAndSpecialtyByName &&
+  //     searchSpecialities !== newData.data.SearchDoctorAndSpecialtyByName.specialties
+  //   ) {
+  //     setsearchSpecialities(newData.data.SearchDoctorAndSpecialtyByName.specialties);
+  //   }
+  //   if (
+  //     newData.data &&
+  //     newData.data.SearchDoctorAndSpecialtyByName &&
+  //     newData.data.SearchDoctorAndSpecialtyByName.otherDoctors &&
+  //     otherDoctors !== newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
+  //   ) {
+  //     const ids = newData.data.SearchDoctorAndSpecialtyByName.otherDoctors
+  //       ? newData.data.SearchDoctorAndSpecialtyByName.otherDoctors.map((item) => {
+  //           if (item) return item.id;
+  //         })
+  //       : [];
+  //     doctorIds.push(...ids);
+  //     setotherDoctors(newData.data.SearchDoctorAndSpecialtyByName.otherDoctors);
+  //   }
+  //   fetchNextSlots(doctorIds);
+  // }
 
   // const { data, error } = useQuery<SearchDoctorAndSpecialty, SearchDoctorAndSpecialtyVariables>(
   //   SEARCH_DOCTOR_AND_SPECIALITY,
@@ -343,49 +371,102 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   // }
   // }
 
-  const getData = useQuery<getAllSpecialties, getAllSpecialties_getAllSpecialties>(
-    GET_ALL_SPECIALTIES,
-    {
-      fetchPolicy: 'no-cache',
-    }
-  );
-  //console.log(getData.loading, 'getData.loading');
-  if (getData.error) {
-    setshowSpinner(showSpinner - 1);
-    console.log('getData.error', getData.error);
-  } else {
-    if (
-      getData.data &&
-      getData.data.getAllSpecialties &&
-      Specialities !== getData.data.getAllSpecialties
-    ) {
-      console.log('getData.data', getData.data.getAllSpecialties);
-      setSpecialities(getData.data.getAllSpecialties);
-      setshowSpinner(showSpinner - 1);
-    }
-  }
+  const fetchSpecialities = () => {
+    client
+      .query<getAllSpecialties>({
+        query: GET_ALL_SPECIALTIES,
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        if (data && data.getAllSpecialties && Specialities !== data.getAllSpecialties) {
+          console.log('data', data.getAllSpecialties);
+          setSpecialities(data.getAllSpecialties);
+          setshowSpinner(false);
+        }
+      })
+      .catch((e: string) => {
+        setshowSpinner(false);
+        console.log('Error occured', e);
+      });
+  };
+
+  // const getData = useQuery<getAllSpecialties, getAllSpecialties_getAllSpecialties>(
+  //   GET_ALL_SPECIALTIES,
+  //   {
+  //     fetchPolicy: 'no-cache',
+  //   }
+  // );
+  // //console.log(getData.loading, 'getData.loading');
+  // if (getData.error) {
+  //   setshowSpinner(showSpinner - 1);
+  //   console.log('getData.error', getData.error);
+  // } else {
+  //   if (
+  //     getData.data &&
+  //     getData.data.getAllSpecialties &&
+  //     Specialities !== getData.data.getAllSpecialties
+  //   ) {
+  //     console.log('getData.data', getData.data.getAllSpecialties);
+  //     setSpecialities(getData.data.getAllSpecialties);
+  //     setshowSpinner(showSpinner - 1);
+  //   }
+  // }
   //console.log(currentPatient && currentPatient.id ? currentPatient.id : '', 'currentPatient');
 
-  const pastData = useQuery<getPatientPastSearches>(GET_PATIENT_PAST_SEARCHES, {
-    fetchPolicy: 'no-cache',
-    variables: {
-      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-    },
-  });
-  if (pastData.error) {
-    console.log('pastData.error', pastData.error);
-  } else {
-    //console.log(pastData, 'pastDatapastDatapastData');
-    if (
-      pastData.data &&
-      pastData.data.getPatientPastSearches &&
-      PastSearches !== pastData.data.getPatientPastSearches
-    ) {
-      setshowSpinner(showSpinner - 1);
-      //console.log('pastData.data', pastData.data.getPatientPastSearches);
-      setPastSearches(pastData.data.getPatientPastSearches);
-    }
-  }
+  // const pastData = useQuery<getPatientPastSearches>(GET_PATIENT_PAST_SEARCHES, {
+  //   fetchPolicy: 'no-cache',
+  //   variables: {
+  //     patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+  //   },
+  // });
+  // if (pastData.error) {
+  //   console.log('pastData.error', pastData.error);
+  // } else {
+  //   console.log(pastData, 'pastDatapastDatapastData');
+  //   if (
+  //     pastData.data &&
+  //     pastData.data.getPatientPastSearches &&
+  //     PastSearches !== pastData.data.getPatientPastSearches
+  //   ) {
+  //     setshowSpinner(showSpinner - 1);
+  //     //console.log('pastData.data', pastData.data.getPatientPastSearches);
+  //     setPastSearches(pastData.data.getPatientPastSearches);
+  //   }
+  // }
+
+  const fetchPastSearches = () => {
+    client
+      .query<getPatientPastSearches>({
+        query: GET_PATIENT_PAST_SEARCHES,
+        variables: {
+          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        if (data && data.getPatientPastSearches && PastSearches !== data.getPatientPastSearches) {
+          //console.log('data', data.getPatientPastSearches);
+          setPastSearches(data.getPatientPastSearches);
+        }
+        fetchSearchData();
+      })
+      .catch((e: string) => {
+        setshowSpinner(false);
+        console.log('Error occured', e);
+      });
+  };
+
+  useEffect(() => {
+    getNetStatus().then((status) => {
+      if (status) {
+        fetchSpecialities();
+        fetchPastSearches();
+      } else {
+        setshowSpinner(false);
+      }
+    });
+  }, []);
+
   const backDataFunctionality = (movedata: string) => {
     if (movedata == 'MoveDoctor') {
       props.navigation.push(AppRoutes.SymptomChecker);
@@ -439,6 +520,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             onChangeText={(value) => {
               setSearchText(value);
               if (value.length > 2) {
+                fetchSearchData(value);
                 // setDoctorName(true);
                 setdisplaySpeialist(true);
               } else {
@@ -655,7 +737,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     // console.log('doctorsList aaaa', doctorsList);
 
     if (searchText.length > 2 && doctorsList && doctorsList.length > 0) {
-      console.log('doctorsList');
       return (
         <View>
           <SectionHeaderComponent
@@ -825,12 +906,18 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       );
     return null;
   };
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {doctorsList && renderSearch()}
-        {showSpinner === 0 ? (
-          <ScrollView style={{ flex: 1 }} bounces={false} keyboardDismissMode="on-drag">
+        {!showSpinner ? (
+          <ScrollView
+            style={{ flex: 1 }}
+            bounces={false}
+            keyboardDismissMode="on-drag"
+            onScrollBeginDrag={Keyboard.dismiss}
+          >
             {props.navigation.state.params!.MoveDoctor == 'MoveDoctor' ? null : renderPastSearch()}
             {/* {renderPastSearch()} */}
             {renderDoctorSearches()}
@@ -851,7 +938,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           </ScrollView>
         ) : null}
       </SafeAreaView>
-      {showSpinner !== 0 && <Spinner />}
+      {showSpinner && <Spinner />}
     </View>
   );
 };
