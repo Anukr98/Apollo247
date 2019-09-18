@@ -968,9 +968,11 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const openThreeDots = Boolean(anchorElThreeDots);
   const idThreeDots = openThreeDots ? 'simple-three-dots' : undefined;
   const channel = props.appointmentId;
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
-    publishKey: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+    subscribeKey: subscribekey,
+    publishKey: publishkey,
     ssl: true,
   };
   const { setCaseSheetEdit } = useContext(CaseSheetContext);
@@ -1071,44 +1073,44 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       (status, response) => {}
     );
 
-    let folloupDateTime = '';
-    if (
-      followUpDate &&
-      followUpDate.length > 0 &&
-      followUpDate[0] !== null &&
-      followUpDate[0] !== ''
-    ) {
-      folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
-    } else if (followUp[0] && followUpAfterInDays[0] !== 'Custom') {
-      const apptdateTime = new Date(props.appointmentDateTime);
-      folloupDateTime = new Date(
-        apptdateTime.getTime() + parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
-      ).toISOString();
-    }
-    const followupObj: any = {
-      appointmentId: props.appointmentId,
-      folloupDateTime: folloupDateTime,
-      doctorId: props.doctorId,
-      caseSheetId: props.caseSheetId,
-      doctorInfo: currentPatient,
-      pdfUrl: props.prescriptionPdf,
-    };
-    if (folloupDateTime !== '') {
-      setTimeout(() => {
-        pubnub.publish(
-          {
-            message: {
-              id: props.doctorId,
-              message: followupconsult,
-              transferInfo: followupObj,
-            },
-            channel: channel,
-            storeInHistory: true,
-          },
-          (status, response) => {}
-        );
-      }, 100);
-    }
+    // let folloupDateTime = '';
+    // if (
+    //   followUpDate &&
+    //   followUpDate.length > 0 &&
+    //   followUpDate[0] !== null &&
+    //   followUpDate[0] !== ''
+    // ) {
+    //   folloupDateTime = followUpDate[0] ? new Date(followUpDate[0]).toISOString() : '';
+    // } else if (followUp[0] && followUpAfterInDays[0] !== 'Custom') {
+    //   const apptdateTime = new Date(props.appointmentDateTime);
+    //   folloupDateTime = new Date(
+    //     apptdateTime.getTime() + parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
+    //   ).toISOString();
+    // }
+    // const followupObj: any = {
+    //   appointmentId: props.appointmentId,
+    //   folloupDateTime: folloupDateTime,
+    //   doctorId: props.doctorId,
+    //   caseSheetId: props.caseSheetId,
+    //   doctorInfo: currentPatient,
+    //   pdfUrl: props.prescriptionPdf,
+    // };
+    // if (folloupDateTime !== '') {
+    //   setTimeout(() => {
+    //     pubnub.publish(
+    //       {
+    //         message: {
+    //           id: props.doctorId,
+    //           message: followupconsult,
+    //           transferInfo: followupObj,
+    //         },
+    //         channel: channel,
+    //         storeInHistory: true,
+    //       },
+    //       (status, response) => {}
+    //     );
+    //   }, 100);
+    // }
   };
   const transferConsultAction = () => {
     if (isEmpty(transferReason)) {
