@@ -11,6 +11,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {};
 });
 
+export type Item = { id: number; start: Date; end: Date };
 export interface BlockedCalendarProps {
   doctorId: string;
 }
@@ -18,6 +19,7 @@ export interface BlockedCalendarProps {
 export const BlockedCalendar: React.FC<BlockedCalendarProps> = (props) => {
   const classes = useStyles();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [itemToEdit, setItemToEdit] = useState<Item | null>(null);
   const { doctorId } = props;
   const { data, loading, error } = useQuery<GetBlockedCalendar, GetBlockedCalendarVariables>(
     GET_BLOCKED_CALENDAR,
@@ -41,16 +43,28 @@ export const BlockedCalendar: React.FC<BlockedCalendarProps> = (props) => {
       end: new Date(item.end),
     }));
     content = blockedCalendar.map((item) => (
-      <BlockedCalendarItem key={item.id} doctorId={doctorId} item={item} />
+      <BlockedCalendarItem
+        key={item.id}
+        doctorId={doctorId}
+        item={item}
+        onEdit={(item) => {
+          setItemToEdit(item);
+          setShowAddModal(true);
+        }}
+      />
     ));
   }
   return (
     <div data-cypress="BlockedCalendar">
       <BlockedCalendarAddModal
+        item={itemToEdit}
         doctorId={doctorId}
         dialogProps={{
           open: showAddModal,
-          onClose: () => setShowAddModal(false),
+          onClose: () => {
+            setShowAddModal(false);
+            setItemToEdit(null);
+          },
         }}
       />
       <h2>Blocked Calendar</h2>

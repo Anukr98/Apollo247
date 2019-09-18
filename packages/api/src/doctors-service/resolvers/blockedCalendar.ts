@@ -27,6 +27,12 @@ export const blockedCalendarTypeDefs = gql`
       start: DateTime!
       end: DateTime!
     ): BlockedCalendarResult!
+    updateBlockedCalendarItem(
+      id: Int!
+      doctorId: String!
+      start: DateTime!
+      end: DateTime!
+    ): BlockedCalendarResult!
     removeBlockedCalendarItem(id: Int!): BlockedCalendarResult!
   }
 `;
@@ -73,6 +79,19 @@ const addBlockedCalendarItem: Resolver<
   return { blockedCalendar };
 };
 
+const updateBlockedCalendarItem: Resolver<
+  null,
+  BlockedCalendarItem,
+  DoctorsServiceContext,
+  BlockedCalendarResult
+> = async (parent, { id, doctorId, start, end }, context) => {
+  checkAuth(doctorId, context);
+  const { bciRepo } = getRepos(context);
+  await bciRepo.update({ id, doctorId }, { start, end });
+  const blockedCalendar = await bciRepo.find({ doctorId });
+  return { blockedCalendar };
+};
+
 const removeBlockedCalendarItem: Resolver<
   null,
   { id: string },
@@ -94,6 +113,7 @@ export const blockedCalendarResolvers = {
   },
   Mutation: {
     addBlockedCalendarItem,
+    updateBlockedCalendarItem,
     removeBlockedCalendarItem,
   },
 };

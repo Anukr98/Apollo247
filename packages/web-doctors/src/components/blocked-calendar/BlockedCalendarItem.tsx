@@ -8,6 +8,7 @@ import {
 } from 'graphql/types/RemoveBlockedCalendarItem';
 import React from 'react';
 import { Mutation } from 'react-apollo';
+import { Item } from 'components/blocked-calendar/BlockedCalendar';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {};
@@ -15,12 +16,13 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export interface BlockedCalendarItemProps {
   doctorId: string;
-  item: { id: number; start: Date; end: Date };
+  item: Item;
+  onEdit: (item: Item) => void;
 }
 
 export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) => {
   const classes = useStyles();
-  const { item, doctorId } = props;
+  const { item, doctorId, onEdit } = props;
   const sameDay = item.start.getDate() === item.end.getDate();
   const dateText = sameDay
     ? format(item.start, 'iii, P')
@@ -30,6 +32,9 @@ export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) =
     <div style={{ color: 'black', display: 'flex', justifyContent: 'space-between' }}>
       <span>{dateText}</span>
       <span>{timeText}</span>
+      <Button variant="text" style={{ color: 'black' }} onClick={() => onEdit(item)}>
+        EDIT
+      </Button>
       <Mutation<RemoveBlockedCalendarItem, RemoveBlockedCalendarItemVariables>
         mutation={REMOVE_BLOCKED_CALENDAR_ITEM}
       >
