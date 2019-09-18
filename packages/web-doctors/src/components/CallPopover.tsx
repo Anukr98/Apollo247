@@ -261,6 +261,10 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fff',
       },
+      '&:disabled': {
+        color: '#fc9916',
+        opacity: 0.7,
+      },
     },
     popOverUL: {
       listStyleType: 'none',
@@ -1293,13 +1297,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             ) : (
               <Button
                 className={classes.consultButton}
-                disabled={
-                  startAppointmentButton ||
-                  disableOnTransfer ||
-                  appointmentInfo!.appointmentState !== 'NEW' ||
-                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                    appointmentInfo!.status !== STATUS.PENDING)
-                }
+                // disabled={
+                //   startAppointmentButton ||
+                //   didisabledsableOnTransfer ||
+                //   appointmentInfo!.appointmentState !== 'NEW' ||
+                //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                //     appointmentInfo!.status !== STATUS.PENDING)
+                // }
                 onClick={() => {
                   !props.startAppointment ? onStartConsult() : onStopConsult();
                   !props.startAppointment ? startInterval(900) : stopInterval();

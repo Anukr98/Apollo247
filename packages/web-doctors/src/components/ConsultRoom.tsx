@@ -92,14 +92,13 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: '50%',
       margin: '5px 5px 10px 70px',
       position: 'relative',
-
-      '& img': {
-        position: 'absolute',
-        left: -50,
-        top: 5,
-        width: 40,
-        borderRadius: '50%',
-      },
+    },
+    patientIcon: {
+      position: 'absolute',
+      left: -50,
+      top: 5,
+      width: 40,
+      borderRadius: '50%',
     },
     chatFooterSection: {
       position: 'absolute',
@@ -450,7 +449,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <div className={rowData.duration ? classes.callMsg : classes.petient}>
             {rightComponent == 1 && !rowData.duration && (
               <span className={classes.boldTxt}>
-                <img src={require('images/ic_patientchat.png')} />
+                <img className={classes.patientIcon} src={require('images/ic_patientchat.png')} />
               </span>
             )}
             {rowData.duration === '00 : 00' ? (
@@ -469,10 +468,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             ) : (
               <div>
                 {rowData.message === documentUpload ? (
-                  <div style={{ width: '50px', height: '50px' }}>
+                  <div style={{ width: '200px', height: 'auto' }}>
                     <a href={rowData.url} target="_blank">
                       <img
-                        style={{ width: '50px', height: '50px' }}
+                        style={{ width: '200px', height: 'auto' }}
                         src={rowData.url}
                         alt={rowData.url}
                       />
