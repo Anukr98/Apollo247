@@ -96,7 +96,7 @@ export const AuthProvider: React.FC = (props) => {
 
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
 
-  apolloClient = buildApolloClient(authToken, () => signOut());
+  apolloClient = buildApolloClient(authToken, () => {});
 
   const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
     null
@@ -196,7 +196,7 @@ export const AuthProvider: React.FC = (props) => {
 
         console.log('authprovider jwt', jwt);
 
-        apolloClient = buildApolloClient(jwt, () => signOut());
+        apolloClient = buildApolloClient(jwt, () => {});
         authStateRegistered = false;
         setAuthToken(jwt);
         getNetStatus().then((item) => {
@@ -205,7 +205,7 @@ export const AuthProvider: React.FC = (props) => {
       }
       setIsSigningIn(false);
     });
-  }, [auth, signOut]);
+  }, [auth]);
 
   const getPatientApiCall = async () => {
     await apolloClient
@@ -219,9 +219,13 @@ export const AuthProvider: React.FC = (props) => {
         AsyncStorage.setItem('currentPatient', JSON.stringify(data));
         setAllPatients(data);
       })
-      .catch((error) => {
+      .catch(async (error) => {
+        const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+        const item = JSON.parse(retrievedItem);
+        setAllPatients(item);
+
         setSignInError(true);
-        console.log('error', error);
+        console.log('getPatientApiCallerror', error);
       });
   };
 

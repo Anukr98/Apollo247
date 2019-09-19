@@ -74,7 +74,6 @@ import {
   CameraRoll,
   Linking,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
 import RNFetchBlob from 'react-native-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import InCallManager from 'react-native-incall-manager';
@@ -181,8 +180,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     position: 'absolute',
     top: isIphoneX() ? 74 : 44,
     right: 20,
-    width: 112,
-    height: 148,
+    width: 148,
+    height: 112,
     zIndex: 1000,
     borderRadius: 30,
   });
@@ -2129,14 +2128,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     left: 0,
                     width: width,
                     height: 24,
-                    backgroundColor: 'black',
-                    opacity: 0.6,
+                    backgroundColor: 'transparent',
+                    // opacity: 0.6,
                     alignItems: 'center',
                     justifyContent: 'center',
                     zIndex: 1000,
                   }}
                 >
-                  <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+                  <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
                     Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
                     {seconds.toString().length < 2 ? '0' + seconds : seconds}
                   </Text>
@@ -2251,14 +2250,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               left: 0,
               width: width,
               height: 24,
-              backgroundColor: 'black',
-              opacity: 0.6,
+              backgroundColor: 'transparent',
+              // opacity: 0.6,
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 1000,
             }}
           >
-            <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+            <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
               Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
               {seconds.toString().length < 2 ? '0' + seconds : seconds}
             </Text>
@@ -2335,8 +2334,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       position: 'absolute',
       top: isIphoneX() ? 74 : 44,
       right: 20,
-      width: 112,
-      height: 148,
+      width: 148,
+      height: 112,
       zIndex: 1000,
       borderRadius: 30,
     });
@@ -2589,8 +2588,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       position: 'absolute',
       top: isIphoneX() ? 74 : 44,
       right: 20,
-      width: 112,
-      height: 148,
+      width: 148,
+      height: 112,
       zIndex: 1000,
       borderRadius: 30,
     });
