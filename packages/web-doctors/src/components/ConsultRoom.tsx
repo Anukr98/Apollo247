@@ -220,10 +220,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setStartingTime(timer);
     }, 1000);
   };
-  // const stopIntervalTimer = () => {
-  //   setStartingTime(0);
-  //   timerIntervalId && clearInterval(timerIntervalId);
-  // };
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
+  };
   const srollToBottomAction = () => {
     setTimeout(() => {
       const scrollDiv = document.getElementById('scrollDiv');
@@ -590,6 +590,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
       }
     );
+    stopIntervalTimer();
     //setIsVideoCall(false);
   };
   const stopAudioVideoCallpatient = () => {
@@ -614,6 +615,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
       }
     );
+    stopIntervalTimer();
   };
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 

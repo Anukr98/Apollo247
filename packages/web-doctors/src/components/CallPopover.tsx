@@ -640,6 +640,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
+  };
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -685,6 +689,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     );
     //setIsVideoCall(false);
+    stopIntervalTimer();
   };
   const autoSend = (callType: string) => {
     const text = {
@@ -731,6 +736,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         //setMessageText('');
       }
     );
+    stopIntervalTimer();
   };
   const convertCall = () => {
     setConvertVideo(!convertVideo);
@@ -1297,13 +1303,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             ) : (
               <Button
                 className={classes.consultButton}
-                disabled={
-                  startAppointmentButton ||
-                  disableOnTransfer ||
-                  appointmentInfo!.appointmentState !== 'NEW' ||
-                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                    appointmentInfo!.status !== STATUS.PENDING)
-                }
+                // disabled={
+                //   startAppointmentButton ||
+                //   disableOnTransfer ||
+                //   appointmentInfo!.appointmentState !== 'NEW' ||
+                //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                //     appointmentInfo!.status !== STATUS.PENDING)
+                // }
                 onClick={() => {
                   !props.startAppointment ? onStartConsult() : onStopConsult();
                   !props.startAppointment ? startInterval(900) : stopInterval();

@@ -281,7 +281,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                             />
                           </button>
                         )}
-                        {isCall && subscribeToVideo && (
+                        {/* {isCall && subscribeToVideo && (
                           <button
                             className={classes.muteBtn}
                             onClick={() => {
@@ -295,8 +295,8 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                               alt="videoon"
                             />
                           </button>
-                        )}
-                        {isCall && !subscribeToVideo && (
+                        )} */}
+                        {/* {isCall && !subscribeToVideo && (
                           <button
                             className={classes.muteBtn}
                             onClick={() => {
@@ -310,7 +310,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                               alt="videooff"
                             />
                           </button>
-                        )}
+                        )} */}
                         {isCall && (
                           <button
                             onClick={() => {
