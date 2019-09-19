@@ -50,6 +50,8 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -150,6 +152,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
     (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
   >([]);
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   // const [doctorIds, setdoctorIds] = useState<string[]>([]);
 
@@ -160,32 +163,47 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     //console.log(doctorIds, 'doctorIds fetchNextSlots');
     const todayDate = new Date().toISOString().slice(0, 10);
 
-    client
-      .query<GetDoctorNextAvailableSlot>({
-        query: NEXT_AVAILABLE_SLOT,
-        variables: {
-          DoctorNextAvailableSlotInput: {
-            doctorIds: doctorIds,
-            availableDate: todayDate,
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
+    getNextAvailableSlots(client, doctorIds, todayDate)
+      .then(({ data }: any) => {
+        console.log(data, 'data res');
         if (data) {
-          if (
-            data &&
-            data.getDoctorNextAvailableSlot &&
-            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-            doctorAvailalbeSlots !== data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-          ) {
-            setdoctorAvailalbeSlots(data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
+          if (doctorAvailalbeSlots !== data) {
+            setdoctorAvailalbeSlots(data);
+            setshowSpinner(false);
           }
         }
       })
       .catch((e: string) => {
-        console.log('Error occured while searching Doctor', e);
+        setshowSpinner(false);
+        console.log('Error occured ', e);
       });
+
+    // client
+    //   .query<GetDoctorNextAvailableSlot>({
+    //     query: NEXT_AVAILABLE_SLOT,
+    //     variables: {
+    //       DoctorNextAvailableSlotInput: {
+    //         doctorIds: doctorIds,
+    //         availableDate: todayDate,
+    //       },
+    //     },
+    //     fetchPolicy: 'no-cache',
+    //   })
+    //   .then(({ data }) => {
+    //     if (data) {
+    //       if (
+    //         data &&
+    //         data.getDoctorNextAvailableSlot &&
+    //         data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+    //         doctorAvailalbeSlots !== data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    //       ) {
+    //         setdoctorAvailalbeSlots(data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
+    //       }
+    //     }
+    //   })
+    //   .catch((e: string) => {
+    //     console.log('Error occured while searching Doctor', e);
+    //   });
 
     // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
     //   fetchPolicy: 'no-cache',
@@ -264,7 +282,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             doctorIds.push(...ids);
             setotherDoctors(searchData.otherDoctors);
           }
-          fetchNextSlots(doctorIds);
+          doctorIds.length > 0 && fetchNextSlots(doctorIds);
         }
       })
       .catch((e: string) => {
@@ -448,10 +466,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           //console.log('data', data.getPatientPastSearches);
           setPastSearches(data.getPatientPastSearches);
         }
+        fetchSpecialities();
         fetchSearchData();
       })
       .catch((e: string) => {
-        setshowSpinner(false);
+        // setshowSpinner(false);
         console.log('Error occured', e);
       });
   };
@@ -459,10 +478,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   useEffect(() => {
     getNetStatus().then((status) => {
       if (status) {
-        fetchSpecialities();
         fetchPastSearches();
       } else {
         setshowSpinner(false);
+        setshowOfflinePopup(true);
       }
     });
   }, []);
@@ -939,6 +958,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         ) : null}
       </SafeAreaView>
       {showSpinner && <Spinner />}
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };

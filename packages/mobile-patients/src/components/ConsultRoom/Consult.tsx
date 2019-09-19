@@ -37,6 +37,7 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 
 const { width, height } = Dimensions.get('window');
 
@@ -192,6 +193,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
 
   const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
   const [followupdone, setFollowupDone] = useState<boolean>(false);
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+
   const client = useApolloClient();
 
   useEffect(() => {
@@ -251,6 +254,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         fetchAppointments();
       } else {
         setshowSpinner(false);
+        setshowOfflinePopup(true);
       }
     });
   }, []);
@@ -1038,6 +1042,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         </BottomPopUp>
       )}
       {showSpinner && <Spinner />}
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };

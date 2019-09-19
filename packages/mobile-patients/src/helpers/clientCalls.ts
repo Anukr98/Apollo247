@@ -2,9 +2,9 @@ import ApolloClient from 'apollo-client';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
 
-export const searchMedicineApi = (
+export const getNextAvailableSlots = (
   client: ApolloClient<object>,
-  doctorIds: string[],
+  doctorIds: (string | null)[] | (string | undefined)[] | string[],
   todayDate: string
 ) => {
   return new Promise((res, rej) => {
