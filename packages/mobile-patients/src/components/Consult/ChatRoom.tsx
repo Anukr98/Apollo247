@@ -71,7 +71,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  CameraRoll,
+  Linking,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import RNFetchBlob from 'react-native-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import InCallManager from 'react-native-incall-manager';
@@ -812,8 +815,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let leftComponent = 0;
   let rightComponent = 0;
 
+  const saveimageIos = (url: any) => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL(url).catch((err) => console.error('An error occurred', err));
+    }
+  };
   const transferReschedule = (rowData: any, index: number) => {
-    //console.log('row', rowData);
     return (
       <>
         {rowData.message === transferConsultMsg ? (
@@ -1124,8 +1131,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           useDownloadManager: true,
                           notification: false,
                           mime: 'application/pdf',
-                          //path:  RNFetchBlob.fs.dirs.DownloadDir + rowData.transferInfo.pdfUrl &&
-                          //rowData.transferInfo.pdfUrl.split('/').pop(),
                           path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
                           description: 'File downloaded by download manager.',
                         },
@@ -1138,10 +1143,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           // the temp file path
                           console.log('The file saved to res ', res);
                           console.log('The file saved to ', res.path());
-
+                          saveimageIos(rowData.transferInfo.pdfUrl);
                           // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                           // RNFetchBlob.ios.openDocument(res.path());
                           Alert.alert('Download Complete');
+
                           Platform.OS === 'ios'
                             ? RNFetchBlob.ios.previewDocument(res.path())
                             : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');

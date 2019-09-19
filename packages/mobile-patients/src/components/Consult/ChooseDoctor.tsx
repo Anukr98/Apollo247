@@ -40,6 +40,8 @@ import {
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Spinner } from '../ui/Spinner';
+import { getNetStatus } from '../../helpers/helperFunctions';
+import { BottomPopUp } from '../ui/BottomPopUp';
 
 const styles = StyleSheet.create({
   headerText: {
@@ -95,12 +97,21 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
   const [chooseDoctorResult, setChooseDoctorResult] = useState([]);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
-
+  const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const appointmentData = props.navigation.state.params!.data;
   // console.log(appointmentData, 'appointmentData');
   // console.log(props.navigation.state.params!.patientId, 'pppp');
   useEffect(() => {
-    chooseDoctor();
+    getNetStatus().then((status) => {
+      if (status) {
+        console.log('Network status', status);
+        chooseDoctor();
+      } else {
+        setNetworkStatus(true);
+        setshowSpinner(false);
+        console.log('Network status failed', status);
+      }
+    });
   });
 
   const client = useApolloClient();
@@ -263,6 +274,31 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
+      {networkStatus && (
+        <BottomPopUp title={'Hi:)'} description="Please check you Internet connection!">
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setNetworkStatus(false);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
       {showSpinner && <Spinner />}
     </View>
   );

@@ -20,9 +20,14 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { useQuery, useApolloClient } from 'react-apollo-hooks';
 import Moment from 'moment';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
-import { timeTo12HrFormat, divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  timeTo12HrFormat,
+  divideSlots,
+  getNetStatus,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { BottomPopUp } from '../ui/BottomPopUp';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -103,7 +108,7 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
   const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
   const [selectedCTA, setselectedCTA] = useState<string>(onlineCTA[0]);
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
-
+  const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(props.date);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
   const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
@@ -112,7 +117,16 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
     if (date !== props.date) {
       setDate(props.date);
     }
-    checkAvailabilitySlot();
+    getNetStatus().then((status) => {
+      if (status) {
+        console.log('Network status', status);
+        checkAvailabilitySlot();
+      } else {
+        setNetworkStatus(true);
+        console.log('Network status failed', status);
+      }
+    });
+
     // if (availableSlots !== props.availableSlots && props.availableSlots) {
     //   setTimeArrayData(props.availableSlots, props.date);
     //   setavailableSlots(props.availableSlots);
@@ -282,6 +296,31 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
           {renderTimings()}
         </View>
       </View>
+      {networkStatus && (
+        <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setNetworkStatus(false);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
     </View>
   );
 };

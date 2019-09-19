@@ -530,11 +530,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                                 color: theme.colors.LIGHT_BLUE,
                               }}
                             >
-                              {item.facility.streetLine1}
-                              {item.facility.streetLine2
-                                ? `${item.facility.streetLine1 ? ', ' : ''}${
-                                    item.facility.streetLine2
-                                  }`
+                              {item && item.facility.streetLine1}
+                              {item && item.facility.streetLine2
+                                ? `${item && item.facility.streetLine1 ? ', ' : ''}${item &&
+                                    item.facility.streetLine2}`
                                 : ''}
                             </Text>
                             <Text
@@ -543,7 +542,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                                 color: theme.colors.LIGHT_BLUE,
                               }}
                             >
-                              {item.facility.city}
+                              {item && item.facility && item.facility.city}
                             </Text>
                             {clinicHours.length > 0 && (
                               <>

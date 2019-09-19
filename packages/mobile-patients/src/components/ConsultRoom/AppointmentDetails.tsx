@@ -47,6 +47,7 @@ import {
   checkIfReschedule,
   checkIfRescheduleVariables,
 } from '../../graphql/types/checkIfReschedule';
+import { getNetStatus } from '../../helpers/helperFunctions';
 
 const { width, height } = Dimensions.get('window');
 
@@ -129,13 +130,22 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [belowThree, setBelowThree] = useState<boolean>(false);
   const [newRescheduleCount, setNewRescheduleCount] = useState<any>();
   const [availability, setAvailability] = useState<any>();
-
+  const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const client = useApolloClient();
 
   useEffect(() => {
-    checkIfReschedule();
-    nextAvailableSlot();
+    getNetStatus().then((status) => {
+      if (status) {
+        console.log('Network status', status);
+        checkIfReschedule();
+        nextAvailableSlot();
+      } else {
+        setNetworkStatus(true);
+        setshowSpinner(false);
+        console.log('Network status failed', status);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -612,6 +622,31 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   <Text style={styles.gotItTextStyles}>{'CANCEL CONSULT'}</Text>
                 </TouchableOpacity>
               </View>
+            </View>
+          </BottomPopUp>
+        )}
+        {networkStatus && (
+          <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
+            <View style={{ height: 60, alignItems: 'flex-end' }}>
+              <TouchableOpacity
+                style={{
+                  height: 60,
+                  paddingRight: 25,
+                  backgroundColor: 'transparent',
+                }}
+                onPress={() => {
+                  setNetworkStatus(false);
+                }}
+              >
+                <Text
+                  style={{
+                    paddingTop: 16,
+                    ...theme.viewStyles.yellowTextStyle,
+                  }}
+                >
+                  OK, GOT IT
+                </Text>
+              </TouchableOpacity>
             </View>
           </BottomPopUp>
         )}
