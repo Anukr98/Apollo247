@@ -27,7 +27,7 @@ import {
   BookAppointmentInput,
   DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { divideSlots, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -44,6 +44,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps, NavigationActions } from 'react-navigation';
 import moment from 'moment';
 import { StackActions } from 'react-navigation';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 
 const { width, height } = Dimensions.get('window');
 
@@ -109,6 +110,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
   const [AppointmentExistAlert, setAppointmentExistAlert] = useState<boolean>(false);
   const scrollViewRef = React.useRef<any>(null);
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   const todayDate = new Date().toDateString().split('T')[0];
   console.log(todayDate, 'todayDatetodayDate', new Date().toDateString());
@@ -207,6 +209,60 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       });
   };
 
+  const onPressPay = () => {
+    getNetStatus().then((status) => {
+      if (status) {
+        if (props.FollowUp == false) {
+          console.log('BookfollowupAppointment flow');
+          const timeSlot =
+            tabs[0].title === selectedTab &&
+            isConsultOnline &&
+            availableInMin! <= 60 &&
+            0 < availableInMin!
+              ? nextAvailableSlot
+              : selectedTimeSlot;
+          console.log('time', timeSlot);
+          console.log('FollowUp', props.FollowUp);
+          console.log('appointmentType', props.appointmentType);
+          console.log('patientId', props.patientId);
+          console.log('appointmentType', props.appointmentType);
+          console.log('appointmentId', props.appointmentId);
+          console.log('doctorId', props.doctorId);
+          const input = {
+            patientId: props.patientId,
+            doctorId: props.doctorId,
+            appointmentDateTime: timeSlot,
+            appointmentType: APPOINTMENT_TYPE.ONLINE,
+            hospitalId: '',
+            followUpParentId: props.appointmentId,
+          };
+          client
+            .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
+              mutation: BOOK_FOLLOWUP_APPOINTMENT,
+              variables: {
+                followUpAppointmentInput: input,
+              },
+              fetchPolicy: 'no-cache',
+            })
+            .then((_data: any) => {
+              console.log('BookFollowUpAppointment', _data);
+              props.navigation.navigate(AppRoutes.Consult);
+            })
+            .catch((e: any) => {
+              const error = JSON.parse(JSON.stringify(e));
+              const errorMessage = error && error.message;
+              console.log('Error occured while BookFollowUpAppointment ', errorMessage, error);
+              Alert.alert('Error', errorMessage);
+            });
+        } else {
+          onSubmitBookAppointment();
+        }
+      } else {
+        setshowOfflinePopup(true);
+      }
+    });
+  };
+
   const renderBottomButton = () => {
     return (
       <StickyBottomComponent
@@ -233,53 +289,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               ? true
               : false
           }
-          onPress={() => {
-            if (props.FollowUp == false) {
-              console.log('BookfollowupAppointment flow');
-              const timeSlot =
-                tabs[0].title === selectedTab &&
-                isConsultOnline &&
-                availableInMin! <= 60 &&
-                0 < availableInMin!
-                  ? nextAvailableSlot
-                  : selectedTimeSlot;
-              console.log('time', timeSlot);
-              console.log('FollowUp', props.FollowUp);
-              console.log('appointmentType', props.appointmentType);
-              console.log('patientId', props.patientId);
-              console.log('appointmentType', props.appointmentType);
-              console.log('appointmentId', props.appointmentId);
-              console.log('doctorId', props.doctorId);
-              const input = {
-                patientId: props.patientId,
-                doctorId: props.doctorId,
-                appointmentDateTime: timeSlot,
-                appointmentType: APPOINTMENT_TYPE.ONLINE,
-                hospitalId: '',
-                followUpParentId: props.appointmentId,
-              };
-              client
-                .mutate<BookFollowUpAppointment, BookFollowUpAppointmentVariables>({
-                  mutation: BOOK_FOLLOWUP_APPOINTMENT,
-                  variables: {
-                    followUpAppointmentInput: input,
-                  },
-                  fetchPolicy: 'no-cache',
-                })
-                .then((_data: any) => {
-                  console.log('BookFollowUpAppointment', _data);
-                  props.navigation.navigate(AppRoutes.Consult);
-                })
-                .catch((e: any) => {
-                  const error = JSON.parse(JSON.stringify(e));
-                  const errorMessage = error && error.message;
-                  console.log('Error occured while BookFollowUpAppointment ', errorMessage, error);
-                  Alert.alert('Error', errorMessage);
-                });
-            } else {
-              onSubmitBookAppointment();
-            }
-          }}
+          onPress={onPressPay}
         />
       </StickyBottomComponent>
     );
@@ -458,6 +468,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         </BottomPopUp>
       )}
       {showSpinner && <Spinner />}
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };
