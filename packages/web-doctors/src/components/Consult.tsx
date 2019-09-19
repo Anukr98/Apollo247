@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     videoContainer: {
-      minHeight: 545,
+      minHeight: 470,
       backgroundColor: '#000',
       borderRadius: 10,
       margin: 20,
