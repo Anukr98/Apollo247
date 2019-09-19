@@ -588,8 +588,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         </View>
                       )}
 
-                      <View style={styles.separatorStyle} />
-                      <View
+                      {/* <View style={styles.separatorStyle} /> */}
+                      {/* <View
                         style={{
                           flexDirection: 'row',
                           marginBottom: 16,
@@ -605,7 +605,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             titleTextStyle={{ color: theme.colors.SKY_BLUE }}
                           />
                         ))}
-                      </View>
+                      </View> */}
                     </View>
                   </View>
                   <View style={[styles.separatorStyle, { marginHorizontal: 16 }]} />
