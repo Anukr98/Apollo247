@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { GraphQLError } from 'graphql';
-import { Alert } from 'react-native';
+import { Alert, NetInfo } from 'react-native';
 
 export const getDateFormat = (_date: string /*"2019-08-08T20:30:00.000Z"*/) => {
   const dateTime = _date.split('T');
@@ -194,3 +194,11 @@ export function g<
 export function g(obj: any, ...props: string[]) {
   return obj && props.reduce((result, prop) => (result == null ? undefined : result[prop]), obj);
 }
+
+export const getNetStatus = async () => {
+  const status = await NetInfo.getConnectionInfo().then((connectionInfo) => {
+    // console.log(connectionInfo, 'connectionInfo');
+    return connectionInfo.type !== 'none';
+  });
+  return status;
+};

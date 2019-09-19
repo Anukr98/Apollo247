@@ -85,7 +85,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
     return (
       addresses &&
       addresses.map((address, i) => (
-        <View style={styles.cardStyle}>
+        <View style={styles.cardStyle} key={i}>
           <Text style={styles.textStyle}>{`${address.landmark ? address.landmark : ''} ${
             address.addressLine1
           } ${address.addressLine2}\n ${address.city ? `${address.city}\n ` : ''}${
@@ -115,7 +115,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
         />
         <ScrollView bounces={false}>
           {renderAddresses()}
-          <View style={{ height: 80 }} />
+          {/* <View style={{ height: 80 }} /> */}
         </ScrollView>
         {renderBottomButtons()}
       </SafeAreaView>

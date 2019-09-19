@@ -21,13 +21,14 @@ import {
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { ConsultMode, Gender, Range } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios from 'axios';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Animated,
   AsyncStorage,
@@ -40,6 +41,8 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 
 const styles = StyleSheet.create({
   topView: {
@@ -140,9 +143,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   ] = useState<getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty | null>(
     null
   );
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   const [scrollY] = useState(new Animated.Value(0));
   const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
 
   const requestLocationPermission = async () => {
     try {
@@ -158,186 +163,286 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       console.log(err);
     }
   };
-  console.log(doctorIds, 'doctorIds fetchNextSlots');
-  const todayDate = new Date().toISOString().slice(0, 10);
-  const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-    fetchPolicy: 'no-cache',
-    variables: {
-      DoctorNextAvailableSlotInput: {
-        doctorIds: doctorIds,
-        availableDate: todayDate,
-      },
-    },
-  });
-
-  if (availability.error) {
-    console.log('error', availability.error);
-  } else {
-    console.log('doctorIds fetchNextSlots result', availability);
-    if (
-      availability &&
-      availability.data &&
-      availability.data.getDoctorNextAvailableSlot &&
-      availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-      doctorAvailalbeSlots !== availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-    ) {
-      console.log(
-        availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots,
-        'doctorIds fetchNextSlots doctorAvailalbeSlots'
-      );
-      setdoctorAvailalbeSlots(availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
-    }
-  }
 
   useEffect(() => {
-    console.log('didmout');
     Platform.OS === 'android' && requestLocationPermission();
     fetchCurrentLocation();
+    getNetStatus().then((status) => {
+      if (status) {
+        fetchSpecialityFilterData(FilterData);
+      } else {
+        setshowSpinner(false);
+        setshowOfflinePopup(true);
+      }
+    });
   }, []);
 
-  console.log('FilterData1111111', FilterData);
-  const experienceArray: Range[] = [];
-  if (FilterData[1].selectedOptions && FilterData[1].selectedOptions.length > 0)
-    FilterData[1].selectedOptions.forEach((element: string) => {
-      const splitArray = element.split(' - ');
-      let object: Range | null = {};
-      if (splitArray.length > 0)
-        object = {
-          minimum: Number(splitArray[0].replace('+', '')),
-          maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
-        };
-      if (object) {
-        experienceArray.push(object);
-      }
-    });
+  const fetchNextSlots = (doctorIds: (string | null)[]) => {
+    console.log(doctorIds, 'doctorIds fetchNextSlots');
+    const todayDate = new Date().toISOString().slice(0, 10);
+    // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
+    //   fetchPolicy: 'no-cache',
+    //   variables: {
+    //     DoctorNextAvailableSlotInput: {
+    //       doctorIds: doctorIds,
+    //       availableDate: todayDate,
+    //     },
+    //   },
+    // });
 
-  const feesArray: Range[] = [];
-  if (FilterData[3].selectedOptions && FilterData[3].selectedOptions.length > 0)
-    FilterData[3].selectedOptions.forEach((element: string) => {
-      const splitArray = element.split(' - ');
-      console.log(splitArray, 'splitArray');
-      let object: Range | null = {};
-      if (splitArray.length > 0)
-        object = {
-          minimum: Number(splitArray[0].replace('+', '')),
-          maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
-        };
+    // if (availability.error) {
+    //   console.log('error', availability.error);
+    // } else {
+    //   console.log('doctorIds fetchNextSlots result', availability);
+    //   if (
+    //     availability &&
+    //     availability.data &&
+    //     availability.data.getDoctorNextAvailableSlot &&
+    //     availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+    //     doctorAvailalbeSlots !== availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    //   ) {
+    //     setdoctorAvailalbeSlots(availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
+    //   }
+    // }
 
-      if (object) {
-        feesArray.push(object);
-      }
-    });
+    getNextAvailableSlots(client, doctorIds, todayDate)
+      .then(({ data }: any) => {
+        console.log(data, 'data res');
+        if (data) {
+          if (doctorAvailalbeSlots !== data) {
+            setdoctorAvailalbeSlots(data);
+            setshowSpinner(false);
+          }
+        }
+      })
+      .catch((e: string) => {
+        setshowSpinner(false);
+        console.log('Error occured ', e);
+      });
 
-  let availableNow = {};
-  const availabilityArray: string[] = [];
-  const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-  console.log('moment', moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'));
-  if (FilterData[2].selectedOptions && FilterData[2].selectedOptions.length > 0)
-    FilterData[2].selectedOptions.forEach((element: string) => {
-      if (element === 'Now') {
-        // availabilityArray.push(today);
-        availableNow = {
-          availableNow: moment(new Date())
-            .utc()
-            .format('YYYY-MM-DD hh:mm'),
-        };
-      } else if (element === 'Today') {
-        availabilityArray.push(today);
-      } else if (element === 'Tomorrow') {
-        availabilityArray.push(
-          moment(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
-            'YYYY-MM-DD'
-          )
-        );
-      } else if (element === 'Next 3 Days') {
-        availabilityArray.push(
-          moment(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
-            'YYYY-MM-DD'
-          )
-        );
-        availabilityArray.push(
-          moment(new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
-            'YYYY-MM-DD'
-          )
-        );
-        availabilityArray.push(
-          moment(new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
-            'YYYY-MM-DD'
-          )
-        );
-      } else {
-        availabilityArray.push(element);
-      }
-      // new Date().getTime() + 24 * 60 * 60 * 1000;
-    });
-  console.log(
-    experienceArray,
-    'experienceArray',
-    availabilityArray,
-    'availabilityArray',
-    feesArray,
-    'feesArray',
-    availableNow,
-    'availableNow'
-  );
+    // client
+    //   .query<GetDoctorNextAvailableSlot>({
+    //     query: NEXT_AVAILABLE_SLOT,
+    //     variables: {
+    //       DoctorNextAvailableSlotInput: {
+    //         doctorIds: doctorIds,
+    //         availableDate: todayDate,
+    //       },
+    //     },
+    //     fetchPolicy: 'no-cache',
+    //   })
+    //   .then(({ data }) => {
+    //     console.log(data, 'data res');
 
-  const FilterInput = {
-    patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-    specialty: props.navigation.state.params ? props.navigation.state.params!.specialityId : '',
-    city: FilterData[0].selectedOptions,
-    experience: experienceArray,
-    availability: availabilityArray,
-    fees: feesArray,
-    gender: FilterData[4].selectedOptions,
-    language: FilterData[5].selectedOptions,
-    ...availableNow,
+    //     if (data) {
+    //       if (
+    //         data &&
+    //         data.getDoctorNextAvailableSlot &&
+    //         data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+    //         doctorAvailalbeSlots !== data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
+    //       ) {
+    //         setdoctorAvailalbeSlots(data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
+    //       }
+    //     }
+    //   })
+    //   .catch((e: string) => {
+    //     console.log('Error occured while searching Doctor', e);
+    //   });
   };
 
-  console.log(
-    props.navigation.state.params,
-    'speciality',
-    FilterData,
-    'FilterDataFilterDataFilterData',
-    FilterInput
-  );
-  const { data, error } = useQuery<getDoctorsBySpecialtyAndFilters>(DOCTOR_SPECIALITY_BY_FILTERS, {
-    fetchPolicy: 'no-cache',
-    variables: {
-      filterInput: FilterInput,
-    },
-  });
-  if (error) {
-    setshowSpinner(false);
-    console.log('error', error);
-  } else {
-    console.log('getDoctorsBySpecialtyAndFilters ', data);
-    const filterGetData =
-      data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
-    if (filterGetData && filterGetData.doctors && doctorsList !== filterGetData.doctors) {
-      const ids = filterGetData.doctors ? filterGetData.doctors.map((item) => item && item.id) : [];
-      const prevIds = [...doctorIds];
-      if (ids !== prevIds) {
-        prevIds.push(...ids);
-        setdoctorIds(prevIds);
-      }
-      console.log(doctorIds, 'doctorIds otherDoctors', filterGetData.doctors);
-      setDoctorsList(filterGetData.doctors);
-      setshowSpinner(false);
-    }
+  const fetchSpecialityFilterData = (FilterData: filterDataType[]) => {
+    console.log('FilterData1111111', FilterData);
+    const experienceArray: Range[] = [];
+    if (FilterData[1].selectedOptions && FilterData[1].selectedOptions.length > 0)
+      FilterData[1].selectedOptions.forEach((element: string) => {
+        const splitArray = element.split(' - ');
+        let object: Range | null = {};
+        if (splitArray.length > 0)
+          object = {
+            minimum: Number(splitArray[0].replace('+', '')),
+            maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
+          };
+        if (object) {
+          experienceArray.push(object);
+        }
+      });
 
-    if (
-      filterGetData &&
-      filterGetData.doctorsAvailability &&
-      doctorsAvailability !== filterGetData.doctorsAvailability
-    ) {
-      setdoctorsAvailability(filterGetData.doctorsAvailability);
-      setshowSpinner(false);
-    }
-    if (filterGetData && filterGetData.specialty && specialities !== filterGetData.specialty) {
-      setspecialities(filterGetData.specialty);
-      setshowSpinner(false);
-    }
-  }
+    const feesArray: Range[] = [];
+    if (FilterData[3].selectedOptions && FilterData[3].selectedOptions.length > 0)
+      FilterData[3].selectedOptions.forEach((element: string) => {
+        const splitArray = element.split(' - ');
+        console.log(splitArray, 'splitArray');
+        let object: Range | null = {};
+        if (splitArray.length > 0)
+          object = {
+            minimum: Number(splitArray[0].replace('+', '')),
+            maximum: splitArray.length > 1 ? Number(element.split(' - ')[1]) : -1,
+          };
+
+        if (object) {
+          feesArray.push(object);
+        }
+      });
+
+    let availableNow = {};
+    const availabilityArray: string[] = [];
+    const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
+    console.log('moment', moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'));
+    if (FilterData[2].selectedOptions && FilterData[2].selectedOptions.length > 0)
+      FilterData[2].selectedOptions.forEach((element: string) => {
+        if (element === 'Now') {
+          // availabilityArray.push(today);
+          availableNow = {
+            availableNow: moment(new Date())
+              .utc()
+              .format('YYYY-MM-DD hh:mm'),
+          };
+        } else if (element === 'Today') {
+          availabilityArray.push(today);
+        } else if (element === 'Tomorrow') {
+          availabilityArray.push(
+            moment(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+              'YYYY-MM-DD'
+            )
+          );
+        } else if (element === 'Next 3 Days') {
+          availabilityArray.push(
+            moment(new Date(new Date().getTime() + 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+              'YYYY-MM-DD'
+            )
+          );
+          availabilityArray.push(
+            moment(new Date(new Date().getTime() + 2 * 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+              'YYYY-MM-DD'
+            )
+          );
+          availabilityArray.push(
+            moment(new Date(new Date().getTime() + 3 * 24 * 60 * 60 * 1000), 'YYYY-MM-DD').format(
+              'YYYY-MM-DD'
+            )
+          );
+        } else {
+          availabilityArray.push(element);
+        }
+        // new Date().getTime() + 24 * 60 * 60 * 1000;
+      });
+    console.log(
+      experienceArray,
+      'experienceArray',
+      availabilityArray,
+      'availabilityArray',
+      feesArray,
+      'feesArray',
+      availableNow,
+      'availableNow'
+    );
+
+    const FilterInput = {
+      patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+      specialty: props.navigation.state.params ? props.navigation.state.params!.specialityId : '',
+      city: FilterData[0].selectedOptions,
+      experience: experienceArray,
+      availability: availabilityArray,
+      fees: feesArray,
+      gender: FilterData[4].selectedOptions,
+      language: FilterData[5].selectedOptions,
+      ...availableNow,
+    };
+
+    console.log(
+      props.navigation.state.params,
+      'speciality',
+      FilterData,
+      'FilterDataFilterDataFilterData',
+      FilterInput
+    );
+    client
+      .query<getDoctorsBySpecialtyAndFilters>({
+        query: DOCTOR_SPECIALITY_BY_FILTERS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          filterInput: FilterInput,
+        },
+      })
+      .then(({ data }) => {
+        console.log('getDoctorsBySpecialtyAndFilters ', data);
+        const filterGetData =
+          data && data.getDoctorsBySpecialtyAndFilters
+            ? data.getDoctorsBySpecialtyAndFilters
+            : null;
+        if (filterGetData && filterGetData.doctors && doctorsList !== filterGetData.doctors) {
+          const ids = filterGetData.doctors
+            ? filterGetData.doctors.map((item) => item && item.id)
+            : [];
+          const prevIds = [...doctorIds];
+          if (ids !== prevIds) {
+            prevIds.push(...ids);
+            setdoctorIds(prevIds);
+            prevIds.length > 0 && fetchNextSlots(prevIds);
+          }
+          console.log(doctorIds, 'doctorIds otherDoctors', filterGetData.doctors);
+          setDoctorsList(filterGetData.doctors);
+          prevIds.length === 0 && setshowSpinner(false);
+        }
+
+        if (
+          filterGetData &&
+          filterGetData.doctorsAvailability &&
+          doctorsAvailability !== filterGetData.doctorsAvailability
+        ) {
+          setdoctorsAvailability(filterGetData.doctorsAvailability);
+          setshowSpinner(false);
+        }
+        if (filterGetData && filterGetData.specialty && specialities !== filterGetData.specialty) {
+          setspecialities(filterGetData.specialty);
+          setshowSpinner(false);
+        }
+      })
+      .catch((e: string) => {
+        setshowSpinner(false);
+        console.log('Error occured while searching Doctor', e);
+      });
+
+    // const { data, error } = useQuery<getDoctorsBySpecialtyAndFilters>(DOCTOR_SPECIALITY_BY_FILTERS, {
+    //   fetchPolicy: 'no-cache',
+    //   variables: {
+    //     filterInput: FilterInput,
+    //   },
+    // });
+    // if (error) {
+    //   setshowSpinner(false);
+    //   console.log('error', error);
+    // } else {
+    //   console.log('getDoctorsBySpecialtyAndFilters ', data);
+    //   const filterGetData =
+    //     data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
+    //   if (filterGetData && filterGetData.doctors && doctorsList !== filterGetData.doctors) {
+    //     const ids = filterGetData.doctors ? filterGetData.doctors.map((item) => item && item.id) : [];
+    //     const prevIds = [...doctorIds];
+    //     if (ids !== prevIds) {
+    //       prevIds.push(...ids);
+    //       setdoctorIds(prevIds);
+    //       fetchNextSlots(prevIds);
+    //     }
+    //     console.log(doctorIds, 'doctorIds otherDoctors', filterGetData.doctors);
+    //     setDoctorsList(filterGetData.doctors);
+    //     setshowSpinner(false);
+    //   }
+
+    //   if (
+    //     filterGetData &&
+    //     filterGetData.doctorsAvailability &&
+    //     doctorsAvailability !== filterGetData.doctorsAvailability
+    //   ) {
+    //     setdoctorsAvailability(filterGetData.doctorsAvailability);
+    //     setshowSpinner(false);
+    //   }
+    //   if (filterGetData && filterGetData.specialty && specialities !== filterGetData.specialty) {
+    //     setspecialities(filterGetData.specialty);
+    //     setshowSpinner(false);
+    //   }
+    // }
+  };
 
   const handleScroll = () => {
     // console.log(e, 'jvjhvhm');
@@ -528,11 +633,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderSearchDoctorResultsRow = (
-    rowData: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null
+    rowData: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null,
+    index: number
   ) => {
     if (rowData)
       return (
         <DoctorCard
+          key={index}
           rowData={rowData}
           navigation={props.navigation}
           doctorAvailalbeSlots={doctorAvailalbeSlots}
@@ -607,7 +714,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             bounces={false}
             data={doctors}
             onEndReachedThreshold={0.5}
-            renderItem={({ item }) => renderSearchDoctorResultsRow(item)}
+            renderItem={({ item, index }) => renderSearchDoctorResultsRow(item, index)}
           />
         )}
       </View>
@@ -792,6 +899,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             console.log('selecteddata', selecteddata);
             setshowSpinner(true);
             setFilterData(selecteddata);
+            getNetStatus().then((status) => {
+              if (status) {
+                fetchSpecialityFilterData(selecteddata);
+              } else {
+                setshowSpinner(false);
+                setshowOfflinePopup(true);
+              }
+            });
           }}
           filterLength={() => {
             setTimeout(() => {
@@ -801,10 +916,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           data={[...FilterData]}
         />
       ) : null}
-      {showSpinner && <Spinner />}
       {renderAnimatedView()}
       {renderTopView()}
       {renderPopup()}
+      {showSpinner && <Spinner />}
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };

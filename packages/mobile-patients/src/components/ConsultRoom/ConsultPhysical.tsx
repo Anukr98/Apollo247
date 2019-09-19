@@ -279,12 +279,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
         <View style={styles.optionsView}>
           {timeArray && timeArray.length > 0
             ? timeArray.map((value) => {
-                console.log(
-                  value,
-                  selectedtiming,
-                  value.label === selectedtiming,
-                  'selectedtiming'
-                );
                 if (value.label === selectedtiming) {
                   if (value.time.length > 0) {
                     return value.time.map((name: string, index: number) => (
