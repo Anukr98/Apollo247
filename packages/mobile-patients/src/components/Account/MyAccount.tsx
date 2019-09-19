@@ -305,7 +305,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              V 1.0(2)
+              Dev V 1.0(15)
             </Text>
           </View>
         </Animated.ScrollView>
@@ -313,7 +313,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
       {renderAnimatedHeader()}
       {networkStatus && (
-        <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
+        <BottomPopUp
+          title={'Oops!'}
+          description="There is no internet. Please check your internet connection."
+        >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               style={{

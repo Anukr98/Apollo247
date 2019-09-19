@@ -48,8 +48,6 @@ export const useAuth = () => {
   };
 };
 
-export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
-
 export const useAllCurrentPatients = () => {
   // const isSigningIn = useAuthContext().isSigningIn;
   // const hasAuthToken = useAuthContext().hasAuthToken;
@@ -76,7 +74,7 @@ export const useAllCurrentPatients = () => {
       allCurrentPatients.find((patient) => patient.relation === Relation.ME)
     : null;
 
-  //console.log('currentPatient', currentPatient);
+  // console.log('currentPatient', currentPatient);
   // console.log('allCurrentPatients', allCurrentPatients);
   useEffect(() => {
     if (!currentPatientId) {

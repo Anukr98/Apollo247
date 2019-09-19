@@ -297,7 +297,10 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
         </View>
       </View>
       {networkStatus && (
-        <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
+        <BottomPopUp
+          title={'Oops!'}
+          description="There is no internet. Please check your internet connection."
+        >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               style={{
