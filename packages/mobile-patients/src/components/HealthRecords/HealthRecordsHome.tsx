@@ -11,6 +11,7 @@ import {
   FileBig,
   Filter,
   NotificationIcon,
+  NoData,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -367,7 +368,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 alignItems: 'center',
               }}
             >
-              <FileBig />
+              <NoData />
             </View>
             <Text
               style={{

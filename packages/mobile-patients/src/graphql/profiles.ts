@@ -178,6 +178,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         status
         hospitalId
         doctorId
+        displayId
         isFollowUp
         rescheduleCount
         displayId
