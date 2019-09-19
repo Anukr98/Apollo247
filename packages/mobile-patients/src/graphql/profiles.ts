@@ -1030,3 +1030,12 @@ export const UPLOAD_CHAT_FILE = gql`
     }
   }
 `;
+
+export const SAVE_ORDER_CANCEL_STATUS = gql`
+  mutation saveOrderCancelStatus($orderCancelInput: OrderCancelInput) {
+    saveOrderCancelStatus(orderCancelInput: $orderCancelInput) {
+      requestStatus
+      requestMessage
+    }
+  }
+`;

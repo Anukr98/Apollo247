@@ -60,9 +60,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       console.log(allCurrentPatients, 'allCurrentPatients');
 
       setTimeout(() => {
-        setshowSpinner(false);
-
         if (userLoggedIn == 'true') {
+          setshowSpinner(false);
+
           if (currentPatient) {
             if (currentPatient.firstName !== '') {
               props.navigation.replace(AppRoutes.ConsultRoom);
@@ -71,6 +71,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             }
           }
         } else if (onboarding == 'true') {
+          setshowSpinner(false);
+
           if (signUp == 'true') {
             props.navigation.replace(AppRoutes.SignUp);
           } else if (multiSignUp == 'true') {
@@ -81,6 +83,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
             props.navigation.replace(AppRoutes.Login);
           }
         } else {
+          setshowSpinner(false);
+
           props.navigation.replace(AppRoutes.Onboarding);
         }
       }, 3500);
