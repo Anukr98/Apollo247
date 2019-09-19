@@ -27,6 +27,9 @@ import {
 } from '@aph/mobile-patients/src/components/OTPVerification';
 import { RNFirebase } from 'react-native-firebase';
 import firebase from 'react-native-firebase';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   container: {
@@ -93,6 +96,7 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [phoneNumberIsValid, setPhoneNumberIsValid] = useState<boolean>(false);
   const { analytics, sendOtp, isSendingOtp, signOut } = useAuth();
   const [subscriptionId, setSubscriptionId] = useState<EmitterSubscription>();
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   useEffect(() => {
     analytics.setCurrentScreen(AppRoutes.Login);
@@ -202,6 +206,42 @@ export const Login: React.FC<LoginProps> = (props) => {
     return isNoBlocked;
   };
 
+  const onClickOkay = () => {
+    Keyboard.dismiss();
+    getNetStatus().then(async (status) => {
+      if (status) {
+        if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
+          null;
+        } else {
+          const isBlocked = await _getTimerData();
+          if (isBlocked) {
+            props.navigation.navigate(AppRoutes.OTPVerification, {
+              otpString,
+              phoneNumber: phoneNumber,
+            });
+          } else {
+            sendOtp(phoneNumber)
+              .then((confirmResult) => {
+                console.log('confirmResult login', confirmResult);
+                props.navigation.navigate(AppRoutes.OTPVerification, {
+                  otpString,
+                  phoneNumber: phoneNumber,
+                });
+              })
+              .catch((error: RNFirebase.RnError) => {
+                Alert.alert(
+                  'Error',
+                  (error && error.message) || 'The interaction was cancelled by the user.'
+                );
+              });
+          }
+        }
+      } else {
+        setshowOfflinePopup(true);
+      }
+    });
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={styles.container}>
@@ -217,35 +257,7 @@ export const Login: React.FC<LoginProps> = (props) => {
               <ArrowDisabled />
             )
           }
-          onClickButton={async () => {
-            Keyboard.dismiss();
-            if (!(phoneNumber.length == 10 && phoneNumberIsValid)) {
-              null;
-            } else {
-              const isBlocked = await _getTimerData();
-              if (isBlocked) {
-                props.navigation.navigate(AppRoutes.OTPVerification, {
-                  otpString,
-                  phoneNumber: phoneNumber,
-                });
-              } else {
-                sendOtp(phoneNumber)
-                  .then((confirmResult) => {
-                    console.log('confirmResult login', confirmResult);
-                    props.navigation.navigate(AppRoutes.OTPVerification, {
-                      otpString,
-                      phoneNumber: phoneNumber,
-                    });
-                  })
-                  .catch((error: RNFirebase.RnError) => {
-                    Alert.alert(
-                      'Error',
-                      (error && error.message) || 'The interaction was cancelled by the user.'
-                    );
-                  });
-              }
-            }
-          }}
+          onClickButton={onClickOkay}
           disableButton={phoneNumberIsValid && phoneNumber.length === 10 ? false : true}
         >
           <View
@@ -277,24 +289,8 @@ export const Login: React.FC<LoginProps> = (props) => {
           </Text>
         </Card>
       </SafeAreaView>
-      {isSendingOtp ? (
-        <View
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0,0,0, 0.2)',
-            alignSelf: 'center',
-            justifyContent: 'center',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-          }}
-        >
-          <ActivityIndicator animating={isSendingOtp} size="large" color="green" />
-        </View>
-      ) : null}
+      {isSendingOtp ? <Spinner /> : null}
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };

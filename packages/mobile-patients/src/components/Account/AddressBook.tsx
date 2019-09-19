@@ -115,7 +115,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
         />
         <ScrollView bounces={false}>
           {renderAddresses()}
-          {/* <View style={{ height: 80 }} /> */}
+          <View style={{ height: 80 }} />
         </ScrollView>
         {renderBottomButtons()}
       </SafeAreaView>

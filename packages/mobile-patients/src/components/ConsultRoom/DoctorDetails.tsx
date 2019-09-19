@@ -773,7 +773,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <StickyBottomComponent defaultBG>
             <Button
               title={'BOOK APPOINTMENT'}
-              onPress={() => setdisplayoverlay(true)}
+              onPress={() => {
+                getNetStatus().then((status) => {
+                  if (status) {
+                    setdisplayoverlay(true);
+                  } else {
+                    setshowOfflinePopup(true);
+                  }
+                });
+              }}
               style={{ marginHorizontal: 60, flex: 1 }}
             />
           </StickyBottomComponent>

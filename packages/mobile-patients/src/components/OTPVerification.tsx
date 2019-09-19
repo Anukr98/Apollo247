@@ -22,6 +22,8 @@ import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
 import { OTPTextView } from './ui/OTPTextView';
 import firebase from 'react-native-firebase';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   container: {
@@ -80,6 +82,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [onOtpClick, setOnOtpClick] = useState<boolean>(false);
 
   const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
 
@@ -246,42 +250,48 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     () => authListener();
   });
 
-  const onClickOk = async () => {
-    console.log('otp OTPVerification', otp);
+  const onClickOk = () => {
     Keyboard.dismiss();
-    setshowSpinner(true);
+    getNetStatus().then(async (status) => {
+      if (status) {
+        console.log('otp OTPVerification', otp);
+        setshowSpinner(true);
 
-    verifyOtp(otp)
-      .then(() => {
-        _removeFromStore();
-        setOnOtpClick(true);
-      })
-      .catch((error) => {
-        console.log({ error });
-        setTimeout(() => {
-          if (isAuthChanged) {
+        verifyOtp(otp)
+          .then(() => {
             _removeFromStore();
             setOnOtpClick(true);
-          } else {
-            setOnOtpClick(false);
-            setshowSpinner(false);
-            // console.log('error', error);
-            _storeTimerData(invalidOtpCount + 1);
+          })
+          .catch((error) => {
+            console.log({ error });
+            setTimeout(() => {
+              if (isAuthChanged) {
+                _removeFromStore();
+                setOnOtpClick(true);
+              } else {
+                setOnOtpClick(false);
+                setshowSpinner(false);
+                // console.log('error', error);
+                _storeTimerData(invalidOtpCount + 1);
 
-            if (invalidOtpCount + 1 === 3) {
-              setShowErrorMsg(true);
-              setIsValidOTP(false);
-              startInterval(timer);
-              setIntervalId(intervalId);
-            } else {
-              setShowErrorMsg(true);
-              setIsValidOTP(true);
-            }
-            setInvalidOtpCount(invalidOtpCount + 1);
-            setOtp('');
-          }
-        }, 1000);
-      });
+                if (invalidOtpCount + 1 === 3) {
+                  setShowErrorMsg(true);
+                  setIsValidOTP(false);
+                  startInterval(timer);
+                  setIntervalId(intervalId);
+                } else {
+                  setShowErrorMsg(true);
+                  setIsValidOTP(true);
+                }
+                setInvalidOtpCount(invalidOtpCount + 1);
+                setOtp('');
+              }
+            }, 1000);
+          });
+      } else {
+        setshowOfflinePopup(true);
+      }
+    });
   };
 
   const minutes = Math.floor(remainingTime / 60);
@@ -333,19 +343,25 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   const onClickResend = () => {
-    setIsresent(true);
-    setOtp('');
-    Keyboard.dismiss();
-    const { phoneNumber } = props.navigation.state.params!;
-    console.log('onClickResend', phoneNumber);
+    getNetStatus().then((status) => {
+      if (status) {
+        setIsresent(true);
+        setOtp('');
+        Keyboard.dismiss();
+        const { phoneNumber } = props.navigation.state.params!;
+        console.log('onClickResend', phoneNumber);
 
-    sendOtp(phoneNumber)
-      .then((confirmResult) => {
-        console.log('confirmResult login', confirmResult);
-      })
-      .catch((error) => {
-        Alert.alert('Error', 'The interaction was cancelled by the user.');
-      });
+        sendOtp(phoneNumber)
+          .then((confirmResult) => {
+            console.log('confirmResult login', confirmResult);
+          })
+          .catch((error) => {
+            Alert.alert('Error', 'The interaction was cancelled by the user.');
+          });
+      } else {
+        setshowOfflinePopup(true);
+      }
+    });
   };
   // console.log(isSigningIn, currentPatient, isVerifyingOtp);
   return (
@@ -429,6 +445,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         )}
       </SafeAreaView>
       {showSpinner && <Spinner />}
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };
