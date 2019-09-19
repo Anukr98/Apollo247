@@ -400,10 +400,8 @@ export const ConsultTabs: React.FC = () => {
       })
       .then((_data) => {
         if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
-          console.log(_data!.data!.updateCaseSheet!.blobName);
-          const url =
-            'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/' +
-            _data!.data!.updateCaseSheet!.blobName;
+          console.log(_data!.data!.updateCaseSheet!.blobName, process.env.PHARMACY_MED_SEARCH_URL);
+          const url = process.env.PHARMACY_MED_SEARCH_URL + _data!.data!.updateCaseSheet!.blobName;
           setPrescriptionPdf(url);
           setSaving(false);
         }
