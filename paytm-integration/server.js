@@ -9,7 +9,14 @@ const stripTags = require('striptags');
 
 require('dotenv').config();
 
-app.use(session({ secret: process.env.SESSION_SECRET, cookie: { maxAge: 60000 } }));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    cookie: { maxAge: 6000000 },
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 const PORT = process.env.PORT || 7000;
 
