@@ -129,6 +129,20 @@ interface ConsultProps {
   isNewMsg: boolean;
   convertCall: () => void;
 }
+function getCookieValue() {
+  const name = 'action=';
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) === 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return '';
+}
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
@@ -276,7 +290,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             />
                           </button>
                         )}
-                        {isCall && subscribeToVideo && (
+                        {isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
                           <button
                             className={classes.muteBtn}
                             onClick={() => {
@@ -291,7 +305,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             />
                           </button>
                         )}
-                        {isCall && !subscribeToVideo && (
+                        {isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
                           <button
                             className={classes.muteBtn}
                             onClick={() => {
