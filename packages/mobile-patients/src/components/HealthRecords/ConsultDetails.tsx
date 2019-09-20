@@ -36,7 +36,7 @@ import { AppRoutes } from '../NavigatorContainer';
 import { ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
 import { Spinner } from '../ui/Spinner';
 import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
 import { getAppointmentData } from '../../graphql/types/getAppointmentData';
 
 import { ConsultOverlay } from '../ConsultRoom/ConsultOverlay';
@@ -139,6 +139,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
 
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
   useEffect(() => {
     setLoading(true);
     client

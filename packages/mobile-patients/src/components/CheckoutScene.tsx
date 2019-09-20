@@ -19,9 +19,9 @@ import {
   SaveMedicineOrderVariables,
   SaveMedicineOrder_SaveMedicineOrder,
 } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrder';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -183,6 +183,15 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   } = useShoppingCart();
 
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
   const MAX_SLIDER_VALUE = grandTotal;
   const client = useApolloClient();
 
