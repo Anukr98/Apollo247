@@ -206,6 +206,20 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingLeft: 0,
       },
     },
+    logout: {
+      fontSize: 15,
+      fontWeight: 600,
+      color: '#02475b',
+      borderTop: '1px solid rgba(2, 71, 91, 0.1)',
+      paddingTop: 8,
+      marginRight: 15,
+      cursor: 'pointer',
+      '& img': {
+        position: 'relative',
+        top: 5,
+        marginRight: 15,
+      },
+    },
   };
 });
 
@@ -259,6 +273,12 @@ export const MyAccount: React.FC = (props) => {
                       </Typography>
                       <Typography variant="h6">
                         <span>{`MCI Number : ${doctorProfile.registrationNumber}`} </span>
+                      </Typography>
+                      <Typography className={classes.logout} onClick={() => setIsDialogOpen(true)}>
+                        <span>
+                          <img src={require('images/ic_logout.svg')} alt="" />
+                          Logout
+                        </span>
                       </Typography>
                     </div>
                   </Paper>
@@ -428,7 +448,7 @@ export const MyAccount: React.FC = (props) => {
                     className={`${classes.serviceItemLeft} ${classes.tabContent} ${isDialogOpen &&
                       classes.tabActive}`}
                   >
-                    <div onClick={() => setIsDialogOpen(true)} className={classes.leftNav}>
+                    {/* <div onClick={() => setIsDialogOpen(true)} className={classes.leftNav}>
                       <img
                         alt=""
                         src={
@@ -448,7 +468,7 @@ export const MyAccount: React.FC = (props) => {
                         }
                         className={classes.navRightIcon}
                       />
-                    </div>
+                    </div> */}
                   </Paper>
                 </Grid>
                 <Grid item lg={9} sm={6} xs={12} className={classes.tabLeftcontent}>
