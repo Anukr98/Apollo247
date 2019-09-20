@@ -2,11 +2,14 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
-import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import {
+  getDoctorDetailsById_getDoctorDetailsById_specialty,
+  getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
+} from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import Moment from 'moment';
@@ -104,7 +107,7 @@ export interface DoctorCardProps extends NavigationScreenProps {
   rowData:
     | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors
     | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors
-    | any
+    | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
     | null;
   onPress?: (doctorId: string) => void;
   displayButton?: boolean;
@@ -124,6 +127,15 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   >([]);
   const rowData = props.rowData;
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
   const client = useApolloClient();
 
   const setAvailability = useCallback(
@@ -263,6 +275,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
     return (
       <TouchableOpacity
+        key={rowData.id}
         activeOpacity={1}
         style={[styles.doctorView, props.style]}
         onPress={() => {
@@ -299,7 +312,8 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 Dr. {rowData.firstName} {rowData.lastName}
               </Text>
               <Text style={styles.doctorSpecializationStyles}>
-                {rowData.specialty ? rowData.specialty.name : ''} | {rowData.experience} YR
+                {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''} |{' '}
+                {rowData.experience} YR
                 {Number(rowData.experience) > 1 ? 'S' : ''}
               </Text>
               <Text style={styles.educationTextStyles}>{rowData.qualification}</Text>

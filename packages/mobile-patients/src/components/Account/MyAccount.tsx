@@ -22,6 +22,9 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { getNetStatus } from '../../helpers/helperFunctions';
+import { BottomPopUp } from '../ui/BottomPopUp';
+import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const { height, width } = Dimensions.get('window');
 
@@ -78,10 +81,18 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY] = useState(new Animated.Value(0));
+  const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [profileDetails, setprofileDetails] = useState<
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
-  const { signOut } = useAuth();
+  const { signOut, getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -97,13 +108,22 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   });
 
   useEffect(() => {
-    if (currentPatient !== profileDetails) {
-      setprofileDetails(currentPatient);
-      setshowSpinner(false);
-    }
-    if (currentPatient === profileDetails) {
-      setshowSpinner(false);
-    }
+    getNetStatus().then((status) => {
+      if (status) {
+        console.log('Network status', status);
+        if (currentPatient !== profileDetails) {
+          setprofileDetails(currentPatient);
+          setshowSpinner(false);
+        }
+        if (currentPatient === profileDetails) {
+          setshowSpinner(false);
+        }
+      } else {
+        setNetworkStatus(true);
+        setshowSpinner(false);
+        console.log('Network status failed', status);
+      }
+    });
   }, [currentPatient, profileDetails]);
 
   const renderDetails = () => {
@@ -293,13 +313,40 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              V 1.0(2)
+              UAT V 1.0(16)
             </Text>
           </View>
         </Animated.ScrollView>
       </SafeAreaView>
-      {showSpinner && <Spinner />}
+
       {renderAnimatedHeader()}
+      {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
+      {/* {networkStatus && (
+        <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setNetworkStatus(false);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )} */}
+      {showSpinner && <Spinner />}
     </View>
   );
 };

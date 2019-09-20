@@ -3,13 +3,11 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ShareGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   GET_APPOINTMENT_HISTORY,
   GET_DOCTOR_DETAILS_BY_ID,
-  NEXT_AVAILABLE_SLOT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAppointmentHistory,
@@ -19,29 +17,29 @@ import {
   getDoctorDetailsById,
   getDoctorDetailsById_getDoctorDetailsById,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
-import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { g, timeDiffFromNow, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Animated,
   Dimensions,
   Image,
   Platform,
   SafeAreaView,
+  ScrollView,
   Share,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
-  ScrollView,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
-import { g, timeDiffFromNow } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 
 const { height, width } = Dimensions.get('window');
 
@@ -158,6 +156,17 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<Number>();
   // const [availableTime, setavailableTime] = useState<string>('');
   const [availableInMinPhysical, setavailableInMinPhysical] = useState<Number>();
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
+  const client = useApolloClient();
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -173,6 +182,18 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   });
 
   useEffect(() => {
+    getNetStatus().then((status) => {
+      if (status) {
+        fetchDoctorDetails();
+        fetchAppointmentHistory();
+      } else {
+        setshowSpinner(false);
+        setshowOfflinePopup(true);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
     const display = props.navigation.state.params
       ? props.navigation.state.params.showBookAppointment || false
       : false;
@@ -180,92 +201,171 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
     setdisplayoverlay(display);
   }, [props.navigation.state.params]);
 
-  const appointmentData = useQuery<getAppointmentHistory>(GET_APPOINTMENT_HISTORY, {
-    fetchPolicy: 'no-cache',
-    variables: {
-      appointmentHistoryInput: {
-        patientId: currentPatient ? currentPatient.id : '',
-        doctorId: doctorId ? doctorId : '',
-      },
-    },
-  });
-  if (appointmentData.error) {
-    console.log('error', appointmentData.error);
-  } else {
-    // console.log(appointmentData, '00000000000');
-    try {
-      if (
-        appointmentData &&
-        appointmentData.data &&
-        appointmentData.data.getAppointmentHistory &&
-        appointmentHistory !== appointmentData.data.getAppointmentHistory.appointmentsHistory
-      ) {
-        setAppointmentHistory(appointmentData.data.getAppointmentHistory.appointmentsHistory);
-      }
-    } catch {}
-  }
+  const fetchAppointmentHistory = () => {
+    client
+      .query<getAppointmentHistory>({
+        query: GET_APPOINTMENT_HISTORY,
+        variables: {
+          appointmentHistoryInput: {
+            patientId: currentPatient ? currentPatient.id : '',
+            doctorId: doctorId ? doctorId : '',
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        try {
+          if (
+            data &&
+            data.getAppointmentHistory &&
+            appointmentHistory !== data.getAppointmentHistory.appointmentsHistory
+          ) {
+            setAppointmentHistory(data.getAppointmentHistory.appointmentsHistory);
+          }
+        } catch {}
+      })
+      .catch((e: string) => {
+        console.log('Error occured', e);
+      });
+  };
 
-  const { data, error } = useQuery<getDoctorDetailsById>(GET_DOCTOR_DETAILS_BY_ID, {
-    // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
-    fetchPolicy: 'no-cache',
-    variables: { id: doctorId },
-  });
-  if (error) {
-    setshowSpinner(false);
-    console.log('error', error);
-  } else {
-    try {
-      console.log('getDoctorDetailsById', data);
-      if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
-        setDoctorDetails(data.getDoctorDetailsById);
-        setDoctorId(data.getDoctorDetailsById.id);
-        setshowSpinner(false);
-      }
-    } catch {}
-  }
+  // const appointmentData = useQuery<getAppointmentHistory>(GET_APPOINTMENT_HISTORY, {
+  //   fetchPolicy: 'no-cache',
+  //   variables: {
+  //     appointmentHistoryInput: {
+  //       patientId: currentPatient ? currentPatient.id : '',
+  //       doctorId: doctorId ? doctorId : '',
+  //     },
+  //   },
+  // });
+  // if (appointmentData.error) {
+  //   console.log('error', appointmentData.error);
+  // } else {
+  //   // console.log(appointmentData, '00000000000');
+  //   try {
+  //     if (
+  //       appointmentData &&
+  //       appointmentData.data &&
+  //       appointmentData.data.getAppointmentHistory &&
+  //       appointmentHistory !== appointmentData.data.getAppointmentHistory.appointmentsHistory
+  //     ) {
+  //       setAppointmentHistory(appointmentData.data.getAppointmentHistory.appointmentsHistory);
+  //     }
+  //   } catch {}
+  // }
 
   const todayDate = new Date().toISOString().slice(0, 10);
-  console.log('todayDate', todayDate);
 
-  const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-    fetchPolicy: 'no-cache',
-    variables: {
-      DoctorNextAvailableSlotInput: {
-        doctorIds: doctorDetails ? [doctorDetails.id] : [],
-        availableDate: todayDate,
-      },
-    },
-  });
-  if (availability.error) {
-    console.log('error', availability.error);
-  } else {
-    try {
-      // console.log(availability.data, 'availabilityData', 'availableSlots');
-      const doctorAvailalbeSlots = g(
-        availability,
-        'data',
-        'getDoctorNextAvailableSlot',
-        'doctorAvailalbeSlots'
-      );
-      // console.log(doctorAvailalbeSlots, '1234567');
-      if (doctorAvailalbeSlots && availableInMin === undefined) {
-        const nextSlot = doctorAvailalbeSlots ? g(doctorAvailalbeSlots[0], 'availableSlot') : null;
-        const nextPhysicalSlot = doctorAvailalbeSlots
-          ? g(doctorAvailalbeSlots[0], 'physicalAvailableSlot')
-          : null;
+  const fetchNextAvailableSlots = (doctorIds: string[]) => {
+    console.log('todayDate', todayDate);
+    // const doctorIds = doctorDetails ? [doctorDetails.id] : [];
+    getNextAvailableSlots(client, doctorIds, todayDate)
+      .then(({ data }: any) => {
+        console.log(data, 'data res');
+        try {
+          if (data && availableInMin === undefined) {
+            const nextSlot = data ? g(data[0], 'availableSlot') : null;
+            const nextPhysicalSlot = data ? g(data[0], 'physicalAvailableSlot') : null;
+            if (nextSlot) {
+              const timeDiff: Number = timeDiffFromNow(nextSlot);
+              setavailableInMin(timeDiff);
+            }
+            if (nextPhysicalSlot) {
+              const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
+              setavailableInMinPhysical(timeDiff);
+            }
+          }
+        } catch (error) {}
+      })
+      .catch((e: string) => {
+        setshowSpinner(false);
+        console.log('Error occured ', e);
+      });
+  };
 
-        // console.log(nextSlot, 'nextSlot', nextPhysicalSlot);
-        if (nextSlot) {
-          const timeDiff: Number = timeDiffFromNow(nextSlot);
-          setavailableInMin(timeDiff);
-        }
-        if (nextPhysicalSlot) {
-          const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
-          setavailableInMinPhysical(timeDiff);
-        }
-      }
-    } catch (error) {}
-  }
+  const fetchDoctorDetails = () => {
+    client
+      .query<getDoctorDetailsById>({
+        query: GET_DOCTOR_DETAILS_BY_ID,
+        variables: { id: doctorId },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        try {
+          console.log('getDoctorDetailsById', data);
+          if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
+            setDoctorDetails(data.getDoctorDetailsById);
+            setDoctorId(data.getDoctorDetailsById.id);
+            setshowSpinner(false);
+            fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
+          }
+        } catch {}
+      })
+      .catch((e: string) => {
+        setshowSpinner(false);
+        console.log('Error occured', e);
+      });
+  };
+
+  // const { data, error } = useQuery<getDoctorDetailsById>(GET_DOCTOR_DETAILS_BY_ID, {
+  //   // variables: { id: 'a6ef960c-fc1f-4a12-878a-12063788d625' },
+  //   fetchPolicy: 'no-cache',
+  //   variables: { id: doctorId },
+  // });
+  // if (error) {
+  //   setshowSpinner(false);
+  //   console.log('error', error);
+  // } else {
+  //   try {
+  //     console.log('getDoctorDetailsById', data);
+  //     if (data && data.getDoctorDetailsById && doctorDetails !== data.getDoctorDetailsById) {
+  //       setDoctorDetails(data.getDoctorDetailsById);
+  //       setDoctorId(data.getDoctorDetailsById.id);
+  //       setshowSpinner(false);
+  //       fetchNextAvailableSlots([data.getDoctorDetailsById.id]);
+  //     }
+  //   } catch {}
+  // }
+
+  // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
+  //   fetchPolicy: 'no-cache',
+  //   variables: {
+  //     DoctorNextAvailableSlotInput: {
+  //       doctorIds: doctorDetails ? [doctorDetails.id] : [],
+  //       availableDate: todayDate,
+  //     },
+  //   },
+  // });
+  // if (availability.error) {
+  //   console.log('error', availability.error);
+  // } else {
+  //   try {
+  //     // console.log(availability.data, 'availabilityData', 'availableSlots');
+  //     const doctorAvailalbeSlots = g(
+  //       availability,
+  //       'data',
+  //       'getDoctorNextAvailableSlot',
+  //       'doctorAvailalbeSlots'
+  //     );
+  //     // console.log(doctorAvailalbeSlots, '1234567');
+  //     if (doctorAvailalbeSlots && availableInMin === undefined) {
+  //       const nextSlot = doctorAvailalbeSlots ? g(doctorAvailalbeSlots[0], 'availableSlot') : null;
+  //       const nextPhysicalSlot = doctorAvailalbeSlots
+  //         ? g(doctorAvailalbeSlots[0], 'physicalAvailableSlot')
+  //         : null;
+
+  //       // console.log(nextSlot, 'nextSlot', nextPhysicalSlot);
+  //       if (nextSlot) {
+  //         const timeDiff: Number = timeDiffFromNow(nextSlot);
+  //         setavailableInMin(timeDiff);
+  //       }
+  //       if (nextPhysicalSlot) {
+  //         const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
+  //         setavailableInMinPhysical(timeDiff);
+  //       }
+  //     }
+  //   } catch (error) {}
+  // }
 
   const formatTime = (time: string) => {
     const IOSFormat = `${todayDate}T${time}.000Z`;
@@ -438,11 +538,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                                 color: theme.colors.LIGHT_BLUE,
                               }}
                             >
-                              {item.facility.streetLine1}
-                              {item.facility.streetLine2
-                                ? `${item.facility.streetLine1 ? ', ' : ''}${
-                                    item.facility.streetLine2
-                                  }`
+                              {item && item.facility.streetLine1}
+                              {item && item.facility.streetLine2
+                                ? `${item && item.facility.streetLine1 ? ', ' : ''}${item &&
+                                    item.facility.streetLine2}`
                                 : ''}
                             </Text>
                             <Text
@@ -451,7 +550,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                                 color: theme.colors.LIGHT_BLUE,
                               }}
                             >
-                              {item.facility.city}
+                              {item && item.facility && item.facility.city}
                             </Text>
                             {clinicHours.length > 0 && (
                               <>
@@ -681,7 +780,15 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <StickyBottomComponent defaultBG>
             <Button
               title={'BOOK APPOINTMENT'}
-              onPress={() => setdisplayoverlay(true)}
+              onPress={() => {
+                getNetStatus().then((status) => {
+                  if (status) {
+                    setdisplayoverlay(true);
+                  } else {
+                    setshowOfflinePopup(true);
+                  }
+                });
+              }}
               style={{ marginHorizontal: 60, flex: 1 }}
             />
           </StickyBottomComponent>
@@ -702,7 +809,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           // availableSlots={availableSlots}
         />
       )}
-      {showSpinner && <Spinner />}
       <Animated.View
         style={{
           position: 'absolute',
@@ -757,6 +863,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         // }
         onPressLeftIcon={() => props.navigation.goBack()}
       />
+      {showSpinner && <Spinner />}
+      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );
 };

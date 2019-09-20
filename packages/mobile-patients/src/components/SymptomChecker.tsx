@@ -4,7 +4,7 @@ import { NavigatorSDK, $Generator } from 'praktice-navigator-react-native-sdk';
 import { NavigationScreenProps, NavigationActions } from 'react-navigation';
 import { SafeAreaView, View, Text } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import Moment from 'moment';
@@ -56,6 +56,14 @@ export interface SymptomCheckerProps extends NavigationScreenProps {
 export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const [userName, setuserName] = useState<string>('');
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     if (currentPatient && currentPatient.firstName) {

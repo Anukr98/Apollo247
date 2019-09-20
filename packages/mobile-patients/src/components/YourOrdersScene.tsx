@@ -10,18 +10,15 @@ import {
   GetMedicineOrdersListVariables,
   GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
-import {
-  MEDICINE_DELIVERY_TYPE,
-  MEDICINE_ORDER_STATUS,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { g, getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Alert } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
@@ -38,15 +35,37 @@ export interface YourOrdersSceneProps extends NavigationScreenProps {}
 
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
 
-  const { data, error, loading } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(
-    GET_MEDICINE_ORDERS_LIST,
-    { variables: { patientId: currentPatient && currentPatient.id }, fetchPolicy: 'no-cache' }
-  );
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
+  let { data, error, loading, refetch } = useQuery<
+    GetMedicineOrdersList,
+    GetMedicineOrdersListVariables
+  >(GET_MEDICINE_ORDERS_LIST, {
+    variables: { patientId: currentPatient && currentPatient.id },
+    fetchPolicy: 'no-cache',
+  });
 
   const orders = (!loading && g(data, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
   // !loading && console.log({ orders });
   // !loading && error && console.log({ error });
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      refetch()
+        .then(() => {})
+        .catch(() => {});
+    });
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+    };
+  }, []);
 
   const getDeliverType = (type: MEDICINE_DELIVERY_TYPE) => {
     switch (type) {
@@ -63,70 +82,33 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   };
 
   const getStatusType = (
-    type: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
+    orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
-    // let _type = g(type[type.length - 1], 'orderStatus');
-    let _type = g(type[0], 'orderStatus');
-    return _type;
+    const sortedList = orderStatusList.sort(
+      (a, b) =>
+        moment(b!.statusDate)
+          .toDate()
+          .getTime() -
+        moment(a!.statusDate)
+          .toDate()
+          .getTime()
+    );
+    return g(sortedList[0], 'orderStatus')!;
   };
 
   const getStatusDesc = (
-    type: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
+    orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
-    console.log({ type });
-
-    // let _type = g(type[type.length - 1], 'orderStatus');
-    let _type = g(type[0], 'orderStatus');
-    let status = '';
-
-    switch (_type) {
-      case MEDICINE_ORDER_STATUS.CANCELLED:
-        status = 'Order Cancelled';
-        break;
-      case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
-        status = 'Cancel Requested';
-        break;
-      case MEDICINE_ORDER_STATUS.DELIVERED:
-        status = 'Order Delivered';
-        break;
-      case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
-        status = 'Items Returned';
-        break;
-      case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
-        status = 'Order Confirmed';
-        break;
-      case MEDICINE_ORDER_STATUS.ORDER_FAILED:
-        status = 'Order Failed';
-        break;
-      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
-        status = 'Order Placed';
-        break;
-      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
-        status = 'Order Verified';
-        break;
-      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-        status = 'Out For Delivery';
-        break;
-      case MEDICINE_ORDER_STATUS.PICKEDUP:
-        status = 'Order Picked Up';
-        break;
-      case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
-        status = 'Prescription Cart Ready';
-        break;
-      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
-        status = 'Prescription Uploaded';
-        break;
-      case MEDICINE_ORDER_STATUS.QUOTE:
-        status = 'Quote';
-        break;
-      case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-        status = 'Return Accepted';
-        break;
-      case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-        status = 'Return Requested';
-        break;
-    }
-    return status;
+    const sortedList = orderStatusList.sort(
+      (a, b) =>
+        moment(b!.statusDate)
+          .toDate()
+          .getTime() -
+        moment(a!.statusDate)
+          .toDate()
+          .getTime()
+    );
+    return getOrderStatusText(g(sortedList[0], 'orderStatus')!);
   };
 
   const getFormattedTime = (time: string) => {
@@ -203,11 +185,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           leftIcon="backArrow"
           title={string.orders.urOrders}
           container={{ borderBottomWidth: 0 }}
-          // rightComponent={
-          //   <TouchableOpacity activeOpacity={1} onPress={() => props.navigation.goBack()}>
-          //     <More />
-          //   </TouchableOpacity>
-          // }
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <ScrollView bounces={false}>

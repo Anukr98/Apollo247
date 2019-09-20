@@ -71,6 +71,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  CameraRoll,
+  Linking,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
@@ -178,8 +180,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     position: 'absolute',
     top: isIphoneX() ? 74 : 44,
     right: 20,
-    width: 112,
-    height: 148,
+    width: 148,
+    height: 112,
     zIndex: 1000,
     borderRadius: 30,
   });
@@ -269,8 +271,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let intervalId: NodeJS.Timeout;
   let stoppedTimer: number;
 
-  const { analytics } = useAuth();
+  const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     const userName =
@@ -812,8 +821,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let leftComponent = 0;
   let rightComponent = 0;
 
+  const saveimageIos = (url: any) => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL(url).catch((err) => console.error('An error occurred', err));
+    }
+  };
   const transferReschedule = (rowData: any, index: number) => {
-    //console.log('row', rowData);
     return (
       <>
         {rowData.message === transferConsultMsg ? (
@@ -1124,8 +1137,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           useDownloadManager: true,
                           notification: false,
                           mime: 'application/pdf',
-                          //path:  RNFetchBlob.fs.dirs.DownloadDir + rowData.transferInfo.pdfUrl &&
-                          //rowData.transferInfo.pdfUrl.split('/').pop(),
                           path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
                           description: 'File downloaded by download manager.',
                         },
@@ -1138,10 +1149,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           // the temp file path
                           console.log('The file saved to res ', res);
                           console.log('The file saved to ', res.path());
-
+                          saveimageIos(rowData.transferInfo.pdfUrl);
                           // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                           // RNFetchBlob.ios.openDocument(res.path());
                           Alert.alert('Download Complete');
+
                           Platform.OS === 'ios'
                             ? RNFetchBlob.ios.previewDocument(res.path())
                             : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
@@ -2123,14 +2135,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     left: 0,
                     width: width,
                     height: 24,
-                    backgroundColor: 'black',
-                    opacity: 0.6,
+                    backgroundColor: 'transparent',
+                    // opacity: 0.6,
                     alignItems: 'center',
                     justifyContent: 'center',
                     zIndex: 1000,
                   }}
                 >
-                  <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+                  <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
                     Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
                     {seconds.toString().length < 2 ? '0' + seconds : seconds}
                   </Text>
@@ -2245,14 +2257,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               left: 0,
               width: width,
               height: 24,
-              backgroundColor: 'black',
-              opacity: 0.6,
+              backgroundColor: 'transparent',
+              // opacity: 0.6,
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 1000,
             }}
           >
-            <Text style={{ color: 'white', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
+            <Text style={{ color: 'transparent', ...theme.fonts.IBMPlexSansSemiBold(10) }}>
               Time Left {minutes.toString().length < 2 ? '0' + minutes : minutes} :{' '}
               {seconds.toString().length < 2 ? '0' + seconds : seconds}
             </Text>
@@ -2329,8 +2341,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       position: 'absolute',
       top: isIphoneX() ? 74 : 44,
       right: 20,
-      width: 112,
-      height: 148,
+      width: 148,
+      height: 112,
       zIndex: 1000,
       borderRadius: 30,
     });
@@ -2583,8 +2595,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       position: 'absolute',
       top: isIphoneX() ? 74 : 44,
       right: 20,
-      width: 112,
-      height: 148,
+      width: 148,
+      height: 112,
       zIndex: 1000,
       borderRadius: 30,
     });

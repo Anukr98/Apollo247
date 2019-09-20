@@ -11,7 +11,7 @@ import {
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
 } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { g } from '../../helpers/helperFunctions';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
 import { theme } from '../../theme/theme';
 import { EPrescription } from '../ShoppingCartProvider';
 import { Button } from '../ui/Button';
@@ -39,6 +39,14 @@ export interface SelectEPrescriptionModalProps {
 export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> = (props) => {
   const [selectedPrescription, setSelectedPrescription] = useState<{ [key: string]: boolean }>({});
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   const { data, loading, error } = useQuery<
     getPatientPastConsultsAndPrescriptions,

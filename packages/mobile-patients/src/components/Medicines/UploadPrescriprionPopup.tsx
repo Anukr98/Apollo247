@@ -9,13 +9,21 @@ import {
   Path,
   PrescriptionIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import {
+  SafeAreaView,
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { ImagePickerResponse } from 'react-native-image-picker';
 import { ScrollView } from 'react-navigation';
+import { Spinner } from '../ui/Spinner';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -54,7 +62,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.35,
   },
   cardViewStyle: {
-    width: 136,
+    // width: 136,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(2, 71, 91, 0.2)',
@@ -63,7 +71,7 @@ const styles = StyleSheet.create({
   cardTextStyle: {
     padding: 8,
     color: theme.colors.WHITE,
-    ...theme.fonts.IBMPlexSansSemiBold(10),
+    ...theme.fonts.IBMPlexSansSemiBold(9),
     textAlign: 'center',
   },
 });
@@ -136,7 +144,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       : {};
   };
 
-  const renderSimpleStepsOrder = () => {
+  const renderOrderSteps = () => {
     return (
       <View
         style={{
@@ -159,7 +167,8 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         <View
           style={{
             flexDirection: 'row',
-            justifyContent: 'space-between',
+            // justifyContent: 'space-between',
+            justifyContent: 'center',
           }}
         >
           <View style={styles.cardViewStyle}>
@@ -174,9 +183,149 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             <Path />
           </View>
           <View style={styles.cardViewStyle}>
-            <Text style={styles.cardTextStyle}>ORDER THROUGH OUR CUSTOMER CARE</Text>
+            <Text style={styles.cardTextStyle}>{'ORDER THROUGH OUR\nCUSTOMER CARE'}</Text>
           </View>
         </View>
+      </View>
+    );
+  };
+
+  const renderCloseIcon = () => {
+    return (
+      <View
+        style={{
+          alignSelf: 'flex-end',
+          backgroundColor: 'transparent',
+          marginBottom: 16,
+        }}
+      >
+        <TouchableOpacity onPress={() => props.onClickClose()}>
+          <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderHeader = () => {
+    return (
+      <View
+        style={{
+          ...theme.viewStyles.cardContainer,
+          borderTopRightRadius: 10,
+          borderTopLeftRadius: 10,
+          backgroundColor: theme.colors.WHITE,
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingVertical: 23,
+          width: '100%',
+        }}
+      >
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansMedium(16),
+            color: theme.colors.LIGHT_BLUE,
+          }}
+        >
+          Upload Prescription(s)
+        </Text>
+      </View>
+    );
+  };
+
+  const renderOptions = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          margin: 20,
+          marginHorizontal: 13,
+        }}
+      >
+        <TouchableOpacity
+          disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
+          activeOpacity={1}
+          style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
+          onPress={onClickTakePhoto}
+        >
+          <CameraIcon />
+          <Text style={styles.yelloTextStyle}>{props.optionTexts.camera}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
+          activeOpacity={1}
+          style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
+          onPress={onClickGallery}
+        >
+          <GalleryIcon />
+          <Text style={styles.yelloTextStyle}>{props.optionTexts.gallery}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          disabled={isOptionDisabled('E-PRESCRIPTION')}
+          activeOpacity={1}
+          style={[styles.cardContainer, getOptionStyle('E-PRESCRIPTION')]}
+          onPress={() => {
+            props.onResponse('E-PRESCRIPTION', []);
+          }}
+        >
+          <PrescriptionIcon />
+          <Text style={styles.yelloTextStyle}>{props.optionTexts.prescription}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  const renderInstructions = () => {
+    return (
+      <View
+        style={{
+          marginHorizontal: 16,
+          justifyContent: 'center',
+        }}
+      >
+        <View style={styles.separatorStyle} />
+        <Text style={styles.lableStyle}>Instructions For Uploading Prescriptions</Text>
+        <View style={{ flexDirection: 'row', flex: 1 }}>
+          <Text style={[styles.instructionsStyle, { flex: 0.1 }]}>1.</Text>
+          <Text style={[[styles.instructionsStyle, { flex: 0.9 }]]}>
+            Take clear picture of your entire prescription.
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', flex: 1 }}>
+          <Text style={[styles.instructionsStyle, { flex: 0.1 }]}>2.</Text>
+          <Text style={[[styles.instructionsStyle, { flex: 0.9 }]]}>
+            Doctor details & date of the prescription should be clearly visible.
+          </Text>
+        </View>
+        <View style={{ flexDirection: 'row', flex: 1 }}>
+          <Text style={[styles.instructionsStyle, { flex: 0.1 }]}>3.</Text>
+          <Text style={[styles.instructionsStyle, { flex: 0.9, paddingBottom: 15 }]}>
+            Only JPG / PNG files up to 2mb will be allowed.
+          </Text>
+        </View>
+        {renderTermsAndCondns()}
+      </View>
+    );
+  };
+
+  const renderTermsAndCondns = () => {
+    return (
+      <View>
+        <View style={styles.separatorStyle} />
+        <Text
+          style={{
+            ...theme.fonts.IBMPlexSansMedium(12),
+            color: theme.colors.TEXT_LIGHT_BLUE,
+            paddingTop: 8,
+            paddingBottom: 16,
+            // paddingHorizontal: 20,
+          }}
+        >
+          * Our pharmacist will dispense medicines only if the prescription is valid & it meets all
+          government regulations.
+        </Text>
       </View>
     );
   };
@@ -185,159 +334,52 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     <Overlay
       isVisible={props.isVisible}
       windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
-      containerStyle={{ alignSelf: 'flex-start' }}
+      containerStyle={{
+        marginBottom: 20,
+      }}
+      fullScreen
+      transparent
       overlayStyle={{
         padding: 0,
         margin: 0,
         width: '88.88%',
-        height: 'auto',
-        // maxHeight: '75%',
+        height: '88.88%',
         borderRadius: 10,
+        borderBottomLeftRadius: 10,
+        borderBottomRightRadius: 10,
+        backgroundColor: 'transparent',
         overflow: 'hidden',
+        elevation: 0,
       }}
     >
       <View
         style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          overflow: 'hidden',
+          flexGrow: 1,
+          backgroundColor: 'transparent',
         }}
       >
-        <View
+        <SafeAreaView
           style={{
-            alignSelf: 'flex-end',
+            flex: 1,
             backgroundColor: 'transparent',
-            // marginTop: -42,
           }}
         >
-          <TouchableOpacity onPress={() => props.onClickClose()}>
-            <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
-          </TouchableOpacity>
-        </View>
-
-        <View
-          style={{
-            backgroundColor: 'transparent',
-            height: 16,
-          }}
-        />
-
-        <View
-          style={{
-            alignItems: 'center',
-            backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-            borderTopRightRadius: 10,
-            borderTopLeftRadius: 10,
-            borderBottomRightRadius: 10,
-            borderBottomLeftRadius: 10,
-          }}
-        >
-          <View
-            style={{
-              ...theme.viewStyles.cardContainer,
-              borderTopRightRadius: 10,
-              borderTopLeftRadius: 10,
-              backgroundColor: theme.colors.WHITE,
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingVertical: 23,
-              width: '100%',
+          {renderCloseIcon()}
+          {renderHeader()}
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+              borderBottomLeftRadius: 10,
+              borderBottomRightRadius: 10,
             }}
           >
-            <Text
-              style={{
-                ...theme.fonts.IBMPlexSansMedium(16),
-                color: theme.colors.LIGHT_BLUE,
-              }}
-            >
-              Upload Prescription(s)
-            </Text>
-          </View>
-          <ScrollView bounces={false}>
-            {props.type == 'nonCartFlow' && renderSimpleStepsOrder()}
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                margin: 20,
-                marginHorizontal: 13,
-              }}
-            >
-              <TouchableOpacity
-                disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
-                activeOpacity={1}
-                style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
-                onPress={onClickTakePhoto}
-              >
-                <CameraIcon />
-                <Text style={styles.yelloTextStyle}>{props.optionTexts.camera}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
-                activeOpacity={1}
-                style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
-                onPress={onClickGallery}
-              >
-                <GalleryIcon />
-                <Text style={styles.yelloTextStyle}>{props.optionTexts.gallery}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                disabled={isOptionDisabled('E-PRESCRIPTION')}
-                activeOpacity={1}
-                style={[styles.cardContainer, getOptionStyle('E-PRESCRIPTION')]}
-                onPress={() => {
-                  props.onResponse('E-PRESCRIPTION', []);
-                }}
-              >
-                <PrescriptionIcon />
-                <Text style={styles.yelloTextStyle}>{props.optionTexts.prescription}</Text>
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                marginHorizontal: 16,
-                justifyContent: 'center',
-              }}
-            >
-              <View style={styles.separatorStyle} />
-
-              <Text style={styles.lableStyle}>Instructions For Uploading Prescriptions</Text>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.instructionsStyle}>1.</Text>
-                <Text style={[styles.instructionsStyle, { paddingLeft: 16 }]}>
-                  Take clear picture of your entire prescription.
-                </Text>
-              </View>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.instructionsStyle}>2.</Text>
-                <Text style={[styles.instructionsStyle, { paddingLeft: 16 }]}>
-                  Doctor details & date of the prescription should be clearly visible.
-                </Text>
-              </View>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={styles.instructionsStyle}>3.</Text>
-                <Text style={[styles.instructionsStyle, { paddingLeft: 16, paddingBottom: 15 }]}>
-                  Only JPG / PNG files up to 2mb will be allowed.
-                </Text>
-              </View>
-              <View style={styles.separatorStyle} />
-
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansMedium(12),
-                  color: theme.colors.TEXT_LIGHT_BLUE,
-                  paddingTop: 8,
-                  paddingBottom: 16,
-                  // paddingHorizontal: 20,
-                }}
-              >
-                * Our pharmacist will dispense medicines only if the prescription is valid & it
-                meets all government regulations.
-              </Text>
-            </View>
+            {props.type == 'nonCartFlow' && renderOrderSteps()}
+            {renderOptions()}
+            {renderInstructions()}
           </ScrollView>
-        </View>
+        </SafeAreaView>
         {showSpinner && <Spinner />}
       </View>
     </Overlay>

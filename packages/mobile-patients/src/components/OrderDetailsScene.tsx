@@ -1,39 +1,54 @@
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { OrderSummary } from '@aph/mobile-patients/src/components/OrderSummaryView';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CrossPopup, DropdownGreen, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import {
+  GET_MEDICINE_ORDER_DETAILS,
+  SAVE_ORDER_CANCEL_STATUS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrderDetails,
   GetMedicineOrderDetailsVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveOrderCancelStatus,
   saveOrderCancelStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveOrderCancelStatus';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  g,
+  getOrderStatusText,
+  handleGraphQlError,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { Mutation, MutationFn, MutationResult } from 'react-apollo';
-import { useQuery } from 'react-apollo-hooks';
-import { BackHandler, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import {
+  Alert,
+  BackHandler,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Overlay } from 'react-native-elements';
 import {
   NavigationActions,
   NavigationScreenProps,
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { GET_MEDICINE_ORDER_DETAILS, SAVE_ORDER_CANCEL_STATUS } from '../graphql/profiles';
-import { AppRoutes } from './NavigatorContainer';
-import { OrderSummary } from './OrderSummaryView';
-import { DropDown } from './ui/DropDown';
-import { NeedHelpAssistant } from './ui/NeedHelpAssistant';
-import { Spinner } from './ui/Spinner';
-import { TabsComponent } from './ui/TabsComponent';
+import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -51,6 +66,12 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     backgroundColor: theme.colors.CARD_BG,
     borderBottomColor: 'rgba(2, 71, 91, 0.3)',
+  },
+  dropdownOverlayStyle: {
+    padding: 0,
+    margin: 0,
+    height: 'auto',
+    borderRadius: 10,
   },
 });
 
@@ -78,6 +99,16 @@ const _list = [
     description: 'To Be Delivered Within — 2hrs',
   },
 ] as any[];
+
+const cancelOptions: [string, string][] = [
+  ['MCCR0036', 'Placed order by mistake'],
+  ['MCCR0040', 'Higher discounts available on other app'],
+  ['MCCR0046', 'Delay in delivery'],
+  ['MCCR0047', 'Delay in order confirmation'],
+  ['MCCR0048', 'Do not require medicines any longer'],
+  ['MCCR0049', 'Already purchased'],
+];
+
 export interface OrderDetailsSceneProps extends NavigationScreenProps {
   orderAutoId: string;
   showOrderSummaryTab: boolean;
@@ -91,18 +122,29 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
 
+  const client = useApolloClient();
+
   const [selectedTab, setSelectedTab] = useState<string>(
     showOrderSummaryTab ? string.orders.viewBill : string.orders.trackOrder
   );
   const [isCancelVisible, setCancelVisible] = useState(false);
 
   const { currentPatient } = useAllCurrentPatients();
-  const { data, loading } = useQuery<GetMedicineOrderDetails, GetMedicineOrderDetailsVariables>(
-    GET_MEDICINE_ORDER_DETAILS,
-    {
-      variables: { patientId: currentPatient && currentPatient.id, orderAutoId: orderAutoId },
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
     }
-  );
+  }, [currentPatient]);
+
+  const { data, loading, refetch } = useQuery<
+    GetMedicineOrderDetails,
+    GetMedicineOrderDetailsVariables
+  >(GET_MEDICINE_ORDER_DETAILS, {
+    variables: { patientId: currentPatient && currentPatient.id, orderAutoId: orderAutoId },
+  });
   const order = g(data, 'getMedicineOrderDetails', 'MedicineOrderDetails');
   const orderDetails = (!loading && order) || {};
   const orderStatusList = (!loading && order && order.medicineOrdersStatus) || [];
@@ -141,58 +183,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     };
   }, []);
 
-  const getStatusType = (type: MEDICINE_ORDER_STATUS) => {
-    let status = type as any;
-    switch (type) {
-      case MEDICINE_ORDER_STATUS.CANCELLED:
-        status = 'Order Cancelled';
-        break;
-      case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
-        status = 'Cancel Requested';
-        break;
-      case MEDICINE_ORDER_STATUS.DELIVERED:
-        status = 'Order Delivered';
-        break;
-      case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
-        status = 'Items Returned';
-        break;
-      case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
-        status = 'Order Confirmed';
-        break;
-      case MEDICINE_ORDER_STATUS.ORDER_FAILED:
-        status = 'Order Failed';
-        break;
-      case MEDICINE_ORDER_STATUS.ORDER_PLACED:
-        status = 'Order Placed';
-        break;
-      case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
-        status = 'Order Verified';
-        break;
-      case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
-        status = 'Out For Delivery';
-        break;
-      case MEDICINE_ORDER_STATUS.PICKEDUP:
-        status = 'Order Picked Up';
-        break;
-      case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
-        status = 'Prescription Cart Ready';
-        break;
-      case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
-        status = 'Prescription Uploaded';
-        break;
-      case MEDICINE_ORDER_STATUS.QUOTE:
-        status = 'Quote';
-        break;
-      case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
-        status = 'Return Accepted';
-        break;
-      case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
-        status = 'Return Requested';
-        break;
-    }
-    return status;
-  };
-
   const getFormattedDate = (time: string) => {
     return moment(time).format('D MMM YYYY');
   };
@@ -211,7 +201,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
                 style={index < array.length - 1 ? { marginBottom: 8 } : {}}
                 key={index}
                 description={''}
-                status={getStatusType(order!.orderStatus!)}
+                status={getOrderStatusText(order!.orderStatus!)}
                 date={getFormattedDate(order!.statusDate)}
                 time={getFormattedTime(order!.statusDate)}
                 isStatusDone={true}
@@ -229,31 +219,31 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   };
 
   const [selectedReason, setSelectedReason] = useState('');
+  const [comment, setComment] = useState('');
   const [overlayDropdown, setOverlayDropdown] = useState(false);
   const renderReturnOrderOverlay = () => {
     const optionsDropdown = overlayDropdown && (
-      <View
-        style={{
-          position: 'absolute',
-          right: 16,
-          alignItems: 'center',
-          zIndex: 101,
-          top: 100,
-          // elevation: 100,
-        }}
+      <Overlay
+        onBackdropPress={() => setOverlayDropdown(false)}
+        isVisible={overlayDropdown}
+        overlayStyle={styles.dropdownOverlayStyle}
       >
         <DropDown
-          options={[
-            {
-              optionText: 'Option 1',
-              onPress: () => {
-                setSelectedReason('Option1');
-                setOverlayDropdown(false);
-              },
-            },
-          ]}
+          cardContainer={{
+            margin: 0,
+          }}
+          options={cancelOptions.map(
+            (item, i) =>
+              ({
+                onPress: () => {
+                  setSelectedReason(item[1]);
+                  setOverlayDropdown(false);
+                },
+                optionText: item[1],
+              } as Option)
+          )}
         />
-      </View>
+      </Overlay>
     );
 
     const heading = (
@@ -301,15 +291,17 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         >
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text
-              style={{
-                opacity: 0.3,
-                flex: 0.9,
-                ...theme.fonts.IBMPlexSansMedium(18),
-                color: theme.colors.SHERPA_BLUE,
-              }}
+              style={[
+                {
+                  flex: 0.9,
+                  ...theme.fonts.IBMPlexSansMedium(18),
+                  color: theme.colors.SHERPA_BLUE,
+                },
+                selectedReason ? {} : { opacity: 0.3 },
+              ]}
               numberOfLines={1}
             >
-              {'Select reason for cancelling'}
+              {selectedReason || 'Select reason for cancelling'}
             </Text>
             <View style={{ flex: 0.1 }}>
               <DropdownGreen style={{ alignSelf: 'flex-end' }} />
@@ -324,6 +316,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           />
         </TouchableOpacity>
         <TextInputComponent
+          value={comment}
+          onChangeText={(text) => {
+            setComment(text);
+          }}
           label={'Add Comments (Optional)'}
           placeholder={'Enter your comments here…'}
         />
@@ -331,7 +327,12 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     );
 
     const bottomButton = (
-      <Button style={{ margin: 16, marginTop: 32, width: 'auto' }} title={'SUBMIT REQUEST'} />
+      <Button
+        style={{ margin: 16, marginTop: 32, width: 'auto' }}
+        onPress={onPressConfirmCancelOrder}
+        disabled={!!!selectedReason}
+        title={'SUBMIT REQUEST'}
+      />
     );
 
     return (
@@ -352,7 +353,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           <View style={{ marginHorizontal: 20 }}>
             <TouchableOpacity
               style={{ marginTop: 38, alignSelf: 'flex-end' }}
-              onPress={() => setCancelVisible(!isCancelVisible)}
+              onPress={() => {
+                setCancelVisible(!isCancelVisible);
+                setSelectedReason('');
+              }}
             >
               <CrossPopup />
             </TouchableOpacity>
@@ -381,23 +385,64 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return <OrderSummary orderDetails={orderDetails as any} />;
   };
 
-  const onCancelOrder = (
-    mutate: MutationFn<saveOrderCancelStatus, saveOrderCancelStatusVariables>,
-    mutateResult: MutationResult<saveOrderCancelStatus>
-  ) => {
-    setMenuOpen(false);
-    setCancelVisible(true);
-    console.log({ mutateResult });
+  const onPressConfirmCancelOrder = () => {
+    setShowSpinner(true);
+    client
+      .mutate<saveOrderCancelStatus, saveOrderCancelStatusVariables>({
+        mutation: SAVE_ORDER_CANCEL_STATUS,
+        variables: {
+          orderCancelInput: {
+            orderNo: orderAutoId,
+            remarksCode: cancelOptions.find((item) => item[1] == selectedReason)![0]!,
+          },
+        },
+      })
+      .then(({ data }) => {
+        console.log({
+          s: data!.saveOrderCancelStatus!,
+        });
+        const setInitialSate = () => {
+          setShowSpinner(false);
+          setCancelVisible(false);
+          setComment('');
+          setSelectedReason('');
+          setMenuOpen(false);
+        };
+        const requestStatus = g(data, 'saveOrderCancelStatus', 'requestStatus');
+        if (requestStatus == 'true') {
+          refetch()
+            .then(() => {
+              setInitialSate();
+            })
+            .catch(() => {
+              setInitialSate();
+            });
+        } else {
+          Alert.alert('Error', g(data, 'saveOrderCancelStatus', 'requestMessage')!);
+        }
+      })
+      .catch((e) => {
+        setShowSpinner(false);
+        handleGraphQlError(e);
+      });
+  };
 
-    // mutate({
-    //   variables: {
-    //     orderCancelInput: {
-    //       orderNo: 1,
-    //       remarksCode: '',
-    //     },
-    //   },
-    // });
-    // setShowSpinner(mutateResult.loading);
+  const onPressCancelOrder = () => {
+    setMenuOpen(false);
+    const isDelivered = orderStatusList.find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+    );
+    const isCancelled = orderStatusList.find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+    );
+
+    if (isDelivered) {
+      Alert.alert('Alert', 'You cannot cancel the order wich is delivered.');
+    } else if (isCancelled) {
+      Alert.alert('Alert', 'Order is already cancelled.');
+    } else {
+      setCancelVisible(true);
+    }
   };
 
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -405,22 +450,16 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const renderMenuOptions = () => {
     if (isMenuOpen) {
       return (
-        <Mutation<saveOrderCancelStatus, saveOrderCancelStatusVariables>
-          mutation={SAVE_ORDER_CANCEL_STATUS}
-        >
-          {(mutate, mutateResult) => (
-            <View style={{ position: 'absolute', top: 0, right: 0 }}>
-              <DropDown
-                options={[
-                  {
-                    optionText: 'Cancel Order',
-                    onPress: () => onCancelOrder(mutate, mutateResult),
-                  },
-                ]}
-              />
-            </View>
-          )}
-        </Mutation>
+        <View style={{ position: 'absolute', top: 0, right: 0 }}>
+          <DropDown
+            options={[
+              {
+                optionText: 'Cancel Order',
+                onPress: () => onPressCancelOrder(),
+              },
+            ]}
+          />
+        </View>
       );
     }
   };
@@ -463,7 +502,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           {selectedTab == string.orders.trackOrder ? renderOrderHistory() : renderOrderSummary()}
         </ScrollView>
       </SafeAreaView>
-      {(loading || showSpinner) && <Spinner />}
+      {(loading || showSpinner) && <Spinner style={{ zIndex: 200 }} />}
     </View>
   );
 };

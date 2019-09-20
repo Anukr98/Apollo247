@@ -7,8 +7,13 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, NavigationActions } from 'react-navigation';
 import moment from 'moment';
+import { getNetStatus } from '../../helpers/helperFunctions';
+import { BottomPopUp } from '../ui/BottomPopUp';
+import { StackActions } from 'react-navigation';
+import { AppRoutes } from '../NavigatorContainer';
+import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const { width, height } = Dimensions.get('window');
 
@@ -29,8 +34,7 @@ export interface ReschedulePopUpProps extends NavigationScreenProps {
 export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [rescheduleCounting, setRescheduleCounting] = useState<number>(1);
-
-  // console.log('doctorreschdule', props.doctor);
+  const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   // console.log('rescheduleCount', props.rescheduleCount);
   // console.log(
   //   'reschduleDateTime',
@@ -51,6 +55,16 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
       setRescheduleCounting(1);
     }
   });
+  const networkBack = () => {
+    setNetworkStatus(false);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+      })
+    );
+  };
 
   return (
     <View
@@ -254,13 +268,44 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     backgroundColor: 'white',
                   }}
                   titleTextStyle={{ color: '#fc9916' }}
-                  onPress={() => props.setdisplayoverlay()}
+                  onPress={() =>
+                    getNetStatus().then((status) => {
+                      if (status) {
+                        console.log('Network status', status);
+                        props.setdisplayoverlay();
+                      } else {
+                        setNetworkStatus(true);
+                        setshowSpinner(false);
+                        console.log('Network status failed', status);
+                      }
+                    })
+                  }
                 />
                 <Button
                   title={'ACCEPT'}
                   style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
                   onPress={() => {
-                    props.acceptChange();
+                    try {
+                      props.reschduleDateTime &&
+                      props.reschduleDateTime.getDoctorNextAvailableSlot &&
+                      props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+                      props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                        .availableSlot
+                        ? props.acceptChange()
+                        : null;
+                    } catch (error) {}
+                    //props.acceptChange();
+                  }}
+                  titleTextStyle={{
+                    color: '#ffffff',
+                    opacity:
+                      props.reschduleDateTime &&
+                      props.reschduleDateTime.getDoctorNextAvailableSlot &&
+                      props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+                      props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                        .availableSlot
+                        ? 1
+                        : 0.5,
                   }}
                 />
               </View>
@@ -268,6 +313,39 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
           </View>
         </View>
       </View>
+      {networkStatus && <NoInterNetPopup onClickClose={() => networkBack()} />}
+      {/* {networkStatus && (
+        <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setNetworkStatus(false);
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                  })
+                );
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )} */}
     </View>
   );
 };
