@@ -271,8 +271,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   let intervalId: NodeJS.Timeout;
   let stoppedTimer: number;
 
-  const { analytics } = useAuth();
+  const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     const userName =

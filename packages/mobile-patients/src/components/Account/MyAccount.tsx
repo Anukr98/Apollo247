@@ -84,7 +84,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const [profileDetails, setprofileDetails] = useState<
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
-  const { signOut } = useAuth();
+  const { signOut, getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -305,7 +312,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              Dev V 1.0(15)
+              UAT V 1.0(16)
             </Text>
           </View>
         </Animated.ScrollView>
