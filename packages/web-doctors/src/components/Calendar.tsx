@@ -211,7 +211,9 @@ export const Calendar: React.FC = () => {
 
   const setStartOfMonthDate = ({ start, end }: { start: string | Date; end: string | Date }) => {
     //setMonthSelected(moment(selectedDate).format('MMMM'));
-    setSelectedDate(startOfMonth(start as Date));
+    const increaseDate = new Date(start);
+    const newDate = new Date(increaseDate.setMonth(increaseDate.getMonth() + 1));
+    setSelectedDate(startOfMonth(newDate as Date));
   };
   const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
     variables: {
