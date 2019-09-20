@@ -48,6 +48,7 @@ import {
   checkIfRescheduleVariables,
 } from '../../graphql/types/checkIfReschedule';
 import { getNetStatus } from '../../helpers/helperFunctions';
+import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const { width, height } = Dimensions.get('window');
 
@@ -634,34 +635,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             </View>
           </BottomPopUp>
         )}
-        {networkStatus && (
-          <BottomPopUp
-            title={'Oops!'}
-            description="There is no internet. Please check your internet connection."
-          >
-            <View style={{ height: 60, alignItems: 'flex-end' }}>
-              <TouchableOpacity
-                style={{
-                  height: 60,
-                  paddingRight: 25,
-                  backgroundColor: 'transparent',
-                }}
-                onPress={() => {
-                  setNetworkStatus(false);
-                }}
-              >
-                <Text
-                  style={{
-                    paddingTop: 16,
-                    ...theme.viewStyles.yellowTextStyle,
-                  }}
-                >
-                  OK, GOT IT
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </BottomPopUp>
-        )}
+        {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
         <View
           style={{
             zIndex: 1,
