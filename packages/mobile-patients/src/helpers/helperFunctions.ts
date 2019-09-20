@@ -1,6 +1,59 @@
 import moment from 'moment';
 import { GraphQLError } from 'graphql';
 import { Alert, NetInfo } from 'react-native';
+import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
+
+export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
+  let statusString = '';
+  switch (status) {
+    case MEDICINE_ORDER_STATUS.CANCELLED:
+      statusString = 'Order Cancelled';
+      break;
+    case MEDICINE_ORDER_STATUS.CANCEL_REQUEST:
+      statusString = 'Cancel Requested';
+      break;
+    case MEDICINE_ORDER_STATUS.DELIVERED:
+      statusString = 'Order Delivered';
+      break;
+    case MEDICINE_ORDER_STATUS.ITEMS_RETURNED:
+      statusString = 'Items Returned';
+      break;
+    case MEDICINE_ORDER_STATUS.ORDER_CONFIRMED:
+      statusString = 'Order Confirmed';
+      break;
+    case MEDICINE_ORDER_STATUS.ORDER_FAILED:
+      statusString = 'Order Failed';
+      break;
+    case MEDICINE_ORDER_STATUS.ORDER_PLACED:
+      statusString = 'Order Placed';
+      break;
+    case MEDICINE_ORDER_STATUS.ORDER_VERIFIED:
+      statusString = 'Order Verified';
+      break;
+    case MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY:
+      statusString = 'Out For Delivery';
+      break;
+    case MEDICINE_ORDER_STATUS.PICKEDUP:
+      statusString = 'Order Picked Up';
+      break;
+    case MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY:
+      statusString = 'Prescription Cart Ready';
+      break;
+    case MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED:
+      statusString = 'Prescription Uploaded';
+      break;
+    case MEDICINE_ORDER_STATUS.QUOTE:
+      statusString = 'Quote';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_ACCEPTED:
+      statusString = 'Return Accepted';
+      break;
+    case MEDICINE_ORDER_STATUS.RETURN_INITIATED:
+      statusString = 'Return Requested';
+      break;
+  }
+  return statusString;
+};
 
 export const getDateFormat = (_date: string /*"2019-08-08T20:30:00.000Z"*/) => {
   const dateTime = _date.split('T');

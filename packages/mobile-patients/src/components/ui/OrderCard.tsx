@@ -1,13 +1,8 @@
-import {
-  MedicineIcon,
-  OrderDelayedIcon,
-  OrderOnHoldIcon,
-  OrderPlacedIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { MedicineIcon, OrderPlacedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { MEDICINE_ORDER_STATUS } from '../../graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -146,20 +141,9 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
           <View
             style={[styles.progressLineBefore, { flex: getProgressWidth(props.status, 'left') }]}
           />
-          {
-            //   props.status == 'On Hold' ? (
-            //   <OrderOnHoldIcon style={styles.statusIconStyle} />
-            // ) : props.status == 'Order Delayed' ? (
-            //   <OrderDelayedIcon style={styles.statusIconStyle} />
-            // ) : (
-            <OrderPlacedIcon style={styles.statusIconStyle} />
-          }
+          <OrderPlacedIcon style={styles.statusIconStyle} />
           <View
-            style={[
-              styles.progressLineAfter,
-              // props.status == 'On Hold' ? { backgroundColor: '#e50000' } : {},
-              { flex: getProgressWidth(props.status, 'right') },
-            ]}
+            style={[styles.progressLineAfter, { flex: getProgressWidth(props.status, 'right') }]}
           />
         </View>
       );
@@ -177,7 +161,6 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
             props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED
               ? { ...theme.fonts.IBMPlexSansSemiBold(12) }
               : {},
-            // props.status == 'Return Rejected' || props.status == 'Order Cancelled'
             props.status == MEDICINE_ORDER_STATUS.CANCELLED
               ? { color: theme.colors.INPUT_FAILURE_TEXT }
               : {},
