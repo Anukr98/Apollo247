@@ -489,6 +489,10 @@ export const MedicinePrescription: React.FC = () => {
         suggestions = FinalSearchdata;
         setSearchInput(value);
         setLoading(false);
+        if (FinalSearchdata.length === 0) {
+          setIsSuggestionFetched(false);
+          setLoading(false);
+        }
       })
       .catch((error) => {
         if (error.toString().includes('404')) {
@@ -894,10 +898,10 @@ export const MedicinePrescription: React.FC = () => {
                       </Paper>
                     )}
                   />
-                  {medicine.length > 2 && !isSuggestionFetched && (
+                  {medicine.length > 2 && !loading && !isSuggestionFetched && (
                     <div>
                       <span>
-                        {`do you want to add '${medicine}' in Tests ?`}
+                        {`do you want to add '${medicine}' in Medicine ?`}
                         <AphButton
                           className={classes.btnAddDoctor}
                           variant="contained"
