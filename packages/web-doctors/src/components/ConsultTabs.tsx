@@ -400,8 +400,8 @@ export const ConsultTabs: React.FC = () => {
       })
       .then((_data) => {
         if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
-          console.log(_data!.data!.updateCaseSheet!.blobName, process.env.AZURE_PDF_BASE_URL);
-          const url = process.env.AZURE_PDF_BASE_URL + _data!.data!.updateCaseSheet!.blobName;
+          //console.log(_data!.data!.updateCaseSheet!.blobName, process.env.AZURE_PDF_BASE_URL);
+          const url = storageClient.getBlobUrl(_data!.data!.updateCaseSheet!.blobName);
           setPrescriptionPdf(url);
           setSaving(false);
         }
