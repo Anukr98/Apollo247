@@ -1,9 +1,10 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { AphAuthenticationError } from 'AphError';
+import { AphAuthenticationError, AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+import { isWithinInterval } from 'date-fns';
 
 export const blockedCalendarTypeDefs = gql`
   type BlockedCalendarItem {
@@ -74,7 +75,16 @@ const addBlockedCalendarItem: Resolver<
 > = async (parent, { doctorId, start, end }, context) => {
   checkAuth(doctorId, context);
   const { bciRepo } = getRepos(context);
-  await bciRepo.save(bciRepo.create({ doctorId, start, end }));
+  const itemToAdd = bciRepo.create({ doctorId, start, end });
+  const existingItems = await bciRepo.find({ doctorId });
+  const newItemOverlapsExistingItems = existingItems.some(
+    ({ start, end }) =>
+      isWithinInterval(itemToAdd.start, { start, end }) ||
+      isWithinInterval(itemToAdd.end, { start, end })
+  );
+  if (newItemOverlapsExistingItems)
+    throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
+  await bciRepo.save(itemToAdd);
   const blockedCalendar = await bciRepo.find({ doctorId });
   return { blockedCalendar };
 };
