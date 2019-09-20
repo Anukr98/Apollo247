@@ -118,7 +118,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                     type="submit"
                     disabled={loading || invalid}
                     variant="contained"
-                    onClick={() => {
+                    onClick={async () => {
                       if (!start || !end || invalid) return;
                       const startDate = parse(start, 'yyyy-MM-dd', new Date());
                       const endDate = parse(end, 'yyyy-MM-dd', new Date());
@@ -138,15 +138,21 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                           end: endDate.toISOString(),
                         },
                       };
+                      const cleanup = () => {
+                        setStart('');
+                        setEnd('');
+                      };
                       const isUpdate = item && item.id != null;
                       if (isUpdate) {
                         const updateArgs = {
                           ...addArgs,
                           variables: { ...addArgs.variables, id: item!.id },
                         };
-                        updateBlockedCalendarItem(updateArgs);
+                        await updateBlockedCalendarItem(updateArgs);
+                        cleanup();
                       } else {
-                        addBlockedCalendarItem(addArgs);
+                        await addBlockedCalendarItem(addArgs);
+                        cleanup();
                       }
                     }}
                   >

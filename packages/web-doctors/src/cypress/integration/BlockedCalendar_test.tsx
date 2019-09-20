@@ -166,6 +166,46 @@ describe('BlockedCalendar', () => {
     });
   });
 
+  it('Add screen should always start with empty fields', () => {
+    cy.contains(/add blocked hours/i).click();
+    fillStart('2050-09-18');
+    fillEnd('2050-09-18');
+
+    const doctorId = srKabir.id;
+    const startUtc = '2050-09-17T18:30:00.000Z';
+    const endUtc = '2050-09-18T18:29:00.000Z';
+    const blockedCalendarResult = {
+      __typename: 'BlockedCalendarResult' as 'BlockedCalendarResult',
+      blockedCalendar: [
+        {
+          __typename: 'BlockedCalendarItem' as 'BlockedCalendarItem',
+          id: 1,
+          doctorId,
+          start: startUtc,
+          end: endUtc,
+        },
+      ],
+    };
+
+    cy.mockAphGraphqlOps({
+      operations: {
+        GetBlockedCalendar: {
+          getBlockedCalendar: blockedCalendarResult,
+        },
+        AddBlockedCalendarItem: {
+          addBlockedCalendarItem: blockedCalendarResult,
+        },
+      },
+    });
+
+    getSubmitBtn().click();
+
+    cy.contains(/add blocked hours/i).click();
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .find('input[value="2050-09-18"]')
+      .should('not.exist');
+  });
+
   it('Should pre-populate fields for Edit', () => {
     const doctorId = srKabir.id;
     const startUtcFromDb = '2050-09-18T10:00:00.000Z';
