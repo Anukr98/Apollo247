@@ -3042,6 +3042,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               elevation: 2,
               zIndex: 100,
               backgroundColor: '#ff748e',
+              position: 'absolute',
+              top: isIphoneX() ? 74: Platform.OS === 'ios' ?  54 : 54,
             }}
           >
             <Text

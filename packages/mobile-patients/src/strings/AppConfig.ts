@@ -19,7 +19,7 @@ const Configuration = {
 
 // const Configuration = {
 //   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-//   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //Production
+//   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
 //   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
 //   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
 //   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
