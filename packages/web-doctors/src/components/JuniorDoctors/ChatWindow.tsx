@@ -239,8 +239,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
-  const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
-  const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;

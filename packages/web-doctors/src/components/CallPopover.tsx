@@ -435,6 +435,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: '15px',
         borderRadius: 10,
         paddingLeft: 10,
+        paddingRight: 10,
         '& :before': {
           border: 0,
         },
@@ -640,6 +641,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
+  };
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -685,6 +690,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     );
     //setIsVideoCall(false);
+    stopIntervalTimer();
   };
   const autoSend = (callType: string) => {
     const text = {
@@ -731,6 +737,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         //setMessageText('');
       }
     );
+    stopIntervalTimer();
   };
   const convertCall = () => {
     setConvertVideo(!convertVideo);

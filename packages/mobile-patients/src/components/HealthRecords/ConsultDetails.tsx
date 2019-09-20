@@ -36,7 +36,7 @@ import { AppRoutes } from '../NavigatorContainer';
 import { ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
 import { Spinner } from '../ui/Spinner';
 import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
 import { getAppointmentData } from '../../graphql/types/getAppointmentData';
 
 import { ConsultOverlay } from '../ConsultRoom/ConsultOverlay';
@@ -127,6 +127,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const client = useApolloClient();
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
+  const [showDiagnosis, setshowDiagnosis] = useState<boolean>(true);
+  const [showgeneral, setShowGeneral] = useState<boolean>(true);
+  const [showFollowUp, setshowFollowUpl] = useState<boolean>(true);
   const [caseSheetDetails, setcaseSheetDetails] = useState<
     getCaseSheet_getCaseSheet_caseSheetDetails
   >();
@@ -136,6 +139,15 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
 
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
   useEffect(() => {
     setLoading(true);
     client
@@ -325,7 +337,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.medicinePrescription &&
             caseSheetDetails!.medicinePrescription.length !== 0 &&
-            caseSheetDetails!.doctorType == 'STAR_APOLLO' ? (
+            caseSheetDetails!.doctorType !== 'JUNIOR' ? (
               <View>
                 {caseSheetDetails!.medicinePrescription.map((item) => {
                   if (item)
@@ -408,8 +420,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       <View>
         <CollapseCard
           heading="DIAGNOSIS"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
+          collapse={showDiagnosis}
+          onPress={() => setshowDiagnosis(!showDiagnosis)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.diagnosis && caseSheetDetails!.diagnosis! !== null ? (
@@ -438,8 +450,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       <View>
         <CollapseCard
           heading="GENERAL ADVICE"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
+          collapse={showgeneral}
+          onPress={() => setShowGeneral(!showgeneral)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails!.otherInstructions && caseSheetDetails!.otherInstructions !== null ? (
@@ -472,13 +484,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       <View>
         <CollapseCard
           heading="FOLLOW-UP"
-          collapse={showPrescription}
-          onPress={() => setshowPrescription(!showPrescription)}
+          collapse={showFollowUp}
+          onPress={() => setshowFollowUpl(!showFollowUp)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
             {caseSheetDetails &&
             caseSheetDetails!.followUp &&
-            caseSheetDetails!.doctorType == 'STAR_APOLLO' ? (
+            caseSheetDetails!.doctorType !== 'JUNIOR' ? (
               <View>
                 <View>
                   <View style={styles.labelViewStyle}>

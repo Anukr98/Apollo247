@@ -2,7 +2,9 @@ package com.apollopatient;
 
 import android.app.Application;
 
+import com.crashlytics.android.Crashlytics;
 import com.facebook.react.ReactApplication;
+import io.fabric.sdk.android.Fabric;
 import io.github.mr03web.softinputmode.SoftInputModePackage;
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import com.corbt.keepawake.KCKeepAwakePackage;
@@ -81,6 +83,7 @@ public class MainApplication extends Application implements ReactApplication {
   @Override
   public void onCreate() {
     super.onCreate();
+    Fabric.with(this, new Crashlytics());
     SoLoader.init(this, /* native exopackage */ false);
   }
 }

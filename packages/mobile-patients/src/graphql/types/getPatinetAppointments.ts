@@ -55,6 +55,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
   status: STATUS;
   hospitalId: string | null;
   doctorId: string;
+  displayId: number | null;
   isFollowUp: string;
   rescheduleCount: number | null;
   doctorInfo: getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo | null;

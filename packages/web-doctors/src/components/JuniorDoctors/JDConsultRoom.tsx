@@ -42,6 +42,7 @@ import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { clientRoutes } from 'helpers/clientRoutes';
 
@@ -366,6 +367,7 @@ export const JDConsultRoom: React.FC = () => {
   const classes = useStyles();
   const { patientId, appointmentId, queueId } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isDiagnosisDialogOpen, setIsDiagnosisDialogOpen] = React.useState(false);
 
   const { currentPatient: currentDoctor, isSignedIn } = useAuth();
   const doctorId = currentDoctor!.id;
@@ -771,51 +773,59 @@ export const JDConsultRoom: React.FC = () => {
   }, [appointmentId, client, isSignedIn]);
 
   const saveCasesheetAction = (flag: boolean) => {
-    setSaving(true);
-    client
-      .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-        mutation: UPDATE_CASESHEET,
-        variables: {
-          UpdateCaseSheetInput: {
-            symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-            notes: customNotes.length > 0 ? customNotes : null,
-            diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
-            diagnosticPrescription:
-              diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
-            followUp: false,
-            followUpDate: '',
-            followUpAfterInDays: '',
-            otherInstructions:
-              otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
-            medicinePrescription:
-              medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
-            id: caseSheetId,
+    if (diagnosis!.length > 0) {
+      setSaving(true);
+      client
+        .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
+          mutation: UPDATE_CASESHEET,
+          variables: {
+            UpdateCaseSheetInput: {
+              symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
+              notes: customNotes.length > 0 ? customNotes : null,
+              diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
+              diagnosticPrescription:
+                diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
+              followUp: false,
+              followUpDate: '',
+              followUpAfterInDays: '',
+              otherInstructions:
+                otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
+              medicinePrescription:
+                medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
+              id: caseSheetId,
+            },
           },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data) => {
-        savePatientAllergiesMutation();
-        savePatientFamilyHistoryMutation();
-        savePatientLifeStyleMutation();
-        setSaving(false);
-      })
-      .catch((e) => {
-        const error = JSON.parse(JSON.stringify(e));
-        const errorMessage = error && error.message;
-        alert(errorMessage);
-        setSaving(false);
-        console.log('Error occured while update casesheet', e);
-      });
+          fetchPolicy: 'no-cache',
+        })
+        .then((_data) => {
+          savePatientAllergiesMutation();
+          savePatientFamilyHistoryMutation();
+          savePatientLifeStyleMutation();
+          setSaving(false);
+        })
+        .catch((e) => {
+          const error = JSON.parse(JSON.stringify(e));
+          const errorMessage = error && error.message;
+          alert(errorMessage);
+          setSaving(false);
+          console.log('Error occured while update casesheet', e);
+        });
+    } else {
+      setIsDiagnosisDialogOpen(true);
+    }
   };
 
   const endConsultAction = () => {
-    mutationRemoveConsult();
-    savePatientAllergiesMutation();
-    savePatientFamilyHistoryMutation();
-    savePatientLifeStyleMutation();
-    setIsDialogOpen(true);
-    saveCasesheetAction(false);
+    if (diagnosis!.length > 0) {
+      mutationRemoveConsult();
+      savePatientAllergiesMutation();
+      savePatientFamilyHistoryMutation();
+      savePatientLifeStyleMutation();
+      setIsDialogOpen(true);
+      saveCasesheetAction(false);
+    } else {
+      setIsDiagnosisDialogOpen(true);
+    }
   };
 
   const createSessionAction = () => {
@@ -1093,6 +1103,18 @@ export const JDConsultRoom: React.FC = () => {
             autoFocus
           >
             Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={isDiagnosisDialogOpen} onClose={() => setIsDiagnosisDialogOpen(false)}>
+        <DialogTitle>{''}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Please enter diagnosis</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button color="primary" onClick={() => setIsDiagnosisDialogOpen(false)} autoFocus>
+            OK
           </Button>
         </DialogActions>
       </Dialog>

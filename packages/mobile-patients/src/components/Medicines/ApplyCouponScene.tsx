@@ -154,7 +154,6 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           ]}
           conatinerstyles={{ paddingBottom: 0 }}
           placeholder={'Enter coupon code'}
-          autoCorrect={false}
         />
         {!isValidCoupon && couponText.length > 0 ? (
           <Text style={styles.inputValidationStyle}>{'Invalid Coupon Code'}</Text>

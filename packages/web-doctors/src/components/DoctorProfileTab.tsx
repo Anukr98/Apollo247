@@ -652,7 +652,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                   <Paper className={classes.serviceItem}>
                     <Typography variant="h5">Awards</Typography>
-                    <Typography variant="h3">
+                    <Typography variant="h3" style={{ whiteSpace: 'pre-line' }}>
                       {doctor.awards
                         .replace('&amp;', '&')
                         .replace(/<\/?[^>]+>/gi, '')

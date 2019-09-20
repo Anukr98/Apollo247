@@ -24,10 +24,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -166,6 +166,14 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     props.navigation.state.params ? props.navigation.state.params!.images : []
   );
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   const client = useApolloClient();
 

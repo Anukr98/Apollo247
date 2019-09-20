@@ -6,6 +6,7 @@ import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/a
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
+import { Relation } from '../graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -20,7 +21,6 @@ export interface SplashScreenProps extends NavigationScreenProps {}
 
 export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const { signInError, signOut } = useAuth();
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   useEffect(() => {
@@ -54,58 +54,74 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
       const multiSignUp = await AsyncStorage.getItem('multiSignUp');
       AsyncStorage.setItem('showSchduledPopup', 'false');
 
+      const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+      const item = JSON.parse(retrievedItem);
+
+      const allPatients =
+        item && item.data && item.data.getCurrentPatients
+          ? item.data.getCurrentPatients.patients
+          : null;
+
+      const mePatient = allPatients
+        ? allPatients.find((patient: any) => patient.relation === Relation.ME) || allPatients[0]
+        : null;
+
+      console.log(allPatients, 'allPatientssplash');
+      console.log(mePatient, 'mePatientsplash');
+
       console.log('onboarding', onboarding);
       console.log('userLoggedIn', userLoggedIn);
-      console.log('splash screen', currentPatient);
-      console.log(allCurrentPatients, 'allCurrentPatients');
 
       setTimeout(() => {
-        setshowSpinner(false);
-
         if (userLoggedIn == 'true') {
-          if (currentPatient) {
-            if (currentPatient.firstName !== '') {
+          setshowSpinner(false);
+
+          if (mePatient) {
+            if (mePatient.firstName !== '') {
               props.navigation.replace(AppRoutes.ConsultRoom);
             } else {
               props.navigation.replace(AppRoutes.Login);
             }
           }
         } else if (onboarding == 'true') {
+          setshowSpinner(false);
+
           if (signUp == 'true') {
             props.navigation.replace(AppRoutes.SignUp);
           } else if (multiSignUp == 'true') {
-            if (currentPatient) {
+            if (mePatient) {
               props.navigation.replace(AppRoutes.MultiSignup);
             }
           } else {
             props.navigation.replace(AppRoutes.Login);
           }
         } else {
+          setshowSpinner(false);
           props.navigation.replace(AppRoutes.Onboarding);
         }
-      }, 3500);
+      }, 2000);
     }
     fetchData();
     SplashScreenView.hide();
-  }, [currentPatient, props.navigation, allCurrentPatients]);
+  }, [props.navigation]);
 
-  useEffect(() => {
-    console.log('SplashScreen signInError', signInError);
+  // useEffect(() => {
+  //   console.log('SplashScreen signInError', signInError);
 
-    firebase.analytics().setCurrentScreen('SplashScreen');
+  //   firebase.analytics().setCurrentScreen('SplashScreen');
 
-    if (signInError) {
-      setshowSpinner(false);
+  //   if (signInError) {
+  //     setshowSpinner(false);
 
-      AsyncStorage.setItem('userLoggedIn', 'false');
-      AsyncStorage.setItem('multiSignUp', 'false');
-      AsyncStorage.setItem('signUp', 'false');
-      signOut();
-      props.navigation.replace(AppRoutes.Login);
-    }
+  //     AsyncStorage.setItem('userLoggedIn', 'false');
+  //     AsyncStorage.setItem('multiSignUp', 'false');
+  //     AsyncStorage.setItem('signUp', 'false');
+  //     signOut();
+  //     props.navigation.replace(AppRoutes.Login);
+  //   }
 
-    SplashScreenView.hide();
-  }, [props.navigation, signInError, signOut]);
+  //   SplashScreenView.hide();
+  // }, [props.navigation, signInError, signOut]);
 
   return (
     <View style={styles.mainView}>

@@ -87,3 +87,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
     </View>
   );
 };
+
+TextInputComponent.defaultProps = {
+  autoCorrect: false,
+};

@@ -33,6 +33,8 @@ import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import moment from 'moment';
+import { StackActions } from 'react-navigation';
+import { NavigationActions } from 'react-navigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -393,7 +395,19 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
-                  props.navigation.replace(AppRoutes.ConsultRoom))
+                  setTimeout(() => {
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [
+                          NavigationActions.navigate({
+                            routeName: AppRoutes.ConsultRoom,
+                          }),
+                        ],
+                      })
+                    );
+                  }, 500))
                 : null}
               {error
                 ? (setVerifyingPhoneNumber(false),
@@ -403,7 +417,19 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'false'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('signUp', 'false'),
-                  props.navigation.replace(AppRoutes.Login))
+                  setTimeout(() => {
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [
+                          NavigationActions.navigate({
+                            routeName: AppRoutes.Login,
+                          }),
+                        ],
+                      })
+                    );
+                  }, 0))
                 : null}
             </Button>
           )}

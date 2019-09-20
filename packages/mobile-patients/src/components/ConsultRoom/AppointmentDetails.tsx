@@ -19,7 +19,7 @@ import { NavigationScreenProps, StackActions, NavigationActions } from 'react-na
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
 import { ReschedulePopUp } from '@aph/mobile-patients/src/components/Consult/ReschedulePopUp';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -47,6 +47,8 @@ import {
   checkIfReschedule,
   checkIfRescheduleVariables,
 } from '../../graphql/types/checkIfReschedule';
+import { getNetStatus } from '../../helpers/helperFunctions';
+import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const { width, height } = Dimensions.get('window');
 
@@ -129,13 +131,31 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [belowThree, setBelowThree] = useState<boolean>(false);
   const [newRescheduleCount, setNewRescheduleCount] = useState<any>();
   const [availability, setAvailability] = useState<any>();
-
+  const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [bottompopup, setBottompopup] = useState<boolean>(false);
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
   const client = useApolloClient();
 
   useEffect(() => {
-    checkIfReschedule();
-    nextAvailableSlot();
+    getNetStatus().then((status) => {
+      if (status) {
+        console.log('Network status', status);
+        checkIfReschedule();
+        nextAvailableSlot();
+      } else {
+        setNetworkStatus(true);
+        setshowSpinner(false);
+        console.log('Network status failed', status);
+      }
+    });
   }, []);
 
   useEffect(() => {
@@ -392,7 +412,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                     paddingBottom: 4,
                   }}
                 >
-                  #{data.id.slice(-4)}
+                  #{data.displayId}
                 </Text>
                 <View style={styles.separatorStyle} />
                 <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>
@@ -548,9 +568,9 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   <View
                     style={{
                       backgroundColor: 'white',
-                      width: 201,
-                      height: 55,
-                      marginLeft: width - 221,
+                      width: 100,
+                      height: 45,
+                      marginLeft: width - 120,
                       marginTop: 64,
                       borderRadius: 10,
                       alignItems: 'center',
@@ -566,7 +586,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                         textAlign: 'center',
                       }}
                     >
-                      Cancel Appointment
+                      Cancel
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -615,6 +635,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             </View>
           </BottomPopUp>
         )}
+        {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
         <View
           style={{
             zIndex: 1,
