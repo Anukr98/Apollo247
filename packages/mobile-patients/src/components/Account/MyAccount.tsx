@@ -24,6 +24,7 @@ import {
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { getNetStatus } from '../../helpers/helperFunctions';
 import { BottomPopUp } from '../ui/BottomPopUp';
+import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const { height, width } = Dimensions.get('window');
 
@@ -319,11 +320,9 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       </SafeAreaView>
 
       {renderAnimatedHeader()}
-      {networkStatus && (
-        <BottomPopUp
-          title={'Oops!'}
-          description="There is no internet. Please check your internet connection."
-        >
+      {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
+      {/* {networkStatus && (
+        <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               style={{
@@ -346,7 +345,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             </TouchableOpacity>
           </View>
         </BottomPopUp>
-      )}
+      )} */}
       {showSpinner && <Spinner />}
     </View>
   );
