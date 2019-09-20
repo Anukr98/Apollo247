@@ -34,7 +34,7 @@ import {
   SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_specialties,
 } from '@aph/mobile-patients/src/graphql/types/SearchDoctorAndSpecialtyByName';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { Mutation } from 'react-apollo';
@@ -157,6 +157,15 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   // const [doctorIds, setdoctorIds] = useState<string[]>([]);
 
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
   const client = useApolloClient();
 
   const fetchNextSlots = (doctorIds: (string | undefined)[]) => {

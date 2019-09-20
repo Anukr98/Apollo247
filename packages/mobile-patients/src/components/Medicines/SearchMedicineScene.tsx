@@ -21,7 +21,7 @@ import {
   pinCodeServiceabilityApi,
   searchMedicineApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios, { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
@@ -139,6 +139,15 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
+
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   /*
   useEffect(() => {

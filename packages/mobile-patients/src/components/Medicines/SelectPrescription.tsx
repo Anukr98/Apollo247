@@ -9,9 +9,9 @@ import {
   getPatientMedicalRecordsVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -22,6 +22,14 @@ export interface SelectPrescriptionProps extends NavigationScreenProps {}
 export const SelectPrescription: React.FC<SelectPrescriptionProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   const { data, loading, error } = useQuery<
     getPatientMedicalRecords,

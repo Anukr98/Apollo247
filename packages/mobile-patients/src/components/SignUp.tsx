@@ -25,7 +25,12 @@ import {
   Dimensions,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  NavigationScreenProps,
+  ScrollView,
+  NavigationActions,
+  StackActions,
+} from 'react-navigation';
 import Moment from 'moment';
 import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
 import {
@@ -143,6 +148,13 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       return false;
     }
   };
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     AsyncStorage.setItem('signUp', 'true');
@@ -350,7 +362,19 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', 'false'),
-                      props.navigation.replace(AppRoutes.ConsultRoom))
+                      setTimeout(() => {
+                        props.navigation.dispatch(
+                          StackActions.reset({
+                            index: 0,
+                            key: null,
+                            actions: [
+                              NavigationActions.navigate({
+                                routeName: AppRoutes.ConsultRoom,
+                              }),
+                            ],
+                          })
+                        );
+                      }, 500))
                     : null}
                   {/* {loading ? setVerifyingPhoneNumber(false) : null} */}
                   {error
@@ -361,7 +385,19 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('userLoggedIn', 'false'),
                       AsyncStorage.setItem('multiSignUp', 'false'),
                       AsyncStorage.setItem('signUp', 'false'),
-                      props.navigation.replace(AppRoutes.Login))
+                      setTimeout(() => {
+                        props.navigation.dispatch(
+                          StackActions.reset({
+                            index: 0,
+                            key: null,
+                            actions: [
+                              NavigationActions.navigate({
+                                routeName: AppRoutes.Login,
+                              }),
+                            ],
+                          })
+                        );
+                      }, 0))
                     : null}
                 </Button>
               )}

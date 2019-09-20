@@ -16,7 +16,7 @@ import {
   GET_NOTIFICATION_SETTINGS,
   SAVE_NOTIFICATION_SETTINGS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { useQuery, useApolloClient } from 'react-apollo-hooks';
 import {
   getPatientNotificationSettings,
@@ -86,6 +86,15 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
   const [backPressCount, setbackPressCount] = useState<number>(0);
 
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
   const client = useApolloClient();
   const NotificationArray: NotificationArray[] = [
     {
