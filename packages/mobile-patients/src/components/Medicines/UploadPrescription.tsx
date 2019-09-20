@@ -15,6 +15,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -28,8 +29,16 @@ import { EPrescriptionCard } from '../ui/EPrescriptionCard';
 import { Spinner } from '../ui/Spinner';
 import { SelectEPrescriptionModal } from './SelectEPrescriptionModal';
 import { Mutation } from 'react-apollo';
-import { UPLOAD_FILE } from '../../graphql/profiles';
+import { UPLOAD_FILE, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql/profiles';
 import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
+import { useApolloClient } from 'react-apollo-hooks';
+import { g } from '../../helpers/helperFunctions';
+import {
+  SavePrescriptionMedicineOrder,
+  SavePrescriptionMedicineOrderVariables,
+} from '../../graphql/types/SavePrescriptionMedicineOrder';
+import { MEDICINE_DELIVERY_TYPE } from '../../graphql/types/globalTypes';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -96,6 +105,9 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [pinCode, setPinCode] = useState<string>('');
 
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+
   const isValidPinCode = (text: string): boolean => text == '' || /^([1-9][0-9]*)$/.test(text);
 
   const onPressSubmit = () => {
@@ -104,6 +116,52 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       setshowSpinner(false);
       setBottompopup(true);
     }, 1000);
+    return;
+
+    if (PhysicalPrescriptions.length > 0) {
+      Promise.all(
+        PhysicalPrescriptions.map((item) =>
+          client.mutate<uploadFile, uploadFileVariables>({
+            mutation: UPLOAD_FILE,
+            fetchPolicy: 'no-cache',
+            variables: {
+              fileType: item.fileType,
+              base64FileInput: item.base64,
+            },
+          })
+        )
+      )
+        .then((result) => {
+          console.log({ result });
+          const uploadedFiles = result.map(({ data }) => data && g(data, 'uploadFile', 'filePath'));
+          const ePresUrls = EPrescriptions.map((item) => item.uploadedUrl);
+          const ePresAndPhysicalPresUrls = [...ePresUrls, ...uploadedFiles].join(', ');
+          console.log({
+            uploadedFiles,
+            ePresUrls,
+            ePresAndPhysicalPresUrls,
+          });
+          // uploadedFiles.concat(EPrescriptions)
+
+          client.mutate<SavePrescriptionMedicineOrder, SavePrescriptionMedicineOrderVariables>({
+            mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+            variables: {
+              prescriptionMedicineInput: {
+                patientId: (currentPatient && currentPatient.id) || '',
+                medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
+                prescriptionImageUrl: ePresAndPhysicalPresUrls,
+                shopId: '0',
+                appointmentId: '',
+                patinetAddressId: '',
+              },
+            },
+          });
+        })
+        .catch((e) => {
+          setshowSpinner(false);
+          Alert.alert('Alert', 'Error while uploading prescription');
+        });
+    }
   };
 
   const renderLabel = (label: string) => {

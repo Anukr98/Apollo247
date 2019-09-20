@@ -634,6 +634,10 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartingTime(timer);
     }, 1000);
   };
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
+  };
   // timer for audio/video call end
   const [remainingTime, setRemainingTime] = useState<number>(900);
   const minutes = Math.floor(remainingTime / 60);
@@ -727,6 +731,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         //setMessageText('');
       }
     );
+    stopIntervalTimer();
     //setIsVideoCall(false);
   };
   const autoSend = (callType: string) => {
@@ -774,6 +779,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         //setMessageText('');
       }
     );
+    stopIntervalTimer();
   };
   const convertCall = () => {
     setConvertVideo(!convertVideo);

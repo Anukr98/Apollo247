@@ -2,7 +2,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { OrderPlacedIcon, OrderTrackerSmallIcon } from './Icons';
-import { OrderCardProps } from './OrderCard';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -53,7 +52,7 @@ const styles = StyleSheet.create({
 });
 
 export interface OrderProgressCardProps {
-  status: OrderCardProps['status'];
+  status: string;
   isStatusDone: boolean;
   nextItemStatus: 'DONE' | 'NOT_DONE' | 'NOT_EXIST';
   date?: string;

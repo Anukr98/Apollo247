@@ -13,6 +13,7 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import { AsyncStorage } from 'react-native';
 import firebase, { RNFirebase } from 'react-native-firebase';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -95,7 +96,7 @@ export const AuthProvider: React.FC = (props) => {
 
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
 
-  apolloClient = buildApolloClient(authToken, () => signOut());
+  apolloClient = buildApolloClient(authToken, () => {});
 
   const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
     null
@@ -195,15 +196,16 @@ export const AuthProvider: React.FC = (props) => {
 
         console.log('authprovider jwt', jwt);
 
-        apolloClient = buildApolloClient(jwt, () => signOut());
+        apolloClient = buildApolloClient(jwt, () => {});
         authStateRegistered = false;
         setAuthToken(jwt);
-
-        getPatientApiCall();
+        getNetStatus().then((item) => {
+          item && getPatientApiCall();
+        });
       }
       setIsSigningIn(false);
     });
-  }, [auth, signOut]);
+  }, [auth]);
 
   const getPatientApiCall = async () => {
     await apolloClient
@@ -217,9 +219,13 @@ export const AuthProvider: React.FC = (props) => {
         AsyncStorage.setItem('currentPatient', JSON.stringify(data));
         setAllPatients(data);
       })
-      .catch((error) => {
+      .catch(async (error) => {
+        const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
+        const item = JSON.parse(retrievedItem);
+        setAllPatients(item);
+
         setSignInError(true);
-        console.log('error', error);
+        console.log('getPatientApiCallerror', error);
       });
   };
 

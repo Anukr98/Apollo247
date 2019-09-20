@@ -23,7 +23,7 @@ import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
@@ -117,6 +117,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
     ePrescriptions,
   } = useShoppingCart();
+
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     (currentPatientId &&

@@ -3,7 +3,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { AddFileIcon, NoData } from '@aph/mobile-patients/src/components/ui/Icons';
 import { DELETE_PATIENT_MEDICAL_RECORD } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -36,6 +36,15 @@ export interface MedicalRecordsProps extends NavigationScreenProps {
 export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   const client = useApolloClient();
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
   // console.log('MedicalRecordData', props.MedicalRecordData);
   useEffect(() => {
     //props.onTabCount(props.MedicalRecordData.length);

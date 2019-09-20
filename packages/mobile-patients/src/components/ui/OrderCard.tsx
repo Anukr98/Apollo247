@@ -1,9 +1,5 @@
-import {
-  MedicineIcon,
-  OrderDelayedIcon,
-  OrderOnHoldIcon,
-  OrderPlacedIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { MedicineIcon, OrderPlacedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
@@ -96,24 +92,7 @@ const styles = StyleSheet.create({
   },
 });
 
-type OrderStatusType =
-  | 'Order Placed'
-  | 'Order Verified'
-  | 'On Hold'
-  | 'Order Delayed'
-  | 'Out For Delivery'
-  | 'Order Ready At Store'
-  | 'Order Delivered'
-  | 'Return Requested'
-  | 'Items Returned'
-  | 'Return Rejected'
-  | 'Return Accepted'
-  | 'Cancelation Requested'
-  | 'Order Cancelled'
-  | 'Order Failed'
-  | 'Order Picked Up'
-  | 'Prescription Uploaded'
-  | 'Quote';
+type OrderStatusType = MEDICINE_ORDER_STATUS;
 
 export interface OrderCardProps {
   orderId: string;
@@ -121,18 +100,16 @@ export interface OrderCardProps {
   description: string;
   dateTime: string;
   status: OrderStatusType;
+  statusDesc: string;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
 }
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
   const isOrderWithProgressIcons =
-    props.status == 'Order Placed' ||
-    props.status == 'Order Verified' ||
-    props.status == 'On Hold' ||
-    props.status == 'Order Delayed' ||
-    props.status == 'Out For Delivery' ||
-    props.status == 'Order Ready At Store';
+    props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+    props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
+    props.status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY;
 
   const getProgressWidth = (
     status: OrderCardProps['status'],
@@ -140,16 +117,14 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   ) => {
     if (progresDirection == 'left') {
       if (
-        status == 'Order Placed' ||
-        status == 'Order Verified' ||
-        status == 'On Hold' ||
-        status == 'Order Delayed'
+        status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+        status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED
       ) {
         return 1;
       }
       return 3;
     } else {
-      if (status == 'Order Placed') {
+      if (status == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
         return 3;
       }
       return 1;
@@ -157,32 +132,18 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
   };
 
   const renderGraphicalStatus = () => {
-    if (props.status == 'Order Delivered') {
+    if (props.status == MEDICINE_ORDER_STATUS.DELIVERED) {
       return <View style={styles.progressLineDone} />;
     }
     if (isOrderWithProgressIcons) {
       return (
         <View style={styles.progressLineContainer}>
           <View
-            style={[
-              styles.progressLineBefore,
-              props.status == 'On Hold' ? {} : {},
-              { flex: getProgressWidth(props.status, 'left') },
-            ]}
+            style={[styles.progressLineBefore, { flex: getProgressWidth(props.status, 'left') }]}
           />
-          {props.status == 'On Hold' ? (
-            <OrderOnHoldIcon style={styles.statusIconStyle} />
-          ) : props.status == 'Order Delayed' ? (
-            <OrderDelayedIcon style={styles.statusIconStyle} />
-          ) : (
-            <OrderPlacedIcon style={styles.statusIconStyle} />
-          )}
+          <OrderPlacedIcon style={styles.statusIconStyle} />
           <View
-            style={[
-              styles.progressLineAfter,
-              props.status == 'On Hold' ? { backgroundColor: '#e50000' } : {},
-              { flex: getProgressWidth(props.status, 'right') },
-            ]}
+            style={[styles.progressLineAfter, { flex: getProgressWidth(props.status, 'right') }]}
           />
         </View>
       );
@@ -197,13 +158,15 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
           numberOfLines={1}
           style={[
             styles.statusStyle,
-            props.status == 'Order Placed' ? { ...theme.fonts.IBMPlexSansSemiBold(12) } : {},
-            props.status == 'Return Rejected' || props.status == 'Order Cancelled'
+            props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED
+              ? { ...theme.fonts.IBMPlexSansSemiBold(12) }
+              : {},
+            props.status == MEDICINE_ORDER_STATUS.CANCELLED
               ? { color: theme.colors.INPUT_FAILURE_TEXT }
               : {},
           ]}
         >
-          {props.status}
+          {props.statusDesc}
         </Text>
         <Text numberOfLines={1} style={styles.dateTimeStyle}>
           {props.dateTime}
@@ -245,7 +208,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
       style={[
         styles.containerStyle,
         props.style,
-        props.status == 'Return Accepted'
+        props.status == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED
           ? { backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }
           : {},
       ]}

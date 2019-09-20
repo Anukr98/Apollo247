@@ -5,10 +5,6 @@ const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingTop: 10,
@@ -21,6 +17,12 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
+  absoluteStyles: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
 });
 
 export interface StickyBottomProps {
@@ -28,6 +30,7 @@ export interface StickyBottomProps {
   backgroundColor?: string;
   children: React.ReactNode;
   defaultBG?: boolean;
+  position?: boolean;
 }
 
 export const StickyBottomComponent: React.FC<StickyBottomProps> = (props) => {
@@ -35,6 +38,7 @@ export const StickyBottomComponent: React.FC<StickyBottomProps> = (props) => {
     <View
       style={[
         styles.container,
+        props.position ? styles.absoluteStyles : {},
         props.style,
         props.defaultBG
           ? {
@@ -51,4 +55,5 @@ export const StickyBottomComponent: React.FC<StickyBottomProps> = (props) => {
 
 StickyBottomComponent.defaultProps = {
   defaultBG: false,
+  position: true,
 };

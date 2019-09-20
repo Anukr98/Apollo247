@@ -20,8 +20,8 @@ import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const apiDetails = {
-  url: 'http://13.126.95.18/searchprd_api.php',
-  authToken: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+  url: process.env.PHARMACY_MED_SEARCH_URL,
+  authToken: process.env.PHARMACY_MED_AUTH_TOKEN,
 };
 
 interface OptionType {

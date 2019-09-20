@@ -188,13 +188,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
   const documentUpload = '^^#DocumentUpload';
-  const subscribeKey = 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac';
-  const publishKey = 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3';
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
+  console.log(subscribekey, publishkey, 'subscribekey, publishkey');
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
     publishKey: publishkey,
@@ -221,10 +220,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setStartingTime(timer);
     }, 1000);
   };
-  // const stopIntervalTimer = () => {
-  //   setStartingTime(0);
-  //   timerIntervalId && clearInterval(timerIntervalId);
-  // };
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
+  };
   const srollToBottomAction = () => {
     setTimeout(() => {
       const scrollDiv = document.getElementById('scrollDiv');
@@ -591,6 +590,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
       }
     );
+    stopIntervalTimer();
     //setIsVideoCall(false);
   };
   const stopAudioVideoCallpatient = () => {
@@ -615,6 +615,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         setMessageText('');
       }
     );
+    stopIntervalTimer();
   };
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 

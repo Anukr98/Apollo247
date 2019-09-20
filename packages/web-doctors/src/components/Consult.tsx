@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     videoContainer: {
-      minHeight: 545,
+      minHeight: 470,
       backgroundColor: '#000',
       borderRadius: 10,
       margin: 20,
@@ -129,6 +129,20 @@ interface ConsultProps {
   isNewMsg: boolean;
   convertCall: () => void;
 }
+function getCookieValue() {
+  const name = 'action=';
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) === 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return '';
+}
 export const Consult: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
@@ -180,6 +194,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 className={
                   props.showVideoChat || !subscribeToVideo ? classes.hidePublisherVideo : ''
                 }
+                resolution={'352x288'}
                 properties={{
                   publishAudio: mute,
                   publishVideo: subscribeToVideo,
@@ -276,7 +291,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             />
                           </button>
                         )}
-                        {isCall && subscribeToVideo && (
+                        {isCall && subscribeToVideo && getCookieValue() === 'videocall' && (
                           <button
                             className={classes.muteBtn}
                             onClick={() => {
@@ -291,7 +306,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             />
                           </button>
                         )}
-                        {isCall && !subscribeToVideo && (
+                        {isCall && !subscribeToVideo && getCookieValue() === 'videocall' && (
                           <button
                             className={classes.muteBtn}
                             onClick={() => {

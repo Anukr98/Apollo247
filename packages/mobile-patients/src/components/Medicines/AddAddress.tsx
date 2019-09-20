@@ -10,7 +10,7 @@ import {
   savePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -22,11 +22,14 @@ import {
   TouchableOpacity,
   View,
   Platform,
+  KeyboardAvoidingView,
+  Dimensions,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { PatientAddressInput } from '../../graphql/types/globalTypes';
 import { pinCodeServiceabilityApi } from '../../helpers/apiCalls';
 import { DropDown, DropDownProps } from '../ui/DropDown';
+const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   placeholderTextStyle: {
@@ -74,6 +77,15 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
   const client = useApolloClient();
   const isAddressValid =
     userName &&
@@ -244,20 +256,31 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       </View>
     );
   };
-
+  const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
-        {renderAddress()}
-        <StickyBottomComponent defaultBG>
-          <Button
-            title={addOnly ? 'SAVE' : 'SAVE & USE'}
-            style={{ flex: 1, marginHorizontal: 40 }}
-            onPress={onSavePress}
-            disabled={!isAddressValid}
-          ></Button>
-        </StickyBottomComponent>
+        <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} {...keyboardVerticalOffset}>
+          <ScrollView>{renderAddress()}</ScrollView>
+          {/* <StickyBottomComponent defaultBG> */}
+          <View
+            style={{
+              width: '100%',
+              paddingTop: 10,
+              height: height === 812 || height === 896 ? 80 : 70,
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              title={addOnly ? 'SAVE' : 'SAVE & USE'}
+              style={{ marginHorizontal: 40, width: '70%' }}
+              onPress={onSavePress}
+              disabled={!isAddressValid}
+            ></Button>
+          </View>
+          {/* </StickyBottomComponent> */}
+        </KeyboardAvoidingView>
       </SafeAreaView>
       {showSpinner && <Spinner />}
     </View>

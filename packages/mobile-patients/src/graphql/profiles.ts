@@ -178,6 +178,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         status
         hospitalId
         doctorId
+        displayId
         isFollowUp
         rescheduleCount
         displayId
@@ -1027,6 +1028,15 @@ export const UPLOAD_CHAT_FILE = gql`
       appointmentId: $appointmentId
     ) {
       filePath
+    }
+  }
+`;
+
+export const SAVE_ORDER_CANCEL_STATUS = gql`
+  mutation saveOrderCancelStatus($orderCancelInput: OrderCancelInput) {
+    saveOrderCancelStatus(orderCancelInput: $orderCancelInput) {
+      requestStatus
+      requestMessage
     }
   }
 `;

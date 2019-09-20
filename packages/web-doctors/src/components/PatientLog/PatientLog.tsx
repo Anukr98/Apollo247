@@ -269,7 +269,7 @@ export interface DoctorsProfileProps {}
 export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
   const classes = useStyles();
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
-  const [sortBy, setSortBy] = React.useState('PATIENT_NAME_A_TO_Z');
+  const [sortBy, setSortBy] = React.useState('MOST_RECENT');
   const [patientList, setPatientList] = React.useState([]);
   const [offset, setOffset] = React.useState<number>(0);
   const [loading, setLoading] = React.useState<boolean>(false);
