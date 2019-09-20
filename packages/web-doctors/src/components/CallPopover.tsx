@@ -435,6 +435,7 @@ const useStyles = makeStyles((theme: Theme) => {
         paddingBottom: '15px',
         borderRadius: 10,
         paddingLeft: 10,
+        paddingRight: 10,
         '& :before': {
           border: 0,
         },
@@ -1303,13 +1304,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             ) : (
               <Button
                 className={classes.consultButton}
-                // disabled={
-                //   startAppointmentButton ||
-                //   disableOnTransfer ||
-                //   appointmentInfo!.appointmentState !== 'NEW' ||
-                //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                //     appointmentInfo!.status !== STATUS.PENDING)
-                // }
+                disabled={
+                  startAppointmentButton ||
+                  disableOnTransfer ||
+                  appointmentInfo!.appointmentState !== 'NEW' ||
+                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                    appointmentInfo!.status !== STATUS.PENDING)
+                }
                 onClick={() => {
                   !props.startAppointment ? onStartConsult() : onStopConsult();
                   !props.startAppointment ? startInterval(900) : stopInterval();
