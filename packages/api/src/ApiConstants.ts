@@ -35,4 +35,6 @@ export enum ApiConstants {
   BOOK_APPOINTMENT_TITLE = 'your appointment is confirmed',
 
   PHARMA_TOKEN = '9f15bdd0fcd5423190c2e877ba0228A24',
+
+  PRISM_TIMEOUT = 10000,
 }
