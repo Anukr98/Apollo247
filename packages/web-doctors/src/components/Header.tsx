@@ -145,7 +145,7 @@ const useStyles = makeStyles((theme: Theme) => {
       marginRight: '0 !important',
     },
     accontDiv: {
-      height: 40,
+      height: 48,
     },
   };
 });
@@ -185,13 +185,7 @@ export const Header: React.FC = (props) => {
                   <CircularProgress />
                 ) : isSignedIn ? (
                   window.location.href.includes('/profile') ? (
-                    <div
-                      className={classes.accontDiv}
-                      onClick={() => {
-                        isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
-                        setSelectedTab(5);
-                      }}
-                    >
+                    <div>
                       <img
                         title="Help"
                         className={`${classes.accountIc} ${selectedTab === 5 &&
@@ -269,7 +263,13 @@ export const Header: React.FC = (props) => {
                     </div>
                   )
                 ) : (
-                  <div>
+                  <div
+                    className={classes.accontDiv}
+                    onClick={() => {
+                      isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                      setSelectedTab(5);
+                    }}
+                  >
                     <img
                       className={classes.accountIc}
                       onClick={() =>

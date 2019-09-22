@@ -181,7 +181,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const articles = string.consult_room.articles.data;
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
-  const { analytics } = useAuth();
+  const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [consultations, setconsultations] = useState<
     getPatinetAppointments_getPatinetAppointments_patinetAppointments[]
@@ -194,6 +194,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
   const [followupdone, setFollowupDone] = useState<boolean>(false);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   const client = useApolloClient();
 

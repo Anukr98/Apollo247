@@ -99,7 +99,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
           setshowSpinner(false);
           props.navigation.replace(AppRoutes.Onboarding);
         }
-      }, 1500);
+      }, 2000);
     }
     fetchData();
     SplashScreenView.hide();

@@ -13,7 +13,7 @@ import { theme } from '../../theme/theme';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 
@@ -77,12 +77,18 @@ export const UserIntro: React.FC<UserIntroProps> = (props) => {
   const [userName, setuserName] = useState<string>('');
 
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
+
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
   }, [currentPatient, userName]);
 
   const Popup = () => (

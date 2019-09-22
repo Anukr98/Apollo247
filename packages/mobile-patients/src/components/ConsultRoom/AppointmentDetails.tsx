@@ -19,7 +19,7 @@ import { NavigationScreenProps, StackActions, NavigationActions } from 'react-na
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import moment from 'moment';
 import { ReschedulePopUp } from '@aph/mobile-patients/src/components/Consult/ReschedulePopUp';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
@@ -48,6 +48,7 @@ import {
   checkIfRescheduleVariables,
 } from '../../graphql/types/checkIfReschedule';
 import { getNetStatus } from '../../helpers/helperFunctions';
+import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const { width, height } = Dimensions.get('window');
 
@@ -132,6 +133,15 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [availability, setAvailability] = useState<any>();
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [bottompopup, setBottompopup] = useState<boolean>(false);
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
+
   const client = useApolloClient();
 
   useEffect(() => {
@@ -625,34 +635,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             </View>
           </BottomPopUp>
         )}
-        {networkStatus && (
-          <BottomPopUp
-            title={'Oops!'}
-            description="There is no internet. Please check your internet connection."
-          >
-            <View style={{ height: 60, alignItems: 'flex-end' }}>
-              <TouchableOpacity
-                style={{
-                  height: 60,
-                  paddingRight: 25,
-                  backgroundColor: 'transparent',
-                }}
-                onPress={() => {
-                  setNetworkStatus(false);
-                }}
-              >
-                <Text
-                  style={{
-                    paddingTop: 16,
-                    ...theme.viewStyles.yellowTextStyle,
-                  }}
-                >
-                  OK, GOT IT
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </BottomPopUp>
-        )}
+        {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
         <View
           style={{
             zIndex: 1,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Alert,
   SafeAreaView,
@@ -9,7 +9,7 @@ import {
   WebView,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients } from '../hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
 import { theme } from '../theme/theme';
 import { AppRoutes } from './NavigatorContainer';
 import { useShoppingCart } from './ShoppingCartProvider';
@@ -51,6 +51,15 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatiendId = currentPatient && currentPatient.id;
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
+
+  const { getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   const getParameterByName = (name: string, url: string) => {
     name = name.replace(/[\[\]]/g, '\\$&');

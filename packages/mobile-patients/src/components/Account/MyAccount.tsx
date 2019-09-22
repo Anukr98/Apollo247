@@ -24,6 +24,7 @@ import {
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { getNetStatus } from '../../helpers/helperFunctions';
 import { BottomPopUp } from '../ui/BottomPopUp';
+import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const { height, width } = Dimensions.get('window');
 
@@ -84,7 +85,14 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const [profileDetails, setprofileDetails] = useState<
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
-  const { signOut } = useAuth();
+  const { signOut, getPatientApiCall } = useAuth();
+
+  useEffect(() => {
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -305,18 +313,16 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              Dev V 1.0(15)
+              QA V 1.0(17)
             </Text>
           </View>
         </Animated.ScrollView>
       </SafeAreaView>
 
       {renderAnimatedHeader()}
-      {networkStatus && (
-        <BottomPopUp
-          title={'Oops!'}
-          description="There is no internet. Please check your internet connection."
-        >
+      {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
+      {/* {networkStatus && (
+        <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               style={{
@@ -339,7 +345,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             </TouchableOpacity>
           </View>
         </BottomPopUp>
-      )}
+      )} */}
       {showSpinner && <Spinner />}
     </View>
   );

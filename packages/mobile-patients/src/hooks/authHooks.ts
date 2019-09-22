@@ -48,6 +48,8 @@ export const useAuth = () => {
   };
 };
 
+export const useCurrentPatient = () => useAllCurrentPatients().currentPatient;
+
 export const useAllCurrentPatients = () => {
   // const isSigningIn = useAuthContext().isSigningIn;
   // const hasAuthToken = useAuthContext().hasAuthToken;

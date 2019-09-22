@@ -13,6 +13,7 @@ import { getNetStatus } from '../../helpers/helperFunctions';
 import { BottomPopUp } from '../ui/BottomPopUp';
 import { StackActions } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
+import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const { width, height } = Dimensions.get('window');
 
@@ -54,6 +55,16 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
       setRescheduleCounting(1);
     }
   });
+  const networkBack = () => {
+    setNetworkStatus(false);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+      })
+    );
+  };
 
   return (
     <View
@@ -302,11 +313,9 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
           </View>
         </View>
       </View>
-      {networkStatus && (
-        <BottomPopUp
-          title={'Hi:)'}
-          description="There is no internet. Please check your internet connection."
-        >
+      {networkStatus && <NoInterNetPopup onClickClose={() => networkBack()} />}
+      {/* {networkStatus && (
+        <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               style={{
@@ -336,7 +345,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
             </TouchableOpacity>
           </View>
         </BottomPopUp>
-      )}
+      )} */}
     </View>
   );
 };
