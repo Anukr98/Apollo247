@@ -24,7 +24,7 @@ import {
 } from 'graphql/types/AddBlockedCalendarItem';
 import React, { useState, useEffect } from 'react';
 import { Mutation } from 'react-apollo';
-import { format, parse, addHours, addMinutes } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { Item } from 'components/blocked-calendar/BlockedCalendar';
 import {
   UpdateBlockedCalendarItem,
@@ -85,6 +85,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     setIsOverlapError(false);
     dialogProps.onClose();
   };
+
   return (
     <Dialog {...dialogProps} data-cypress="BlockedCalendarModal">
       <DialogTitle style={{ color: 'black' }}>BLOCK CALENDAR</DialogTitle>
@@ -177,8 +178,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                     onClick={() => {
                       const startDate = parse(start, 'yyyy-MM-dd', new Date());
                       const endDate = parse(end, 'yyyy-MM-dd', new Date());
-                      const sameDay = start === end;
-                      if (durationSelected && sameDay) {
+                      if (durationSelected) {
                         startDate.setHours(0);
                         startDate.setMinutes(0);
                         endDate.setHours(23);

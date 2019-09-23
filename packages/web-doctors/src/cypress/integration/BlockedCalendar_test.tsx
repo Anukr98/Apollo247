@@ -391,6 +391,7 @@ describe('BlockedCalendar', () => {
     });
     waitForLoader();
     getAddBtn().click();
+    selectDuration();
     cy.contains(errorMsgInDom).should('not.exist');
     fillStart('2050-09-13');
     fillEnd('2050-09-20');
