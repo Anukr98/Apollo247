@@ -300,34 +300,6 @@ const createCaseSheet: Resolver<
   return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
 };
 
-//TODO : remove afer getCaseSheet integration
-const getJuniorDoctorCaseSheet: Resolver<
-  null,
-  { appointmentId: string },
-  ConsultServiceContext,
-  {
-    caseSheetDetails: CaseSheet;
-    patientDetails: Patient;
-  }
-> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
-  //check appointmnet id
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentData = await appointmentRepo.findById(args.appointmentId);
-  if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
-
-  //get casesheet data
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
-  if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
-
-  //get patient info
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
-  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
-
-  return { caseSheetDetails, patientDetails };
-};
-
 const getCaseSheet: Resolver<
   null,
   { appointmentId: string },
