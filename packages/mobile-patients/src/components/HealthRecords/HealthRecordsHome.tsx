@@ -26,7 +26,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import strings from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -88,7 +88,15 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     }
   }, [currentPatient]);
 
-  useEffect(() => {
+  const fetchPastData = (filters: filterDataType[] = []) => {
+    const filterArray = [];
+    const selectedOptions =
+      filters.length > 0 && filters[0].selectedOptions ? filters[0].selectedOptions : [];
+    if (selectedOptions.includes('Online Consults')) filterArray.push('ONLINE');
+    if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
+    if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
+    console.log(filterArray, 'filterArray', filters, 'filters', selectedOptions);
+
     setLoading(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
@@ -97,7 +105,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         variables: {
           consultsAndOrdersInput: {
             patient: currentPatient && currentPatient.id ? currentPatient.id : '',
-            //filter: ['PHYSICAL'],
+            filter: filterArray,
           },
         },
       })
@@ -143,9 +151,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Heath records', error);
       });
-  }, []);
+  };
 
-  const fetchData = () => {
+  const fetchData = useCallback(() => {
     client
       .query<getPatientMedicalRecords>({
         query: GET_MEDICAL_RECORD,
@@ -155,6 +163,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
+        setLoading(false);
         const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
         console.log('records occured', { records });
         setmedicalRecords(records);
@@ -167,16 +176,27 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         // ]);
       })
       .catch((error) => {
+        setLoading(false);
         console.log('Error occured', { error });
       });
-  };
+  }, []);
+
   useEffect(() => {
+    fetchPastData();
     fetchData();
   }, []);
+
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       fetchData();
+      setLoading(true);
     });
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+    };
   }, [props.navigation, fetchData]);
 
   const renderDeleteMedicalOrder = (MedicaId: string) => {
@@ -257,65 +277,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
-  // const renderTopView = () => {
-  //   return (
-  //     <View
-  //       style={{
-  //         height: 280,
-  //         // justifyContent: 'space-between',
-  //       }}
-  //     >
-  //       <View
-  //         style={{
-  //           position: 'absolute',
-  //           top: 0,
-  //           left: 0,
-  //           right: 0,
-  //         }}
-  //       >
-  //         <UserIntro
-  //           description={strings.health_records_home.description}
-  //           style={{
-  //             height: 236,
-  //           }}
-  //         >
-  //           <View
-  //             style={{
-  //               height: 83,
-  //               flexDirection: 'row',
-  //               justifyContent: 'space-between',
-  //               marginHorizontal: 20,
-  //             }}
-  //           >
-  //             <View style={{ marginTop: 20 }}>
-  //               <ApolloLogo />
-  //             </View>
-  //             <View style={{ flexDirection: 'row', marginTop: 16 }}>
-  //               <NotificationIcon />
-  //             </View>
-  //           </View>
-  //         </UserIntro>
-  //       </View>
-  //       <View>
-  //         <TabsComponent
-  //           style={{
-  //             height: 43,
-  //             marginTop: 236,
-  //             backgroundColor: theme.colors.CARD_BG,
-  //             ...theme.viewStyles.shadowStyle,
-  //           }}
-  //           textStyle={{
-  //             paddingTop: 12,
-  //           }}
-  //           data={tabs}
-  //           onChange={(selectedTab: string) => setselectedTab(selectedTab)}
-  //           selectedTab={selectedTab}
-  //         />
-  //       </View>
-  //     </View>
-  //   );
-  // };
-
   const renderFilter = () => {
     return (
       <View style={styles.filterViewStyle}>
@@ -325,9 +286,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         >
           <AddFileIcon />
         </TouchableOpacity>
-        {/* <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
+        <TouchableOpacity activeOpacity={1} onPress={() => setDisplayFilter(true)}>
           <Filter />
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
     );
   };
@@ -364,7 +325,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     // console.log(arrayValuesFilter, 'arrayValues', arrayValues);
     return (
       <View>
-        {/* {renderFilter()} */}
+        {renderFilter()}
 
         {arrayValues == 0 ? (
           <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
@@ -441,7 +402,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           )}
         </ScrollView>
       </SafeAreaView>
-      {/* {displayFilter && (
+      {displayFilter && (
         <FilterScene
           onClickClose={(data: filterDataType[]) => {
             setDisplayFilter(false);
@@ -449,10 +410,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           }}
           setData={(data) => {
             setFilterData(data);
+            fetchPastData(data);
           }}
-          data={FilterData}
+          data={JSON.parse(JSON.stringify(FilterData))}
+          filterLength={() => {
+            setTimeout(() => {
+              setLoading(false);
+            }, 500);
+          }}
         />
-      )} */}
+      )}
       {displayOrderPopup && (
         <AddFilePopup
           onClickClose={() => {

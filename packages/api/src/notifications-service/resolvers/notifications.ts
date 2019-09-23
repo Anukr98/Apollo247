@@ -44,6 +44,8 @@ export const getNotificationsTypeDefs = gql`
     sendPushNotification(
       pushNotificationInput: PushNotificationInput
     ): PushNotificationSuccessMessage
+
+    testPushNotification(deviceToken: String): PushNotificationSuccessMessage
   }
 `;
 
@@ -118,14 +120,6 @@ export async function sendNotification(
   ) {
     return;
   }
-
-  //initialize firebaseadmin
-  const config = {
-    credential: firebaseAdmin.credential.applicationDefault(),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
-  };
-  let admin = require('firebase-admin');
-  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
@@ -202,6 +196,14 @@ export async function sendNotification(
     notificationBody = smsMessage;
   }
 
+  //initialize firebaseadmin
+  const config = {
+    credential: firebaseAdmin.credential.applicationDefault(),
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+  };
+  let admin = require('firebase-admin');
+  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+
   //building payload
   const payload = {
     notification: {
@@ -244,6 +246,51 @@ const sendPushNotification: Resolver<
 > = async (parent, { pushNotificationInput }, { patientsDb, consultsDb, doctorsDb }) => {
   return sendNotification(pushNotificationInput, patientsDb, consultsDb, doctorsDb);
 };
+
+const testPushNotification: Resolver<
+  null,
+  { deviceToken: String },
+  NotificationsServiceContext,
+  PushNotificationSuccessMessage | undefined
+> = async (parent, args, {}) => {
+  //initialize firebaseadmin
+  const config = {
+    credential: firebaseAdmin.credential.applicationDefault(),
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+  };
+  let admin = require('firebase-admin');
+  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+
+  //building payload
+  const payload = {
+    notification: {
+      title: 'Test Push notification title',
+      body: 'Test Push notification body',
+    },
+  };
+
+  //options
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+  let notificationResponse;
+  const registrationToken: string = <string>args.deviceToken;
+
+  await admin
+    .messaging()
+    .sendToDevice(registrationToken, payload, options)
+    .then((response: PushNotificationSuccessMessage) => {
+      console.log('response:::', response);
+      notificationResponse = response;
+    })
+    .catch((error: JSON) => {
+      console.log('PushNotification Failed::' + error);
+      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+    });
+
+  return notificationResponse;
+};
 export const getNotificationsResolvers = {
-  Query: { sendPushNotification },
+  Query: { sendPushNotification, testPushNotification },
 };
