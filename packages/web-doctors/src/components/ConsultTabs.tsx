@@ -202,7 +202,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Params = { id: string; patientId: string };
 const storageClient = new AphStorageClient(
-  process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
 
