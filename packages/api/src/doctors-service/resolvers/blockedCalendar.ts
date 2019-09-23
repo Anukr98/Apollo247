@@ -4,7 +4,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { AphAuthenticationError, AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
-import { isWithinInterval } from 'date-fns';
+import { areIntervalsOverlapping } from 'date-fns';
 
 export const blockedCalendarTypeDefs = gql`
   type BlockedCalendarItem {
@@ -55,6 +55,11 @@ const getRepos = (context: DoctorsServiceContext) => ({
   bciRepo: context.doctorsDb.getCustomRepository(BlockedCalendarItemRepository),
 });
 
+const doesItemOverlap = (item: BlockedCalendarItem, itemsToCheckAgainst: BlockedCalendarItem[]) =>
+  itemsToCheckAgainst.some(({ start, end }) =>
+    areIntervalsOverlapping({ start: item.start, end: item.end }, { start, end })
+  );
+
 const getBlockedCalendar: Resolver<
   null,
   { doctorId: string },
@@ -77,13 +82,8 @@ const addBlockedCalendarItem: Resolver<
   const { bciRepo } = getRepos(context);
   const itemToAdd = bciRepo.create({ doctorId, start, end });
   const existingItems = await bciRepo.find({ doctorId });
-  const newItemOverlapsExistingItems = existingItems.some(
-    ({ start, end }) =>
-      isWithinInterval(itemToAdd.start, { start, end }) ||
-      isWithinInterval(itemToAdd.end, { start, end })
-  );
-  if (newItemOverlapsExistingItems)
-    throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
+  const overlap = doesItemOverlap(itemToAdd, existingItems);
+  if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
   await bciRepo.save(itemToAdd);
   const blockedCalendar = await bciRepo.find({ doctorId });
   return { blockedCalendar };
@@ -97,6 +97,12 @@ const updateBlockedCalendarItem: Resolver<
 > = async (parent, { id, doctorId, start, end }, context) => {
   checkAuth(doctorId, context);
   const { bciRepo } = getRepos(context);
+  const itemToUpdate = await bciRepo.findOneOrFail(id);
+  const existingItems = (await bciRepo.find({ doctorId })).filter(
+    (item) => item.id !== itemToUpdate.id
+  );
+  const overlap = doesItemOverlap(itemToUpdate, existingItems);
+  if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
   await bciRepo.update({ id, doctorId }, { start, end });
   const blockedCalendar = await bciRepo.find({ doctorId });
   return { blockedCalendar };
