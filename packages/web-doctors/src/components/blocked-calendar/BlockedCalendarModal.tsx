@@ -30,6 +30,8 @@ import {
   UpdateBlockedCalendarItem,
   UpdateBlockedCalendarItemVariables,
 } from 'graphql/types/UpdateBlockedCalendarItem';
+import { ApolloError } from 'apollo-client';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {};
@@ -51,11 +53,18 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const [selectedValue, setSelectedValue] = useState(RadioValues.DURATION);
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
+  const [isOverlapError, setIsOverlapError] = useState(false);
   useEffect(() => {
     setStart(item ? format(item.start, 'yyyy-MM-dd') : '');
     setEnd(item ? format(item.end, 'yyyy-MM-dd') : '');
   }, [item]);
   const invalid = !start || !end || new Date() > new Date(start) || new Date(end) < new Date(start);
+  const handleSubmitComplete = () => {
+    setStart('');
+    setEnd('');
+    setIsOverlapError(false);
+    dialogProps.onClose();
+  };
   return (
     <Dialog {...dialogProps} data-cypress="BlockedCalendarModal">
       <DialogTitle style={{ color: 'black' }}>BLOCK CALENDAR</DialogTitle>
@@ -97,19 +106,22 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
             InputProps={{ style: { color: 'black ' } }}
           />
         </div>
+        {isOverlapError && (
+          <div style={{ color: 'red' }}>Error! Blocked calendar items cannot overlap</div>
+        )}
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" onClick={(e) => dialogProps.onClose()}>
+        <Button variant="contained" onClick={(e) => handleSubmitComplete()}>
           CANCEL
         </Button>
         <Mutation<UpdateBlockedCalendarItem, UpdateBlockedCalendarItemVariables>
           mutation={UPDATE_BLOCKED_CALENDAR_ITEM}
-          onCompleted={() => dialogProps.onClose()}
+          onCompleted={() => handleSubmitComplete()}
         >
           {(updateBlockedCalendarItem, { loading: updateLoading }) => (
             <Mutation<AddBlockedCalendarItem, AddBlockedCalendarItemVariables>
               mutation={ADD_BLOCKED_CALENDAR_ITEM}
-              onCompleted={() => dialogProps.onClose()}
+              onCompleted={() => handleSubmitComplete()}
             >
               {(addBlockedCalendarItem, { loading: addLoading }) => {
                 const loading = addLoading || updateLoading;
@@ -138,15 +150,27 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                           end: endDate.toISOString(),
                         },
                       };
+                      const handleError = (error: ApolloError) => {
+                        const networkErrorMessage = error.networkError
+                          ? error.networkError.message
+                          : null;
+                        const allMessages = error.graphQLErrors
+                          .map((e) => e.message)
+                          .concat(networkErrorMessage ? networkErrorMessage : []);
+                        const isOverlapError = allMessages.includes(
+                          AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS
+                        );
+                        setIsOverlapError(isOverlapError);
+                      };
                       const isUpdate = item && item.id != null;
                       if (isUpdate) {
                         const updateArgs = {
                           ...addArgs,
                           variables: { ...addArgs.variables, id: item!.id },
                         };
-                        updateBlockedCalendarItem(updateArgs);
+                        updateBlockedCalendarItem(updateArgs).catch(handleError);
                       } else {
-                        addBlockedCalendarItem(addArgs);
+                        addBlockedCalendarItem(addArgs).catch(handleError);
                       }
                     }}
                   >

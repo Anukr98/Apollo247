@@ -4,8 +4,8 @@ import { AddBlockedCalendarItem } from 'graphql/types/AddBlockedCalendarItem';
 import { RemoveBlockedCalendarItem } from 'graphql/types/RemoveBlockedCalendarItem';
 
 export interface AllAphOperations {
-  GetDoctorDetails: GetDoctorDetails;
-  GetBlockedCalendar: GetBlockedCalendar;
-  AddBlockedCalendarItem: AddBlockedCalendarItem;
-  RemoveBlockedCalendarItem: RemoveBlockedCalendarItem;
+  GetDoctorDetails: GetDoctorDetails | Function;
+  GetBlockedCalendar: GetBlockedCalendar | Function;
+  AddBlockedCalendarItem: AddBlockedCalendarItem | Function;
+  RemoveBlockedCalendarItem: RemoveBlockedCalendarItem | Function;
 }
