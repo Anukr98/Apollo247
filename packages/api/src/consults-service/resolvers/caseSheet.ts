@@ -254,7 +254,6 @@ export const caseSheetTypeDefs = gql`
   }
 
   extend type Query {
-    getJuniorDoctorCaseSheet(appointmentId: String): CaseSheetFullDetails
     getCaseSheet(appointmentId: String): CaseSheetFullDetails
     searchDiagnosis(searchString: String): [DiagnosisJson]
     searchDiagnostic(searchString: String): [DiagnosticJson]
@@ -448,5 +447,5 @@ export const caseSheetResolvers = {
     updateCaseSheet,
   },
 
-  Query: { getJuniorDoctorCaseSheet, getCaseSheet, searchDiagnosis, searchDiagnostic },
+  Query: { getCaseSheet, searchDiagnosis, searchDiagnostic },
 };
