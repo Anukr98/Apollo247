@@ -1271,6 +1271,29 @@
             "deprecationReason": null
           },
           {
+            "name": "testPushNotification",
+            "description": null,
+            "args": [
+              {
+                "name": "deviceToken",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "PushNotificationSuccessMessage",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "sendEmailMessage",
             "description": null,
             "args": [],
