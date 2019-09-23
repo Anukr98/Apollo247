@@ -7,7 +7,6 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import fetch from 'node-fetch';
 import { PharmaCancelResponse } from 'types/medicineOrderTypes';
-import { ApiConstants } from 'ApiConstants';
 
 export const medicineOrderCancelTypeDefs = gql`
   input MedicineOrderCancelInput {
@@ -66,7 +65,7 @@ const cancelMedicineOrder: Resolver<
   const pharmaResp = await fetch(cancelOrderUrl, {
     method: 'POST',
     body: JSON.stringify(cancelOrderInput),
-    headers: { 'Content-Type': 'application/json', Token: ApiConstants.PHARMA_TOKEN.toString() },
+    headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
   });
 
   if (pharmaResp.status == 400 || pharmaResp.status == 404) {

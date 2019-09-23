@@ -162,7 +162,7 @@ const checkIfReschedule: Resolver<
   rescheduleCount = apptDetails.rescheduleCount;
   isFollowUp = apptDetails.isFollowUp;
   if (apptDetails && apptDetails.isFollowUp == false) {
-    if (apptDetails.rescheduleCount > 3) {
+    if (apptDetails.rescheduleCount >= 3) {
       isPaid = 1;
       isCancel = 1;
     } else {
@@ -172,7 +172,7 @@ const checkIfReschedule: Resolver<
   }
 
   if (apptDetails && apptDetails.isFollowUp == true) {
-    if (apptDetails.rescheduleCount > 3) {
+    if (apptDetails.rescheduleCount >= 3) {
       isPaid = 1;
       isCancel = 1;
     } else {

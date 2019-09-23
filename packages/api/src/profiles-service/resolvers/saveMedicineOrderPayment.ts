@@ -16,7 +16,6 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 import { PharmaLineItem, PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import { differenceInYears } from 'date-fns';
-import { ApiConstants } from 'ApiConstants';
 
 export const saveMedicineOrderPaymentTypeDefs = gql`
   enum MEDICINE_ORDER_PAYMENT_TYPE {
@@ -189,7 +188,7 @@ const SaveMedicineOrderPayment: Resolver<
       VendorName: '*****',
       DotorName: 'Apollo',
       OrderType: 'Pharma',
-      StateCode: 'Telangana',
+      StateCode: 'TS',
       TAT: null,
       CouponCode: 'MED10',
       OrderDate: new Date(),
@@ -221,15 +220,15 @@ const SaveMedicineOrderPayment: Resolver<
   const placeOrderUrl = process.env.PHARMACY_MED_PLACE_ORDERS
     ? process.env.PHARMACY_MED_PLACE_ORDERS
     : '';
-  /*const placeOrderToken = process.env.PHARMACY_ORDER_TOKEN ? process.env.PHARMACY_ORDER_TOKEN : '';
+  const placeOrderToken = process.env.PHARMACY_ORDER_TOKEN ? process.env.PHARMACY_ORDER_TOKEN : '';
   if (placeOrderUrl == '' || placeOrderToken == '') {
     throw new AphError(AphErrorMessages.INVALID_PHARMA_ORDER_URL, undefined, {});
-  }*/
+  }
 
   const pharmaResp = await fetch(placeOrderUrl, {
     method: 'POST',
     body: JSON.stringify(medicineOrderPharma),
-    headers: { 'Content-Type': 'application/json', Token: ApiConstants.PHARMA_TOKEN.toString() },
+    headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
   });
 
   if (pharmaResp.status == 400 || pharmaResp.status == 404) {
