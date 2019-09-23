@@ -864,7 +864,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
         onPressLeftIcon={() => props.navigation.goBack()}
       />
       {showSpinner && <Spinner />}
-      {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
+      {showOfflinePopup && (
+        <NoInterNetPopup
+          onClickClose={() => {
+            setshowOfflinePopup(false);
+            props.navigation.goBack();
+          }}
+        />
+      )}
     </View>
   );
 };

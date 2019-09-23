@@ -138,7 +138,7 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
   };
   return (
     <View>
-      {renderFilter()}
+      {props.MedicalRecordData && props.MedicalRecordData.length > 0 && renderFilter()}
       {renderCards()}
     </View>
   );
