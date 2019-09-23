@@ -163,7 +163,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        setLoading(false);
+        // setLoading(false);
         const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
         console.log('records occured', { records });
         setmedicalRecords(records);
@@ -176,7 +176,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         // ]);
       })
       .catch((error) => {
-        setLoading(false);
+        // setLoading(false);
         console.log('Error occured', { error });
       });
   }, []);
@@ -223,6 +223,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         style={{
           height: 280,
           // justifyContent: 'space-between',
+          ...theme.viewStyles.shadowStyle,
         }}
       >
         <View
@@ -266,7 +267,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           style={{
             marginTop: 226,
             backgroundColor: theme.colors.CARD_BG,
-            ...theme.viewStyles.shadowStyle,
           }}
           height={44}
           data={tabs}
