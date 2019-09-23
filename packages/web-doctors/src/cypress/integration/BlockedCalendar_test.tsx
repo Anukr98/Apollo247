@@ -1,5 +1,7 @@
 import { clientRoutes } from 'helpers/clientRoutes';
 import { srKabir } from 'cypress/fixtures/doctorDetailsFixtures';
+import { GraphQLError } from 'graphql';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 const fillStart = (start: string) =>
   cy
@@ -28,6 +30,8 @@ const waitForLoader = () =>
 const getSubmitBtn = () =>
   cy.get('[data-cypress="BlockedCalendarModal"]').find('button[type="submit"]');
 
+const getAddBtn = () => cy.contains(/add blocked hours/i);
+
 describe('BlockedCalendar', () => {
   beforeEach(() => {
     cy.signIn(srKabir);
@@ -37,7 +41,7 @@ describe('BlockedCalendar', () => {
   });
 
   it('Can visit Availability page', () => {
-    cy.contains(/add blocked hours/i);
+    getAddBtn().should('exist');
   });
 
   it('Should convert UTC dates to IST for display purposes (same-day)', () => {
@@ -64,7 +68,6 @@ describe('BlockedCalendar', () => {
         },
       },
     });
-    cy.contains(/add blocked hours/i).should('exist');
     waitForLoader();
     cy.contains(displayDateIst).should('exist');
     cy.contains(displayTimeIst).should('exist');
@@ -94,14 +97,13 @@ describe('BlockedCalendar', () => {
         },
       },
     });
-    cy.contains(/add blocked hours/i).should('exist');
     waitForLoader();
     cy.contains(displayDateIst).should('exist');
     cy.contains(displayTimeIst).should('exist');
   });
 
   it('Should validate start/end dates', () => {
-    cy.contains(/add blocked hours/i).click();
+    getAddBtn().click();
 
     getSubmitBtn().should('be.disabled');
 
@@ -119,7 +121,7 @@ describe('BlockedCalendar', () => {
   });
 
   it('Should send dates in UTC', () => {
-    cy.contains(/add blocked hours/i).click();
+    getAddBtn().click();
     fillStart('2050-09-18');
     fillEnd('2050-09-18');
 
@@ -167,7 +169,7 @@ describe('BlockedCalendar', () => {
   });
 
   it('Add screen should always start with empty fields', () => {
-    cy.contains(/add blocked hours/i).click();
+    getAddBtn().click();
     fillStart('2050-09-18');
     fillEnd('2050-09-18');
 
@@ -200,7 +202,7 @@ describe('BlockedCalendar', () => {
 
     getSubmitBtn().click();
 
-    cy.contains(/add blocked hours/i).click();
+    getAddBtn().click();
     cy.get('[data-cypress="BlockedCalendarModal"]')
       .find('input[value="2050-09-18"]')
       .should('not.exist');
@@ -285,5 +287,44 @@ describe('BlockedCalendar', () => {
     cy.contains(/unblock/i).click();
     cy.contains(displayDateIst).should('not.exist');
     cy.contains(displayTimeIst).should('not.exist');
+  });
+
+  it('Should display error if dates overlap', () => {
+    const errorMsgInDom = /Error/i;
+    const doctorId = srKabir.id;
+    const startUtcFromDb = '2050-09-18T10:00:00.000Z';
+    const endUtcFromDb = '2050-09-18T11:00:00.000Z';
+    cy.mockAphGraphqlOps({
+      operations: {
+        GetBlockedCalendar: {
+          getBlockedCalendar: {
+            __typename: 'BlockedCalendarResult',
+            blockedCalendar: [
+              {
+                __typename: 'BlockedCalendarItem',
+                id: 1,
+                doctorId,
+                start: startUtcFromDb,
+                end: endUtcFromDb,
+              },
+            ],
+          },
+        },
+      },
+    });
+    waitForLoader();
+    getAddBtn().click();
+    cy.contains(errorMsgInDom).should('not.exist');
+    fillStart('2050-09-13');
+    fillEnd('2050-09-20');
+    cy.mockAphGraphqlOps({
+      operations: {
+        AddBlockedCalendarItem: () => {
+          throw new GraphQLError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
+        },
+      },
+    });
+    getSubmitBtn().click();
+    cy.contains(errorMsgInDom).should('exist');
   });
 });
