@@ -19,11 +19,15 @@ import {
   Platform,
   Alert,
   Linking,
+  CameraRoll,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '../ui/Button';
 import RNFetchBlob from 'react-native-fetch-blob';
 import { Spinner } from '../ui/Spinner';
+import { useShoppingCart, ShoppingCartItem } from '../ShoppingCartProvider';
+import { CartItem } from '../../helpers/apiCalls';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -104,6 +108,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   var arr = url.split(',');
   console.log(arr[0], 'arr');
   console.log(arr.length, 'arrlength');
+  const { addCartItem } = useShoppingCart();
   const saveimageIos = (url: any) => {
     console.log(url, 'saveimageIos');
     if (Platform.OS === 'ios') {
@@ -156,7 +161,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                             // the temp file path
                             console.log('The file saved to res ', res);
                             console.log('The file saved to ', res.path());
-                            saveimageIos(arr[0]);
+                            //saveimageIos(arr[0]);
+                            try {
+                              CameraRoll.saveToCameraRoll(arr[0]);
+                            } catch {}
                             // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                             // RNFetchBlob.ios.openDocument(res.path());
                             Alert.alert('Download Complete');
@@ -227,7 +235,22 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             marginBottom: 36,
           }}
         >
-          <Button title="RE-ORDER MEDICINES" />
+          <Button
+            title="RE-ORDER MEDICINES"
+            disabled={data.medicineSku == null ? true : false}
+            onPress={() => {
+              addCartItem &&
+                addCartItem({
+                  id: data.medicineSku,
+                  mou: '1',
+                  price: data.price,
+                  quantity: data.quantity,
+                  name: data.medicineName,
+                  prescriptionRequired: false,
+                } as ShoppingCartItem);
+              props.navigation.navigate(AppRoutes.YourCart);
+            }}
+          />
         </View>
         {loading && <Spinner />}
       </SafeAreaView>

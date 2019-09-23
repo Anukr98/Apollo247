@@ -600,6 +600,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   let insertText: object[] = [];
+  const newmessage: { message: string }[] = [];
 
   const getHistory = (timetoken: number) => {
     setLoading(true);
@@ -612,15 +613,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         start: timetoken,
       },
       (status, res) => {
-        // const start = res.startTimeToken;
+        const end: number = res.endTimeToken ? res.endTimeToken : 1;
         try {
           const msgs = res.messages;
           console.log('msgs', msgs);
 
-          const newmessage: { message: string }[] = [];
-
           res.messages.forEach((element, index) => {
-            newmessage[index] = element.entry;
+            newmessage[newmessage.length] = element.entry;
           });
           console.log('res', res);
           setLoading(false);
@@ -643,7 +642,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             console.log('newmessage', newmessage);
             if (msgs.length == 100) {
               console.log('hihihihihi');
-              // getHistory(start);
+              getHistory(end);
             }
 
             setTimeout(() => {
@@ -657,36 +656,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       }
     );
   };
-
-  // function getAllMessages(timetoken) {
-  //   pubnub.history(
-  //     {
-  //       channel: 'ba7897d4-848f-4f02-8058-ebac75382be8',
-  //       stringifiedTimeToken: true, // false is the default
-  //       start: timetoken // start time token to fetch
-  //       //count: 1000
-  //     },
-  //     function (status, response) {
-  //       var msgs = response.messages;
-  //       var start = response.startTimeToken;
-  //       var end = response.endTimeToken;
-  //       // if msgs were retrieved, do something useful with them
-  //       if (msgs != "undefined" && msgs.length > 0) {
-  //         console.log(msgs.length);
-  //         console.log("start : " + start);
-  //         console.log("end : " + end);
-  //         console.log("Lenght" + msgs.length);
-  //       }
-  //       // if 100 msgs were retrieved, there might be more; call history again
-  //       if (msgs.length == 100) {
-  //         console.log("hihihihihi");
-  //         getAllMessages(start);
-
-  //       }
-  //     }
-  //   );
-  // }
-  // getAllMessages(0);
 
   const checkingAppointmentDates = () => {
     try {
@@ -3043,7 +3012,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               zIndex: 100,
               backgroundColor: '#ff748e',
               position: 'absolute',
-              top: isIphoneX() ? 74: Platform.OS === 'ios' ?  54 : 54,
+              top: isIphoneX() ? 74 : Platform.OS === 'ios' ? 54 : 54,
             }}
           >
             <Text
