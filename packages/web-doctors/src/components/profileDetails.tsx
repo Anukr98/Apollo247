@@ -444,11 +444,11 @@ export const MyAccount: React.FC = (props) => {
                       />
                     </div>
                   </Paper>
-                  <Paper
+                  {/* <Paper
                     className={`${classes.serviceItemLeft} ${classes.tabContent} ${isDialogOpen &&
                       classes.tabActive}`}
                   >
-                    {/* <div onClick={() => setIsDialogOpen(true)} className={classes.leftNav}>
+                    <div onClick={() => setIsDialogOpen(true)} className={classes.leftNav}>
                       <img
                         alt=""
                         src={
@@ -468,8 +468,8 @@ export const MyAccount: React.FC = (props) => {
                         }
                         className={classes.navRightIcon}
                       />
-                    </div> */}
-                  </Paper>
+                    </div>
+                  </Paper> */}
                 </Grid>
                 <Grid item lg={9} sm={6} xs={12} className={classes.tabLeftcontent}>
                   <div className={classes.outerContainer}>
