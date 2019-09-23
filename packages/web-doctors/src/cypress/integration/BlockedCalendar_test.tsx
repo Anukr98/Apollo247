@@ -158,8 +158,8 @@ describe('BlockedCalendar', () => {
     fillEndTime('20:30');
     getSubmitBtn().should('be.enabled');
 
-    fillStartTime('00:01');
-    fillEndTime('00:00');
+    fillStartTime('10:00');
+    fillEndTime('09:00');
     getSubmitBtn().should('be.disabled');
   });
 
