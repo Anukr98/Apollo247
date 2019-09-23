@@ -132,8 +132,8 @@ describe('BlockedCalendar', () => {
 
   it('Should validate start/end dates', () => {
     getAddBtn().click();
-
     getSubmitBtn().should('be.disabled');
+    selectDuration();
 
     fillStart('2050-09-18');
     fillEnd('2050-09-19');
@@ -145,6 +145,21 @@ describe('BlockedCalendar', () => {
 
     fillStart('1999-01-01');
     fillEnd('2050-09-18');
+    getSubmitBtn().should('be.disabled');
+  });
+
+  it('Should validate start/end times', () => {
+    getAddBtn().click();
+    getSubmitBtn().should('be.disabled');
+    selectDay();
+    fillStart('2050-09-18');
+
+    fillStartTime('10:30');
+    fillEndTime('20:30');
+    getSubmitBtn().should('be.enabled');
+
+    fillStartTime('00:01');
+    fillEndTime('00:00');
     getSubmitBtn().should('be.disabled');
   });
 

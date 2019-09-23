@@ -74,7 +74,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
 
   const dateInvalid =
     !start || !end || new Date() > new Date(start) || new Date(end) < new Date(start);
-  const timeInvalid = daySelected ? !startTime || !endTime : false;
+  const timeInvalid = daySelected ? !startTime || !endTime || endTime < startTime : false;
   const invalid = dateInvalid || timeInvalid;
 
   const handleSubmitComplete = () => {
