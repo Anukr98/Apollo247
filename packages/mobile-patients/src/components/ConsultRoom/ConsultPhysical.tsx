@@ -156,10 +156,10 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     let searchstring = '';
 
     AsyncStorage.getItem('location').then((item) => {
-      const latlong = item ? JSON.parse(item) : null;
-      console.log(item, 'AsyncStorage item', latlong);
-      if (latlong) {
-        searchstring = `${latlong.lat}, ${latlong.lng}`;
+      const location = item ? JSON.parse(item) : null;
+      console.log(item, 'AsyncStorage item', location.latlong);
+      if (location.latlong) {
+        searchstring = `${location.latlong.lat}, ${location.latlong.lng}`;
       } else {
         Permissions.request('location')
           .then((response) => {

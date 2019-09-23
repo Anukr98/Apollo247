@@ -606,7 +606,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             {renderDoctorDetails()}
             {renderData()}
           </ScrollView>
-          {loading && <Spinner />}
 
           {displayoverlay && props.navigation.state.params!.DoctorInfo && (
             <OverlayRescheduleView
@@ -638,6 +637,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             />
           )}
         </SafeAreaView>
+        {loading && <Spinner />}
       </View>
     );
   return null;
