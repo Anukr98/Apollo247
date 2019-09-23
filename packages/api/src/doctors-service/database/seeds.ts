@@ -88,13 +88,13 @@ import { BlockedCalendarItemRepository } from 'doctors-service/repositories/bloc
 
   console.log('Building doctors...');
   const jrKabir = buildDoctor({
+    doctorType: DoctorType.JUNIOR,
     id: 'befa91a6-adb0-488d-a148-cc84ce3cacac',
     firstName: 'Kabir',
     lastName: 'Sarin',
     gender: Gender.MALE,
     emailAddress: 'kabir@sarink.net',
     specialty: _sample(doctorSpecialties),
-    doctorType: DoctorType.JUNIOR,
     delegateNumber: '+91123456789',
     isActive: true, // Don't forget to set this to true or you won't be able to log in!
     onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,

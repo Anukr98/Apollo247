@@ -17,6 +17,17 @@ const fillEnd = (end: string) =>
     .find('input')
     .type(end);
 
+const waitForLoader = () =>
+  cy
+    .get('[data-cypress="BlockedCalendar"]')
+    .find('[class*="MuiCircularProgress"]')
+    .should('exist')
+    .find('[class*="MuiCircularProgress"]')
+    .should('not.exist');
+
+const getSubmitBtn = () =>
+  cy.get('[data-cypress="BlockedCalendarModal"]').find('button[type="submit"]');
+
 describe('BlockedCalendar', () => {
   beforeEach(() => {
     cy.signIn(srKabir);
@@ -54,11 +65,7 @@ describe('BlockedCalendar', () => {
       },
     });
     cy.contains(/add blocked hours/i).should('exist');
-    cy.get('[data-cypress="BlockedCalendar"]')
-      .find('[class*="MuiCircularProgress"]')
-      .should('exist')
-      .find('[class*="MuiCircularProgress"]')
-      .should('not.exist');
+    waitForLoader();
     cy.contains(displayDateIst).should('exist');
     cy.contains(displayTimeIst).should('exist');
   });
@@ -88,11 +95,7 @@ describe('BlockedCalendar', () => {
       },
     });
     cy.contains(/add blocked hours/i).should('exist');
-    cy.get('[data-cypress="BlockedCalendar"]')
-      .find('[class*="MuiCircularProgress"]')
-      .should('exist')
-      .find('[class*="MuiCircularProgress"]')
-      .should('not.exist');
+    waitForLoader();
     cy.contains(displayDateIst).should('exist');
     cy.contains(displayTimeIst).should('exist');
   });
@@ -100,27 +103,19 @@ describe('BlockedCalendar', () => {
   it('Should validate start/end dates', () => {
     cy.contains(/add blocked hours/i).click();
 
-    cy.get('[data-cypress="BlockedCalendarModal"]')
-      .find('button[type="submit"]')
-      .should('be.disabled');
+    getSubmitBtn().should('be.disabled');
 
     fillStart('2050-09-18');
     fillEnd('2050-09-19');
-    cy.get('[data-cypress="BlockedCalendarModal"]')
-      .find('button[type="submit"]')
-      .should('be.enabled');
+    getSubmitBtn().should('be.enabled');
 
     fillStart('2050-09-19');
     fillEnd('2050-09-18');
-    cy.get('[data-cypress="BlockedCalendarModal"]')
-      .find('button[type="submit"]')
-      .should('be.disabled');
+    getSubmitBtn().should('be.disabled');
 
     fillStart('1999-01-01');
     fillEnd('2050-09-18');
-    cy.get('[data-cypress="BlockedCalendarModal"]')
-      .find('button[type="submit"]')
-      .should('be.disabled');
+    getSubmitBtn().should('be.disabled');
   });
 
   it('Should send dates in UTC', () => {
@@ -155,9 +150,7 @@ describe('BlockedCalendar', () => {
       },
     });
 
-    cy.get('[data-cypress="BlockedCalendarModal"]')
-      .find('button[type="submit"]')
-      .click();
+    getSubmitBtn().click();
 
     cy.get('@fetchStub').should((fetchStub: any) => {
       const fetchSpy = fetchStub.getCalls();
@@ -173,7 +166,7 @@ describe('BlockedCalendar', () => {
     });
   });
 
-  it('Should allow Edit functionality', () => {
+  it('Should pre-populate fields for Edit', () => {
     const doctorId = srKabir.id;
     const startUtcFromDb = '2050-09-18T10:00:00.000Z';
     const endUtcFromDb = '2050-09-18T11:00:00.000Z';
@@ -195,11 +188,7 @@ describe('BlockedCalendar', () => {
         },
       },
     });
-    cy.get('[data-cypress="BlockedCalendar"]')
-      .find('[class*="MuiCircularProgress"]')
-      .should('exist')
-      .find('[class*="MuiCircularProgress"]')
-      .should('not.exist');
+    waitForLoader();
 
     cy.get('[data-cypress="BlockedCalendar"]')
       .find('button:contains(EDIT)')
@@ -208,5 +197,53 @@ describe('BlockedCalendar', () => {
     cy.get('[data-cypress="BlockedCalendarModal"]')
       .find('input[value="2050-09-18"]')
       .should('exist');
+  });
+
+  it('Unblocking should work', () => {
+    const doctorId = srKabir.id;
+    const startUtcFromDb = '2050-09-18T10:00:00.000Z';
+    const endUtcFromDb = '2050-09-18T11:00:00.000Z';
+    const displayDateIst = 'Sun, 09/18/2050';
+    const displayTimeIst = '3:30 PM - 4:30 PM';
+    cy.mockAphGraphqlOps({
+      operations: {
+        GetBlockedCalendar: {
+          getBlockedCalendar: {
+            __typename: 'BlockedCalendarResult',
+            blockedCalendar: [
+              {
+                __typename: 'BlockedCalendarItem',
+                id: 1,
+                doctorId,
+                start: startUtcFromDb,
+                end: endUtcFromDb,
+              },
+            ],
+          },
+        },
+      },
+    });
+    waitForLoader();
+    cy.contains(displayDateIst).should('exist');
+    cy.contains(displayTimeIst).should('exist');
+    cy.mockAphGraphqlOps({
+      operations: {
+        RemoveBlockedCalendarItem: {
+          removeBlockedCalendarItem: {
+            __typename: 'BlockedCalendarResult',
+            blockedCalendar: [],
+          },
+        },
+        GetBlockedCalendar: {
+          getBlockedCalendar: {
+            __typename: 'BlockedCalendarResult',
+            blockedCalendar: [],
+          },
+        },
+      },
+    });
+    cy.contains(/unblock/i).click();
+    cy.contains(displayDateIst).should('not.exist');
+    cy.contains(displayTimeIst).should('not.exist');
   });
 });
