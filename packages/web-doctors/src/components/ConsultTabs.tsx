@@ -202,7 +202,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Params = { id: string; patientId: string };
 const storageClient = new AphStorageClient(
-  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
+  process.env.AZURE_STORAGE_CONNECTION_STRING_API,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
 
@@ -316,6 +316,7 @@ export const ConsultTabs: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
               ] as unknown) as string[])
             : setConsultType([]);
+          console.log(_data!.data!.getCaseSheet!.caseSheetDetails!.followUp);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUp
             ? setFollowUp(([
                 _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
@@ -352,27 +353,11 @@ export const ConsultTabs: React.FC = () => {
           setLoaded(true);
         });
       return () => {
-        console.log('in return...');
         const cookieStr = `action=`;
         document.cookie = cookieStr + ';path=/;';
       };
     }
   }, []);
-
-  // useEffect(() => {
-  //   if (appointmentId !== paramId && paramId !== '' && currentPatient && currentPatient.id !== '') {
-  //     setAppointmentId(paramId);
-  //     setpatientId(params.patientId);
-  //     setdoctorId(currentPatient.id);
-
-  //   }
-  //   return () => {
-  //     console.log('in return...');
-  //     const cookieStr = `action=`;
-  //     document.cookie = cookieStr + ';path=/;';
-  //   };
-  // }, [paramId, appointmentId]);
-
   const saveCasesheetAction = (flag: boolean) => {
     setSaving(true);
     client
@@ -400,8 +385,8 @@ export const ConsultTabs: React.FC = () => {
       })
       .then((_data) => {
         if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
-          //console.log(_data!.data!.updateCaseSheet!.blobName, process.env.AZURE_PDF_BASE_URL);
           const url = storageClient.getBlobUrl(_data!.data!.updateCaseSheet!.blobName);
+          console.log(url);
           setPrescriptionPdf(url);
           setSaving(false);
         }
@@ -420,36 +405,6 @@ export const ConsultTabs: React.FC = () => {
 
   const endConsultAction = () => {
     saveCasesheetAction(false);
-    // client
-    //   .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-    //     mutation: UPDATE_CASESHEET,
-    //     variables: {
-    //       UpdateCaseSheetInput: {
-    //         symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-    //         notes,
-    //         diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
-    //         diagnosticPrescription:
-    //           diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
-    //         followUp: followUp[0],
-    //         followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
-    //         followUpAfterInDays:
-    //           followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
-    //         otherInstructions:
-    //           otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
-    //         medicinePrescription:
-    //           medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
-    //         id: caseSheetId,
-    //       },
-    //     },
-    //     fetchPolicy: 'no-cache',
-    //   })
-    //   .then((_data) => {
-    //     console.log('_data', _data);
-    //     endConsultActionFinal();
-    //   })
-    //   .catch((e) => {
-    //     console.log('Error occured while update casesheet', e);
-    //   });
   };
 
   const endConsultActionFinal = () => {
@@ -471,7 +426,6 @@ export const ConsultTabs: React.FC = () => {
         console.log('_data', _data);
       })
       .catch((e) => {
-        console.log('Error occured while End casesheet', e);
         const error = JSON.parse(JSON.stringify(e));
         const errorMessage = error && error.message;
         console.log('Error occured while End casesheet', errorMessage, error);
@@ -579,7 +533,6 @@ export const ConsultTabs: React.FC = () => {
                 saving={saving}
               />
               <div>
-                {/* <Document file="https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/1132ed6b-6505-495a-a4b0-43a75af23ee0.pdf"></Document> */}
                 <div>
                   <div>
                     <Tabs
@@ -645,7 +598,6 @@ export const ConsultTabs: React.FC = () => {
             </Button>
           </div>
           <div className={classes.tabBody}>
-            {}
             <h3>
               You're ending your consult with{' '}
               {casesheetInfo &&

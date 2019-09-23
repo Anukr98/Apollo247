@@ -10,6 +10,7 @@ import {
   Paper,
   FormHelperText,
 } from '@material-ui/core';
+import { Prompt } from 'react-router-dom';
 import Pubnub from 'pubnub';
 import moment from 'moment';
 import { isEmpty } from 'lodash';
@@ -580,6 +581,8 @@ interface CallPopoverProps {
   sessionId: string;
   token: string;
   saving: boolean;
+  startAppointmentClick: (startAppointment: boolean) => void;
+  startAppointment: boolean;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -597,6 +600,18 @@ let transferObject: any = {
 };
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
+const handleBrowserUnload = (event: BeforeUnloadEvent) => {
+  event.preventDefault();
+  event.returnValue = '';
+};
+
+const subscribeBrowserButtonsListener = () => {
+  window.addEventListener('beforeunload', handleBrowserUnload);
+};
+
+const unSubscribeBrowserButtonsListener = () => {
+  window.removeEventListener('beforeunload', handleBrowserUnload);
+};
 
 export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
@@ -1055,6 +1070,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       message: startConsultjr,
       isTyping: true,
     };
+    subscribeBrowserButtonsListener();
     pubnub.publish(
       {
         message: text,
@@ -1070,6 +1086,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       message: stopConsult,
       isTyping: true,
     };
+    unSubscribeBrowserButtonsListener();
     pubnub.publish(
       {
         message: text,
@@ -1219,6 +1236,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const [isDoctorSelected, setIsDoctorSelected] = useState(false);
   return (
     <div>
+      <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
       <div className={classes.pageSubHeader}>
         <div className={classes.headerLeftGroup}>
           <div className={classes.consultName}>Consult Room</div>

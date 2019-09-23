@@ -18,8 +18,11 @@ import {
   Image,
   Platform,
   Alert,
+  Linking,
+  ScrollView,
+  CameraRoll,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
 import RNFetchBlob from 'react-native-fetch-blob';
@@ -209,19 +212,21 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
           marginTop: 15,
         }}
       >
-        {urls.map((item: string) => (
-          <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
-            <Image
-              source={{ uri: item }}
-              style={{
-                // flex: 1,
-                width: '100%',
-                height: 425,
-              }}
-              resizeMode="contain"
-            />
-          </View>
-        ))}
+        <ScrollView>
+          {urls.map((item: string) => (
+            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+              <Image
+                source={{ uri: item }}
+                style={{
+                  // flex: 1,
+                  width: '100%',
+                  height: 425,
+                }}
+                resizeMode="contain"
+              />
+            </View>
+          ))}
+        </ScrollView>
       </View>
     );
   };
@@ -236,6 +241,11 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         {!!data.documentURLs && renderImage()}
       </View>
     );
+  };
+  const saveimageIos = (url: any) => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL(url).catch((err) => console.error('An error occurred', err));
+    }
   };
 
   if (data)
@@ -258,51 +268,54 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                   activeOpacity={1}
                   onPress={() => {
                     console.log('pdf url', data.documentURLs);
+                    const urls = data.documentURLs.split(',');
+                    console.log(urls, 'urls');
 
-                    let dirs = RNFetchBlob.fs.dirs;
-                    console.log('dirs', dirs);
-                    if (Platform.OS == 'ios') {
+                    if (!data.documentURLs || data.documentURLs === '[object Object]') {
+                      Alert.alert('No Image');
+                    } else {
+                      for (var i = 0; i < urls.length; i++) {
+                        console.log('urllrr', urls[i]);
+                        let dirs = RNFetchBlob.fs.dirs;
+                        console.log('dirs', dirs);
+                        setLoading(true);
+                        RNFetchBlob.config({
+                          fileCache: true,
+                          addAndroidDownloads: {
+                            useDownloadManager: true,
+                            notification: false,
+                            mime: 'application/pdf',
+                            path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+                            description: 'File downloaded by download manager.',
+                          },
+                        })
+                          .fetch('GET', urls[i], {
+                            //some headers ..
+                          })
+                          .then((res) => {
+                            setLoading(false);
+                            // the temp file path
+                            console.log('The file saved to res ', res);
+                            console.log('The file saved to ', res.path());
+                            //saveimageIos(urls[0]);
+                            try {
+                              CameraRoll.saveToCameraRoll(urls[i]);
+                            } catch {}
+
+                            // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                            // RNFetchBlob.ios.openDocument(res.path());
+                            Alert.alert('Download Complete');
+                            Platform.OS === 'ios'
+                              ? RNFetchBlob.ios.previewDocument(res.path())
+                              : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                          })
+                          .catch((err) => {
+                            console.log('error ', err);
+                            setLoading(false);
+                            // ...
+                          });
+                      }
                     }
-
-                    console.log(
-                      'pdf downloadDest',
-                      data.documentURLs && data.documentURLs.split('/').pop()
-                    );
-
-                    setLoading(true);
-                    RNFetchBlob.config({
-                      fileCache: true,
-                      addAndroidDownloads: {
-                        useDownloadManager: true,
-                        notification: false,
-                        mime: 'application/pdf',
-                        //path:  RNFetchBlob.fs.dirs.DownloadDir + rowData.transferInfo.pdfUrl &&
-                        //rowData.transferInfo.pdfUrl.split('/').pop(),
-                        path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
-                        description: 'File downloaded by download manager.',
-                      },
-                    })
-                      .fetch('GET', data.documentURLs, {
-                        //some headers ..
-                      })
-                      .then((res) => {
-                        setLoading(false);
-                        // the temp file path
-                        console.log('The file saved to res ', res);
-                        console.log('The file saved to ', res.path());
-
-                        // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                        // RNFetchBlob.ios.openDocument(res.path());
-                        Alert.alert('Download Complete');
-                        Platform.OS === 'ios'
-                          ? RNFetchBlob.ios.previewDocument(res.path())
-                          : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                      })
-                      .catch((err) => {
-                        console.log('error ', err);
-                        setLoading(false);
-                        // ...
-                      });
                   }}
                 >
                   <Download />

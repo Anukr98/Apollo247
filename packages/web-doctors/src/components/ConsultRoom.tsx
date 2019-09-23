@@ -193,7 +193,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const channel = props.appointmentId;
   const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
   const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
-  console.log(subscribekey, publishkey, 'subscribekey, publishkey');
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
     publishKey: publishkey,

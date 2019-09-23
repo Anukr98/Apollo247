@@ -166,6 +166,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   const addCartItem: ShoppingCartContextProps['addCartItem'] = (itemToAdd) => {
+    if (cartItems.find((item) => item.id == itemToAdd.id)) {
+      return;
+    }
     const newCartItems = [...cartItems, itemToAdd];
     saveCartItems(newCartItems);
     setCartItems(newCartItems);

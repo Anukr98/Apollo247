@@ -37,7 +37,7 @@ import {
   SavePrescriptionMedicineOrder,
   SavePrescriptionMedicineOrderVariables,
 } from '../../graphql/types/SavePrescriptionMedicineOrder';
-import { MEDICINE_DELIVERY_TYPE } from '../../graphql/types/globalTypes';
+import { MEDICINE_DELIVERY_TYPE, PrescriptionMedicineInput } from '../../graphql/types/globalTypes';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const styles = StyleSheet.create({
@@ -110,57 +110,61 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
 
   const isValidPinCode = (text: string): boolean => text == '' || /^([1-9][0-9]*)$/.test(text);
 
-  const onPressSubmit = () => {
-    setshowSpinner(true);
-    setTimeout(() => {
-      setshowSpinner(false);
-      setBottompopup(true);
-    }, 1000);
-    return;
-
-    if (PhysicalPrescriptions.length > 0) {
-      Promise.all(
-        PhysicalPrescriptions.map((item) =>
-          client.mutate<uploadFile, uploadFileVariables>({
-            mutation: UPLOAD_FILE,
-            fetchPolicy: 'no-cache',
-            variables: {
-              fileType: item.fileType,
-              base64FileInput: item.base64,
-            },
-          })
-        )
-      )
-        .then((result) => {
-          console.log({ result });
-          const uploadedFiles = result.map(({ data }) => data && g(data, 'uploadFile', 'filePath'));
-          const ePresUrls = EPrescriptions.map((item) => item.uploadedUrl);
-          const ePresAndPhysicalPresUrls = [...ePresUrls, ...uploadedFiles].join(', ');
-          console.log({
-            uploadedFiles,
-            ePresUrls,
-            ePresAndPhysicalPresUrls,
-          });
-          // uploadedFiles.concat(EPrescriptions)
-
-          client.mutate<SavePrescriptionMedicineOrder, SavePrescriptionMedicineOrderVariables>({
-            mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
-            variables: {
-              prescriptionMedicineInput: {
-                patientId: (currentPatient && currentPatient.id) || '',
-                medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
-                prescriptionImageUrl: ePresAndPhysicalPresUrls,
-                shopId: '0',
-                appointmentId: '',
-                patinetAddressId: '',
-              },
-            },
-          });
+  const uploadMultipleFiles = (physicalPrescriptions: PhysicalPrescription[]) => {
+    return Promise.all(
+      physicalPrescriptions.map((item) =>
+        client.mutate<uploadFile, uploadFileVariables>({
+          mutation: UPLOAD_FILE,
+          fetchPolicy: 'no-cache',
+          variables: {
+            fileType: item.fileType,
+            base64FileInput: item.base64,
+          },
         })
-        .catch((e) => {
-          setshowSpinner(false);
-          Alert.alert('Alert', 'Error while uploading prescription');
-        });
+      )
+    );
+  };
+
+  const onPressSubmit = async () => {
+    setshowSpinner(true);
+    const ePresUrls = EPrescriptions.map((item) => item.uploadedUrl);
+    let ePresAndPhysicalPresUrls = [...ePresUrls];
+    console.log({ ePresAndPhysicalPresUrls });
+
+    try {
+      if (PhysicalPrescriptions.length > 0) {
+        const uploadedFiles = await uploadMultipleFiles(PhysicalPrescriptions);
+        console.log({ uploadedFiles });
+        const uploadedUrls = uploadedFiles.map(({ data }) => g(data, 'uploadFile', 'filePath')!);
+        ePresAndPhysicalPresUrls = [...ePresAndPhysicalPresUrls, ...uploadedUrls];
+      }
+      const prescriptionMedicineInput: PrescriptionMedicineInput = {
+        patientId: (currentPatient && currentPatient.id) || '',
+        medicineDeliveryType: MEDICINE_DELIVERY_TYPE.HOME_DELIVERY,
+        prescriptionImageUrl: ePresAndPhysicalPresUrls.join(', '),
+        shopId: '0',
+        appointmentId: '',
+        patinetAddressId: '0',
+        // patinetAddressId: '402e9de2-7301-4350-917b-66f9890ff5a4',
+      };
+      console.log({ prescriptionMedicineInput });
+
+      const { data } = await client.mutate<
+        SavePrescriptionMedicineOrder,
+        SavePrescriptionMedicineOrderVariables
+      >({
+        mutation: SAVE_PRESCRIPTION_MEDICINE_ORDER,
+        variables: { prescriptionMedicineInput },
+      });
+      setshowSpinner(false);
+      const errorMessage = g(data, 'SavePrescriptionMedicineOrder', 'errorMessage');
+      if (errorMessage) {
+        setBottomErrorPopup(true);
+      }
+    } catch (error) {
+      console.log({ error });
+      setshowSpinner(false);
+      setBottomErrorPopup(true);
     }
   };
 
@@ -320,6 +324,46 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     );
   };
 
+  const [bottomErrorPopup, setBottomErrorPopup] = useState<boolean>(false);
+
+  const renderErrorDialog = () => {
+    return (
+      (bottomErrorPopup && (
+        <BottomPopUp
+          style={{
+            elevation: 20,
+            zIndex: 10,
+          }}
+          title={'Uh oh.. :('}
+          description={`Error occurred while uploading prescription. Please try again.`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottomErrorPopup(false);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )) ||
+      null
+    );
+  };
+
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const renderSuccessDialog = () => {
     return (
@@ -409,6 +453,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       </StickyBottomComponent>
       {showSpinner && <Spinner />}
       {renderSuccessDialog()}
+      {renderErrorDialog()}
       {renderPrescriptionModal()}
       <UploadPrescriprionPopup
         isVisible={ShowPopop}
