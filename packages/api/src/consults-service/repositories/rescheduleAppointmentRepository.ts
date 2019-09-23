@@ -32,12 +32,15 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
         rescheduleStatus: TRANSFER_STATUS.INITIATED,
       },
     });
+    console.log(recCount, 'recCount');
     if (recCount > 0) {
+      console.log('came here');
       throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {});
     }
     const createReschdule = this.create(rescheduleAppointmentAttrs)
       .save()
       .catch((createErrors) => {
+        console.log(createErrors, 'createErrors');
         throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
           createErrors,
         });
@@ -51,6 +54,7 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
       };
       const context: Partial<ConsultServiceContext> = {};
       if (!context.consultsDb || !context.patientsDb || !context.doctorsDb) {
+        console.log('context errors');
         throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {});
       }
 

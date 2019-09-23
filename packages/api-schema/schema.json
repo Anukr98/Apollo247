@@ -12510,6 +12510,33 @@
             "deprecationReason": null
           },
           {
+            "name": "testInitiateRescheduleAppointment",
+            "description": null,
+            "args": [
+              {
+                "name": "RescheduleAppointmentInput",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "RescheduleAppointmentInput",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "RescheduleAppointmentResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "initiateRescheduleAppointment",
             "description": null,
             "args": [

@@ -76,6 +76,9 @@ export const rescheduleAppointmentTypeDefs = gql`
   }
 
   extend type Mutation {
+    testInitiateRescheduleAppointment(
+      RescheduleAppointmentInput: RescheduleAppointmentInput
+    ): RescheduleAppointmentResult!
     initiateRescheduleAppointment(
       RescheduleAppointmentInput: RescheduleAppointmentInput
     ): RescheduleAppointmentResult!
@@ -196,6 +199,31 @@ const checkIfReschedule: Resolver<
     rescheduleCount,
     appointmentState: apptDetails.appointmentState,
     isFollowUp,
+  };
+};
+const testInitiateRescheduleAppointment: Resolver<
+  null,
+  RescheduleAppointmentInputArgs,
+  ConsultServiceContext,
+  RescheduleAppointmentResult
+> = async (parent, { RescheduleAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointment = await appointmentRepo.findById(RescheduleAppointmentInput.appointmentId);
+  if (!appointment) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+  const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+  const rescheduleAppointmentAttrs: Omit<RescheduleAppointment, 'id'> = {
+    ...RescheduleAppointmentInput,
+    rescheduleStatus: TRANSFER_STATUS.INITIATED,
+    appointment,
+  };
+  const rescheduleAppointment = await rescheduleApptRepo.rescheduleAppointment(
+    rescheduleAppointmentAttrs
+  );
+  return {
+    rescheduleAppointment,
+    rescheduleCount: appointment.rescheduleCount,
   };
 };
 
@@ -343,6 +371,7 @@ const bookRescheduleAppointment: Resolver<
 export const rescheduleAppointmentResolvers = {
   Mutation: {
     initiateRescheduleAppointment,
+    testInitiateRescheduleAppointment,
     bookRescheduleAppointment,
   },
 

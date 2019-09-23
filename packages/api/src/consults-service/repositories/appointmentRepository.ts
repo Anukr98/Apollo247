@@ -643,4 +643,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         });
       });
   }
+
+  checkIfDoctorSlotBlocked(doctorId: String, appointmentDateTime: Date) {
+    return true;
+  }
 }
