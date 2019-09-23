@@ -385,6 +385,7 @@ export const ConsultTabs: React.FC = () => {
       })
       .then((_data) => {
         if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
+          console.log(_data!.data!.updateCaseSheet!.blobName);
           const url = storageClient.getBlobUrl(_data!.data!.updateCaseSheet!.blobName);
           console.log(url);
           setPrescriptionPdf(url);
