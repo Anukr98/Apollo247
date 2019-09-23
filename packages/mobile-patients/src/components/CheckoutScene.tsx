@@ -263,7 +263,6 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   };
 
   const initiateOrder = async () => {
-    console.log('initiateOrder', [...physicalPrescriptions, ...ePrescriptions].join(','));
     setShowSpinner(true);
     const orderInfo: SaveMedicineOrderVariables = {
       MedicineCartInput: {
@@ -274,7 +273,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
         estimatedAmount: grandTotal,
-        prescriptionImageUrl: [...physicalPrescriptions, ...ePrescriptions].join(','),
+        prescriptionImageUrl: [
+          ...physicalPrescriptions.map((item) => item.uploadedUrl),
+          ...ePrescriptions.map((item) => item.uploadedUrl),
+        ].join(','),
         items: cartItems.map(
           (item) =>
             ({
