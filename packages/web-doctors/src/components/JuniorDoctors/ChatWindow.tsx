@@ -226,6 +226,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
+  const [chatUploadFile, setChatUploadFile] = useState<string | ArrayBuffer | null>(null);
+
+  console.log(chatUploadFile, 'uploaded file ');
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -721,8 +724,24 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               disabled={!props.disableChat}
             />
             {props.disableChat && (
-              <Button className={classes.chatsendcircle}>
+              <Button className={classes.chatsendcircle} variant="contained" component="label">
                 <img src={require('images/ic_add_circle.svg')} alt="" />
+                <input
+                  type="file"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const fileNames = e.target.files;
+                    if (fileNames && fileNames.length > 0) {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const dataURL = reader.result;
+                        setChatUploadFile(dataURL);
+                        // console.log(dataURL);
+                      };
+                      reader.readAsDataURL(fileNames[0]);
+                    }
+                  }}
+                />
               </Button>
             )}
           </div>
