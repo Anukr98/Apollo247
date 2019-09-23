@@ -48,6 +48,12 @@ export const rescheduleAppointmentTypeDefs = gql`
     autoSelectSlot: Int
   }
 
+  input TestRescheduleAppointmentInput {
+    doctorId: ID!
+    startDate: DateTime!
+    endDate: DateTime!
+  }
+
   input BookRescheduleAppointmentInput {
     appointmentId: ID!
     doctorId: ID!
@@ -77,8 +83,8 @@ export const rescheduleAppointmentTypeDefs = gql`
 
   extend type Mutation {
     testInitiateRescheduleAppointment(
-      RescheduleAppointmentInput: RescheduleAppointmentInput
-    ): RescheduleAppointmentResult!
+      testRescheduleAppointmentInput: TestRescheduleAppointmentInput
+    ): Boolean!
     initiateRescheduleAppointment(
       RescheduleAppointmentInput: RescheduleAppointmentInput
     ): RescheduleAppointmentResult!
@@ -141,9 +147,18 @@ type CheckRescheduleResult = {
   isFollowUp: Boolean;
 };
 
+type TestRescheduleAppointmentInput = {
+  doctorId: string;
+  startDate: Date;
+  endDate: Date;
+};
+
 type RescheduleAppointmentInputArgs = { RescheduleAppointmentInput: RescheduleAppointmentInput };
 type BookRescheduleAppointmentInputArgs = {
   bookRescheduleAppointmentInput: BookRescheduleAppointmentInput;
+};
+type TestRescheduleAppointmentInputArgs = {
+  testRescheduleAppointmentInput: TestRescheduleAppointmentInput;
 };
 
 const checkIfReschedule: Resolver<
@@ -203,28 +218,21 @@ const checkIfReschedule: Resolver<
 };
 const testInitiateRescheduleAppointment: Resolver<
   null,
-  RescheduleAppointmentInputArgs,
+  TestRescheduleAppointmentInputArgs,
   ConsultServiceContext,
-  RescheduleAppointmentResult
-> = async (parent, { RescheduleAppointmentInput }, { consultsDb, doctorsDb, patientsDb }) => {
-  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointment = await appointmentRepo.findById(RescheduleAppointmentInput.appointmentId);
-  if (!appointment) {
-    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
-  }
+  Boolean
+> = async (parent, { testRescheduleAppointmentInput }, { consultsDb, patientsDb, doctorsDb }) => {
   const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
-  const rescheduleAppointmentAttrs: Omit<RescheduleAppointment, 'id'> = {
-    ...RescheduleAppointmentInput,
-    rescheduleStatus: TRANSFER_STATUS.INITIATED,
-    appointment,
-  };
-  const rescheduleAppointment = await rescheduleApptRepo.rescheduleAppointment(
-    rescheduleAppointmentAttrs
+  const rescheduleAppointment = await rescheduleApptRepo.getAppointmentsAndReschedule(
+    testRescheduleAppointmentInput.doctorId,
+    testRescheduleAppointmentInput.startDate,
+    testRescheduleAppointmentInput.endDate,
+    consultsDb,
+    doctorsDb,
+    patientsDb
   );
-  return {
-    rescheduleAppointment,
-    rescheduleCount: appointment.rescheduleCount,
-  };
+  console.log(rescheduleAppointment, 'rescheduleAppointment');
+  return true;
 };
 
 const initiateRescheduleAppointment: Resolver<
