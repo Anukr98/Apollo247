@@ -147,7 +147,7 @@ const submitPrescriptionOrder: Resolver<
       VendorName: '*****',
       DotorName: 'Apollo',
       OrderType: 'Pharma',
-      StateCode: 'Telangana',
+      StateCode: 'TS',
       TAT: null,
       CouponCode: 'MED10',
       OrderDate: new Date(),
@@ -186,7 +186,7 @@ const submitPrescriptionOrder: Resolver<
   const pharmaResp = await fetch(placeOrderUrl, {
     method: 'POST',
     body: JSON.stringify(medicineOrderPharma),
-    headers: { 'Content-Type': 'application/json', Token: ApiConstants.PHARMA_TOKEN.toString() },
+    headers: { 'Content-Type': 'application/json', Token: placeOrderToken },
   });
 
   if (pharmaResp.status == 400) {

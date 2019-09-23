@@ -13,6 +13,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
 import { getConnection } from 'typeorm';
+import { ApiConstants } from 'ApiConstants';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -69,12 +70,17 @@ const getCurrentPatients: Resolver<
 > = async (parent, args, { firebaseUid, mobileNumber }) => {
   let isPrismWorking = 1;
   const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
+  const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
   if (prismUrl == '') {
     //throw new AphError(AphErrorMessages.INVALID_PRISM_URL, undefined, {});
     isPrismWorking = 0;
   }
-  const prismBaseUrl = prismUrl + '/ui/data';
-  const prismHeaders = { method: 'get', headers: { Host: 'blue.phrdemo.com' }, timeOut: 10000 };
+  const prismBaseUrl = prismUrl + '/data';
+  const prismHeaders = {
+    method: 'get',
+    headers: { Host: prismHost },
+    timeOut: ApiConstants.PRISM_TIMEOUT,
+  };
 
   const prismAuthToken = await fetch(
     `${prismBaseUrl}/getauthtoken?mobile=${mobileNumber}`,

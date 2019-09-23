@@ -5,11 +5,6 @@ import { ApolloServer } from 'apollo-server';
 //import gql from 'graphql-tag';
 import 'reflect-metadata';
 import {
-  getSearchesTypeDefs,
-  getSearchesResolvers,
-} from 'notifications-service/resolvers/getSearches';
-
-import {
   getNotificationsTypeDefs,
   getNotificationsResolvers,
 } from 'notifications-service/resolvers/notifications';
@@ -43,10 +38,6 @@ import { emailTypeDefs, emailResolvers } from 'notifications-service/resolvers/e
       return context;
     },
     schema: buildFederatedSchema([
-      {
-        typeDefs: getSearchesTypeDefs,
-        resolvers: getSearchesResolvers,
-      },
       {
         typeDefs: getNotificationsTypeDefs,
         resolvers: getNotificationsResolvers,

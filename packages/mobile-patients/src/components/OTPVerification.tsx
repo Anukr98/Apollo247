@@ -254,48 +254,47 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     Keyboard.dismiss();
     getNetStatus().then(async (status) => {
       if (status) {
-        console.log('otp OTPVerification', otp);
+        console.log('otp OTPVerification', otp, otp.length, 'length');
         setshowSpinner(true);
 
-        verifyOtp(otp)
-          .then(() => {
-            _removeFromStore();
-            setOnOtpClick(true);
-          })
-          .catch((error) => {
-            console.log({ error });
-            setTimeout(() => {
-              if (isAuthChanged) {
-                _removeFromStore();
-                setOnOtpClick(true);
-              } else {
-                setOnOtpClick(false);
-                setshowSpinner(false);
-                // console.log('error', error);
-                _storeTimerData(invalidOtpCount + 1);
-
-                if (invalidOtpCount + 1 === 3) {
-                  setShowErrorMsg(true);
-                  setIsValidOTP(false);
-                  startInterval(timer);
-                  setIntervalId(intervalId);
+        setTimeout(() => {
+          verifyOtp(otp)
+            .then(() => {
+              _removeFromStore();
+              setOnOtpClick(true);
+            })
+            .catch((error) => {
+              console.log({ error });
+              setTimeout(() => {
+                if (isAuthChanged) {
+                  _removeFromStore();
+                  setOnOtpClick(true);
                 } else {
-                  setShowErrorMsg(true);
-                  setIsValidOTP(true);
+                  setOnOtpClick(false);
+                  setshowSpinner(false);
+                  // console.log('error', error);
+                  _storeTimerData(invalidOtpCount + 1);
+
+                  if (invalidOtpCount + 1 === 3) {
+                    setShowErrorMsg(true);
+                    setIsValidOTP(false);
+                    startInterval(timer);
+                    setIntervalId(intervalId);
+                  } else {
+                    setShowErrorMsg(true);
+                    setIsValidOTP(true);
+                  }
+                  setInvalidOtpCount(invalidOtpCount + 1);
+                  setOtp('');
                 }
-                setInvalidOtpCount(invalidOtpCount + 1);
-                setOtp('');
-              }
-            }, 1000);
-          });
+              }, 1000);
+            });
+        }, 2000);
       } else {
         setshowOfflinePopup(true);
       }
     });
   };
-
-  const minutes = Math.floor(remainingTime / 60);
-  const seconds = remainingTime - minutes * 60;
 
   useEffect(() => {
     const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
@@ -321,7 +320,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, [subscriptionId]);
 
   useEffect(() => {
-    if (timer === 0) {
+    if (timer === 1 || timer === 0) {
       console.log('timer', 'wedfrtgy5u676755ertyuiojkhgfghjkgf');
       timer = 900;
       setRemainingTime(900);
@@ -363,6 +362,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       }
     });
   };
+
+  const renderTime = () => {
+    console.log(remainingTime, 'remainingTime', timer, 'timer');
+
+    const minutes = Math.floor(timer / 60);
+    const seconds = timer - minutes * 60;
+
+    return `${minutes} : ${seconds}`;
+  };
   // console.log(isSigningIn, currentPatient, isVerifyingOtp);
   return (
     <View style={{ flex: 1 }}>
@@ -400,9 +408,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 editable={false}
               />
             </View>
-            <Text style={[styles.errorText]}>
-              Try again after — {minutes} : {seconds}
-            </Text>
+            <Text style={[styles.errorText]}>Try again after — {renderTime()}</Text>
           </Card>
         ) : (
           <Card
