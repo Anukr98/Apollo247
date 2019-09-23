@@ -53,15 +53,24 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const [selectedValue, setSelectedValue] = useState(RadioValues.DURATION);
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [isOverlapError, setIsOverlapError] = useState(false);
   useEffect(() => {
     setStart(item ? format(item.start, 'yyyy-MM-dd') : '');
     setEnd(item ? format(item.end, 'yyyy-MM-dd') : '');
+    setStartTime(item ? format(item.start, 'HH:mm') : '');
+    setEndTime(item ? format(item.end, 'HH:mm') : '');
   }, [item]);
-  const invalid = !start || !end || new Date() > new Date(start) || new Date(end) < new Date(start);
+  const dateInvalid =
+    !start || !end || new Date() > new Date(start) || new Date(end) < new Date(start);
+  const timeInvalid = selectedValue === RadioValues.DAY ? !startTime || !endTime : false;
+  const invalid = dateInvalid || timeInvalid;
   const handleSubmitComplete = () => {
     setStart('');
     setEnd('');
+    setStartTime('');
+    setEndTime('');
     setIsOverlapError(false);
     dialogProps.onClose();
   };
@@ -75,36 +84,57 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           row
         >
           <FormControlLabel
-            value={RadioValues.DAY}
-            label="For a day"
-            control={<AphRadio title="For a day" />}
-            disabled
-          />
-          <FormControlLabel
             value={RadioValues.DURATION}
             label="For a duration"
             control={<AphRadio title="For a duration" />}
           />
+          <FormControlLabel
+            value={RadioValues.DAY}
+            label="For a day"
+            control={<AphRadio title="For a day" />}
+          />
         </RadioGroup>
         <div>
-          <TextField
-            onChange={(e) => setStart(e.currentTarget.value)}
-            value={start}
-            label="Start"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            InputProps={{ style: { color: 'black ' } }}
-          />
+          <div style={{ display: 'flex' }}>
+            <TextField
+              onChange={(e) => setStart(e.currentTarget.value)}
+              value={start}
+              label="Start"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              InputProps={{ style: { color: 'black ' } }}
+            />
+            {selectedValue === RadioValues.DAY && (
+              <TextField
+                onChange={(e) => setStartTime(e.currentTarget.value)}
+                value={startTime}
+                type="time"
+                InputLabelProps={{ shrink: true }}
+                InputProps={{ style: { color: 'black ' } }}
+              />
+            )}
+          </div>
         </div>
         <div>
-          <TextField
-            onChange={(e) => setEnd(e.currentTarget.value)}
-            value={end}
-            label="End"
-            type="date"
-            InputLabelProps={{ shrink: true }}
-            InputProps={{ style: { color: 'black ' } }}
-          />
+          <div style={{ display: 'flex' }}>
+            <TextField
+              onChange={(e) => setEnd(e.currentTarget.value)}
+              value={end}
+              label="End"
+              type="date"
+              InputLabelProps={{ shrink: true }}
+              InputProps={{ style: { color: 'black ' } }}
+            />
+            {selectedValue === RadioValues.DAY && (
+              <TextField
+                onChange={(e) => setEndTime(e.currentTarget.value)}
+                value={endTime}
+                type="time"
+                InputLabelProps={{ shrink: true }}
+                InputProps={{ style: { color: 'black ' } }}
+              />
+            )}
+          </div>
         </div>
         {isOverlapError && (
           <div style={{ color: 'red' }}>Error! Blocked calendar items cannot overlap</div>

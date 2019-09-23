@@ -19,6 +19,18 @@ const fillEnd = (end: string) =>
     .find('input')
     .type(end);
 
+const selectDay = () =>
+  cy
+    .get('[data-cypress="BlockedCalendarModal"]')
+    .contains('For a day')
+    .click();
+
+const selectDuration = () =>
+  cy
+    .get('[data-cypress="BlockedCalendarModal"]')
+    .contains('For a duration')
+    .click();
+
 const waitForLoader = () =>
   cy
     .get('[data-cypress="BlockedCalendar"]')
@@ -236,8 +248,17 @@ describe('BlockedCalendar', () => {
       .find('button:contains(EDIT)')
       .click();
 
-    cy.get('[data-cypress="BlockedCalendarModal"]')
+    selectDuration()
+      .get('[data-cypress="BlockedCalendarModal"]')
       .find('input[value="2050-09-18"]')
+      .should('exist');
+
+    selectDay()
+      .get('[data-cypress="BlockedCalendarModal"]')
+      .find('input[value="15:30"]')
+      .should('exist')
+      .get('[data-cypress="BlockedCalendarModal"]')
+      .find('input[value="16:30"]')
       .should('exist');
   });
 
