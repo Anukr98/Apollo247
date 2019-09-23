@@ -9,9 +9,25 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Image,
+  Platform,
+  Alert,
+  Linking,
+  CameraRoll,
+} from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '../ui/Button';
+import RNFetchBlob from 'react-native-fetch-blob';
+import { Spinner } from '../ui/Spinner';
+import { useShoppingCart, ShoppingCartItem } from '../ShoppingCartProvider';
+import { CartItem } from '../../helpers/apiCalls';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -82,12 +98,23 @@ const styles = StyleSheet.create({
 export interface RecordDetailsProps extends NavigationScreenProps {}
 
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   console.log(data, 'data');
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
   console.log(me, 'me');
   const url = props.navigation.state.params ? props.navigation.state.params.PrescriptionUrl : {};
   console.log(url, 'url');
+  var arr = url.split(',');
+  console.log(arr[0], 'arr');
+  console.log(arr.length, 'arrlength');
+  const { addCartItem } = useShoppingCart();
+  const saveimageIos = (url: any) => {
+    console.log(url, 'saveimageIos');
+    if (Platform.OS === 'ios') {
+      Linking.openURL(url).catch((err) => console.error('An error occurred', err));
+    }
+  };
   return (
     <View
       style={{
@@ -103,7 +130,58 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
               {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
                 <ShareGreen />
               </TouchableOpacity> */}
-              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+              <TouchableOpacity
+                activeOpacity={1}
+                onPress={() => {
+                  try {
+                    console.log('pdf url', url);
+                    if (!url || url === '[object Object]') {
+                      Alert.alert('No Image');
+                    } else {
+                      for (var i = 0; i < arr.length; i++) {
+                        console.log('urllrr', arr[i]);
+                        let dirs = RNFetchBlob.fs.dirs;
+                        console.log('dirs', dirs);
+                        setLoading(true);
+                        RNFetchBlob.config({
+                          fileCache: true,
+                          addAndroidDownloads: {
+                            useDownloadManager: true,
+                            notification: false,
+                            mime: 'application/pdf',
+                            path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+                            description: 'File downloaded by download manager.',
+                          },
+                        })
+                          .fetch('GET', arr[i], {
+                            //some headers ..
+                          })
+                          .then((res) => {
+                            setLoading(false);
+                            // the temp file path
+                            console.log('The file saved to res ', res);
+                            console.log('The file saved to ', res.path());
+                            //saveimageIos(arr[0]);
+                            try {
+                              CameraRoll.saveToCameraRoll(arr[0]);
+                            } catch {}
+                            // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                            // RNFetchBlob.ios.openDocument(res.path());
+                            Alert.alert('Download Complete');
+                            Platform.OS === 'ios'
+                              ? RNFetchBlob.ios.previewDocument(res.path())
+                              : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                          })
+                          .catch((err) => {
+                            console.log('error ', err);
+                            setLoading(false);
+                            // ...
+                          });
+                      }
+                    }
+                  } catch (error) {}
+                }}
+              >
                 <Download />
               </TouchableOpacity>
             </View>
@@ -157,8 +235,24 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             marginBottom: 36,
           }}
         >
-          <Button title="RE-ORDER MEDICINES" />
+          <Button
+            title="RE-ORDER MEDICINES"
+            disabled={data.medicineSku == null ? true : false}
+            onPress={() => {
+              addCartItem &&
+                addCartItem({
+                  id: data.medicineSku,
+                  mou: '1',
+                  price: data.price,
+                  quantity: data.quantity,
+                  name: data.medicineName,
+                  prescriptionRequired: false,
+                } as ShoppingCartItem);
+              props.navigation.navigate(AppRoutes.YourCart);
+            }}
+          />
         </View>
+        {loading && <Spinner />}
       </SafeAreaView>
     </View>
   );

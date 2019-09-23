@@ -8,6 +8,25 @@ import { useAuth } from 'hooks/authHooks';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
+import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/doctors';
+import {
+  UpdateDoctorOnlineStatus,
+  UpdateDoctorOnlineStatusVariables,
+} from 'graphql/types/updateDoctorOnlineStatus';
+import { useMutation } from 'react-apollo-hooks';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
+import { GET_CONSULT_QUEUE } from 'graphql/consults';
+import { GetConsultQueueVariables, GetConsultQueue } from 'graphql/types/GetConsultQueue';
+import { useQuery } from 'react-apollo-hooks';
+import { AphLinearProgress } from '@aph/web-ui-components';
+import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
+import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -69,13 +88,75 @@ const useStyles = makeStyles((theme: Theme) => {
     bottomActions: {
       padding: 20,
     },
+    popoverTile: {
+      color: '#fcb716',
+      fontWeight: 500,
+    },
   };
 });
 
 export const JDProfile: React.FC = (props) => {
   const classes = useStyles();
 
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [logoutFailed, setIsLogoutFailed] = React.useState(false);
+  const [clearQueue, setClearQueue] = React.useState(false);
+
   const { currentPatient: currentDoctor, signOut, isSigningIn } = useAuth();
+
+  let activeConsultsCount: number = 0;
+
+  const doctorAwayMutation = useMutation<
+    UpdateDoctorOnlineStatus,
+    UpdateDoctorOnlineStatusVariables
+  >(UPDATE_DOCTOR_ONLINE_STATUS, {
+    variables: {
+      doctorId: (currentDoctor && currentDoctor.id) || '',
+      onlineStatus: DOCTOR_ONLINE_STATUS.AWAY,
+    },
+  });
+
+  const { data, loading, error } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
+    GET_CONSULT_QUEUE,
+    {
+      skip: !currentDoctor,
+      variables: {
+        doctorId: currentDoctor!.id,
+      },
+      fetchPolicy: 'no-cache',
+    }
+  );
+
+  const {
+    data: doctorDetailsData,
+    error: doctorDetailsError,
+    loading: doctorDetailsLoading,
+  } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
+
+  if (
+    doctorDetailsLoading ||
+    doctorDetailsError ||
+    !doctorDetailsData ||
+    !doctorDetailsData.getDoctorDetails
+  )
+    return null;
+
+  const { onlineStatus } = doctorDetailsData.getDoctorDetails;
+
+  if (loading) return <AphLinearProgress />;
+  if (error) return <div>An error occurred while loading your consults....</div>;
+  if (data && data.getConsultQueue) {
+    const { consultQueue } = data.getConsultQueue;
+    const allConsults = consultQueue.map((consult) => ({
+      ...consult,
+      appointment: {
+        ...consult.appointment,
+        appointmentDateTime: new Date(consult.appointment.appointmentDateTime),
+      },
+    }));
+    const activeConsults = allConsults.filter((consult) => consult.isActive);
+    activeConsultsCount = activeConsults.length;
+  }
 
   const doctorFirstName =
     currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
@@ -121,13 +202,102 @@ export const JDProfile: React.FC = (props) => {
               </Scrollbars>
             </div>
             <div className={classes.bottomActions}>
-              <AphButton color="primary" fullWidth onClick={() => signOut()}>
+              <AphButton
+                color="primary"
+                fullWidth
+                onClick={() => {
+                  if (activeConsultsCount > 0 || onlineStatus === DOCTOR_ONLINE_STATUS.ONLINE) {
+                    setClearQueue(true);
+                  } else {
+                    doctorAwayMutation()
+                      .then(() => {
+                        setIsDialogOpen(true);
+                      })
+                      .catch(() => {
+                        setIsLogoutFailed(true);
+                      });
+                  }
+                }}
+              >
                 Logout
               </AphButton>
             </div>
           </div>
         </div>
       </div>
+
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle className={classes.popoverTile}>Apollo 24x7</DialogTitle>
+        <DialogContent>
+          <DialogContentText>You are successfully Logged out from Apollo 24x7</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              signOut(); // kills firebase token.
+              setIsDialogOpen(false);
+            }}
+            autoFocus
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={clearQueue}
+        onClose={() => setClearQueue(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle className={classes.popoverTile}>Apollo 24x7</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Please mark yourself 'Away' first and clear your{' '}
+            {activeConsultsCount > 0 ? activeConsultsCount : ''} active consults in Queue to logout.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setClearQueue(false);
+            }}
+            autoFocus
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={logoutFailed}
+        onClose={() => setIsLogoutFailed(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle className={classes.popoverTile}>Apollo 24x7</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Unable to log out!</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsLogoutFailed(false);
+            }}
+            autoFocus
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

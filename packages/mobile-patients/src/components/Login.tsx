@@ -229,6 +229,8 @@ export const Login: React.FC<LoginProps> = (props) => {
                 });
               })
               .catch((error: RNFirebase.RnError) => {
+                console.log(error, 'error');
+
                 Alert.alert(
                   'Error',
                   (error && error.message) || 'The interaction was cancelled by the user.'

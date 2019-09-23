@@ -674,22 +674,28 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
       props.navigation.navigate(AppRoutes.CheckoutScene);
     } else {
       setshowSpinner(true);
-      multiplePhysicalPrescriptionUpload(prescriptions)
+      const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+      multiplePhysicalPrescriptionUpload(unUploadedPres)
         .then((data) => {
           setshowSpinner(false);
           const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
-          const uploadedPrescriptions = prescriptions.map(
+          const newuploadedPrescriptions = unUploadedPres.map(
             (item, index) =>
               ({
                 ...item,
                 uploadedUrl: uploadUrls[index],
               } as PhysicalPrescription)
           );
-          setPhysicalPrescriptions && setPhysicalPrescriptions(uploadedPrescriptions);
+          setPhysicalPrescriptions &&
+            setPhysicalPrescriptions([
+              ...newuploadedPrescriptions,
+              ...prescriptions.filter((item) => item.uploadedUrl),
+            ]);
           setshowSpinner(false);
           props.navigation.navigate(AppRoutes.CheckoutScene);
         })
         .catch((e) => {
+          console.log({ e });
           setshowSpinner(false);
           Alert.alert('Alert', 'Error occurred while uploading prescriptions.');
         });

@@ -17,7 +17,6 @@ export const UserCard: React.FC = () => {
     appointmentInfo && appointmentInfo !== null && appointmentInfo.displayId !== null
       ? appointmentInfo!.displayId
       : '';
-  console.log(displayId);
   if (
     patientDetails!.dateOfBirth &&
     patientDetails!.dateOfBirth !== null &&
