@@ -177,17 +177,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const client = useApolloClient();
 
-  const data = {
-    doctorInfo: {
-      firstName: 'Mamatha',
-      photoUrl:
-        'https://image.shutterstock.com/image-photo/smiling-doctor-posing-arms-crossed-600w-519507367.jpg',
-    },
-    id: '34567890987654',
-    consult_info: '03 Aug 2019, Online Consult',
-    description: 'This is a follow-up consult to the Clinic Visit on 27 Jul 2019',
-  };
-
   const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
     return Promise.all(
       prescriptions.map((item) =>
@@ -633,62 +622,59 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
-  if (data.doctorInfo)
-    return (
-      <View
-        style={{
-          ...theme.viewStyles.container,
-        }}
-      >
-        <SafeAreaView style={{ flex: 1 }}>
-          <Header
-            container={{
-              ...theme.viewStyles.cardViewStyle,
-              borderRadius: 0,
-            }}
-            title="ADD A RECORD"
-            leftIcon="backArrow"
-            onPressLeftIcon={() => props.navigation.goBack()}
-          />
-          <KeyboardAwareScrollView bounces={false}>
-            {renderData()}
-            <View style={{ height: 80 }} />
-          </KeyboardAwareScrollView>
-        </SafeAreaView>
-        {renderBottomButton()}
-        {displayOrderPopup && (
-          <AddFilePopup
-            onClickClose={() => {
-              setdisplayOrderPopup(false);
-            }}
-            getData={(data: (PickerImage | PickerImage[])[]) => {
-              console.log(data);
-              setImages([...(Images as PickerImage[]), ...(data as PickerImage[])]);
-              setdisplayOrderPopup(false);
-            }}
-          />
-        )}
-        {showRecordTypePopup && (
-          <InputDropdownMenu
-            width={200}
-            Options={RecordType}
-            setShowPopup={(showpopup) => setshowRecordTypePopup(showpopup)}
-            setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
-          />
-        )}
-        {showUnitPopup && (
-          <InputDropdownMenu
-            Options={MedicalTest}
-            setShowPopup={(showpopup) => setshowUnitPopup(showpopup)}
-            setSelectedOption={(value: MedicalTestUnit) => {
-              console.log(value, 'value', selectedUnitIndex);
-              selectedUnitIndex !== undefined &&
-                setParametersData('unit', value, selectedUnitIndex);
-            }}
-          />
-        )}
-        {showSpinner && <Spinner />}
-      </View>
-    );
-  return null;
+  return (
+    <View
+      style={{
+        ...theme.viewStyles.container,
+      }}
+    >
+      <SafeAreaView style={{ flex: 1 }}>
+        <Header
+          container={{
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
+          }}
+          title="ADD A RECORD"
+          leftIcon="backArrow"
+          onPressLeftIcon={() => props.navigation.goBack()}
+        />
+        <KeyboardAwareScrollView bounces={false}>
+          {renderData()}
+          <View style={{ height: 80 }} />
+        </KeyboardAwareScrollView>
+      </SafeAreaView>
+      {renderBottomButton()}
+      {displayOrderPopup && (
+        <AddFilePopup
+          onClickClose={() => {
+            setdisplayOrderPopup(false);
+          }}
+          getData={(data: (PickerImage | PickerImage[])[]) => {
+            console.log(data);
+            setImages([...(Images as PickerImage[]), ...(data as PickerImage[])]);
+            setdisplayOrderPopup(false);
+          }}
+        />
+      )}
+      {showRecordTypePopup && (
+        <InputDropdownMenu
+          width={200}
+          Options={RecordType}
+          setShowPopup={(showpopup) => setshowRecordTypePopup(showpopup)}
+          setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
+        />
+      )}
+      {showUnitPopup && (
+        <InputDropdownMenu
+          Options={MedicalTest}
+          setShowPopup={(showpopup) => setshowUnitPopup(showpopup)}
+          setSelectedOption={(value: MedicalTestUnit) => {
+            console.log(value, 'value', selectedUnitIndex);
+            selectedUnitIndex !== undefined && setParametersData('unit', value, selectedUnitIndex);
+          }}
+        />
+      )}
+      {showSpinner && <Spinner />}
+    </View>
+  );
 };

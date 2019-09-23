@@ -3,17 +3,12 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Filter, LocationOff, LocationOn } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import {
-  DOCTOR_SPECIALITY_BY_FILTERS,
-  NEXT_AVAILABLE_SLOT,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots,
-} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
+import { GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import {
   getDoctorsBySpecialtyAndFilters,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
@@ -21,6 +16,7 @@ import {
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { ConsultMode, Gender, Range } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
@@ -41,8 +37,6 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 
 const styles = StyleSheet.create({
   topView: {
@@ -468,113 +462,127 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const autoSearch = (searchText: string) => {
-    axios
-      .get(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${key}`
-      )
-      .then((obj) => {
-        console.log(obj, 'places');
-        if (obj.data.predictions) {
-          const address = obj.data.predictions.map(
-            (item: {
-              place_id: string;
-              structured_formatting: {
-                main_text: string;
-              };
-            }) => {
-              return { name: item.structured_formatting.main_text, placeId: item.place_id };
+    getNetStatus().then((status) => {
+      if (status) {
+        axios
+          .get(
+            `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${key}`
+          )
+          .then((obj) => {
+            console.log(obj, 'places');
+            if (obj.data.predictions) {
+              const address = obj.data.predictions.map(
+                (item: {
+                  place_id: string;
+                  structured_formatting: {
+                    main_text: string;
+                  };
+                }) => {
+                  return { name: item.structured_formatting.main_text, placeId: item.place_id };
+                }
+              );
+              console.log(address, 'address');
+              setlocationSearchList(address);
+              // setcurrentLocation(address.toUpperCase());
             }
-          );
-          console.log(address, 'address');
-          setlocationSearchList(address);
-          // setcurrentLocation(address.toUpperCase());
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    });
   };
 
   const saveLatlong = (placeId: string) => {
-    axios
-      .get(`https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${key}`)
-      .then((obj) => {
-        try {
-          console.log(obj, 'places details');
-          if (obj.data.result.geometry && obj.data.result.geometry.location) {
-            console.log(obj.data.result.geometry.location, 'obj.data.geometry.location');
+    getNetStatus().then((status) => {
+      if (status) {
+        axios
+          .get(
+            `https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${key}`
+          )
+          .then((obj) => {
+            try {
+              console.log(obj, 'places details');
+              if (obj.data.result.geometry && obj.data.result.geometry.location) {
+                console.log(obj.data.result.geometry.location, 'obj.data.geometry.location');
 
-            AsyncStorage.setItem('location', JSON.stringify(obj.data.result.geometry.location));
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+                AsyncStorage.setItem('location', JSON.stringify(obj.data.result.geometry.location));
+              }
+            } catch (error) {
+              console.log(error);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    });
   };
 
   const fetchCurrentLocation = () => {
     // setshowLocationpopup(true);
-    AsyncStorage.getItem('location').then((item) => {
-      const latlong = item ? JSON.parse(item) : null;
-      console.log(item, 'AsyncStorage item', latlong);
-      if (latlong) {
-        findAddressFromLocationString(`${latlong.lat}, ${latlong.lng}`, key)
-          .then((response: any) => {
-            console.log(response, 'lat long');
-            if (
-              response.data.results.length &&
-              response.data.results[0].address_components.length
-            ) {
-              const address = response.data.results[0].address_components[0].short_name;
-              console.log(address, 'address');
-              setcurrentLocation(address.toUpperCase());
-            }
-          })
-          .catch((error) => console.log(error));
-        // searchstring = `${latlong.lat}, ${latlong.lng}`;
-      } else {
-        // searchstring = position.coords.latitude + ', ' + position.coords.longitude;
-
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-            console.log(searchstring, 'getCurrentPosition searchstring');
-
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-            axios
-              .get(url)
-              .then((obj) => {
-                console.log(obj);
+    getNetStatus().then((status) => {
+      if (status) {
+        AsyncStorage.getItem('location').then((item) => {
+          const latlong = item ? JSON.parse(item) : null;
+          console.log(item, 'AsyncStorage item', latlong);
+          if (latlong) {
+            findAddressFromLocationString(`${latlong.lat}, ${latlong.lng}`, key)
+              .then((response: any) => {
+                console.log(response, 'lat long');
                 if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
+                  response.data.results.length &&
+                  response.data.results[0].address_components.length
                 ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(
-                    address,
-                    'address',
-                    obj.data.results[0].geometry.location,
-                    'location'
-                  );
+                  const address = response.data.results[0].address_components[0].short_name;
+                  console.log(address, 'address');
                   setcurrentLocation(address.toUpperCase());
-                  AsyncStorage.setItem(
-                    'location',
-                    JSON.stringify(obj.data.results[0].geometry.location)
-                  );
                 }
               })
-              .catch((error) => {
-                console.log(error, 'geocode error');
-              });
-          },
-          (error) => {
-            console.log(error.code, error.message, 'getCurrentPosition error');
-          },
-          { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-        );
+              .catch((error) => console.log(error));
+            // searchstring = `${latlong.lat}, ${latlong.lng}`;
+          } else {
+            // searchstring = position.coords.latitude + ', ' + position.coords.longitude;
+
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+                console.log(searchstring, 'getCurrentPosition searchstring');
+
+                const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+                axios
+                  .get(url)
+                  .then((obj) => {
+                    console.log(obj);
+                    if (
+                      obj.data.results.length > 0 &&
+                      obj.data.results[0].address_components.length > 0
+                    ) {
+                      const address = obj.data.results[0].address_components[0].short_name;
+                      console.log(
+                        address,
+                        'address',
+                        obj.data.results[0].geometry.location,
+                        'location'
+                      );
+                      setcurrentLocation(address.toUpperCase());
+                      AsyncStorage.setItem(
+                        'location',
+                        JSON.stringify(obj.data.results[0].geometry.location)
+                      );
+                    }
+                  })
+                  .catch((error) => {
+                    console.log(error, 'geocode error');
+                  });
+              },
+              (error) => {
+                console.log(error.code, error.message, 'getCurrentPosition error');
+              },
+              { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+            );
+          }
+        });
       }
     });
   };
@@ -922,7 +930,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               setshowSpinner(false);
             }, 500);
           }}
-          data={[...FilterData]}
+          data={JSON.parse(JSON.stringify(FilterData))}
         />
       ) : null}
       {renderAnimatedView()}
