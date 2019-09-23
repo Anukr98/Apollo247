@@ -113,7 +113,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     setshowSpinner(true);
     ImagePicker.launchCamera(
       {
-        quality: 0.2,
+        quality: 0.1,
       },
       (response) => {
         setshowSpinner(false);
