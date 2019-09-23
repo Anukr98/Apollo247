@@ -45,37 +45,24 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { clientRoutes } from 'helpers/clientRoutes';
-
 /* patient related queries and mutations */
-// import { useQueryWithSkip } from 'hooks/apolloHooks';
 import {
   SAVE_PATIENT_FAMILY_HISTORY,
-  // GET_PATIENT_FAMILY_HISTORY,
   SAVE_PATIENT_LIFE_STYLE,
-  // GET_PATIENT_LIFE_STYLE,
   UPDATE_PATIENT_ALLERGIES,
 } from 'graphql/consults';
 import {
   SavePatientFamilyHistory,
   SavePatientFamilyHistoryVariables,
 } from 'graphql/types/SavePatientFamilyHistory';
-// import {
-//   GetPatientFamilyHistoryList,
-//   GetPatientFamilyHistoryListVariables,
-// } from 'graphql/types/GetPatientFamilyHistoryList';
 import {
   SavePatientLifeStyle,
   SavePatientLifeStyleVariables,
 } from 'graphql/types/SavePatientLifeStyle';
-// import {
-//   GetPatientLifeStyleList,
-//   GetPatientLifeStyleListVariables,
-// } from 'graphql/types/GetPatientLifeStyleList';
 import {
   UpdatePatientAllergies,
   UpdatePatientAllergiesVariables,
 } from 'graphql/types/UpdatePatientAllergies';
-
 import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
@@ -368,6 +355,7 @@ export const JDConsultRoom: React.FC = () => {
   const { patientId, appointmentId, queueId } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDiagnosisDialogOpen, setIsDiagnosisDialogOpen] = React.useState(false);
+  let showConsultButtons = false;
 
   const { currentPatient: currentDoctor, isSignedIn } = useAuth();
   const doctorId = currentDoctor!.id;
@@ -380,38 +368,6 @@ export const JDConsultRoom: React.FC = () => {
       id: parseInt(queueId, 10),
     },
   });
-
-  // const {
-  //   data: patientFamilyHistoryData,
-  //   loading: patientFamilyHistoryLoading,
-  //   error: patientFamilyHistoryError,
-  // } = useQueryWithSkip<GetPatientFamilyHistoryList, GetPatientFamilyHistoryListVariables>(
-  //   GET_PATIENT_FAMILY_HISTORY,
-  //   { variables: { patientId: patientId } }
-  // );
-
-  // const {
-  //   data: patientLifeStyleListData,
-  //   loading: patientLifeStyleLoading,
-  //   error: patientLifeStyleError,
-  // } = useQueryWithSkip<GetPatientLifeStyleList, GetPatientLifeStyleListVariables>(
-  //   GET_PATIENT_LIFE_STYLE,
-  //   { variables: { patientId: patientId } }
-  // );
-
-  // const doctorFirstName =
-  //   currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
-  // const doctorLastName =
-  //   currentDoctor && currentDoctor.lastName ? _startCase(_toLower(currentDoctor.lastName)) : '';
-  // const doctorMobileNumber =
-  //   currentDoctor && currentDoctor.mobileNumber ? currentDoctor.mobileNumber : '';
-  // const doctorSalutation =
-  //   currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
-  // const doctorSpecialty =
-  //   currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
-  //     ? _startCase(_toLower(currentDoctor.specialty.name))
-  //     : '';
-  // const doctorPhotoUrl = currentDoctor && currentDoctor.photoUrl ? currentDoctor.photoUrl : '';
 
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
@@ -534,13 +490,6 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo && casesheetInfo!.getCaseSheet && casesheetInfo!.getCaseSheet!.patientDetails
       ? casesheetInfo!.getCaseSheet!.patientDetails.uhid
       : '';
-  // const doctorId =
-  //   casesheetInfo &&
-  //   casesheetInfo.getCaseSheet &&
-  //   casesheetInfo.getCaseSheet.caseSheetDetails &&
-  //   casesheetInfo.getCaseSheet.caseSheetDetails.doctorId
-  //     ? casesheetInfo.getCaseSheet.caseSheetDetails.doctorId
-  //     : '';
   const patientRelation =
     casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
       ? casesheetInfo.getCaseSheet.patientDetails.relation
@@ -572,6 +521,10 @@ export const JDConsultRoom: React.FC = () => {
       new Date(patientAppointmentTimeUtc).getTime(),
       'dd/MM/yyyy, hh:mm a'
     );
+
+    // show/hide consult now buttons.
+    if (new Date(patientAppointmentTimeUtc).getTime() >= new Date().getTime())
+      showConsultButtons = true;
   }
   // console.log('patient details....', casesheetInfo.getCaseSheet.patientDetails);
   const patientRelationHeader =
@@ -909,12 +862,12 @@ export const JDConsultRoom: React.FC = () => {
             <div className={classes.pageContainer}>
               {/* patient and doctors details start */}
               <div className={classes.pageHeader}>
-                <div className={classes.backArrow}>
-                  <a href={clientRoutes.juniorDoctor()}>
+                <a href={clientRoutes.juniorDoctor()}>
+                  <div className={classes.backArrow}>
                     <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
                     <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-                  </a>
-                </div>
+                  </div>
+                </a>
                 <div className={classes.patientSection}>
                   <div className={classes.patientImage}>
                     <img
@@ -969,21 +922,23 @@ export const JDConsultRoom: React.FC = () => {
                 </div>
               </div>
               {/* patient and doctors details end */}
-              <JDCallPopover
-                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-                createSessionAction={createSessionAction}
-                saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
-                endConsultAction={endConsultAction}
-                appointmentId={appointmentId}
-                appointmentDateTime={appointmentDateTime}
-                doctorId={doctorId}
-                isEnded={isEnded}
-                caseSheetId={caseSheetId}
-                prescriptionPdf={prescriptionPdf}
-                sessionId={sessionId}
-                token={token}
-                saving={saving}
-              />
+              {showConsultButtons && (
+                <JDCallPopover
+                  setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+                  createSessionAction={createSessionAction}
+                  saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
+                  endConsultAction={endConsultAction}
+                  appointmentId={appointmentId}
+                  appointmentDateTime={appointmentDateTime}
+                  doctorId={doctorId}
+                  isEnded={isEnded}
+                  caseSheetId={caseSheetId}
+                  prescriptionPdf={prescriptionPdf}
+                  sessionId={sessionId}
+                  token={token}
+                  saving={saving}
+                />
+              )}
               <div className={classes.contentGroup}>
                 <div className={classes.leftSection}>
                   <div className={classes.blockGroup}>
@@ -1019,6 +974,7 @@ export const JDConsultRoom: React.FC = () => {
                         appointmentId={appointmentId}
                         doctorId={doctorId}
                         patientId={patientId}
+                        disableChat={showConsultButtons}
                       />
                     </div>
                   </div>

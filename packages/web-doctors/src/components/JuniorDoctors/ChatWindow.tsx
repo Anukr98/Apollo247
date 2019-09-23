@@ -211,6 +211,7 @@ interface ConsultRoomProps {
   appointmentId: string;
   doctorId: string;
   patientId: string;
+  disableChat: boolean;
 }
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
@@ -717,10 +718,13 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               onChange={(event) => {
                 setMessageText(event.currentTarget.value);
               }}
+              disabled={!props.disableChat}
             />
-            <Button className={classes.chatsendcircle}>
-              <img src={require('images/ic_add_circle.svg')} alt="" />
-            </Button>
+            {props.disableChat && (
+              <Button className={classes.chatsendcircle}>
+                <img src={require('images/ic_add_circle.svg')} alt="" />
+              </Button>
+            )}
           </div>
         )}
       </div>
