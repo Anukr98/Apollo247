@@ -18,31 +18,15 @@ import {
   getDoctorDetailsResolvers,
   getDoctorDetailsTypeDefs,
 } from 'doctors-service/resolvers/getDoctorDetails';
-import { doctorResolvers, doctorTypeDefs } from 'doctors-service/resolvers/getDoctors';
 import {
   getDoctorsBySpecialtyAndFiltersTypeDefs,
   getDoctorsBySpecialtyAndFiltersTypeDefsResolvers,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import {
-  getSpecialtyResolvers,
-  getSpecialtyTypeDefs,
-} from 'doctors-service/resolvers/getSpecialties';
-import {
-  getSpecialtyDoctorsResolvers,
-  getSpecialtyDoctorsTypeDefs,
-} from 'doctors-service/resolvers/getSpecialtyDoctorsWithFilters';
-import {
-  searchDoctorAndSpecialtyResolvers,
-  searchDoctorAndSpecialtyTypeDefs,
-} from 'doctors-service/resolvers/searchDoctorAndSpecialty';
-import {
   searchDoctorAndSpecialtyByNameResolvers,
   searchDoctorAndSpecialtyByNameTypeDefs,
 } from 'doctors-service/resolvers/searchDoctorAndSpecialtyByName';
-import {
-  starDoctorProgramResolvers,
-  starDoctorTypeDefs,
-} from 'doctors-service/resolvers/starDoctorProgram';
+
 import { starTeamResolvers, starTeamTypeDefs } from 'doctors-service/resolvers/starTeam';
 import {
   saveDoctorDeviceTokenTypeDefs,
@@ -100,40 +84,20 @@ import {
         },
       },
       {
-        typeDefs: doctorTypeDefs,
-        resolvers: doctorResolvers,
-      },
-      {
         typeDefs: delegateFunctionsTypeDefs,
         resolvers: delegateFunctionsResolvers,
-      },
-      {
-        typeDefs: getSpecialtyDoctorsTypeDefs,
-        resolvers: getSpecialtyDoctorsResolvers,
       },
       {
         typeDefs: getDoctorsBySpecialtyAndFiltersTypeDefs,
         resolvers: getDoctorsBySpecialtyAndFiltersTypeDefsResolvers,
       },
       {
-        typeDefs: getSpecialtyTypeDefs,
-        resolvers: getSpecialtyResolvers,
-      },
-      {
         typeDefs: getAllSpecialtiesTypeDefs,
         resolvers: getAllSpecialtiesResolvers,
       },
       {
-        typeDefs: searchDoctorAndSpecialtyTypeDefs,
-        resolvers: searchDoctorAndSpecialtyResolvers,
-      },
-      {
         typeDefs: searchDoctorAndSpecialtyByNameTypeDefs,
         resolvers: searchDoctorAndSpecialtyByNameResolvers,
-      },
-      {
-        typeDefs: starDoctorTypeDefs,
-        resolvers: starDoctorProgramResolvers,
       },
       {
         typeDefs: getDoctorDetailsTypeDefs,
