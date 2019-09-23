@@ -15,6 +15,7 @@ import { RescheduleAppointmentRepository } from 'consults-service/repositories/r
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { differenceInDays } from 'date-fns';
 import { ApiConstants } from 'ApiConstants';
+import { Connection } from 'typeorm';
 
 export const rescheduleAppointmentTypeDefs = gql`
   type NotificationMessage {
@@ -232,6 +233,7 @@ const testInitiateRescheduleAppointment: Resolver<
     patientsDb
   );
   console.log(rescheduleAppointment, 'rescheduleAppointment');
+
   return true;
 };
 
@@ -375,6 +377,54 @@ const bookRescheduleAppointment: Resolver<
   console.log(appointmentDetails, 'modified details');
   return { appointmentDetails };
 };
+
+export async function getAppointmentsAndReschedule(
+  doctorId: string,
+  startDate: Date,
+  endDate: Date,
+  consultsDb: Connection,
+  doctorsDb: Connection,
+  patientsDb: Connection
+) {
+  const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const reschduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+  const doctorAppts = await apptRepo.getDoctorAppointmentsByDates(doctorId, startDate, endDate);
+  console.log(doctorAppts.length, 'appt length');
+  if (doctorAppts.length > 0) {
+    doctorAppts.map(async (appt) => {
+      const rescheduleAppointmentAttrs = {
+        appointmentId: appt.id,
+        rescheduleReason: '',
+        rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+        rescheduleInitiatedId: doctorId,
+        autoSelectSlot: 0,
+        rescheduledDateTime: new Date(),
+        rescheduleStatus: TRANSFER_STATUS.INITIATED,
+        appointment: appt,
+      };
+
+      if (!rescheduleAppointmentAttrs.appointment) {
+        throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {});
+      }
+      /*const rescheduleAppt = await reschduleRepo.findRescheduleRecord(
+        rescheduleAppointmentAttrs.appointment
+      );
+      console.log(rescheduleAppt, 'rescheduleAppt');
+      if (rescheduleAppt) {
+        return rescheduleAppt;
+      }*/
+      const createReschdule = reschduleRepo.saveReschedule(rescheduleAppointmentAttrs);
+      /*const resResponse = await this.rescheduleAppointment(
+        rescheduleAppointmentAttrs,
+        consultsDb,
+        doctorsDb,
+        patientsDb
+      );*/
+      console.log(createReschdule, 'reschedle response');
+    });
+  }
+  return true;
+}
 
 export const rescheduleAppointmentResolvers = {
   Mutation: {

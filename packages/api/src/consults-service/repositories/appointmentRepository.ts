@@ -174,6 +174,21 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  getDoctorAppointmentsByDates(doctorId: string, startDate: Date, endDate: Date) {
+    //const newStartDate = new Date(format(addDays(startDate, -1), 'yyyy-MM-dd') + '18:30');
+    const newStartDate = new Date(startDate);
+    const newEndDate = new Date(endDate);
+
+    return this.find({
+      where: {
+        doctorId,
+        appointmentDateTime: Between(newStartDate, newEndDate),
+        status: Not(STATUS.CANCELLED),
+      },
+      order: { appointmentDateTime: 'ASC' },
+    });
+  }
+
   getDoctorAppointmentHistory(doctorId: string) {
     return this.find({
       where: { doctorId },

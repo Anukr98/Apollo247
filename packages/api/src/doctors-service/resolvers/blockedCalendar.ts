@@ -4,6 +4,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { AphAuthenticationError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+import { getAppointmentsAndReschedule } from 'consults-service/resolvers/rescheduleAppointment';
 
 export const blockedCalendarTypeDefs = gql`
   type BlockedCalendarItem {
@@ -34,6 +35,11 @@ export const blockedCalendarTypeDefs = gql`
       end: DateTime!
     ): BlockedCalendarResult!
     removeBlockedCalendarItem(id: Int!): BlockedCalendarResult!
+    testInitiateRescheduleAppointment1(
+      doctorId: String!
+      startDate: DateTime!
+      endDate: DateTime!
+    ): Boolean!
   }
 `;
 
@@ -107,6 +113,24 @@ const removeBlockedCalendarItem: Resolver<
   return { blockedCalendar };
 };
 
+const testInitiateRescheduleAppointment1: Resolver<
+  null,
+  { doctorId: string; startDate: Date; endDate: Date },
+  DoctorsServiceContext,
+  Boolean
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  //const reschduleRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
+  await getAppointmentsAndReschedule(
+    args.doctorId,
+    args.startDate,
+    args.endDate,
+    consultsDb,
+    doctorsDb,
+    patientsDb
+  );
+  return true;
+};
+
 export const blockedCalendarResolvers = {
   Query: {
     getBlockedCalendar,
@@ -115,5 +139,6 @@ export const blockedCalendarResolvers = {
     addBlockedCalendarItem,
     updateBlockedCalendarItem,
     removeBlockedCalendarItem,
+    testInitiateRescheduleAppointment1,
   },
 };

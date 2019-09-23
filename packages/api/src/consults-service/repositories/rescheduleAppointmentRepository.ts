@@ -1,14 +1,14 @@
-import { EntityRepository, Repository, Between, Not, Connection } from 'typeorm';
+import { EntityRepository, Repository, Connection } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
   RescheduleAppointmentDetails,
   TRANSFER_STATUS,
-  Appointment,
   TRANSFER_INITIATED_TYPE,
-  STATUS,
+  Appointment,
 } from 'consults-service/entities';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 @EntityRepository(RescheduleAppointmentDetails)
 export class RescheduleAppointmentRepository extends Repository<RescheduleAppointmentDetails> {
@@ -38,13 +38,8 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
     doctorsDb: Connection,
     patientsDb: Connection
   ) {
-    const doctorAppts = await Appointment.find({
-      where: {
-        doctorId,
-        status: Not(STATUS.CANCELLED),
-        appointmentDateTime: Between(startDate, endDate),
-      },
-    });
+    const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+    const doctorAppts = await apptRepo.getDoctorAppointmentsByDates(doctorId, startDate, endDate);
     console.log(doctorAppts.length, 'appt length');
     if (doctorAppts.length > 0) {
       doctorAppts.map(async (appt) => {
@@ -70,22 +65,28 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
     return true;
   }
 
+  findRescheduleRecord(appointment: Appointment) {
+    return RescheduleAppointmentDetails.findOne({
+      where: { appointment, rescheduleStatus: TRANSFER_STATUS.INITIATED },
+    });
+  }
+
   async rescheduleAppointment(
     rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails>,
     consultsDb: Connection,
     doctorsDb: Connection,
     patientsDb: Connection
   ) {
-    const rescheduleAppt = await this.findOne({
-      where: {
-        appointment: rescheduleAppointmentAttrs.appointment,
-        rescheduleStatus: TRANSFER_STATUS.INITIATED,
-      },
-    });
+    if (!rescheduleAppointmentAttrs.appointment) {
+      throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {});
+    }
+    const rescheduleAppt = await this.findRescheduleRecord(rescheduleAppointmentAttrs.appointment);
+    console.log(rescheduleAppt, 'rescheduleAppt');
     if (rescheduleAppt) {
       return rescheduleAppt;
     }
-    const createReschdule = this.create(rescheduleAppointmentAttrs)
+
+    const createReschdule = RescheduleAppointmentDetails.create(rescheduleAppointmentAttrs)
       .save()
       .catch((createErrors) => {
         console.log(createErrors, 'createErrors');
