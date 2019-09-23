@@ -169,7 +169,7 @@ export class DoctorRepository extends Repository<Doctor> {
     return 0;
   }
 
-  filterDoctors(filterInput: FilterDoctorInput) {
+  async filterDoctors(filterInput: FilterDoctorInput) {
     const { specialty, city, experience, gender, fees, language } = filterInput;
 
     const queryBuilder = this.createQueryBuilder('doctor')
@@ -180,9 +180,6 @@ export class DoctorRepository extends Repository<Doctor> {
       .where('doctor.specialty = :specialty', { specialty })
       .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR });
 
-    if (city && city.length > 0) {
-      queryBuilder.andWhere('doctor.city IN (:...city)', { city });
-    }
     if (gender && gender.length > 0) {
       queryBuilder.andWhere('doctor.gender IN (:...gender)', { gender });
     }
@@ -237,7 +234,18 @@ export class DoctorRepository extends Repository<Doctor> {
       );
     }
 
-    return queryBuilder.orderBy('doctor.experience', 'DESC').getMany();
+    let doctorsResult = await queryBuilder.orderBy('doctor.experience', 'DESC').getMany();
+
+    if (city && city.length > 0) {
+      doctorsResult = doctorsResult.filter((doctor) => {
+        const matchedDocHospitals = doctor.doctorHospital.filter((doctorHospital) => {
+          return city.includes(doctorHospital.facility.city);
+        });
+        return matchedDocHospitals.length > 0;
+      });
+    }
+
+    return doctorsResult;
   }
 
   getDoctorsAvailability(doctors: Doctor[], selectedDates: string[], now?: AppointmentDateTime) {
