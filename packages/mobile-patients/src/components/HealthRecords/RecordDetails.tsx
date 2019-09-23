@@ -20,6 +20,7 @@ import {
   Alert,
   Linking,
   ScrollView,
+  CameraRoll,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -296,7 +297,11 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                             // the temp file path
                             console.log('The file saved to res ', res);
                             console.log('The file saved to ', res.path());
-                            saveimageIos(urls[i]);
+                            //saveimageIos(urls[0]);
+                            try {
+                              CameraRoll.saveToCameraRoll(urls[i]);
+                            } catch {}
+
                             // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                             // RNFetchBlob.ios.openDocument(res.path());
                             Alert.alert('Download Complete');
