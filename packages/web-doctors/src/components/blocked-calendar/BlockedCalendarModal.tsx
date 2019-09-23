@@ -24,7 +24,7 @@ import {
 } from 'graphql/types/AddBlockedCalendarItem';
 import React, { useState, useEffect } from 'react';
 import { Mutation } from 'react-apollo';
-import { format, parse } from 'date-fns';
+import { format, parse, addHours, addMinutes } from 'date-fns';
 import { Item } from 'components/blocked-calendar/BlockedCalendar';
 import {
   UpdateBlockedCalendarItem,
@@ -51,21 +51,32 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const { item, dialogProps, doctorId } = props;
   const classes = useStyles();
   const [selectedValue, setSelectedValue] = useState(RadioValues.DURATION);
+  const daySelected = selectedValue === RadioValues.DAY;
+  const durationSelected = selectedValue === RadioValues.DURATION;
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
   const [isOverlapError, setIsOverlapError] = useState(false);
+
   useEffect(() => {
     setStart(item ? format(item.start, 'yyyy-MM-dd') : '');
     setEnd(item ? format(item.end, 'yyyy-MM-dd') : '');
     setStartTime(item ? format(item.start, 'HH:mm') : '');
     setEndTime(item ? format(item.end, 'HH:mm') : '');
   }, [item]);
+
+  useEffect(() => {
+    if (daySelected) {
+      setEnd(start);
+    }
+  }, [daySelected, start]);
+
   const dateInvalid =
     !start || !end || new Date() > new Date(start) || new Date(end) < new Date(start);
-  const timeInvalid = selectedValue === RadioValues.DAY ? !startTime || !endTime : false;
+  const timeInvalid = daySelected ? !startTime || !endTime : false;
   const invalid = dateInvalid || timeInvalid;
+
   const handleSubmitComplete = () => {
     setStart('');
     setEnd('');
@@ -104,10 +115,11 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
               InputLabelProps={{ shrink: true }}
               InputProps={{ style: { color: 'black ' } }}
             />
-            {selectedValue === RadioValues.DAY && (
+            {daySelected && (
               <TextField
                 onChange={(e) => setStartTime(e.currentTarget.value)}
                 value={startTime}
+                label="Start time"
                 type="time"
                 InputLabelProps={{ shrink: true }}
                 InputProps={{ style: { color: 'black ' } }}
@@ -118,6 +130,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         <div>
           <div style={{ display: 'flex' }}>
             <TextField
+              disabled={daySelected}
               onChange={(e) => setEnd(e.currentTarget.value)}
               value={end}
               label="End"
@@ -125,10 +138,11 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
               InputLabelProps={{ shrink: true }}
               InputProps={{ style: { color: 'black ' } }}
             />
-            {selectedValue === RadioValues.DAY && (
+            {daySelected && (
               <TextField
                 onChange={(e) => setEndTime(e.currentTarget.value)}
                 value={endTime}
+                label="End time"
                 type="time"
                 InputLabelProps={{ shrink: true }}
                 InputProps={{ style: { color: 'black ' } }}
@@ -161,15 +175,21 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                     disabled={loading || invalid}
                     variant="contained"
                     onClick={() => {
-                      if (!start || !end || invalid) return;
                       const startDate = parse(start, 'yyyy-MM-dd', new Date());
                       const endDate = parse(end, 'yyyy-MM-dd', new Date());
                       const sameDay = start === end;
-                      if (sameDay) {
+                      if (durationSelected && sameDay) {
                         startDate.setHours(0);
                         startDate.setMinutes(0);
                         endDate.setHours(23);
                         endDate.setMinutes(59);
+                      } else {
+                        const [startHours, startMins] = startTime.split(':');
+                        startDate.setHours(parseInt(startHours, 10));
+                        startDate.setMinutes(parseInt(startMins, 10));
+                        const [endHours, endMins] = endTime.split(':');
+                        endDate.setHours(parseInt(endHours, 10));
+                        endDate.setMinutes(parseInt(endMins, 10));
                       }
                       const addArgs = {
                         refetchQueries: [{ query: GET_BLOCKED_CALENDAR, variables: { doctorId } }],
