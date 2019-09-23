@@ -422,6 +422,7 @@ export const JDConsultRoom: React.FC = () => {
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [saving, setSaving] = useState<boolean>(false);
+  const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
 
   const [allergies, setPatientAllergies] = useState<string>('');
   const [lifeStyle, setPatientLifeStyle] = useState<string>('');
@@ -827,7 +828,9 @@ export const JDConsultRoom: React.FC = () => {
       setIsDiagnosisDialogOpen(true);
     }
   };
-
+  const startAppointmentClick = (startAppointment: boolean) => {
+    setStartAppointment(startAppointment);
+  };
   const createSessionAction = () => {
     setSaving(true);
     client
@@ -983,6 +986,8 @@ export const JDConsultRoom: React.FC = () => {
                 sessionId={sessionId}
                 token={token}
                 saving={saving}
+                startAppointment={startAppointment}
+                startAppointmentClick={startAppointmentClick}
               />
               <div className={classes.contentGroup}>
                 <div className={classes.leftSection}>
