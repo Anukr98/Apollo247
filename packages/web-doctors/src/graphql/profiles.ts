@@ -143,93 +143,6 @@ export const GET_DOCTOR_DETAILS = gql`
     }
   }
 `;
-export const GET_DOCTOR_PROFILE = gql`
-  query GetDoctorProfile {
-    getDoctorProfile {
-      profile {
-        id
-        salutation
-        firstName
-        lastName
-        mobileNumber
-        experience
-        speciality
-        specialization
-        isStarDoctor
-        education
-        services
-        languages
-        city
-        awards
-        photoUrl
-        registrationNumber
-        isProfileComplete
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        onlineConsultationFees
-        physicalConsultationFees
-        package
-        inviteStatus
-      }
-      paymentDetails {
-        accountNumber
-        address
-      }
-      clinics {
-        name
-        addressLine1
-        addressLine2
-        addressLine3
-        city
-      }
-      starDoctorTeam {
-        firstName
-        lastName
-        experience
-        inviteStatus
-      }
-      consultationHours {
-        days
-        startTime
-        endTime
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        type
-      }
-    }
-  }
-`;
-export const REMOVE_STAR_DOCTOR = gql`
-  mutation RemoveDoctorFromStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
-    removeDoctorFromStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
-  }
-`;
-export const GET_DOCTOR_FOR_STAR_DOCTOR_PROGRAM = gql`
-  query GetDoctorsForStarDoctorProgram($searchString: String!) {
-    getDoctorsForStarDoctorProgram(searchString: $searchString) {
-      profile {
-        id
-        firstName
-        lastName
-        inviteStatus
-        experience
-      }
-      starDoctorTeam {
-        id
-        firstName
-        lastName
-        inviteStatus
-        experience
-      }
-    }
-  }
-`;
-export const ADD_DOCTOR_TO_STAR_PROGRAM = gql`
-  mutation AddDoctorToStarDoctorProgram($starDoctorId: String!, $doctorId: String!) {
-    addDoctorToStarDoctorProgram(starDoctorId: $starDoctorId, doctorId: $doctorId)
-  }
-`;
-
 export const UPDATE_PATIENT = gql`
   mutation UpdatePatient($patientInput: UpdatePatientInput!) {
     updatePatient(patientInput: $patientInput) {
@@ -266,69 +179,6 @@ export const GET_APPOINTMENT_DATA = gql`
       appointmentsHistory {
         appointmentDateTime
         id
-      }
-    }
-  }
-`;
-
-export const GET_JUNIOR_DOCTOR_CASESHEET = gql`
-  query GetJuniorDoctorCaseSheet($appointmentId: String!) {
-    getJuniorDoctorCaseSheet(appointmentId: $appointmentId) {
-      patientDetails {
-        id
-        allergies
-        lifeStyle {
-          description
-        }
-        familyHistory {
-          description
-          relation
-        }
-        dateOfBirth
-        emailAddress
-        firstName
-        lastName
-        gender
-        mobileNumber
-        uhid
-        photoUrl
-        relation
-        healthVault {
-          imageUrls
-          reportUrls
-        }
-      }
-      caseSheetDetails {
-        id
-        medicinePrescription {
-          id
-          medicineName
-          medicineDosage
-          medicineToBeTaken
-          medicineInstructions
-          medicineTimings
-          medicineConsumptionDurationInDays
-        }
-        otherInstructions {
-          instruction
-        }
-        symptoms {
-          symptom
-          since
-          howOften
-          severity
-        }
-        diagnosis {
-          name
-        }
-        diagnosticPrescription {
-          itemname
-        }
-        followUp
-        followUpDate
-        followUpAfterInDays
-        consultType
-        notes
       }
     }
   }
@@ -510,26 +360,6 @@ export const GET_PATIENT_LOG = gql`
         gender
         uhid
         photoUrl
-      }
-    }
-  }
-`;
-export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
-  query SearchDoctorAndSpecialty($searchText: String!) {
-    SearchDoctorAndSpecialty(searchText: $searchText) {
-      doctors {
-        firstName
-        lastName
-        services
-        speciality
-        specialization
-        id
-        photoUrl
-      }
-      specialties {
-        id
-        name
-        image
       }
     }
   }
