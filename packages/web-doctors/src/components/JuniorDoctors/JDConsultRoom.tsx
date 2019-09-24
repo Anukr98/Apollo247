@@ -9,7 +9,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
-} from 'graphql/types/createAppointmentSession';
+} from 'graphql/types/CreateAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
 import {
@@ -42,40 +42,26 @@ import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { clientRoutes } from 'helpers/clientRoutes';
-
 /* patient related queries and mutations */
-// import { useQueryWithSkip } from 'hooks/apolloHooks';
 import {
   SAVE_PATIENT_FAMILY_HISTORY,
-  // GET_PATIENT_FAMILY_HISTORY,
   SAVE_PATIENT_LIFE_STYLE,
-  // GET_PATIENT_LIFE_STYLE,
   UPDATE_PATIENT_ALLERGIES,
 } from 'graphql/consults';
 import {
   SavePatientFamilyHistory,
   SavePatientFamilyHistoryVariables,
 } from 'graphql/types/SavePatientFamilyHistory';
-// import {
-//   GetPatientFamilyHistoryList,
-//   GetPatientFamilyHistoryListVariables,
-// } from 'graphql/types/GetPatientFamilyHistoryList';
 import {
   SavePatientLifeStyle,
   SavePatientLifeStyleVariables,
 } from 'graphql/types/SavePatientLifeStyle';
-// import {
-//   GetPatientLifeStyleList,
-//   GetPatientLifeStyleListVariables,
-// } from 'graphql/types/GetPatientLifeStyleList';
 import {
   UpdatePatientAllergies,
   UpdatePatientAllergiesVariables,
 } from 'graphql/types/UpdatePatientAllergies';
-
 import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
@@ -328,6 +314,11 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
       },
     },
+    backArrowSection: {
+      position: 'fixed',
+      width: '100%',
+      top: 93,
+    },
     backArrow: {
       cursor: 'pointer',
       marginRight: 50,
@@ -368,6 +359,7 @@ export const JDConsultRoom: React.FC = () => {
   const { patientId, appointmentId, queueId } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDiagnosisDialogOpen, setIsDiagnosisDialogOpen] = React.useState(false);
+  let showConsultButtons = false;
 
   const { currentPatient: currentDoctor, isSignedIn } = useAuth();
   const doctorId = currentDoctor!.id;
@@ -380,38 +372,6 @@ export const JDConsultRoom: React.FC = () => {
       id: parseInt(queueId, 10),
     },
   });
-
-  // const {
-  //   data: patientFamilyHistoryData,
-  //   loading: patientFamilyHistoryLoading,
-  //   error: patientFamilyHistoryError,
-  // } = useQueryWithSkip<GetPatientFamilyHistoryList, GetPatientFamilyHistoryListVariables>(
-  //   GET_PATIENT_FAMILY_HISTORY,
-  //   { variables: { patientId: patientId } }
-  // );
-
-  // const {
-  //   data: patientLifeStyleListData,
-  //   loading: patientLifeStyleLoading,
-  //   error: patientLifeStyleError,
-  // } = useQueryWithSkip<GetPatientLifeStyleList, GetPatientLifeStyleListVariables>(
-  //   GET_PATIENT_LIFE_STYLE,
-  //   { variables: { patientId: patientId } }
-  // );
-
-  // const doctorFirstName =
-  //   currentDoctor && currentDoctor.firstName ? _startCase(_toLower(currentDoctor.firstName)) : '';
-  // const doctorLastName =
-  //   currentDoctor && currentDoctor.lastName ? _startCase(_toLower(currentDoctor.lastName)) : '';
-  // const doctorMobileNumber =
-  //   currentDoctor && currentDoctor.mobileNumber ? currentDoctor.mobileNumber : '';
-  // const doctorSalutation =
-  //   currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
-  // const doctorSpecialty =
-  //   currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
-  //     ? _startCase(_toLower(currentDoctor.specialty.name))
-  //     : '';
-  // const doctorPhotoUrl = currentDoctor && currentDoctor.photoUrl ? currentDoctor.photoUrl : '';
 
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
@@ -535,13 +495,6 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo && casesheetInfo!.getCaseSheet && casesheetInfo!.getCaseSheet!.patientDetails
       ? casesheetInfo!.getCaseSheet!.patientDetails.uhid
       : '';
-  // const doctorId =
-  //   casesheetInfo &&
-  //   casesheetInfo.getCaseSheet &&
-  //   casesheetInfo.getCaseSheet.caseSheetDetails &&
-  //   casesheetInfo.getCaseSheet.caseSheetDetails.doctorId
-  //     ? casesheetInfo.getCaseSheet.caseSheetDetails.doctorId
-  //     : '';
   const patientRelation =
     casesheetInfo && casesheetInfo.getCaseSheet && casesheetInfo.getCaseSheet.patientDetails
       ? casesheetInfo.getCaseSheet.patientDetails.relation
@@ -573,6 +526,10 @@ export const JDConsultRoom: React.FC = () => {
       new Date(patientAppointmentTimeUtc).getTime(),
       'dd/MM/yyyy, hh:mm a'
     );
+
+    // show/hide consult now buttons.
+    if (new Date(patientAppointmentTimeUtc).getTime() >= new Date().getTime())
+      showConsultButtons = true;
   }
   // console.log('patient details....', casesheetInfo.getCaseSheet.patientDetails);
   const patientRelationHeader =
@@ -908,187 +865,138 @@ export const JDConsultRoom: React.FC = () => {
             setCasesheetNotes,
           }}
         >
-          <div className={classes.container}>
-            <div className={classes.pageContainer}>
-              {/* patient and doctors details start */}
-              <div className={classes.pageHeader}>
-                <div className={classes.backArrow}>
-                  <a href={clientRoutes.juniorDoctor()}>
-                    <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                    <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-                  </a>
-                </div>
-                <div className={classes.patientSection}>
-                  <div className={classes.patientImage}>
-                    <img
-                      style={{ width: '100px' }}
-                      src={patientPhotoUrl}
-                      alt="Patient Profile Photo"
-                    />
-                  </div>
-                  <div className={classes.patientInfo}>
-                    <div className={classes.patientName}>
-                      {patientFirstName} {patientLastName}
-                      <span>({userCardStrip})</span>
-                    </div>
-                    <div className={classes.patientTextInfo}>
-                      <label>UHID:</label> {patientUhid} | <label>Relation:</label>
-                      {patientRelationHeader}
-                    </div>
-                    <div className={classes.patientTextInfo}>
-                      <label>Appt ID:</label> {patientAppointmentId}
-                    </div>
-                    <div className={classes.patientTextInfo}>
-                      <label>Appt Date:</label> {appointmentDateIST}
+          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+            <div className={classes.container}>
+              <div className={classes.pageContainer}>
+                {/* patient and doctors details start */}
+                <div className={classes.pageHeader}>
+                  <div className={classes.backArrowSection}>
+                    <div className={classes.backArrow}>
+                      <a href={clientRoutes.juniorDoctor()}>
+                        <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                        <img
+                          className={classes.whiteArrow}
+                          src={require('images/ic_back_white.svg')}
+                        />
+                      </a>
                     </div>
                   </div>
+                  <div className={classes.patientSection}>
+                    <div className={classes.patientImage}>
+                      <img
+                        style={{ width: '100px' }}
+                        src={patientPhotoUrl}
+                        alt="Patient Profile Photo"
+                      />
+                    </div>
+                    <div className={classes.patientInfo}>
+                      <div className={classes.patientName}>
+                        {patientFirstName} {patientLastName}
+                        <span>({userCardStrip})</span>
+                      </div>
+                      <div className={classes.patientTextInfo}>
+                        <label>UHID:</label> {patientUhid} | <label>Relation:</label>
+                        {patientRelationHeader}
+                      </div>
+                      <div className={classes.patientTextInfo}>
+                        <label>Appt ID:</label> {patientAppointmentId}
+                      </div>
+                      <div className={classes.patientTextInfo}>
+                        <label>Appt Date:</label> {appointmentDateIST}
+                      </div>
+                    </div>
+                  </div>
+                  <div className={classes.doctorSection}>
+                    {assignedDoctorDetailsLoading ? (
+                      <CircularProgress />
+                    ) : (
+                      <>
+                        <div className={classes.doctorImg}>
+                          <Avatar
+                            src={
+                              assignedDoctorPhoto !== ''
+                                ? assignedDoctorPhoto
+                                : require('images/no_photo.png')
+                            }
+                            alt="Doctor Profile Photo"
+                            className={classes.avatar}
+                          />
+                        </div>
+                        <div className={classes.doctorInfo}>
+                          <div className={classes.assign}>Assigned to:</div>
+                          <div
+                            className={classes.doctorName}
+                          >{`${assignedDoctorSalutation} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
+                          <div className={classes.doctorType}>{assignedDoctorSpecialty}</div>
+                          <div className={classes.doctorContact}>{assignedDoctorMobile}</div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className={classes.doctorSection}>
-                  {assignedDoctorDetailsLoading ? (
-                    <CircularProgress />
-                  ) : (
-                    <>
-                      <div className={classes.doctorImg}>
-                        <Avatar
-                          src={
-                            assignedDoctorPhoto !== ''
-                              ? assignedDoctorPhoto
-                              : require('images/doctor_02.png')
-                          }
-                          alt="Doctor Profile Photo"
-                          className={classes.avatar}
+                {/* patient and doctors details end */}
+                <JDCallPopover
+                  setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+                  createSessionAction={createSessionAction}
+                  saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
+                  endConsultAction={endConsultAction}
+                  appointmentId={appointmentId}
+                  appointmentDateTime={appointmentDateTime}
+                  doctorId={doctorId}
+                  isEnded={isEnded}
+                  caseSheetId={caseSheetId}
+                  prescriptionPdf={prescriptionPdf}
+                  sessionId={sessionId}
+                  token={token}
+                  saving={saving}
+                  startAppointment={startAppointment}
+                  startAppointmentClick={startAppointmentClick}
+                />
+                <div className={classes.contentGroup}>
+                  <div className={classes.leftSection}>
+                    <div className={classes.blockGroup}>
+                      <div className={classes.blockHeader}>Case Sheet</div>
+                      <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
+                        <Scrollbars autoHide={false} style={{ height: 'calc(100vh - 270px' }}>
+                          <div className={classes.customScroll}>
+                            {casesheetInfo ? (
+                              <CaseSheet
+                                lifeStyle={lifeStyle}
+                                allergies={allergies}
+                                familyHistory={familyHistory}
+                                setLifeStyle={(lifeStyle: string) => setPatientLifeStyle(lifeStyle)}
+                                setAllergies={(allergies: string) => setPatientAllergies(allergies)}
+                                setFamilyHistory={(familyHistory: string) =>
+                                  setFamilyHistory(familyHistory)
+                                }
+                              />
+                            ) : null}
+                          </div>
+                        </Scrollbars>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={classes.rightSection}>
+                    <div className={classes.blockGroup}>
+                      <div className={classes.blockHeader}>Chat</div>
+                      <div className={`${classes.blockBody}`}>
+                        <ChatWindow
+                          startConsult={startConsult}
+                          sessionId={sessionId}
+                          token={token}
+                          appointmentId={appointmentId}
+                          doctorId={doctorId}
+                          patientId={patientId}
                         />
                       </div>
-                      <div className={classes.doctorInfo}>
-                        <div className={classes.assign}>Assigned to:</div>
-                        <div
-                          className={classes.doctorName}
-                        >{`${assignedDoctorSalutation} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
-                        <div className={classes.doctorType}>{assignedDoctorSpecialty}</div>
-                        <div className={classes.doctorContact}>{assignedDoctorMobile}</div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-              {/* patient and doctors details end */}
-              <JDCallPopover
-                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-                createSessionAction={createSessionAction}
-                saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
-                endConsultAction={endConsultAction}
-                appointmentId={appointmentId}
-                appointmentDateTime={appointmentDateTime}
-                doctorId={doctorId}
-                isEnded={isEnded}
-                caseSheetId={caseSheetId}
-                prescriptionPdf={prescriptionPdf}
-                sessionId={sessionId}
-                token={token}
-                saving={saving}
-                startAppointment={startAppointment}
-                startAppointmentClick={startAppointmentClick}
-              />
-              <div className={classes.contentGroup}>
-                <div className={classes.leftSection}>
-                  <div className={classes.blockGroup}>
-                    <div className={classes.blockHeader}>Case Sheet</div>
-                    <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                      <Scrollbars autoHide={false} style={{ height: 'calc(100vh - 430px' }}>
-                        <div className={classes.customScroll}>
-                          {casesheetInfo ? (
-                            <CaseSheet
-                              lifeStyle={lifeStyle}
-                              allergies={allergies}
-                              familyHistory={familyHistory}
-                              setLifeStyle={(lifeStyle: string) => setPatientLifeStyle(lifeStyle)}
-                              setAllergies={(allergies: string) => setPatientAllergies(allergies)}
-                              setFamilyHistory={(familyHistory: string) =>
-                                setFamilyHistory(familyHistory)
-                              }
-                            />
-                          ) : null}
-                        </div>
-                      </Scrollbars>
-                    </div>
-                  </div>
-                </div>
-                <div className={classes.rightSection}>
-                  <div className={classes.blockGroup}>
-                    <div className={classes.blockHeader}>Chat</div>
-                    <div className={`${classes.blockBody}`}>
-                      <ChatWindow
-                        startConsult={startConsult}
-                        sessionId={sessionId}
-                        token={token}
-                        appointmentId={appointmentId}
-                        doctorId={doctorId}
-                        patientId={patientId}
-                      />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </Scrollbars>
         </CaseSheetContext.Provider>
       )}
-      {/* <Modal
-        open={isPopoverOpen}
-        onClose={() => setIsPopoverOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <Paper className={classes.modalBox}>
-          <div className={classes.tabHeader}>
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => setIsPopoverOpen(false)}
-              />
-            </Button>
-          </div>
-          <div className={classes.tabBody}>
-            {}
-            <h3>
-              You're ending your consult with
-              {casesheetInfo &&
-                casesheetInfo !== null &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.firstName !== '' &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
-                  <span>
-                    {` ${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
-                      casesheetInfo!.getCaseSheet!.patientDetails!.lastName
-                    }.`}
-                  </span>
-                )}
-            </h3>
-            <Button
-              className={classes.consultButton}
-              //disabled={startAppointmentButton}
-              onClick={() => {
-                setIsPopoverOpen(false);
-                endConsultActionFinal();
-                setCaseSheetEdit(false);
-              }}
-            >
-              Preview Prescription
-            </Button>
-            <Button
-              className={classes.cancelConsult}
-              onClick={() => {
-                setIsPopoverOpen(false);
-              }}
-            >
-              Edit Case Sheet
-            </Button>
-          </div>
-        </Paper>
-      </Modal> */}
-
       <Dialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
@@ -1108,18 +1016,6 @@ export const JDConsultRoom: React.FC = () => {
             autoFocus
           >
             Ok
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={isDiagnosisDialogOpen} onClose={() => setIsDiagnosisDialogOpen(false)}>
-        <DialogTitle>{''}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Please enter diagnosis</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button color="primary" onClick={() => setIsDiagnosisDialogOpen(false)} autoFocus>
-            OK
           </Button>
         </DialogActions>
       </Dialog>

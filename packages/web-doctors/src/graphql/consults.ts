@@ -109,3 +109,15 @@ export const UPDATE_PATIENT_ALLERGIES = gql`
     }
   }
 `;
+
+export const UPLOAD_CHAT_DOCUMENT = gql`
+  mutation UploadChatDocument($fileType: String, $base64FileInput: String, $appointmentId: String) {
+    uploadChatDocument(
+      fileType: $fileType
+      base64FileInput: $base64FileInput
+      appointmentId: $appointmentId
+    ) {
+      filePath
+    }
+  }
+`;

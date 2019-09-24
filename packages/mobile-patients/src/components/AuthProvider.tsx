@@ -26,7 +26,7 @@ export interface AuthContextProps {
   setCurrentPatientId: ((pid: string | null) => void) | null;
   allPatients: ApolloQueryResult<GetCurrentPatients> | null;
 
-  sendOtp: ((phoneNumber: string) => Promise<unknown>) | null;
+  sendOtp: ((phoneNumber: string, forceResend?: boolean) => Promise<unknown>) | null;
   sendOtpError: boolean;
   isSendingOtp: boolean;
 
@@ -115,12 +115,12 @@ export const AuthProvider: React.FC = (props) => {
 
   const [allPatients, setAllPatients] = useState<AuthContextProps['allPatients']>(null);
 
-  const sendOtp = (phoneNumber: string) => {
+  const sendOtp = (phoneNumber: string, forceResend: boolean = false) => {
     return new Promise(async (resolve, reject) => {
       setIsSendingOtp(true);
 
       const [phoneAuthResult, phoneAuthError] = await wait(
-        auth.signInWithPhoneNumber('+91' + phoneNumber)
+        auth.signInWithPhoneNumber('+91' + phoneNumber, forceResend)
       );
       setIsSendingOtp(false);
       if (phoneAuthError) {

@@ -1,20 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
-import {
-  Typography,
-  Chip,
-  MenuItem,
-  makeStyles,
-  Theme,
-  createStyles,
-  Paper,
-} from '@material-ui/core';
-import { AphButton, AphInput, AphTextField } from '@aph/web-ui-components';
+import { Chip, MenuItem, makeStyles, Theme, createStyles, Paper } from '@material-ui/core';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import deburr from 'lodash/deburr';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SearchDiagnosis, SearchDiagnosisVariables } from 'graphql/types/SearchDiagnosis';
+import { SearchDiagnosis } from 'graphql/types/SearchDiagnosis';
 import { SEARCH_DIAGNOSIS } from 'graphql/profiles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
@@ -55,13 +47,11 @@ function renderSuggestion(
 
   return (
     <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map((part) => (
-          <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
-            {part.text}
-          </span>
-        ))}
-      </div>
+      {parts.map((part) => (
+        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
+          {part.text}
+        </span>
+      ))}
     </MenuItem>
   );
 }
@@ -69,106 +59,27 @@ function renderSuggestion(
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      height: 250,
-      flexGrow: 1,
-    },
-    container: {
-      position: 'relative',
-    },
-    suggestionsContainerOpen: {
-      position: 'absolute',
-      zIndex: 1,
-      marginTop: theme.spacing(1),
-      left: 0,
-      right: 0,
-    },
-    suggestion: {
-      display: 'block',
-      overflow: 'hidden',
-      borderBottom: '1px solid rgba(2,71,91,0.1)',
-      '&:hover': {
-        '& div': {
-          backgroundColor: '#f0f4f5 !important',
-        },
-      },
-    },
-    suggestionsList: {
-      margin: 0,
       padding: 0,
-      listStyleType: 'none',
-      borderRadius: 10,
     },
-    divider: {
-      height: theme.spacing(2),
+    sectionGroup: {
+      padding: 0,
     },
-    mainContainer: {
-      width: '100%',
-      '& h4': {
-        fontSize: 14,
-        fontWeight: 500,
-        color: 'rgba(2, 71, 91, 0.6)',
-        marginBottom: 12,
-      },
-      '&:before': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '&:after': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '& input': {
-        borderBottom: '2px solid #00b38e',
-        '&:hover': {
-          borderBottom: '2px solid #00b38e',
-          '&:before': {
-            borderBottom: '2px solid #00b38e',
-          },
-        },
-        '&:before': {
-          borderBottom: '2px solid #00b38e',
-        },
-        '&:after': {
-          borderBottom: '2px solid #00b38e',
-        },
-      },
-    },
-    diagnosBtn: {
-      border: '1px solid #00b38e',
-      borderRadius: 16,
-      color: '#fff !important',
-      fontWeight: 600,
-      backgroundColor: '#00b38e',
-      marginBottom: 15,
-      marginRight: 16,
+    sectionTitle: {
+      color: '#02475b',
+      opacity: 0.6,
       fontSize: 14,
-      paddingRight: 30,
-      position: 'relative',
-      minHeight: 32,
-      height: 'auto',
-      '& svg': {
-        position: 'absolute',
-        right: 0,
-        '& path': {
-          fill: '#fff',
-        },
-      },
-      '& span': {
-        whiteSpace: 'normal',
-        paddingTop: 5,
-        paddingBottom: 5,
-      },
-      '&:focus': {
-        backgroundColor: '#00b38e',
-      },
+      fontWeight: 500,
+      letterSpacing: 0.02,
+      paddingBottom: 5,
     },
-
-    btnAddDoctor: {
+    addBtn: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: 600,
-      // pointerEvents: 'none',
-      paddingLeft: 4,
+      padding: 0,
+      marginTop: 12,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -176,12 +87,8 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
-    searchpopup: {
-      borderRadius: 10,
-      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
-      marginTop: 2,
-    },
     inputRoot: {
+      marginTop: 10,
       '&:before': {
         borderBottom: '2px solid #00b38e',
       },
@@ -200,6 +107,74 @@ const useStyles = makeStyles((theme: Theme) =>
         },
         '&:after': {
           borderBottom: '2px solid #00b38e !important',
+        },
+      },
+    },
+    chipSection: {
+      paddingBottom: 0,
+    },
+    chipCol: {
+      display: 'inline-block',
+    },
+    chipItem: {
+      padding: 7,
+      paddingLeft: 12,
+      fontSize: 14,
+      fontWeight: 600,
+      color: theme.palette.common.white,
+      backgroundColor: '#00b38e',
+      borderRadius: 16,
+      marginRight: 16,
+      marginTop: 6,
+      '&:focus': {
+        backgroundColor: '#00b38e',
+      },
+      '& span': {
+        paddingLeft: 0,
+        paddingRight: 5,
+      },
+      '& img': {
+        margin: 0,
+        marginLeft: 5,
+      },
+    },
+    autoSuggestBox: {
+      position: 'relative',
+    },
+    searchpopup: {
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
+      marginTop: 2,
+      position: 'absolute',
+      left: 0,
+      width: '100%',
+      zIndex: 1,
+      '& ul': {
+        padding: 0,
+        margin: 0,
+        '& li': {
+          padding: 0,
+          listStyleType: 'none',
+          '& >div': {
+            padding: '10px 16px',
+            fontSize: 18,
+            fontWeight: 500,
+            color: '#02475b',
+            '&:hover': {
+              backgroundColor: '#f0f4f5 !important',
+            },
+            '&:focus': {
+              backgroundColor: '#f0f4f5 !important',
+            },
+            '& span:nth-child(2)': {
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
+          },
+          '&:first-child': {
+            borderRadius: '10px 10px 0 0',
+          },
         },
       },
     },
@@ -324,35 +299,45 @@ export const Diagnosis: React.FC = () => {
     renderSuggestion,
   };
   return (
-    <Typography component="div" className={classes.mainContainer}>
-      <Typography component="h4" variant="h4">
-        Diagnosed Medical Condition
-      </Typography>
-      <Typography component="div">
-        {selectedValues !== null &&
-          selectedValues.length > 0 &&
-          selectedValues!.map((item, idx) =>
-            caseSheetEdit ? (
-              <Chip
-                className={classes.diagnosBtn}
-                key={idx}
-                label={item!.name}
-                onDelete={() => handleDelete(item, idx)}
-                color="primary"
-              />
-            ) : (
-              <Chip className={classes.diagnosBtn} key={idx} label={item!.name} color="primary" />
-            )
-          )}
-      </Typography>
+    <div className={classes.root}>
+      <div className={classes.sectionGroup}>
+        <div className={classes.sectionTitle}>Diagnosed Medical Condition</div>
+        <div className={classes.chipSection}>
+          {selectedValues !== null &&
+            selectedValues.length > 0 &&
+            selectedValues!.map((item, idx) =>
+              caseSheetEdit ? (
+                <div className={classes.chipCol}>
+                  <Chip
+                    className={classes.chipItem}
+                    key={idx}
+                    label={item!.name}
+                    onDelete={() => handleDelete(item, idx)}
+                    color="primary"
+                    deleteIcon={<img src={require('images/ic_cross_orange.svg')} alt="" />}
+                  />
+                </div>
+              ) : (
+                <div className={classes.chipCol}>
+                  <Chip
+                    className={classes.chipItem}
+                    key={idx}
+                    label={item!.name}
+                    color="primary"
+                    deleteIcon={<img src={require('images/ic_cross_orange.svg')} alt="" />}
+                  />
+                </div>
+              )
+            )}
+        </div>
+      </div>
       {!showAddCondition && caseSheetEdit && (
         <AphButton
-          variant="contained"
           color="primary"
-          classes={{ root: classes.btnAddDoctor }}
+          classes={{ root: classes.addBtn }}
           onClick={() => showAddConditionHandler(true)}
         >
-          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD CONDITION
+          <img src={require('images/ic_dark_plus.svg')} alt="" /> Add Condition
         </AphButton>
       )}
       {showAddCondition && (
@@ -375,19 +360,16 @@ export const Diagnosis: React.FC = () => {
             value: state.single,
             onChange: handleChange('single'),
           }}
-          theme={{
-            container: classes.container,
-            suggestionsContainerOpen: classes.suggestionsContainerOpen,
-            suggestionsList: classes.suggestionsList,
-            suggestion: classes.suggestion,
-          }}
           renderSuggestionsContainer={(options) => (
             <Paper {...options.containerProps} square className={classes.searchpopup}>
               {options.children}
             </Paper>
           )}
+          theme={{
+            container: classes.autoSuggestBox,
+          }}
         />
       )}
-    </Typography>
+    </div>
   );
 };

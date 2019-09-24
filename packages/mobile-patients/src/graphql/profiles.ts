@@ -469,6 +469,7 @@ export const GET_CASESHEET_DETAILS = gql`
           patientId
           parentId
           status
+          displayId
           isFollowUp
         }
         consultType
@@ -842,6 +843,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
         isFollowUp
         followUpParentId
         followUpTo
+        displayId
         bookingDate
         caseSheet {
           consultType

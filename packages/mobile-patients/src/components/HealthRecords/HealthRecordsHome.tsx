@@ -28,7 +28,15 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+  Platform,
+} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { Button } from '../ui/Button';
@@ -192,6 +200,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   // }, []);
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      fetchPastData();
       fetchData(true);
     });
     return () => {
@@ -237,7 +246,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           <UserIntro
             description={strings.health_records_home.description}
             style={{
-              height: 236,
+              height: 190, //236,
             }}
           >
             <View
@@ -265,7 +274,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         </View>
         <TabsComponent
           style={{
-            marginTop: 226,
+            marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
             backgroundColor: theme.colors.CARD_BG,
           }}
           height={44}
@@ -325,7 +334,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     // console.log(arrayValuesFilter, 'arrayValues', arrayValues);
     return (
       <View>
-        {renderFilter()}
+        {arrayValues && arrayValues.length !== 0 && renderFilter()}
 
         {arrayValues == 0 ? (
           <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
@@ -362,6 +371,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           <View>
             {arrayValues &&
               arrayValues.map((item: any, i: number) => {
+                console.log('item', item);
                 return (
                   <HealthConsultView
                     key={i}
@@ -374,6 +384,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                         DoctorInfo: item.doctorInfo,
                         FollowUp: item.isFollowUp,
                         appointmentType: item.appointmentType,
+                        DisplayId: item.displayId,
                       });
                     }}
                     PastData={item}

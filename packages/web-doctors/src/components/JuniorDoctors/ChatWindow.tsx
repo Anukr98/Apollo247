@@ -5,6 +5,14 @@ import { AphInput } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
+import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
+import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
+import { useMutation } from 'react-apollo-hooks';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContentText from '@material-ui/core/DialogContentText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -225,6 +233,23 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
+  const [chatUploadFile, setChatUploadFile] = useState<string | ArrayBuffer | null>(null);
+  const [chatUploadFileExtension, setChatUploadFileExtension] = useState<string>('');
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+  const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
+  const [fileUploading, setFileUploading] = React.useState<boolean>(false);
+
+  // console.log(chatUploadFile, chatUploadFileExtension, 'file upload....');
+
+  const getFileSizeInMBs = (fileSize: number) => {
+    let i = 0;
+    while (fileSize > 900) {
+      fileSize /= 1024;
+      i++;
+    }
+    console.log(i, 'increment....');
+    return Math.round(fileSize * 100) / 100;
+  };
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -269,10 +294,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       setStartingTime(timer);
     }, 1000);
   };
-  // const stopIntervalTimer = () => {
-  //   setStartingTime(0);
-  //   timerIntervalId && clearInterval(timerIntervalId);
-  // };
+
+  const mutationUploadChatDocument = useMutation<UploadChatDocument, UploadChatDocumentVariables>(
+    UPLOAD_CHAT_DOCUMENT
+  );
+
   const srollToBottomAction = () => {
     setTimeout(() => {
       const scrollDiv = document.getElementById('scrollDiv');
@@ -316,7 +342,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       status: (statusEvent) => {},
       message: (message) => {
         insertText[insertText.length] = message.message;
-        console.log(message.message);
         setMessages(() => [...insertText]);
         if (
           !showVideoChat &&
@@ -336,7 +361,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
         }
-        srollToBottomAction();
         resetMessagesAction();
         getHistory();
       },
@@ -345,28 +369,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       pubnub.unsubscribe({ channels: [channel] });
     };
   }, []);
-  // function getCookieValue() {
-  //   const name = 'action=';
-  //   const ca = document.cookie.split(';');
-  //   for (let i = 0; i < ca.length; i++) {
-  //     let c = ca[i];
-  //     while (c.charAt(0) === ' ') {
-  //       c = c.substring(1);
-  //     }
-  //     if (c.indexOf(name) === 0) {
-  //       return c.substring(name.length, c.length);
-  //     }
-  //   }
-  //   return '';
-  // }
-  // useEffect(() => {
-  //   //if (props.startConsult !== isVideoCall) {
-  //   if (getCookieValue() !== '') {
-  //     setIsVideoCall(props.startConsult === 'videocall' ? true : false);
-  //     setMessageText(videoCallMsg);
-  //     autoSend();
-  //   }
-  // }, []);
 
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
@@ -378,7 +380,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
       }
-      srollToBottomAction();
     });
   };
 
@@ -398,36 +399,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       (status, response) => {
         resetMessagesAction();
         srollToBottomAction();
-        // setTimeout(() => {
-        //   setMessageText('');
-        //   const scrollDiv = document.getElementById('scrollDiv');
-        //   if(scrollDiv){
-        //     scrollDiv!.scrollIntoView();
-        //   }
-        // }, 100);
       }
     );
   };
-  const autoSend = () => {
-    const text = {
-      id: doctorId,
-      message: props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
-      isTyping: true,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
-    actionBtn();
-  };
-
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
       rowData.id === doctorId &&
@@ -489,7 +463,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               ) : (
                 <span>{rowData.message}</span>
               )}
-              {/* {rowData.message} */}
             </div>
           )}
         </div>
@@ -559,7 +532,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               ) : (
                 <span>{rowData.message}</span>
               )}
-              {/* {rowData.message} */}
             </div>
           )}
         </div>
@@ -583,6 +555,19 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const actionBtn = () => {
     setShowVideo(true);
   };
+  const sendMsg = (msgObject: any, isStoreInHistory: boolean) => {
+    pubnub.publish(
+      {
+        channel: channel,
+        message: msgObject,
+        storeInHistory: isStoreInHistory,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+      }
+    );
+  };
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -594,17 +579,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: stopcallMsg,
       isTyping: true,
     };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
+    sendMsg(text, true);
     const stoptext = {
       id: doctorId,
       message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
@@ -613,18 +588,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
     };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: stoptext,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
-    //setIsVideoCall(false);
+    sendMsg(stoptext, true);
   };
   const stopAudioVideoCallpatient = () => {
     setIsCallAccepted(false);
@@ -637,36 +601,16 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: stopcallMsg,
       isTyping: true,
     };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
+    sendMsg(text, true);
   };
-  // const [convertVideo, setConvertVideo] = useState<boolean>(false);
-
-  // const covertVideoMsg = '^^convert`video^^';
-  // const covertAudioMsg = '^^convert`audio^^';
   const convertCall = () => {
     setConvertVideo(!convertVideo);
     setTimeout(() => {
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: convertVideo ? covertVideoMsg : covertAudioMsg,
-          },
-          channel: channel,
-          storeInHistory: false,
-        },
-        (status, response) => {}
-      );
+      const text = {
+        isTyping: true,
+        message: convertVideo ? covertVideoMsg : covertAudioMsg,
+      };
+      sendMsg(text, false);
     }, 10);
   };
   return (
@@ -693,7 +637,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             <Scrollbars
               className={classes.customScrollWrap}
               autoHide={true}
-              style={{ height: 'calc(100vh - 505px' }}
+              style={{ height: 'calc(100vh - 344px' }}
             >
               <div className={classes.customScroll}>
                 {messagessHtml}
@@ -717,13 +661,115 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               onChange={(event) => {
                 setMessageText(event.currentTarget.value);
               }}
+              // disabled={!props.disableChat}
             />
-            <Button className={classes.chatsendcircle}>
+            {/* {props.disableChat && (
+              <Button className={classes.chatsendcircle} variant="contained" component="label">
+                <img src={require('images/ic_add_circle.svg')} alt="" />
+                <input
+                  type="file"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const fileNames = e.target.files;
+                    if (fileNames && fileNames.length > 0) {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const dataURL = reader.result;
+                        setChatUploadFile(dataURL);
+                        mutationUploadChatDocument();
+                        // console.log(dataURL);
+                      };
+                      reader.readAsDataURL(fileNames[0]);
+                    }
+                  }}
+                />
+              </Button>
+            )} */}
+            <Button
+              className={classes.chatsendcircle}
+              variant="contained"
+              component="label"
+              disabled={fileUploading}
+            >
               <img src={require('images/ic_add_circle.svg')} alt="" />
+              <input
+                type="file"
+                style={{ display: 'none' }}
+                disabled={fileUploading}
+                onChange={(e) => {
+                  const fileNames = e.target.files;
+                  if (fileNames && fileNames.length > 0) {
+                    setFileUploading(true);
+                    const fileExtension = fileNames[0].name.split('.').pop();
+                    const fileSize = fileNames[0].size;
+                    if (fileSize > 2000000) {
+                      setFileUploadErrorMessage(
+                        'Invalid File Size. File size must be less than 2MB'
+                      );
+                      setIsDialogOpen(true);
+                    } else if (
+                      fileExtension === 'png' ||
+                      fileExtension === 'jpg' ||
+                      fileExtension === 'pdf'
+                    ) {
+                      const reader = new FileReader();
+                      reader.addEventListener(
+                        'load',
+                        () => {
+                          mutationUploadChatDocument({
+                            variables: {
+                              appointmentId: props.appointmentId,
+                              base64FileInput: reader.result as string,
+                              fileType: fileExtension,
+                            },
+                          }).then((response) => {
+                            setFileUploading(false);
+                            // continue from here to post this in chat window.....
+                            console.log(response);
+                          });
+                        },
+                        false
+                      );
+                      if (fileNames[0]) {
+                        reader.readAsDataURL(fileNames[0]);
+                      }
+                    } else {
+                      setFileUploadErrorMessage(
+                        'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
+                      );
+                      setIsDialogOpen(true);
+                    }
+                  }
+                }}
+              />
             </Button>
           </div>
         )}
       </div>
+
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle>File Upload Error</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{fileUploadErrorMessage}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsDialogOpen(false);
+              setFileUploading(false);
+            }}
+            autoFocus
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
