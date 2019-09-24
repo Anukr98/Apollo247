@@ -8,6 +8,11 @@ import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
 import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
 import { useMutation } from 'react-apollo-hooks';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContentText from '@material-ui/core/DialogContentText';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -230,8 +235,22 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [chatUploadFile, setChatUploadFile] = useState<string | ArrayBuffer | null>(null);
+  const [chatUploadFileExtension, setChatUploadFileExtension] = useState<string>('');
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+  const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
+  const [fileUploading, setFileUploading] = React.useState<boolean>(false);
 
-  console.log(chatUploadFile, 'uploaded file ');
+  // console.log(chatUploadFile, chatUploadFileExtension, 'file upload....');
+
+  const getFileSizeInMBs = (fileSize: number) => {
+    let i = 0;
+    while (fileSize > 900) {
+      fileSize /= 1024;
+      i++;
+    }
+    console.log(i, 'increment....');
+    return Math.round(fileSize * 100) / 100;
+  };
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -283,7 +302,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       variables: {
         appointmentId: props.appointmentId,
         base64FileInput: String(chatUploadFile),
-        fileType: '',
+        fileType: chatUploadFileExtension,
       },
     }
   );
@@ -756,21 +775,52 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 />
               </Button>
             )} */}
-            <Button className={classes.chatsendcircle} variant="contained" component="label">
+            <Button
+              className={classes.chatsendcircle}
+              variant="contained"
+              component="label"
+              disabled={fileUploading}
+            >
               <img src={require('images/ic_add_circle.svg')} alt="" />
               <input
                 type="file"
                 style={{ display: 'none' }}
+                disabled={fileUploading}
                 onChange={(e) => {
                   const fileNames = e.target.files;
                   if (fileNames && fileNames.length > 0) {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      const dataURL = reader.result;
-                      setChatUploadFile(dataURL);
-                      mutationUploadChatDocument();
-                    };
-                    reader.readAsDataURL(fileNames[0]);
+                    setFileUploading(true);
+                    const fileExtension = fileNames[0].name.split('.').pop();
+                    const fileSize = fileNames[0].size;
+                    console.log(fileSize, 'file Size is.......');
+                    setChatUploadFileExtension(fileExtension || '');
+                    if (fileSize > 2000000) {
+                      setFileUploadErrorMessage(
+                        'Invalid File Size. File size must be less than 2MB'
+                      );
+                      setIsDialogOpen(true);
+                    } else if (
+                      fileExtension === 'png' ||
+                      fileExtension === 'jpg' ||
+                      fileExtension === 'pdf'
+                    ) {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const dataURL = reader.result;
+                        setChatUploadFile(dataURL);
+                        mutationUploadChatDocument().then((response) => {
+                          setFileUploading(false);
+                          // continue from here to post this in chat window.....
+                          console.log(response);
+                        });
+                      };
+                      reader.readAsDataURL(fileNames[0]);
+                    } else {
+                      setFileUploadErrorMessage(
+                        'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
+                      );
+                      setIsDialogOpen(true);
+                    }
                   }
                 }}
               />
@@ -778,6 +828,30 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           </div>
         )}
       </div>
+
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle>File Upload Error</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{fileUploadErrorMessage}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsDialogOpen(false);
+              setFileUploading(false);
+            }}
+            autoFocus
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
