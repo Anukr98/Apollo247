@@ -479,7 +479,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         fetchSearchData();
       })
       .catch((e: string) => {
-        // setshowSpinner(false);
+        setshowSpinner(false);
         console.log('Error occured', e);
       });
   };

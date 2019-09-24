@@ -8,7 +8,7 @@ import {
   ShareGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -20,14 +20,17 @@ import {
   Alert,
   Linking,
   CameraRoll,
+  PermissionsAndroid,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Button } from '../ui/Button';
 import RNFetchBlob from 'react-native-fetch-blob';
 import { Spinner } from '../ui/Spinner';
 import { useShoppingCart, ShoppingCartItem } from '../ShoppingCartProvider';
-import { CartItem } from '../../helpers/apiCalls';
+import { CartItem, getMedicineDetailsApi } from '../../helpers/apiCalls';
 import { AppRoutes } from '../NavigatorContainer';
+import moment from 'moment';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -108,11 +111,85 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   var arr = url.split(',');
   console.log(arr[0], 'arr');
   console.log(arr.length, 'arrlength');
-  const { addCartItem } = useShoppingCart();
+  const { addCartItem, addEPrescription } = useShoppingCart();
+  const { currentPatient } = useAllCurrentPatients();
+
+  const addToCart = () => {
+    if (!data.medicineSku) {
+      Alert.alert('Alert', 'Item not available.');
+      return;
+    }
+    setLoading(true);
+    getMedicineDetailsApi(data.medicineSku)
+      .then(({ data: { productdp } }) => {
+        setLoading(false);
+        console.log({ data: productdp && productdp[0] });
+        const medicineDetails = (productdp && productdp[0]) || {};
+        const isInStock = medicineDetails.is_in_stock;
+        if (!isInStock) {
+          Alert.alert('Alert', 'This item is out of stock.');
+          return;
+        }
+        addCartItem!({
+          id: medicineDetails.sku,
+          mou: medicineDetails.mou,
+          price: medicineDetails.price,
+          quantity: data.quantity,
+          name: data.medicineName,
+          prescriptionRequired: medicineDetails.is_prescription_required == '1',
+        } as ShoppingCartItem);
+        if (medicineDetails.is_prescription_required == '1') {
+          addEPrescription!({
+            id: data!.id,
+            date: moment(me).format('DD MMMM YYYY'),
+            doctorName: '',
+            forPatient: (currentPatient && currentPatient.firstName) || '',
+            medicines: `${data.medicineName}`,
+            uploadedUrl: arr[0],
+          });
+        }
+
+        props.navigation.navigate(AppRoutes.YourCart);
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.log(err, 'MedicineDetailsScene err');
+        Alert.alert('Alert', 'No medicines found.');
+      });
+  };
+
   const saveimageIos = (url: any) => {
     console.log(url, 'saveimageIos');
     if (Platform.OS === 'ios') {
       Linking.openURL(url).catch((err) => console.error('An error occurred', err));
+    }
+  };
+  useEffect(() => {
+    Platform.OS === 'android' && requestReadSmsPermission();
+  });
+  const requestReadSmsPermission = async () => {
+    try {
+      const resuts = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      ]);
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        console.log(resuts, 'WRITE_EXTERNAL_STORAGE');
+      }
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        console.log(resuts, 'READ_EXTERNAL_STORAGE');
+      }
+      if (resuts) {
+        console.log(resuts, 'READ_EXTERNAL_STORAGE');
+      }
+    } catch (error) {
+      console.log('error', error);
     }
   };
   return (
@@ -140,6 +217,12 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                     } else {
                       for (var i = 0; i < arr.length; i++) {
                         console.log('urllrr', arr[i]);
+                        if (Platform.OS === 'ios') {
+                          try {
+                            CameraRoll.saveToCameraRoll(arr[i]);
+                            Alert.alert('Download Completed');
+                          } catch {}
+                        }
                         let dirs = RNFetchBlob.fs.dirs;
                         console.log('dirs', dirs);
                         setLoading(true);
@@ -161,10 +244,16 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                             // the temp file path
                             console.log('The file saved to res ', res);
                             console.log('The file saved to ', res.path());
+                            // console.log(
+                            //   'CameraRoll.saveToCameraRoll(arr[i]) ',
+                            //   CameraRoll.saveToCameraRoll(arr[i])
+                            // );
                             //saveimageIos(arr[0]);
-                            try {
-                              CameraRoll.saveToCameraRoll(arr[0]);
-                            } catch {}
+                            // if (Platform.OS === 'ios') {
+                            //   try {
+                            //     CameraRoll.saveToCameraRoll(arr[i]);
+                            //   } catch {}
+                            // }
                             // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                             // RNFetchBlob.ios.openDocument(res.path());
                             Alert.alert('Download Complete');
@@ -212,7 +301,22 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             </Text>
           </View>
         </View>
-        {url == null ? null : (
+        <ScrollView>
+          {arr.map((item: string) => (
+            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+              <Image
+                source={{ uri: item }}
+                style={{
+                  // flex: 1,
+                  width: '100%',
+                  height: 425,
+                }}
+                resizeMode="contain"
+              />
+            </View>
+          ))}
+        </ScrollView>
+        {/* {url == null ? null : (
           <Image
             style={{
               width: 327,
@@ -224,7 +328,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             }}
             source={{ uri: url }}
           />
-        )}
+        )} */}
 
         <View
           style={{
@@ -239,16 +343,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             title="RE-ORDER MEDICINES"
             disabled={data.medicineSku == null ? true : false}
             onPress={() => {
-              addCartItem &&
-                addCartItem({
-                  id: data.medicineSku,
-                  mou: '1',
-                  price: data.price,
-                  quantity: data.quantity,
-                  name: data.medicineName,
-                  prescriptionRequired: false,
-                } as ShoppingCartItem);
-              props.navigation.navigate(AppRoutes.YourCart);
+              addToCart();
             }}
           />
         </View>

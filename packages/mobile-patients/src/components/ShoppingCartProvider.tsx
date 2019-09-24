@@ -57,6 +57,7 @@ export interface ShoppingCartContextProps {
   setStores: ((store: Store[]) => void) | null;
 
   ePrescriptions: EPrescription[];
+  addEPrescription: ((item: EPrescription) => void) | null;
   setEPrescriptions: ((items: EPrescription[]) => void) | null;
   removeEPrescription: ((id: EPrescription['id']) => void) | null;
 
@@ -105,6 +106,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   uploadPrescriptionRequired: false,
 
   ePrescriptions: [],
+  addEPrescription: null,
   setEPrescriptions: null,
   removeEPrescription: null,
 
@@ -135,7 +137,7 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
 });
 
 export const ShoppingCartProvider: React.FC = (props) => {
-  const [cartItems, setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
+  const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
     0
   );
@@ -159,6 +161,14 @@ export const ShoppingCartProvider: React.FC = (props) => {
     []
   );
 
+  const addEPrescription: ShoppingCartContextProps['addEPrescription'] = (itemToAdd) => {
+    if (ePrescriptions.find((item) => item.id == itemToAdd.id)) {
+      return;
+    }
+    const newItems = [...ePrescriptions, itemToAdd];
+    setEPrescriptions(newItems);
+  };
+
   const saveCartItems = (cartItems: ShoppingCartItem[]) => {
     AsyncStorage.setItem('cartItems', JSON.stringify(cartItems)).catch(() => {
       Alert.alert('Error', 'Failed to save cart items in local storage.');
@@ -171,20 +181,20 @@ export const ShoppingCartProvider: React.FC = (props) => {
     }
     const newCartItems = [...cartItems, itemToAdd];
     saveCartItems(newCartItems);
-    setCartItems(newCartItems);
+    _setCartItems(newCartItems);
   };
 
   const removeCartItem: ShoppingCartContextProps['removeCartItem'] = (id) => {
     const newCartItems = cartItems.filter((item) => item.id !== id);
     saveCartItems(newCartItems);
-    setCartItems(newCartItems);
+    _setCartItems(newCartItems);
   };
   const updateCartItem: ShoppingCartContextProps['updateCartItem'] = (itemUpdates) => {
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
       saveCartItems([...cartItems]);
-      setCartItems([...cartItems]);
+      _setCartItems([...cartItems]);
     }
   };
 
@@ -254,6 +264,11 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setEPrescriptions([...newItems]);
   };
 
+  const setCartItems: ShoppingCartContextProps['setCartItems'] = (items) => {
+    _setCartItems(items);
+    saveCartItems(items);
+  };
+
   const clearCartInfo = () => {
     AsyncStorage.setItem('cartItems', '').catch(() => {
       Alert.alert('Alert', 'Failed to clear cart items from local storage.');
@@ -273,7 +288,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     const updateCartItemsFromStorage = async () => {
       try {
         const cartItemsFromStorage = await AsyncStorage.getItem('cartItems');
-        setCartItems(JSON.parse(cartItemsFromStorage || 'null') || []);
+        _setCartItems(JSON.parse(cartItemsFromStorage || 'null') || []);
       } catch (error) {
         Alert.alert('Alert', 'Failed to get cart items from local storage.');
       }
@@ -323,6 +338,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
         uploadPrescriptionRequired,
 
         ePrescriptions,
+        addEPrescription,
         removeEPrescription,
         setEPrescriptions,
 

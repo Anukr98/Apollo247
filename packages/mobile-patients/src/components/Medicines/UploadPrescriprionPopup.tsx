@@ -9,6 +9,7 @@ import {
   Path,
   PrescriptionIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
@@ -21,9 +22,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
-import ImagePicker, { ImagePickerResponse } from 'react-native-image-picker';
+import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ScrollView } from 'react-navigation';
-import { Spinner } from '../ui/Spinner';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -95,44 +95,64 @@ export interface UploadPrescriprionPopupProps {
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
-  const formatResponse = (response: ImagePickerResponse) => {
-    const imageUri = response!.uri || response!.path || 'folder/img.jpg';
-    const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
-    return response.data
-      ? [
-          {
-            base64: response.data,
-            fileType: imageUri.substring(imageUri.lastIndexOf('.') + 1),
-            title: `IMG_${random8DigitNumber}`,
-          } as PhysicalPrescription,
-        ]
-      : [];
+  const formatResponse = (response: ImageCropPickerResponse[]) => {
+    console.log({ response });
+    // const imageUri = response!.uri || response!.path || 'folder/img.jpg';
+    if (response.length == 0) return [];
+
+    return response.map((item) => {
+      const imageUri = item!.path || 'folder/img.jpg';
+      const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+      return {
+        base64: item.data,
+        fileType: imageUri.substring(imageUri.lastIndexOf('.') + 1),
+        title: `IMG_${random8DigitNumber}`,
+      } as PhysicalPrescription;
+    });
   };
 
   const onClickTakePhoto = () => {
     setshowSpinner(true);
-    ImagePicker.launchCamera(
-      {
-        quality: 0.1,
-      },
-      (response) => {
+    ImagePicker.openCamera({
+      // width: 400,
+      // height: 400,
+      cropping: false,
+      includeBase64: true,
+      compressImageQuality: 0.1,
+    })
+      .then((response) => {
+        console.log({ response });
         setshowSpinner(false);
-        props.onResponse('CAMERA_AND_GALLERY', formatResponse(response));
-      }
-    );
+        props.onResponse(
+          'CAMERA_AND_GALLERY',
+          formatResponse([response] as ImageCropPickerResponse[])
+        );
+      })
+      .catch((e) => {
+        console.log({ e });
+        setshowSpinner(false);
+      });
   };
 
   const onClickGallery = () => {
     setshowSpinner(true);
-    ImagePicker.launchImageLibrary(
-      {
-        quality: 0.2,
-      },
-      (response) => {
+    ImagePicker.openPicker({
+      cropping: false,
+      includeBase64: true,
+      multiple: true,
+      compressImageQuality: 0.1,
+    })
+      .then((response) => {
         setshowSpinner(false);
-        props.onResponse('CAMERA_AND_GALLERY', formatResponse(response));
-      }
-    );
+        props.onResponse(
+          'CAMERA_AND_GALLERY',
+          formatResponse(response as ImageCropPickerResponse[])
+        );
+      })
+      .catch((e) => {
+        console.log({ e });
+        setshowSpinner(false);
+      });
   };
 
   const isOptionDisabled = (type: EPrescriptionDisableOption) => props.disabledOption == type;

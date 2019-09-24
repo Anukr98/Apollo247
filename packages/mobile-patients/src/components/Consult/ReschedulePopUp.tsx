@@ -233,7 +233,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                       props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
                       props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
                         .availableSlot
-                  ).format(' DD MMMM YYYY HH:mm A')}
+                  ).format(' DD MMMM YYYY, hh:mm a')}
                 </Text>
               ) : (
                 <Text

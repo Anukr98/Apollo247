@@ -118,6 +118,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     ePrescriptions,
   } = useShoppingCart();
 
+  console.log({ ePrescriptions });
+
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
