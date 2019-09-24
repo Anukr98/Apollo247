@@ -19,8 +19,7 @@ export class FacilityRepository extends Repository<Facility> {
   getFacilityUniqueTerm(facility: Partial<Facility>) {
     let facilityName = '';
     if (facility.name) facilityName = facility.name.trim().toLowerCase();
-    if (facility.streetLine1)
-      facilityName = facilityName + '_' + facility.streetLine1.trim().toLowerCase();
+    if (facility.streetLine1) facilityName += '_' + facility.streetLine1.trim().toLowerCase();
     return facilityName;
   }
 
@@ -29,9 +28,20 @@ export class FacilityRepository extends Repository<Facility> {
     const uniqueFacilityChecker: string[] = [];
     duplicateFacilities.forEach((facility) => {
       const uniqueTerm = this.getFacilityUniqueTerm(facility);
-      if (!uniqueFacilityChecker.includes(uniqueTerm) && uniqueTerm != '') {
+      if (!uniqueFacilityChecker.includes(uniqueTerm)) {
         uniqueFacilityChecker.push(uniqueTerm);
-        uniqueFacilities.push(facility);
+        if (facility.name === undefined || uniqueTerm == '') {
+          uniqueFacilities.push({
+            name: '',
+            streetLine1: '',
+            city: '',
+            state: '',
+            country: '',
+            facilityType: FacilityType.HOSPITAL,
+          });
+        } else {
+          uniqueFacilities.push(facility);
+        }
       }
     });
     return uniqueFacilities;
@@ -50,15 +60,6 @@ export class FacilityRepository extends Repository<Facility> {
           return;
         }
       });
-    });
-
-    uniqueFacilities.push({
-      name: '',
-      streetLine1: '',
-      city: '',
-      state: '',
-      country: '',
-      facilityType: FacilityType.HOSPITAL,
     });
 
     //insert/update new facilities

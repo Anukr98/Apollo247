@@ -8,6 +8,11 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { getConnection } from 'typeorm';
 
 export const getDoctorDetailsTypeDefs = gql`
+  enum Gender {
+    MALE
+    FEMALE
+    OTHER
+  }
   enum AccountType {
     CURRENT
     SAVINGS

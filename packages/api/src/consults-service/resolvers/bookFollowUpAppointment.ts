@@ -157,7 +157,7 @@ const bookFollowUpAppointment: Resolver<
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
 
-  //TODO after junior doctor flow.. casesheet creation should be changed.
+  //casesheet creation starts here.
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const caseSheetAttrs: Partial<CaseSheet> = {
     consultType: appointment.appointmentType,

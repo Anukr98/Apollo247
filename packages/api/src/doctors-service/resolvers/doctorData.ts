@@ -197,6 +197,12 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
       if (element.PHYSICALCONSULTATIONLOCATIONNAME == facility.name) {
         element.PHYSICALCONSULTATIONLOCATIONNAME = facility.id;
         return;
+      } else if (
+        typeof element.PHYSICALCONSULTATIONLOCATIONNAME == 'undefined' &&
+        facility.name == ''
+      ) {
+        element.PHYSICALCONSULTATIONLOCATIONNAME = facility.id;
+        return;
       }
     });
   });
