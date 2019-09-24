@@ -289,7 +289,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 }
               }, 1000);
             });
-        }, 2000);
+        }, 3000);
       } else {
         setshowOfflinePopup(true);
       }
@@ -350,7 +350,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         const { phoneNumber } = props.navigation.state.params!;
         console.log('onClickResend', phoneNumber);
 
-        sendOtp(phoneNumber)
+        sendOtp(phoneNumber, true)
           .then((confirmResult) => {
             console.log('confirmResult login', confirmResult);
           })
