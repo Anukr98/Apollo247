@@ -336,7 +336,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
         }
-        srollToBottomAction();
+        //srollToBottomAction();
         resetMessagesAction();
         getHistory();
       },
@@ -378,7 +378,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
       }
-      srollToBottomAction();
+      //srollToBottomAction();
     });
   };
 
@@ -693,7 +693,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             <Scrollbars
               className={classes.customScrollWrap}
               autoHide={true}
-              style={{ height: 'calc(100vh - 505px' }}
+              style={{ height: 'calc(100vh - 344px' }}
             >
               <div className={classes.customScroll}>
                 {messagessHtml}
