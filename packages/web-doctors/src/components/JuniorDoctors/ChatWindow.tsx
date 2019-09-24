@@ -296,14 +296,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const mutationUploadChatDocument = useMutation<UploadChatDocument, UploadChatDocumentVariables>(
-    UPLOAD_CHAT_DOCUMENT,
-    {
-      variables: {
-        appointmentId: props.appointmentId,
-        base64FileInput: String(chatUploadFile),
-        fileType: chatUploadFileExtension,
-      },
-    }
+    UPLOAD_CHAT_DOCUMENT
   );
 
   const srollToBottomAction = () => {
@@ -349,7 +342,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       status: (statusEvent) => {},
       message: (message) => {
         insertText[insertText.length] = message.message;
-        console.log(message.message);
         setMessages(() => [...insertText]);
         if (
           !showVideoChat &&
@@ -369,7 +361,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
         }
-        //srollToBottomAction();
         resetMessagesAction();
         getHistory();
       },
@@ -378,28 +369,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       pubnub.unsubscribe({ channels: [channel] });
     };
   }, []);
-  // function getCookieValue() {
-  //   const name = 'action=';
-  //   const ca = document.cookie.split(';');
-  //   for (let i = 0; i < ca.length; i++) {
-  //     let c = ca[i];
-  //     while (c.charAt(0) === ' ') {
-  //       c = c.substring(1);
-  //     }
-  //     if (c.indexOf(name) === 0) {
-  //       return c.substring(name.length, c.length);
-  //     }
-  //   }
-  //   return '';
-  // }
-  // useEffect(() => {
-  //   //if (props.startConsult !== isVideoCall) {
-  //   if (getCookieValue() !== '') {
-  //     setIsVideoCall(props.startConsult === 'videocall' ? true : false);
-  //     setMessageText(videoCallMsg);
-  //     autoSend();
-  //   }
-  // }, []);
 
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
@@ -411,7 +380,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
       }
-      //srollToBottomAction();
     });
   };
 
@@ -431,36 +399,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       (status, response) => {
         resetMessagesAction();
         srollToBottomAction();
-        // setTimeout(() => {
-        //   setMessageText('');
-        //   const scrollDiv = document.getElementById('scrollDiv');
-        //   if(scrollDiv){
-        //     scrollDiv!.scrollIntoView();
-        //   }
-        // }, 100);
       }
     );
   };
-  const autoSend = () => {
-    const text = {
-      id: doctorId,
-      message: props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
-      isTyping: true,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
-    actionBtn();
-  };
-
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
       rowData.id === doctorId &&
@@ -522,7 +463,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               ) : (
                 <span>{rowData.message}</span>
               )}
-              {/* {rowData.message} */}
             </div>
           )}
         </div>
@@ -592,7 +532,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               ) : (
                 <span>{rowData.message}</span>
               )}
-              {/* {rowData.message} */}
             </div>
           )}
         </div>
@@ -616,6 +555,19 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const actionBtn = () => {
     setShowVideo(true);
   };
+  const sendMsg = (msgObject: any, isStoreInHistory: boolean) => {
+    pubnub.publish(
+      {
+        channel: channel,
+        message: msgObject,
+        storeInHistory: isStoreInHistory,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
+      }
+    );
+  };
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -627,17 +579,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: stopcallMsg,
       isTyping: true,
     };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
+    sendMsg(text, true);
     const stoptext = {
       id: doctorId,
       message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
@@ -646,18 +588,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
     };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: stoptext,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
-    //setIsVideoCall(false);
+    sendMsg(stoptext, true);
   };
   const stopAudioVideoCallpatient = () => {
     setIsCallAccepted(false);
@@ -670,36 +601,16 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: stopcallMsg,
       isTyping: true,
     };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
+    sendMsg(text, true);
   };
-  // const [convertVideo, setConvertVideo] = useState<boolean>(false);
-
-  // const covertVideoMsg = '^^convert`video^^';
-  // const covertAudioMsg = '^^convert`audio^^';
   const convertCall = () => {
     setConvertVideo(!convertVideo);
     setTimeout(() => {
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: convertVideo ? covertVideoMsg : covertAudioMsg,
-          },
-          channel: channel,
-          storeInHistory: false,
-        },
-        (status, response) => {}
-      );
+      const text = {
+        isTyping: true,
+        message: convertVideo ? covertVideoMsg : covertAudioMsg,
+      };
+      sendMsg(text, false);
     }, 10);
   };
   return (
@@ -791,8 +702,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                     setFileUploading(true);
                     const fileExtension = fileNames[0].name.split('.').pop();
                     const fileSize = fileNames[0].size;
-                    console.log(fileSize, 'file Size is.......');
-                    setChatUploadFileExtension(fileExtension || '');
                     if (fileSize > 2000000) {
                       setFileUploadErrorMessage(
                         'Invalid File Size. File size must be less than 2MB'
@@ -804,16 +713,26 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                       fileExtension === 'pdf'
                     ) {
                       const reader = new FileReader();
-                      reader.onload = () => {
-                        const dataURL = reader.result;
-                        setChatUploadFile(dataURL);
-                        mutationUploadChatDocument().then((response) => {
-                          setFileUploading(false);
-                          // continue from here to post this in chat window.....
-                          console.log(response);
-                        });
-                      };
-                      reader.readAsDataURL(fileNames[0]);
+                      reader.addEventListener(
+                        'load',
+                        () => {
+                          mutationUploadChatDocument({
+                            variables: {
+                              appointmentId: props.appointmentId,
+                              base64FileInput: reader.result as string,
+                              fileType: fileExtension,
+                            },
+                          }).then((response) => {
+                            setFileUploading(false);
+                            // continue from here to post this in chat window.....
+                            console.log(response);
+                          });
+                        },
+                        false
+                      );
+                      if (fileNames[0]) {
+                        reader.readAsDataURL(fileNames[0]);
+                      }
                     } else {
                       setFileUploadErrorMessage(
                         'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'

@@ -42,7 +42,6 @@ import { REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { clientRoutes } from 'helpers/clientRoutes';
 /* patient related queries and mutations */
@@ -991,62 +990,6 @@ export const JDConsultRoom: React.FC = () => {
           </Scrollbars>
         </CaseSheetContext.Provider>
       )}
-      {/* <Modal
-        open={isPopoverOpen}
-        onClose={() => setIsPopoverOpen(false)}
-        disableBackdropClick
-        disableEscapeKeyDown
-      >
-        <Paper className={classes.modalBox}>
-          <div className={classes.tabHeader}>
-            <Button className={classes.cross}>
-              <img
-                src={require('images/ic_cross.svg')}
-                alt=""
-                onClick={() => setIsPopoverOpen(false)}
-              />
-            </Button>
-          </div>
-          <div className={classes.tabBody}>
-            {}
-            <h3>
-              You're ending your consult with
-              {casesheetInfo &&
-                casesheetInfo !== null &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.firstName !== '' &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.lastName &&
-                casesheetInfo!.getCaseSheet!.patientDetails!.lastName !== '' && (
-                  <span>
-                    {` ${casesheetInfo!.getCaseSheet!.patientDetails!.firstName} ${
-                      casesheetInfo!.getCaseSheet!.patientDetails!.lastName
-                    }.`}
-                  </span>
-                )}
-            </h3>
-            <Button
-              className={classes.consultButton}
-              //disabled={startAppointmentButton}
-              onClick={() => {
-                setIsPopoverOpen(false);
-                endConsultActionFinal();
-                setCaseSheetEdit(false);
-              }}
-            >
-              Preview Prescription
-            </Button>
-            <Button
-              className={classes.cancelConsult}
-              onClick={() => {
-                setIsPopoverOpen(false);
-              }}
-            >
-              Edit Case Sheet
-            </Button>
-          </div>
-        </Paper>
-      </Modal> */}
-
       <Dialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}

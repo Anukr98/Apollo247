@@ -211,13 +211,15 @@ export const Header: React.FC = (props) => {
                           />
                         </span>
                       ) : null}
-                      <span title="Notification">
-                        <img
-                          className={`${selectedTab === 4 && classes.menuItemActive}`}
-                          onClick={() => setSelectedTab(4)}
-                          src={require('images/ic_notifications.svg')}
-                        />
-                      </span>
+                      {!isJuniorDoctor ? (
+                        <span title="Notification">
+                          <img
+                            className={`${selectedTab === 4 && classes.menuItemActive}`}
+                            onClick={() => setSelectedTab(4)}
+                            src={require('images/ic_notifications.svg')}
+                          />
+                        </span>
+                      ) : null}
                       <span title="Help">
                         <img
                           className={`${selectedTab === 5 && classes.menuItemActive}`}
