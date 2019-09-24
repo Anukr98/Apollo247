@@ -224,13 +224,10 @@ const testInitiateRescheduleAppointment: Resolver<
   Boolean
 > = async (parent, { testRescheduleAppointmentInput }, { consultsDb, patientsDb, doctorsDb }) => {
   const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
-  const rescheduleAppointment = await rescheduleApptRepo.getAppointmentsAndReschedule(
+  const rescheduleAppointment = rescheduleApptRepo.getAppointmentsAndReschedule(
     testRescheduleAppointmentInput.doctorId,
     testRescheduleAppointmentInput.startDate,
-    testRescheduleAppointmentInput.endDate,
-    consultsDb,
-    doctorsDb,
-    patientsDb
+    testRescheduleAppointmentInput.endDate
   );
   console.log(rescheduleAppointment, 'rescheduleAppointment');
 

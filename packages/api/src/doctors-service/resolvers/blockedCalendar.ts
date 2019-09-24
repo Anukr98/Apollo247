@@ -4,8 +4,8 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { AphAuthenticationError, AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
-import { getAppointmentsAndReschedule } from 'consults-service/resolvers/rescheduleAppointment';
 import { areIntervalsOverlapping } from 'date-fns';
+import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 
 export const blockedCalendarTypeDefs = gql`
   type BlockedCalendarItem {
@@ -135,15 +135,8 @@ const testInitiateRescheduleAppointment1: Resolver<
   DoctorsServiceContext,
   Boolean
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
-  //const reschduleRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
-  await getAppointmentsAndReschedule(
-    args.doctorId,
-    args.startDate,
-    args.endDate,
-    consultsDb,
-    doctorsDb,
-    patientsDb
-  );
+  const resRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+  await resRepo.getAppointmentsAndReschedule(args.doctorId, args.startDate, args.endDate);
   return true;
 };
 

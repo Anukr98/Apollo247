@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Connection } from 'typeorm';
+import { EntityRepository, Repository, Connection, getConnection } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
@@ -30,15 +30,11 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
     return this.update(id, { rescheduleStatus });
   }
 
-  async getAppointmentsAndReschedule(
-    doctorId: string,
-    startDate: Date,
-    endDate: Date,
-    consultsDb: Connection,
-    doctorsDb: Connection,
-    patientsDb: Connection
-  ) {
-    const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  async getAppointmentsAndReschedule(doctorId: string, startDate: Date, endDate: Date) {
+    const consultsConnection = getConnection();
+    const doctorsConnection = getConnection('doctors-db');
+    const profilesConnection = getConnection('patients-db');
+    const apptRepo = consultsConnection.getCustomRepository(AppointmentRepository);
     const doctorAppts = await apptRepo.getDoctorAppointmentsByDates(doctorId, startDate, endDate);
     console.log(doctorAppts.length, 'appt length');
     if (doctorAppts.length > 0) {
@@ -55,9 +51,9 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
         };
         const resResponse = await this.rescheduleAppointment(
           rescheduleAppointmentAttrs,
-          consultsDb,
-          doctorsDb,
-          patientsDb
+          consultsConnection,
+          doctorsConnection,
+          profilesConnection
         );
         console.log(resResponse, 'reschedle response');
       });
