@@ -990,6 +990,8 @@ export const JDConsultRoom: React.FC = () => {
                   sessionId={sessionId}
                   token={token}
                   saving={saving}
+                  startAppointment={startAppointment}
+                  startAppointmentClick={startAppointmentClick}
                 />
                 <div className={classes.contentGroup}>
                   <div className={classes.leftSection}>
