@@ -953,7 +953,7 @@ export const JDConsultRoom: React.FC = () => {
                           src={
                             assignedDoctorPhoto !== ''
                               ? assignedDoctorPhoto
-                              : require('images/doctor_02.png')
+                              : require('images/no_photo.png')
                           }
                           alt="Doctor Profile Photo"
                           className={classes.avatar}

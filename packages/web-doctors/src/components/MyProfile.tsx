@@ -457,7 +457,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
               {doctor!.associatedDoctor!.photoUrl ? (
                 <img src={`${doctor!.associatedDoctor!.photoUrl}`} />
               ) : (
-                <img src={require('images/doctor-profile.jpg')} />
+                <img src={require('images/no_photo.png')} />
               )}
             </Avatar>
           }
