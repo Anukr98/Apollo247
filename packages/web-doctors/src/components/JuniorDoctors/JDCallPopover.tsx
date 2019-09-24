@@ -470,7 +470,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
     },
     pageSubHeader: {
-      padding: '24px 20px',
+      padding: 16,
       display: 'flex',
     },
     headerLeftGroup: {

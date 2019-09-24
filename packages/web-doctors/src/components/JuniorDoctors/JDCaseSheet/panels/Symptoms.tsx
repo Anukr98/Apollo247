@@ -1,174 +1,113 @@
-import React, { Fragment, useEffect, useContext } from 'react';
-import {
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Theme,
-  Paper,
-  FormHelperText,
-  Modal,
-  Button,
-} from '@material-ui/core';
-//import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import React, { useEffect, useContext } from 'react';
+import { Theme, FormHelperText } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
+import { AphTextField, AphButton, AphDialogTitle, AphDialog } from '@aph/web-ui-components';
 
 import { isEmpty, debounce, trim } from 'lodash';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import _uniqueId from 'lodash/uniqueId';
 
 const useStyles = makeStyles((theme: Theme) => ({
-  container: {
-    display: 'flex',
-    flex: 1,
+  root: {
+    width: '100%',
+  },
+  symtomListGroup: {
+    paddingBottom: 4,
   },
   listItem: {
-    display: 'flex',
-    flexFlow: 'column',
-    padding: '0px 0 10px 10px',
-    backgroundColor: 'rgba(0, 0, 0, 0.02)',
-    border: 'solid 1px rgba(2, 71, 91, 0.15)',
     borderRadius: 5,
-    minWidth: 288,
-    maxWidth: 288,
-    margin: '5px 0',
-
-    '& h6': {
-      fontSize: 12,
-      color: '#01475b',
-      fontWeight: 'normal',
-    },
-    '& h3': {
-      fontSize: 14,
-      color: '#01475b',
-      fontWeight: 500,
+    border: 'solid 1px rgba(2, 71, 91, 0.15)',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    padding: 16,
+    paddingTop: 14,
+    marginBottom: 16,
+    '&:last-child': {
+      marginBottom: 0,
     },
   },
   symtomHeading: {
-    margin: '5px 0 0 0',
-    '& span': {
-      fontSize: 14,
-      color: '#01475b',
-      fontWeight: 500,
+    fontSize: 15,
+    color: '#01475b',
+    fontWeight: 500,
+    position: 'relative',
+    paddingRight: 40,
+  },
+  deleteSymptom: {
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
+    minWidth: 'auto',
+    padding: 0,
+    position: 'absolute',
+    right: 0,
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
+    '& img': {
+      maxWidth: 24,
+      maxHeight: 24,
     },
   },
   symtomContent: {
-    padding: '0 0 0 10px',
-    '& div': {
-      margin: 0,
-    },
-    '& p': {
-      '& span': {
-        fontSize: 12,
-        color: '#01475b',
-        fontWeight: 'normal',
-      },
-    },
+    paddingTop: 5,
   },
-  symtomList: {
-    padding: '0 0 10px 0',
-    '& ul': {
-      padding: 0,
-    },
+  symtomType: {
+    fontSize: 14,
+    lineHeight: 1.43,
+    color: '#01475b',
   },
-  btnAddDoctor: {
+  addBtn: {
     backgroundColor: 'transparent',
     boxShadow: 'none',
     color: theme.palette.action.selected,
     fontSize: 14,
     fontWeight: 600,
-    paddingLeft: 4,
+    padding: 0,
+    marginTop: 16,
     '&:hover': {
       backgroundColor: 'transparent',
     },
     '& img': {
       marginRight: 8,
+      verticalAlign: 'middle',
     },
   },
-  deleteSymptom: {
-    backgroundColor: 'transparent',
-    boxShadow: 'none',
-    position: 'absolute',
-    right: 0,
-    color: '#666666',
-    top: 7,
-    minWidth: 10,
-    fontSize: 14,
-    fontWeight: theme.typography.fontWeightBold,
-    paddingLeft: 4,
-    '&:hover': {
-      backgroundColor: 'transparent',
+  noDataFound: {
+    borderRadius: 5,
+    border: 'solid 1px rgba(2, 71, 91, 0.15)',
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+    padding: 16,
+    paddingTop: 14,
+    color: '#02475b',
+  },
+  dialogWindow: {
+    '& >div': {
+      '& >div': {
+        maxWidth: 480,
+      },
     },
   },
-  popupHeadingCenter: {
+  dialogTitle: {
     '& h6': {
       fontSize: 13,
       color: '#01475b',
       fontWeight: 600,
       textAlign: 'center',
-      marginTop: 5,
     },
   },
-  medicinePopup: {
-    width: 480,
-    margin: '30px auto 0 auto',
-    boxShadow: 'none',
-  },
-  cross: {
+  dialogClose: {
     position: 'absolute',
-    right: -5,
-    minWidth: 20,
-    top: -9,
-    fontSize: 18,
-    color: '#02475b',
-  },
-  dialogContent: {
-    padding: 20,
-    minHeight: 380,
-    '& h6': {
-      fontSize: 14,
-      fontWeight: 500,
-      color: 'rgba(2, 71, 91, 0.6)',
-      marginBottom: 10,
-      marginTop: 0,
-    },
-  },
-  numberTablets: {
-    fontSize: 16,
-    color: '#02475b',
-    fontWeight: 500,
-    marginBottom: 30,
-    '& button': {
-      border: '1px solid #00b38e',
-      padding: '5px 10px',
-      fontSize: 12,
-      fontWeight: 'normal',
-      borderRadius: 14,
-      marginRight: 15,
-      color: '#00b38e',
-      backgroundColor: '#fff',
-    },
-    '& input': {
-      paddingTop: 0,
-      paddingBottom: 5,
-    },
-  },
-  helpText: {
-    paddingLeft: 0,
-    paddingRight: 20,
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
+    padding: 0,
+    right: 0,
+    top: -5,
+    minWidth: 'auto',
   },
   dialogActions: {
-    padding: 20,
-    paddingTop: 10,
+    padding: '16px 20px',
     boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
     position: 'relative',
     textAlign: 'right',
-    '& button': {
-      borderRadius: 10,
-      minwidth: 130,
-      padding: '8px 20px',
-    },
   },
   cancelBtn: {
     fontSize: 14,
@@ -177,40 +116,43 @@ const useStyles = makeStyles((theme: Theme) => ({
     backgroundColor: 'transparent',
     boxShadow: '0 2px 5px 0 rgba(0,0,0,0.2)',
     border: 'none',
-    marginRight: 10,
+    marginRight: 20,
+    minWidth: 'auto',
+    borderRadius: 10,
     '&:hover': {
       backgroundColor: 'transparent',
       color: '#fc9916',
     },
   },
-  paper: {
-    textAlign: 'left',
-    color: theme.palette.text.secondary,
-    marginBottom: 12,
-    backgroundColor: '#f7f7f7',
-    border: '1px solid rgba(2,71,91,0.1)',
-    padding: '12px 40px 12px 12px',
-    maxWidth: 288,
-    borderRadius: 5,
-    position: 'relative',
-    '& h5': {
-      fontSize: 14,
-      color: '#02475b',
-      margin: 0,
-      fontWeight: 600,
-    },
-    '& h6': {
-      fontSize: 12,
-      color: '#02475b',
-      margin: 0,
-      fontWeight: 'normal',
-    },
-  },
-  nodatafound: {
+  submitBtn: {
+    borderRadius: 10,
+    minWidth: 200,
     fontSize: 14,
   },
-  symptomCaption: {
-    marginLeft: 20,
+  dialogContent: {
+    padding: 20,
+  },
+  formSection: {
+    '& label': {
+      fontSize: 14,
+      fontWeight: 500,
+      color: 'rgba(2, 71, 91, 0.6)',
+    },
+  },
+  formGroup: {
+    paddingBottom: 24,
+  },
+  formSubGroup: {
+    paddingLeft: 20,
+  },
+  helpText: {
+    paddingLeft: 0,
+    paddingRight: 20,
+  },
+  formHeader: {
+    '& input': {
+      fontWeight: 'bold',
+    },
   },
 }));
 interface errorObject {
@@ -345,231 +287,179 @@ export const Symptoms: React.FC = (props) => {
   }, [symptoms, idx]);
 
   return (
-    <Typography className={classes.container} component="div">
-      <div>
-        {symptoms && symptoms.length > 0 ? (
-          <List className={classes.symtomList}>
-            {symptoms &&
-              symptoms!.map((item, idx) => (
-                <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
-                  <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
+    <div className={classes.root}>
+      {symptoms && symptoms.length > 0 ? (
+        <div className={classes.symtomListGroup}>
+          {symptoms &&
+            symptoms!.map((item, idx) => (
+              <div key={idx} className={classes.listItem}>
+                <div className={classes.symtomHeading}>
+                  {item!.symptom}
                   <AphButton
-                    variant="contained"
-                    color="primary"
                     classes={{ root: classes.deleteSymptom }}
                     onClick={() => deleteSymptom(idx)}
                   >
                     <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
                   </AphButton>
-                  <Fragment>
-                    <List>
-                      {item!.since && (
-                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                          <ListItemText
-                            secondary={
-                              <Fragment>
-                                <Typography component="span">Since: {item!.since}</Typography>
-                              </Fragment>
-                            }
-                          />
-                        </ListItem>
-                      )}
-                      {item!.howOften && (
-                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                          <ListItemText
-                            secondary={
-                              <Fragment>
-                                <Typography component="span">
-                                  How Often : {item!.howOften}
-                                </Typography>
-                              </Fragment>
-                            }
-                          />
-                        </ListItem>
-                      )}
-                      {item!.severity && (
-                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                          <ListItemText
-                            secondary={
-                              <Fragment>
-                                <Typography component="span">Severity: {item!.severity}</Typography>
-                              </Fragment>
-                            }
-                          />
-                        </ListItem>
-                      )}
-                    </List>
-                  </Fragment>
-                </ListItem>
-              ))}
-          </List>
-        ) : (
-          <div className={classes.nodatafound}>No data Found</div>
-        )}
-
-        {caseSheetEdit && (
+                </div>
+                <div className={classes.symtomContent}>
+                  {item!.since && <div className={classes.symtomType}>Since: {item!.since}</div>}
+                  {item!.howOften && (
+                    <div className={classes.symtomType}>How Often : {item!.howOften}</div>
+                  )}
+                  {item!.severity && (
+                    <div className={classes.symtomType}>Severity: {item!.severity}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+        </div>
+      ) : (
+        <div className={classes.noDataFound}>No data Found</div>
+      )}
+      {caseSheetEdit && (
+        <AphButton classes={{ root: classes.addBtn }} onClick={() => setIsDialogOpen(true)}>
+          <img src={require('images/ic_dark_plus.svg')} alt="" />
+          Add Symptom
+        </AphButton>
+      )}
+      <AphDialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+        className={classes.dialogWindow}
+      >
+        <AphDialogTitle className={classes.dialogTitle}>
+          ADD SYMPTOM
           <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.btnAddDoctor }}
-            onClick={() => setIsDialogOpen(true)}
+            onClick={() => {
+              clearError();
+              setIsDialogOpen(false);
+              clearField();
+            }}
+            className={classes.dialogClose}
           >
-            <img src={require('images/ic_dark_plus.svg')} alt="" />
+            <img src={require('images/ic_cross.svg')} alt="" />
+          </AphButton>
+        </AphDialogTitle>
+        <div className={classes.dialogContent}>
+          <div className={classes.formSection}>
+            <div className={classes.formGroup}>
+              <label>Symptom</label>
+              <AphTextField
+                placeholder=""
+                value={symptom}
+                inputProps={{ maxLength: 30 }}
+                className={classes.formHeader}
+                onChange={(event) => {
+                  setSymptom(event.target.value);
+                  clearError();
+                }}
+                error={errorState.symptomError}
+              />
+              {errorState.symptomError && (
+                <FormHelperText
+                  className={classes.helpText}
+                  component="div"
+                  error={errorState.symptomError}
+                >
+                  Please Enter Symptom(two symptom name can't be same)
+                </FormHelperText>
+              )}
+            </div>
+            <div className={classes.formSubGroup}>
+              <div className={classes.formGroup}>
+                <label>Since?</label>
+                <AphTextField
+                  placeholder=""
+                  value={since}
+                  inputProps={{ maxLength: 30 }}
+                  onChange={(event) => {
+                    setSince(event.target.value);
+                    clearError();
+                  }}
+                  error={errorState.sinceError}
+                />
+                {errorState.sinceError && (
+                  <FormHelperText
+                    className={classes.helpText}
+                    component="div"
+                    error={errorState.sinceError}
+                  >
+                    Please Enter Since
+                  </FormHelperText>
+                )}
+              </div>
+              <div className={classes.formGroup}>
+                <label>How often?</label>
+                <AphTextField
+                  placeholder=""
+                  value={howOften}
+                  inputProps={{ maxLength: 30 }}
+                  onChange={(event) => {
+                    setHowOften(event.target.value);
+                    clearError();
+                  }}
+                  error={errorState.howOfftenError}
+                />
+                {errorState.howOfftenError && (
+                  <FormHelperText
+                    className={classes.helpText}
+                    component="div"
+                    error={errorState.howOfftenError}
+                  >
+                    Please Enter How Often
+                  </FormHelperText>
+                )}
+              </div>
+              <div className={classes.formGroup}>
+                <label>Severity</label>
+                <AphTextField
+                  placeholder=""
+                  inputProps={{ maxLength: 30 }}
+                  value={severity}
+                  onChange={(event) => {
+                    setSeverity(event.target.value);
+                    clearError();
+                  }}
+                  error={errorState.severityError}
+                />
+                {errorState.severityError && (
+                  <FormHelperText
+                    className={classes.helpText}
+                    component="div"
+                    error={errorState.severityError}
+                  >
+                    Please Enter Severity
+                  </FormHelperText>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className={classes.dialogActions}>
+          <AphButton
+            className={classes.cancelBtn}
+            onClick={() => {
+              setIsDialogOpen(false);
+              clearField();
+              clearError();
+            }}
+          >
+            Cancel
+          </AphButton>
+          <AphButton
+            className={classes.submitBtn}
+            color="primary"
+            onClick={() => {
+              addUpdateSymptom();
+            }}
+          >
             Add Symptom
           </AphButton>
-        )}
-
-        <Modal
-          open={isDialogOpen}
-          onClose={() => setIsDialogOpen(false)}
-          disableBackdropClick
-          disableEscapeKeyDown
-        >
-          <Paper className={classes.medicinePopup}>
-            <AphDialogTitle className={classes.popupHeadingCenter}>
-              ADD SYMPTOM
-              <Button className={classes.cross}>
-                <img
-                  src={require('images/ic_cross.svg')}
-                  alt=""
-                  onClick={() => {
-                    clearError();
-                    setIsDialogOpen(false);
-                    clearField();
-                  }}
-                />
-              </Button>
-            </AphDialogTitle>
-            <div>
-              {
-                <div>
-                  <div>
-                    <div className={classes.dialogContent}>
-                      <div>
-                        <h6>Symptom</h6>
-                        <div className={classes.numberTablets}>
-                          <AphTextField
-                            placeholder=""
-                            value={symptom}
-                            inputProps={{ maxLength: 30 }}
-                            onChange={(event) => {
-                              setSymptom(event.target.value);
-                              clearError();
-                            }}
-                            error={errorState.symptomError}
-                          />
-                          {errorState.symptomError && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.symptomError}
-                            >
-                              Please Enter Symptom(two symptom name can't be same)
-                            </FormHelperText>
-                          )}
-                        </div>
-                      </div>
-                      <div className={classes.symptomCaption}>
-                        <h6>Since?</h6>
-                        <div className={classes.numberTablets}>
-                          <AphTextField
-                            placeholder=""
-                            value={since}
-                            inputProps={{ maxLength: 30 }}
-                            onChange={(event) => {
-                              setSince(event.target.value);
-                              clearError();
-                            }}
-                            error={errorState.sinceError}
-                          />
-                          {errorState.sinceError && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.sinceError}
-                            >
-                              Please Enter Since
-                            </FormHelperText>
-                          )}
-                        </div>
-                      </div>
-                      <div className={classes.symptomCaption}>
-                        <h6>How often?</h6>
-                        <div className={classes.numberTablets}>
-                          <AphTextField
-                            placeholder=""
-                            value={howOften}
-                            inputProps={{ maxLength: 30 }}
-                            onChange={(event) => {
-                              setHowOften(event.target.value);
-                              clearError();
-                            }}
-                            error={errorState.howOfftenError}
-                          />
-                          {errorState.howOfftenError && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.howOfftenError}
-                            >
-                              Please Enter How Often
-                            </FormHelperText>
-                          )}
-                        </div>
-                      </div>
-                      <div className={classes.symptomCaption}>
-                        <h6>Severity</h6>
-                        <div className={classes.numberTablets}>
-                          <AphTextField
-                            placeholder=""
-                            inputProps={{ maxLength: 30 }}
-                            value={severity}
-                            onChange={(event) => {
-                              setSeverity(event.target.value);
-                              clearError();
-                            }}
-                            error={errorState.severityError}
-                          />
-                          {errorState.severityError && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.severityError}
-                            >
-                              Please Enter Severity
-                            </FormHelperText>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={classes.dialogActions}>
-                    <AphButton
-                      className={classes.cancelBtn}
-                      color="primary"
-                      onClick={() => {
-                        setIsDialogOpen(false);
-                        clearField();
-                        clearError();
-                      }}
-                    >
-                      Cancel
-                    </AphButton>
-                    <AphButton
-                      color="primary"
-                      onClick={() => {
-                        addUpdateSymptom();
-                      }}
-                    >
-                      Add Symptom
-                    </AphButton>
-                  </div>
-                </div>
-              }
-            </div>
-          </Paper>
-        </Modal>
-      </div>
-    </Typography>
+        </div>
+      </AphDialog>
+    </div>
   );
 };
