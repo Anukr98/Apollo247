@@ -10,8 +10,29 @@ export class DoctorHospitalRepository extends Repository<DoctorAndHospital> {
     return this.count({ where: { doctor, facility } });
   }
 
-  insertDoctorAndHospitals(doctorAndHospitals: Partial<DoctorAndHospital>[]) {
-    return this.save(doctorAndHospitals).catch((saveDoctorHospitalsError) => {
+  findAll() {
+    return this.createQueryBuilder('doctorAndHospital')
+      .select('doctorAndHospital.doctor', 'doctor')
+      .addSelect('doctorAndHospital.facility', 'facility')
+      .where('doctorAndHospital.id is not null')
+      .getRawMany();
+  }
+
+  async insertDoctorAndHospitals(doctorAndHospitals: Partial<DoctorAndHospital>[]) {
+    const allDoctorAndHospitals = await this.findAll();
+
+    const newDoctorAndHospitals = doctorAndHospitals.filter((docAndHospital) => {
+      return allDoctorAndHospitals.some((allDocHospital) => {
+        return (
+          allDocHospital.facility == docAndHospital.facility &&
+          allDocHospital.doctor == docAndHospital.doctor
+        );
+      })
+        ? false
+        : true;
+    });
+
+    return this.save(newDoctorAndHospitals).catch((saveDoctorHospitalsError) => {
       throw new AphError(AphErrorMessages.SAVE_DOCTOR_AND_HOSPITAL_ERROR, undefined, {
         saveDoctorHospitalsError,
       });
