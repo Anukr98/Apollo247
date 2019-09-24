@@ -9,7 +9,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
-} from 'graphql/types/createAppointmentSession';
+} from 'graphql/types/CreateAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
 import {
