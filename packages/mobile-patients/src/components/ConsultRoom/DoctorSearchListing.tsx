@@ -757,7 +757,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           transform: [{ translateY: headMov }],
           zIndex: 2,
           elevation: 2,
-          ...theme.viewStyles.shadowStyle,
+          // ...theme.viewStyles.shadowStyle,
         }}
       >
         <Animated.View style={{ paddingHorizontal: 20, top: 0, opacity: imgOp }}>
