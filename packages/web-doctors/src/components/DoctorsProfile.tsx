@@ -13,7 +13,6 @@ import { AvailabilityTab } from 'components/AvailabilityTab';
 import { FeesTab } from 'components/FeesTab';
 import { useQuery } from 'react-apollo-hooks';
 import Scrollbars from 'react-custom-scrollbars';
-//import { GET_DOCTOR_PROFILE } from 'graphql/profiles';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 
 import { Link } from 'react-router-dom';

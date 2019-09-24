@@ -13,7 +13,7 @@ import { useAuth } from 'hooks/authHooks';
 import { AphSelect } from '@aph/web-ui-components';
 import { useApolloClient } from 'react-apollo-hooks';
 import { GET_PATIENT_LOG } from 'graphql/profiles';
-import { GetPatientLog } from 'graphql/types/getPatientLog';
+import { GetPatientLog } from 'graphql/types/GetPatientLog';
 import { patientLogSort, patientLogType } from 'graphql/types/globalTypes';
 import Scrollbars from 'react-custom-scrollbars';
 
