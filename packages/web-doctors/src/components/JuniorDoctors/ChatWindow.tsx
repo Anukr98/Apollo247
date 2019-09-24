@@ -5,6 +5,9 @@ import { AphInput } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
+import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
+import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
+import { useMutation } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -273,10 +276,18 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       setStartingTime(timer);
     }, 1000);
   };
-  // const stopIntervalTimer = () => {
-  //   setStartingTime(0);
-  //   timerIntervalId && clearInterval(timerIntervalId);
-  // };
+
+  const mutationUploadChatDocument = useMutation<UploadChatDocument, UploadChatDocumentVariables>(
+    UPLOAD_CHAT_DOCUMENT,
+    {
+      variables: {
+        appointmentId: props.appointmentId,
+        base64FileInput: String(chatUploadFile),
+        fileType: '',
+      },
+    }
+  );
+
   const srollToBottomAction = () => {
     setTimeout(() => {
       const scrollDiv = document.getElementById('scrollDiv');
@@ -721,9 +732,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               onChange={(event) => {
                 setMessageText(event.currentTarget.value);
               }}
-              disabled={!props.disableChat}
+              // disabled={!props.disableChat}
             />
-            {props.disableChat && (
+            {/* {props.disableChat && (
               <Button className={classes.chatsendcircle} variant="contained" component="label">
                 <img src={require('images/ic_add_circle.svg')} alt="" />
                 <input
@@ -736,6 +747,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                       reader.onload = () => {
                         const dataURL = reader.result;
                         setChatUploadFile(dataURL);
+                        mutationUploadChatDocument();
                         // console.log(dataURL);
                       };
                       reader.readAsDataURL(fileNames[0]);
@@ -743,7 +755,26 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                   }}
                 />
               </Button>
-            )}
+            )} */}
+            <Button className={classes.chatsendcircle} variant="contained" component="label">
+              <img src={require('images/ic_add_circle.svg')} alt="" />
+              <input
+                type="file"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const fileNames = e.target.files;
+                  if (fileNames && fileNames.length > 0) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      const dataURL = reader.result;
+                      setChatUploadFile(dataURL);
+                      mutationUploadChatDocument();
+                    };
+                    reader.readAsDataURL(fileNames[0]);
+                  }
+                }}
+              />
+            </Button>
           </div>
         )}
       </div>
