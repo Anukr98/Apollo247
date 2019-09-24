@@ -11,6 +11,14 @@ const fillStart = (start: string) =>
     .find('input')
     .type(start);
 
+const fillStartTime = (startTime: string) =>
+  cy
+    .get('[data-cypress="BlockedCalendarModal"]')
+    .contains('Start time')
+    .parent()
+    .find('input')
+    .type(startTime);
+
 const fillEnd = (end: string) =>
   cy
     .get('[data-cypress="BlockedCalendarModal"]')
@@ -18,6 +26,26 @@ const fillEnd = (end: string) =>
     .parent()
     .find('input')
     .type(end);
+
+const fillEndTime = (endTime: string) =>
+  cy
+    .get('[data-cypress="BlockedCalendarModal"]')
+    .contains('End time')
+    .parent()
+    .find('input')
+    .type(endTime);
+
+const selectDay = () =>
+  cy
+    .get('[data-cypress="BlockedCalendarModal"]')
+    .contains('For a day')
+    .click();
+
+const selectDuration = () =>
+  cy
+    .get('[data-cypress="BlockedCalendarModal"]')
+    .contains('For a duration')
+    .click();
 
 const waitForLoader = () =>
   cy
@@ -104,8 +132,8 @@ describe('BlockedCalendar', () => {
 
   it('Should validate start/end dates', () => {
     getAddBtn().click();
-
     getSubmitBtn().should('be.disabled');
+    selectDuration();
 
     fillStart('2050-09-18');
     fillEnd('2050-09-19');
@@ -120,39 +148,33 @@ describe('BlockedCalendar', () => {
     getSubmitBtn().should('be.disabled');
   });
 
-  it('Should send dates in UTC', () => {
+  it('Should validate start/end times', () => {
     getAddBtn().click();
+    getSubmitBtn().should('be.disabled');
+    selectDay();
+    fillStart('2050-09-18');
+
+    fillStartTime('10:30');
+    fillEndTime('20:30');
+    getSubmitBtn().should('be.enabled');
+
+    fillStartTime('10:00');
+    fillEndTime('09:00');
+    getSubmitBtn().should('be.disabled');
+  });
+
+  it('Should send dates in UTC (duration selected, same day)', () => {
+    getAddBtn().click();
+
+    selectDuration();
     fillStart('2050-09-18');
     fillEnd('2050-09-18');
-
-    const doctorId = srKabir.id;
-    const startUtc = '2050-09-17T18:30:00.000Z';
-    const endUtc = '2050-09-18T18:29:00.000Z';
-    const blockedCalendarResult = {
-      __typename: 'BlockedCalendarResult' as 'BlockedCalendarResult',
-      blockedCalendar: [
-        {
-          __typename: 'BlockedCalendarItem' as 'BlockedCalendarItem',
-          id: 1,
-          doctorId,
-          start: startUtc,
-          end: endUtc,
-        },
-      ],
-    };
-
-    cy.mockAphGraphqlOps({
-      operations: {
-        GetBlockedCalendar: {
-          getBlockedCalendar: blockedCalendarResult,
-        },
-        AddBlockedCalendarItem: {
-          addBlockedCalendarItem: blockedCalendarResult,
-        },
-      },
-    });
-
     getSubmitBtn().click();
+    const expectedMutationToSend = {
+      doctorId: srKabir.id,
+      start: '2050-09-17T18:30:00.000Z',
+      end: '2050-09-18T18:29:00.000Z',
+    };
 
     cy.get('@fetchStub').should((fetchStub: any) => {
       const fetchSpy = fetchStub.getCalls();
@@ -160,12 +182,58 @@ describe('BlockedCalendar', () => {
       const addItemMutationArgs = addItemMutation.args[1];
       const addItemMutationArgsBody = JSON.parse(addItemMutationArgs.body);
       const addItemMutationInputVariables = addItemMutationArgsBody.variables;
-      expect(addItemMutationInputVariables).to.deep.equal({
-        doctorId,
-        start: startUtc,
-        end: endUtc,
-      });
+      expect(addItemMutationInputVariables).to.deep.equal(expectedMutationToSend);
     });
+  });
+
+  it('Should send dates/times in UTC (day selected)', () => {
+    getAddBtn().click();
+
+    selectDay();
+    fillStart('2050-09-18');
+    fillStartTime('15:30');
+    fillEndTime('16:30');
+    getSubmitBtn().click();
+    const expectedMutationToSend = {
+      doctorId: srKabir.id,
+      start: '2050-09-18T10:00:00.000Z',
+      end: '2050-09-18T11:00:00.000Z',
+    };
+
+    cy.get('@fetchStub').should((fetchStub: any) => {
+      const fetchSpy = fetchStub.getCalls();
+      const addItemMutation = fetchSpy[fetchSpy.length - 2];
+      const addItemMutationArgs = addItemMutation.args[1];
+      const addItemMutationArgsBody = JSON.parse(addItemMutationArgs.body);
+      const addItemMutationInputVariables = addItemMutationArgsBody.variables;
+      expect(addItemMutationInputVariables).to.deep.equal(expectedMutationToSend);
+    });
+  });
+
+  it('When day is selected, start/end date should always be the same', () => {
+    getAddBtn().click();
+
+    selectDuration();
+    fillStart('2050-09-17');
+    fillEnd('2050-09-19');
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .find('input[value="2050-09-17"]')
+      .should('exist');
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .find('input[value="2050-09-19"]')
+      .should('exist');
+    cy.contains('Start time').should('not.exist');
+    cy.contains('End time').should('not.exist');
+
+    selectDay();
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .find('input[value="2050-09-17"]')
+      .should('exist');
+    cy.get('[data-cypress="BlockedCalendarModal"]')
+      .find('input[value="2050-09-19"]')
+      .should('not.exist');
+    cy.contains('Start time').should('exist');
+    cy.contains('End time').should('exist');
   });
 
   it('Add screen should always start with empty fields', () => {
@@ -236,8 +304,17 @@ describe('BlockedCalendar', () => {
       .find('button:contains(EDIT)')
       .click();
 
-    cy.get('[data-cypress="BlockedCalendarModal"]')
+    selectDuration()
+      .get('[data-cypress="BlockedCalendarModal"]')
       .find('input[value="2050-09-18"]')
+      .should('exist');
+
+    selectDay()
+      .get('[data-cypress="BlockedCalendarModal"]')
+      .find('input[value="15:30"]')
+      .should('exist')
+      .get('[data-cypress="BlockedCalendarModal"]')
+      .find('input[value="16:30"]')
       .should('exist');
   });
 
@@ -314,6 +391,7 @@ describe('BlockedCalendar', () => {
     });
     waitForLoader();
     getAddBtn().click();
+    selectDuration();
     cy.contains(errorMsgInDom).should('not.exist');
     fillStart('2050-09-13');
     fillEnd('2050-09-20');
