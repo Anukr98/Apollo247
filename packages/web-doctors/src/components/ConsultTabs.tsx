@@ -15,7 +15,7 @@ import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
-} from 'graphql/types/createAppointmentSession';
+} from 'graphql/types/CreateAppointmentSession';
 import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,

@@ -9,7 +9,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
-} from 'graphql/types/createAppointmentSession';
+} from 'graphql/types/CreateAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 import { CREATE_APPOINTMENT_SESSION, GET_CASESHEET, UPDATE_CASESHEET } from 'graphql/profiles';
 import {
@@ -908,129 +908,134 @@ export const JDConsultRoom: React.FC = () => {
             setCasesheetNotes,
           }}
         >
-          <div className={classes.container}>
-            <div className={classes.pageContainer}>
-              {/* patient and doctors details start */}
-              <div className={classes.pageHeader}>
-                <div className={classes.backArrow}>
-                  <a href={clientRoutes.juniorDoctor()}>
-                    <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                    <img className={classes.whiteArrow} src={require('images/ic_back_white.svg')} />
-                  </a>
-                </div>
-                <div className={classes.patientSection}>
-                  <div className={classes.patientImage}>
-                    <img
-                      style={{ width: '100px' }}
-                      src={patientPhotoUrl}
-                      alt="Patient Profile Photo"
-                    />
+          <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
+            <div className={classes.container}>
+              <div className={classes.pageContainer}>
+                {/* patient and doctors details start */}
+                <div className={classes.pageHeader}>
+                  <div className={classes.backArrow}>
+                    <a href={clientRoutes.juniorDoctor()}>
+                      <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                      <img
+                        className={classes.whiteArrow}
+                        src={require('images/ic_back_white.svg')}
+                      />
+                    </a>
                   </div>
-                  <div className={classes.patientInfo}>
-                    <div className={classes.patientName}>
-                      {patientFirstName} {patientLastName}
-                      <span>({userCardStrip})</span>
+                  <div className={classes.patientSection}>
+                    <div className={classes.patientImage}>
+                      <img
+                        style={{ width: '100px' }}
+                        src={patientPhotoUrl}
+                        alt="Patient Profile Photo"
+                      />
                     </div>
-                    <div className={classes.patientTextInfo}>
-                      <label>UHID:</label> {patientUhid} | <label>Relation:</label>
-                      {patientRelationHeader}
-                    </div>
-                    <div className={classes.patientTextInfo}>
-                      <label>Appt ID:</label> {patientAppointmentId}
-                    </div>
-                    <div className={classes.patientTextInfo}>
-                      <label>Appt Date:</label> {appointmentDateIST}
+                    <div className={classes.patientInfo}>
+                      <div className={classes.patientName}>
+                        {patientFirstName} {patientLastName}
+                        <span>({userCardStrip})</span>
+                      </div>
+                      <div className={classes.patientTextInfo}>
+                        <label>UHID:</label> {patientUhid} | <label>Relation:</label>
+                        {patientRelationHeader}
+                      </div>
+                      <div className={classes.patientTextInfo}>
+                        <label>Appt ID:</label> {patientAppointmentId}
+                      </div>
+                      <div className={classes.patientTextInfo}>
+                        <label>Appt Date:</label> {appointmentDateIST}
+                      </div>
                     </div>
                   </div>
+                  <div className={classes.doctorSection}>
+                    {assignedDoctorDetailsLoading ? (
+                      <CircularProgress />
+                    ) : (
+                      <>
+                        <div className={classes.doctorImg}>
+                          <Avatar
+                            src={
+                              assignedDoctorPhoto !== ''
+                                ? assignedDoctorPhoto
+                                : require('images/doctor_02.png')
+                            }
+                            alt="Doctor Profile Photo"
+                            className={classes.avatar}
+                          />
+                        </div>
+                        <div className={classes.doctorInfo}>
+                          <div className={classes.assign}>Assigned to:</div>
+                          <div
+                            className={classes.doctorName}
+                          >{`${assignedDoctorSalutation} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
+                          <div className={classes.doctorType}>{assignedDoctorSpecialty}</div>
+                          <div className={classes.doctorContact}>{assignedDoctorMobile}</div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className={classes.doctorSection}>
-                  {assignedDoctorDetailsLoading ? (
-                    <CircularProgress />
-                  ) : (
-                    <>
-                      <div className={classes.doctorImg}>
-                        <Avatar
-                          src={
-                            assignedDoctorPhoto !== ''
-                              ? assignedDoctorPhoto
-                              : require('images/no_photo.png')
-                          }
-                          alt="Doctor Profile Photo"
-                          className={classes.avatar}
+                {/* patient and doctors details end */}
+                <JDCallPopover
+                  setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+                  createSessionAction={createSessionAction}
+                  saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
+                  endConsultAction={endConsultAction}
+                  appointmentId={appointmentId}
+                  appointmentDateTime={appointmentDateTime}
+                  doctorId={doctorId}
+                  isEnded={isEnded}
+                  caseSheetId={caseSheetId}
+                  prescriptionPdf={prescriptionPdf}
+                  sessionId={sessionId}
+                  token={token}
+                  saving={saving}
+                  startAppointment={startAppointment}
+                  startAppointmentClick={startAppointmentClick}
+                />
+                <div className={classes.contentGroup}>
+                  <div className={classes.leftSection}>
+                    <div className={classes.blockGroup}>
+                      <div className={classes.blockHeader}>Case Sheet</div>
+                      <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
+                        <Scrollbars autoHide={false} style={{ height: 'calc(100vh - 270px' }}>
+                          <div className={classes.customScroll}>
+                            {casesheetInfo ? (
+                              <CaseSheet
+                                lifeStyle={lifeStyle}
+                                allergies={allergies}
+                                familyHistory={familyHistory}
+                                setLifeStyle={(lifeStyle: string) => setPatientLifeStyle(lifeStyle)}
+                                setAllergies={(allergies: string) => setPatientAllergies(allergies)}
+                                setFamilyHistory={(familyHistory: string) =>
+                                  setFamilyHistory(familyHistory)
+                                }
+                              />
+                            ) : null}
+                          </div>
+                        </Scrollbars>
+                      </div>
+                    </div>
+                  </div>
+                  <div className={classes.rightSection}>
+                    <div className={classes.blockGroup}>
+                      <div className={classes.blockHeader}>Chat</div>
+                      <div className={`${classes.blockBody}`}>
+                        <ChatWindow
+                          startConsult={startConsult}
+                          sessionId={sessionId}
+                          token={token}
+                          appointmentId={appointmentId}
+                          doctorId={doctorId}
+                          patientId={patientId}
                         />
                       </div>
-                      <div className={classes.doctorInfo}>
-                        <div className={classes.assign}>Assigned to:</div>
-                        <div
-                          className={classes.doctorName}
-                        >{`${assignedDoctorSalutation} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
-                        <div className={classes.doctorType}>{assignedDoctorSpecialty}</div>
-                        <div className={classes.doctorContact}>{assignedDoctorMobile}</div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-              {/* patient and doctors details end */}
-              <JDCallPopover
-                setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-                createSessionAction={createSessionAction}
-                saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
-                endConsultAction={endConsultAction}
-                appointmentId={appointmentId}
-                appointmentDateTime={appointmentDateTime}
-                doctorId={doctorId}
-                isEnded={isEnded}
-                caseSheetId={caseSheetId}
-                prescriptionPdf={prescriptionPdf}
-                sessionId={sessionId}
-                token={token}
-                saving={saving}
-                startAppointment={startAppointment}
-                startAppointmentClick={startAppointmentClick}
-              />
-              <div className={classes.contentGroup}>
-                <div className={classes.leftSection}>
-                  <div className={classes.blockGroup}>
-                    <div className={classes.blockHeader}>Case Sheet</div>
-                    <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                      <Scrollbars autoHide={false} style={{ height: 'calc(100vh - 430px' }}>
-                        <div className={classes.customScroll}>
-                          {casesheetInfo ? (
-                            <CaseSheet
-                              lifeStyle={lifeStyle}
-                              allergies={allergies}
-                              familyHistory={familyHistory}
-                              setLifeStyle={(lifeStyle: string) => setPatientLifeStyle(lifeStyle)}
-                              setAllergies={(allergies: string) => setPatientAllergies(allergies)}
-                              setFamilyHistory={(familyHistory: string) =>
-                                setFamilyHistory(familyHistory)
-                              }
-                            />
-                          ) : null}
-                        </div>
-                      </Scrollbars>
-                    </div>
-                  </div>
-                </div>
-                <div className={classes.rightSection}>
-                  <div className={classes.blockGroup}>
-                    <div className={classes.blockHeader}>Chat</div>
-                    <div className={`${classes.blockBody}`}>
-                      <ChatWindow
-                        startConsult={startConsult}
-                        sessionId={sessionId}
-                        token={token}
-                        appointmentId={appointmentId}
-                        doctorId={doctorId}
-                        patientId={patientId}
-                      />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </Scrollbars>
         </CaseSheetContext.Provider>
       )}
       {/* <Modal
@@ -1108,18 +1113,6 @@ export const JDConsultRoom: React.FC = () => {
             autoFocus
           >
             Ok
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={isDiagnosisDialogOpen} onClose={() => setIsDiagnosisDialogOpen(false)}>
-        <DialogTitle>{''}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Please enter diagnosis</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button color="primary" onClick={() => setIsDiagnosisDialogOpen(false)} autoFocus>
-            OK
           </Button>
         </DialogActions>
       </Dialog>

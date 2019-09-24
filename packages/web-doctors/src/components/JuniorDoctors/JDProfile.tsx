@@ -13,7 +13,7 @@ import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/doctors';
 import {
   UpdateDoctorOnlineStatus,
   UpdateDoctorOnlineStatusVariables,
-} from 'graphql/types/updateDoctorOnlineStatus';
+} from 'graphql/types/UpdateDoctorOnlineStatus';
 import { useMutation } from 'react-apollo-hooks';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
