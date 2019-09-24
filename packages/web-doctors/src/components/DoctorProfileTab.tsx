@@ -353,7 +353,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
               {doctor!.associatedDoctor!.photoUrl ? (
                 <img src={`${doctor!.associatedDoctor!.photoUrl}`} />
               ) : (
-                <img src={require('images/doctor-profile.jpg')} />
+                <img src={require('images/no_photo.png')} />
               )}
             </Avatar>
           }
@@ -620,11 +620,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           <Grid item lg={4} sm={6} xs={12}>
             <Paper className={classes.serviceItem}>
               <div className={classes.avatarBlock}>
-                <img
-                  alt=""
-                  src={require('images/doctor-profile.jpg')}
-                  className={classes.bigAvatar}
-                />
+                <img alt="" src={require('images/no_photo.png')} className={classes.bigAvatar} />
                 <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
               </div>
               <Typography variant="h4">

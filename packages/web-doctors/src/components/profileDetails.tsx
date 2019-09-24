@@ -254,7 +254,11 @@ export const MyAccount: React.FC = (props) => {
                     <div className={classes.avatarBlock}>
                       <img
                         alt=""
-                        src={require('images/doctor-profile.jpg')}
+                        src={
+                          doctorProfile.photoUrl
+                            ? doctorProfile.photoUrl
+                            : require('images/no_photo.png')
+                        }
                         className={classes.bigAvatar}
                       />
                       <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />

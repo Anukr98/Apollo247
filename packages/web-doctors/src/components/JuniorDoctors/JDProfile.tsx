@@ -186,7 +186,7 @@ export const JDProfile: React.FC = (props) => {
           <div className={classes.profileBlock}>
             <div className={classes.doctorImg}>
               <img
-                src={doctorPhotoUrl !== '' ? doctorPhotoUrl : require('images/doctor_02.png')}
+                src={doctorPhotoUrl !== '' ? doctorPhotoUrl : require('images/no_photo.png')}
                 alt="Doctor Profile Image"
               />
             </div>
