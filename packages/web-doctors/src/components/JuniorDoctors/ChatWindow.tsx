@@ -719,7 +719,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                           mutationUploadChatDocument({
                             variables: {
                               appointmentId: props.appointmentId,
-                              base64FileInput: btoa(String(reader.result)),
+                              base64FileInput: reader.result as string,
                               fileType: fileExtension,
                             },
                           }).then((response) => {
