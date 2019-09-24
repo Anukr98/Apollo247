@@ -3,10 +3,8 @@ import {
   Theme,
   makeStyles,
   Paper,
-  Grid,
   FormHelperText,
   Modal,
-  Button,
   MenuItem,
   createStyles,
   CircularProgress,
@@ -67,101 +65,44 @@ function renderSuggestion(
 
   return (
     <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map((part) => (
-          <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
-            {part.text}
-          </span>
-        ))}
-      </div>
+      {parts.map((part) => (
+        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
+          {part.text}
+        </span>
+      ))}
     </MenuItem>
   );
 }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    container: {
-      position: 'relative',
-    },
-    input: {
-      color: 'black',
-      paddingTop: 0,
-    },
-    suggestionsContainerOpen: {
-      position: 'absolute',
-      zIndex: 1,
-      marginTop: theme.spacing(1),
-      left: 0,
-      right: 0,
-      color: 'black',
-      boxShadow: 'none',
-    },
-    suggestion: {
-      display: 'block',
-      overflow: 'hidden',
-      borderBottom: '1px solid rgba(2,71,91,0.1)',
-      '&:hover': {
-        '& div': {
-          backgroundColor: '#f0f4f5 !important',
-        },
-      },
-    },
-    suggestionsList: {
-      margin: 0,
-      padding: 0,
-      listStyleType: 'none',
-      color: '#02475b',
-      fontSize: 18,
-      fontWeight: 500,
-    },
     root: {
-      flexGrow: 1,
+      padding: 0,
     },
-    paper: {
-      textAlign: 'left',
-      color: theme.palette.text.secondary,
-      marginBottom: 12,
-      backgroundColor: 'rgba(0,0,0,0.02)',
-      border: '1px solid rgba(2,71,91,0.1)',
-      padding: '12px 40px 12px 12px',
-      maxWidth: 320,
-      borderRadius: 5,
-      position: 'relative',
-      boxShadow: 'none',
-      '& h5': {
-        fontSize: 14,
-        color: '#02475b',
-        margin: 0,
-        fontWeight: 600,
-      },
-      '& h6': {
-        fontSize: 12,
-        color: '#02475b',
-        margin: 0,
-        fontWeight: 'normal',
+    sectionGroup: {
+      padding: 0,
+    },
+    sectionTitle: {
+      color: '#02475b',
+      opacity: 0.6,
+      fontSize: 14,
+      fontWeight: 500,
+      letterSpacing: 0.02,
+      paddingBottom: 5,
+    },
+    sectionBody: {
+      '& >div:last-child': {
+        marginBottom: 6,
       },
     },
-    medicinePopup: {
-      width: 480,
-      margin: '30px auto 0 auto',
-      boxShadow: 'none',
-    },
-    activeCard: {
-      // border: '1px solid #00b38e',
-      // backgroundColor: '#fff',
-    },
-    checkImg: {
-      position: 'absolute',
-      right: 16,
-      top: 16,
-    },
-    btnAddDoctor: {
+    addBtn: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: 600,
-      paddingLeft: 4,
+      padding: 0,
+      marginTop: 12,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -169,12 +110,142 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
-    medicineHeading: {
-      fontSize: 14,
-      fontWeight: 500,
-      lineHeight: 'normal',
-      color: 'rgba(2, 71, 91, 0.6) !important',
+    medicineBox: {
+      borderRadius: 5,
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
+      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      padding: 12,
+      display: 'flex',
+      marginTop: 6,
       marginBottom: 12,
+    },
+    medicineName: {
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#02475b',
+    },
+    medicineInfo: {
+      fontSize: 12,
+      fontWeight: 'normal',
+      letterSpacing: 0.02,
+      lineHeight: 1.17,
+      color: '#02475b',
+    },
+    actionGroup: {
+      marginLeft: 'auto',
+      display: 'flex',
+      '& button': {
+        boxShadow: 'none',
+        borderRadius: 0,
+        backgroundColor: 'transparent',
+        padding: 0,
+        marginLeft: 12,
+        minWidth: 'auto',
+      },
+    },
+    medicinePopup: {
+      width: 480,
+      margin: '30px auto 0 auto',
+      boxShadow: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    dialogTitle: {
+      '& h6': {
+        fontSize: 13,
+        color: '#01475b',
+        fontWeight: 600,
+        textAlign: 'center',
+      },
+    },
+    dialogClose: {
+      position: 'absolute',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      padding: 0,
+      right: 0,
+      top: -5,
+      minWidth: 'auto',
+    },
+    searchFrom: {
+      padding: 20,
+    },
+    loaderDiv: {
+      textAlign: 'center',
+      margin: 'auto',
+      paddingTop: 20,
+    },
+    dialogContent: {
+      padding: 20,
+      '& h6': {
+        fontSize: 14,
+        fontWeight: 500,
+        color: 'rgba(2, 71, 91, 0.6)',
+        marginBottom: 10,
+        marginTop: 0,
+        lineHeight: 'normal',
+      },
+    },
+    autoSuggestBox: {
+      position: 'relative',
+    },
+    searchpopup: {
+      boxShadow: 'none',
+      '& ul': {
+        padding: 0,
+        margin: 0,
+        marginLeft: -20,
+        marginRight: -20,
+        '& li': {
+          padding: 0,
+          listStyleType: 'none',
+          '& >div': {
+            padding: '10px 20px',
+            fontSize: 18,
+            fontWeight: 500,
+            color: '#02475b',
+            '&:hover': {
+              backgroundColor: '#f0f4f5 !important',
+            },
+            '&:focus': {
+              backgroundColor: '#f0f4f5 !important',
+            },
+            '& span:nth-child(2)': {
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
+          },
+        },
+      },
+    },
+    addNewMedicine: {
+      paddingTop: 10,
+      color: '#02475b',
+      fontSize: 16,
+    },
+    inputRoot: {
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '& input': {
+        fontSize: 18,
+        fontWeight: 500,
+        color: '#02475b',
+        paddingTop: 0,
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+      },
     },
     backArrow: {
       cursor: 'pointer',
@@ -184,13 +255,6 @@ const useStyles = makeStyles((theme: Theme) =>
       '& img': {
         verticalAlign: 'middle',
       },
-    },
-    cross: {
-      position: 'absolute',
-      right: -10,
-      top: -9,
-      fontSize: 18,
-      color: '#02475b',
     },
     dialogActions: {
       padding: 20,
@@ -227,33 +291,12 @@ const useStyles = makeStyles((theme: Theme) =>
     shadowHide: {
       overflow: 'hidden',
     },
-    dialogContent: {
-      padding: 20,
-      minHeight: 450,
-      '& h6': {
-        fontSize: 14,
-        fontWeight: 500,
-        color: 'rgba(2, 71, 91, 0.6)',
-        marginBottom: 10,
-        marginTop: 0,
-        lineHeight: 'normal',
-      },
-    },
     popupHeading: {
       '& h6': {
         fontSize: 13,
         color: '#01475b',
         fontWeight: 600,
         textAlign: 'left',
-      },
-    },
-    popupHeadingCenter: {
-      '& h6': {
-        fontSize: 13,
-        color: '#01475b',
-        fontWeight: 600,
-        textAlign: 'center',
-        marginTop: 5,
       },
     },
     numberTablets: {
@@ -284,73 +327,12 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: '#00b38e !important',
       color: '#fff !important',
       fontWeight: 600,
+      cursor: 'pointer',
     },
     helpText: {
       paddingLeft: 0,
       paddingRight: 20,
       paddingBottom: 10,
-    },
-    medicineDilog: {
-      '& .dialogBoxClose': {
-        display: 'none !important',
-      },
-    },
-    loader: {
-      left: '50%',
-      top: 41,
-      position: 'relative',
-    },
-    updateSymptom: {
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
-      top: 2,
-      right: 0,
-      color: '#666666',
-      position: 'absolute',
-      fontSize: 14,
-      fontWeight: theme.typography.fontWeightBold,
-      minWidth: 30,
-      padding: '5px 10px',
-      '&:hover': {
-        backgroundColor: 'transparent',
-      },
-    },
-    deleteSymptom: {
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
-      top: 2,
-      right: 30,
-      color: '#666666',
-      position: 'absolute',
-      fontSize: 14,
-      fontWeight: theme.typography.fontWeightBold,
-      minWidth: 30,
-      padding: '5px 10px',
-      '&:hover': {
-        backgroundColor: 'transparent',
-      },
-    },
-    inputRoot: {
-      '&:before': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '&:after': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '& input': {
-        fontSize: 15,
-        fontWeight: 500,
-        color: '#02475b',
-        paddingTop: 0,
-      },
-      '&:hover': {
-        '&:before': {
-          borderBottom: '2px solid #00b38e !important',
-        },
-        '&:after': {
-          borderBottom: '2px solid #00b38e !important',
-        },
-      },
     },
   })
 );
@@ -614,40 +596,21 @@ export const MedicinePrescription: React.FC = () => {
     (_medicine: MedicineObject | null, index: number) => {
       const medicine = _medicine!;
       return (
-        <div key={index} style={{ position: 'relative' }}>
-          <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
-            <h5>{medicine.name}</h5>
-            <h6>
+        <div key={index} className={classes.medicineBox}>
+          <div key={medicine.id}>
+            <div className={classes.medicineName}>{medicine.name}</div>
+            <div className={classes.medicineInfo}>
               {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
-            </h6>
-            {/* <img
-            className={classes.checkImg}
-            src={
-              medicine.selected
-                ? require('images/ic_selected.svg')
-                : require('images/ic_unselected.svg')
-            }
-            alt="chkUncheck"
-          /> */}
-          </Paper>
-          <AphButton
-            variant="contained"
-            color="primary"
-            key={_uniqueId('ok_')}
-            classes={{ root: classes.updateSymptom }}
-            onClick={() => updateMedicine(index)}
-          >
-            <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
-          </AphButton>
-          <AphButton
-            variant="contained"
-            color="primary"
-            key={_uniqueId('cancel_')}
-            classes={{ root: classes.deleteSymptom }}
-            onClick={() => deletemedicine(index)}
-          >
-            <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
-          </AphButton>
+            </div>
+          </div>
+          <div className={classes.actionGroup}>
+            <AphButton key={_uniqueId('ok_')} onClick={() => updateMedicine(index)}>
+              <img src={caseSheetEdit && require('images/round_edit_24_px.svg')} alt="" />
+            </AphButton>
+            <AphButton key={_uniqueId('cancel_')} onClick={() => deletemedicine(index)}>
+              <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
+            </AphButton>
+          </div>
         </div>
       );
     }
@@ -816,23 +779,19 @@ export const MedicinePrescription: React.FC = () => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.medicineHeading}>Medicines</div>
-      <Grid container spacing={1}>
-        <Grid item xs={6}>
-          {selectedMedicinesHtml}
-          {caseSheetEdit && (
-            <AphButton
-              variant="contained"
-              color="primary"
-              classes={{ root: classes.btnAddDoctor }}
-              onClick={() => setIsDialogOpen(true)}
-            >
-              <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD Medicine
-            </AphButton>
-          )}
-        </Grid>
-        <Grid item xs={4}></Grid>
-      </Grid>
+      <div className={classes.sectionGroup}>
+        <div className={classes.sectionTitle}>Medicines</div>
+        <div className={classes.sectionBody}>{selectedMedicinesHtml}</div>
+        {caseSheetEdit && (
+          <AphButton
+            color="primary"
+            classes={{ root: classes.addBtn }}
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> Add Medicine
+          </AphButton>
+        )}
+      </div>
       <Modal
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
@@ -840,16 +799,14 @@ export const MedicinePrescription: React.FC = () => {
         disableEscapeKeyDown
       >
         <Paper className={classes.medicinePopup}>
-          <AphDialogTitle
-            className={!showDosage ? classes.popupHeading : classes.popupHeadingCenter}
-          >
+          <AphDialogTitle className={!showDosage ? classes.popupHeading : classes.dialogTitle}>
             {showDosage && (
               <div className={classes.backArrow} onClick={() => setShowDosage(false)}>
                 <img src={require('images/ic_back.svg')} alt="" />
               </div>
             )}
             {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
-            <Button className={classes.cross}>
+            <AphButton className={classes.dialogClose}>
               <img
                 src={require('images/ic_cross.svg')}
                 alt=""
@@ -858,161 +815,155 @@ export const MedicinePrescription: React.FC = () => {
                   setShowDosage(false);
                 }}
               />
-            </Button>
+            </AphButton>
           </AphDialogTitle>
           <div className={classes.shadowHide}>
             {!showDosage ? (
-              <div>
-                <div className={classes.dialogContent}>
-                  <Autosuggest
-                    onSuggestionSelected={(e, { suggestion }) => {
-                      setState({
-                        single: '',
-                        popper: '',
-                      });
-                      setShowDosage(true);
-                      setSelectedValue(suggestion.label);
-                      setSelectedId(suggestion.sku);
-                      setMedicine('');
-                      setLoading(false);
-                    }}
-                    {...autosuggestProps}
-                    inputProps={{
-                      classes,
-                      color: 'primary',
-                      id: 'react-autosuggest-simple',
-                      placeholder: 'Search',
-                      value: state.single,
+              <div className={classes.searchFrom}>
+                <Autosuggest
+                  onSuggestionSelected={(e, { suggestion }) => {
+                    setState({
+                      single: '',
+                      popper: '',
+                    });
+                    setShowDosage(true);
+                    setSelectedValue(suggestion.label);
+                    setSelectedId(suggestion.sku);
+                    setMedicine('');
+                    setLoading(false);
+                  }}
+                  {...autosuggestProps}
+                  inputProps={{
+                    classes,
+                    color: 'primary',
+                    id: 'react-autosuggest-simple',
+                    placeholder: 'Search',
+                    value: state.single,
 
-                      onChange: handleChange('single'),
-                    }}
-                    theme={{
-                      container: classes.container,
-                      suggestionsContainerOpen: classes.suggestionsContainerOpen,
-                      suggestionsList: classes.suggestionsList,
-                      suggestion: classes.suggestion,
-                    }}
-                    renderSuggestionsContainer={(options) => (
-                      <Paper {...options.containerProps} square>
-                        {options.children}
-                      </Paper>
-                    )}
-                  />
-                  {medicine.length > 2 && !loading && !isSuggestionFetched && (
-                    <div>
-                      <span>
-                        {`do you want to add '${medicine}' in Medicine ?`}
-                        <AphButton
-                          className={classes.btnAddDoctor}
-                          variant="contained"
-                          color="primary"
-                          onClick={() => {
-                            setState({
-                              single: '',
-                              popper: '',
-                            });
-                            setShowDosage(true);
-                            setSelectedValue(medicine);
-                            setSelectedId('IB01');
-                            setLoading(false);
-                            setMedicine('');
-                          }}
-                        >
-                          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD MEDICINE
-                        </AphButton>
-                      </span>
-                    </div>
+                    onChange: handleChange('single'),
+                  }}
+                  theme={{
+                    container: classes.autoSuggestBox,
+                  }}
+                  renderSuggestionsContainer={(options) => (
+                    <Paper {...options.containerProps} square className={classes.searchpopup}>
+                      {options.children}
+                    </Paper>
                   )}
-                  {loading ? <CircularProgress className={classes.loader} /> : null}
-                </div>
+                />
+                {medicine.length > 2 && !loading && !isSuggestionFetched && (
+                  <div className={classes.addNewMedicine}>
+                    <div>{`do you want to add '${medicine}' in Medicine ?`}</div>
+                    <AphButton
+                      className={classes.addBtn}
+                      color="primary"
+                      onClick={() => {
+                        setState({
+                          single: '',
+                          popper: '',
+                        });
+                        setShowDosage(true);
+                        setSelectedValue(medicine);
+                        setSelectedId('IB01');
+                        setLoading(false);
+                        setMedicine('');
+                      }}
+                    >
+                      <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD MEDICINE
+                    </AphButton>
+                  </div>
+                )}
+                {loading ? (
+                  <div className={classes.loaderDiv}>
+                    <CircularProgress />
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div>
-                <div>
-                  <div className={classes.dialogContent}>
-                    <div>
-                      <h6>Dosage</h6>
-                      <div className={classes.numberTablets}>
-                        <img
-                          src={require('images/ic_minus.svg')}
-                          alt="removeBtn"
-                          onClick={() => {
-                            if (tabletsCount > 1) {
-                              setTabletsCount(tabletsCount - 1);
-                            }
-                          }}
-                        />
-                        <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
-                        <img
-                          src={require('images/ic_plus.svg')}
-                          alt="addbtn"
-                          onClick={() => {
-                            if (tabletsCount > 0 && tabletsCount < 5) {
-                              setTabletsCount(tabletsCount + 1);
-                            }
-                          }}
-                        />
-                      </div>
+                <div className={classes.dialogContent}>
+                  <div className={classes.sectionGroup}>
+                    <div className={classes.sectionTitle}>Dosage</div>
+                    <div className={classes.numberTablets}>
+                      <img
+                        src={require('images/ic_minus.svg')}
+                        alt="removeBtn"
+                        onClick={() => {
+                          if (tabletsCount > 1) {
+                            setTabletsCount(tabletsCount - 1);
+                          }
+                        }}
+                      />
+                      <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
+                      <img
+                        src={require('images/ic_plus.svg')}
+                        alt="addbtn"
+                        onClick={() => {
+                          if (tabletsCount > 0 && tabletsCount < 5) {
+                            setTabletsCount(tabletsCount + 1);
+                          }
+                        }}
+                      />
                     </div>
-                    <div>
-                      <h6>Time of the Day</h6>
-                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                      {errorState.daySlotErr && (
+                  </div>
+                  <div className={classes.sectionGroup}>
+                    <div className={classes.sectionTitle}>Time of the Day</div>
+                    <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                    {errorState.daySlotErr && (
+                      <FormHelperText
+                        className={classes.helpText}
+                        component="div"
+                        error={errorState.daySlotErr}
+                      >
+                        Please select to be day slot.
+                      </FormHelperText>
+                    )}
+                  </div>
+                  <div className={classes.sectionGroup}>
+                    <div className={classes.sectionTitle}>To be taken</div>
+                    <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                    {errorState.tobeTakenErr && (
+                      <FormHelperText
+                        className={classes.helpText}
+                        component="div"
+                        error={errorState.tobeTakenErr}
+                      >
+                        Please select to be taken.
+                      </FormHelperText>
+                    )}
+                  </div>
+                  <div className={classes.sectionGroup}>
+                    <div className={classes.sectionTitle}>Duration of Consumption(In days)</div>
+                    <div className={classes.numberTablets}>
+                      <AphTextField
+                        placeholder=""
+                        inputProps={{ maxLength: 6 }}
+                        value={consumptionDuration}
+                        onChange={(event: any) => {
+                          setConsumptionDuration(event.target.value);
+                        }}
+                        error={errorState.durationErr}
+                      />
+                      {errorState.durationErr && (
                         <FormHelperText
                           className={classes.helpText}
                           component="div"
-                          error={errorState.daySlotErr}
-                        >
-                          Please select to be day slot.
-                        </FormHelperText>
-                      )}
-                    </div>
-                    <div>
-                      <h6>To be taken</h6>
-                      <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                      {errorState.tobeTakenErr && (
-                        <FormHelperText
-                          className={classes.helpText}
-                          component="div"
-                          error={errorState.tobeTakenErr}
-                        >
-                          Please select to be taken.
-                        </FormHelperText>
-                      )}
-                    </div>
-                    <div>
-                      <h6>Duration of Consumption(In days)</h6>
-                      <div className={classes.numberTablets}>
-                        <AphTextField
-                          placeholder=""
-                          inputProps={{ maxLength: 6 }}
-                          value={consumptionDuration}
-                          onChange={(event: any) => {
-                            setConsumptionDuration(event.target.value);
-                          }}
                           error={errorState.durationErr}
-                        />
-                        {errorState.durationErr && (
-                          <FormHelperText
-                            className={classes.helpText}
-                            component="div"
-                            error={errorState.durationErr}
-                          >
-                            Please Enter Duration in days(Number only)
-                          </FormHelperText>
-                        )}
-                      </div>
+                        >
+                          Please Enter Duration in days(Number only)
+                        </FormHelperText>
+                      )}
                     </div>
-                    <div>
-                      <h6>Instructions (if any)</h6>
-                      <div className={classes.numberTablets}>
-                        <AphTextField
-                          value={medicineInstruction}
-                          onChange={(event: any) => {
-                            setMedicineInstruction(event.target.value);
-                          }}
-                        />
-                      </div>
+                  </div>
+                  <div className={classes.sectionGroup}>
+                    <div className={classes.sectionTitle}>Instructions (if any)</div>
+                    <div className={classes.numberTablets}>
+                      <AphTextField
+                        value={medicineInstruction}
+                        onChange={(event: any) => {
+                          setMedicineInstruction(event.target.value);
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
