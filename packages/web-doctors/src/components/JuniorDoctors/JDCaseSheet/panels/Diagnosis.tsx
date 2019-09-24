@@ -111,7 +111,10 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     chipSection: {
-      width: '100%',
+      paddingBottom: 0,
+    },
+    chipCol: {
+      display: 'inline-block',
     },
     chipItem: {
       padding: 7,
@@ -304,22 +307,26 @@ export const Diagnosis: React.FC = () => {
             selectedValues.length > 0 &&
             selectedValues!.map((item, idx) =>
               caseSheetEdit ? (
-                <Chip
-                  className={classes.chipItem}
-                  key={idx}
-                  label={item!.name}
-                  onDelete={() => handleDelete(item, idx)}
-                  color="primary"
-                  deleteIcon={<img src={require('images/ic_cross_orange.svg')} alt="" />}
-                />
+                <div className={classes.chipCol}>
+                  <Chip
+                    className={classes.chipItem}
+                    key={idx}
+                    label={item!.name}
+                    onDelete={() => handleDelete(item, idx)}
+                    color="primary"
+                    deleteIcon={<img src={require('images/ic_cross_orange.svg')} alt="" />}
+                  />
+                </div>
               ) : (
-                <Chip
-                  className={classes.chipItem}
-                  key={idx}
-                  label={item!.name}
-                  color="primary"
-                  deleteIcon={<img src={require('images/ic_cross_orange.svg')} alt="" />}
-                />
+                <div className={classes.chipCol}>
+                  <Chip
+                    className={classes.chipItem}
+                    key={idx}
+                    label={item!.name}
+                    color="primary"
+                    deleteIcon={<img src={require('images/ic_cross_orange.svg')} alt="" />}
+                  />
+                </div>
               )
             )}
         </div>

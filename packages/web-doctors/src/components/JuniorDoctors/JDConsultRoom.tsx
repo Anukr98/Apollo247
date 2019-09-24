@@ -315,6 +315,11 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
       },
     },
+    backArrowSection: {
+      position: 'fixed',
+      width: '100%',
+      top: 93,
+    },
     backArrow: {
       cursor: 'pointer',
       marginRight: 50,
@@ -866,14 +871,16 @@ export const JDConsultRoom: React.FC = () => {
               <div className={classes.pageContainer}>
                 {/* patient and doctors details start */}
                 <div className={classes.pageHeader}>
-                  <div className={classes.backArrow}>
-                    <a href={clientRoutes.juniorDoctor()}>
-                      <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
-                      <img
-                        className={classes.whiteArrow}
-                        src={require('images/ic_back_white.svg')}
-                      />
-                    </a>
+                  <div className={classes.backArrowSection}>
+                    <div className={classes.backArrow}>
+                      <a href={clientRoutes.juniorDoctor()}>
+                        <img className={classes.blackArrow} src={require('images/ic_back.svg')} />
+                        <img
+                          className={classes.whiteArrow}
+                          src={require('images/ic_back_white.svg')}
+                        />
+                      </a>
+                    </div>
                   </div>
                   <div className={classes.patientSection}>
                     <div className={classes.patientImage}>
