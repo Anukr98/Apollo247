@@ -169,9 +169,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   useEffect(() => {
     Platform.OS === 'android' && requestLocationPermission();
-    fetchCurrentLocation();
     getNetStatus().then((status) => {
       if (status) {
+        fetchCurrentLocation();
         fetchSpecialityFilterData(FilterData);
       } else {
         setshowSpinner(false);
@@ -493,12 +493,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     });
   };
 
-  const saveLatlong = (placeId: string) => {
+  const saveLatlong = (item: { name: string; placeId: string }) => {
     getNetStatus().then((status) => {
       if (status) {
         axios
           .get(
-            `https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${key}`
+            `https://maps.googleapis.com/maps/api/place/details/json?placeid=${item.placeId}&key=${key}`
           )
           .then((obj) => {
             try {
@@ -506,7 +506,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
               if (obj.data.result.geometry && obj.data.result.geometry.location) {
                 console.log(obj.data.result.geometry.location, 'obj.data.geometry.location');
 
-                AsyncStorage.setItem('location', JSON.stringify(obj.data.result.geometry.location));
+                AsyncStorage.setItem(
+                  'location',
+                  JSON.stringify({ latlong: obj.data.result.geometry.location, name: item.name })
+                );
               }
             } catch (error) {
               console.log(error);
@@ -520,69 +523,52 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const fetchCurrentLocation = () => {
-    // setshowLocationpopup(true);
-    getNetStatus().then((status) => {
-      if (status) {
-        AsyncStorage.getItem('location').then((item) => {
-          const latlong = item ? JSON.parse(item) : null;
-          console.log(item, 'AsyncStorage item', latlong);
-          if (latlong) {
-            findAddressFromLocationString(`${latlong.lat}, ${latlong.lng}`, key)
-              .then((response: any) => {
-                console.log(response, 'lat long');
+    AsyncStorage.getItem('location').then((item) => {
+      const location = item ? JSON.parse(item) : null;
+      console.log(item, 'AsyncStorage item', location);
+      if (location) {
+        location.name && setcurrentLocation(location.name.toUpperCase());
+      } else {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+            console.log(searchstring, 'getCurrentPosition searchstring');
+
+            const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+            axios
+              .get(url)
+              .then((obj) => {
+                console.log(obj);
                 if (
-                  response.data.results.length &&
-                  response.data.results[0].address_components.length
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
                 ) {
-                  const address = response.data.results[0].address_components[0].short_name;
-                  console.log(address, 'address');
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(
+                    address,
+                    'address',
+                    obj.data.results[0].geometry.location,
+                    'location'
+                  );
                   setcurrentLocation(address.toUpperCase());
+                  AsyncStorage.setItem(
+                    'location',
+                    JSON.stringify({
+                      latlong: obj.data.results[0].geometry.location,
+                      name: address.toUpperCase(),
+                    })
+                  );
                 }
               })
-              .catch((error) => console.log(error));
-            // searchstring = `${latlong.lat}, ${latlong.lng}`;
-          } else {
-            // searchstring = position.coords.latitude + ', ' + position.coords.longitude;
-
-            navigator.geolocation.getCurrentPosition(
-              (position) => {
-                const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-                console.log(searchstring, 'getCurrentPosition searchstring');
-
-                const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-                axios
-                  .get(url)
-                  .then((obj) => {
-                    console.log(obj);
-                    if (
-                      obj.data.results.length > 0 &&
-                      obj.data.results[0].address_components.length > 0
-                    ) {
-                      const address = obj.data.results[0].address_components[0].short_name;
-                      console.log(
-                        address,
-                        'address',
-                        obj.data.results[0].geometry.location,
-                        'location'
-                      );
-                      setcurrentLocation(address.toUpperCase());
-                      AsyncStorage.setItem(
-                        'location',
-                        JSON.stringify(obj.data.results[0].geometry.location)
-                      );
-                    }
-                  })
-                  .catch((error) => {
-                    console.log(error, 'geocode error');
-                  });
-              },
-              (error) => {
-                console.log(error.code, error.message, 'getCurrentPosition error');
-              },
-              { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-            );
-          }
-        });
+              .catch((error) => {
+                console.log(error, 'geocode error');
+              });
+          },
+          (error) => {
+            console.log(error.code, error.message, 'getCurrentPosition error');
+          },
+          { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+        );
       }
     });
   };
@@ -594,8 +580,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              setshowLocationpopup(true);
-              fetchCurrentLocation();
+              getNetStatus().then((status) => {
+                if (status) {
+                  setshowLocationpopup(true);
+                  fetchCurrentLocation();
+                } else {
+                  setshowOfflinePopup(true);
+                }
+              });
             }}
           >
             <LocationOff />
@@ -765,6 +757,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           transform: [{ translateY: headMov }],
           zIndex: 2,
           elevation: 2,
+          ...theme.viewStyles.shadowStyle,
         }}
       >
         <Animated.View style={{ paddingHorizontal: 20, top: 0, opacity: imgOp }}>
@@ -862,7 +855,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     }}
                     onPress={() => {
                       setcurrentLocation(item.name);
-                      saveLatlong(item.placeId);
+                      saveLatlong(item);
                       setshowLocationpopup(false);
                     }}
                   >

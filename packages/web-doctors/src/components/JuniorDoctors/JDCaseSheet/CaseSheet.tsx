@@ -277,7 +277,7 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
         >
           <ExpansionPanelSummary
             classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
-            expandIcon={<img src={require('images/ic_accordion_up.svg')} alt="" />}
+            expandIcon={<img src={require('images/ic_accordion_down.svg')} alt="" />}
           >
             {item.value}
           </ExpansionPanelSummary>

@@ -6,7 +6,7 @@ import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 import {
   UpdateDoctorOnlineStatus,
   UpdateDoctorOnlineStatusVariables,
-} from 'graphql/types/updateDoctorOnlineStatus';
+} from 'graphql/types/UpdateDoctorOnlineStatus';
 import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/doctors';
 import { Mutation } from 'react-apollo';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';

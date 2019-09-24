@@ -33,6 +33,19 @@ import { TRANSFER_INITIATED_TYPE, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 
+const handleBrowserUnload = (event: BeforeUnloadEvent) => {
+  event.preventDefault();
+  event.returnValue = '';
+};
+
+const subscribeBrowserButtonsListener = () => {
+  window.addEventListener('beforeunload', handleBrowserUnload);
+};
+
+const unSubscribeBrowserButtonsListener = () => {
+  window.removeEventListener('beforeunload', handleBrowserUnload);
+};
+
 const useStyles = makeStyles((theme: Theme) => {
   return {
     loginFormWrap: {
@@ -469,7 +482,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
     },
     pageSubHeader: {
-      padding: '24px 20px',
+      padding: 16,
       display: 'flex',
     },
     headerLeftGroup: {
@@ -526,6 +539,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderLeft: 'solid 1px rgba(2, 71, 91, 0.6)',
       paddingLeft: 12,
       marginLeft: 12,
+      display: 'none',
       color: 'rgba(2, 71, 91, 0.6)',
       '& span': {
         fontWeight: 'bold',
@@ -580,6 +594,8 @@ interface CallPopoverProps {
   sessionId: string;
   token: string;
   saving: boolean;
+  startAppointmentClick: (startAppointment: boolean) => void;
+  startAppointment: boolean;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -600,9 +616,7 @@ let stoppedConsulTimer: number;
 
 export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
-  const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
-    CaseSheetContext
-  );
+  const { appointmentInfo } = useContext(CaseSheetContext);
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
@@ -633,10 +647,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       stoppedConsulTimer = timer;
       setStartingTime(timer);
     }, 1000);
-  };
-  const stopIntervalTimer = () => {
-    setStartingTime(0);
-    timerIntervalId && clearInterval(timerIntervalId);
   };
   // timer for audio/video call end
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -681,6 +691,10 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
     //srollToBottomAction();
+  };
+  const stopIntervalTimer = () => {
+    setStartingTime(0);
+    timerIntervalId && clearInterval(timerIntervalId);
   };
   const [disableStartConsult, setDisableStartConsult] = useState<boolean>(false);
   useEffect(() => {
@@ -1055,6 +1069,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       message: startConsultjr,
       isTyping: true,
     };
+    subscribeBrowserButtonsListener();
     pubnub.publish(
       {
         message: text,
@@ -1070,6 +1085,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       message: stopConsult,
       isTyping: true,
     };
+    unSubscribeBrowserButtonsListener();
     pubnub.publish(
       {
         message: text,
@@ -1214,8 +1230,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     return '';
   };
-  const ConsultMinutes = 2;
-  const ConsultSeconds = 10;
   const [isDoctorSelected, setIsDoctorSelected] = useState(false);
   return (
     <div>
@@ -1247,6 +1261,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.submitBtn}
                 disabled={props.saving}
                 onClick={() => {
+                  unSubscribeBrowserButtonsListener();
                   stopInterval();
                   props.endConsultAction();
                   setDisableOnTransfer(true);
@@ -1276,7 +1291,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           <AphButton
             className={classes.iconButton}
             aria-describedby={id}
-            onClick={(e) => handleClick(e)}
+            onClick={(e: any) => handleClick(e)}
           >
             <img src={require('images/ic_call.svg')} />
           </AphButton>
@@ -1290,7 +1305,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                 appointmentInfo!.status !== STATUS.PENDING)
             }
-            onClick={(e) => handleClickThreeDots(e)}
+            onClick={(e: any) => handleClickThreeDots(e)}
           >
             <img src={require('images/ic_more.svg')} />
           </AphButton>

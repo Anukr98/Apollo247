@@ -297,6 +297,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
 
           {props.PastData.medicineOrderLineItems &&
             props.PastData.medicineOrderLineItems.map((item: any) => {
+              console.log('utem', item);
               return (
                 <TouchableOpacity
                   activeOpacity={1}
@@ -304,7 +305,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                   onPress={() => {
                     console.log('medicnedeial', props.PastData.medicineOrderLineItems);
                     console.log(moment(props.PastData.quoteDateTime).format('DD MMM YYYY'));
-
+                    console.log(props.PastData, 'props.PastData.prescriptionImageUrl');
                     props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
                       data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
                       medicineDate: moment(props.PastData.quoteDateTime).format('DD MMM YYYY'),

@@ -13,7 +13,7 @@ import { UPDATE_DOCTOR_ONLINE_STATUS } from 'graphql/doctors';
 import {
   UpdateDoctorOnlineStatus,
   UpdateDoctorOnlineStatusVariables,
-} from 'graphql/types/updateDoctorOnlineStatus';
+} from 'graphql/types/UpdateDoctorOnlineStatus';
 import { useMutation } from 'react-apollo-hooks';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -186,7 +186,7 @@ export const JDProfile: React.FC = (props) => {
           <div className={classes.profileBlock}>
             <div className={classes.doctorImg}>
               <img
-                src={doctorPhotoUrl !== '' ? doctorPhotoUrl : require('images/doctor_02.png')}
+                src={doctorPhotoUrl !== '' ? doctorPhotoUrl : require('images/no_photo.png')}
                 alt="Doctor Profile Image"
               />
             </div>
