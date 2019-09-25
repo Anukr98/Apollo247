@@ -106,6 +106,14 @@ const useStyles = makeStyles((theme: Theme) => {
     chatsendcircle: {
       position: 'absolute',
       right: 0,
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
     },
     missCall: {
       color: '#890000',
@@ -154,6 +162,14 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       maxWidth: 236,
       textAlign: 'left',
+    },
+    chatImgBubble: {
+      padding: 0,
+      overflow: 'hidden',
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
     },
     patientBubble: {
       backgroundColor: theme.palette.common.white,
@@ -445,7 +461,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
-            <div className={classes.chatBubble}>
+            <div
+              className={`${classes.chatBubble} ${
+                rowData.message === documentUpload ? classes.chatImgBubble : ''
+              }`}
+            >
               {leftComponent == 1 && !rowData.duration && (
                 <div className={classes.patientAvatar}>
                   <Avatar
@@ -456,15 +476,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <div style={{ width: '50px', height: '50px' }}>
-                  <a href={rowData.url} target="_blank">
-                    <img
-                      style={{ width: '50px', height: '50px' }}
-                      src={rowData.url}
-                      alt={rowData.url}
-                    />
-                  </a>
-                </div>
+                <a href={rowData.url} target="_blank">
+                  <img src={rowData.url} alt={rowData.url} />
+                </a>
               ) : (
                 <span>{rowData.message}</span>
               )}
@@ -514,7 +528,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
-            <div className={`${classes.chatBubble} ${classes.patientBubble}`}>
+            <div
+              className={`${classes.chatBubble} ${classes.patientBubble} ${
+                rowData.message === documentUpload ? classes.chatImgBubble : ''
+              }`}
+            >
               {rightComponent == 1 && !rowData.duration && (
                 <div className={classes.patientAvatar}>
                   <Avatar
