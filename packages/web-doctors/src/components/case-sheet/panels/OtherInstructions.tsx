@@ -132,17 +132,20 @@ export const OtherInstructions: React.FC = () => {
         <Typography component="div" className={classes.listContainer}>
           {selectedValues !== null &&
             selectedValues.length > 0 &&
-            selectedValues!.map((item, idx) => (
-              <Chip
-                className={classes.othersBtn}
-                key={idx}
-                label={item!.instruction}
-                onDelete={() => handleDelete(item, idx)}
-                deleteIcon={
-                  <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
-                }
-              />
-            ))}
+            selectedValues!.map(
+              (item, idx) =>
+                item.instruction!.trim() !== '' && (
+                  <Chip
+                    className={classes.othersBtn}
+                    key={idx}
+                    label={item!.instruction}
+                    onDelete={() => handleDelete(item, idx)}
+                    deleteIcon={
+                      <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+                    }
+                  />
+                )
+            )}
         </Typography>
       </Typography>
       {showAddInputText && (
