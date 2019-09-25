@@ -20,8 +20,8 @@ export const clientRoutes = {
   juniorDoctor: () => '/junior-doctor',
   patientDetails: () => '/patient-details',
   juniorDoctorProfile: () => '/jd-profile',
-  ConsultTabs: (appointmentId: string, patientId: string) =>
-    `/Consulttabs/${appointmentId}/${patientId}`,
+  ConsultTabs: (appointmentId: string, patientId: string, tabValue: string) =>
+    `/Consulttabs/${appointmentId}/${patientId}/${tabValue}`,
   JDConsultRoom: ({ appointmentId, patientId, queueId }: JDConsultRoomParams) =>
     `/jd-consultroom/${appointmentId}/${patientId}/${queueId}`,
 };

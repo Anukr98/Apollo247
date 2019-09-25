@@ -64,7 +64,7 @@ const App: React.FC = () => {
       />
       <AuthRouted
         exact
-        path={clientRoutes.ConsultTabs(':id', ':patientId')}
+        path={clientRoutes.ConsultTabs(':id', ':patientId', ':tabValue')}
         component={ConsultTabs}
       />
       <AuthRouted exact path={clientRoutes.juniorDoctor()} component={JuniorDoctor} />
@@ -93,7 +93,7 @@ const App: React.FC = () => {
       />
       <AuthRouted
         exact
-        path={clientRoutes.ConsultTabs(':id', ':patientId')}
+        path={clientRoutes.ConsultTabs(':id', ':patientId', ':tabValue')}
         component={ConsultTabs}
       />
     </div>

@@ -194,7 +194,9 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
                     </Grid>
                     <Grid lg={2} sm={3} xs={3} key={4} className={classes.valign} item>
                       <span className={classes.chatSpan}>
-                        <Link to={`/consulttabs/${patient.appointmentids[0]}/${patient.patientid}`}>
+                        <Link
+                          to={`/consulttabs/${patient.appointmentids[0]}/${patient.patientid}/1`}
+                        >
                           <IconButton aria-label="Navigate next" className={classes.chatIcon}>
                             <MessageIcon />
                           </IconButton>

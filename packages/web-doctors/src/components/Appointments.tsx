@@ -454,7 +454,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                     {appointment!.caseSheet &&
                       appointment!.caseSheet !== null &&
                       appointment!.caseSheet.length > 0 && (
-                        <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}`}>
+                        <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}/0`}>
                           <Card
                             className={classes.card}
                             ref={activeStep === idx ? upcomingElement : null}
