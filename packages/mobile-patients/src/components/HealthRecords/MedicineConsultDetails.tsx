@@ -244,16 +244,14 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                             // the temp file path
                             console.log('The file saved to res ', res);
                             console.log('The file saved to ', res.path());
-                            // console.log(
-                            //   'CameraRoll.saveToCameraRoll(arr[i]) ',
-                            //   CameraRoll.saveToCameraRoll(arr[i])
-                            // );
+                            console.log('arr[i] ', arr[i]);
                             //saveimageIos(arr[0]);
-                            // if (Platform.OS === 'ios') {
-                            //   try {
-                            //     CameraRoll.saveToCameraRoll(arr[i]);
-                            //   } catch {}
-                            // }
+                            if (Platform.OS === 'ios') {
+                              try {
+                                CameraRoll.saveToCameraRoll(arr[i]);
+                              } catch {}
+                            }
+
                             // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                             // RNFetchBlob.ios.openDocument(res.path());
                             Alert.alert('Download Complete');

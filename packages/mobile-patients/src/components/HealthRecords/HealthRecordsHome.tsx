@@ -20,6 +20,7 @@ import {
   GET_PAST_CONSULTS_PRESCRIPTIONS,
   GET_MEDICAL_RECORD,
   DELETE_PATIENT_MEDICAL_RECORD,
+  CHECK_IF_FOLLOWUP_BOOKED,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientPastConsultsAndPrescriptions } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -49,6 +50,8 @@ import {
   deletePatientMedicalRecord,
   deletePatientMedicalRecordVariables,
 } from '../../graphql/types/deletePatientMedicalRecord';
+import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
+import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -69,6 +72,14 @@ const filterData: filterDataType[] = [
     selectedOptions: [],
   },
 ];
+type rescheduleType = {
+  rescheduleCount: number;
+  appointmentState: string;
+  isCancel: number;
+  isFollowUp: number;
+  isPaid: number;
+};
+
 export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
@@ -88,7 +99,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [arrayValues, setarrayValues] = useState<any>();
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [bookFollowUp, setBookFollowUp] = useState<boolean>(true);
+  const [isfollowcount, setIsfollowucount] = useState<number>(0);
+  const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
 
+  const [doctorId, setDoctorId] = useState<any>();
+  const [doctorInfo, setDoctorInfo] = useState<any>();
+  const [appointmentFollowUpId, setAppointmentFollowUpId] = useState<any>();
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -372,7 +390,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           <View>
             {arrayValues &&
               arrayValues.map((item: any, i: number) => {
-                console.log('item', item);
+                //console.log('item', item);
                 return (
                   <HealthConsultView
                     key={i}
@@ -390,6 +408,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                     }}
                     PastData={item}
                     navigation={props.navigation}
+                    onFollowUpClick={() => onFollowUpClick(item)}
                   />
                 );
               })}
@@ -398,8 +417,79 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       </View>
     );
   };
+
+  const onFollowUpClick = (item: any) => {
+    let dataval =
+      item.caseSheet &&
+      item.caseSheet.find((obj: any) => {
+        console.log('doctorType', obj);
+
+        return (
+          obj.doctorType === 'STAR_APOLLO' ||
+          obj.doctorType === 'APOLLO' ||
+          obj.doctorType === 'PAYROLL'
+        );
+      });
+    console.log('dataval,', dataval.followUp);
+    console.log('ite,', item);
+    console.log('onFollowUpClick', item.doctorInfo);
+    // setDoctorId(item.doctorInfo.id);
+    // setDoctorInfo(item.doctorInfo);
+    // setBookFollowUp(dataval.followUp);
+    // setAppointmentFollowUpId(item.id);
+    // console.log('appointmentid', appointmentFollowUpId);
+    // console.log('patientid', item.patientId);
+    // console.log('follwup', bookFollowUp);
+    // console.log('doctorInfo', doctorInfo);
+    client
+      .query<checkIfFollowUpBooked>({
+        query: CHECK_IF_FOLLOWUP_BOOKED,
+        variables: {
+          appointmentId: item.id,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        console.log('checkIfFollowUpBooked', data);
+        console.log('checkIfFollowUpBookedcount', data.checkIfFollowUpBooked);
+        setIsfollowucount(data.checkIfFollowUpBooked);
+        console.log('setIsfollowucount', data.checkIfFollowUpBooked);
+        setdisplayoverlay(true);
+        props.navigation.push(AppRoutes.ConsultDetails, {
+          CaseSheet: item.id,
+          DoctorInfo: item.doctorInfo,
+          FollowUp: dataval.followUp,
+          appointmentType: item.appointmentType,
+          DisplayId: item.displayId,
+          Displayoverlay: true,
+          isFollowcount: data.checkIfFollowUpBooked,
+        });
+      })
+      .catch((error) => {
+        console.log('Error occured', { error });
+      });
+  };
+
   return (
     <View style={{ flex: 1 }}>
+      {/* {displayoverlay && doctorInfo && (
+        <OverlayRescheduleView
+          setdisplayoverlay={() => setdisplayoverlay(false)}
+          navigation={props.navigation}
+          doctor={doctorInfo ? doctorInfo : null}
+          patientId={currentPatient ? currentPatient.id : ''}
+          clinics={doctorInfo && doctorInfo.doctorHospital ? doctorInfo.doctorHospital : []}
+          doctorId={doctorId}
+          renderTab={'Consult Online'}
+          rescheduleCount={rescheduleType!}
+          appointmentId={appointmentFollowUpId}
+          bookFollowUp={bookFollowUp}
+          data={doctorInfo && doctorInfo}
+          KeyFollow={'Followup'}
+          isfollowupcount={isfollowcount}
+        />
+      )} */}
+
       <SafeAreaView style={theme.viewStyles.container}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderTopView()}

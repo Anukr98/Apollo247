@@ -110,6 +110,8 @@ export interface ConsultDetailsProps extends NavigationScreenProps {
   appointmentType: string;
   appointmentDate: any;
   DisplayId: any;
+  Displayoverlay: any;
+  isFollowcount: any;
 }
 
 type rescheduleType = {
@@ -125,6 +127,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   console.log('DoctorInfo', props.navigation.state.params!.DoctorInfo);
   console.log('FollowUp', props.navigation.state.params!.FollowUp);
   console.log('appointmentDate', props.navigation.state.params!.appointmentDate);
+  console.log('Displayoverlay', props.navigation.state.params!.Displayoverlay);
+  console.log('isfollowcount', props.navigation.state.params!.isFollowcount);
   const data = props.navigation.state.params!.DoctorInfo;
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
@@ -136,9 +140,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [caseSheetDetails, setcaseSheetDetails] = useState<
     getCaseSheet_getCaseSheet_caseSheetDetails
   >();
-  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(
+    props.navigation.state.params!.Displayoverlay
+  );
   const [bookFollowUp, setBookFollowUp] = useState<boolean>(true);
-  const [isfollowcount, setIsfollowucount] = useState<number>(0);
+  const [isfollowcount, setIsfollowucount] = useState<number>(
+    props.navigation.state.params!.isFollowcount
+  );
   const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
 
   const { currentPatient } = useAllCurrentPatients();
@@ -165,10 +173,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         setLoading(false);
         console.log('GET_CASESHEET_DETAILS', _data!);
         console.log(_data.data.getCaseSheet!.caseSheetDetails!.blobName, 'blobname');
-        // console.log(
-        //   'isfollowupcasesheet',
-        //   _data!.data!.getCaseSheet!.caseSheetDetails!.isFollowUp!
-        // );
+        console.log('displayid', _data.data.getCaseSheet!.caseSheetDetails!.appointment!.displayId);
+        props.navigation.state.params!.DisplayId = _data.data.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
+
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
       })
       .catch((error) => {
