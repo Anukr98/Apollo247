@@ -13,13 +13,11 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 @EntityRepository(RescheduleAppointmentDetails)
 export class RescheduleAppointmentRepository extends Repository<RescheduleAppointmentDetails> {
   saveReschedule(rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails>) {
-    return this.create(rescheduleAppointmentAttrs)
-      .save()
-      .catch((createErrors) => {
-        throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
-          createErrors,
-        });
+    return this.save(this.create(rescheduleAppointmentAttrs)).catch((createErrors) => {
+      throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
+        createErrors,
       });
+    });
   }
 
   checkTransfer(appointment: string, transferedDocotrId: string) {
