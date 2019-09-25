@@ -127,8 +127,16 @@ export interface HealthConsultViewProps extends NavigationScreenProps {
   PastData?: any; //getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults;
   onPressOrder?: () => void;
   onClickCard?: () => void;
-  //PastData?: any;
+  onFollowUpClick?: (PastData: any) => void;
 }
+
+type rescheduleType = {
+  rescheduleCount: number;
+  appointmentState: string;
+  isCancel: number;
+  isFollowUp: number;
+  isPaid: number;
+};
 
 export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   //console.log('PastData', props.PastData);
@@ -137,15 +145,14 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
-    // console.log('doctorType', obj);
-    // console.log('blobname', AppConfig.Configuration.DOCUMENT_BASE_URL.concat(obj.blobName));
     return (
       obj!.doctorType === 'STAR_APOLLO' ||
       obj!.doctorType === 'APOLLO' ||
       obj!.doctorType === 'PAYROLL'
     );
   });
-  console.log('itemdoctyrpe', item);
+  console.log('symptoms', g(item, 'symptoms'));
+
   if (
     (props.PastData &&
       props.PastData.medicineOrderLineItems &&
@@ -217,13 +224,11 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     </View>
                     <View style={styles.separatorStyles} />
                     <View>
-                      {g(props.PastData, 'caseSheet', '0', 'symptoms') ? (
+                      {g(item, 'symptoms') ? (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                           <Text style={styles.descriptionTextStyles}>
-                            {props.PastData!.caseSheet[0].symptoms[0].symptom},
-                            {props.PastData!.caseSheet[0].symptoms[0].since},
-                            {props.PastData!.caseSheet[0].symptoms[0].howOften},
-                            {props.PastData!.caseSheet[0].symptoms[0].severity}
+                            {item.symptoms[0].symptom},{item.symptoms[0].since},
+                            {item.symptoms[0].howOften},{item.symptoms[0].severity}
                           </Text>
                           <PrescriptionSkyBlue />
                         </View>
@@ -242,7 +247,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     justifyContent: 'space-between',
                   }}
                 >
-                  {props.PastData!.isFollowUp ? (
+                  {g(item, 'followUp') ? (
                     <TouchableOpacity
                       activeOpacity={1}
                       //style={[styles.cardContainerStyle]}
@@ -259,18 +264,20 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       //     showBookAppointment: true,
                       //   });
                       // }}
+                      onPress={() => {
+                        props.onFollowUpClick ? props.onFollowUpClick(props.PastData) : null;
+                      }}
                     >
-                      <Text style={styles.yellowTextStyle}></Text>
+                      <Text style={styles.yellowTextStyle}> BOOK FOLLOW-UP</Text>
                     </TouchableOpacity>
                   ) : (
                     <Text></Text>
                   )}
-                  {item == undefined ? null : (
+                  {g(item, 'medicinePrescription') ? (
                     <Text
                       style={styles.yellowTextStyle}
                       onPress={() => {
                         console.log('passdata2', props.PastData!.caseSheet);
-                        let refIndex;
                         let item =
                           props.PastData!.caseSheet &&
                           props.PastData!.caseSheet.find((obj: any) => {
@@ -286,7 +293,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                             );
                           });
 
-                        console.log('resultsenior', item);
                         if (item == undefined) {
                           Alert.alert('No Medicines');
                         } else {
@@ -364,7 +370,9 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
 
                                 const presToAdd = {
                                   id: item!.id!,
-                                  date: moment(item!.followUpDate).format('DD MMM YYYY'),
+                                  date: moment(g(props.PastData, 'appointmentDateTime')).format(
+                                    'DD MMM YYYY'
+                                  ),
                                   doctorName: '',
                                   forPatient: (currentPatient && currentPatient.firstName) || '',
                                   medicines: (medicines || [])
@@ -415,7 +423,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     >
                       ORDER MEDS & TESTS
                     </Text>
-                  )}
+                  ) : null}
                 </View>
               </View>
             </TouchableOpacity>
