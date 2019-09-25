@@ -52,6 +52,7 @@ function renderSuggestion(
           {part.text}
         </span>
       ))}
+      <img src={require('images/ic-add.svg')} alt="" />
     </MenuItem>
   );
 }
@@ -152,11 +153,23 @@ const useStyles = makeStyles((theme: Theme) =>
       '& ul': {
         padding: 0,
         margin: 0,
+        borderRadius: 10,
+        overflow: 'hidden',
         '& li': {
           padding: 0,
           listStyleType: 'none',
+          position: 'relative',
+          '&:after': {
+            content: '""',
+            height: 1,
+            left: 20,
+            right: 20,
+            bottom: 0,
+            position: 'absolute',
+            backgroundColor: 'rgba(2, 71, 91, 0.15)',
+          },
           '& >div': {
-            padding: '10px 16px',
+            padding: '10px 62px 10px 16px',
             fontSize: 18,
             fontWeight: 500,
             color: '#02475b',
@@ -171,9 +184,27 @@ const useStyles = makeStyles((theme: Theme) =>
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             },
+            '& img': {
+              position: 'absolute',
+              right: 20,
+              display: 'none',
+            },
           },
           '&:first-child': {
             borderRadius: '10px 10px 0 0',
+          },
+          '&:last-child': {
+            borderRadius: '10px 10px 0 0',
+            '&:after': {
+              display: 'none',
+            },
+          },
+          '&:hover': {
+            '& >div': {
+              '& img': {
+                display: 'block',
+              },
+            },
           },
         },
       },
