@@ -343,6 +343,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: (message) => {
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
+        console.log(message.message);
         if (
           !showVideoChat &&
           message.message.message !== videoCallMsg &&
@@ -455,9 +456,13 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <div>
+                <div style={{ width: '50px', height: '50px' }}>
                   <a href={rowData.url} target="_blank">
-                    <img src={rowData.url} alt={rowData.url} />
+                    <img
+                      style={{ width: '50px', height: '50px' }}
+                      src={rowData.url}
+                      alt={rowData.url}
+                    />
                   </a>
                 </div>
               ) : (
@@ -702,30 +707,56 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                     setFileUploading(true);
                     const fileExtension = fileNames[0].name.split('.').pop();
                     const fileSize = fileNames[0].size;
+                    console.log(fileSize);
                     if (fileSize > 2000000) {
                       setFileUploadErrorMessage(
                         'Invalid File Size. File size must be less than 2MB'
                       );
                       setIsDialogOpen(true);
                     } else if (
-                      fileExtension === 'png' ||
-                      fileExtension === 'jpg' ||
-                      fileExtension === 'pdf'
+                      fileExtension &&
+                      (fileExtension.toLowerCase() === 'png' ||
+                        fileExtension.toLowerCase() === 'jpg' ||
+                        fileExtension.toLowerCase() === 'pdf' ||
+                        fileExtension.toLowerCase() === 'jpeg')
                     ) {
                       const reader = new FileReader();
                       reader.addEventListener(
                         'load',
                         () => {
+                          const readerResult = reader.result as string;
+                          const base64String = readerResult.replace(
+                            /^data:image\/[a-z]+;base64,/,
+                            ''
+                          );
                           mutationUploadChatDocument({
                             variables: {
                               appointmentId: props.appointmentId,
-                              base64FileInput: reader.result as string,
+                              base64FileInput: base64String,
                               fileType: fileExtension,
                             },
                           }).then((response) => {
-                            setFileUploading(false);
-                            // continue from here to post this in chat window.....
-                            console.log(response);
+                            if (
+                              response &&
+                              response!.data &&
+                              response!.data!.uploadChatDocument &&
+                              response!.data!.uploadChatDocument!.filePath
+                            ) {
+                              setFileUploading(false);
+                              // continue from here to post this in chat window.....
+                              const uploadObject = {
+                                id: doctorId,
+                                fileType: `image`,
+                                message: `^^#DocumentUpload`,
+                                url: response!.data!.uploadChatDocument!.filePath,
+                                isTyping: true,
+                              };
+                              sendMsg(uploadObject, true);
+                              console.log(uploadObject);
+                            } else {
+                              setFileUploadErrorMessage('Error occured in uploading file.');
+                              setIsDialogOpen(true);
+                            }
                           });
                         },
                         false
