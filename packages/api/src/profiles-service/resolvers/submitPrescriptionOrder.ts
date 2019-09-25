@@ -13,7 +13,6 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 import { PharmaLineItem, PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import { differenceInYears } from 'date-fns';
-import { ApiConstants } from 'ApiConstants';
 
 export const submitPrescriptionOrderTypeDefs = gql`
   input SubmitPrescriptionOrderInput {

@@ -18,7 +18,6 @@ import { PatientAddressRepository } from 'profiles-service/repositories/patientA
 import { PharmaResponse, PrescriptionUrl } from 'types/medicineOrderTypes';
 import fetch from 'node-fetch';
 import { differenceInYears } from 'date-fns';
-import { ApiConstants } from 'ApiConstants';
 
 export const savePrescriptionMedicineOrderTypeDefs = gql`
   input PrescriptionMedicineInput {
