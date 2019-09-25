@@ -19,6 +19,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   patientId: string;
   parentId: string | null;
   status: STATUS;
+  displayId: string;
   isFollowUp: number;
 }
 
@@ -62,6 +63,7 @@ export interface getCaseSheet_getCaseSheet_caseSheetDetails {
   consultType: string | null;
   diagnosis: (getCaseSheet_getCaseSheet_caseSheetDetails_diagnosis | null)[] | null;
   diagnosticPrescription: (getCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription | null)[] | null;
+  blobName: string | null;
   doctorId: string | null;
   followUp: boolean | null;
   followUpAfterInDays: string | null;

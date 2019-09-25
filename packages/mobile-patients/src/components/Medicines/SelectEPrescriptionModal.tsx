@@ -85,7 +85,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     (item) =>
       ({
         id: item!.id,
-        date: moment(item!.quoteDateTime).format('DD MMMM YYYY'),
+        date: moment(item!.quoteDateTime).format('DD MMM YYYY'),
         uploadedUrl: item!.prescriptionImageUrl,
         doctorName: '', // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
         forPatient: (currentPatient && currentPatient.firstName) || '',

@@ -83,6 +83,7 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
                 lineHeight: 20,
                 letterSpacing: 0.04,
               }}
+              numberOfLines={1}
             >
               {date}
             </Text>

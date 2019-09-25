@@ -128,57 +128,50 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const client = useApolloClient();
 
   const checkAvailabilitySlot = () => {
-    getNetStatus().then((status) => {
-      if (status) {
-        console.log('checkAvailabilitySlot consult online');
-        props.setshowSpinner && props.setshowSpinner(true);
-        client
-          .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
-            query: NEXT_AVAILABLE_SLOT,
-            variables: {
-              DoctorNextAvailableSlotInput: {
-                doctorIds: props.doctor ? [props.doctor.id] : [],
-                availableDate: todayDate,
-              },
-            },
-            fetchPolicy: 'no-cache',
-          })
-          .then(({ data }) => {
-            props.setshowSpinner && props.setshowSpinner(false);
-            if (
-              data &&
-              data.getDoctorNextAvailableSlot &&
-              data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-              data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
-              data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-              data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
-              availableInMin === 0
-            ) {
-              const nextSlot = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
-                .availableSlot;
-              // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
-              let timeDiff: Number = 0;
-              const today: Date = new Date();
-              const date2: Date = new Date(nextSlot);
-              if (date2 && today) {
-                timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
-              }
-              console.log(timeDiff, 'timeDiff');
+    console.log('checkAvailabilitySlot consult online');
+    props.setshowSpinner && props.setshowSpinner(true);
+    client
+      .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
+        query: NEXT_AVAILABLE_SLOT,
+        variables: {
+          DoctorNextAvailableSlotInput: {
+            doctorIds: props.doctor ? [props.doctor.id] : [],
+            availableDate: todayDate,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        props.setshowSpinner && props.setshowSpinner(false);
+        if (
+          data &&
+          data.getDoctorNextAvailableSlot &&
+          data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+          data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
+          data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+          data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
+          availableInMin === 0
+        ) {
+          const nextSlot = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot;
+          // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
+          let timeDiff: Number = 0;
+          const today: Date = new Date();
+          const date2: Date = new Date(nextSlot);
+          if (date2 && today) {
+            timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+          }
+          console.log(timeDiff, 'timeDiff');
 
-              props.setNextAvailableSlot(nextSlot);
-              props.setavailableInMin(timeDiff);
-              setavailableInMin(timeDiff);
-              setNextAvailableSlot(nextSlot);
-            }
-          })
-          .catch((e: any) => {
-            props.setshowSpinner && props.setshowSpinner(false);
-            console.log('error', e);
-          });
-      } else {
-        // setshowOfflinePopup(true);
-      }
-    });
+          props.setNextAvailableSlot(nextSlot);
+          props.setavailableInMin(timeDiff);
+          setavailableInMin(timeDiff);
+          setNextAvailableSlot(nextSlot);
+        }
+      })
+      .catch((e: any) => {
+        props.setshowSpinner && props.setshowSpinner(false);
+        console.log('error', e);
+      });
   };
 
   // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
