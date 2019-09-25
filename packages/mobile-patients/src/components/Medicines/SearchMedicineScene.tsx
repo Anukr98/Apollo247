@@ -174,6 +174,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         variables: {
           patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
         },
+        fetchPolicy: 'no-cache',
       })
       .then(({ data: { getPatientPastMedicineSearches } }) => {
         console.log({ getPatientPastMedicineSearches });

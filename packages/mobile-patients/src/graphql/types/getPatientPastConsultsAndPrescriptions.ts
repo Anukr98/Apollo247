@@ -39,6 +39,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet {
   __typename: "CaseSheet";
+  blobName: string | null;
   consultType: string | null;
   diagnosis: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosis | null)[] | null;
   diagnosticPrescription: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosticPrescription | null)[] | null;
@@ -83,9 +84,9 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   isFollowUp: boolean | null;
   followUpParentId: string | null;
   followUpTo: any | null;
+  displayId: number;
   bookingDate: any | null;
   caseSheet: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet | null)[] | null;
-  displayId: number;
   status: STATUS;
   doctorInfo: getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_doctorInfo | null;
 }

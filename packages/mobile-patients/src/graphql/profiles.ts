@@ -72,64 +72,64 @@ export const GET_PATIENT_PAST_SEARCHES = gql`
   }
 `;
 
-export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
-  query SearchDoctorAndSpecialty($searchText: String!) {
-    SearchDoctorAndSpecialty(searchText: $searchText) {
-      doctors {
-        id
-        salutation
-        firstName
-        lastName
-        experience
-        speciality
-        specialization
-        isStarDoctor
-        education
-        services
-        languages
-        city
-        address
-        photoUrl
-        availableIn
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        isStarDoctor
-        services
-        languages
-        availableIn
-      }
-      specialties {
-        id
-        name
-        image
-      }
-      possibleMatches {
-        doctors {
-          id
-          salutation
-          firstName
-          lastName
-          experience
-          speciality
-          specialization
-          isStarDoctor
-          education
-          services
-          languages
-          city
-          address
-          photoUrl
-          availableIn
-        }
-        specialties {
-          id
-          name
-          image
-        }
-      }
-    }
-  }
-`;
+// export const SEARCH_DOCTOR_AND_SPECIALITY = gql`
+//   query SearchDoctorAndSpecialty($searchText: String!) {
+//     SearchDoctorAndSpecialty(searchText: $searchText) {
+//       doctors {
+//         id
+//         salutation
+//         firstName
+//         lastName
+//         experience
+//         speciality
+//         specialization
+//         isStarDoctor
+//         education
+//         services
+//         languages
+//         city
+//         address
+//         photoUrl
+//         availableIn
+//         availableForPhysicalConsultation
+//         availableForVirtualConsultation
+//         isStarDoctor
+//         services
+//         languages
+//         availableIn
+//       }
+//       specialties {
+//         id
+//         name
+//         image
+//       }
+//       possibleMatches {
+//         doctors {
+//           id
+//           salutation
+//           firstName
+//           lastName
+//           experience
+//           speciality
+//           specialization
+//           isStarDoctor
+//           education
+//           services
+//           languages
+//           city
+//           address
+//           photoUrl
+//           availableIn
+//         }
+//         specialties {
+//           id
+//           name
+//           image
+//         }
+//       }
+//     }
+//   }
+// `;
 
 export const GET_PAST_SEARCHES = gql`
   query getPastSearches {
@@ -479,6 +479,7 @@ export const GET_CASESHEET_DETAILS = gql`
         diagnosticPrescription {
           itemname
         }
+        blobName
         doctorId
         followUp
         followUpAfterInDays
@@ -846,6 +847,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
         displayId
         bookingDate
         caseSheet {
+          blobName
           consultType
           diagnosis {
             name
@@ -859,6 +861,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           followUpAfterInDays
           followUpDate
           id
+
           medicinePrescription {
             medicineConsumptionDurationInDays
             medicineDosage

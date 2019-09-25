@@ -3,6 +3,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   getMedicineDetailsApi,
   MedicineProduct,
@@ -19,6 +20,11 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.WHITE,
     margin: 20,
     padding: 16,
+  },
+  noteContainerStyle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   noteText: {
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -54,7 +60,7 @@ const styles = StyleSheet.create({
     height: 1,
     opacity: 0.1,
     backgroundColor: theme.colors.LIGHT_BLUE,
-    marginTop: 17,
+    marginTop: 15,
     marginBottom: 24,
   },
   noDataCard: {
@@ -145,7 +151,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     if (medicineDetails!.is_prescription_required == '1') {
       return (
         <>
-          <Text style={styles.noteText}>This medicine requires doctor’s prescription</Text>
+          <View style={styles.noteContainerStyle}>
+            <Text style={styles.noteText}>This medicine requires doctor’s prescription</Text>
+            <MedicineRxIcon />
+          </View>
           <View style={styles.separator} />
         </>
       );

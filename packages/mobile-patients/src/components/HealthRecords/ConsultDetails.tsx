@@ -33,7 +33,7 @@ import {
   NavigationActions,
 } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
-import { ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
+import { ShoppingCartItem, useShoppingCart, EPrescription } from '../ShoppingCartProvider';
 import { Spinner } from '../ui/Spinner';
 import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
 import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
@@ -45,6 +45,8 @@ import {
   checkIfRescheduleVariables,
 } from '../../graphql/types/checkIfReschedule';
 import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
+import { getMedicineDetailsApi } from '../../helpers/apiCalls';
+import { AppConfig } from '../../strings/AppConfig';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -107,6 +109,7 @@ export interface ConsultDetailsProps extends NavigationScreenProps {
   PatientId: any;
   appointmentType: string;
   appointmentDate: any;
+  DisplayId: any;
 }
 
 type rescheduleType = {
@@ -161,6 +164,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       .then((_data) => {
         setLoading(false);
         console.log('GET_CASESHEET_DETAILS', _data!);
+        console.log(_data.data.getCaseSheet!.caseSheetDetails!.blobName, 'blobname');
         // console.log(
         //   'isfollowupcasesheet',
         //   _data!.data!.getCaseSheet!.caseSheetDetails!.isFollowUp!
@@ -221,7 +225,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 }}
               >
                 {props.navigation.state.params!.DoctorInfo &&
-                  '#' + props.navigation.state.params!.DoctorInfo.id}
+                  '#' + props.navigation.state.params!.DisplayId}
               </Text>
               <View style={theme.viewStyles.lightSeparatorStyle} />
               <Text style={styles.doctorNameStyle}>
@@ -281,6 +285,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
   const renderSymptoms = () => {
     console.log('caseSheetDetails.symptoms.length', caseSheetDetails!.symptoms!);
+    console.log('bolbname', caseSheetDetails!.blobName!);
     // if (caseSheetDetails && caseSheetDetails.symptoms && caseSheetDetails.symptoms.length > 0)
     return (
       <View
@@ -320,7 +325,86 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       </View>
     );
   };
-  const { setCartItems } = useShoppingCart();
+  const { setCartItems, cartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
+
+  const onAddToCart = () => {
+    console.log('medicine', caseSheetDetails!.medicinePrescription);
+    console.log(
+      'blobName',
+      AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!)
+    );
+    setLoading(true);
+
+    const medPrescription = caseSheetDetails!.medicinePrescription || [];
+    const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
+
+    Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
+      .then((result) => {
+        console.log({ result });
+
+        setLoading(false);
+        const medicines = result
+          .map(({ data: { productdp } }, index) => {
+            const medicineDetails = (productdp && productdp[0]) || {};
+            if (!medicineDetails.is_in_stock) {
+              return null;
+            }
+            return {
+              id: medicineDetails!.sku!,
+              mou: medicineDetails.mou,
+              name: medicineDetails!.name,
+              price: medicineDetails!.price,
+              quantity: parseInt(medPrescription[index]!.medicineDosage!),
+              prescriptionRequired: medicineDetails.is_prescription_required == '1',
+            } as ShoppingCartItem;
+          })
+          .filter((item) => (item ? true : false));
+
+        console.log({ medicines });
+
+        const filteredItemsFromCart = cartItems.filter(
+          (cartItem) => !medicines.find((item) => (item && item.id) == cartItem.id)
+        );
+
+        console.log({ filteredItemsFromCart });
+
+        setCartItems!([...filteredItemsFromCart, ...(medicines as ShoppingCartItem[])]);
+
+        if (medPrescription.length > medicines.length) {
+          const outOfStockCount = medPrescription.length - medicines.length;
+          Alert.alert('Alert', `${outOfStockCount} item(s) are out of stock.`);
+          // props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+        }
+
+        const rxMedicinesCount =
+          medicines.length == 0 ? 0 : medicines.filter((item) => item!.prescriptionRequired).length;
+
+        console.log({ rxMedicinesCount });
+
+        const presToAdd = {
+          id: caseSheetDetails!.id,
+          date: moment(caseSheetDetails!.appointment!.appointmentDateTime).format('DD MMM YYYY'),
+          doctorName: '',
+          forPatient: (currentPatient && currentPatient.firstName) || '',
+          medicines: (medicines || []).map((item) => item!.name).join(', '),
+          uploadedUrl: docUrl,
+        } as EPrescription;
+
+        if (rxMedicinesCount) {
+          setEPrescriptions!([
+            ...ePrescriptions.filter((item) => !(item.id == presToAdd.id)),
+            presToAdd,
+          ]);
+        }
+        props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+      })
+      .catch((e) => {
+        setLoading(false);
+        console.log({ e });
+        Alert.alert('Alert', 'Oops! Something went wrong.');
+      });
+  };
+
   const renderPrescriptions = () => {
     // if (
     //   caseSheetDetails &&
@@ -376,20 +460,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 })}
                 <TouchableOpacity
                   onPress={() => {
-                    console.log('medicine', caseSheetDetails!.medicinePrescription);
-                    const medicines: ShoppingCartItem[] = caseSheetDetails!.medicinePrescription!.map(
-                      (item) =>
-                        ({
-                          id: item!.id!,
-                          mou: '10',
-                          name: item!.medicineName!,
-                          price: 50,
-                          quantity: parseInt(item!.medicineDosage!),
-                          prescriptionRequired: false,
-                        } as ShoppingCartItem)
-                    );
-                    setCartItems && setCartItems(medicines);
-                    props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
+                    onAddToCart();
                   }}
                 >
                   <Text

@@ -8,7 +8,7 @@ import {
   ShareGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -21,6 +21,7 @@ import {
   Linking,
   ScrollView,
   CameraRoll,
+  PermissionsAndroid,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -101,7 +102,34 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   console.log(data, 'data');
-
+  useEffect(() => {
+    Platform.OS === 'android' && requestReadSmsPermission();
+  });
+  const requestReadSmsPermission = async () => {
+    try {
+      const resuts = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      ]);
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        console.log(resuts, 'WRITE_EXTERNAL_STORAGE');
+      }
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        console.log(resuts, 'READ_EXTERNAL_STORAGE');
+      }
+      if (resuts) {
+        console.log(resuts, 'READ_EXTERNAL_STORAGE');
+      }
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
   const renderRecordDetails = () => {
     return (
       <View>
@@ -276,6 +304,12 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                     } else {
                       for (var i = 0; i < urls.length; i++) {
                         console.log('urllrr', urls[i]);
+                        if (Platform.OS === 'ios') {
+                          try {
+                            CameraRoll.saveToCameraRoll(urls[i]);
+                            Alert.alert('Download Completed');
+                          } catch {}
+                        }
                         let dirs = RNFetchBlob.fs.dirs;
                         console.log('dirs', dirs);
                         setLoading(true);
@@ -298,10 +332,11 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                             console.log('The file saved to res ', res);
                             console.log('The file saved to ', res.path());
                             //saveimageIos(urls[0]);
-                            try {
-                              CameraRoll.saveToCameraRoll(urls[i]);
-                            } catch {}
-
+                            // if (Platform.OS === 'ios') {
+                            //   try {
+                            //     CameraRoll.saveToCameraRoll(urls[0]);
+                            //   } catch {}
+                            // }
                             // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                             // RNFetchBlob.ios.openDocument(res.path());
                             Alert.alert('Download Complete');
