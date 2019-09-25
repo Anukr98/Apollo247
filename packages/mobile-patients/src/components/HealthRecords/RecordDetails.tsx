@@ -332,11 +332,12 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                             console.log('The file saved to res ', res);
                             console.log('The file saved to ', res.path());
                             //saveimageIos(urls[0]);
-                            // if (Platform.OS === 'ios') {
-                            //   try {
-                            //     CameraRoll.saveToCameraRoll(urls[0]);
-                            //   } catch {}
-                            // }
+                            if (Platform.OS === 'ios') {
+                              try {
+                                CameraRoll.saveToCameraRoll(urls[i]);
+                              } catch {}
+                            }
+
                             // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                             // RNFetchBlob.ios.openDocument(res.path());
                             Alert.alert('Download Complete');

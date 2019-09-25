@@ -1148,6 +1148,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         DoctorInfo: rowData.transferInfo.doctorInfo,
                         PatientId: appointmentData.patientId,
                         appointmentType: appointmentData.appointmentType,
+                        DisplayId: '',
                       });
                     } catch (error) {}
                   }}
