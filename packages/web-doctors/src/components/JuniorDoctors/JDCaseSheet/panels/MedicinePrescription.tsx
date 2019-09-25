@@ -17,6 +17,8 @@ import { isEmpty, trim, deburr } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import _uniqueId from 'lodash/uniqueId';
+import Scrollbars from 'react-custom-scrollbars';
+import { mergeClasses } from '@material-ui/styles';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -70,6 +72,7 @@ function renderSuggestion(
           {part.text}
         </span>
       ))}
+      <img src={require('images/ic-add.svg')} alt="" />
     </MenuItem>
   );
 }
@@ -169,7 +172,7 @@ const useStyles = makeStyles((theme: Theme) =>
       minWidth: 'auto',
     },
     searchFrom: {
-      padding: 20,
+      padding: 0,
     },
     loaderDiv: {
       textAlign: 'center',
@@ -189,19 +192,33 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     autoSuggestBox: {
       position: 'relative',
+      overflow: 'hidden',
+      borderRadius: 10,
+      '& >div:first-child': {
+        padding: 20,
+        paddingBottom: 0,
+      },
     },
     searchpopup: {
       boxShadow: 'none',
       '& ul': {
         padding: 0,
         margin: 0,
-        marginLeft: -20,
-        marginRight: -20,
         '& li': {
           padding: 0,
           listStyleType: 'none',
+          position: 'relative',
+          '&:after': {
+            content: '""',
+            height: 1,
+            left: 20,
+            right: 20,
+            bottom: 0,
+            position: 'absolute',
+            backgroundColor: 'rgba(2, 71, 91, 0.15)',
+          },
           '& >div': {
-            padding: '10px 20px',
+            padding: '10px 66px 10px 20px',
             fontSize: 18,
             fontWeight: 500,
             color: '#02475b',
@@ -216,12 +233,29 @@ const useStyles = makeStyles((theme: Theme) =>
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             },
+            '& img': {
+              position: 'absolute',
+              right: 20,
+              display: 'none',
+            },
+          },
+          '&:last-child': {
+            '&:after': {
+              display: 'none',
+            },
+          },
+          '&:hover': {
+            '& >div': {
+              '& img': {
+                display: 'block',
+              },
+            },
           },
         },
       },
     },
     addNewMedicine: {
-      paddingTop: 10,
+      padding: 20,
       color: '#02475b',
       fontSize: 16,
     },
@@ -257,8 +291,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     dialogActions: {
-      padding: 20,
-      paddingTop: 10,
+      padding: '16px 20px',
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
       position: 'relative',
       textAlign: 'right',
@@ -306,13 +339,17 @@ const useStyles = makeStyles((theme: Theme) =>
       marginBottom: 20,
       '& button': {
         border: '1px solid #00b38e',
-        padding: '5px 10px',
+        padding: '5px 13px',
         fontSize: 12,
         fontWeight: 'normal',
         borderRadius: 14,
         marginRight: 15,
         color: '#00b38e',
         backgroundColor: '#fff',
+        boxShadow: 'none',
+        textTransform: 'none',
+        minWidth: 'auto',
+        lineHeight: '12px',
         '&:focus': {
           outline: 'none',
         },
@@ -333,6 +370,11 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: 0,
       paddingRight: 20,
       paddingBottom: 10,
+    },
+    selectedMedicine: {
+      paddingLeft: 35,
+      paddingRight: 35,
+      wordBreak: 'break-word',
     },
   })
 );
@@ -618,7 +660,7 @@ export const MedicinePrescription: React.FC = () => {
   const daySlotsHtml = daySlots.map((_daySlotitem: SlotsObject | null, index: number) => {
     const daySlotitem = _daySlotitem!;
     return (
-      <button
+      <AphButton
         key={daySlotitem.id}
         className={daySlotitem.selected ? classes.activeBtn : ''}
         onClick={() => {
@@ -626,7 +668,7 @@ export const MedicinePrescription: React.FC = () => {
         }}
       >
         {daySlotitem.value}
-      </button>
+      </AphButton>
     );
   });
   const addUpdateMedicines = () => {
@@ -725,7 +767,7 @@ export const MedicinePrescription: React.FC = () => {
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
     const tobeTakenitem = _tobeTakenitem!;
     return (
-      <button
+      <AphButton
         key={tobeTakenitem.id}
         className={tobeTakenitem.selected ? classes.activeBtn : ''}
         onClick={() => {
@@ -733,7 +775,7 @@ export const MedicinePrescription: React.FC = () => {
         }}
       >
         {tobeTakenitem.value}
-      </button>
+      </AphButton>
     );
   });
 
@@ -805,7 +847,11 @@ export const MedicinePrescription: React.FC = () => {
                 <img src={require('images/ic_back.svg')} alt="" />
               </div>
             )}
-            {showDosage ? selectedValue.toUpperCase() : 'ADD MEDICINE'}
+            {showDosage ? (
+              <div className={classes.selectedMedicine}>{selectedValue.toUpperCase()}</div>
+            ) : (
+              'ADD MEDICINE'
+            )}
             <AphButton className={classes.dialogClose}>
               <img
                 src={require('images/ic_cross.svg')}
@@ -846,127 +892,130 @@ export const MedicinePrescription: React.FC = () => {
                     container: classes.autoSuggestBox,
                   }}
                   renderSuggestionsContainer={(options) => (
-                    <Paper {...options.containerProps} square className={classes.searchpopup}>
-                      {options.children}
-                    </Paper>
+                    <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                      <Paper {...options.containerProps} square className={classes.searchpopup}>
+                        {options.children}
+                      </Paper>
+                      {medicine.length > 2 && !loading && !isSuggestionFetched && (
+                        <div className={classes.addNewMedicine}>
+                          <div>{`do you want to add '${medicine}' in Medicine ?`}</div>
+                          <AphButton
+                            className={classes.addBtn}
+                            onClick={() => {
+                              setState({
+                                single: '',
+                                popper: '',
+                              });
+                              setShowDosage(true);
+                              setSelectedValue(medicine);
+                              setSelectedId('IB01');
+                              setLoading(false);
+                              setMedicine('');
+                            }}
+                          >
+                            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD MEDICINE
+                          </AphButton>
+                        </div>
+                      )}
+                      {loading ? (
+                        <div className={classes.loaderDiv}>
+                          <CircularProgress />
+                        </div>
+                      ) : null}
+                    </Scrollbars>
                   )}
                 />
-                {medicine.length > 2 && !loading && !isSuggestionFetched && (
-                  <div className={classes.addNewMedicine}>
-                    <div>{`do you want to add '${medicine}' in Medicine ?`}</div>
-                    <AphButton
-                      className={classes.addBtn}
-                      color="primary"
-                      onClick={() => {
-                        setState({
-                          single: '',
-                          popper: '',
-                        });
-                        setShowDosage(true);
-                        setSelectedValue(medicine);
-                        setSelectedId('IB01');
-                        setLoading(false);
-                        setMedicine('');
-                      }}
-                    >
-                      <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD MEDICINE
-                    </AphButton>
-                  </div>
-                )}
-                {loading ? (
-                  <div className={classes.loaderDiv}>
-                    <CircularProgress />
-                  </div>
-                ) : null}
               </div>
             ) : (
               <div>
-                <div className={classes.dialogContent}>
-                  <div className={classes.sectionGroup}>
-                    <div className={classes.sectionTitle}>Dosage</div>
-                    <div className={classes.numberTablets}>
-                      <img
-                        src={require('images/ic_minus.svg')}
-                        alt="removeBtn"
-                        onClick={() => {
-                          if (tabletsCount > 1) {
-                            setTabletsCount(tabletsCount - 1);
-                          }
-                        }}
-                      />
-                      <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
-                      <img
-                        src={require('images/ic_plus.svg')}
-                        alt="addbtn"
-                        onClick={() => {
-                          if (tabletsCount > 0 && tabletsCount < 5) {
-                            setTabletsCount(tabletsCount + 1);
-                          }
-                        }}
-                      />
+                <Scrollbars autoHide={true} style={{ height: 'calc(54vh' }}>
+                  <div className={classes.dialogContent}>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.sectionTitle}>Dosage</div>
+                      <div className={classes.numberTablets}>
+                        <img
+                          src={require('images/ic_minus.svg')}
+                          alt="removeBtn"
+                          onClick={() => {
+                            if (tabletsCount > 1) {
+                              setTabletsCount(tabletsCount - 1);
+                            }
+                          }}
+                        />
+                        <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
+                        <img
+                          src={require('images/ic_plus.svg')}
+                          alt="addbtn"
+                          onClick={() => {
+                            if (tabletsCount > 0 && tabletsCount < 5) {
+                              setTabletsCount(tabletsCount + 1);
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className={classes.sectionGroup}>
-                    <div className={classes.sectionTitle}>Time of the Day</div>
-                    <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                    {errorState.daySlotErr && (
-                      <FormHelperText
-                        className={classes.helpText}
-                        component="div"
-                        error={errorState.daySlotErr}
-                      >
-                        Please select to be day slot.
-                      </FormHelperText>
-                    )}
-                  </div>
-                  <div className={classes.sectionGroup}>
-                    <div className={classes.sectionTitle}>To be taken</div>
-                    <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                    {errorState.tobeTakenErr && (
-                      <FormHelperText
-                        className={classes.helpText}
-                        component="div"
-                        error={errorState.tobeTakenErr}
-                      >
-                        Please select to be taken.
-                      </FormHelperText>
-                    )}
-                  </div>
-                  <div className={classes.sectionGroup}>
-                    <div className={classes.sectionTitle}>Duration of Consumption(In days)</div>
-                    <div className={classes.numberTablets}>
-                      <AphTextField
-                        placeholder=""
-                        inputProps={{ maxLength: 6 }}
-                        value={consumptionDuration}
-                        onChange={(event: any) => {
-                          setConsumptionDuration(event.target.value);
-                        }}
-                        error={errorState.durationErr}
-                      />
-                      {errorState.durationErr && (
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.sectionTitle}>Time of the Day</div>
+                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                      {errorState.daySlotErr && (
                         <FormHelperText
                           className={classes.helpText}
                           component="div"
-                          error={errorState.durationErr}
+                          error={errorState.daySlotErr}
                         >
-                          Please Enter Duration in days(Number only)
+                          Please select to be day slot.
                         </FormHelperText>
                       )}
                     </div>
-                  </div>
-                  <div className={classes.sectionGroup}>
-                    <div className={classes.sectionTitle}>Instructions (if any)</div>
-                    <div className={classes.numberTablets}>
-                      <AphTextField
-                        value={medicineInstruction}
-                        onChange={(event: any) => {
-                          setMedicineInstruction(event.target.value);
-                        }}
-                      />
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.sectionTitle}>To be taken</div>
+                      <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                      {errorState.tobeTakenErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.tobeTakenErr}
+                        >
+                          Please select to be taken.
+                        </FormHelperText>
+                      )}
+                    </div>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.sectionTitle}>Duration of Consumption(In days)</div>
+                      <div className={classes.numberTablets}>
+                        <AphTextField
+                          placeholder=""
+                          inputProps={{ maxLength: 6 }}
+                          value={consumptionDuration}
+                          onChange={(event: any) => {
+                            setConsumptionDuration(event.target.value);
+                          }}
+                          error={errorState.durationErr}
+                        />
+                        {errorState.durationErr && (
+                          <FormHelperText
+                            className={classes.helpText}
+                            component="div"
+                            error={errorState.durationErr}
+                          >
+                            Please Enter Duration in days(Number only)
+                          </FormHelperText>
+                        )}
+                      </div>
+                    </div>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.sectionTitle}>Instructions (if any)</div>
+                      <div className={classes.numberTablets}>
+                        <AphTextField
+                          value={medicineInstruction}
+                          onChange={(event: any) => {
+                            setMedicineInstruction(event.target.value);
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                </Scrollbars>
                 <div className={classes.dialogActions}>
                   <AphButton
                     className={classes.cancelBtn}
