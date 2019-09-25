@@ -31,6 +31,7 @@ const plugins = [
     template: './index.html',
     templateParameters: { env: process.env.NODE_ENV },
     inject: true,
+    favicon: './favicon.png',
   }),
 ];
 if (isLocal) {
