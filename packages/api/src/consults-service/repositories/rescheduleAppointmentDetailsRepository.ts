@@ -24,45 +24,40 @@ export class RescheduleAppointmentDetailsRepository extends Repository<
   ) {
     const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
     const doctorAppts = await apptRepo.getDoctorAppointmentsByDates(doctorId, startDate, endDate);
-    console.log(doctorAppts.length, 'appt length');
     if (doctorAppts.length > 0) {
       doctorAppts.map(async (appt) => {
-        const rescheduleAppointmentAttrs = {
+        const rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails> = {
           rescheduleReason: '',
           rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
           rescheduleInitiatedId: doctorId,
-          autoSelectSlot: 0,
           rescheduledDateTime: new Date(),
           rescheduleStatus: TRANSFER_STATUS.INITIATED,
           appointment: appt,
         };
-        const rescheduleAppt = await this.findRescheduleRecord(
-          rescheduleAppointmentAttrs.appointment
-        );
+        const rescheduleAppt = await this.findRescheduleRecord(appt);
         console.log(rescheduleAppt, 'rescheduleAppt');
-        if (rescheduleAppt) {
-          return rescheduleAppt;
+        if (!rescheduleAppt) {
+          const createReschdule = await this.save(this.create(rescheduleAppointmentAttrs)).catch(
+            (createErrors) => {
+              console.log(createErrors, 'createErrors');
+              throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
+                createErrors,
+              });
+            }
+          );
+          // send notification
+          const pushNotificationInput = {
+            appointmentId: appt.id,
+            notificationType: NotificationType.INITIATE_RESCHEDULE,
+          };
+          const notificationResult = sendNotification(
+            pushNotificationInput,
+            patientsDb,
+            consultsDb,
+            doctorsDb
+          );
+          console.log(notificationResult, createReschdule, 'notificationResult');
         }
-        const createReschdule = await this.save(this.create(rescheduleAppointmentAttrs)).catch(
-          (createErrors) => {
-            console.log(createErrors, 'createErrors');
-            throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
-              createErrors,
-            });
-          }
-        );
-        // send notification
-        const pushNotificationInput = {
-          appointmentId: rescheduleAppointmentAttrs.appointment.id,
-          notificationType: NotificationType.INITIATE_RESCHEDULE,
-        };
-        const notificationResult = sendNotification(
-          pushNotificationInput,
-          patientsDb,
-          consultsDb,
-          doctorsDb
-        );
-        console.log(notificationResult, createReschdule, 'notificationResult');
       });
     }
     return true;
