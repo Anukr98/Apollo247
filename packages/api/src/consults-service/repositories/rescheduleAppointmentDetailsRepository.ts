@@ -28,7 +28,6 @@ export class RescheduleAppointmentDetailsRepository extends Repository<
     if (doctorAppts.length > 0) {
       doctorAppts.map(async (appt) => {
         const rescheduleAppointmentAttrs = {
-          appointmentId: appt.id,
           rescheduleReason: '',
           rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
           rescheduleInitiatedId: doctorId,
