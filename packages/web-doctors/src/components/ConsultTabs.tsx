@@ -200,7 +200,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-type Params = { id: string; patientId: string };
+type Params = { id: string; patientId: string; tabValue: string };
 const storageClient = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
@@ -217,7 +217,11 @@ export const ConsultTabs: React.FC = () => {
   //     setpatientId(params.patientId);
   //     setdoctorId(currentPatient.id);
 
-  const [tabValue, setTabValue] = useState<number>(0);
+  const [tabValue, setTabValue] = useState<number>(
+    params && params!.tabValue && params!.tabValue !== null && params!.tabValue !== ''
+      ? parseInt(params!.tabValue, 10)
+      : 0
+  );
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
