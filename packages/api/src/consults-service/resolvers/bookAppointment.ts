@@ -16,6 +16,7 @@ import { sendSMS } from 'notifications-service/resolvers/notifications';
 import { ApiConstants } from 'ApiConstants';
 import { addMilliseconds, format } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 export const bookAppointmentTypeDefs = gql`
   enum STATUS {
@@ -159,6 +160,17 @@ const bookAppointment: Resolver<
     if (!docHospital) {
       throw new AphError(AphErrorMessages.INVALID_FACILITY_ID, undefined, {});
     }
+  }
+
+  //check if doctor slot is blocked
+  const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
+  const recCount = await blockRepo.checkIfSlotBlocked(
+    appointmentInput.appointmentDateTime,
+    appointmentInput.doctorId
+  );
+
+  if (recCount > 0) {
+    throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
   }
 
   //check if given appointment datetime is greater than current date time

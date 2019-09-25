@@ -21,6 +21,9 @@ import {
   TRANSFER_INITIATED_TYPE,
   CONSULTS_RX_SEARCH_FILTER,
   AppointmentDocuments,
+  RescheduleAppointmentDetails,
+  TRANSFER_STATUS,
+  TransferAppointmentDetails,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -657,9 +660,5 @@ export class AppointmentRepository extends Repository<Appointment> {
           createErrors,
         });
       });
-  }
-
-  checkIfDoctorSlotBlocked(doctorId: String, appointmentDateTime: Date) {
-    return true;
   }
 }

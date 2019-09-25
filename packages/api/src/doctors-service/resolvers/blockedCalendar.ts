@@ -5,7 +5,11 @@ import { AphAuthenticationError, AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { areIntervalsOverlapping } from 'date-fns';
-import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
+import { RescheduleAppointmentDetailsRepository } from 'consults-service/repositories/rescheduleAppointmentDetailsRepository';
+import { getAppointmentsAndReschedule } from 'consults-service/resolvers/rescheduleAppointment';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { TRANSFER_INITIATED_TYPE, TRANSFER_STATUS } from 'consults-service/entities';
+import { getConnection } from 'typeorm';
 
 export const blockedCalendarTypeDefs = gql`
   type BlockedCalendarItem {
@@ -135,8 +139,36 @@ const testInitiateRescheduleAppointment1: Resolver<
   DoctorsServiceContext,
   Boolean
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
-  const resRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
-  await resRepo.getAppointmentsAndReschedule(args.doctorId, args.startDate, args.endDate);
+  const resRepo = consultsDb.getCustomRepository(RescheduleAppointmentDetailsRepository);
+  //const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  //await resRepo.getAppointmentsAndReschedule(args.doctorId, args.startDate, args.endDate);
+  // const apptDetails = await apptRepo.findById('5e29e59a-4500-443a-a0f9-d98e0a55b294');
+  // console.log(apptDetails, 'appt details');
+  // if (apptDetails) {
+  //   const resdets = await resRepo.findRescheduleRecord(apptDetails);
+  //   console.log(resdets);
+  // }
+  /*const rescheduleAppointmentAttrs = {
+    appointmentId: '5e29e59a-4500-443a-a0f9-d98e0a55b294',
+    rescheduleReason: '',
+    rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+    rescheduleInitiatedId: args.doctorId,
+    autoSelectSlot: 0,
+    rescheduledDateTime: new Date(),
+    rescheduleStatus: TRANSFER_STATUS.INITIATED,
+  };
+  const consultConn = getConnection('consults-db');
+  const reshRepo = consultConn.getCustomRepository(RescheduleAppointmentDetailsRepository);
+  const createReschdule = await reshRepo.saveReschedule(rescheduleAppointmentAttrs);
+  console.log(createReschdule, 'create Reschdule');*/
+  await resRepo.getAppointmentsAndReschedule(
+    args.doctorId,
+    args.startDate,
+    args.endDate,
+    consultsDb,
+    doctorsDb,
+    patientsDb
+  );
   return true;
 };
 

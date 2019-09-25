@@ -227,7 +227,10 @@ const testInitiateRescheduleAppointment: Resolver<
   const rescheduleAppointment = rescheduleApptRepo.getAppointmentsAndReschedule(
     testRescheduleAppointmentInput.doctorId,
     testRescheduleAppointmentInput.startDate,
-    testRescheduleAppointmentInput.endDate
+    testRescheduleAppointmentInput.endDate,
+    consultsDb,
+    doctorsDb,
+    patientsDb
   );
   console.log(rescheduleAppointment, 'rescheduleAppointment');
 

@@ -11,7 +11,9 @@ import { sendNotification, NotificationType } from 'notifications-service/resolv
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 @EntityRepository(RescheduleAppointmentDetails)
-export class RescheduleAppointmentRepository extends Repository<RescheduleAppointmentDetails> {
+export class RescheduleAppointmentDetailsRepository extends Repository<
+  RescheduleAppointmentDetails
+> {
   saveReschedule(rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails>) {
     return this.create(rescheduleAppointmentAttrs)
       .save()
@@ -85,18 +87,18 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
     if (rescheduleAppt) {
       return rescheduleAppt;
     }
-    const consultConn = getConnection('consults-db');
-    const reshRepo = consultConn.getCustomRepository(RescheduleAppointmentRepository);
-    const createReschdule = await reshRepo.saveReschedule(rescheduleAppointmentAttrs);
+    // const consultConn = getConnection('consults-db');
+    // const reshRepo = consultConn.getCustomRepository(RescheduleAppointmentDetailsRepository);
+    // const createReschdule = await reshRepo.saveReschedule(rescheduleAppointmentAttrs);
 
-    // this.create(rescheduleAppointmentAttrs)
-    //   .save()
-    //   .catch((createErrors) => {
-    //     console.log(createErrors, 'createErrors');
-    //     throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
-    //       createErrors,
-    //     });
-    //   });
+    const createReschdule = await this.create(rescheduleAppointmentAttrs)
+      .save()
+      .catch((createErrors) => {
+        console.log(createErrors, 'createErrors');
+        throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
+          createErrors,
+        });
+      });
     if (!rescheduleAppointmentAttrs.appointment) {
       throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {});
     }
