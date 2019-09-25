@@ -28,6 +28,7 @@ import {
   UPDATE_CASESHEET,
   END_APPOINTMENT_SESSION,
 } from 'graphql/profiles';
+import { CircularProgress } from '@material-ui/core';
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
@@ -138,6 +139,11 @@ const useStyles = makeStyles((theme: Theme) => {
       height: 30,
       borderTopLeftRadius: '10px',
       borderTopRightRadius: '10px',
+    },
+    loading: {
+      position: 'absolute',
+      left: '50%',
+      top: '45%',
     },
     tabBody: {
       minHeight: 60,
@@ -482,6 +488,8 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
+      {!loaded && <CircularProgress className={classes.loading} />}
+
       {error && error !== '' && <Typography className={classes.tabRoot}>{error}</Typography>}
       {loaded && error === '' && (
         <CaseSheetContext.Provider

@@ -23,6 +23,7 @@ import {
   InitiateTransferAppointment,
   InitiateTransferAppointmentVariables,
 } from 'graphql/types/InitiateTransferAppointment';
+import { CircularProgress } from '@material-ui/core';
 import {
   SearchDoctorAndSpecialtyByName,
   SearchDoctorAndSpecialtyByNameVariables,
@@ -216,6 +217,11 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'relative',
       backgroundColor: '#f7f7f7',
       paddingBottom: 95,
+    },
+    loading: {
+      position: 'absolute',
+      left: '-20%',
+      top: 250,
     },
     audioVideoContainer: {
       maxWidth: 1064,
@@ -1300,6 +1306,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   </svg>
                   End Consult
                 </Button>
+                {props.saving && <CircularProgress className={classes.loading} />}
               </span>
             ) : (
               <Button
