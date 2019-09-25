@@ -89,14 +89,14 @@ export class RescheduleAppointmentDetailsRepository extends Repository<
     // const reshRepo = consultConn.getCustomRepository(RescheduleAppointmentDetailsRepository);
     // const createReschdule = await reshRepo.saveReschedule(rescheduleAppointmentAttrs);
 
-    const createReschdule = await this.create(rescheduleAppointmentAttrs)
-      .save()
-      .catch((createErrors) => {
+    const createReschdule = await this.save(this.create(rescheduleAppointmentAttrs)).catch(
+      (createErrors) => {
         console.log(createErrors, 'createErrors');
         throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
           createErrors,
         });
-      });
+      }
+    );
     if (!rescheduleAppointmentAttrs.appointment) {
       throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {});
     }
