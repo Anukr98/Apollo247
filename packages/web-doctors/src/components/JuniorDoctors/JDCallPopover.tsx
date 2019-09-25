@@ -32,6 +32,7 @@ import {
 import { TRANSFER_INITIATED_TYPE, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
+import { CircularProgress } from '@material-ui/core';
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -127,6 +128,12 @@ const useStyles = makeStyles((theme: Theme) => {
       '& svg': {
         marginRight: 5,
       },
+    },
+    loading: {
+      position: 'absolute',
+      top: 400,
+      left: '50%',
+      zIndex: 9999,
     },
     ResheduleCosultButton: {
       fontSize: 14,
@@ -1269,6 +1276,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               >
                 Submit Case Sheet
               </AphButton>
+              {props.saving && <CircularProgress className={classes.loading} />} }
             </span>
           ) : (
             <AphButton
