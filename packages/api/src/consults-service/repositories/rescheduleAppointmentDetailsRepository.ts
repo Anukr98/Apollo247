@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Connection, getConnection } from 'typeorm';
+import { EntityRepository, Repository, Connection } from 'typeorm';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import {
@@ -14,22 +14,6 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 export class RescheduleAppointmentDetailsRepository extends Repository<
   RescheduleAppointmentDetails
 > {
-  saveReschedule(rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails>) {
-    return this.save(this.create(rescheduleAppointmentAttrs)).catch((createErrors) => {
-      throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
-        createErrors,
-      });
-    });
-  }
-
-  checkTransfer(appointment: string, transferedDocotrId: string) {
-    return this.count({ where: { appointment, transferedDocotrId } });
-  }
-
-  updateReschedule(id: string, rescheduleStatus: TRANSFER_STATUS) {
-    return this.update(id, { rescheduleStatus });
-  }
-
   async getAppointmentsAndReschedule(
     doctorId: string,
     startDate: Date,
@@ -53,13 +37,33 @@ export class RescheduleAppointmentDetailsRepository extends Repository<
           rescheduleStatus: TRANSFER_STATUS.INITIATED,
           appointment: appt,
         };
-        const resResponse = await this.rescheduleAppointment(
-          rescheduleAppointmentAttrs,
-          consultsDb,
-          doctorsDb,
-          patientsDb
+        const rescheduleAppt = await this.findRescheduleRecord(
+          rescheduleAppointmentAttrs.appointment
         );
-        console.log(resResponse, 'reschedle response');
+        console.log(rescheduleAppt, 'rescheduleAppt');
+        if (rescheduleAppt) {
+          return rescheduleAppt;
+        }
+        const createReschdule = await this.save(this.create(rescheduleAppointmentAttrs)).catch(
+          (createErrors) => {
+            console.log(createErrors, 'createErrors');
+            throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
+              createErrors,
+            });
+          }
+        );
+        // send notification
+        const pushNotificationInput = {
+          appointmentId: rescheduleAppointmentAttrs.appointment.id,
+          notificationType: NotificationType.INITIATE_RESCHEDULE,
+        };
+        const notificationResult = sendNotification(
+          pushNotificationInput,
+          patientsDb,
+          consultsDb,
+          doctorsDb
+        );
+        console.log(notificationResult, createReschdule, 'notificationResult');
       });
     }
     return true;
@@ -69,49 +73,5 @@ export class RescheduleAppointmentDetailsRepository extends Repository<
     return this.findOne({
       where: { appointment, rescheduleStatus: TRANSFER_STATUS.INITIATED },
     });
-  }
-
-  async rescheduleAppointment(
-    rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails>,
-    consultsDb: Connection,
-    doctorsDb: Connection,
-    patientsDb: Connection
-  ) {
-    if (!rescheduleAppointmentAttrs.appointment) {
-      throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {});
-    }
-    const rescheduleAppt = await this.findRescheduleRecord(rescheduleAppointmentAttrs.appointment);
-    console.log(rescheduleAppt, 'rescheduleAppt');
-    if (rescheduleAppt) {
-      return rescheduleAppt;
-    }
-    // const consultConn = getConnection('consults-db');
-    // const reshRepo = consultConn.getCustomRepository(RescheduleAppointmentDetailsRepository);
-    // const createReschdule = await reshRepo.saveReschedule(rescheduleAppointmentAttrs);
-
-    const createReschdule = await this.save(this.create(rescheduleAppointmentAttrs)).catch(
-      (createErrors) => {
-        console.log(createErrors, 'createErrors');
-        throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {
-          createErrors,
-        });
-      }
-    );
-    if (!rescheduleAppointmentAttrs.appointment) {
-      throw new AphError(AphErrorMessages.RESCHEDULE_APPOINTMENT_ERROR, undefined, {});
-    }
-    // send notification
-    const pushNotificationInput = {
-      appointmentId: rescheduleAppointmentAttrs.appointment.id,
-      notificationType: NotificationType.INITIATE_RESCHEDULE,
-    };
-    const notificationResult = sendNotification(
-      pushNotificationInput,
-      patientsDb,
-      consultsDb,
-      doctorsDb
-    );
-    console.log(notificationResult, 'notificationResult');
-    return createReschdule;
   }
 }
