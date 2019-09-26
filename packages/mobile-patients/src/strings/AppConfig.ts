@@ -1,4 +1,5 @@
 // const Configuration = {
+//   LOG_ENVIRONMENT: 'debug'
 //   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
 //   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
 //   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
@@ -19,6 +20,7 @@
 // };
 
 const Configuration = {
+  LOG_ENVIRONMENT: 'release',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
