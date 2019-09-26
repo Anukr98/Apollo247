@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Typography, Chip, Theme, MenuItem, Paper, TextField } from '@material-ui/core';
-import DoneIcon from '@material-ui/icons/Done';
+import { Chip, Theme, MenuItem, Paper } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import AddCircle from '@material-ui/icons/AddCircle';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
 import deburr from 'lodash/deburr';
 import match from 'autosuggest-highlight/match';
@@ -57,13 +55,11 @@ function renderSuggestion(
 
   return (
     <MenuItem selected={isHighlighted} component="div">
-      <div>
-        {parts.map((part) => (
-          <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
-            {part.text}
-          </span>
-        ))}
-      </div>
+      {parts.map((part) => (
+        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
+          {part.text}
+        </span>
+      ))}
     </MenuItem>
   );
 }
@@ -71,92 +67,162 @@ function renderSuggestion(
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      height: 250,
-      flexGrow: 1,
+      padding: 0,
     },
-    container: {
-      position: 'relative',
+    sectionGroup: {
+      padding: 0,
     },
-    suggestionsContainerOpen: {
-      position: 'absolute',
-      zIndex: 1,
-      marginTop: theme.spacing(1),
-      left: 0,
-      right: 0,
-    },
-    textFieldWrapper: {
-      border: 'solid 1px #30c1a3',
-      borderRadius: 10,
-      width: '100%',
-      padding: 16,
-      color: '#01475b',
+    sectionTitle: {
+      color: '#02475b',
+      opacity: 0.6,
       fontSize: 14,
       fontWeight: 500,
-      position: 'relative',
-      paddingRight: 48,
+      letterSpacing: 0.02,
+      paddingBottom: 5,
     },
-
-    suggestion: {
-      display: 'block',
-      overflow: 'hidden',
-      borderBottom: '1px solid rgba(2,71,91,0.1)',
+    addBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
+      padding: 0,
+      marginTop: 12,
       '&:hover': {
-        '& div': {
-          backgroundColor: '#f0f4f5 !important',
+        backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
+      },
+    },
+    inputRoot: {
+      marginTop: 10,
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
+      },
+      '& input': {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#01475b',
+        paddingTop: 0,
+      },
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
         },
       },
     },
-    suggestionsList: {
-      margin: 0,
-      padding: 0,
-      listStyleType: 'none',
-      borderRadius: 10,
+    chipSection: {
+      paddingBottom: 0,
     },
-    chatSubmitBtn: {
-      position: 'absolute',
-      top: '50%',
-      marginTop: -18,
-      right: 10,
-      minWidth: 'auto',
-      padding: 0,
+    chipCol: {
+      display: 'inline-block',
+    },
+    chipItem: {
+      padding: 12,
+      paddingRight: 12,
+      fontSize: 14,
+      fontWeight: 600,
+      color: '#02475b',
+      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      borderRadius: 5,
+      marginRight: 16,
+      marginTop: 6,
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
+      height: 'auto',
+      '& span': {
+        padding: 0,
+        whiteSpace: 'normal',
+      },
+      '&:focus': {
+        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      },
       '& img': {
-        maxWidth: 36,
+        margin: 0,
+        marginLeft: 12,
+        maxWidth: 20,
       },
     },
-
-    divider: {
-      height: theme.spacing(2),
+    autoSuggestBox: {
+      position: 'relative',
     },
-    mainContainer: {
+    searchpopup: {
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
+      marginTop: 2,
+      position: 'absolute',
+      left: 0,
       width: '100%',
-    },
-    contentContainer: {
-      display: 'flex',
-      flexFlow: 'row',
-      flexWrap: 'wrap',
-      width: '100%',
-      '& h5': {
-        color: 'rgba(2, 71, 91, 0.6)',
-        fontSize: 14,
-        fontWeight: 500,
-        marginBottom: 12,
+      zIndex: 1,
+      '& ul': {
+        padding: 0,
+        margin: 0,
+        borderRadius: 10,
+        overflow: 'hidden',
+        '& li': {
+          padding: 0,
+          listStyleType: 'none',
+          position: 'relative',
+          '&:after': {
+            content: '""',
+            height: 1,
+            left: 20,
+            right: 20,
+            bottom: 0,
+            position: 'absolute',
+            backgroundColor: 'rgba(2, 71, 91, 0.15)',
+          },
+          '& >div': {
+            padding: '10px 62px 10px 16px',
+            fontSize: 18,
+            fontWeight: 500,
+            color: '#02475b',
+            '&:hover': {
+              backgroundColor: '#f0f4f5 !important',
+            },
+            '&:focus': {
+              backgroundColor: '#f0f4f5 !important',
+            },
+            '& span:nth-child(2)': {
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            },
+            '& img': {
+              position: 'absolute',
+              right: 20,
+              display: 'none',
+            },
+          },
+          '&:first-child': {
+            borderRadius: '10px 10px 0 0',
+          },
+          '&:last-child': {
+            borderRadius: '10px 10px 0 0',
+            '&:after': {
+              display: 'none',
+            },
+          },
+          '&:hover': {
+            '& >div': {
+              '& img': {
+                display: 'block',
+              },
+            },
+          },
+        },
       },
     },
-    column: {
-      width: '49%',
-      display: 'flex',
-      marginRight: '1%',
-      flexDirection: 'column',
-    },
-    listContainer: {
-      display: 'flex',
-      flexFlow: 'column',
-    },
-    icon: {
-      color: '#00b38e',
-    },
-    textFieldContainer: {
-      width: '100%',
+    addNewDiagnostic: {
+      paddingTop: 16,
+      color: '#02475b',
+      fontSize: 16,
     },
     othersBtn: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
@@ -178,14 +244,6 @@ const useStyles = makeStyles((theme: Theme) =>
         whiteSpace: 'normal',
       },
     },
-    textFieldColor: {
-      '& input': {
-        color: 'initial',
-        '& :before': {
-          border: 0,
-        },
-      },
-    },
     btnAddDoctor: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
@@ -199,33 +257,6 @@ const useStyles = makeStyles((theme: Theme) =>
       },
       '& img': {
         marginRight: 8,
-      },
-    },
-    searchpopup: {
-      borderRadius: 10,
-      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
-      marginTop: 2,
-    },
-    inputRoot: {
-      '&:before': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '&:after': {
-        borderBottom: '2px solid #00b38e',
-      },
-      '& input': {
-        fontSize: 16,
-        fontWeight: 500,
-        color: '#01475b',
-        paddingTop: 0,
-      },
-      '&:hover': {
-        '&:before': {
-          borderBottom: '2px solid #00b38e !important',
-        },
-        '&:after': {
-          borderBottom: '2px solid #00b38e !important',
-        },
       },
     },
   })
@@ -360,116 +391,100 @@ export const DiagnosticPrescription: React.FC = () => {
     renderSuggestion,
   };
   return (
-    <Typography component="div" className={classes.contentContainer}>
-      <Typography component="div" className={classes.column}>
-        <Typography component="h5" variant="h5">
-          Tests
-        </Typography>
-        <Typography component="div" className={classes.listContainer}>
+    <div className={classes.root}>
+      <div className={classes.sectionGroup}>
+        <div className={classes.sectionTitle}>Tests</div>
+        <div className={classes.chipSection}>
           {selectedValues !== null &&
             selectedValues.length > 0 &&
-            selectedValues!.map(
-              (item, idx) =>
-                item.itemname!.trim() !== '' && (
-                  <Chip
-                    className={classes.othersBtn}
-                    key={idx}
-                    label={item!.itemname}
-                    onDelete={() => handleDelete(item, idx)}
-                    deleteIcon={
-                      <img
-                        src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                        alt=""
-                      />
-                    }
-                  />
-                )
-            )}
-        </Typography>
-      </Typography>
-      <Typography component="div" className={classes.textFieldContainer}>
-        {!showAddCondition && caseSheetEdit && (
+            selectedValues!.map((item, idx) => (
+              <div className={classes.chipCol}>
+                <Chip
+                  className={classes.chipItem}
+                  key={idx}
+                  label={item!.itemname}
+                  onDelete={() => handleDelete(item, idx)}
+                  deleteIcon={
+                    <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
+                  }
+                />
+              </div>
+            ))}
+        </div>
+      </div>
+      {!showAddCondition && caseSheetEdit && (
+        <AphButton
+          classes={{ root: classes.addBtn }}
+          color="primary"
+          onClick={() => {
+            showAddConditionHandler(true);
+            setState({
+              single: '',
+              popper: '',
+            });
+          }}
+        >
+          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
+        </AphButton>
+      )}
+      {showAddCondition && !showAddOtherTests && (
+        <Autosuggest
+          onSuggestionSelected={(e, { suggestion }) => {
+            selectedValues!.push(suggestion);
+            setSelectedValues(selectedValues);
+            setShowAddCondition(false);
+            suggestions = suggestions.filter((val) => !selectedValues!.includes(val!));
+            setState({
+              single: '',
+              popper: '',
+            });
+            setOtherDiagnostic('');
+          }}
+          {...autosuggestProps}
+          inputProps={{
+            classes,
+            id: 'react-autosuggest-simple',
+            placeholder: 'Search Tests',
+            value: state.single,
+            onChange: handleChange('single'),
+          }}
+          theme={{
+            container: classes.autoSuggestBox,
+          }}
+          renderSuggestionsContainer={(options) => (
+            <Paper {...options.containerProps} square className={classes.searchpopup}>
+              {options.children}
+            </Paper>
+          )}
+        />
+      )}
+      {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
+        <div className={classes.addNewDiagnostic}>
+          <div>{`do you want to add '${otherDiagnostic}' in Tests ?`} </div>
           <AphButton
-            className={classes.btnAddDoctor}
-            variant="contained"
-            color="primary"
+            className={classes.addBtn}
             onClick={() => {
-              showAddConditionHandler(true);
-              setState({
-                single: '',
-                popper: '',
-              });
+              if (otherDiagnostic.trim() !== '') {
+                selectedValues!.splice(idx, 0, {
+                  itemname: otherDiagnostic,
+                  __typename: 'DiagnosticPrescription',
+                });
+                setSelectedValues(selectedValues);
+                setShowAddOtherTests(false);
+                setShowAddCondition(false);
+                setIdx(selectedValues!.length + 1);
+                setTimeout(() => {
+                  setOtherDiagnostic('');
+                }, 10);
+              } else {
+                setOtherDiagnostic('');
+              }
             }}
           >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
+            <img src={require('images/ic_dark_plus.svg')} alt="" /> Add Test
           </AphButton>
-        )}
-        {showAddCondition && !showAddOtherTests && (
-          <Autosuggest
-            onSuggestionSelected={(e, { suggestion }) => {
-              selectedValues!.push(suggestion);
-              setSelectedValues(selectedValues);
-              setShowAddCondition(false);
-              suggestions = suggestions.filter((val) => !selectedValues!.includes(val!));
-              setState({
-                single: '',
-                popper: '',
-              });
-              setOtherDiagnostic('');
-            }}
-            {...autosuggestProps}
-            inputProps={{
-              classes,
-              id: 'react-autosuggest-simple',
-              placeholder: 'Search Tests',
-              value: state.single,
-              onChange: handleChange('single'),
-            }}
-            theme={{
-              container: classes.container,
-              suggestionsContainerOpen: classes.suggestionsContainerOpen,
-              suggestionsList: classes.suggestionsList,
-              suggestion: classes.suggestion,
-            }}
-            renderSuggestionsContainer={(options) => (
-              <Paper {...options.containerProps} square className={classes.searchpopup}>
-                {options.children}
-              </Paper>
-            )}
-          />
-        )}
-        {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
-          <div>
-            <span>
-              {`do you want to add '${otherDiagnostic}' in Tests ?`}
-              <AphButton
-                className={classes.btnAddDoctor}
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  if (otherDiagnostic.trim() !== '') {
-                    selectedValues!.splice(idx, 0, {
-                      itemname: otherDiagnostic,
-                      __typename: 'DiagnosticPrescription',
-                    });
-                    setSelectedValues(selectedValues);
-                    setShowAddOtherTests(false);
-                    setShowAddCondition(false);
-                    setIdx(selectedValues!.length + 1);
-                    setTimeout(() => {
-                      setOtherDiagnostic('');
-                    }, 10);
-                  } else {
-                    setOtherDiagnostic('');
-                  }
-                }}
-              >
-                <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TEST
-              </AphButton>
-            </span>
-          </div>
-        )}
-      </Typography>
-    </Typography>
+        </div>
+      )}
+    </div>
   );
 };
