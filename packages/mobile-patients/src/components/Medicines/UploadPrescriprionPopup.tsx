@@ -24,6 +24,7 @@ import {
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ScrollView } from 'react-navigation';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -96,7 +97,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const formatResponse = (response: ImageCropPickerResponse[]) => {
-    console.log({ response });
     // const imageUri = response!.uri || response!.path || 'folder/img.jpg';
     if (response.length == 0) return [];
 
@@ -121,7 +121,6 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       compressImageQuality: 0.1,
     })
       .then((response) => {
-        console.log({ response });
         setshowSpinner(false);
         props.onResponse(
           'CAMERA_AND_GALLERY',
@@ -129,7 +128,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         );
       })
       .catch((e) => {
-        console.log({ e });
+        aphConsole.log({ e });
         setshowSpinner(false);
       });
   };
@@ -150,7 +149,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         );
       })
       .catch((e) => {
-        console.log({ e });
+        aphConsole.log({ e });
         setshowSpinner(false);
       });
   };

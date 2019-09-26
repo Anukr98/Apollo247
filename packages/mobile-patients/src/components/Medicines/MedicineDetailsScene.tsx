@@ -13,6 +13,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -96,12 +97,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   useEffect(() => {
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
-        console.log({ data: data.productdp[0] || {} });
         setmedicineDetails(data.productdp[0] || {});
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err, 'MedicineDetailsScene err');
+        aphConsole.log('MedicineDetailsScene err', err);
         setLoading(false);
       });
   }, []);

@@ -2,7 +2,7 @@ import {
   uploadFile,
   uploadFileVariables,
 } from '@aph/mobile-patients/src//graphql/types/uploadFile';
-import { handleGraphQlError } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { handleGraphQlError, aphConsole } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -122,7 +122,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -297,11 +296,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [checkingServicability, setCheckingServicability] = useState(false);
 
   const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
-    console.log({ address });
     setCheckingServicability(true);
     pinCodeServiceabilityApi(address.zipcode!)
       .then(({ data: { Availability } }) => {
-        console.log({ Availability });
         setCheckingServicability(false);
         if (Availability) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
@@ -314,7 +311,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         }
       })
       .catch((e) => {
-        console.log({ e });
+        aphConsole.log({ e });
         setCheckingServicability(false);
         handleGraphQlError(e);
       });
@@ -692,7 +689,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           props.navigation.navigate(AppRoutes.CheckoutScene);
         })
         .catch((e) => {
-          console.log({ e });
+          aphConsole.log({ e });
           setLoading!(false);
           showAphAlert!({
             title: 'Uh oh.. :(',

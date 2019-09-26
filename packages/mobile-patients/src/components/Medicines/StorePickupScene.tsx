@@ -8,6 +8,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -68,7 +69,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
             setStores && setStores(stores_count > 0 ? Stores : []);
           })
           .catch((e) => {
-            console.log({ e });
+            aphConsole.log({ e });
             setStorePickUpLoading(false);
           });
       } else {

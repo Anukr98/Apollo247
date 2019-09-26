@@ -81,7 +81,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -182,7 +181,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         <TouchableOpacity
           activeOpacity={1}
           // onPress={() => {
-          //   console.log('clicked');
           //   setShowPopup(true);
           // }}
           style={{ marginBottom: 8 }}
