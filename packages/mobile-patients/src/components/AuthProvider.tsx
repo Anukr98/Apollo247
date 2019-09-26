@@ -66,8 +66,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
 const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
-  console.log('buildApolloClient', authToken);
   const errorLink = onError((error) => {
+    console.log('-------error-------', error);
     const { graphQLErrors, operation, forward } = error;
     if (graphQLErrors) {
       const unauthenticatedError = graphQLErrors.some(
@@ -185,7 +185,7 @@ export const AuthProvider: React.FC = (props) => {
         setIsSigningIn(true);
         authStateRegistered = true;
 
-        const jwt = await user.getIdToken().catch((error) => {
+        const jwt = await user.getIdToken(true).catch((error) => {
           setIsSigningIn(false);
           setSignInError(true);
           setAuthToken('');
