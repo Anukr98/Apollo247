@@ -5,7 +5,7 @@ import { BlockedCalendarItem } from 'doctors-service/entities';
 export class BlockedCalendarItemRepository extends Repository<BlockedCalendarItem> {
   checkIfSlotBlocked(slot: Date, doctorId: string) {
     return this.count({
-      where: { doctorId, start: MoreThanOrEqual(slot), end: LessThanOrEqual(slot) },
+      where: { doctorId, start: LessThanOrEqual(slot), end: MoreThanOrEqual(slot) },
     });
   }
 }
