@@ -17,19 +17,21 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 export class DoctorRepository extends Repository<Doctor> {
   getDoctorProfileData(id: string) {
     return this.findOne({
-      where: [{ id }],
+      where: [{ id, isActive: true }],
       relations: ['specialty', 'doctorHospital'],
     });
   }
 
   getDoctorDetails(firebaseToken: string) {
     return this.findOne({
-      where: [{ firebaseToken }],
+      where: [{ firebaseToken, isActive: true }],
     });
   }
 
   async isJuniorDoctor(id: string) {
-    const count = await this.count({ where: { id, doctorType: DoctorType.JUNIOR } });
+    const count = await this.count({
+      where: { id, doctorType: DoctorType.JUNIOR, isActive: true },
+    });
     return count > 0 ? true : false;
   }
 
@@ -68,7 +70,7 @@ export class DoctorRepository extends Repository<Doctor> {
 
   findById(id: string) {
     return this.findOne({
-      where: [{ id }],
+      where: [{ id, isActive: true }],
       relations: [
         'specialty',
         'doctorHospital',
@@ -103,6 +105,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
       .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
       .where('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
+      .andWhere('doctor.isActive = true')
       .andWhere(
         new Brackets((qb) => {
           qb.andWhere('LOWER(doctor.firstName) LIKE :searchString', {
@@ -130,6 +133,7 @@ export class DoctorRepository extends Repository<Doctor> {
         specialtyId,
       })
       .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
+      .andWhere('doctor.isActive = true')
       .orderBy('doctor.experience', 'DESC')
       .getMany();
   }
