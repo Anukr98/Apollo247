@@ -16,17 +16,13 @@ import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+import { timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { useQuery, useApolloClient } from 'react-apollo-hooks';
 import Moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Text, View } from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
-import {
-  timeTo12HrFormat,
-  divideSlots,
-  getNetStatus,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -138,79 +134,44 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        props.setshowSpinner && props.setshowSpinner(false);
-        if (
-          data &&
-          data.getDoctorNextAvailableSlot &&
-          data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-          data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
-          data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-          data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
-          availableInMin === 0
-        ) {
-          const nextSlot = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot;
-          // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
-          let timeDiff: Number = 0;
-          const today: Date = new Date();
-          const date2: Date = new Date(nextSlot);
-          if (date2 && today) {
-            timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
-          }
-          console.log(timeDiff, 'timeDiff');
+        try {
+          props.setshowSpinner && props.setshowSpinner(false);
+          if (
+            data &&
+            data.getDoctorNextAvailableSlot &&
+            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
+            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
+            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
+            availableInMin === 0
+          ) {
+            const nextSlot = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot;
+            // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
+            let timeDiff: Number = 0;
+            const today: Date = new Date();
+            const date2: Date = new Date(nextSlot);
+            if (date2 && today) {
+              timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+            }
+            console.log(timeDiff, 'timeDiff', nextSlot);
 
-          props.setNextAvailableSlot(nextSlot);
-          props.setavailableInMin(timeDiff);
-          setavailableInMin(timeDiff);
-          setNextAvailableSlot(nextSlot);
-        }
+            props.setNextAvailableSlot(nextSlot);
+            props.setavailableInMin(timeDiff);
+            setavailableInMin(timeDiff);
+            setNextAvailableSlot(nextSlot);
+            if (timeDiff > 60) {
+              setselectedCTA(onlineCTA[1]);
+            }
+            setDate(new Date(nextSlot));
+            props.setDate(new Date(nextSlot));
+          }
+        } catch {}
       })
       .catch((e: any) => {
         props.setshowSpinner && props.setshowSpinner(false);
         console.log('error', e);
       });
   };
-
-  // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-  //   fetchPolicy: 'no-cache',
-  //   variables: {
-  //     DoctorNextAvailableSlotInput: {
-  //       doctorIds: props.doctor ? [props.doctor.id] : [],
-  //       availableDate: todayDate,
-  //     },
-  //   },
-  // });
-
-  // if (availability.error) {
-  //   console.log('error', availability.error);
-  // } else {
-  //   // console.log(availability.data, 'availabilityData', 'availableSlots');
-  //   if (
-  //     availability &&
-  //     availability.data &&
-  //     availability.data.getDoctorNextAvailableSlot &&
-  //     availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-  //     availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
-  //     availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-  //     availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
-  //     availableInMin === 0
-  //   ) {
-  //     const nextSlot = availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
-  //       .availableSlot;
-  //     // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
-  //     let timeDiff: Number = 0;
-  //     const today: Date = new Date();
-  //     const date2: Date = new Date(nextSlot);
-  //     if (date2 && today) {
-  //       timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
-  //     }
-  //     console.log(timeDiff, 'timeDiff');
-
-  //     props.setNextAvailableSlot(nextSlot);
-  //     props.setavailableInMin(timeDiff);
-  //     setavailableInMin(timeDiff);
-  //     setNextAvailableSlot(nextSlot);
-  //   }
-  // }
 
   const renderTimings = () => {
     console.log(props.timeArray, 'timeArray123456789', selectedtiming);
@@ -219,14 +180,12 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
         <TabsComponent
           style={{
             backgroundColor: theme.colors.CARD_BG,
-            // borderRadius: 10,
             borderBottomWidth: 0.5,
             borderBottomColor: 'rgba(2, 71, 91, 0.3)',
           }}
           data={timings}
           onChange={(selectedtiming: string) => {
             setselectedtiming(selectedtiming);
-            // setselectedTimeSlot('');
           }}
           selectedTab={selectedtiming}
           showIcons={true}
