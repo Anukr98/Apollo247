@@ -54,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontSize: 14,
     lineHeight: 1.43,
     color: '#01475b',
+    wordBreak: 'break-word',
   },
   addBtn: {
     backgroundColor: 'transparent',

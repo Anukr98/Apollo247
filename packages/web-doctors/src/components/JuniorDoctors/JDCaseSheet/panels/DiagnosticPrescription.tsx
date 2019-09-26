@@ -136,6 +136,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: 6,
       border: 'solid 1px rgba(2, 71, 91, 0.15)',
       height: 'auto',
+      wordBreak: 'break-word',
       '& span': {
         padding: 0,
         whiteSpace: 'normal',
