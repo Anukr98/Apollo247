@@ -337,7 +337,7 @@ export const Diagnosis: React.FC = () => {
           {selectedValues !== null &&
             selectedValues.length > 0 &&
             selectedValues!.map((item, idx) =>
-              caseSheetEdit ? (
+              caseSheetEdit && item.name!.trim() !== '' ? (
                 <div className={classes.chipCol}>
                   <Chip
                     className={classes.chipItem}
@@ -349,15 +349,17 @@ export const Diagnosis: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div className={classes.chipCol}>
-                  <Chip
-                    className={classes.chipItem}
-                    key={idx}
-                    label={item!.name}
-                    color="primary"
-                    deleteIcon={<img src={require('images/ic_cross_orange.svg')} alt="" />}
-                  />
-                </div>
+                item.name!.trim() !== '' && (
+                  <div className={classes.chipCol}>
+                    <Chip
+                      className={classes.chipItem}
+                      key={idx}
+                      label={item!.name}
+                      color="primary"
+                      deleteIcon={<img src={require('images/ic_cross_orange.svg')} alt="" />}
+                    />
+                  </div>
+                )
               )
             )}
         </div>
