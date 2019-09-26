@@ -287,7 +287,6 @@ export function g(obj: any, ...props: string[]) {
 
 export const getNetStatus = async () => {
   const status = await NetInfo.getConnectionInfo().then((connectionInfo) => {
-    console.log(connectionInfo, 'connectionInfo');
     return connectionInfo.type !== 'none';
   });
   return status;

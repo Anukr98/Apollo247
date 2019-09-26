@@ -257,18 +257,20 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
             fetchPolicy: 'no-cache',
           })
           .then(({ data }) => {
-            console.log(data, 'availableSlots');
-            if (
-              data &&
-              data.getDoctorPhysicalAvailableSlots &&
-              data.getDoctorPhysicalAvailableSlots.availableSlots &&
-              availableSlots !== data.getDoctorPhysicalAvailableSlots.availableSlots
-            ) {
-              props.setshowSpinner && props.setshowSpinner(false);
-              setTimeArrayData(data.getDoctorPhysicalAvailableSlots.availableSlots);
-              console.log(availableSlots, 'availableSlots1111');
-              setavailableSlots(data.getDoctorPhysicalAvailableSlots.availableSlots);
-            }
+            try {
+              console.log(data, 'availableSlots');
+              if (
+                data &&
+                data.getDoctorPhysicalAvailableSlots &&
+                data.getDoctorPhysicalAvailableSlots.availableSlots &&
+                availableSlots !== data.getDoctorPhysicalAvailableSlots.availableSlots
+              ) {
+                props.setshowSpinner && props.setshowSpinner(false);
+                setTimeArrayData(data.getDoctorPhysicalAvailableSlots.availableSlots);
+                console.log(availableSlots, 'availableSlots1111');
+                setavailableSlots(data.getDoctorPhysicalAvailableSlots.availableSlots);
+              }
+            } catch {}
           })
           .catch((e: any) => {
             props.setshowSpinner && props.setshowSpinner(false);

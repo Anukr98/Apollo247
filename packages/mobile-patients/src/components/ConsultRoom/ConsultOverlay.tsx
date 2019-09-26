@@ -4,6 +4,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -29,8 +30,9 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { divideSlots, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Dimensions,
@@ -41,10 +43,7 @@ import {
   View,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
-import { NavigationScreenProps, NavigationActions } from 'react-navigation';
-import moment from 'moment';
-import { StackActions } from 'react-navigation';
-import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -146,17 +145,19 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             },
           })
           .then(({ data }) => {
-            console.log(data, 'availableSlots', availableSlots);
-            if (
-              data &&
-              data.getDoctorAvailableSlots &&
-              data.getDoctorAvailableSlots.availableSlots &&
-              availableSlots !== data.getDoctorAvailableSlots.availableSlots
-            ) {
-              setshowSpinner(false);
-              setTimeArrayData(data.getDoctorAvailableSlots.availableSlots, date);
-              setavailableSlots(data.getDoctorAvailableSlots.availableSlots);
-            }
+            try {
+              console.log(data, 'availableSlots', availableSlots);
+              if (
+                data &&
+                data.getDoctorAvailableSlots &&
+                data.getDoctorAvailableSlots.availableSlots &&
+                availableSlots !== data.getDoctorAvailableSlots.availableSlots
+              ) {
+                setshowSpinner(false);
+                setTimeArrayData(data.getDoctorAvailableSlots.availableSlots, date);
+                setavailableSlots(data.getDoctorAvailableSlots.availableSlots);
+              }
+            } catch {}
           })
           .catch((e: string) => {
             showSpinner && setshowSpinner(false);
@@ -294,10 +295,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               props.navigation.navigate(AppRoutes.Consult);
             })
             .catch((e: any) => {
-              const error = JSON.parse(JSON.stringify(e));
-              const errorMessage = error && error.message;
-              console.log('Error occured while BookFollowUpAppointment ', errorMessage, error);
-              Alert.alert('Error', errorMessage);
+              try {
+                const error = JSON.parse(JSON.stringify(e));
+                const errorMessage = error && error.message;
+                console.log('Error occured while BookFollowUpAppointment ', errorMessage, error);
+                Alert.alert('Error', errorMessage);
+              } catch {}
             });
         } else {
           onSubmitBookAppointment();
