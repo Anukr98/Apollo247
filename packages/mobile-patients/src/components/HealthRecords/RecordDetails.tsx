@@ -241,8 +241,8 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         }}
       >
         <ScrollView>
-          {urls.map((item: string) => (
-            <View style={{ marginHorizontal: 20, marginBottom: 15 }}>
+          {urls.map((item: string, i: number) => (
+            <View key={i} style={{ marginHorizontal: 20, marginBottom: 15 }}>
               <Image
                 source={{ uri: item }}
                 style={{
