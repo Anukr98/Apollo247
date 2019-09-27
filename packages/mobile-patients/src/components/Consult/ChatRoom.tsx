@@ -1108,8 +1108,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                           saveimageIos(rowData.transferInfo.pdfUrl);
                           // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
                           // RNFetchBlob.ios.openDocument(res.path());
-                          Alert.alert('Download Complete');
-
+                          if (Platform.OS === 'android') {
+                            Alert.alert('Download Complete');
+                          }
                           Platform.OS === 'ios'
                             ? RNFetchBlob.ios.previewDocument(res.path())
                             : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
@@ -1136,6 +1137,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                         PatientId: appointmentData.patientId,
                         appointmentType: appointmentData.appointmentType,
                         DisplayId: '',
+                        BlobName:
+                          rowData.transferInfo &&
+                          rowData.transferInfo.pdfUrl &&
+                          rowData.transferInfo.pdfUrl.split('/').pop(),
                       });
                     } catch (error) {}
                   }}

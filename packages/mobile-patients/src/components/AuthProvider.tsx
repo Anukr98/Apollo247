@@ -75,6 +75,7 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
       );
       if (unauthenticatedError) {
         handleUnauthenticated();
+        console.log('-------unauthenticatedError-------', unauthenticatedError);
       }
     }
     return forward(operation);
@@ -96,7 +97,7 @@ export const AuthProvider: React.FC = (props) => {
 
   const [analytics, setAnalytics] = useState<AuthContextProps['analytics']>(null);
 
-  apolloClient = buildApolloClient(authToken, () => {});
+  apolloClient = buildApolloClient(authToken, () => getFirebaseToken());
 
   const [currentPatientId, setCurrentPatientId] = useState<AuthContextProps['currentPatientId']>(
     null
@@ -174,6 +175,10 @@ export const AuthProvider: React.FC = (props) => {
   }, [analytics]);
 
   useEffect(() => {
+    getFirebaseToken();
+  }, [auth]);
+
+  const getFirebaseToken = () => {
     let authStateRegistered = false;
     console.log('authprovider');
 
@@ -196,7 +201,7 @@ export const AuthProvider: React.FC = (props) => {
 
         console.log('authprovider jwt', jwt);
 
-        apolloClient = buildApolloClient(jwt, () => {});
+        apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
         authStateRegistered = false;
         setAuthToken(jwt);
         getNetStatus().then((item) => {
@@ -205,7 +210,7 @@ export const AuthProvider: React.FC = (props) => {
       }
       setIsSigningIn(false);
     });
-  }, [auth]);
+  };
 
   const getPatientApiCall = async () => {
     await apolloClient

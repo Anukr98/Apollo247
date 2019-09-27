@@ -109,7 +109,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [appointmentFollowUpId, setAppointmentFollowUpId] = useState<any>();
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -121,7 +120,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (selectedOptions.includes('Online Consults')) filterArray.push('ONLINE');
     if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
     if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
-    console.log(filterArray, 'filterArray', filters, 'filters', selectedOptions);
 
     setLoading(true);
     client
@@ -136,8 +134,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         },
       })
       .then((_data) => {
-        console.log('getPatientPastConsultsAndPrescriptions', _data!);
-
         const formatDate = (date: string) =>
           moment(date)
             .clone()
@@ -176,6 +172,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Heath records', error);
+        //Alert.alert('Error', error);
       });
   };
 
@@ -192,7 +189,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .then(({ data }) => {
         loading && setLoading(false);
         const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
-        console.log('records occured', { records });
         setmedicalRecords(records);
         // setTabs([
         //   ...tabs.map((item) =>
@@ -205,6 +201,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .catch((error) => {
         loading && setLoading(false);
         console.log('Error occured', { error });
+        Alert.alert('Error', error);
       });
   }, []);
 
@@ -339,8 +336,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   // };
 
   const renderConsults = () => {
-    console.log('arrayValues', arrayValues);
-
     // const arrayValuesFilter =
     //   filterData[0].selectedOptions && filterData[0].selectedOptions.length
     //     ? arrayValues.filter(
@@ -390,7 +385,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           <View>
             {arrayValues &&
               arrayValues.map((item: any, i: number) => {
-                //console.log('item', item);
+                let dataval =
+                  item.caseSheet &&
+                  item.caseSheet.find((obj: any) => {
+                    return (
+                      obj.doctorType === 'STAR_APOLLO' ||
+                      obj.doctorType === 'APOLLO' ||
+                      obj.doctorType === 'PAYROLL'
+                    );
+                  });
+
                 return (
                   <HealthConsultView
                     key={i}
@@ -404,6 +408,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                         FollowUp: item.isFollowUp,
                         appointmentType: item.appointmentType,
                         DisplayId: item.displayId,
+                        BlobName: g(dataval, 'blobName'),
                       });
                     }}
                     PastData={item}
@@ -422,25 +427,13 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     let dataval =
       item.caseSheet &&
       item.caseSheet.find((obj: any) => {
-        console.log('doctorType', obj);
-
         return (
           obj.doctorType === 'STAR_APOLLO' ||
           obj.doctorType === 'APOLLO' ||
           obj.doctorType === 'PAYROLL'
         );
       });
-    console.log('dataval,', dataval.followUp);
-    console.log('ite,', item);
-    console.log('onFollowUpClick', item.doctorInfo);
-    // setDoctorId(item.doctorInfo.id);
-    // setDoctorInfo(item.doctorInfo);
-    // setBookFollowUp(dataval.followUp);
-    // setAppointmentFollowUpId(item.id);
-    // console.log('appointmentid', appointmentFollowUpId);
-    // console.log('patientid', item.patientId);
-    // console.log('follwup', bookFollowUp);
-    // console.log('doctorInfo', doctorInfo);
+
     client
       .query<checkIfFollowUpBooked>({
         query: CHECK_IF_FOLLOWUP_BOOKED,
@@ -463,6 +456,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           DisplayId: item.displayId,
           Displayoverlay: true,
           isFollowcount: data.checkIfFollowUpBooked,
+          BlobName: dataval.blobName,
         });
       })
       .catch((error) => {
@@ -472,24 +466,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* {displayoverlay && doctorInfo && (
-        <OverlayRescheduleView
-          setdisplayoverlay={() => setdisplayoverlay(false)}
-          navigation={props.navigation}
-          doctor={doctorInfo ? doctorInfo : null}
-          patientId={currentPatient ? currentPatient.id : ''}
-          clinics={doctorInfo && doctorInfo.doctorHospital ? doctorInfo.doctorHospital : []}
-          doctorId={doctorId}
-          renderTab={'Consult Online'}
-          rescheduleCount={rescheduleType!}
-          appointmentId={appointmentFollowUpId}
-          bookFollowUp={bookFollowUp}
-          data={doctorInfo && doctorInfo}
-          KeyFollow={'Followup'}
-          isfollowupcount={isfollowcount}
-        />
-      )} */}
-
       <SafeAreaView style={theme.viewStyles.container}>
         <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderTopView()}
@@ -527,9 +503,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           onClickClose={() => {
             setdisplayOrderPopup(false);
           }}
-          getData={(data: (PickerImage | PickerImage[])[]) => {
-            console.log(data);
-          }}
+          getData={(data: (PickerImage | PickerImage[])[]) => {}}
         />
       )}
       {loading && <Spinner />}
