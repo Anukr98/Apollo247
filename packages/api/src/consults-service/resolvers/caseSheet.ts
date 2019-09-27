@@ -445,8 +445,6 @@ const createJuniorDoctorCaseSheet: Resolver<
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   let caseSheetDetails;
 
-  console.log('--------------------------');
-
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
@@ -454,13 +452,11 @@ const createJuniorDoctorCaseSheet: Resolver<
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
 
-  console.log(doctorData);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   if (doctorData.doctorType != 'JUNIOR') throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //check if junior doctor case-sheet exists already
   caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
-  console.log(caseSheetDetails);
   if (caseSheetDetails != null) return caseSheetDetails;
 
   const caseSheetAttrs: Partial<CaseSheet> = {
