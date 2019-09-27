@@ -147,6 +147,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .where('doctor.specialty = :specialtyId', {
         specialtyId,
       })
+      .andWhere('doctor.isActive = true')
       .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
       .andWhere('doctor.id NOT IN (:doctorId)', { doctorId })
       .orderBy('doctor.experience', 'DESC')
@@ -182,6 +183,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
       .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
       .where('doctor.specialty = :specialty', { specialty })
+      .andWhere('doctor.isActive = true')
       .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR });
 
     if (gender && gender.length > 0) {
@@ -414,7 +416,8 @@ export class DoctorRepository extends Repository<Doctor> {
     else return 60;
   }
 
-  findAll() {
+  //don't use this method. Should be used only for data tool.
+  getAllInactiveAndActiveDoctors() {
     return this.createQueryBuilder('doctor')
       .getMany()
       .catch((getDoctorsError) => {
@@ -435,10 +438,10 @@ export class DoctorRepository extends Repository<Doctor> {
 
   async insertOrUpdateAllDoctors(doctors: Partial<Doctor>[]) {
     //get all the existing specialties
-    const allExistingSpecialties = await this.findAll();
+    const allExistingDoctors = await this.getAllInactiveAndActiveDoctors();
 
     doctors.forEach((doctor) => {
-      allExistingSpecialties.forEach((existingDoctor) => {
+      allExistingDoctors.forEach((existingDoctor) => {
         if (this.getDoctorUniqueTerm(doctor) == this.getDoctorUniqueTerm(existingDoctor)) {
           doctor.id = existingDoctor.id;
           doctor.updatedDate = new Date();
