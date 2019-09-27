@@ -62,7 +62,6 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const onClickTakePhoto = () => {
-    console.log('onClickTakePhoto');
     ImagePicker.openCamera({
       width: 400,
       height: 400,
@@ -71,13 +70,11 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
       includeBase64: true,
       compressImageQuality: 0.1,
     }).then((image) => {
-      console.log(image, typeof image);
       props.getData([image]);
     });
   };
 
   const onClickGallery = () => {
-    console.log('onClickGallery');
     ImagePicker.openPicker({
       width: 400,
       height: 400,
@@ -86,7 +83,6 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
       includeBase64: true,
       compressImageQuality: 0.1,
     }).then((image) => {
-      console.log(image, typeof image);
       props.getData(image as PickerImage[]);
     });
   };

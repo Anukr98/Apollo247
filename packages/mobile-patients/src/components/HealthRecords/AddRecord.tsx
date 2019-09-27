@@ -109,10 +109,9 @@ const charactersList = {
 const replaceStringWithChar = (str: string) => {
   const ss = str;
   Object.entries(charactersList).forEach(([key, value]) => {
-    console.log(key, value, 'key, value');
     ss.replace(key, value);
   });
-  console.log(ss, 'ssrrrrrr');
+
   return ss.toLowerCase();
 };
 
@@ -127,7 +126,6 @@ const MedicalTest: RecordTypeType[] = [
     value: MedicalTestUnit._PERCENT_,
   },
 ];
-console.log(MedicalTest, 'MedicalTest');
 
 const MedicalRecordInitialValues: AddMedicalRecordParametersInput = {
   parameterName: '',
@@ -170,7 +168,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -193,26 +190,21 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const onSavePress = () => {
-    console.log('dateOfTest', dateOfTest);
     setshowSpinner(true);
-    console.log(currentPatient, 'currentPatient', currentPatient ? currentPatient.id : '');
     let uploadedUrls = [];
     multiplePhysicalPrescriptionUpload(Images)
       .then((data) => {
-        console.log({ data });
         const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
         const uploadedPrescriptions = Images.map((item, index) => ({
           ...item,
           uploadedUrl: uploadUrls[index],
         }));
-        console.log(uploadedPrescriptions, 'uploadedPrescriptions');
+
         uploadedUrls = uploadedPrescriptions.map((item) => item.uploadedUrl);
 
         // setPhysicalPrescriptions && setPhysicalPrescriptions(uploadedPrescriptions);
         // setshowSpinner(false);
         // props.navigation.navigate(AppRoutes.CheckoutScene);
-
-        console.log('dateOfTest', dateOfTest);
 
         const inputData = {
           patientId: currentPatient ? currentPatient.id : '',
@@ -226,7 +218,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
           documentURLs: uploadedUrls.join(','),
         };
-        console.log('inputData', inputData);
+
         if (currentPatient && currentPatient.id)
           client
             .mutate<addPatientMedicalRecord, addPatientMedicalRecordVariables>({
@@ -238,7 +230,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             .then(({ data }) => {
               setshowSpinner(false);
               const status = g(data, 'addPatientMedicalRecord', 'status');
-              console.log(status, 'status');
+
               if (status) {
                 props.navigation.goBack();
               }
@@ -261,8 +253,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const renderImagesRow = (data: PickerImage, i: number) => {
     var base64Icon = 'data:image/png;base64,';
     fin = base64Icon.concat(data.data!);
-    console.log('imageCOPYImages', fin);
-
     return (
       <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
         <View
@@ -317,7 +307,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             onPress={() => {
               const imageCOPY = [...Images];
               imageCOPY.splice(i, 1);
-              console.log(imageCOPY, 'imageCOPYImages remove');
+
               setImages(imageCOPY);
             }}
           >
@@ -420,8 +410,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             <DatePicker
               isDateTimePickerVisible={isDateTimePickerVisible}
               handleDatePicked={(date) => {
-                console.log(date, 'dateOfTest');
-
                 const formatDate = Moment(date).format('DD/MM/YYYY');
                 setdateOfTest(formatDate);
                 setIsDateTimePickerVisible(false);
@@ -650,7 +638,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setdisplayOrderPopup(false);
           }}
           getData={(data: (PickerImage | PickerImage[])[]) => {
-            console.log(data);
             setImages([...(Images as PickerImage[]), ...(data as PickerImage[])]);
             setdisplayOrderPopup(false);
           }}
