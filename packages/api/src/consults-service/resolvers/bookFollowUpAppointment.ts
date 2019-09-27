@@ -157,17 +157,6 @@ const bookFollowUpAppointment: Resolver<
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
 
-  //casesheet creation starts here.
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheetAttrs: Partial<CaseSheet> = {
-    consultType: appointment.appointmentType,
-    doctorId: appointment.doctorId,
-    patientId: appointment.patientId,
-    appointment: appointment,
-  };
-  await caseSheetRepo.savecaseSheet(caseSheetAttrs);
-  ///////////
-
   return { appointment };
 };
 

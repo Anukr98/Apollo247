@@ -230,17 +230,6 @@ const bookTransferAppointment: Resolver<
   };
   const appointment = await appointmentRepo.saveAppointment(appointmentAttrs);
 
-  // casesheet creation should be changed.
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheetAttrs: Partial<CaseSheet> = {
-    consultType: appointment.appointmentType,
-    doctorId: appointment.doctorId,
-    patientId: appointment.patientId,
-    appointment: appointment,
-  };
-  await caseSheetRepo.savecaseSheet(caseSheetAttrs);
-  ///////////
-
   //update initiate transfer to completed
   const transferApptRepo = consultsDb.getCustomRepository(TransferAppointmentRepository);
   await transferApptRepo.updateTransfer(

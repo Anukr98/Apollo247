@@ -3,7 +3,6 @@ import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { CaseSheet, Appointment } from 'consults-service/entities';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -17,6 +16,8 @@ import {
   generateRxPdfDocument,
   uploadRxPdf,
 } from 'consults-service/rxPdfGenerator';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { DoctorType } from 'doctors-service/entities';
 
 export type DiagnosisJson = {
   name: string;
@@ -81,11 +82,6 @@ export const caseSheetTypeDefs = gql`
     WIFE
     HUSBAND
     OTHER
-  }
-
-  input CaseSheetInput {
-    appointmentId: String!
-    createdDoctorId: String!
   }
 
   type Appointment {
@@ -249,54 +245,53 @@ export const caseSheetTypeDefs = gql`
   }
 
   extend type Mutation {
-    createCaseSheet(CaseSheetInput: CaseSheetInput): CaseSheet
     updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
   }
 
   extend type Query {
-    getCaseSheet(appointmentId: String): CaseSheetFullDetails
+    getCaseSheet(appointmentId: String, loggedInDoctorId: String): CaseSheetFullDetails
     searchDiagnosis(searchString: String): [DiagnosisJson]
     searchDiagnostic(searchString: String): [DiagnosticJson]
   }
 `;
 
-type CaseSheetInput = {
-  appointmentId: string;
-  createdDoctorId: string;
-};
-
-type caseSheetInputArgs = { CaseSheetInput: CaseSheetInput };
-const createCaseSheet: Resolver<
+const getJuniorDoctorCaseSheet: Resolver<
   null,
-  caseSheetInputArgs,
+  { appointmentId: string },
   ConsultServiceContext,
-  CaseSheet
-> = async (parent, { CaseSheetInput }, { consultsDb, doctorsDb }) => {
-  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  {
+    caseSheetDetails: CaseSheet;
+    patientDetails: Patient;
+    pastAppointments: Appointment[];
+  }
+> = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
+  //check appointment id
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-
-  //check appointmnet id
-  const appointmentData = await appointmentRepo.findById(CaseSheetInput.appointmentId);
+  const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
-  //check createdByDoctor id
-  if (CaseSheetInput.createdDoctorId.length > 0) {
-    const doctordata = await doctorRepository.getDoctorProfileData(CaseSheetInput.createdDoctorId);
-    if (doctordata == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
-  }
+  //get loggedin user details
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
+  //get junior doctor case-sheet
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const appointment: Partial<Appointment> = {
-    id: CaseSheetInput.appointmentId,
-  };
-  const caseSheetAttrs: Partial<CaseSheet> = {
-    ...CaseSheetInput,
-    consultType: appointmentData.appointmentType,
-    doctorId: appointmentData.doctorId,
-    patientId: appointmentData.patientId,
-    appointment: <Appointment>appointment,
-  };
-  return await caseSheetRepo.savecaseSheet(caseSheetAttrs);
+  const caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
+  if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  //get patient info
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  //get past appointment details
+  const pastAppointments = await appointmentRepo.getPastAppointments(
+    appointmentData.doctorId,
+    appointmentData.patientId
+  );
+
+  return { caseSheetDetails, patientDetails, pastAppointments };
 };
 
 const getCaseSheet: Resolver<
@@ -323,6 +318,7 @@ const getCaseSheet: Resolver<
   caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(appointmentData.id);
   if (caseSheetDetails == null) {
     caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
+
     if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
     juniorDoctorNotes = caseSheetDetails.notes;
   }
@@ -443,9 +439,8 @@ export const caseSheetResolvers = {
     },
   },
   Mutation: {
-    createCaseSheet,
     updateCaseSheet,
   },
 
-  Query: { getCaseSheet, searchDiagnosis, searchDiagnostic },
+  Query: { getCaseSheet, getJuniorDoctorCaseSheet, searchDiagnosis, searchDiagnostic },
 };

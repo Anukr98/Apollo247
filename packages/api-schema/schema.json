@@ -812,6 +812,16 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "loggedInDoctorId",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -11077,29 +11087,6 @@
             "deprecationReason": null
           },
           {
-            "name": "createCaseSheet",
-            "description": null,
-            "args": [
-              {
-                "name": "CaseSheetInput",
-                "description": null,
-                "type": {
-                  "kind": "INPUT_OBJECT",
-                  "name": "CaseSheetInput",
-                  "ofType": null
-                },
-                "defaultValue": null
-              }
-            ],
-            "type": {
-              "kind": "OBJECT",
-              "name": "CaseSheet",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "updateCaseSheet",
             "description": null,
             "args": [
@@ -15616,45 +15603,6 @@
               "ofType": {
                 "kind": "ENUM",
                 "name": "STATUS",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
-          }
-        ],
-        "interfaces": null,
-        "enumValues": null,
-        "possibleTypes": null
-      },
-      {
-        "kind": "INPUT_OBJECT",
-        "name": "CaseSheetInput",
-        "description": null,
-        "fields": null,
-        "inputFields": [
-          {
-            "name": "appointmentId",
-            "description": null,
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
-                "ofType": null
-              }
-            },
-            "defaultValue": null
-          },
-          {
-            "name": "createdDoctorId",
-            "description": null,
-            "type": {
-              "kind": "NON_NULL",
-              "name": null,
-              "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
                 "ofType": null
               }
             },

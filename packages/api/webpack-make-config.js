@@ -85,6 +85,7 @@ module.exports = ({ nodemonPluginArgs, webpackConfigOptions }) => {
 
     watch: isLocal,
     watchOptions: {
+      poll: 3000,
       aggregateTimeout: 300,
       ignored: [/node_modules([\\]+|\/)+(?!@aph)/],
     },

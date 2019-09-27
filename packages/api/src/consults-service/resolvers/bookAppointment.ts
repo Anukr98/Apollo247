@@ -282,17 +282,6 @@ const bookAppointment: Resolver<
   AphMqClient.send(testMessage);*/
   //message queue ends
 
-  //  casesheet creation starts here.
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheetAttrs: Partial<CaseSheet> = {
-    consultType: appointment.appointmentType,
-    doctorId: appointment.doctorId,
-    patientId: appointment.patientId,
-    appointment: appointment,
-  };
-  await caseSheetRepo.savecaseSheet(caseSheetAttrs);
-  ///////////
-
   return { appointment };
 };
 
