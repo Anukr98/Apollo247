@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE, CaseSheet, APPOINTMENT_STATE } from 'consults-service/entities';
+import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -9,7 +9,6 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHospitalRepository';
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 //import { AppointmentPayload } from 'types/appointmentTypes';
-import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 //import { addMinutes, format, addMilliseconds } from 'date-fns';
 import { sendSMS } from 'notifications-service/resolvers/notifications';
@@ -280,17 +279,6 @@ const bookAppointment: Resolver<
 
   AphMqClient.send(testMessage);*/
   //message queue ends
-
-  //  casesheet creation starts here.
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheetAttrs: Partial<CaseSheet> = {
-    consultType: appointment.appointmentType,
-    doctorId: appointment.doctorId,
-    patientId: appointment.patientId,
-    appointment: appointment,
-  };
-  await caseSheetRepo.savecaseSheet(caseSheetAttrs);
-  ///////////
 
   return { appointment };
 };

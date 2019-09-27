@@ -28,12 +28,10 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   { doctorsDb }
 ) => {
   const excelToJson = require('convert-excel-to-json');
-
   let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
-  console.log('assetsDirectory:', assetsDir);
   const rowData = excelToJson({
     sourceFile: assetsDir + '/doctorsData.xlsx',
     sheets: [
@@ -158,7 +156,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     DoctorDetails.languages = element.LANGUAGES;
     DoctorDetails.isActive = true;
     DoctorDetails.photoUrl = 'https://apollouatstg.blob.core.windows.net/doctors/no_photo.png';
-    DoctorDetails.onlineConsultationFees = element.ONLINECONSULTATIONFEES;
+    DoctorDetails.onlineConsultationFees = element.ONLINECONSULTATIONFEES || 0;
     DoctorDetails.physicalConsultationFees = element.PHYSICALCONSULTATIONFEES || 0;
     DoctorDetails.registrationNumber =
       !element.MCINO || element.MCINO == 'undefined' ? '' : element.MCINO;
