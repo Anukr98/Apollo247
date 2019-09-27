@@ -157,7 +157,7 @@ const createJuniorAppointmentSession: Resolver<
   }
   function getSessionToken() {
     return new Promise((resolve, reject) => {
-      opentok.createSession({}, (error, session) => {
+      opentok.createSession({ mediaMode: 'routed', archiveMode: 'always' }, (error, session) => {
         if (error) {
           reject(error);
         }
@@ -257,7 +257,7 @@ const createAppointmentSession: Resolver<
   }
   function getSessionToken() {
     return new Promise((resolve, reject) => {
-      opentok.createSession({}, (error, session) => {
+      opentok.createSession({ mediaMode: 'routed', archiveMode: 'always' }, (error, session) => {
         if (error) {
           reject(error);
         }
