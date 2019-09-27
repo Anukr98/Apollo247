@@ -12,6 +12,7 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 //import { addMinutes, format } from 'date-fns';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 export const bookFollowUpAppointmentTypeDefs = gql`
   type FollowUpAppointmentBooking {
@@ -133,6 +134,16 @@ const bookFollowUpAppointment: Resolver<
   const parentApptDetails = await appts.findById(followUpAppointmentInput.followUpParentId);
   if (!parentApptDetails) {
     throw new AphError(AphErrorMessages.INVALID_PARENT_APPOINTMENT_ID, undefined, {});
+  }
+
+  //check if doctor slot is blocked
+  const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
+  const recCount = await blockRepo.checkIfSlotBlocked(
+    followUpAppointmentInput.appointmentDateTime,
+    followUpAppointmentInput.doctorId
+  );
+  if (recCount > 0) {
+    throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
   }
 
   const apptCount = await appts.checkIfAppointmentExist(
