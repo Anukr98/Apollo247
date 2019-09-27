@@ -59,12 +59,14 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorImg: {
       borderRadius: '10px 10px 0 0',
       overflow: 'hidden',
+      textAlign: 'center',
       '& img': {
         verticalAlign: 'middle',
       },
     },
     doctorInfo: {
       padding: '20px 5px',
+      minHeight: 150,
     },
     customScroll: {
       padding: '0 15px',
@@ -91,6 +93,10 @@ const useStyles = makeStyles((theme: Theme) => {
     popoverTile: {
       color: '#fcb716',
       fontWeight: 500,
+    },
+    noDoctorImage: {
+      padding: 20,
+      paddingBottom: 0,
     },
   };
 });
@@ -184,22 +190,24 @@ export const JDProfile: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.pageContainer}>
           <div className={classes.profileBlock}>
-            <div className={classes.doctorImg}>
+            <div
+              className={`${classes.doctorImg} ${
+                doctorPhotoUrl !== '' ? classes.noDoctorImage : ''
+              }`}
+            >
               <img
                 src={doctorPhotoUrl !== '' ? doctorPhotoUrl : require('images/no_photo.png')}
                 alt="Doctor Profile Image"
               />
             </div>
             <div className={classes.doctorInfo}>
-              <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 474px' }}>
-                <div className={classes.customScroll}>
-                  <div
-                    className={classes.doctorName}
-                  >{`${doctorSalutation} ${doctorFirstName} ${doctorLastName}`}</div>
-                  <div className={classes.doctorType}>{doctorSpecialty}</div>
-                  <div className={classes.contactNo}>{doctorMobileNumber}</div>
-                </div>
-              </Scrollbars>
+              <div className={classes.customScroll}>
+                <div
+                  className={classes.doctorName}
+                >{`${doctorSalutation} ${doctorFirstName} ${doctorLastName}`}</div>
+                <div className={classes.doctorType}>{doctorSpecialty}</div>
+                <div className={classes.contactNo}>{doctorMobileNumber}</div>
+              </div>
             </div>
             <div className={classes.bottomActions}>
               <AphButton

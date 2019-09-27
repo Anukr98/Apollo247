@@ -127,12 +127,15 @@ const useStyles = makeStyles((theme: Theme) =>
       borderRadius: 16,
       marginRight: 16,
       marginTop: 6,
+      height: 'auto',
+      wordBreak: 'break-word',
       '&:focus': {
         backgroundColor: '#00b38e',
       },
       '& span': {
         paddingLeft: 0,
         paddingRight: 5,
+        whiteSpace: 'normal',
       },
       '& img': {
         margin: 0,

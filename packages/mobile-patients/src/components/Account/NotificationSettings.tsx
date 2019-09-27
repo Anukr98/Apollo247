@@ -90,7 +90,6 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -153,7 +152,6 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
     // },
   ];
 
-  console.log(currentPatient);
   const { data, error } = useQuery<getPatientNotificationSettings>(GET_NOTIFICATION_SETTINGS, {
     fetchPolicy: 'no-cache',
     variables: {
@@ -163,14 +161,12 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = (props)
   if (error) {
     console.log('error', error);
   } else {
-    console.log(data);
     if (
       data &&
       data.getPatientNotificationSettings &&
       data.getPatientNotificationSettings.notificationSettings &&
       notifications !== data.getPatientNotificationSettings.notificationSettings
     ) {
-      console.log(data, 'setnotifications');
       setshowSpinner(false);
       setnotifications(data.getPatientNotificationSettings.notificationSettings);
       const settings = data.getPatientNotificationSettings.notificationSettings;

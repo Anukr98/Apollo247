@@ -21,6 +21,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { addDays } from 'date-fns';
 import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
+import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 export const transferAppointmentTypeDefs = gql`
   enum TRANSFER_STATUS {
@@ -199,6 +200,16 @@ const bookTransferAppointment: Resolver<
   //check if given appointment datetime is greater than current date time
   if (BookTransferAppointmentInput.appointmentDateTime <= new Date()) {
     throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
+  }
+
+  //check if doctor slot is blocked
+  const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
+  const recCount = await blockRepo.checkIfSlotBlocked(
+    BookTransferAppointmentInput.appointmentDateTime,
+    BookTransferAppointmentInput.doctorId
+  );
+  if (recCount > 0) {
+    throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
   }
 
   const apptCount = await appointmentRepo.checkIfAppointmentExist(

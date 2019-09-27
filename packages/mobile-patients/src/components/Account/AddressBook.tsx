@@ -49,12 +49,10 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
 
-  console.log(currentPatient);
   const { data, error } = useQuery<getPatientAddressList>(GET_PATIENT_ADDRESS_LIST, {
     variables: {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
@@ -63,14 +61,12 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   if (error) {
     console.log('error', error);
   } else {
-    console.log('getPatientAddressList', data);
     if (
       data &&
       data.getPatientAddressList &&
       data.getPatientAddressList.addressList &&
       addressList !== data.getPatientAddressList.addressList
     ) {
-      console.log('data', data.getPatientAddressList);
       setaddressList(data.getPatientAddressList.addressList);
       setshowSpinner(false);
       setAddresses && setAddresses(data.getPatientAddressList.addressList);
@@ -107,7 +103,6 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   const renderAddresses = () => {
     return <View style={styles.addressContainer}>{renderRadioButtonList()}</View>;
   };
-  console.log(addresses, 'addresses');
 
   return (
     <View style={{ flex: 1 }}>

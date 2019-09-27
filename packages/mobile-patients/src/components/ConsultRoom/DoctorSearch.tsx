@@ -48,6 +48,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  BackHandler,
+  ActivityIndicator,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -124,6 +126,7 @@ const pastSearches: pastSearches[] = [
 ];
 
 let doctorIds: (string | undefined)[] = [];
+let abortController;
 export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
@@ -153,6 +156,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
   >([]);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [isSearching, setisSearching] = useState<boolean>(false);
 
   // const [doctorIds, setdoctorIds] = useState<string[]>([]);
 
@@ -246,19 +250,31 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     //   }
     // }
   };
+  //= new AbortController();
 
-  const fetchSearchData = (searchText: string = '') => {
+  const fetchSearchData = (searchTextString: string = searchText) => {
+    // abortController && abortController.abort();
+    // console.log(abortController, 'signal');
+
+    // abortController = new AbortController();
+    // console.log('fetchSearchData searchText', searchTextString, abortController);
+    setisSearching(true);
     client
       .query<SearchDoctorAndSpecialtyByName>({
         query: SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
         fetchPolicy: 'no-cache',
         variables: {
-          searchText,
+          searchText: searchTextString,
           patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
         },
+        // context: {
+        //   fetchOptions: {
+        //     signal: abortController.signal,
+        //   },
+        // },
       })
       .then(({ data }) => {
-        // console.log('newData.data doctor', newData.data);
+        console.log('searchText', searchText, searchTextString, data);
         const searchData =
           data && data.SearchDoctorAndSpecialtyByName ? data.SearchDoctorAndSpecialtyByName : null;
         if (searchData) {
@@ -291,8 +307,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             doctorIds.push(...ids);
             setotherDoctors(searchData.otherDoctors);
           }
-          doctorIds.length > 0 && fetchNextSlots(doctorIds);
+          doctorIds.length > 0 ? fetchNextSlots(doctorIds) : setshowSpinner(false);
         }
+        setisSearching(false);
       })
       .catch((e: string) => {
         console.log('Error occured while searching Doctor', e);
@@ -476,11 +493,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           setPastSearches(data.getPatientPastSearches);
         }
         fetchSpecialities();
-        fetchSearchData();
+        fetchSearchData(searchText);
       })
       .catch((e: string) => {
         setshowSpinner(false);
         console.log('Error occured', e);
+        // setshowSpinner(false);
       });
   };
 
@@ -495,12 +513,31 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     });
   }, []);
 
-  const backDataFunctionality = (movedata: string) => {
+  useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
+    });
+
+    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    });
+
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+      willBlurSubscription && willBlurSubscription.remove();
+    };
+  }, []);
+
+  const backDataFunctionality = async () => {
+    console.log('backDataFunctionality hardwareBackPress');
+    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    const movedata = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
     if (movedata == 'MoveDoctor') {
       props.navigation.push(AppRoutes.SymptomChecker);
     } else {
       props.navigation.goBack();
     }
+    return false;
   };
   const renderSearch = () => {
     const hasError =
@@ -508,21 +545,20 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       doctorsList &&
       doctorsList.length === 0 &&
       !showSpinner &&
+      !isSearching &&
       searchSpecialities &&
       searchSpecialities.length === 0
         ? true
         : false;
+    console.log(hasError, 'hasError', showSpinner);
+
     return (
       <View style={styles.searchContainer}>
         <Header
           title={'DOCTORS / SPECIALITIES'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() =>
-            backDataFunctionality(
-              props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : ''
-            )
-          }
+          onPressLeftIcon={() => backDataFunctionality()}
         />
         <View style={styles.searchView}>
           <TextInputComponent
@@ -940,30 +976,38 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
         {doctorsList && renderSearch()}
         {!showSpinner ? (
-          <ScrollView
-            style={{ flex: 1 }}
-            bounces={false}
-            keyboardDismissMode="on-drag"
-            onScrollBeginDrag={Keyboard.dismiss}
-          >
-            {props.navigation.state.params!.MoveDoctor == 'MoveDoctor' ? null : renderPastSearch()}
-            {/* {renderPastSearch()} */}
-            {renderDoctorSearches()}
-            {renderSpecialist()}
-            {searchText.length > 2 &&
-              doctorsList &&
-              doctorsList.length === 0 &&
-              searchSpecialities &&
-              searchSpecialities.length === 0 &&
-              possibleMatches &&
-              renderPossibleMatches()}
-            {doctorsList &&
-              searchText.length > 2 &&
-              doctorsList.length === 1 &&
-              otherDoctors &&
-              renderOtherSUggestedDoctors()}
-            {renderHelpView()}
-          </ScrollView>
+          isSearching ? (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <ActivityIndicator animating={true} size="large" color="green" />
+            </View>
+          ) : (
+            <ScrollView
+              style={{ flex: 1 }}
+              bounces={false}
+              keyboardDismissMode="on-drag"
+              onScrollBeginDrag={Keyboard.dismiss}
+            >
+              {props.navigation.state.params!.MoveDoctor == 'MoveDoctor'
+                ? null
+                : renderPastSearch()}
+              {/* {renderPastSearch()} */}
+              {renderDoctorSearches()}
+              {renderSpecialist()}
+              {searchText.length > 2 &&
+                doctorsList &&
+                doctorsList.length === 0 &&
+                searchSpecialities &&
+                searchSpecialities.length === 0 &&
+                possibleMatches &&
+                renderPossibleMatches()}
+              {doctorsList &&
+                searchText.length > 2 &&
+                doctorsList.length === 1 &&
+                otherDoctors &&
+                renderOtherSUggestedDoctors()}
+              {renderHelpView()}
+            </ScrollView>
+          )
         ) : null}
       </SafeAreaView>
       {showSpinner && <Spinner />}
