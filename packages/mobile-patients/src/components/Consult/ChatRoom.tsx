@@ -1436,7 +1436,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <View
         style={{
           backgroundColor: 'transparent',
-          width: 282,
           borderRadius: 10,
           marginVertical: 2,
           alignSelf: 'flex-start',
@@ -1473,7 +1472,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
           </View>
         )}
-        <View>
+        {/* <View>
           {rowData.message === imageconsult ? (
             <TouchableOpacity
               activeOpacity={0.5}
@@ -1504,7 +1503,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
               </View>
             </TouchableOpacity>
-          ) : (
+          ) : ( */}
             <View
               style={{
                 backgroundColor: 'white',
@@ -1524,8 +1523,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 {rowData.message}
               </Text>
             </View>
-          )}
-        </View>
+          {/* )}
+        </View> */}
       </View>
     );
   };
@@ -3140,7 +3139,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               width: 200,
               bottom: dropDownBottomStyle,
               position: 'absolute',
-              right: 15,
+              left: 15,
               shadowColor: '#808080',
               shadowOffset: { width: 0, height: 5 },
               shadowOpacity: 0.4,
