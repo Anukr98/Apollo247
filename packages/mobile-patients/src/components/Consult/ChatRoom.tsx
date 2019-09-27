@@ -1916,13 +1916,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const checkIfReschduleApi = (rowData: any, Value: string) => {
     setLoading(true);
-    checkIfRescheduleAppointment(
-      client,
-      rowData.transferInfo.appointmentId,
+    const slotTime =
       Value === 'Followup'
         ? rowData.transferInfo.folloupDateTime
-        : rowData.transferInfo.transferDateTime
-    )
+        : rowData.transferInfo.transferDateTime;
+    checkIfRescheduleAppointment(client, rowData.transferInfo.appointmentId, slotTime)
       .then((_data: any) => {
         setLoading(false);
         try {
