@@ -136,6 +136,16 @@ export const ShoppingCartContext = createContext<ShoppingCartContextProps>({
   clearCartInfo: null,
 });
 
+const AsyncStorageKeys = {
+  cartItems: 'cartItems',
+  ePrescriptions: 'ePrescriptions',
+  physicalPrescriptions: 'physicalPrescriptions',
+};
+
+const showGenericAlert = (message: string) => {
+  Alert.alert('Alert', message);
+};
+
 export const ShoppingCartProvider: React.FC = (props) => {
   const [cartItems, _setCartItems] = useState<ShoppingCartContextProps['cartItems']>([]);
   const [couponDiscount, setCouponDiscount] = useState<ShoppingCartContextProps['couponDiscount']>(
@@ -153,13 +163,31 @@ export const ShoppingCartProvider: React.FC = (props) => {
   const [coupon, setCoupon] = useState<ShoppingCartContextProps['coupon']>(null);
   const [deliveryType, setDeliveryType] = useState<ShoppingCartContextProps['deliveryType']>(null);
 
-  const [physicalPrescriptions, setPhysicalPrescriptions] = useState<
+  const [physicalPrescriptions, _setPhysicalPrescriptions] = useState<
     ShoppingCartContextProps['physicalPrescriptions']
   >([]);
 
-  const [ePrescriptions, setEPrescriptions] = useState<ShoppingCartContextProps['ePrescriptions']>(
+  const [ePrescriptions, _setEPrescriptions] = useState<ShoppingCartContextProps['ePrescriptions']>(
     []
   );
+
+  const setEPrescriptions: ShoppingCartContextProps['setEPrescriptions'] = (items) => {
+    _setEPrescriptions(items);
+    AsyncStorage.setItem(AsyncStorageKeys.ePrescriptions, JSON.stringify(items)).catch(() => {
+      showGenericAlert('Failed to save E-Prescriptions in local storage.');
+    });
+  };
+
+  const setPhysicalPrescriptions: ShoppingCartContextProps['setPhysicalPrescriptions'] = (
+    items
+  ) => {
+    AsyncStorage.setItem(AsyncStorageKeys.physicalPrescriptions, JSON.stringify(items)).catch(
+      () => {
+        showGenericAlert('Failed to save Physical Prescriptions in local storage.');
+      }
+    );
+    _setPhysicalPrescriptions(items);
+  };
 
   const addEPrescription: ShoppingCartContextProps['addEPrescription'] = (itemToAdd) => {
     if (ePrescriptions.find((item) => item.id == itemToAdd.id)) {
@@ -169,9 +197,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setEPrescriptions(newItems);
   };
 
-  const saveCartItems = (cartItems: ShoppingCartItem[]) => {
-    AsyncStorage.setItem('cartItems', JSON.stringify(cartItems)).catch(() => {
-      Alert.alert('Error', 'Failed to save cart items in local storage.');
+  const setCartItems: ShoppingCartContextProps['setCartItems'] = (cartItems) => {
+    _setCartItems(cartItems);
+    AsyncStorage.setItem(AsyncStorageKeys.cartItems, JSON.stringify(cartItems)).catch(() => {
+      showGenericAlert('Failed to save cart items in local storage.');
     });
   };
 
@@ -180,21 +209,18 @@ export const ShoppingCartProvider: React.FC = (props) => {
       return;
     }
     const newCartItems = [...cartItems, itemToAdd];
-    saveCartItems(newCartItems);
-    _setCartItems(newCartItems);
+    setCartItems(newCartItems);
   };
 
   const removeCartItem: ShoppingCartContextProps['removeCartItem'] = (id) => {
     const newCartItems = cartItems.filter((item) => item.id !== id);
-    saveCartItems(newCartItems);
-    _setCartItems(newCartItems);
+    setCartItems(newCartItems);
   };
   const updateCartItem: ShoppingCartContextProps['updateCartItem'] = (itemUpdates) => {
     const foundIndex = cartItems.findIndex((item) => item.id == itemUpdates.id);
     if (foundIndex !== -1) {
       cartItems[foundIndex] = { ...cartItems[foundIndex], ...itemUpdates };
-      saveCartItems([...cartItems]);
-      _setCartItems([...cartItems]);
+      setCartItems([...cartItems]);
     }
   };
 
@@ -264,15 +290,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     setEPrescriptions([...newItems]);
   };
 
-  const setCartItems: ShoppingCartContextProps['setCartItems'] = (items) => {
-    _setCartItems(items);
-    saveCartItems(items);
-  };
-
   const clearCartInfo = () => {
-    AsyncStorage.setItem('cartItems', '').catch(() => {
-      Alert.alert('Alert', 'Failed to clear cart items from local storage.');
-    });
     setPhysicalPrescriptions([]);
     setEPrescriptions([]);
     setCartItems([]);
@@ -287,10 +305,20 @@ export const ShoppingCartProvider: React.FC = (props) => {
   useEffect(() => {
     const updateCartItemsFromStorage = async () => {
       try {
-        const cartItemsFromStorage = await AsyncStorage.getItem('cartItems');
-        _setCartItems(JSON.parse(cartItemsFromStorage || 'null') || []);
+        const cartItemsFromStorage = await AsyncStorage.multiGet([
+          AsyncStorageKeys.cartItems,
+          AsyncStorageKeys.physicalPrescriptions,
+          AsyncStorageKeys.ePrescriptions,
+        ]);
+        const cartItems = cartItemsFromStorage[0][1];
+        const physicalPrescriptions = cartItemsFromStorage[1][1];
+        const ePrescriptions = cartItemsFromStorage[2][1];
+
+        _setCartItems(JSON.parse(cartItems || 'null') || []);
+        _setPhysicalPrescriptions(JSON.parse(physicalPrescriptions || 'null') || []);
+        _setEPrescriptions(JSON.parse(ePrescriptions || 'null') || []);
       } catch (error) {
-        Alert.alert('Alert', 'Failed to get cart items from local storage.');
+        showGenericAlert('Failed to get cart items from local storage.');
       }
     };
     updateCartItemsFromStorage();
@@ -317,8 +345,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
 
   useEffect(() => {
     // updating prescription here on update in cart items
-    if (cartTotalOfPharmaProducts == 0 && physicalPrescriptions.length > 0) {
-      setPhysicalPrescriptions([]);
+    if (cartTotalOfPharmaProducts == 0) {
+      physicalPrescriptions.length > 0 && setPhysicalPrescriptions([]);
+      ePrescriptions.length > 0 && setEPrescriptions([]);
     }
   }, [cartTotalOfPharmaProducts]);
 

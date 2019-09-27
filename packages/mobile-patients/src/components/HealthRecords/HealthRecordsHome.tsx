@@ -202,6 +202,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       fetchPastData();
       fetchData(true);
+      setDisplayFilter(false);
     });
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
@@ -230,7 +231,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     return (
       <View
         style={{
-          height: 280,
+          height: 250,
           // justifyContent: 'space-between',
           ...theme.viewStyles.shadowStyle,
         }}

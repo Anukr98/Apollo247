@@ -162,6 +162,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'inline-block',
       maxWidth: 236,
       textAlign: 'left',
+      wordBreak: 'break-word',
     },
     chatImgBubble: {
       padding: 0,
