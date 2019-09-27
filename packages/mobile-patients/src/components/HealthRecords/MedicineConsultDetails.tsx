@@ -103,14 +103,9 @@ export interface RecordDetailsProps extends NavigationScreenProps {}
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
-  console.log(data, 'data');
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
-  console.log(me, 'me');
   const url = props.navigation.state.params ? props.navigation.state.params.PrescriptionUrl : {};
-  console.log(url, 'url');
   var arr = url.split(',');
-  console.log(arr[0], 'arr');
-  console.log(arr.length, 'arrlength');
   const { addCartItem, addEPrescription } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
 
@@ -123,7 +118,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
     getMedicineDetailsApi(data.medicineSku)
       .then(({ data: { productdp } }) => {
         setLoading(false);
-        console.log({ data: productdp && productdp[0] });
+
         const medicineDetails = (productdp && productdp[0]) || {};
         const isInStock = medicineDetails.is_in_stock;
         if (!isInStock) {
@@ -158,12 +153,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
       });
   };
 
-  const saveimageIos = (url: any) => {
-    console.log(url, 'saveimageIos');
-    if (Platform.OS === 'ios') {
-      Linking.openURL(url).catch((err) => console.error('An error occurred', err));
-    }
-  };
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
@@ -177,16 +166,13 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
         resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
         PermissionsAndroid.RESULTS.GRANTED
       ) {
-        console.log(resuts, 'WRITE_EXTERNAL_STORAGE');
       }
       if (
         resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
         PermissionsAndroid.RESULTS.GRANTED
       ) {
-        console.log(resuts, 'READ_EXTERNAL_STORAGE');
       }
       if (resuts) {
-        console.log(resuts, 'READ_EXTERNAL_STORAGE');
       }
     } catch (error) {
       console.log('error', error);
@@ -211,12 +197,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                 activeOpacity={1}
                 onPress={() => {
                   try {
-                    console.log('pdf url', url);
                     if (!url || url === '[object Object]') {
                       Alert.alert('No Image');
                     } else {
                       for (var i = 0; i < arr.length; i++) {
-                        console.log('urllrr', arr[i]);
                         if (Platform.OS === 'ios') {
                           try {
                             CameraRoll.saveToCameraRoll(arr[i]);
@@ -224,7 +208,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                           } catch {}
                         }
                         let dirs = RNFetchBlob.fs.dirs;
-                        console.log('dirs', dirs);
+
                         setLoading(true);
                         RNFetchBlob.config({
                           fileCache: true,
@@ -241,21 +225,12 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                           })
                           .then((res) => {
                             setLoading(false);
-                            // the temp file path
-                            console.log('The file saved to res ', res);
-                            console.log('The file saved to ', res.path());
-                            // console.log(
-                            //   'CameraRoll.saveToCameraRoll(arr[i]) ',
-                            //   CameraRoll.saveToCameraRoll(arr[i])
-                            // );
-                            //saveimageIos(arr[0]);
+
                             // if (Platform.OS === 'ios') {
                             //   try {
                             //     CameraRoll.saveToCameraRoll(arr[i]);
                             //   } catch {}
                             // }
-                            // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                            // RNFetchBlob.ios.openDocument(res.path());
                             Alert.alert('Download Complete');
                             Platform.OS === 'ios'
                               ? RNFetchBlob.ios.previewDocument(res.path())

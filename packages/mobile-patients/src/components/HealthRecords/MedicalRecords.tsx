@@ -40,12 +40,10 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
 
-  // console.log('MedicalRecordData', props.MedicalRecordData);
   useEffect(() => {
     //props.onTabCount(props.MedicalRecordData.length);
   }, [currentPatient, client]);
@@ -102,7 +100,6 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
           <View>
             {props.MedicalRecordData &&
               props.MedicalRecordData.map((item: any) => {
-                //console.log('itemdata', item);
                 if (item)
                   return (
                     <HealthMedicineCard
