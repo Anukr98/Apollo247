@@ -8,4 +8,10 @@ export class BlockedCalendarItemRepository extends Repository<BlockedCalendarIte
       where: { doctorId, start: LessThanOrEqual(slot), end: MoreThanOrEqual(slot) },
     });
   }
+
+  getBlockedSlots(slot: Date, doctorId: string) {
+    return this.find({
+      where: { doctorId, start: LessThanOrEqual(slot), end: MoreThanOrEqual(slot) },
+    });
+  }
 }
