@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { Chip, Theme } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -161,11 +161,11 @@ const useStyles = makeStyles((theme: Theme) =>
 export const OtherInstructions: React.FC = () => {
   const classes = useStyles();
   const { otherInstructions: selectedValues, setOtherInstructions: setSelectedValues } = useContext(
-    CaseSheetContext
+    CaseSheetContextJrd
   );
 
   const [otherInstruct, setOtherInstruct] = useState('');
-  const { caseSheetEdit } = useContext(CaseSheetContext);
+  const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [idx, setIdx] = React.useState();
   const [showAddInputText, setShowAddInputText] = useState<boolean>(false);
   const handleDelete = (item: any, idx: number) => {
@@ -182,19 +182,25 @@ export const OtherInstructions: React.FC = () => {
         <div className={classes.chipSection}>
           {selectedValues !== null &&
             selectedValues.length > 0 &&
-            selectedValues!.map((item, idx) => item.instruction!.trim() !== '' && (
-              <div className={classes.chipCol}>
-                <Chip
-                  className={classes.chipItem}
-                  key={idx}
-                  label={item!.instruction}
-                  onDelete={() => handleDelete(item, idx)}
-                  deleteIcon={
-                    <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
-                  }
-                />
-              </div>
-            ))}
+            selectedValues!.map(
+              (item, idx) =>
+                item.instruction!.trim() !== '' && (
+                  <div className={classes.chipCol}>
+                    <Chip
+                      className={classes.chipItem}
+                      key={idx}
+                      label={item!.instruction}
+                      onDelete={() => handleDelete(item, idx)}
+                      deleteIcon={
+                        <img
+                          src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+                          alt=""
+                        />
+                      }
+                    />
+                  </div>
+                )
+            )}
         </div>
       </div>
       {showAddInputText && (

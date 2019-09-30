@@ -14,17 +14,17 @@ import { SearchDiagnostic } from 'graphql/types/SearchDiagnostic';
 //   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
 // } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
-  GetCaseSheet,
-  GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
-} from 'graphql/types/GetCaseSheet';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+  GetJuniorDoctorCaseSheet,
+  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
+} from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 interface OptionType {
   itemname: string;
   __typename: 'DiagnosticPrescription';
 }
 
-let suggestions: (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [];
+let suggestions: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -269,10 +269,10 @@ export const DiagnosticPrescription: React.FC = () => {
   const {
     diagnosticPrescription: selectedValues,
     setDiagnosticPrescription: setSelectedValues,
-  } = useContext(CaseSheetContext);
+  } = useContext(CaseSheetContextJrd);
   const [idx, setIdx] = React.useState();
   const client = useApolloClient();
-  const { caseSheetEdit } = useContext(CaseSheetContext);
+  const { caseSheetEdit } = useContext(CaseSheetContextJrd);
 
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const [showAddOtherTests, setShowAddOtherTests] = useState<boolean>(false);
@@ -354,7 +354,7 @@ export const DiagnosticPrescription: React.FC = () => {
     popper: '',
   });
   const [stateSuggestions, setSuggestions] = React.useState<
-    (GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[]
+    (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[]
   >([]);
 
   const handleSuggestionsFetchRequested = ({ value }: { value: string }) => {
