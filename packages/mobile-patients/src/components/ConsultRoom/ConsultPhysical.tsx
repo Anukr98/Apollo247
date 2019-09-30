@@ -98,14 +98,14 @@ type TimeArray = {
 
 export interface ConsultPhysicalProps {
   doctor?: getDoctorDetailsById_getDoctorDetailsById | null;
-  timeArray?: TimeArray;
   clinics: getDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   date: Date;
   setDate: (arg0: Date) => void;
   setselectedTimeSlot: (arg0: string) => void;
   selectedTimeSlot: string;
-  setshowSpinner?: (arg0: boolean) => void;
-  setshowOfflinePopup?: (arg0: boolean) => void;
+  setshowSpinner: (arg0: boolean) => void;
+  setshowOfflinePopup: (arg0: boolean) => void;
+  scrollToSlots: (top?: number) => void;
 }
 export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   const timings = [
@@ -220,7 +220,14 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   }, [fetchLocation]);
 
   useEffect(() => {
+    // getNetStatus().then((status) => {
+    //   if (status) {
     fetchPhysicalSlots(date);
+    //   } else {
+    //     props.setshowSpinner(false);
+    //     props.setshowOfflinePopup(true);
+    //   }
+    // });
   }, []);
 
   useEffect(() => {
@@ -232,54 +239,60 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   }, [requestLocationPermission, fetchLocation]);
 
   const setTimeArrayData = (availableSlots: string[]) => {
+    setselectedtiming(timeArray[0].label);
     const array = divideSlots(availableSlots, date);
     console.log(array, 'array', timeArray, 'timeArray');
     if (array !== timeArray) settimeArray(array);
+    for (const i in array) {
+      console.log(i, 'iiiii', array[i]);
+      if (array[i].time.length > 0) {
+        console.log(array[i].label, 'label');
+        setselectedtiming(array[i].label);
+        props.setselectedTimeSlot(array[i].time[0]);
+        props.scrollToSlots();
+        break;
+      }
+    }
   };
 
   const fetchPhysicalSlots = (date: Date) => {
-    getNetStatus().then((status) => {
-      const availableDate = date.toISOString().split('T')[0];
-      console.log(availableDate, 'fetchPhysicalSlots', date);
+    console.log('fetchPhysicalSlots111');
 
-      if (status) {
-        props.setshowSpinner && props.setshowSpinner(true);
-        client
-          .query<getDoctorPhysicalAvailableSlots>({
-            query: GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS,
-            variables: {
-              DoctorPhysicalAvailabilityInput: {
-                availableDate: availableDate,
-                doctorId: props.doctor ? props.doctor.id : '',
-                facilityId: selectedClinic ? selectedClinic.facility.id : '',
-              },
-            },
-            fetchPolicy: 'no-cache',
-          })
-          .then(({ data }) => {
-            console.log(data, 'availableSlots');
-            if (
-              data &&
-              data.getDoctorPhysicalAvailableSlots &&
-              data.getDoctorPhysicalAvailableSlots.availableSlots &&
-              availableSlots !== data.getDoctorPhysicalAvailableSlots.availableSlots
-            ) {
-              props.setshowSpinner && props.setshowSpinner(false);
-              setTimeArrayData(data.getDoctorPhysicalAvailableSlots.availableSlots);
-              console.log(availableSlots, 'availableSlots1111');
-              setavailableSlots(data.getDoctorPhysicalAvailableSlots.availableSlots);
-            }
-          })
-          .catch((e: any) => {
-            props.setshowSpinner && props.setshowSpinner(false);
-            console.log('error', e);
-          });
-      } else {
-        props.setshowSpinner && props.setshowSpinner(false);
-        props.setshowOfflinePopup && props.setshowOfflinePopup(true);
-        // setshowOfflinePopup(true);
-      }
-    });
+    const availableDate = date.toISOString().split('T')[0];
+    console.log(availableDate, 'fetchPhysicalSlots', date);
+
+    props.setshowSpinner(true);
+    client
+      .query<getDoctorPhysicalAvailableSlots>({
+        query: GET_DOCTOR_PHYSICAL_AVAILABLE_SLOTS,
+        variables: {
+          DoctorPhysicalAvailabilityInput: {
+            availableDate: availableDate,
+            doctorId: props.doctor ? props.doctor.id : '',
+            facilityId: selectedClinic ? selectedClinic.facility.id : '',
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        try {
+          console.log(data, 'fetchPhysicalSlots');
+          if (
+            data &&
+            data.getDoctorPhysicalAvailableSlots &&
+            data.getDoctorPhysicalAvailableSlots.availableSlots
+          ) {
+            props.setshowSpinner(false);
+            setTimeArrayData(data.getDoctorPhysicalAvailableSlots.availableSlots);
+            console.log(availableSlots, 'availableSlots1111');
+            setavailableSlots(data.getDoctorPhysicalAvailableSlots.availableSlots);
+          }
+        } catch {}
+      })
+      .catch((e: any) => {
+        props.setshowSpinner(false);
+        console.log('error', e);
+      });
   };
 
   // const availabilityData = useQuery<getDoctorPhysicalAvailableSlots>(
@@ -298,7 +311,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
 
   // if (availabilityData.error) {
   //   console.log('error', availabilityData.error);
-  //   props.setshowSpinner && props.setshowSpinner(false);
+  //   props.setshowSpinner(false);
   // } else {
   //   console.log(availabilityData.data, 'availableSlots');
   //   if (
@@ -308,7 +321,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   //     availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots &&
   //     availableSlots !== availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots
   //   ) {
-  //     props.setshowSpinner && props.setshowSpinner(false);
+  //     props.setshowSpinner(false);
   //     setTimeArrayData(availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots);
   //     console.log(availableSlots, 'availableSlots1111');
   //     setavailableSlots(availabilityData.data.getDoctorPhysicalAvailableSlots.availableSlots);
