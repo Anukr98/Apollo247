@@ -469,7 +469,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           consultStartTime = new Date(st);
         }
         const slotsCount =
-          Math.ceil(Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
+          (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
         const dayStartTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
         let startTime = new Date(previousDate.toDateString() + ' ' + dayStartTime);
         //console.log(slotsCount, 'slots count');
