@@ -28,7 +28,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
-      .andWhere('case_sheet.createdDoctorId != :juniorDoctorType', { juniorDoctorType })
+      .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
       .getOne();
   }
 

@@ -135,6 +135,7 @@ export const getDoctorDetailsTypeDefs = gql`
     country: String
     facilityType: String!
     id: ID!
+    imageUrl: String
     latitude: String
     longitude: String
     name: String!
