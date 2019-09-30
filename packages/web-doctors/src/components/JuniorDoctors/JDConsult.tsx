@@ -3,7 +3,7 @@ import { Theme } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import { makeStyles } from '@material-ui/styles';
 import { OTSession, OTPublisher, OTStreams, OTSubscriber } from 'opentok-react';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -143,7 +143,7 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
-  const { patientDetails } = useContext(CaseSheetContext);
+  const { patientDetails } = useContext(CaseSheetContextJrd);
   const apikey = process.env.OPENTOK_KEY;
   return (
     <div className={classes.consult}>

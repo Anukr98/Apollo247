@@ -30,7 +30,7 @@ import {
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
 } from 'graphql/profiles';
 import { TRANSFER_INITIATED_TYPE, STATUS } from 'graphql/types/globalTypes';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { CircularProgress } from '@material-ui/core';
 
@@ -623,7 +623,7 @@ let stoppedConsulTimer: number;
 
 export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
-  const { appointmentInfo } = useContext(CaseSheetContext);
+  const { appointmentInfo } = useContext(CaseSheetContextJrd);
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
@@ -1002,7 +1002,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     publishKey: publishkey,
     ssl: true,
   };
-  const { setCaseSheetEdit } = useContext(CaseSheetContext);
+  const { setCaseSheetEdit } = useContext(CaseSheetContextJrd);
   useEffect(() => {
     const apptClosedTime = moment(new Date(props.appointmentDateTime));
     const presentTime = moment(new Date());

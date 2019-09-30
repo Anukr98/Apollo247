@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Typography, makeStyles } from '@material-ui/core';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 const useStyles = makeStyles(() => ({
   container: {

@@ -280,12 +280,12 @@ const getJuniorDoctorCaseSheet: Resolver<
   //get junior doctor case-sheet
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   const caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
-  if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
-  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(
@@ -322,13 +322,13 @@ const getCaseSheet: Resolver<
 
   //check whether there is a senior doctor case-sheet
   const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(appointmentData.id);
-  if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
   juniorDoctorNotes = caseSheetDetails.notes;
 
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
-  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(

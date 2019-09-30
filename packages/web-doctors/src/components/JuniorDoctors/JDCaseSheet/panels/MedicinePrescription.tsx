@@ -15,10 +15,9 @@ import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import { isEmpty, trim, deburr } from 'lodash';
 import axios from 'axios';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import _uniqueId from 'lodash/uniqueId';
 import Scrollbars from 'react-custom-scrollbars';
-import { mergeClasses } from '@material-ui/styles';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -414,7 +413,7 @@ export const MedicinePrescription: React.FC = () => {
   const {
     medicinePrescription: selectedMedicinesArr,
     setMedicinePrescription: setSelectedMedicinesArr,
-  } = useContext(CaseSheetContext);
+  } = useContext(CaseSheetContextJrd);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [showDosage, setShowDosage] = React.useState<boolean>(false);
   const [idx, setIdx] = React.useState();
@@ -425,7 +424,7 @@ export const MedicinePrescription: React.FC = () => {
     tobeTakenErr: false,
     durationErr: false,
   });
-  const { caseSheetEdit } = useContext(CaseSheetContext);
+  const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>(1);
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([

@@ -3,9 +3,8 @@ import { Theme, FormHelperText } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton, AphDialogTitle, AphDialog } from '@aph/web-ui-components';
 
-import { isEmpty, debounce, trim } from 'lodash';
-import { CaseSheetContext } from 'context/CaseSheetContext';
-import _uniqueId from 'lodash/uniqueId';
+import { isEmpty, trim } from 'lodash';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -171,14 +170,14 @@ interface symptomObject {
 }
 export const Symptoms: React.FC = (props) => {
   const classes = useStyles();
-  const { symptoms, setSymptoms } = useContext(CaseSheetContext);
+  const { symptoms, setSymptoms } = useContext(CaseSheetContextJrd);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [symptom, setSymptom] = React.useState('');
   const [since, setSince] = React.useState('');
   const [howOften, setHowOften] = React.useState('');
   const [idx, setIdx] = React.useState();
   const [severity, setSeverity] = React.useState('');
-  const { caseSheetEdit } = useContext(CaseSheetContext);
+  const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [errorState, setErrorState] = React.useState<errorObject>({
     symptomError: false,
     sinceError: false,
