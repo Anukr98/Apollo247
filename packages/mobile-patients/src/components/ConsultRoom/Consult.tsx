@@ -527,14 +527,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           var day1 = moment(appointmentDateTime).add(7, 'days');
 
           var day2 = moment(new Date());
-          console.log('day1', day1);
-          console.log('day2', day2);
 
           day1.diff(day2, 'days'); // 1
-          // var difference = function(day1: number, day2: number) {
-          //   return Math.abs(day1 - day2);
-          // };
-          console.log('difference', day1.diff(day2, 'days'));
 
           return (
             <View style={{}}>

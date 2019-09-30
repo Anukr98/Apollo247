@@ -133,7 +133,10 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
     const clinics: Facility[] = [];
 
     _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
-      if (hospitalDetails.facility.facilityType === 'CLINIC') {
+      if (
+        hospitalDetails.facility.facilityType === 'CLINIC' ||
+        hospitalDetails.facility.facilityType === 'HOSPITAL'
+      ) {
         clinics.push(hospitalDetails);
       }
     });

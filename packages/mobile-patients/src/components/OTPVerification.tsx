@@ -264,30 +264,34 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               setOnOtpClick(true);
             })
             .catch((error) => {
-              console.log({ error });
-              setTimeout(() => {
-                if (isAuthChanged) {
-                  _removeFromStore();
-                  setOnOtpClick(true);
-                } else {
-                  setOnOtpClick(false);
-                  setshowSpinner(false);
-                  // console.log('error', error);
-                  _storeTimerData(invalidOtpCount + 1);
-
-                  if (invalidOtpCount + 1 === 3) {
-                    setShowErrorMsg(true);
-                    setIsValidOTP(false);
-                    startInterval(timer);
-                    setIntervalId(intervalId);
+              try {
+                console.log({ error });
+                setTimeout(() => {
+                  if (isAuthChanged) {
+                    _removeFromStore();
+                    setOnOtpClick(true);
                   } else {
-                    setShowErrorMsg(true);
-                    setIsValidOTP(true);
+                    setOnOtpClick(false);
+                    setshowSpinner(false);
+                    // console.log('error', error);
+                    _storeTimerData(invalidOtpCount + 1);
+
+                    if (invalidOtpCount + 1 === 3) {
+                      setShowErrorMsg(true);
+                      setIsValidOTP(false);
+                      startInterval(timer);
+                      setIntervalId(intervalId);
+                    } else {
+                      setShowErrorMsg(true);
+                      setIsValidOTP(true);
+                    }
+                    setInvalidOtpCount(invalidOtpCount + 1);
+                    setOtp('');
                   }
-                  setInvalidOtpCount(invalidOtpCount + 1);
-                  setOtp('');
-                }
-              }, 1000);
+                }, 1000);
+              } catch (error) {
+                console.log(error);
+              }
             });
         }, 3000);
       } else {

@@ -112,6 +112,7 @@ const addToConsultQueue: Resolver<
   const onlineJrDocs = await docRepo.find({
     onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
     doctorType: DoctorType.JUNIOR,
+    isActive: true,
   });
   const chosenJrDoc = _sample(onlineJrDocs);
   if (!chosenJrDoc) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);

@@ -54,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontSize: 14,
     lineHeight: 1.43,
     color: '#01475b',
+    wordBreak: 'break-word',
   },
   addBtn: {
     backgroundColor: 'transparent',
@@ -291,28 +292,36 @@ export const Symptoms: React.FC = (props) => {
       {symptoms && symptoms.length > 0 ? (
         <div className={classes.symtomListGroup}>
           {symptoms &&
-            symptoms!.map((item, idx) => (
-              <div key={idx} className={classes.listItem}>
-                <div className={classes.symtomHeading}>
-                  {item!.symptom}
-                  <AphButton
-                    classes={{ root: classes.deleteSymptom }}
-                    onClick={() => deleteSymptom(idx)}
-                  >
-                    <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
-                  </AphButton>
-                </div>
-                <div className={classes.symtomContent}>
-                  {item!.since && <div className={classes.symtomType}>Since: {item!.since}</div>}
-                  {item!.howOften && (
-                    <div className={classes.symtomType}>How Often : {item!.howOften}</div>
-                  )}
-                  {item!.severity && (
-                    <div className={classes.symtomType}>Severity: {item!.severity}</div>
-                  )}
-                </div>
-              </div>
-            ))}
+            symptoms!.map(
+              (item, idx) =>
+                item!.symptom!.trim() !== '' && (
+                  <div key={idx} className={classes.listItem}>
+                    <div className={classes.symtomHeading}>
+                      {item!.symptom}
+                      <AphButton
+                        classes={{ root: classes.deleteSymptom }}
+                        onClick={() => deleteSymptom(idx)}
+                      >
+                        <img
+                          src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+                          alt=""
+                        />
+                      </AphButton>
+                    </div>
+                    <div className={classes.symtomContent}>
+                      {item!.since && item!.since.trim() !== '' && (
+                        <div className={classes.symtomType}>Since: {item!.since}</div>
+                      )}
+                      {item!.howOften && item!.howOften.trim() !== '' && (
+                        <div className={classes.symtomType}>How Often : {item!.howOften}</div>
+                      )}
+                      {item!.severity && item!.severity.trim() !== '' && (
+                        <div className={classes.symtomType}>Severity: {item!.severity}</div>
+                      )}
+                    </div>
+                  </div>
+                )
+            )}
         </div>
       ) : (
         <div className={classes.noDataFound}>No data Found</div>

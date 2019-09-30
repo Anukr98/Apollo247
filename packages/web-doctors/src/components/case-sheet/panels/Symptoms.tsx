@@ -351,58 +351,63 @@ export const Symptoms: React.FC = (props) => {
         {symptoms && symptoms.length > 0 ? (
           <List className={classes.symtomList}>
             {symptoms &&
-              symptoms!.map((item, idx) => (
-                <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
-                  <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
-                  <AphButton
-                    variant="contained"
-                    color="primary"
-                    classes={{ root: classes.deleteSymptom }}
-                    onClick={() => deleteSymptom(idx)}
-                  >
-                    <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
-                  </AphButton>
-                  <Fragment>
-                    <List>
-                      {item!.since && (
-                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                          <ListItemText
-                            secondary={
-                              <Fragment>
-                                <Typography component="span">Since: {item!.since}</Typography>
-                              </Fragment>
-                            }
-                          />
-                        </ListItem>
-                      )}
-                      {item!.howOften && (
-                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                          <ListItemText
-                            secondary={
-                              <Fragment>
-                                <Typography component="span">
-                                  How Often : {item!.howOften}
-                                </Typography>
-                              </Fragment>
-                            }
-                          />
-                        </ListItem>
-                      )}
-                      {item!.severity && (
-                        <ListItem alignItems="flex-start" className={classes.symtomContent}>
-                          <ListItemText
-                            secondary={
-                              <Fragment>
-                                <Typography component="span">Severity: {item!.severity}</Typography>
-                              </Fragment>
-                            }
-                          />
-                        </ListItem>
-                      )}
-                    </List>
-                  </Fragment>
-                </ListItem>
-              ))}
+              symptoms!.map(
+                (item, idx) =>
+                  item!.symptom!.trim() !== '' && (
+                    <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
+                      <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
+                      <AphButton
+                        variant="contained"
+                        color="primary"
+                        classes={{ root: classes.deleteSymptom }}
+                        onClick={() => deleteSymptom(idx)}
+                      >
+                        <img src={caseSheetEdit && require('images/ic_cancel_green.svg')} alt="" />
+                      </AphButton>
+                      <Fragment>
+                        <List>
+                          {item!.since && item!.since.trim() !== '' && (
+                            <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                              <ListItemText
+                                secondary={
+                                  <Fragment>
+                                    <Typography component="span">Since: {item!.since}</Typography>
+                                  </Fragment>
+                                }
+                              />
+                            </ListItem>
+                          )}
+                          {item!.howOften && item!.howOften.trim() !== '' && (
+                            <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                              <ListItemText
+                                secondary={
+                                  <Fragment>
+                                    <Typography component="span">
+                                      How Often : {item!.howOften}
+                                    </Typography>
+                                  </Fragment>
+                                }
+                              />
+                            </ListItem>
+                          )}
+                          {item!.severity && item!.severity.trim() !== '' && (
+                            <ListItem alignItems="flex-start" className={classes.symtomContent}>
+                              <ListItemText
+                                secondary={
+                                  <Fragment>
+                                    <Typography component="span">
+                                      Severity: {item!.severity}
+                                    </Typography>
+                                  </Fragment>
+                                }
+                              />
+                            </ListItem>
+                          )}
+                        </List>
+                      </Fragment>
+                    </ListItem>
+                  )
+              )}
           </List>
         ) : (
           <div className={classes.nodatafound}>No data Found</div>

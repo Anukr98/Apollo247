@@ -126,6 +126,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 14,
       fontWeight: 600,
       color: '#02475b',
+      wordBreak: 'break-word',
     },
     medicineInfo: {
       fontSize: 12,

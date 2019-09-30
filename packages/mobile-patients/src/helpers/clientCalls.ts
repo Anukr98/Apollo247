@@ -1,6 +1,12 @@
 import ApolloClient from 'apollo-client';
 import { GetDoctorNextAvailableSlot } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
-import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  NEXT_AVAILABLE_SLOT,
+  ADD_TO_CONSULT_QUEUE,
+  CHECK_IF_RESCHDULE,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { addToConsultQueueVariables } from '../graphql/types/addToConsultQueue';
+import { checkIfRescheduleVariables } from '../graphql/types/checkIfReschedule';
 
 export const getNextAvailableSlots = (
   client: ApolloClient<object>,
@@ -32,6 +38,50 @@ export const getNextAvailableSlots = (
       })
       .catch((e: string) => {
         console.log('Error occured while searching Doctor', e);
+        rej({ error: e });
+      });
+  });
+};
+
+export const addToConsultQueue = (client: ApolloClient<object>, appointmentId: string) => {
+  return new Promise((res, rej) => {
+    client
+      .mutate<addToConsultQueueVariables>({
+        mutation: ADD_TO_CONSULT_QUEUE,
+        variables: {
+          appointmentId: appointmentId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e: string) => {
+        rej({ error: e });
+      });
+  });
+};
+
+export const checkIfRescheduleAppointment = (
+  client: ApolloClient<object>,
+  existAppointmentId: string,
+  rescheduleDate: string
+) => {
+  return new Promise((res, rej) => {
+    client
+      .query<checkIfRescheduleVariables>({
+        query: CHECK_IF_RESCHDULE,
+        variables: {
+          existAppointmentId: existAppointmentId,
+          rescheduleDate: rescheduleDate,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        res({ data });
+      })
+      .catch((e: any) => {
+        const error = JSON.parse(JSON.stringify(e));
         rej({ error: e });
       });
   });

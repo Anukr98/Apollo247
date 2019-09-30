@@ -136,6 +136,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: 6,
       border: 'solid 1px rgba(2, 71, 91, 0.15)',
       height: 'auto',
+      wordBreak: 'break-word',
       '& span': {
         padding: 0,
         whiteSpace: 'normal',
@@ -397,19 +398,25 @@ export const DiagnosticPrescription: React.FC = () => {
         <div className={classes.chipSection}>
           {selectedValues !== null &&
             selectedValues.length > 0 &&
-            selectedValues!.map((item, idx) => (
-              <div className={classes.chipCol}>
-                <Chip
-                  className={classes.chipItem}
-                  key={idx}
-                  label={item!.itemname}
-                  onDelete={() => handleDelete(item, idx)}
-                  deleteIcon={
-                    <img src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''} alt="" />
-                  }
-                />
-              </div>
-            ))}
+            selectedValues!.map(
+              (item, idx) =>
+                item.itemname!.trim() !== '' && (
+                  <div className={classes.chipCol}>
+                    <Chip
+                      className={classes.chipItem}
+                      key={idx}
+                      label={item!.itemname}
+                      onDelete={() => handleDelete(item, idx)}
+                      deleteIcon={
+                        <img
+                          src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+                          alt=""
+                        />
+                      }
+                    />
+                  </div>
+                )
+            )}
         </div>
       </div>
       {!showAddCondition && caseSheetEdit && (

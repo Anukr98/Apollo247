@@ -4,11 +4,9 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { STATUS, CaseSheet, REQUEST_ROLES } from 'consults-service/entities';
+import { STATUS, REQUEST_ROLES } from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
 import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
 
@@ -30,7 +28,6 @@ export const createAppointmentSessionTypeDefs = gql`
     doctorId: ID!
     patientId: ID!
     appointmentDateTime: DateTime!
-    caseSheetId: String
   }
 
   type CreateJuniorAppointmentSession {
@@ -78,7 +75,6 @@ type CreateAppointmentSession = {
   doctorId: string;
   patientId: string;
   appointmentDateTime: Date;
-  caseSheetId: string;
 };
 
 type CreateJuniorAppointmentSession = {
@@ -161,7 +157,7 @@ const createJuniorAppointmentSession: Resolver<
   }
   function getSessionToken() {
     return new Promise((resolve, reject) => {
-      opentok.createSession({}, (error, session) => {
+      opentok.createSession({ mediaMode: 'routed', archiveMode: 'always' }, (error, session) => {
         if (error) {
           reject(error);
         }
@@ -218,49 +214,12 @@ const createAppointmentSession: Resolver<
     patientId = '',
     doctorId = '';
   let appointmentDateTime: Date = new Date();
-  let caseSheetId = '';
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   if (createAppointmentSessionInput.requestRole != REQUEST_ROLES.DOCTOR) {
     throw new AphError(AphErrorMessages.INVALID_REQUEST_ROLE);
   }
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
-
-  // senior doctor case sheet creation starts
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const juniorDoctorcaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(apptDetails.id);
-  if (juniorDoctorcaseSheet == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
-
-  //check whether if senior doctors casesheet already exists
-  let caseSheetDetails;
-  caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(apptDetails.id);
-
-  if (caseSheetDetails == null) {
-    //get doctor details
-    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    const doctordata = await doctorRepository.findById(apptDetails.doctorId);
-    if (doctordata == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
-
-    const caseSheetAttrs: Partial<CaseSheet> = {
-      diagnosis: juniorDoctorcaseSheet.diagnosis,
-      diagnosticPrescription: juniorDoctorcaseSheet.diagnosticPrescription,
-      followUp: juniorDoctorcaseSheet.followUp,
-      followUpAfterInDays: juniorDoctorcaseSheet.followUpAfterInDays,
-      followUpDate: juniorDoctorcaseSheet.followUpDate,
-      otherInstructions: juniorDoctorcaseSheet.otherInstructions,
-      symptoms: juniorDoctorcaseSheet.symptoms,
-      consultType: apptDetails.appointmentType,
-      doctorId: apptDetails.doctorId,
-      patientId: apptDetails.patientId,
-      appointment: apptDetails,
-      createdDoctorId: apptDetails.doctorId,
-      doctorType: doctordata.doctorType,
-    };
-    caseSheetDetails = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
-    if (caseSheetDetails == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
-  }
-  caseSheetId = caseSheetDetails.id;
-  // senior doctor case sheet creation ends
 
   if (
     apptDetails &&
@@ -294,12 +253,11 @@ const createAppointmentSession: Resolver<
       patientId,
       doctorId,
       appointmentDateTime,
-      caseSheetId,
     };
   }
   function getSessionToken() {
     return new Promise((resolve, reject) => {
-      opentok.createSession({}, (error, session) => {
+      opentok.createSession({ mediaMode: 'routed', archiveMode: 'always' }, (error, session) => {
         if (error) {
           reject(error);
         }
@@ -343,7 +301,6 @@ const createAppointmentSession: Resolver<
     patientId,
     doctorId,
     appointmentDateTime,
-    caseSheetId,
   };
 };
 

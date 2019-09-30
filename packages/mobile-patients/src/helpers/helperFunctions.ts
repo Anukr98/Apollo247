@@ -1,7 +1,44 @@
-import moment from 'moment';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { GraphQLError } from 'graphql';
+import moment from 'moment';
 import { Alert, NetInfo } from 'react-native';
-import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
+
+interface AphConsole {
+  error(message?: any, ...optionalParams: any[]): void;
+  info(message?: any, ...optionalParams: any[]): void;
+  log(message?: any, ...optionalParams: any[]): void;
+  warn(message?: any, ...optionalParams: any[]): void;
+  trace(message?: any, ...optionalParams: any[]): void;
+  debug(message?: any, ...optionalParams: any[]): void;
+  table(...data: any[]): void;
+}
+
+const isDebugOn = AppConfig.Configuration.LOG_ENVIRONMENT == 'debug';
+
+export const aphConsole: AphConsole = {
+  error: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.error(message, ...optionalParams);
+  },
+  log: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.log(message, ...optionalParams);
+  },
+  info: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.info(message, ...optionalParams);
+  },
+  warn: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.warn(message, ...optionalParams);
+  },
+  trace: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.trace(message, ...optionalParams);
+  },
+  debug: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.debug(message, ...optionalParams);
+  },
+  table: (...data: any[]) => {
+    isDebugOn && console.table(...data);
+  },
+};
 
 export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
   let statusString = '';

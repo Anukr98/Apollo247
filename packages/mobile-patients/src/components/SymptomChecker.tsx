@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigatorSDK, $Generator } from 'praktice-navigator-react-native-sdk';
 // import { Generator } from 'praktice-navigator-react-native-sdk';
 import { NavigationScreenProps, NavigationActions } from 'react-navigation';
-import { SafeAreaView, View, Text } from 'react-native';
+import { SafeAreaView, View, Text, BackHandler } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -64,6 +64,33 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  const navigateToPrev = async () => {
+    console.log('navigateToPrev hardwareBackPress');
+    BackHandler.removeEventListener('hardwareBackPress', navigateToPrev);
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
+      })
+    );
+    return false;
+  };
+  useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', navigateToPrev);
+    });
+
+    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', navigateToPrev);
+    });
+
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+      willBlurSubscription && willBlurSubscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (currentPatient && currentPatient.firstName) {

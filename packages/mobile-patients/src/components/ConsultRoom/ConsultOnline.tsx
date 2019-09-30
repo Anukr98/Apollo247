@@ -117,10 +117,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       setDate(props.date);
     }
     checkAvailabilitySlot();
-    // if (availableSlots !== props.availableSlots && props.availableSlots) {
-    //   setTimeArrayData(props.availableSlots, props.date);
-    //   setavailableSlots(props.availableSlots);
-    // }
   }, [props.date, date]);
 
   const todayDate = new Date().toISOString().slice(0, 10);

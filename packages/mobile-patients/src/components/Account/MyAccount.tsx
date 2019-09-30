@@ -89,7 +89,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -110,7 +109,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   useEffect(() => {
     getNetStatus().then((status) => {
       if (status) {
-        console.log('Network status', status);
         if (currentPatient !== profileDetails) {
           setprofileDetails(currentPatient);
           setshowSpinner(false);
@@ -121,7 +119,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       } else {
         setNetworkStatus(true);
         setshowSpinner(false);
-        console.log('Network status failed', status);
       }
     });
   }, [currentPatient, profileDetails]);
@@ -159,9 +156,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     return null;
   };
 
-  const handleScroll = () => {
-    // console.log(e, 'jvjhvhm');
-  };
+  const handleScroll = () => {};
 
   const onShare = async () => {
     try {
@@ -313,7 +308,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              V 1.0(4)
+              QA V 1.0(22)
             </Text>
           </View>
         </Animated.ScrollView>

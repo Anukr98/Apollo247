@@ -1,3 +1,9 @@
+import {
+  uploadFile,
+  uploadFileVariables,
+} from '@aph/mobile-patients/src//graphql/types/uploadFile';
+import { handleGraphQlError } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
@@ -9,10 +15,10 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { GET_PATIENT_ADDRESS_LIST, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientAddressList,
@@ -25,13 +31,10 @@ import {
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import { AxiosResponse } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
-  Alert,
-  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -39,9 +42,7 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
-import { handleGraphQlError } from '../../helpers/helperFunctions';
-import { MedicineUploadPrescriptionView } from './MedicineUploadPrescriptionView';
+
 const styles = StyleSheet.create({
   labelView: {
     flexDirection: 'row',
@@ -86,12 +87,6 @@ export interface YourCartProps extends NavigationScreenProps {
 }
 
 export const YourCart: React.FC<YourCartProps> = (props) => {
-  const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
-  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
-  const { currentPatient } = useAllCurrentPatients();
-  const currentPatientId = currentPatient && currentPatient!.id;
-  const client = useApolloClient();
   const {
     updateCartItem,
     removeCartItem,
@@ -114,12 +109,15 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setPinCode,
     stores,
     setStores,
-
     ePrescriptions,
   } = useShoppingCart();
 
-  console.log({ ePrescriptions });
-
+  const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
+  const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
+  const { currentPatient } = useAllCurrentPatients();
+  const currentPatientId = currentPatient && currentPatient!.id;
+  const client = useApolloClient();
+  const { showAphAlert, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -130,7 +128,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    setLoading!(true);
     (currentPatientId &&
+      addresses.length == 0 &&
       client
         .query<getPatientAddressList, getPatientAddressListVariables>({
           query: GET_PATIENT_ADDRESS_LIST,
@@ -138,14 +138,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           fetchPolicy: 'no-cache',
         })
         .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          setshowSpinner(false);
+          setLoading!(false);
           setAddresses && setAddresses(addressList!);
         })
         .catch((e) => {
-          setshowSpinner(false);
+          setLoading!(false);
           handleGraphQlError(e, 'Unable to fetch user address');
         })) ||
-      setshowSpinner(false);
+      setLoading!(false);
   }, [currentPatientId]);
 
   /*  useEffect(() => {
@@ -174,12 +174,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         setshowSpinner(false);
       });
   }, []);*/
-
-  const showGenericALert = (e: { response: AxiosResponse }) => {
-    const error = e && e.response && e.response.data.message;
-    console.log({ errorResponse: e.response, error }); //remove this line later
-    Alert.alert('Error', error || 'Unknown error occurred.');
-  };
 
   const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
     if (!(unit < 1)) {
@@ -312,10 +306,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         if (Availability) {
           setDeliveryAddressId && setDeliveryAddressId(address.id);
         } else {
-          Alert.alert(
-            'Alert',
-            'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
-          );
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+          });
         }
       })
       .catch((e) => {
@@ -675,11 +670,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     if (prescriptions.length == 0) {
       props.navigation.navigate(AppRoutes.CheckoutScene);
     } else {
-      setshowSpinner(true);
+      setLoading!(true);
       const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
       multiplePhysicalPrescriptionUpload(unUploadedPres)
         .then((data) => {
-          setshowSpinner(false);
+          setLoading!(false);
           const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
           const newuploadedPrescriptions = unUploadedPres.map(
             (item, index) =>
@@ -693,13 +688,16 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               ...newuploadedPrescriptions,
               ...prescriptions.filter((item) => item.uploadedUrl),
             ]);
-          setshowSpinner(false);
+          setLoading!(false);
           props.navigation.navigate(AppRoutes.CheckoutScene);
         })
         .catch((e) => {
           console.log({ e });
-          setshowSpinner(false);
-          Alert.alert('Alert', 'Error occurred while uploading prescriptions.');
+          setLoading!(false);
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description: 'Error occurred while uploading prescriptions.',
+          });
         });
     }
   };
@@ -727,7 +725,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
         </StickyBottomComponent>
       </SafeAreaView>
-      {showSpinner && <Spinner />}
     </View>
   );
 };

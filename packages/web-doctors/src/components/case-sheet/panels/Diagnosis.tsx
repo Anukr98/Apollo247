@@ -332,7 +332,7 @@ export const Diagnosis: React.FC = () => {
         {selectedValues !== null &&
           selectedValues.length > 0 &&
           selectedValues!.map((item, idx) =>
-            caseSheetEdit ? (
+            caseSheetEdit && item.name!.trim() !== '' ? (
               <Chip
                 className={classes.diagnosBtn}
                 key={idx}
@@ -341,7 +341,9 @@ export const Diagnosis: React.FC = () => {
                 color="primary"
               />
             ) : (
-              <Chip className={classes.diagnosBtn} key={idx} label={item!.name} color="primary" />
+              item.name!.trim() !== '' && (
+                <Chip className={classes.diagnosBtn} key={idx} label={item!.name} color="primary" />
+              )
             )
           )}
       </Typography>

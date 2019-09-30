@@ -887,6 +887,8 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           lastName
           experience
           city
+          onlineConsultationFees
+          physicalConsultationFees
           photoUrl
           qualification
           specialty {

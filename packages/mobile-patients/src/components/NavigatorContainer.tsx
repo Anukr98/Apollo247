@@ -18,7 +18,6 @@ import { Medicine } from '@aph/mobile-patients/src/components/Medicines/Medicine
 import { MedicineDetailsScene } from '@aph/mobile-patients/src/components/Medicines/MedicineDetailsScene';
 import { SearchMedicineScene } from '@aph/mobile-patients/src/components/Medicines/SearchMedicineScene';
 import { SelectDeliveryAddress } from '@aph/mobile-patients/src/components/Medicines/SelectDeliveryAddress';
-import { SelectPrescription } from '@aph/mobile-patients/src/components/Medicines/SelectPrescription';
 import { StorePickupScene } from '@aph/mobile-patients/src/components/Medicines/StorePickupScene';
 import { UploadPrescription } from '@aph/mobile-patients/src/components/Medicines/UploadPrescription';
 import { YourCart } from '@aph/mobile-patients/src/components/Medicines/YourCart';
@@ -79,7 +78,6 @@ export enum AppRoutes {
   CheckoutScene = 'CheckoutScene',
   PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
-  SelectPrescription = 'SelectPrescription',
   UploadPrescription = 'UploadPrescription',
   SelectDeliveryAddress = 'SelectDeliveryAddress',
   HealthRecordsHome = 'HealthRecordsHome',
@@ -197,9 +195,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.OrderDetailsScene]: {
     screen: OrderDetailsScene,
-  },
-  [AppRoutes.SelectPrescription]: {
-    screen: SelectPrescription,
   },
   [AppRoutes.UploadPrescription]: {
     screen: UploadPrescription,

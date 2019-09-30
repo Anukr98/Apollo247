@@ -1,29 +1,31 @@
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
-  Filter,
-  TrackerBig,
+  MedicineIcon,
   OnlineConsult,
   PrescriptionSkyBlue,
-  MedicalIcon,
-  MedicineIcon,
+  TrackerBig,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import strings from '@aph/mobile-patients/src/strings/strings.json';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { getDoctorDetailsById_getDoctorDetailsById_specialty } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { NavigationScreenProps } from 'react-navigation';
-import { g } from '../../helpers/helperFunctions';
-import { ShoppingCartItem, useShoppingCart, EPrescription } from '../ShoppingCartProvider';
-import { AppConfig } from '../../strings/AppConfig';
+import React, { useEffect, useState } from 'react';
 import {
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults,
-  getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription,
-} from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
+  Alert,
+  Image,
+  PermissionsAndroid,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
+import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
 import { getMedicineDetailsApi } from '../../helpers/apiCalls';
+import { g } from '../../helpers/helperFunctions';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { AppConfig } from '../../strings/AppConfig';
+import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -74,6 +76,8 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
     color: theme.colors.TEXT_LIGHT_BLUE,
+    lineHeight: 20,
+    letterSpacing: 0.04,
   },
   profileImageStyle: { width: 40, height: 40, borderRadius: 20 },
   yellowTextStyle: {
@@ -127,25 +131,47 @@ export interface HealthConsultViewProps extends NavigationScreenProps {
   PastData?: any; //getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults;
   onPressOrder?: () => void;
   onClickCard?: () => void;
-  //PastData?: any;
+  onFollowUpClick?: (PastData: any) => void;
 }
 
 export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
-  //console.log('PastData', props.PastData);
   const { setCartItems, cartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
 
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
-    // console.log('doctorType', obj);
-    // console.log('blobname', AppConfig.Configuration.DOCUMENT_BASE_URL.concat(obj.blobName));
     return (
       obj!.doctorType === 'STAR_APOLLO' ||
       obj!.doctorType === 'APOLLO' ||
       obj!.doctorType === 'PAYROLL'
     );
   });
-  console.log('itemdoctyrpe', item);
+
+  useEffect(() => {
+    Platform.OS === 'android' && requestReadSmsPermission();
+  });
+  const requestReadSmsPermission = async () => {
+    try {
+      const resuts = await PermissionsAndroid.requestMultiple([
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      ]);
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+      }
+      if (
+        resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
+        PermissionsAndroid.RESULTS.GRANTED
+      ) {
+      }
+      if (resuts) {
+      }
+    } catch (error) {
+      console.log('error', error);
+    }
+  };
   if (
     (props.PastData &&
       props.PastData.medicineOrderLineItems &&
@@ -189,12 +215,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       )}
                   </View>
                   <View style={{ flex: 1 }}>
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      // onPress={() => {
-                      //   props.onClickCard ? props.onClickCard() : null;
-                      // }}
-                    >
+                    <TouchableOpacity activeOpacity={1}>
                       <Text style={styles.doctorNameStyles}>
                         Dr. {props.PastData!.doctorInfo && props.PastData!.doctorInfo.firstName} 
                         {props.PastData!.doctorInfo && props.PastData!.doctorInfo.lastName}
@@ -217,15 +238,22 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     </View>
                     <View style={styles.separatorStyles} />
                     <View>
-                      {g(props.PastData, 'caseSheet', '0', 'symptoms') ? (
+                      {g(item, 'symptoms') ? (
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <Text style={styles.descriptionTextStyles}>
-                            {props.PastData!.caseSheet[0].symptoms[0].symptom},
-                            {props.PastData!.caseSheet[0].symptoms[0].since},
-                            {props.PastData!.caseSheet[0].symptoms[0].howOften},
-                            {props.PastData!.caseSheet[0].symptoms[0].severity}
-                          </Text>
-                          <PrescriptionSkyBlue />
+                          <View style={{ flexDirection: 'column' }}>
+                            {item.symptoms.map((value: any) => {
+                              return (
+                                <View style={{ flex: 2 }}>
+                                  <Text style={styles.descriptionTextStyles}>
+                                    {value.symptom},{value.since},{value.howOften},{value.severity}
+                                  </Text>
+                                </View>
+                              );
+                            })}
+                          </View>
+                          <TouchableOpacity>
+                            <PrescriptionSkyBlue />
+                          </TouchableOpacity>
                         </View>
                       ) : (
                         <Text style={styles.descriptionTextStyles}>No Symptoms</Text>
@@ -242,43 +270,25 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     justifyContent: 'space-between',
                   }}
                 >
-                  {props.PastData!.isFollowUp ? (
+                  {g(item, 'followUp') ? (
                     <TouchableOpacity
                       activeOpacity={1}
-                      //style={[styles.cardContainerStyle]}
-                      // onPress={() => {
-                      //   console.log('doctorid', props.PastData.doctorInfo.id);
-                      //   console.log('patientid', props.PastData.patientId);
-                      //   console.log('appointmentid', props.PastData.id);
-                      //   props.navigation.navigate(AppRoutes.DoctorDetails, {
-                      //     doctorId: props.PastData.doctorInfo.id,
-                      //     PatientId: props.PastData.patientId,
-                      //     FollowUp: props.PastData.isFollowUp,
-                      //     appointmentType: props.PastData.appointmentType,
-                      //     appointmentId: props.PastData.id,
-                      //     showBookAppointment: true,
-                      //   });
-                      // }}
+                      onPress={() => {
+                        props.onFollowUpClick ? props.onFollowUpClick(props.PastData) : null;
+                      }}
                     >
-                      <Text style={styles.yellowTextStyle}></Text>
+                      <Text style={styles.yellowTextStyle}> BOOK FOLLOW-UP</Text>
                     </TouchableOpacity>
                   ) : (
                     <Text></Text>
                   )}
-                  {item == undefined ? null : (
+                  {g(item, 'medicinePrescription') ? (
                     <Text
                       style={styles.yellowTextStyle}
                       onPress={() => {
-                        console.log('passdata2', props.PastData!.caseSheet);
-                        let refIndex;
                         let item =
                           props.PastData!.caseSheet &&
                           props.PastData!.caseSheet.find((obj: any) => {
-                            console.log('doctorType', obj);
-                            console.log(
-                              'blobname',
-                              AppConfig.Configuration.DOCUMENT_BASE_URL.concat(obj.blobName)
-                            );
                             return (
                               obj.doctorType === 'STAR_APOLLO' ||
                               obj.doctorType === 'APOLLO' ||
@@ -286,15 +296,9 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                             );
                           });
 
-                        console.log('resultsenior', item);
                         if (item == undefined) {
                           Alert.alert('No Medicines');
                         } else {
-                          console.log(
-                            'doctorTypesenior',
-                            item.doctorType,
-                            item.medicinePrescription
-                          );
                           if (item.medicinePrescription != null) {
                             //write here stock condition
 
@@ -310,8 +314,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               medPrescription.map((item: any) => getMedicineDetailsApi(item!.id!))
                             )
                               .then((result) => {
-                                console.log({ result });
-
                                 setLoading(false);
                                 const medicines = result
                                   .map(({ data: { productdp } }, index) => {
@@ -331,14 +333,10 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                   })
                                   .filter((item: any) => (item ? true : false));
 
-                                console.log({ medicines });
-
                                 const filteredItemsFromCart = cartItems.filter(
                                   (cartItem) =>
                                     !medicines.find((item: any) => (item && item.id) == cartItem.id)
                                 );
-
-                                console.log({ filteredItemsFromCart });
 
                                 setCartItems!([
                                   ...filteredItemsFromCart,
@@ -360,11 +358,11 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                     : medicines.filter((item: any) => item!.prescriptionRequired)
                                         .length;
 
-                                console.log({ rxMedicinesCount });
-
                                 const presToAdd = {
                                   id: item!.id!,
-                                  date: moment(item!.followUpDate).format('DD MMM YYYY'),
+                                  date: moment(g(props.PastData, 'appointmentDateTime')).format(
+                                    'DD MMM YYYY'
+                                  ),
                                   doctorName: '',
                                   forPatient: (currentPatient && currentPatient.firstName) || '',
                                   medicines: (medicines || [])
@@ -415,13 +413,13 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     >
                       ORDER MEDS & TESTS
                     </Text>
-                  )}
+                  ) : null}
                 </View>
               </View>
             </TouchableOpacity>
           </View>
         ) : (
-          <View style={{ marginRight: 20, flex: 1 }}>
+          <View style={{ flex: 1 }}>
             {props.PastData! && props.PastData!.medicineOrderLineItems.length == 0 ? null : (
               <View>
                 {moment(new Date()).format('DD/MM/YYYY') ===
@@ -437,15 +435,11 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
 
                 {props.PastData!.medicineOrderLineItems! &&
                   props.PastData!.medicineOrderLineItems!.map((item: any) => {
-                    //console.log('utem', item);
                     return (
                       <TouchableOpacity
                         activeOpacity={1}
                         style={[styles.cardContainerStyle]}
                         onPress={() => {
-                          console.log('medicnedeial', props.PastData!.medicineOrderLineItems);
-                          console.log(moment(props.PastData!.quoteDateTime).format('DD MMM YYYY'));
-                          console.log(props.PastData, 'props.PastData.prescriptionImageUrl');
                           props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
                             data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
                             medicineDate: moment(props.PastData!.quoteDateTime).format(

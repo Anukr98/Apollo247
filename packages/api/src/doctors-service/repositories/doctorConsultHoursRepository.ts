@@ -64,22 +64,27 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
   async insertOrUpdateAllConsultHours(availabilityData: any[]) {
     const consultHours: Partial<ConsultHours>[] = [];
     availabilityData.forEach((consultHourData) => {
-      const weekDays = consultHourData.weekDays.toString();
-      const arrWeekDays = weekDays.split(',');
-      const availability = consultHourData.availability.toString();
-      const arrDayTimes = this.getDayStarAndEndTimesArray(availability);
+      if (
+        typeof consultHourData.weekDays != 'undefined' &&
+        typeof consultHourData.availability != 'undefined'
+      ) {
+        const weekDays = consultHourData.weekDays.toString();
+        const arrWeekDays = weekDays.split(',');
+        const availability = consultHourData.availability.toString();
+        const arrDayTimes = this.getDayStarAndEndTimesArray(availability);
 
-      arrWeekDays.forEach((weekDay: WeekDay) => {
-        arrDayTimes.forEach((dayTimes: DayTimes) => {
-          const dayConsultHour: Partial<ConsultHours> = {
-            weekDay: weekDay,
-            startTime: dayTimes.startTime,
-            endTime: dayTimes.endTime,
-            ...consultHourData,
-          };
-          consultHours.push(dayConsultHour);
+        arrWeekDays.forEach((weekDay: WeekDay) => {
+          arrDayTimes.forEach((dayTimes: DayTimes) => {
+            const dayConsultHour: Partial<ConsultHours> = {
+              weekDay: weekDay,
+              startTime: dayTimes.startTime,
+              endTime: dayTimes.endTime,
+              ...consultHourData,
+            };
+            consultHours.push(dayConsultHour);
+          });
         });
-      });
+      }
     });
 
     return this.save(consultHours).catch((saveConsultHoursError) => {

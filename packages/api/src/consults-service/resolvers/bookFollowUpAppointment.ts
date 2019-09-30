@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE, CaseSheet, APPOINTMENT_STATE } from 'consults-service/entities';
+import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -10,8 +10,8 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 //import { AphMqClient, AphMqMessage, AphMqMessageTypes } from 'AphMqClient';
 //import { AppointmentPayload } from 'types/appointmentTypes';
 //import { addMinutes, format } from 'date-fns';
-import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 export const bookFollowUpAppointmentTypeDefs = gql`
   type FollowUpAppointmentBooking {
@@ -135,6 +135,16 @@ const bookFollowUpAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_PARENT_APPOINTMENT_ID, undefined, {});
   }
 
+  //check if doctor slot is blocked
+  const blockRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
+  const recCount = await blockRepo.checkIfSlotBlocked(
+    followUpAppointmentInput.appointmentDateTime,
+    followUpAppointmentInput.doctorId
+  );
+  if (recCount > 0) {
+    throw new AphError(AphErrorMessages.DOCTOR_SLOT_BLOCKED, undefined, {});
+  }
+
   const apptCount = await appts.checkIfAppointmentExist(
     followUpAppointmentInput.doctorId,
     followUpAppointmentInput.appointmentDateTime
@@ -156,17 +166,6 @@ const bookFollowUpAppointment: Resolver<
     appointmentDateTime: new Date(followUpAppointmentInput.appointmentDateTime.toISOString()),
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
-
-  //casesheet creation starts here.
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheetAttrs: Partial<CaseSheet> = {
-    consultType: appointment.appointmentType,
-    doctorId: appointment.doctorId,
-    patientId: appointment.patientId,
-    appointment: appointment,
-  };
-  await caseSheetRepo.savecaseSheet(caseSheetAttrs);
-  ///////////
 
   return { appointment };
 };

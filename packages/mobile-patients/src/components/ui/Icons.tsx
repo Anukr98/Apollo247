@@ -660,3 +660,7 @@ export const ToggleOn: React.FC<IconProps> = (props) => (
     source={require('./icons/ic_toggle_on.png')}
   />
 );
+
+export const ChatSend: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 24, width: 24 }} {...props} source={require('./icons/ChatSend.png')} />
+);
