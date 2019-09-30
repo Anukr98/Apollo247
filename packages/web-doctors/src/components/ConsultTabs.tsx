@@ -27,8 +27,17 @@ import {
   GET_CASESHEET,
   UPDATE_CASESHEET,
   END_APPOINTMENT_SESSION,
+  CREATE_CASESHEET_FOR_SRD,
+  GET_CASESHEET_JRD,
 } from 'graphql/profiles';
+
+import {
+  GetJuniorDoctorCaseSheet,
+  GetJuniorDoctorCaseSheetVariables,
+} from 'graphql/types/GetJuniorDoctorCaseSheet';
+
 import { CircularProgress } from '@material-ui/core';
+
 import {
   GetCaseSheet,
   GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms,
@@ -37,11 +46,21 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetCaseSheet';
+
+import {
+  CreateSeniorDoctorCaseSheet,
+  CreateSeniorDoctorCaseSheetVariables,
+} from 'graphql/types/CreateSeniorDoctorCaseSheet';
+
 import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import Scrollbars from 'react-custom-scrollbars';
+import { useMutation } from 'react-apollo-hooks';
+import { ApolloError } from 'apollo-client';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -219,9 +238,18 @@ export const ConsultTabs: React.FC = () => {
 
   const { currentPatient, isSignedIn } = useAuth();
 
-  //     setAppointmentId(paramId);
-  //     setpatientId(params.patientId);
-  //     setdoctorId(currentPatient.id);
+  const mutationCreateSrdCaseSheet = useMutation<
+    CreateSeniorDoctorCaseSheet,
+    CreateSeniorDoctorCaseSheetVariables
+  >(CREATE_CASESHEET_FOR_SRD, {
+    variables: {
+      appointmentId: paramId,
+    },
+  });
+
+  // setAppointmentId(paramId);
+  // setpatientId(params.patientId);
+  // setdoctorId(currentPatient.id);
 
   const [tabValue, setTabValue] = useState<number>(
     params && params!.tabValue && params!.tabValue !== null && params!.tabValue !== ''
@@ -294,6 +322,10 @@ export const ConsultTabs: React.FC = () => {
         .then((_data) => {
           setCasesheetInfo(_data.data);
           setError('');
+          _data!.data!.getCaseSheet!.caseSheetDetails &&
+          _data!.data!.getCaseSheet!.caseSheetDetails.id
+            ? setCaseSheetId(_data!.data!.getCaseSheet!.caseSheetDetails.id)
+            : '';
           _data!.data!.getCaseSheet!.caseSheetDetails!.diagnosis !== null
             ? setDiagnosis((_data!.data!.getCaseSheet!.caseSheetDetails!
                 .diagnosis as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[])
@@ -355,9 +387,27 @@ export const ConsultTabs: React.FC = () => {
             );
           }
         })
-        .catch((e: any) => {
-          setError('Somthing went wrong, Please try again.');
-          console.log('Error occured creating session', e);
+        .catch((error: ApolloError) => {
+          const networkErrorMessage = error.networkError ? error.networkError.message : null;
+          const allMessages = error.graphQLErrors
+            .map((e) => e.message)
+            .concat(networkErrorMessage ? networkErrorMessage : []);
+          const isCasesheetNotExists = allMessages.includes(AphErrorMessages.NO_CASESHEET_EXIST);
+          if (isCasesheetNotExists) {
+            console.log(error);
+            setError('Creating Casesheet. Please wait....');
+            mutationCreateSrdCaseSheet()
+              .then((response) => {
+                window.location.href = clientRoutes.ConsultTabs(
+                  appointmentId,
+                  patientId,
+                  String(tabValue)
+                );
+              })
+              .catch((e: ApolloError) => {
+                setError('Unable to load Consult.');
+              });
+          }
         })
         .finally(() => {
           setLoaded(true);
@@ -368,6 +418,7 @@ export const ConsultTabs: React.FC = () => {
       };
     }
   }, []);
+
   const saveCasesheetAction = (flag: boolean) => {
     setSaving(true);
     client
@@ -459,7 +510,7 @@ export const ConsultTabs: React.FC = () => {
       .then((_data: any) => {
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
-        setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
+        //setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
         setError('');
         setSaving(false);
       })
