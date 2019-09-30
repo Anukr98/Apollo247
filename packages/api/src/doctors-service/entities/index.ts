@@ -358,6 +358,9 @@ export class DoctorSpecialty extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Column({ nullable: true })
+  displayOrder: Number;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
