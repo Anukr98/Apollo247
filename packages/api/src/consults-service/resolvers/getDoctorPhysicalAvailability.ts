@@ -64,7 +64,9 @@ const getDoctorPhysicalAvailableSlots: Resolver<
         st = `${previousDate.toDateString()} ${timeSlot.startTime.toString()}`;
         consultStartTime = new Date(st);
       }
-      const slotsCount = Math.ceil(differenceInMinutes(consultEndTime, consultStartTime) / 60) * 4;
+      console.log(consultStartTime, consultEndTime, 'conslt hours');
+      const slotsCount = (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
+      console.log(slotsCount, 'slots count', differenceInMinutes(consultEndTime, consultStartTime));
       const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
       availableSlotsReturn = Array(slotsCount)
@@ -88,7 +90,7 @@ const getDoctorPhysicalAvailableSlots: Resolver<
         });
     });
   }
-  console.log(availableSlotsReturn);
+  console.log(availableSlotsReturn, 'return slots');
   const appts = consultsDb.getCustomRepository(AppointmentRepository);
   const apptSlots = await appts.findByDateDoctorId(
     DoctorPhysicalAvailabilityInput.doctorId,
@@ -104,14 +106,14 @@ const getDoctorPhysicalAvailableSlots: Resolver<
         .getUTCMinutes()
         .toString()
         .padStart(2, '0')}:00.000Z`;
-      console.log(sl, 'slot');
-      console.log(availableSlots.indexOf(sl), 'index of');
-      console.log(
-        appt.appointmentDateTime.toDateString(),
-        appt.appointmentDateTime,
-        availableSlots.indexOf(sl),
-        'check index with date'
-      );
+      //console.log(sl, 'slot');
+      //console.log(availableSlots.indexOf(sl), 'index of');
+      // console.log(
+      //   appt.appointmentDateTime.toDateString(),
+      //   appt.appointmentDateTime,
+      //   availableSlots.indexOf(sl),
+      //   'check index with date'
+      // );
       if (availableSlots.indexOf(sl) >= 0) {
         availableSlots.splice(availableSlots.indexOf(sl), 1);
       }

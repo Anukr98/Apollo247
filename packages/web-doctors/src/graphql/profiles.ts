@@ -228,6 +228,60 @@ export const CREATE_CASESHEET_FOR_JRD = gql`
   }
 `;
 
+export const CREATE_CASESHEET_FOR_SRD = gql`
+  mutation CreateSeniorDoctorCaseSheet($appointmentId: String) {
+    createSeniorDoctorCaseSheet(appointmentId: $appointmentId) {
+      appointment {
+        id
+        appointmentDateTime
+        appointmentState
+        appointmentType
+        displayId
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        rescheduleCount
+      }
+      blobName
+      consultType
+      diagnosis {
+        name
+      }
+      diagnosticPrescription {
+        itemname
+      }
+      doctorId
+      doctorType
+      followUp
+      followUpAfterInDays
+      followUpDate
+      id
+      medicinePrescription {
+        medicineConsumptionDurationInDays
+        medicineDosage
+        medicineInstructions
+        medicineTimings
+        medicineToBeTaken
+        medicineName
+        id
+      }
+      notes
+      otherInstructions {
+        instruction
+      }
+      patientId
+      symptoms {
+        symptom
+        since
+        howOften
+        severity
+      }
+    }
+  }
+`;
+
 export const GET_CASESHEET_JRD = gql`
   query GetJuniorDoctorCaseSheet($appointmentId: String) {
     getJuniorDoctorCaseSheet(appointmentId: $appointmentId) {

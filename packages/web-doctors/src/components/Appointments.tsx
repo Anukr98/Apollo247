@@ -395,7 +395,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
           className={classes.calendarContent}
         >
           {appointments.map((appointment, idx) => {
-            return appointment.caseSheet.length > 0 ? (
+            // return appointment.caseSheet.length > 0 ? (
+            return (
               <Step
                 key={_uniqueId('apt_')}
                 active={true}
@@ -580,8 +581,8 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   </div>
                 </StepContent>
               </Step>
-            ) : (
-              <div>&nbsp;</div>
+              // )
+              // <div>&nbsp;</div>
             );
           })}
         </Stepper>

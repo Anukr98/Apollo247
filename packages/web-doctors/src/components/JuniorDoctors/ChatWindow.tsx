@@ -207,7 +207,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     patientChatRow: {
       paddingBottom: 8,
-      textAlign: 'right',
+      textAlign: 'left',
+      paddingLeft: 40,
     },
     patientAvatar: {
       position: 'absolute',

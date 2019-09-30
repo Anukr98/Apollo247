@@ -77,6 +77,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
     );
     return false;
   };
+
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', navigateToPrev);

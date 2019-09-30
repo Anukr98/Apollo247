@@ -4,21 +4,21 @@ import { useQuery } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, StyleSheet, View } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import { ScrollView } from 'react-navigation';
-import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '../../graphql/profiles';
+import { GET_PAST_CONSULTS_PRESCRIPTIONS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientPastConsultsAndPrescriptions,
   getPatientPastConsultsAndPrescriptionsVariables,
   getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems,
-} from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
-import { g } from '../../helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
-import { theme } from '../../theme/theme';
-import { EPrescription } from '../ShoppingCartProvider';
-import { Button } from '../ui/Button';
-import { Card } from '../ui/Card';
-import { EPrescriptionCard } from '../ui/EPrescriptionCard';
-import { Header } from '../ui/Header';
-import { Spinner } from '../ui/Spinner';
+} from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
+import { g, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { EPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -43,7 +43,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -59,7 +58,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     },
     fetchPolicy: 'no-cache',
   });
-  console.log({ data, loading, error });
+  aphConsole.log({ data, loading, error });
 
   useEffect(() => {
     const pIds = props.selectedEprescriptionIds;

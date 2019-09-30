@@ -79,7 +79,6 @@ import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { Redirect } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
