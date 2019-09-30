@@ -41,7 +41,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { handleGraphQlError } from '../../helpers/helperFunctions';
+import { handleGraphQlError, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -144,7 +144,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -177,17 +176,16 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         fetchPolicy: 'no-cache',
       })
       .then(({ data: { getPatientPastMedicineSearches } }) => {
-        console.log({ getPatientPastMedicineSearches });
         setPastSearches(getPatientPastMedicineSearches || []);
       })
       .catch((error) => {
-        console.log('Error occured', { error });
+        aphConsole.log('Error occured', { error });
       });
   }, [currentPatient]);
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
-    console.log({ errorResponse: e.response, error }); //remove this line later
+    aphConsole.log({ errorResponse: e.response, error }); //remove this line later
     Alert.alert('Alert', error || 'Unknown error occurred.');
   };
 
@@ -206,10 +204,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         setIsLoading(false);
       })
       .catch((e) => {
-        if (axios.isCancel(e)) {
-          console.log('Request canceled', e);
-        } else {
-          // handle error
+        if (!axios.isCancel(e)) {
           setIsLoading(false);
           showGenericALert(e);
         }
@@ -268,9 +263,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         let cartInfo: CartInfoResponse | null = null;
         try {
           cartInfo = await getCartInfo();
-          console.log({ cartInfo });
         } catch (error) {
-          console.log(error);
         }
         // add to local cart
         const cartItemIndex = cartInfo!.items.findIndex((cartItem) => cartItem.sku == medicine.sku);
@@ -300,7 +293,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   */
   /*  
   const onRemoveCartItem = async (medicine: MedicineProduct) => {
-    console.log({ id: medicine.id });
     let cartItemId = 0;
     let cartInfo: CartInfoResponse | null = null;
     try {
@@ -308,7 +300,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       const cartItem = cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
       cartItemId = (cartItem && cartItem.item_id) || 0;
     } catch (error) {
-      console.log(error);
     }
     if (!cartItemId) {
       Alert.alert('Error', 'Item does not exist in cart');
@@ -316,7 +307,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     }
     removeProductFromCartApi(cartItemId)
       .then(({ data }) => {
-        console.log('onPressRemoveFromCar', data);
         const cloneOfMedicineCardStatus = { ...medicineCardStatus };
         delete cloneOfMedicineCardStatus[medicine.sku];
         setMedicineCardStatus(cloneOfMedicineCardStatus);
@@ -341,7 +331,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       const cartItem = cartInfo.items.find((cartItem) => cartItem.sku == medicine.sku);
       cartItemId = (cartItem && cartItem.item_id) || 0;
     } catch (error) {
-      console.log(error);
     }
     if (!cartItemId) {
       Alert.alert('Error', 'Item does not exist in cart');
@@ -384,7 +373,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               activeOpacity={1}
               // style={{ marginRight: 24 }}
               onPress={() => {
-                console.log('YourCartProps onpress');
                 props.navigation.navigate(AppRoutes.YourCart);
               }}
             >
@@ -418,7 +406,10 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             styles.searchValueStyle,
             isNoMedicinesFound ? { borderBottomColor: '#e50000' } : {},
           ]}
-          textInputprops={isNoMedicinesFound ? { selectionColor: '#e50000' } : {}}
+          textInputprops={{
+            ...(isNoMedicinesFound ? { selectionColor: '#e50000' } : {}),
+            autoFocus: true,
+          }}
           value={searchText}
           placeholder="Enter name of the medicine"
           underlineColorAndroid="transparent"
@@ -461,7 +452,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${text}&latitude=17.3355835&longitude=78.46756239999999&key=${key}`
       )
       .then((obj) => {
-        console.log(obj, 'places');
         if (obj.data.predictions) {
           const address = obj.data.predictions.map(
             (item: {
@@ -472,13 +462,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               return item.structured_formatting.main_text;
             }
           );
-          console.log(address, 'address');
           // setlocationSearchList(address);
           // setcurrentLocation(address.toUpperCase());
         }
       })
       .catch((error) => {
-        console.log(error);
+        aphConsole.log(error);
       });
   };
 
@@ -627,7 +616,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         {renderHeader()}
         {renderSearchInput()}
       </View>
-      {renderDeliveryPinCode()}
+      {/* {renderDeliveryPinCode()} */}
       {showMatchingMedicines ? renderMatchingMedicines() : renderPastSearches()}
     </SafeAreaView>
   );
