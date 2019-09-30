@@ -16,7 +16,7 @@ import {
   DiagnosticPrescription,
   OtherInstructions,
 } from 'components/JuniorDoctors/JDCaseSheet/panels';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { AphTextField } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -173,7 +173,7 @@ const HistoryAndLifeStyle: React.FC<HistoryAndLifeStyleProps> = (props) => {
 
 export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
   const classes = useStyles();
-  const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContext);
+  const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [symptoms, setSymptoms] = useState<boolean>(caseSheetEdit);
   const [healthVault, setHealthVault] = useState<boolean>(caseSheetEdit);
   const [diagnosis, setDiagnosis] = useState<boolean>(caseSheetEdit);
@@ -269,11 +269,12 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      {items.map((item) => (
+      {items.map((item, index) => (
         <ExpansionPanel
           expanded={item.state}
           onChange={handlePanelExpansion(item.key)}
           className={classes.panelRoot}
+          key={index}
         >
           <ExpansionPanelSummary
             classes={{ root: classes.panelHeader, expanded: classes.panelExpanded }}
