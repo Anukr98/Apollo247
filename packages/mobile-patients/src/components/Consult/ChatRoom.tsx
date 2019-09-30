@@ -1436,9 +1436,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <View
         style={{
           backgroundColor: 'transparent',
+          width: rowData.message !== null ? 282 : 0,
           borderRadius: 10,
           marginVertical: 2,
-          alignSelf: 'flex-start',
+          // alignSelf: 'flex-start',
         }}
       >
         {leftComponent === 1 && (
@@ -1472,7 +1473,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             )}
           </View>
         )}
-        {/* <View>
+        <View>
           {rowData.message === imageconsult ? (
             <TouchableOpacity
               activeOpacity={0.5}
@@ -1503,7 +1504,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
               </View>
             </TouchableOpacity>
-          ) : ( */}
+          ) : (
             <View
               style={{
                 backgroundColor: 'white',
@@ -1523,8 +1524,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 {rowData.message}
               </Text>
             </View>
-          {/* )}
-        </View> */}
+          )}
+        </View>
       </View>
     );
   };
@@ -1915,11 +1916,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const checkIfReschduleApi = (rowData: any, Value: string) => {
     setLoading(true);
-    const slotTime =
+    checkIfRescheduleAppointment(
+      client,
+      rowData.transferInfo.appointmentId,
       Value === 'Followup'
         ? rowData.transferInfo.folloupDateTime
-        : rowData.transferInfo.transferDateTime;
-    checkIfRescheduleAppointment(client, rowData.transferInfo.appointmentId, slotTime)
+        : rowData.transferInfo.transferDateTime
+    )
       .then((_data: any) => {
         setLoading(false);
         try {
@@ -2984,7 +2987,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={{
                   width: 40,
                   height: 40,
-                  marginTop: 10,
+                  marginTop: 9,
                   marginLeft: 5,
                 }}
                 onPress={async () => {
