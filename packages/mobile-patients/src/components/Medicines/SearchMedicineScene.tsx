@@ -406,7 +406,10 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             styles.searchValueStyle,
             isNoMedicinesFound ? { borderBottomColor: '#e50000' } : {},
           ]}
-          textInputprops={isNoMedicinesFound ? { selectionColor: '#e50000' } : {}}
+          textInputprops={{
+            ...(isNoMedicinesFound ? { selectionColor: '#e50000' } : {}),
+            autoFocus: true,
+          }}
           value={searchText}
           placeholder="Enter name of the medicine"
           underlineColorAndroid="transparent"
@@ -613,7 +616,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         {renderHeader()}
         {renderSearchInput()}
       </View>
-      {renderDeliveryPinCode()}
+      {/* {renderDeliveryPinCode()} */}
       {showMatchingMedicines ? renderMatchingMedicines() : renderPastSearches()}
     </SafeAreaView>
   );
