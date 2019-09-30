@@ -21,6 +21,12 @@ import { Link } from 'react-router-dom';
 import { STATUS, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
 import { CircularProgress } from '@material-ui/core';
 import _uniqueId from 'lodash/uniqueId';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
 
 export interface Appointment {
   id: string;
@@ -288,6 +294,10 @@ const useStyles = makeStyles((theme: Theme) =>
       left: 21,
       top: 2,
     },
+    popoverTile: {
+      color: '#fcb716',
+      fontWeight: 500,
+    },
   })
 );
 
@@ -313,6 +323,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
   const stepsCompleted = getActiveStep(appointments);
   const [activeStep, setActiveStep] = useState<number>(stepsCompleted < 0 ? 0 : stepsCompleted);
   const [loading, isLoading] = useState<boolean>(loadingData);
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const upcomingElement = useRef(null);
 
@@ -379,7 +390,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
     );
   }
 
-  if (appointments && appointments.length) {
+  if (appointments && appointments.length && !isDialogOpen) {
     return (
       <div>
         <Stepper
@@ -396,18 +407,101 @@ export const Appointments: React.FC<AppointmentsProps> = ({
         >
           {appointments.map((appointment, idx) => {
             // return appointment.caseSheet.length > 0 ? (
+            const appointmentCard = (
+              <Card
+                className={classes.card}
+                ref={activeStep === idx ? upcomingElement : null}
+                classes={{
+                  root: 'cardRow',
+                }}
+              >
+                <CardContent>
+                  <Grid item xs={12}>
+                    <Grid item container spacing={2}>
+                      <Grid item lg={5} sm={5} xs={12} key={1} container>
+                        <Grid sm={3} xs={2} key={5} item>
+                          <Avatar
+                            alt={appointment.details.patientName}
+                            src={appointment.details.avatar}
+                            className={classes.bigAvatar}
+                          />
+                        </Grid>
+                        <Grid sm={9} xs={10} key={6} item className={classes.valign}>
+                          <div className={classes.section2}>
+                            {appointment.isNew && (
+                              <Typography
+                                gutterBottom
+                                variant="caption"
+                                className={classes.newAppointment}
+                              >
+                                New
+                              </Typography>
+                            )}
+                            <Typography
+                              gutterBottom
+                              variant="body1"
+                              className={classes.mainHeading}
+                            >
+                              {appointment.details.patientName}
+                            </Typography>
+                          </div>
+                        </Grid>
+                      </Grid>
+                      {!!appointment.details.checkups &&
+                      !!appointment.details.checkups.symptoms &&
+                      !!appointment.details.checkups.symptoms.length ? (
+                        <Grid lg={5} sm={5} xs={8} key={2} item className={classes.valign}>
+                          <div className={classes.section1}>
+                            {(appointment.details.checkups.symptoms.length > 2
+                              ? appointment.details.checkups.symptoms.slice(0, 2)
+                              : appointment.details.checkups.symptoms
+                            ).map((checkup: any, idx: any) => (
+                              <Chip
+                                key={_uniqueId('chkup_')}
+                                className={classes.chip}
+                                label={checkup.symptom.toUpperCase()}
+                              />
+                            ))}
+                            {appointment.details.checkups.symptoms.length > 2 &&
+                              getSymptomTooltip(appointment, appointment.details.checkups.symptoms)}
+                          </div>
+                        </Grid>
+                      ) : (
+                        <Grid lg={5} sm={5} xs={8} key={2} item className={classes.valign}>
+                          <div className={classes.section1}>
+                            <Typography
+                              gutterBottom
+                              variant="caption"
+                              className={classes.bold}
+                            ></Typography>
+                          </div>
+                        </Grid>
+                      )}
+                      <Grid lg={2} sm={2} xs={3} key={3} className={classes.valign} item>
+                        <div className={`${classes.section2} ${classes.videoIcomm}`}>
+                          <IconButton aria-label="Video call">
+                            {appointment.type === APPOINTMENT_TYPE.ONLINE ? (
+                              <img src={require('images/ic_video.svg')} alt="" />
+                            ) : (
+                              <img src={require('images/ic_physical_consult.svg')} alt="" />
+                            )}
+                          </IconButton>
+                          <IconButton aria-label="Navigate next">
+                            <NavigateNextIcon />
+                          </IconButton>
+                        </div>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+              </Card>
+            );
+
             return (
               <Step
                 key={_uniqueId('apt_')}
                 active={true}
                 className={
-                  // appointment.status === STATUS.NO_SHOW
-                  //   ? classes.missing
-                  //   : appointment.status === STATUS.COMPLETED
-                  //   ? ''
-                  //   : activeStep === idx
-                  //   ? 'upcoming'
-                  //   : ''
                   appointment.startTime > new Date().getTime() && !upcomingNextRendered
                     ? classes.upcoming
                     : getAppointmentStatusClass(appointment.status)
@@ -453,131 +547,20 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                 >
                   <div>
                     {appointment!.caseSheet &&
-                      appointment!.caseSheet !== null &&
-                      appointment!.caseSheet.length > 0 && (
-                        <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}/0`}>
-                          <Card
-                            className={classes.card}
-                            ref={activeStep === idx ? upcomingElement : null}
-                            classes={{
-                              root: 'cardRow',
-                            }}
-                          >
-                            <CardContent>
-                              <Grid item xs={12}>
-                                <Grid item container spacing={2}>
-                                  <Grid item lg={5} sm={5} xs={12} key={1} container>
-                                    <Grid sm={3} xs={2} key={5} item>
-                                      <Avatar
-                                        alt={appointment.details.patientName}
-                                        src={appointment.details.avatar}
-                                        className={classes.bigAvatar}
-                                      />
-                                    </Grid>
-                                    <Grid sm={9} xs={10} key={6} item className={classes.valign}>
-                                      <div className={classes.section2}>
-                                        {appointment.isNew && (
-                                          <Typography
-                                            gutterBottom
-                                            variant="caption"
-                                            className={classes.newAppointment}
-                                          >
-                                            New
-                                          </Typography>
-                                        )}
-                                        <Typography
-                                          gutterBottom
-                                          variant="body1"
-                                          className={classes.mainHeading}
-                                        >
-                                          {appointment.details.patientName}
-                                        </Typography>
-                                      </div>
-                                    </Grid>
-                                  </Grid>
-                                  {!!appointment.details.checkups &&
-                                  !!appointment.details.checkups.symptoms &&
-                                  !!appointment.details.checkups.symptoms.length ? (
-                                    <Grid
-                                      lg={5}
-                                      sm={5}
-                                      xs={8}
-                                      key={2}
-                                      item
-                                      className={classes.valign}
-                                    >
-                                      <div className={classes.section1}>
-                                        {(appointment.details.checkups.symptoms.length > 2
-                                          ? appointment.details.checkups.symptoms.slice(0, 2)
-                                          : appointment.details.checkups.symptoms
-                                        ).map((checkup: any, idx: any) => (
-                                          <Chip
-                                            key={_uniqueId('chkup_')}
-                                            className={classes.chip}
-                                            label={checkup.symptom.toUpperCase()}
-                                          />
-                                        ))}
-                                        {appointment.details.checkups.symptoms.length > 2 &&
-                                          getSymptomTooltip(
-                                            appointment,
-                                            appointment.details.checkups.symptoms
-                                          )}
-                                      </div>
-                                    </Grid>
-                                  ) : (
-                                    <Grid
-                                      lg={5}
-                                      sm={5}
-                                      xs={8}
-                                      key={2}
-                                      item
-                                      className={classes.valign}
-                                    >
-                                      <div className={classes.section1}>
-                                        <Typography
-                                          gutterBottom
-                                          variant="caption"
-                                          className={classes.bold}
-                                        ></Typography>
-                                      </div>
-                                    </Grid>
-                                  )}
-                                  <Grid
-                                    lg={2}
-                                    sm={2}
-                                    xs={3}
-                                    key={3}
-                                    className={classes.valign}
-                                    item
-                                  >
-                                    <div className={`${classes.section2} ${classes.videoIcomm}`}>
-                                      <IconButton aria-label="Video call">
-                                        {appointment.type === APPOINTMENT_TYPE.ONLINE ? (
-                                          <img src={require('images/ic_video.svg')} alt="" />
-                                        ) : (
-                                          <img
-                                            src={require('images/ic_physical_consult.svg')}
-                                            alt=""
-                                          />
-                                        )}
-                                      </IconButton>
-                                      {/* {appointment!.caseSheet &&
-                                appointment!.caseSheet !== null &&
-                                appointment!.caseSheet.length > 0 && (
-                                  <Link
-                                    to={`/consulttabs/${appointment.id}/${appointment.patientId}`}
-                                  > */}
-                                      <IconButton aria-label="Navigate next">
-                                        <NavigateNextIcon />
-                                      </IconButton>
-                                    </div>
-                                  </Grid>
-                                </Grid>
-                              </Grid>
-                            </CardContent>
-                          </Card>
-                        </Link>
-                      )}
+                    appointment!.caseSheet !== null &&
+                    appointment!.caseSheet.length > 0 ? (
+                      <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}/0`}>
+                        {appointmentCard}
+                      </Link>
+                    ) : (
+                      <div
+                        onClick={() => {
+                          setIsDialogOpen(true);
+                        }}
+                      >
+                        {appointmentCard}
+                      </div>
+                    )}
                   </div>
                 </StepContent>
               </Step>
@@ -589,7 +572,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
       </div>
     );
   }
-
+  console.log(isDialogOpen);
   return (
     <div className={classes.calendarContent}>
       <div className={classes.noContent}>
@@ -599,6 +582,32 @@ export const Appointments: React.FC<AppointmentsProps> = ({
         No consults scheduled
         {isToday(selectedDate) ? ' today' : ` for ${format(selectedDate, 'MMM, dd')}`}!
       </div>
+
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle className={classes.popoverTile}>Apollo 24x7</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            You are not permitted to start Consult as there is no Casesheet created by Junior
+            Doctor.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsDialogOpen(false);
+            }}
+            autoFocus
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
