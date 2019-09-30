@@ -9,6 +9,8 @@ import { format, addMinutes, addDays } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+import { Connection } from 'typeorm';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   type FilterDoctorsResult {
@@ -77,6 +79,13 @@ export type ConsultModeAvailability = {
 export type DateAvailability = { [index: string]: ConsultModeAvailability };
 export type DoctorAvailability = { [index: string]: DateAvailability };
 export type AppointmentDateTime = { startDateTime: Date; endDateTime: Date };
+
+export type SlotAvailability = {
+  doctorId: string;
+  availableSlot: string;
+  physicalAvailableSlot: string;
+  currentDateTime: Date;
+};
 
 const getDoctorsBySpecialtyAndFilters: Resolver<
   null,
@@ -241,11 +250,100 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     });
   });
 
+  //logic to sort based on next availability time
+  const finalDoctorIds = finalDoctorsList.map((doctor) => {
+    return doctor.id;
+  });
+
+  const doctorNextAvailSlots = await getDoctorNextAvailableSlot(
+    finalDoctorIds,
+    doctorsDb,
+    consultsDb
+  );
+  console.log('----------------------------------------------------------');
+  console.log('doctor next avail slots: ', doctorNextAvailSlots);
+
   return {
     doctors: finalDoctorsList,
     doctorsAvailability: doctorsConsultModeAvailability,
     specialty: specialtyDetails,
   };
+};
+
+const getDoctorNextAvailableSlot = async (
+  doctorIds: string[],
+  doctorsDb: Connection,
+  consultsDb: Connection
+) => {
+  const appts = consultsDb.getCustomRepository(AppointmentRepository);
+  //const weekDay = format(new Date(), 'EEEE').toUpperCase();
+  const doctorAvailalbeSlots: SlotAvailability[] = [];
+  function slots(doctorId: string) {
+    return new Promise<SlotAvailability>(async (resolve) => {
+      let availableSlot: string = '';
+      let physicalAvailableSlot: string = '';
+
+      const docConsultRep = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+      const docConsultHrsOnline = await docConsultRep.checkByDoctorAndConsultMode(
+        doctorId,
+        'ONLINE'
+      );
+      const docConsultHrsPhysical = await docConsultRep.checkByDoctorAndConsultMode(
+        doctorId,
+        'PHYSICAL'
+      );
+      if (docConsultHrsOnline > 0) {
+        //if the slot is empty check for next day
+        let nextDate = new Date();
+        while (true) {
+          const nextSlot = await appts.getDoctorNextSlotDate(
+            doctorId,
+            nextDate,
+            doctorsDb,
+            'ONLINE'
+          );
+          if (nextSlot != '' && nextSlot != undefined) {
+            availableSlot = nextSlot;
+            break;
+          }
+          nextDate = addDays(nextDate, 1);
+        }
+      }
+
+      if (docConsultHrsPhysical > 0) {
+        //if the slot is empty check for next day
+        let nextDate = new Date();
+        while (true) {
+          const nextSlot = await appts.getDoctorNextSlotDate(
+            doctorId,
+            nextDate,
+            doctorsDb,
+            'PHYSICAL'
+          );
+          if (nextSlot != '' && nextSlot != undefined) {
+            physicalAvailableSlot = nextSlot;
+            break;
+          }
+          nextDate = addDays(nextDate, 1);
+        }
+      }
+
+      const doctorSlot: SlotAvailability = {
+        doctorId,
+        availableSlot,
+        physicalAvailableSlot,
+        currentDateTime: new Date(),
+      };
+      doctorAvailalbeSlots.push(doctorSlot);
+      resolve(doctorSlot);
+    });
+  }
+  const promises: object[] = [];
+  doctorIds.map(async (doctorId) => {
+    promises.push(slots(doctorId));
+  });
+  await Promise.all(promises);
+  return { doctorAvailalbeSlots };
 };
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefsResolvers = {
