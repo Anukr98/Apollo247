@@ -178,6 +178,16 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         setshowOfflinePopup(true);
       }
     });
+
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      console.log('didFocus');
+      setshowSpinner(true);
+      fetchSpecialityFilterData();
+    });
+
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+    };
   }, []);
 
   const fetchNextSlots = (doctorIds: (string | null)[]) => {
@@ -202,11 +212,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
   };
 
-  const fetchSpecialityFilterData = (FilterData: filterDataType[]) => {
-    console.log('FilterData1111111', FilterData);
+  const fetchSpecialityFilterData = (SearchData: filterDataType[] = FilterData) => {
+    console.log('FilterData1111111', SearchData);
     const experienceArray: Range[] = [];
-    if (FilterData[1].selectedOptions && FilterData[1].selectedOptions.length > 0)
-      FilterData[1].selectedOptions.forEach((element: string) => {
+    if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
+      SearchData[1].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         let object: Range | null = {};
         if (splitArray.length > 0)
@@ -220,8 +230,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
 
     const feesArray: Range[] = [];
-    if (FilterData[3].selectedOptions && FilterData[3].selectedOptions.length > 0)
-      FilterData[3].selectedOptions.forEach((element: string) => {
+    if (SearchData[3].selectedOptions && SearchData[3].selectedOptions.length > 0)
+      SearchData[3].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         console.log(splitArray, 'splitArray');
         let object: Range | null = {};
@@ -239,9 +249,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     let availableNow = {};
     const availabilityArray: string[] = [];
     const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-    console.log('moment', moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'));
-    if (FilterData[2].selectedOptions && FilterData[2].selectedOptions.length > 0)
-      FilterData[2].selectedOptions.forEach((element: string) => {
+    if (SearchData[2].selectedOptions && SearchData[2].selectedOptions.length > 0)
+      SearchData[2].selectedOptions.forEach((element: string) => {
         if (element === 'Now') {
           availableNow = {
             availableNow: moment(new Date())
@@ -280,14 +289,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const FilterInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
       specialty: props.navigation.state.params ? props.navigation.state.params!.specialityId : '',
-      city: FilterData[0].selectedOptions,
+      city: SearchData[0].selectedOptions,
       experience: experienceArray,
       availability: availabilityArray,
       fees: feesArray,
-      gender: FilterData[4].selectedOptions,
-      language: FilterData[5].selectedOptions,
+      gender: SearchData[4].selectedOptions,
+      language: SearchData[5].selectedOptions,
       ...availableNow,
     };
+    console.log(FilterInput, 'FilterInput');
 
     client
       .query<getDoctorsBySpecialtyAndFilters>({
@@ -755,8 +765,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
     }
   };
-
-  console.log(FilterData, 'FilterData', showSpinner, 'displayFilter', displayFilter);
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>

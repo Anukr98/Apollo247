@@ -10,19 +10,28 @@ import {
   NightUnselected,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  NEXT_AVAILABLE_SLOT,
+  GET_AVAILABLE_SLOTS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
-import { timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  timeTo12HrFormat,
+  nextAvailability,
+  getNetStatus,
+  divideSlots,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Text, View } from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
+import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -61,7 +70,7 @@ type TimeArray = {
 
 export interface ConsultOnlineProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
-  timeArray: TimeArray;
+  // timeArray: TimeArray;
   date: Date;
   setDate: (arg0: Date) => void;
   setNextAvailableSlot: (arg0: string) => void;
@@ -72,8 +81,11 @@ export interface ConsultOnlineProps {
   availableInMin: Number;
   setselectedTimeSlot: (arg0: string) => void;
   selectedTimeSlot: string;
-  setshowSpinner?: (arg0: boolean) => void;
+  setshowSpinner: (arg0: boolean) => void;
   availableSlots?: [];
+  SelectedSlotTitle?: string;
+  scrollToSlots: (top?: number) => void;
+  setshowOfflinePopup: (arg0: boolean) => void;
 }
 export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const timings = [
@@ -99,8 +111,16 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     },
   ];
   const onlineCTA = ['Consult Now', 'Schedule For Later'];
+  const [timeArray, settimeArray] = useState<TimeArray>([
+    { label: 'Morning', time: [] },
+    { label: 'Afternoon', time: [] },
+    { label: 'Evening', time: [] },
+    { label: 'Night', time: [] },
+  ]);
 
-  const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
+  const [selectedtiming, setselectedtiming] = useState<string>(
+    props.SelectedSlotTitle ? props.SelectedSlotTitle : timings[0].title
+  );
   const [selectedCTA, setselectedCTA] = useState<string>(onlineCTA[0]);
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
 
@@ -114,6 +134,76 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     }
     checkAvailabilitySlot();
   }, [props.date, date]);
+
+  // useEffect(() => {
+  //   if (props.SelectedSlotTitle && selectedtiming !== props.SelectedSlotTitle) {
+  //     setselectedtiming(props.SelectedSlotTitle);
+  //   }
+  // }, [props.SelectedSlotTitle]);
+
+  // useEffect(() => {
+  //   fetchSlots(date);
+  // }, []);
+
+  const setTimeArrayData = async (availableSlots: string[], date: Date) => {
+    console.log(availableSlots, 'setTimeArrayData availableSlots');
+    setselectedtiming(timeArray[0].label);
+
+    const array = await divideSlots(availableSlots, date);
+    console.log(array, 'array', timeArray, 'timeArray.......');
+    if (array !== timeArray) settimeArray(array);
+    for (const i in array) {
+      if (array[i].time.length > 0) {
+        // setSelectedSlotTitle(array[i].label);
+        setselectedtiming(array[i].label);
+        props.setselectedTimeSlot(array[i].time[0]);
+        props.scrollToSlots();
+        break;
+      }
+    }
+  };
+
+  const fetchSlots = (selectedDate: Date = date) => {
+    console.log('fetchSlots', selectedDate);
+
+    getNetStatus().then((status) => {
+      if (status) {
+        props.setshowSpinner(true);
+        const availableDate = Moment(selectedDate).format('YYYY-MM-DD');
+        client
+          .query<getDoctorAvailableSlots>({
+            query: GET_AVAILABLE_SLOTS,
+            fetchPolicy: 'no-cache',
+            variables: {
+              DoctorAvailabilityInput: {
+                availableDate: availableDate,
+                doctorId: props.doctor ? props.doctor.id : '',
+              },
+            },
+          })
+          .then(({ data }) => {
+            try {
+              console.log(data, 'availableSlots', availableDate);
+              if (
+                data &&
+                data.getDoctorAvailableSlots &&
+                data.getDoctorAvailableSlots.availableSlots
+              ) {
+                props.setshowSpinner(false);
+                setTimeArrayData(data.getDoctorAvailableSlots.availableSlots, selectedDate);
+              }
+            } catch {}
+          })
+          .catch((e: string) => {
+            props.setshowSpinner(false);
+            console.log('Error occured', e);
+          });
+      } else {
+        props.setshowSpinner(false);
+        props.setshowOfflinePopup(true);
+      }
+    });
+  };
 
   const todayDate = new Date().toISOString().slice(0, 10);
 
@@ -162,8 +252,10 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             if (timeDiff > 60) {
               setselectedCTA(onlineCTA[1]);
             }
-            setDate(new Date(nextSlot));
-            props.setDate(new Date(nextSlot));
+            setDate(date2);
+            props.setDate(date2);
+            console.log(nextAvailability(nextSlot), 'nextAvailability'); //next slot
+            fetchSlots(date2);
           }
         } catch {}
       })
@@ -174,7 +266,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   };
 
   const renderTimings = () => {
-    console.log(props.timeArray, 'timeArray123456789', selectedtiming);
+    console.log(timeArray, 'timeArray123456789', selectedtiming);
     return (
       <View>
         <TabsComponent
@@ -191,8 +283,8 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
           showIcons={true}
         />
         <View style={styles.optionsView}>
-          {props.timeArray && props.timeArray.length > 0
-            ? props.timeArray.map((value) => {
+          {timeArray && timeArray.length > 0
+            ? timeArray.map((value) => {
                 if (value.label === selectedtiming) {
                   if (value.time.length > 0) {
                     return value.time.map((name: string, index: number) => (
@@ -250,6 +342,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
           //   props.setshowSpinner(true);
           props.setDate(selectedDate);
           props.setselectedTimeSlot('');
+          fetchSlots(selectedDate);
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {
@@ -260,7 +353,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     );
   };
 
-  console.log(date, 'date online');
+  console.log(date, 'date online', props.SelectedSlotTitle, 'SelectedSlotTitle', selectedtiming);
   return (
     <View>
       <View
@@ -280,10 +373,11 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               ...theme.fonts.IBMPlexSansMedium(14),
             }}
           >
-            {`${props.doctor ? `Dr. ${props.doctor.firstName}` : 'Doctor'} is available ${
+            {`${props.doctor ? `Dr. ${props.doctor.firstName}` : 'Doctor'} is ${
               availableInMin <= 60 && availableInMin > 0
-                ? `in ${availableInMin} min${availableInMin == 1 ? '' : 's'}`
-                : `on ${Moment(new Date(NextAvailableSlot), 'HH:mm:ss.SSSz').format(
+                ? `${nextAvailability(NextAvailableSlot)}`
+                : // ? `in ${availableInMin} min${availableInMin == 1 ? '' : 's'}`
+                  `on ${Moment(new Date(NextAvailableSlot), 'HH:mm:ss.SSSz').format(
                     'DD MMM, h:mm a'
                   )}`
             }!\nWould you like to consult now or schedule for later?`}
@@ -309,7 +403,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             onPress={() => {
               setselectedCTA(onlineCTA[0]);
               props.setisConsultOnline(true);
-              props.setselectedTimeSlot('');
+              // props.setselectedTimeSlot('');
             }}
           />
           <View style={{ width: 16 }} />
@@ -328,9 +422,11 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               selectedCTA === onlineCTA[1] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
+              fetchSlots();
               setselectedCTA(onlineCTA[1]);
               props.setisConsultOnline(false);
-              props.setselectedTimeSlot('');
+              props.scrollToSlots && props.scrollToSlots();
+              // props.setselectedTimeSlot('');
             }}
           />
         </View>

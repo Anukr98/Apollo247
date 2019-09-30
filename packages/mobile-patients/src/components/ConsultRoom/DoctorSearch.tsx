@@ -173,64 +173,67 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const fetchSearchData = (searchTextString: string = searchText) => {
-    setisSearching(true);
-    client
-      .query<SearchDoctorAndSpecialtyByName>({
-        query: SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
-        fetchPolicy: 'no-cache',
-        variables: {
-          searchText: searchTextString,
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-      })
-      .then(({ data }) => {
-        try {
-          console.log('searchText', searchText, searchTextString, data);
-          const searchData =
-            data && data.SearchDoctorAndSpecialtyByName
-              ? data.SearchDoctorAndSpecialtyByName
-              : null;
-          if (searchData) {
-            if (searchData.doctors) {
-              doctorIds = getIds(searchData.doctors);
-              // searchData.doctors
-              //   ? searchData.doctors.map((item) => {
-              //       if (item) return item.id;
-              //     })
-              //   : [];
-              setdoctorsList(searchData.doctors);
+    if (searchTextString.length > 2) {
+      console.log(searchTextString, 'searchTextString');
+      setisSearching(true);
+      client
+        .query<SearchDoctorAndSpecialtyByName>({
+          query: SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
+          fetchPolicy: 'no-cache',
+          variables: {
+            searchText: searchTextString,
+            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+          },
+        })
+        .then(({ data }) => {
+          try {
+            console.log('searchText', searchText, searchTextString, data);
+            const searchData =
+              data && data.SearchDoctorAndSpecialtyByName
+                ? data.SearchDoctorAndSpecialtyByName
+                : null;
+            if (searchData) {
+              if (searchData.doctors) {
+                doctorIds = getIds(searchData.doctors);
+                // searchData.doctors
+                //   ? searchData.doctors.map((item) => {
+                //       if (item) return item.id;
+                //     })
+                //   : [];
+                setdoctorsList(searchData.doctors);
+              }
+              if (searchData.possibleMatches) {
+                const ids = getIds(searchData.possibleMatches.doctors);
+                // searchData.possibleMatches.doctors
+                //   ? searchData.possibleMatches.doctors.map((item) => {
+                //       if (item) return item.id;
+                //     })
+                //   : [];
+                doctorIds.push(...ids);
+                setpossibleMatches(searchData.possibleMatches);
+              }
+              if (searchData.specialties) {
+                setsearchSpecialities(searchData.specialties);
+              }
+              if (searchData.otherDoctors) {
+                const ids = getIds(searchData.otherDoctors);
+                // searchData.otherDoctors
+                //   ? searchData.otherDoctors.map((item) => {
+                //       if (item) return item.id;
+                //     })
+                //   : [];
+                doctorIds.push(...ids);
+                setotherDoctors(searchData.otherDoctors);
+              }
+              doctorIds.length > 0 ? fetchNextSlots(doctorIds) : setshowSpinner(false);
             }
-            if (searchData.possibleMatches) {
-              const ids = getIds(searchData.possibleMatches.doctors);
-              // searchData.possibleMatches.doctors
-              //   ? searchData.possibleMatches.doctors.map((item) => {
-              //       if (item) return item.id;
-              //     })
-              //   : [];
-              doctorIds.push(...ids);
-              setpossibleMatches(searchData.possibleMatches);
-            }
-            if (searchData.specialties) {
-              setsearchSpecialities(searchData.specialties);
-            }
-            if (searchData.otherDoctors) {
-              const ids = getIds(searchData.otherDoctors);
-              // searchData.otherDoctors
-              //   ? searchData.otherDoctors.map((item) => {
-              //       if (item) return item.id;
-              //     })
-              //   : [];
-              doctorIds.push(...ids);
-              setotherDoctors(searchData.otherDoctors);
-            }
-            doctorIds.length > 0 ? fetchNextSlots(doctorIds) : setshowSpinner(false);
-          }
-          setisSearching(false);
-        } catch {}
-      })
-      .catch((e: string) => {
-        console.log('Error occured while searching Doctor', e);
-      });
+            setisSearching(false);
+          } catch {}
+        })
+        .catch((e: string) => {
+          console.log('Error occured while searching Doctor', e);
+        });
+    }
   };
 
   const fetchSpecialities = () => {
@@ -277,7 +280,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       .finally(() => {
         console.log('finally');
         fetchSpecialities();
-        !!searchText && fetchSearchData(searchText);
+        !!searchText && fetchSearchData();
       });
   };
 
@@ -292,7 +295,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     });
 
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      console.log('didFocus searchText', !!searchText, searchText);
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
+      !!searchText && fetchSearchData();
     });
 
     const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
@@ -303,7 +308,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
     };
-  }, []);
+  }, [searchText]);
 
   const backDataFunctionality = async () => {
     console.log('backDataFunctionality hardwareBackPress');
@@ -359,9 +364,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             onChangeText={(value) => {
               setSearchText(value);
               if (value.length > 2) {
-                fetchSearchData(value);
+                // fetchSearchData(value);
                 // setDoctorName(true);
                 setdisplaySpeialist(true);
+                setisSearching(true);
               } else {
                 setdisplaySpeialist(false);
               }
@@ -738,6 +744,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       );
     return null;
   };
+
+  console.log('render searchText', searchText, searchText);
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>

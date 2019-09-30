@@ -28,6 +28,8 @@ import { NavigationScreenProps } from 'react-navigation';
 import { theme } from '../../theme/theme';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
+import { nextAvailability } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -284,13 +286,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
       >
         <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
-            {props.displayButton && availableInMin !== undefined ? (
+            <AvailabilityCapsule availableTime={availableTime} styles={styles.availableView} />
+            {/* {props.displayButton && 
+            availableInMin !== undefined ? (
               <CapsuleView
-                title={availabilityText()}
+                upperCase
+                title={nextAvailability(availableTime)}
                 style={styles.availableView}
                 isActive={Number(availableInMin) > 15 || availableInMin < 0 ? false : true}
               />
-            ) : null}
+            ) : null} */}
             <View style={styles.imageView}>
               {/* {rowData.image} */}
               {rowData.photoUrl &&
@@ -328,7 +333,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 onPress={() =>
                   availableInMin && availableInMin < 60 && availableInMin > 0
                     ? navigateToDetails(rowData.id ? rowData.id : '', { showBookAppointment: true })
-                    : navigateToDetails(rowData.id ? rowData.id : '')
+                    : navigateToDetails(rowData.id ? rowData.id : '', { showBookAppointment: true })
                 }
               >
                 <Text style={styles.buttonText}>
