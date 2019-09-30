@@ -415,6 +415,9 @@ export class Facility extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true, type: 'text' })
+  imageUrl: string;
+
   @Column({ nullable: true })
   latitude: string;
 
