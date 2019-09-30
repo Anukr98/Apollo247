@@ -79,6 +79,7 @@ import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { Redirect } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -370,6 +371,7 @@ export const JDConsultRoom: React.FC = () => {
   const { patientId, appointmentId, queueId } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDiagnosisDialogOpen, setIsDiagnosisDialogOpen] = React.useState(false);
+  const [newCaseSheet, setNewCaseSheet] = React.useState<boolean>(false);
   // let showConsultButtons = false;
 
   const { currentPatient: currentDoctor, isSignedIn } = useAuth();
@@ -392,6 +394,18 @@ export const JDConsultRoom: React.FC = () => {
       appointmentId: appointmentId,
     },
   });
+
+  // if (newCaseSheet) {
+  //   return (
+  //     <Redirect
+  //       to={clientRoutes.JDConsultRoom({
+  //         appointmentId: appointmentId,
+  //         patientId: patientId,
+  //         queueId: queueId,
+  //       })}
+  //     />
+  //   );
+  // }
 
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
@@ -612,6 +626,11 @@ export const JDConsultRoom: React.FC = () => {
         .then((_data) => {
           setCasesheetInfo(_data.data);
           setError('');
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails &&
+          _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id
+            ? setCaseSheetId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id)
+            : '';
+          //setCaseSheetId(_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails.id);
           //TO DO. this must be altered later
           //in effiecient way of loading the data as api needs to be revamped based on the UI.
           _data!.data!.getJuniorDoctorCaseSheet!.patientDetails!.allergies
@@ -749,10 +768,14 @@ export const JDConsultRoom: React.FC = () => {
             setError('Creating Casesheet. Please wait....');
             mutationCreateJrdCaseSheet()
               .then((response) => {
-                console.log('jrd response', response);
+                window.location.href = clientRoutes.JDConsultRoom({
+                  appointmentId: appointmentId,
+                  patientId: patientId,
+                  queueId: queueId,
+                });
               })
               .catch((e: ApolloError) => {
-                console.log(e);
+                setError('Unable to load Consult.');
               });
           }
         })
@@ -842,7 +865,7 @@ export const JDConsultRoom: React.FC = () => {
       .then((_data: any) => {
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
-        setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
+        //setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
         setError('');
         setSaving(false);
       })
