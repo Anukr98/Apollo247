@@ -117,7 +117,8 @@ const SaveMedicineOrderPayment: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.findById(orderDetails.patient.id);
   let deliveryCity = 'Kakinada',
-    deliveryZipcode = '500045';
+    deliveryZipcode = '500045',
+    deliveryAddress = 'Kakinada';
   if (!patientDetails) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
@@ -127,6 +128,7 @@ const SaveMedicineOrderPayment: Resolver<
     if (!patientAddressDetails) {
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
     }
+    deliveryAddress = patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
     if (patientAddressDetails.city == '' || patientAddressDetails.city == null) {
       deliveryCity = 'Kakinada';
     } else {
@@ -194,8 +196,8 @@ const SaveMedicineOrderPayment: Resolver<
       OrderDate: new Date(),
       CustomerDetails: {
         MobileNo: patientDetails.mobileNumber.substr(3),
-        Comm_addr: deliveryCity,
-        Del_addr: deliveryCity,
+        Comm_addr: deliveryAddress,
+        Del_addr: deliveryAddress,
         FirstName: patientDetails.firstName,
         LastName: patientDetails.lastName,
         City: deliveryCity,

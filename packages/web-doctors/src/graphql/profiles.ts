@@ -161,6 +161,186 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+// export const CREATE_APPOINTMENT_SESSION = gql`
+//   mutation CreateAppointmentSession($createAppointmentSessionInput: CreateAppointmentSessionInput) {
+//     createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
+//       sessionId
+//       appointmentToken
+//       patientId
+//       doctorId
+//       appointmentDateTime
+//       caseSheetId
+//     }
+//   }
+// `;
+
+export const CREATE_CASESHEET_FOR_JRD = gql`
+  mutation CreateJuniorDoctorCaseSheet($appointmentId: String) {
+    createJuniorDoctorCaseSheet(appointmentId: $appointmentId) {
+      appointment {
+        id
+        appointmentDateTime
+        appointmentState
+        appointmentType
+        displayId
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        rescheduleCount
+      }
+      blobName
+      consultType
+      diagnosis {
+        name
+      }
+      diagnosticPrescription {
+        itemname
+      }
+      doctorId
+      doctorType
+      followUp
+      followUpAfterInDays
+      followUpDate
+      id
+      medicinePrescription {
+        medicineConsumptionDurationInDays
+        medicineDosage
+        medicineInstructions
+        medicineTimings
+        medicineToBeTaken
+        medicineName
+        id
+      }
+      notes
+      otherInstructions {
+        instruction
+      }
+      patientId
+      symptoms {
+        symptom
+        since
+        howOften
+        severity
+      }
+    }
+  }
+`;
+
+export const GET_CASESHEET_JRD = gql`
+  query GetJuniorDoctorCaseSheet($appointmentId: String) {
+    getJuniorDoctorCaseSheet(appointmentId: $appointmentId) {
+      caseSheetDetails {
+        id
+        doctorId
+        appointment {
+          id
+          appointmentDateTime
+          status
+          appointmentState
+          displayId
+        }
+        medicinePrescription {
+          id
+          medicineName
+          medicineDosage
+          medicineToBeTaken
+          medicineInstructions
+          medicineTimings
+          medicineConsumptionDurationInDays
+        }
+        otherInstructions {
+          instruction
+        }
+        symptoms {
+          symptom
+          since
+          howOften
+          severity
+        }
+        diagnosis {
+          name
+        }
+        diagnosticPrescription {
+          itemname
+        }
+        followUp
+        followUpDate
+        followUpAfterInDays
+        consultType
+        notes
+      }
+      patientDetails {
+        id
+        allergies
+        lifeStyle {
+          description
+        }
+        familyHistory {
+          description
+          relation
+        }
+        patientAddress {
+          city
+        }
+        dateOfBirth
+        emailAddress
+        firstName
+        lastName
+        gender
+        mobileNumber
+        uhid
+        photoUrl
+        relation
+        healthVault {
+          imageUrls
+          reportUrls
+        }
+      }
+      pastAppointments {
+        id
+        appointmentDateTime
+        appointmentState
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        caseSheet {
+          consultType
+          doctorType
+          diagnosis {
+            name
+          }
+          diagnosticPrescription {
+            itemname
+          }
+          symptoms {
+            symptom
+            since
+            howOften
+            severity
+          }
+          followUpDate
+          followUpAfterInDays
+          followUp
+          medicinePrescription {
+            medicineName
+            medicineTimings
+            medicineInstructions
+            medicineConsumptionDurationInDays
+          }
+          otherInstructions {
+            instruction
+          }
+        }
+      }
+      juniorDoctorNotes
+    }
+  }
+`;
+
 export const CREATE_APPOINTMENT_SESSION = gql`
   mutation CreateAppointmentSession($createAppointmentSessionInput: CreateAppointmentSessionInput) {
     createAppointmentSession(createAppointmentSessionInput: $createAppointmentSessionInput) {
@@ -169,10 +349,10 @@ export const CREATE_APPOINTMENT_SESSION = gql`
       patientId
       doctorId
       appointmentDateTime
-      caseSheetId
     }
   }
 `;
+
 export const GET_APPOINTMENT_DATA = gql`
   query GetAppointmentData($appointmentId: String!) {
     getAppointmentData(appointmentId: $appointmentId) {

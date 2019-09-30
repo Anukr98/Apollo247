@@ -3,8 +3,8 @@ import { List, ListItem, Avatar, IconButton, Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { format } from 'date-fns';
-import { CaseSheetContext } from 'context/CaseSheetContext';
-import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -131,13 +131,12 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 interface PastAppointmentProps {
-  data: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
+  data: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments[] | null;
   isChild: boolean;
 }
 
 const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
   const classes = useStyles();
-  const ischild: boolean = true;
   return (
     <List className={isChild ? classes.childListStyle : classes.listStyle}>
       {data &&
@@ -160,7 +159,7 @@ const PastAppointment: React.FC<PastAppointmentProps> = ({ data, isChild }) => {
 };
 
 interface AppointmentCardProps {
-  data: GetCaseSheet_getCaseSheet_pastAppointments;
+  data: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments;
 }
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
@@ -242,7 +241,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
-  const { healthVault, pastAppointments } = useContext(CaseSheetContext);
+  const { healthVault, pastAppointments } = useContext(CaseSheetContextJrd);
 
   return (
     <div className={classes.root}>

@@ -358,6 +358,9 @@ export class DoctorSpecialty extends BaseEntity {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
+  @Column({ nullable: true })
+  displayOrder: Number;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -411,6 +414,9 @@ export class Facility extends BaseEntity {
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ nullable: true, type: 'text' })
+  imageUrl: string;
 
   @Column({ nullable: true })
   latitude: string;

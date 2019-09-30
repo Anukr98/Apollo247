@@ -8,8 +8,7 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { fontWeight } from '@material-ui/system';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { addDays } from 'date-fns';
 
 const useStyles = makeStyles(() => ({
@@ -293,7 +292,7 @@ export const FollowUp: React.FC = () => {
     setFollowUpAfterInDays,
     followUpDate,
     setFollowUpDate,
-  } = useContext(CaseSheetContext);
+  } = useContext(CaseSheetContextJrd);
   const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(!!followUp[0]);
   const [followUpDays, setFollowUpDays] = useState<number>(
     parseInt(followUpAfterInDays[0], 10) || 2

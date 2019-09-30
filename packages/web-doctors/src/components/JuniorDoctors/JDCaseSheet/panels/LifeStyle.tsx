@@ -1,7 +1,7 @@
 import React, { Fragment, useContext } from 'react';
 import { Typography, List, ListItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -37,7 +37,7 @@ const useStyles = makeStyles(() => ({
 
 export const LifeStyle: React.FC = () => {
   const classes = useStyles();
-  const { loading, patientDetails } = useContext(CaseSheetContext);
+  const { loading, patientDetails } = useContext(CaseSheetContextJrd);
   return loading && !patientDetails ? (
     <div></div>
   ) : (
