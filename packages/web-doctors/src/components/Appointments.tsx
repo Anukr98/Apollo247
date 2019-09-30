@@ -572,7 +572,6 @@ export const Appointments: React.FC<AppointmentsProps> = ({
       </div>
     );
   }
-  console.log(isDialogOpen);
   return (
     <div className={classes.calendarContent}>
       <div className={classes.noContent}>
