@@ -127,7 +127,10 @@ const SavePrescriptionMedicineOrder: Resolver<
       throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
     }
     let deliveryCity = 'Kakinada',
-      deliveryZipcode = '500034';
+      deliveryZipcode = '500034',
+      deliveryAddress = 'Kakinada';
+
+    deliveryAddress = patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
     if (patientAddressDetails.city == '' || patientAddressDetails.city == null) {
       deliveryCity = 'Kakinada';
     } else {
@@ -173,8 +176,8 @@ const SavePrescriptionMedicineOrder: Resolver<
         OrderDate: new Date(),
         CustomerDetails: {
           MobileNo: patientDetails.mobileNumber.substr(3),
-          Comm_addr: deliveryCity,
-          Del_addr: deliveryCity,
+          Comm_addr: deliveryAddress,
+          Del_addr: deliveryAddress,
           FirstName: patientDetails.firstName,
           LastName: patientDetails.lastName,
           City: deliveryCity,
