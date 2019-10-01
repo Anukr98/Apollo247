@@ -56,8 +56,7 @@ const getDoctorAvailableSlots: Resolver<
         st = `${previousDate.toDateString()} ${timeSlot.startTime.toString()}`;
         consultStartTime = new Date(st);
       }
-      const slotsCount =
-        Math.ceil(Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
+      const slotsCount = (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
       const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
       //console.log(slotsCount, 'slots count');

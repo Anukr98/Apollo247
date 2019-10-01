@@ -15,7 +15,6 @@ export interface CreateAppointmentSession_createAppointmentSession {
   patientId: string;
   doctorId: string;
   appointmentDateTime: any;
-  caseSheetId: string | null;
 }
 
 export interface CreateAppointmentSession {

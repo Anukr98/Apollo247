@@ -7,7 +7,6 @@ import {
   APPOINTMENT_TYPE,
   APPOINTMENT_STATE,
   TRANSFER_INITIATED_TYPE,
-  CaseSheet,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -20,7 +19,6 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { addDays } from 'date-fns';
 import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
-import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 export const transferAppointmentTypeDefs = gql`
@@ -240,17 +238,6 @@ const bookTransferAppointment: Resolver<
     patientName: patientDetails.firstName + ' ' + patientDetails.lastName,
   };
   const appointment = await appointmentRepo.saveAppointment(appointmentAttrs);
-
-  // casesheet creation should be changed.
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheetAttrs: Partial<CaseSheet> = {
-    consultType: appointment.appointmentType,
-    doctorId: appointment.doctorId,
-    patientId: appointment.patientId,
-    appointment: appointment,
-  };
-  await caseSheetRepo.savecaseSheet(caseSheetAttrs);
-  ///////////
 
   //update initiate transfer to completed
   const transferApptRepo = consultsDb.getCustomRepository(TransferAppointmentRepository);

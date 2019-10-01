@@ -99,6 +99,57 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
+  displayId: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    color: theme.colors.SEARCH_EDUCATION_COLOR,
+    paddingBottom: 4,
+  },
+  doctorImage: {
+    width: 80,
+    height: 80,
+  },
+  reschduleButtonStyle: {
+    flex: 0.4,
+    marginLeft: 20,
+    marginRight: 8,
+    backgroundColor: 'white',
+  },
+  mainView: {
+    backgroundColor: theme.colors.CARD_BG,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    ...theme.viewStyles.shadowStyle,
+  },
+  startConsultText: { flex: 0.6, marginRight: 20, marginLeft: 8 },
+  viewStyles: {
+    ...theme.viewStyles.container,
+  },
+  indexValue: {
+    flex: 1,
+    zIndex: -1,
+  },
+  amountPaidStyles: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  cancelViewStyles: {
+    backgroundColor: 'white',
+    width: 100,
+    height: 45,
+    marginLeft: width - 120,
+    marginTop: 64,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...theme.viewStyles.shadowStyle,
+  },
+  cancelText: {
+    backgroundColor: 'white',
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansMedium(16),
+    textAlign: 'center',
+  },
+  cancelMainView: { margin: 0, height: height, width: width, backgroundColor: 'transparent' },
 });
 
 type rescheduleType = {
@@ -204,21 +255,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         console.log('Error occured while GetDoctorNextAvailableSlot', error);
       });
   };
-
-  // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-  //   fetchPolicy: 'no-cache',
-  //   variables: {
-  //     DoctorNextAvailableSlotInput: {
-  //       doctorIds: doctorDetails ? [doctorDetails.id] : [],
-  //       availableDate: todayDate,
-  //     },
-  //   },
-  // });
-  // if (availability.error) {
-  //   console.log('error', availability.error);
-  // } else {
-  //   console.log(availability.data!, 'availabilityData', 'availableSlots');
-  // }
 
   const cancelAppointmentApi = () => {
     const appointmentTransferInput = {
@@ -385,17 +421,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
   if (data.doctorInfo)
     return (
-      <View
-        style={{
-          ...theme.viewStyles.container,
-        }}
-      >
-        <SafeAreaView
-          style={{
-            flex: 1,
-            zIndex: -1,
-          }}
-        >
+      <View style={styles.viewStyles}>
+        <SafeAreaView style={styles.indexValue}>
           <Header
             title="UPCOMING ONLINE VISIT"
             leftIcon="backArrow"
@@ -410,29 +437,14 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             }
             onPressLeftIcon={() => props.navigation.goBack()}
           />
-          <View
-            style={{
-              backgroundColor: theme.colors.CARD_BG,
-              paddingTop: 20,
-              paddingHorizontal: 20,
-              ...theme.viewStyles.shadowStyle,
-            }}
-          >
+          <View style={styles.mainView}>
             <View
               style={{
                 flexDirection: 'row',
               }}
             >
               <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    ...theme.fonts.IBMPlexSansMedium(12),
-                    color: theme.colors.SEARCH_EDUCATION_COLOR,
-                    paddingBottom: 4,
-                  }}
-                >
-                  #{data.displayId}
-                </Text>
+                <Text style={styles.displayId}>#{data.displayId}</Text>
                 <View style={styles.separatorStyle} />
                 <Text style={styles.doctorNameStyle}>Dr. {data.doctorInfo.firstName}</Text>
                 <Text style={styles.timeStyle}>{appointmentTime}</Text>
@@ -442,12 +454,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   <Text style={theme.viewStyles.yellowTextStyle}>ORDER SUMMARY</Text>
                 </View>
                 <View style={styles.separatorStyle} />
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                  }}
-                >
+                <View style={styles.amountPaidStyles}>
                   <Text style={styles.descriptionStyle}>Amount Paid</Text>
                   <Text style={styles.descriptionStyle}>
                     {data.doctorInfo.onlineConsultationFees}
@@ -456,13 +463,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               </View>
               <View style={styles.imageView}>
                 {data.doctorInfo.photoUrl ? (
-                  <Image
-                    source={{ uri: data.doctorInfo.photoUrl }}
-                    style={{
-                      width: 80,
-                      height: 80,
-                    }}
-                  />
+                  <Image source={{ uri: data.doctorInfo.photoUrl }} style={styles.doctorImage} />
                 ) : null}
               </View>
             </View>
@@ -470,12 +471,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           <StickyBottomComponent defaultBG style={{ paddingHorizontal: 0 }}>
             <Button
               title={'RESCHEDULE'}
-              style={{
-                flex: 0.4,
-                marginLeft: 20,
-                marginRight: 8,
-                backgroundColor: 'white',
-              }}
+              style={styles.reschduleButtonStyle}
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
                 try {
@@ -486,7 +482,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
             <Button
               title={'START CONSULTATION'}
-              style={{ flex: 0.6, marginRight: 20, marginLeft: 8 }}
+              style={styles.startConsultText}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.ChatRoom, {
                   data: data,
@@ -541,38 +537,15 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 setCancelAppointment(false);
               }}
             >
-              <View
-                style={{ margin: 0, height: height, width: width, backgroundColor: 'transparent' }}
-              >
+              <View style={styles.cancelMainView}>
                 <TouchableOpacity
                   onPress={() => {
                     setShowCancelPopup(true);
                     setCancelAppointment(false);
                   }}
                 >
-                  <View
-                    style={{
-                      backgroundColor: 'white',
-                      width: 100,
-                      height: 45,
-                      marginLeft: width - 120,
-                      marginTop: 64,
-                      borderRadius: 10,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      ...theme.viewStyles.shadowStyle,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        backgroundColor: 'white',
-                        color: '#02475b',
-                        ...theme.fonts.IBMPlexSansMedium(16),
-                        textAlign: 'center',
-                      }}
-                    >
-                      Cancel
-                    </Text>
+                  <View style={styles.cancelViewStyles}>
+                    <Text style={styles.cancelText}>Cancel</Text>
                   </View>
                 </TouchableOpacity>
               </View>

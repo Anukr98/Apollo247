@@ -25,6 +25,7 @@ import {
   g,
   getOrderStatusText,
   handleGraphQlError,
+  aphConsole,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -75,31 +76,6 @@ const styles = StyleSheet.create({
   },
 });
 
-const _list = [
-  {
-    status: 'Order Placed',
-    date: '9 Aug 2019',
-    time: '12:00 pm',
-    isStatusDone: true,
-    nextItemStatus: 'DONE',
-  },
-  {
-    status: 'Order Verified',
-    date: '9 Aug 2019',
-    time: '12:00 pm',
-    isStatusDone: true,
-    nextItemStatus: 'NOT_DONE',
-  },
-  {
-    status: 'Order Verified',
-    date: '9 Aug 2019',
-    time: '12:00 pm',
-    isStatusDone: false,
-    nextItemStatus: 'NOT_EXIST',
-    description: 'To Be Delivered Within — 2hrs',
-  },
-] as any[];
-
 const cancelOptions: [string, string][] = [
   ['MCCR0036', 'Placed order by mistake'],
   ['MCCR0040', 'Higher discounts available on other app'],
@@ -134,7 +110,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -148,9 +123,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const order = g(data, 'getMedicineOrderDetails', 'MedicineOrderDetails');
   const orderDetails = (!loading && order) || {};
   const orderStatusList = (!loading && order && order.medicineOrdersStatus) || [];
-
-  // !loading && console.log({ orderDetails });
-  // !loading && error && console.error({ error });
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -398,7 +370,7 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
         },
       })
       .then(({ data }) => {
-        console.log({
+        aphConsole.log({
           s: data!.saveOrderCancelStatus!,
         });
         const setInitialSate = () => {

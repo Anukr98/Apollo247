@@ -8,7 +8,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
   findAll() {
     return this.createQueryBuilder('specialty')
-      .orderBy('specialty.name', 'ASC')
+      .orderBy('specialty.displayOrder', 'ASC')
       .getMany()
       .catch((getSpecialtiesError) => {
         throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, {
@@ -21,6 +21,7 @@ export class DoctorSpecialtyRepository extends Repository<DoctorSpecialty> {
       .where('LOWER(name) LIKE :searchString', {
         searchString: `${searchString}%`,
       })
+      .orderBy('specialty.displayOrder', 'ASC')
       .getMany()
       .catch((getSpecialtiesError) => {
         throw new AphError(AphErrorMessages.GET_SPECIALTIES_ERROR, undefined, {

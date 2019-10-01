@@ -1,10 +1,8 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  GET_CASESHEET_DETAILS,
-  GET_APPOINTMENT_DATA,
-  CHECK_IF_RESCHDULE,
   CHECK_IF_FOLLOWUP_BOOKED,
+  GET_CASESHEET_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getCaseSheet,
@@ -19,34 +17,30 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
   Image,
+  Linking,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  AsyncStorage,
 } from 'react-native';
+import RNFetchBlob from 'react-native-fetch-blob';
 import {
+  NavigationActions,
   NavigationScreenProps,
   ScrollView,
   StackActions,
-  NavigationActions,
 } from 'react-navigation';
-import { AppRoutes } from '../NavigatorContainer';
-import { ShoppingCartItem, useShoppingCart, EPrescription } from '../ShoppingCartProvider';
-import { Spinner } from '../ui/Spinner';
-import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
-import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
-import { getAppointmentData } from '../../graphql/types/getAppointmentData';
-
-import { ConsultOverlay } from '../ConsultRoom/ConsultOverlay';
-import {
-  checkIfReschedule,
-  checkIfRescheduleVariables,
-} from '../../graphql/types/checkIfReschedule';
 import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
 import { getMedicineDetailsApi } from '../../helpers/apiCalls';
+import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
 import { AppConfig } from '../../strings/AppConfig';
+import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
+import { AppRoutes } from '../NavigatorContainer';
+import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
+import { Download } from '../ui/Icons';
+import { Spinner } from '../ui/Spinner';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -110,6 +104,9 @@ export interface ConsultDetailsProps extends NavigationScreenProps {
   appointmentType: string;
   appointmentDate: any;
   DisplayId: any;
+  Displayoverlay: any;
+  isFollowcount: any;
+  BlobName: string;
 }
 
 type rescheduleType = {
@@ -121,10 +118,6 @@ type rescheduleType = {
 };
 
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
-  console.log('consulcasesheetid', props.navigation.state.params!.CaseSheet);
-  console.log('DoctorInfo', props.navigation.state.params!.DoctorInfo);
-  console.log('FollowUp', props.navigation.state.params!.FollowUp);
-  console.log('appointmentDate', props.navigation.state.params!.appointmentDate);
   const data = props.navigation.state.params!.DoctorInfo;
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
@@ -136,9 +129,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const [caseSheetDetails, setcaseSheetDetails] = useState<
     getCaseSheet_getCaseSheet_caseSheetDetails
   >();
-  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(
+    props.navigation.state.params!.Displayoverlay
+  );
   const [bookFollowUp, setBookFollowUp] = useState<boolean>(true);
-  const [isfollowcount, setIsfollowucount] = useState<number>(0);
+  const [isfollowcount, setIsfollowucount] = useState<number>(
+    props.navigation.state.params!.isFollowcount
+  );
   const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
 
   const { currentPatient } = useAllCurrentPatients();
@@ -146,7 +143,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -163,49 +159,17 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       })
       .then((_data) => {
         setLoading(false);
-        console.log('GET_CASESHEET_DETAILS', _data!);
-        console.log(_data.data.getCaseSheet!.caseSheetDetails!.blobName, 'blobname');
-        // console.log(
-        //   'isfollowupcasesheet',
-        //   _data!.data!.getCaseSheet!.caseSheetDetails!.isFollowUp!
-        // );
+        props.navigation.state.params!.DisplayId = _data.data.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
+
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
       })
       .catch((error) => {
         setLoading(false);
-        console.log(error, 'GET_CASESHEET_DETAILS error');
         const errorMessage = error && error.message;
         console.log('Error occured while GET_CASESHEET_DETAILS error', errorMessage, error);
         Alert.alert('Error', errorMessage);
       });
   }, []);
-  // const getData = useQuery<getCaseSheet>(GET_CASESHEET_DETAILS, {
-  //   fetchPolicy: 'no-cache',
-  //   variables: {
-  //     appointmentId: props.navigation.state.params!.CaseSheet,
-  //   },
-  // });
-  // console.log(getData, 'getData');
-
-  // if (getData.data) {
-  //   if (
-  //     getData &&
-  //     getData.data &&
-  //     getData.data.getCaseSheet &&
-  //     getData.data.getCaseSheet.caseSheetDetails &&
-  //     caseSheetDetails !== getData.data.getCaseSheet.caseSheetDetails
-  //   ) {
-  //     console.log(getData.data.getCaseSheet.caseSheetDetails, 'caseSheetDetails');
-  //     setcaseSheetDetails(getData.data.getCaseSheet.caseSheetDetails);
-  //   }
-  // } else {
-  //   console.log(getData.error, 'getData error');
-  //   console.log('Error occured while accept appid', getData.error);
-  //   const error = JSON.parse(JSON.stringify(getData.error));
-  //   const errorMessage = error && error.message;
-  //   console.log('Error occured while getData error', errorMessage, error);
-  //   Alert.alert('Error', errorMessage);
-  // }
 
   const renderDoctorDetails = () => {
     return (
@@ -284,9 +248,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderSymptoms = () => {
-    console.log('caseSheetDetails.symptoms.length', caseSheetDetails!.symptoms!);
-    console.log('bolbname', caseSheetDetails!.blobName!);
-    // if (caseSheetDetails && caseSheetDetails.symptoms && caseSheetDetails.symptoms.length > 0)
     return (
       <View
         style={{
@@ -328,11 +289,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const { setCartItems, cartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
 
   const onAddToCart = () => {
-    console.log('medicine', caseSheetDetails!.medicinePrescription);
-    console.log(
-      'blobName',
-      AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!)
-    );
     setLoading(true);
 
     const medPrescription = caseSheetDetails!.medicinePrescription || [];
@@ -340,8 +296,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
       .then((result) => {
-        console.log({ result });
-
         setLoading(false);
         const medicines = result
           .map(({ data: { productdp } }, index) => {
@@ -360,13 +314,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           })
           .filter((item) => (item ? true : false));
 
-        console.log({ medicines });
-
         const filteredItemsFromCart = cartItems.filter(
           (cartItem) => !medicines.find((item) => (item && item.id) == cartItem.id)
         );
-
-        console.log({ filteredItemsFromCart });
 
         setCartItems!([...filteredItemsFromCart, ...(medicines as ShoppingCartItem[])]);
 
@@ -378,8 +328,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
 
         const rxMedicinesCount =
           medicines.length == 0 ? 0 : medicines.filter((item) => item!.prescriptionRequired).length;
-
-        console.log({ rxMedicinesCount });
 
         const presToAdd = {
           id: caseSheetDetails!.id,
@@ -406,11 +354,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderPrescriptions = () => {
-    // if (
-    //   caseSheetDetails &&
-    //   caseSheetDetails.medicinePrescription &&
-    //   caseSheetDetails.medicinePrescription.length > 0
-    // )
     return (
       <View>
         <CollapseCard
@@ -485,8 +428,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderDiagnosis = () => {
-    console.log('dia', caseSheetDetails!.diagnosis!);
-    //if (caseSheetDetails && caseSheetDetails.diagnosis && caseSheetDetails.diagnosis.length > 0)
     return (
       <View>
         <CollapseCard
@@ -549,8 +490,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderFollowUp = () => {
-    console.log('caseSheetDetails.followUp', caseSheetDetails!.followUp);
-    //if (caseSheetDetails && caseSheetDetails.followUp)
     return (
       <View>
         <CollapseCard
@@ -584,15 +523,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 </View>
                 <TouchableOpacity
                   onPress={() => {
-                    console.log(
-                      'doctorid',
-                      props.navigation.state.params!.DoctorInfo &&
-                        props.navigation.state.params!.DoctorInfo.id
-                    );
-                    console.log('patientid', props.navigation.state.params!.PatientId);
-                    console.log('appointmentid', props.navigation.state.params!.CaseSheet);
-                    console.log('follwup', caseSheetDetails!.followUp);
-                    console.log('appointmentType', props.navigation.state.params!.appointmentType);
                     client
                       .query<checkIfFollowUpBooked>({
                         query: CHECK_IF_FOLLOWUP_BOOKED,
@@ -605,24 +535,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         console.log('checkIfFollowUpBooked', data);
                         console.log('checkIfFollowUpBookedcount', data.checkIfFollowUpBooked);
                         setIsfollowucount(data.checkIfFollowUpBooked);
-                        // setBookFollowUp(
-                        //   data!.getAppointmentData &&
-                        //     data!.getAppointmentData!.appointmentsHistory[0].isFollowUp!
-                        // );
+
                         setdisplayoverlay(true);
                       })
                       .catch((error) => {
                         console.log('Error occured', { error });
                       });
-                    // props.navigation.navigate(AppRoutes.DoctorDetails, {
-                    //   doctorId: props.navigation.state.params!.DoctorInfo.id,
-                    //   PatientId: props.navigation.state.params!.PatientId,
-                    //   FollowUp: caseSheetDetails!.followUp,
-                    //   appointmentType: props.navigation.state.params!.appointmentType,
-                    //   appointmentId: props.navigation.state.params!.CaseSheet,
-                    //   showBookAppointment: true,
-                    // });
-                    //setdisplayoverlay(true);
                   }}
                 >
                   <Text
@@ -671,6 +589,69 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             title="PRESCRIPTION"
             leftIcon="backArrow"
             onPressLeftIcon={() => props.navigation.goBack()}
+            rightComponent={
+              <View style={{ flexDirection: 'row' }}>
+                {/* <TouchableOpacity activeOpacity={1} style={{ marginRight: 20 }} onPress={() => {}}>
+                  <ShareGreen />
+                </TouchableOpacity> */}
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    if (props.navigation.state.params!.BlobName == null) {
+                      Alert.alert('No Image');
+                    } else {
+                      if (Platform.OS === 'ios') {
+                        try {
+                          Linking.openURL(
+                            AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
+                              props.navigation.state.params!.BlobName
+                            )
+                          ).catch((err) => console.error('An error occurred', err));
+                        } catch {}
+                      }
+                      let dirs = RNFetchBlob.fs.dirs;
+
+                      setLoading(true);
+                      RNFetchBlob.config({
+                        fileCache: true,
+                        addAndroidDownloads: {
+                          useDownloadManager: true,
+                          notification: false,
+                          mime: 'application/pdf',
+                          path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+                          description: 'File downloaded by download manager.',
+                        },
+                      })
+                        .fetch(
+                          'GET',
+                          AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
+                            props.navigation.state.params!.BlobName
+                          ),
+                          {
+                            //some headers ..
+                          }
+                        )
+                        .then((res) => {
+                          setLoading(false);
+                          if (Platform.OS === 'android') {
+                            Alert.alert('Download Complete');
+                          }
+                          Platform.OS === 'ios'
+                            ? RNFetchBlob.ios.previewDocument(res.path())
+                            : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                        })
+                        .catch((err) => {
+                          console.log('error ', err);
+                          setLoading(false);
+                          // ...
+                        });
+                    }
+                  }}
+                >
+                  {props.navigation.state.params!.BlobName ? <Download /> : null}
+                </TouchableOpacity>
+              </View>
+            }
           />
 
           <ScrollView bounces={false}>

@@ -8,7 +8,7 @@ import deburr from 'lodash/deburr';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SearchDiagnosis } from 'graphql/types/SearchDiagnosis';
 import { SEARCH_DIAGNOSIS } from 'graphql/profiles';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 interface OptionType {
   name: string;
@@ -127,12 +127,15 @@ const useStyles = makeStyles((theme: Theme) =>
       borderRadius: 16,
       marginRight: 16,
       marginTop: 6,
+      height: 'auto',
+      wordBreak: 'break-word',
       '&:focus': {
         backgroundColor: '#00b38e',
       },
       '& span': {
         paddingLeft: 0,
         paddingRight: 5,
+        whiteSpace: 'normal',
       },
       '& img': {
         margin: 0,
@@ -217,9 +220,9 @@ export const Diagnosis: React.FC = () => {
   const [idx, setIdx] = React.useState();
   const [searchInput, setSearchInput] = useState('');
   const { diagnosis: selectedValues, setDiagnosis: setSelectedValues } = useContext(
-    CaseSheetContext
+    CaseSheetContextJrd
   );
-  const { caseSheetEdit } = useContext(CaseSheetContext);
+  const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const client = useApolloClient();
 
   useEffect(() => {

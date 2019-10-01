@@ -101,7 +101,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
-  console.log(data, 'data');
+
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
@@ -115,16 +115,13 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
         resuts[PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE] !==
         PermissionsAndroid.RESULTS.GRANTED
       ) {
-        console.log(resuts, 'WRITE_EXTERNAL_STORAGE');
       }
       if (
         resuts[PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE] !==
         PermissionsAndroid.RESULTS.GRANTED
       ) {
-        console.log(resuts, 'READ_EXTERNAL_STORAGE');
       }
       if (resuts) {
-        console.log(resuts, 'READ_EXTERNAL_STORAGE');
       }
     } catch (error) {
       console.log('error', error);
@@ -233,7 +230,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
 
   const renderImage = () => {
     const urls = data.documentURLs.split(',');
-    console.log(urls, 'urls');
     return (
       <View
         style={{
@@ -295,15 +291,11 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
-                    console.log('pdf url', data.documentURLs);
                     const urls = data.documentURLs.split(',');
-                    console.log(urls, 'urls');
-
                     if (!data.documentURLs || data.documentURLs === '[object Object]') {
                       Alert.alert('No Image');
                     } else {
                       for (var i = 0; i < urls.length; i++) {
-                        console.log('urllrr', urls[i]);
                         if (Platform.OS === 'ios') {
                           try {
                             CameraRoll.saveToCameraRoll(urls[i]);
@@ -311,7 +303,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                           } catch {}
                         }
                         let dirs = RNFetchBlob.fs.dirs;
-                        console.log('dirs', dirs);
                         setLoading(true);
                         RNFetchBlob.config({
                           fileCache: true,
@@ -328,18 +319,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                           })
                           .then((res) => {
                             setLoading(false);
-                            // the temp file path
-                            console.log('The file saved to res ', res);
-                            console.log('The file saved to ', res.path());
-                            //saveimageIos(urls[0]);
-                            // if (Platform.OS === 'ios') {
-                            //   try {
-                            //     CameraRoll.saveToCameraRoll(urls[0]);
-                            //   } catch {}
-                            // }
-                            // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                            // RNFetchBlob.ios.openDocument(res.path());
-                            Alert.alert('Download Complete');
                             Platform.OS === 'ios'
                               ? RNFetchBlob.ios.previewDocument(res.path())
                               : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');

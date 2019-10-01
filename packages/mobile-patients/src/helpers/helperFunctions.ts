@@ -1,7 +1,44 @@
-import moment from 'moment';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { GraphQLError } from 'graphql';
+import moment from 'moment';
 import { Alert, NetInfo } from 'react-native';
-import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
+
+interface AphConsole {
+  error(message?: any, ...optionalParams: any[]): void;
+  info(message?: any, ...optionalParams: any[]): void;
+  log(message?: any, ...optionalParams: any[]): void;
+  warn(message?: any, ...optionalParams: any[]): void;
+  trace(message?: any, ...optionalParams: any[]): void;
+  debug(message?: any, ...optionalParams: any[]): void;
+  table(...data: any[]): void;
+}
+
+const isDebugOn = AppConfig.Configuration.LOG_ENVIRONMENT == 'debug';
+
+export const aphConsole: AphConsole = {
+  error: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.error(message, ...optionalParams);
+  },
+  log: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.log(message, ...optionalParams);
+  },
+  info: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.info(message, ...optionalParams);
+  },
+  warn: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.warn(message, ...optionalParams);
+  },
+  trace: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.trace(message, ...optionalParams);
+  },
+  debug: (message?: any, ...optionalParams: any[]) => {
+    isDebugOn && console.debug(message, ...optionalParams);
+  },
+  table: (...data: any[]) => {
+    isDebugOn && console.table(...data);
+  },
+};
 
 export const getOrderStatusText = (status: MEDICINE_ORDER_STATUS): string => {
   let statusString = '';
@@ -250,8 +287,27 @@ export function g(obj: any, ...props: string[]) {
 
 export const getNetStatus = async () => {
   const status = await NetInfo.getConnectionInfo().then((connectionInfo) => {
-    console.log(connectionInfo, 'connectionInfo');
     return connectionInfo.type !== 'none';
   });
   return status;
+};
+
+export const nextAvailability = (nextSlot: string) => {
+  console.log(nextSlot, 'nextAvailability nextSlot');
+
+  const today: Date = new Date();
+  const date2: Date = new Date(nextSlot);
+  const secs = (date2 as any) - (today as any);
+  const mins = Math.ceil(secs / (60 * 1000));
+  let hours: number = 0;
+  if (mins > 0 && mins < 60) {
+    return `available in ${mins} min${mins > 1 ? 's' : ''}`;
+  } else if (mins > 60 && mins < 1380) {
+    hours = Math.ceil(mins / 60);
+    console.log(hours, 'hours');
+    return `available in ${hours} hour${hours > 1 ? 's' : ''}`;
+  } else if (mins >= 1380) {
+    const days = Math.ceil(mins / (24 * 60));
+    return `available in ${days} day${days > 1 ? 's' : ''}`;
+  }
 };

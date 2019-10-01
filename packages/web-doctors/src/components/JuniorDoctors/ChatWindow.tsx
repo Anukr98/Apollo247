@@ -13,6 +13,12 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+
+const client = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -201,7 +207,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     patientChatRow: {
       paddingBottom: 8,
-      textAlign: 'right',
+      textAlign: 'left',
+      paddingLeft: 40,
     },
     patientAvatar: {
       position: 'absolute',
@@ -221,6 +228,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+
 interface MessagesObjectProps {
   id: string;
   message: string;
@@ -229,6 +237,7 @@ interface MessagesObjectProps {
   duration: string;
   url: string;
 }
+
 interface ConsultRoomProps {
   startConsult: string;
   sessionId: string;
@@ -236,7 +245,9 @@ interface ConsultRoomProps {
   appointmentId: string;
   doctorId: string;
   patientId: string;
+  disableChat: boolean;
 }
+
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
 export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
@@ -250,23 +261,25 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
-  const [chatUploadFile, setChatUploadFile] = useState<string | ArrayBuffer | null>(null);
-  const [chatUploadFileExtension, setChatUploadFileExtension] = useState<string>('');
+  // const [chatUploadFile, setChatUploadFile] = useState<string | ArrayBuffer | null>(null);
+  // const [chatUploadFileExtension, setChatUploadFileExtension] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
+  // const [isUploading, setIsUploading] = useState(false);
+  // const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
 
   // console.log(chatUploadFile, chatUploadFileExtension, 'file upload....');
 
-  const getFileSizeInMBs = (fileSize: number) => {
-    let i = 0;
-    while (fileSize > 900) {
-      fileSize /= 1024;
-      i++;
-    }
-    console.log(i, 'increment....');
-    return Math.round(fileSize * 100) / 100;
-  };
+  // const getFileSizeInMBs = (fileSize: number) => {
+  //   let i = 0;
+  //   while (fileSize > 900) {
+  //     fileSize /= 1024;
+  //     i++;
+  //   }
+  //   console.log(i, 'increment....');
+  //   return Math.round(fileSize * 100) / 100;
+  // };
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -685,7 +698,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               onChange={(event) => {
                 setMessageText(event.currentTarget.value);
               }}
-              // disabled={!props.disableChat}
+              disabled={props.disableChat}
             />
             {/* {props.disableChat && (
               <Button className={classes.chatsendcircle} variant="contained" component="label">
@@ -709,90 +722,82 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 />
               </Button>
             )} */}
-            <Button
-              className={classes.chatsendcircle}
-              variant="contained"
-              component="label"
-              disabled={fileUploading}
-            >
-              <img src={require('images/ic_add_circle.svg')} alt="" />
-              <input
-                type="file"
-                style={{ display: 'none' }}
+
+            {!props.disableChat && (
+              <Button
+                className={classes.chatsendcircle}
+                variant="contained"
+                component="label"
                 disabled={fileUploading}
-                onChange={(e) => {
-                  const fileNames = e.target.files;
-                  if (fileNames && fileNames.length > 0) {
-                    setFileUploading(true);
-                    const fileExtension = fileNames[0].name.split('.').pop();
-                    const fileSize = fileNames[0].size;
-                    console.log(fileSize);
-                    if (fileSize > 2000000) {
-                      setFileUploadErrorMessage(
-                        'Invalid File Size. File size must be less than 2MB'
-                      );
-                      setIsDialogOpen(true);
-                    } else if (
-                      fileExtension &&
-                      (fileExtension.toLowerCase() === 'png' ||
-                        fileExtension.toLowerCase() === 'jpg' ||
-                        fileExtension.toLowerCase() === 'pdf' ||
-                        fileExtension.toLowerCase() === 'jpeg')
-                    ) {
-                      const reader = new FileReader();
-                      reader.addEventListener(
-                        'load',
-                        () => {
-                          const readerResult = reader.result as string;
-                          const base64String = readerResult.replace(
-                            /^data:image\/[a-z]+;base64,/,
-                            ''
-                          );
-                          mutationUploadChatDocument({
-                            variables: {
-                              appointmentId: props.appointmentId,
-                              base64FileInput: base64String,
-                              fileType: fileExtension,
-                            },
-                          }).then((response) => {
-                            if (
-                              response &&
-                              response!.data &&
-                              response!.data!.uploadChatDocument &&
-                              response!.data!.uploadChatDocument!.filePath
-                            ) {
-                              setFileUploading(false);
-                              // continue from here to post this in chat window.....
-                              const uploadObject = {
-                                id: doctorId,
-                                fileType: `image`,
-                                message: `^^#DocumentUpload`,
-                                url: response!.data!.uploadChatDocument!.filePath,
-                                isTyping: true,
-                              };
-                              sendMsg(uploadObject, true);
-                              console.log(uploadObject);
-                            } else {
-                              setFileUploadErrorMessage('Error occured in uploading file.');
-                              setIsDialogOpen(true);
-                            }
-                          });
-                        },
-                        false
-                      );
-                      if (fileNames[0]) {
-                        reader.readAsDataURL(fileNames[0]);
+              >
+                <img src={require('images/ic_add_circle.svg')} alt="" />
+                <input
+                  type="file"
+                  style={{ display: 'none' }}
+                  disabled={fileUploading}
+                  // onChange={async (e) => {
+                  //   setIsUploading(false);
+                  //   setUploadedFileUrl(null);
+                  //   const files = e.currentTarget.files;
+                  //   const file = files && files.length > 0 ? files[0] : null;
+                  //   if (file) {
+                  //     setIsUploading(true);
+                  //     const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
+                  //       throw error;
+                  //     });
+                  //     const url = client.getBlobUrl(aphBlob.name);
+                  //     console.log(aphBlob, url);
+                  //     setUploadedFileUrl(url);
+                  //     setIsUploading(false);
+                  //   }
+                  // }}
+                  onChange={async (e) => {
+                    const fileNames = e.target.files;
+                    if (fileNames && fileNames.length > 0) {
+                      setFileUploading(true);
+                      const file = fileNames[0] || null;
+                      const fileExtension = file.name.split('.').pop();
+                      const fileSize = file.size;
+                      if (fileSize > 2000000) {
+                        setFileUploadErrorMessage(
+                          'Invalid File Size. File size must be less than 2MB'
+                        );
+                        setIsDialogOpen(true);
+                      } else if (
+                        fileExtension &&
+                        (fileExtension.toLowerCase() === 'png' ||
+                          fileExtension.toLowerCase() === 'jpg' ||
+                          fileExtension.toLowerCase() === 'pdf' ||
+                          fileExtension.toLowerCase() === 'jpeg')
+                      ) {
+                        if (file) {
+                          const aphBlob = await client
+                            .uploadBrowserFile({ file })
+                            .catch((error) => {
+                              throw error;
+                            });
+                          const url = client.getBlobUrl(aphBlob.name);
+                          const uploadObject = {
+                            id: doctorId,
+                            fileType: `image`,
+                            message: `^^#DocumentUpload`,
+                            url: url,
+                            isTyping: true,
+                          };
+                          sendMsg(uploadObject, true);
+                          setFileUploading(false);
+                        }
+                      } else {
+                        setFileUploadErrorMessage(
+                          'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
+                        );
+                        setIsDialogOpen(true);
                       }
-                    } else {
-                      setFileUploadErrorMessage(
-                        'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
-                      );
-                      setIsDialogOpen(true);
                     }
-                  }
-                }}
-              />
-            </Button>
+                  }}
+                />
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -823,3 +828,48 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     </div>
   );
 };
+
+// const reader = new FileReader();
+// reader.addEventListener(
+//   'load',
+//   () => {
+//     const readerResult = reader.result as string;
+//     const base64String = readerResult.replace(
+//       /^data:image\/[a-z]+;base64,/,
+//       ''
+//     );
+//     mutationUploadChatDocument({
+//       variables: {
+//         appointmentId: props.appointmentId,
+//         base64FileInput: base64String,
+//         fileType: fileExtension,
+//       },
+//     }).then((response) => {
+//       if (
+//         response &&
+//         response!.data &&
+//         response!.data!.uploadChatDocument &&
+//         response!.data!.uploadChatDocument!.filePath
+//       ) {
+//         setFileUploading(false);
+//         // continue from here to post this in chat window.....
+//         const uploadObject = {
+//           id: doctorId,
+//           fileType: `image`,
+//           message: `^^#DocumentUpload`,
+//           url: response!.data!.uploadChatDocument!.filePath,
+//           isTyping: true,
+//         };
+//         sendMsg(uploadObject, true);
+//         console.log(uploadObject);
+//       } else {
+//         setFileUploadErrorMessage('Error occured in uploading file.');
+//         setIsDialogOpen(true);
+//       }
+//     });
+//   },
+//   false
+// );
+// if (fileNames[0]) {
+//   reader.readAsDataURL(fileNames[0]);
+// }

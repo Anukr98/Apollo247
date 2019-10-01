@@ -19,7 +19,12 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { g, timeDiffFromNow, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  timeDiffFromNow,
+  getNetStatus,
+  nextAvailability,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -40,6 +45,7 @@ import {
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 
 const { height, width } = Dimensions.get('window');
 
@@ -154,7 +160,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [scrollY] = useState(new Animated.Value(0));
   const [availableInMin, setavailableInMin] = useState<Number>();
-  // const [availableTime, setavailableTime] = useState<string>('');
+  const [availableTime, setavailableTime] = useState<string>('');
+  const [physicalAvailableTime, setphysicalAvailableTime] = useState<string>('');
+
   const [availableInMinPhysical, setavailableInMinPhysical] = useState<Number>();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
@@ -267,10 +275,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             const nextSlot = data ? g(data[0], 'availableSlot') : null;
             const nextPhysicalSlot = data ? g(data[0], 'physicalAvailableSlot') : null;
             if (nextSlot) {
+              setavailableTime(nextSlot);
               const timeDiff: Number = timeDiffFromNow(nextSlot);
               setavailableInMin(timeDiff);
             }
             if (nextPhysicalSlot) {
+              setphysicalAvailableTime(nextPhysicalSlot);
               const timeDiff: Number = timeDiffFromNow(nextPhysicalSlot);
               setavailableInMinPhysical(timeDiff);
             }
@@ -388,6 +398,8 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           ? `${doctorClinics[0].facility.name}, ${doctorClinics[0].facility.city}`
           : '';
 
+      console.log(nextAvailability(availableTime), 'availableTime');
+
       return (
         <View style={styles.topView}>
           {doctorDetails && (
@@ -422,12 +434,14 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                   <Text style={styles.onlineConsultAmount}>
                     Rs. {doctorDetails.onlineConsultationFees}
                   </Text>
-                  {availableInMin && availableInMin < 60 && availableInMin > 0 ? (
+                  <AvailabilityCapsule availableTime={availableTime} />
+                  {/* {!!availableTime ? (
                     <CapsuleView
-                      title={`AVAILABLE IN ${availableInMin} MIN${availableInMin == 1 ? '' : 'S'}`}
-                      isActive={availableInMin <= 15 ? true : false}
+                      upperCase
+                      title={nextAvailability(availableTime)}
+                      isActive={availableInMin && availableInMin <= 15 ? true : false}
                     />
-                  ) : null}
+                  ) : null} */}
                 </View>
                 {doctorDetails.doctorType !== DoctorType.PAYROLL && (
                   <View style={styles.horizontalSeparatorStyle} />
@@ -439,16 +453,16 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                       <Text style={styles.onlineConsultAmount}>
                         Rs. {doctorDetails.physicalConsultationFees}
                       </Text>
-                      {availableInMinPhysical &&
-                      availableInMinPhysical < 60 &&
-                      availableInMinPhysical > 0 ? (
+                      <AvailabilityCapsule availableTime={physicalAvailableTime} />
+                      {/* {!!physicalAvailableTime ? (
                         <CapsuleView
-                          title={`AVAILABLE IN ${availableInMinPhysical} MIN${
-                            availableInMinPhysical == 1 ? '' : 'S'
-                          }`}
-                          isActive={availableInMinPhysical <= 15 ? true : false}
+                          upperCase
+                          title={nextAvailability(physicalAvailableTime)}
+                          isActive={
+                            availableInMinPhysical && availableInMinPhysical <= 15 ? true : false
+                          }
                         />
-                      ) : null}
+                      ) : null} */}
                     </>
                   )}
                 </View>
@@ -517,7 +531,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           {/* {clinic.image && ( */}
                           <Image
                             source={{
-                              uri: 'https://via.placeholder.com/328x136',
+                              uri:
+                                item && item.facility.imageUrl
+                                  ? item.facility.imageUrl
+                                  : 'https://via.placeholder.com/328x136',
                             }}
                             style={{
                               height: 136,

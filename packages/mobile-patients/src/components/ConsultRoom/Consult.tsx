@@ -57,17 +57,6 @@ const styles = StyleSheet.create({
     color: '#02475b',
     ...theme.fonts.IBMPlexSansSemiBold(36),
   },
-  nameTextStyle: {
-    marginLeft: 5,
-    color: '#02475b',
-    ...theme.fonts.IBMPlexSansSemiBold(36),
-  },
-  seperatorStyle: {
-    height: 2,
-    backgroundColor: '#00b38e',
-    marginTop: 5,
-    marginHorizontal: 5,
-  },
   descriptionTextStyle: {
     marginTop: 12,
     color: theme.colors.SKY_BLUE,
@@ -205,6 +194,21 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const client = useApolloClient();
 
   useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      setshowSpinner(true);
+      getNetStatus().then((status) => {
+        if (status) {
+          fetchAppointments();
+        } else {
+          setshowSpinner(false);
+          setshowOfflinePopup(true);
+        }
+      });
+    });
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+    };
+
     try {
       setNewAppointmentTime(
         props.navigation.getParam('Data')
@@ -213,19 +217,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             )
           : ''
       );
-
-      console.log('props.navigation.getParam', props.navigation.getParam('Data'));
-
       let calculateCount = props.navigation.getParam('Data')
         ? props.navigation.getParam('Data').rescheduleCount
         : '';
-
       calculateCount = 3 - calculateCount;
-
-      // if (calculateCount <= 0) {
-      //   calculateCount = 1;
-      // }
-
       setNewRescheduleCount(calculateCount);
     } catch (error) {
       setNewRescheduleCount(1);
@@ -515,7 +510,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           const minutes = moment.duration(moment(appointmentDateTime).diff(new Date())).asMinutes();
           const title =
             minutes > 0 && minutes <= 15
-              ? `${Math.ceil(minutes)} MIN`
+              ? `${Math.ceil(minutes)} MIN${Math.ceil(minutes) > 1 ? 'S' : ''}`
               : moment(appointmentDateTime).format(
                   appointmentDateTime.split(' ')[0] === new Date().toISOString().split('T')[0]
                     ? 'h:mm A'
@@ -527,14 +522,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           var day1 = moment(appointmentDateTime).add(7, 'days');
 
           var day2 = moment(new Date());
-          console.log('day1', day1);
-          console.log('day2', day2);
 
           day1.diff(day2, 'days'); // 1
-          // var difference = function(day1: number, day2: number) {
-          //   return Math.abs(day1 - day2);
-          // };
-          console.log('difference', day1.diff(day2, 'days'));
 
           return (
             <View style={{}}>
@@ -734,7 +723,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             paddingLeft: 3,
                           }}
                         >
-                          {day1.diff(day2, 'days')} more days
+                              {day1.diff(day2, 'days')} more {day1.diff(day2, 'days') == 1 ? 'day' : 'days'}
                         </Text>
                       </View>
                     </View>

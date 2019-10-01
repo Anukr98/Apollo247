@@ -20,6 +20,7 @@ import {
   GET_PAST_CONSULTS_PRESCRIPTIONS,
   GET_MEDICAL_RECORD,
   DELETE_PATIENT_MEDICAL_RECORD,
+  CHECK_IF_FOLLOWUP_BOOKED,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientPastConsultsAndPrescriptions } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -49,6 +50,8 @@ import {
   deletePatientMedicalRecord,
   deletePatientMedicalRecordVariables,
 } from '../../graphql/types/deletePatientMedicalRecord';
+import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
+import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -69,6 +72,14 @@ const filterData: filterDataType[] = [
     selectedOptions: [],
   },
 ];
+type rescheduleType = {
+  rescheduleCount: number;
+  appointmentState: string;
+  isCancel: number;
+  isFollowUp: number;
+  isPaid: number;
+};
+
 export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 
 export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
@@ -88,10 +99,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [arrayValues, setarrayValues] = useState<any>();
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
+  const [bookFollowUp, setBookFollowUp] = useState<boolean>(true);
+  const [isfollowcount, setIsfollowucount] = useState<number>(0);
+  const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
 
+  const [doctorId, setDoctorId] = useState<any>();
+  const [doctorInfo, setDoctorInfo] = useState<any>();
+  const [appointmentFollowUpId, setAppointmentFollowUpId] = useState<any>();
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -103,7 +120,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (selectedOptions.includes('Online Consults')) filterArray.push('ONLINE');
     if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
     if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
-    console.log(filterArray, 'filterArray', filters, 'filters', selectedOptions);
 
     setLoading(true);
     client
@@ -118,8 +134,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         },
       })
       .then((_data) => {
-        console.log('getPatientPastConsultsAndPrescriptions', _data!);
-
         const formatDate = (date: string) =>
           moment(date)
             .clone()
@@ -158,6 +172,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Heath records', error);
+        //Alert.alert('Error', error);
       });
   };
 
@@ -174,7 +189,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .then(({ data }) => {
         loading && setLoading(false);
         const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
-        console.log('records occured', { records });
         setmedicalRecords(records);
         // setTabs([
         //   ...tabs.map((item) =>
@@ -187,6 +201,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       .catch((error) => {
         loading && setLoading(false);
         console.log('Error occured', { error });
+        Alert.alert('Error', error);
       });
   }, []);
 
@@ -321,8 +336,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   // };
 
   const renderConsults = () => {
-    console.log('arrayValues', arrayValues);
-
     // const arrayValuesFilter =
     //   filterData[0].selectedOptions && filterData[0].selectedOptions.length
     //     ? arrayValues.filter(
@@ -372,7 +385,16 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           <View>
             {arrayValues &&
               arrayValues.map((item: any, i: number) => {
-                console.log('item', item);
+                let dataval =
+                  item.caseSheet &&
+                  item.caseSheet.find((obj: any) => {
+                    return (
+                      obj.doctorType === 'STAR_APOLLO' ||
+                      obj.doctorType === 'APOLLO' ||
+                      obj.doctorType === 'PAYROLL'
+                    );
+                  });
+
                 return (
                   <HealthConsultView
                     key={i}
@@ -386,10 +408,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                         FollowUp: item.isFollowUp,
                         appointmentType: item.appointmentType,
                         DisplayId: item.displayId,
+                        BlobName: g(dataval, 'blobName'),
                       });
                     }}
                     PastData={item}
                     navigation={props.navigation}
+                    onFollowUpClick={() => onFollowUpClick(item)}
                   />
                 );
               })}
@@ -398,6 +422,48 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       </View>
     );
   };
+
+  const onFollowUpClick = (item: any) => {
+    let dataval =
+      item.caseSheet &&
+      item.caseSheet.find((obj: any) => {
+        return (
+          obj.doctorType === 'STAR_APOLLO' ||
+          obj.doctorType === 'APOLLO' ||
+          obj.doctorType === 'PAYROLL'
+        );
+      });
+
+    client
+      .query<checkIfFollowUpBooked>({
+        query: CHECK_IF_FOLLOWUP_BOOKED,
+        variables: {
+          appointmentId: item.id,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data }) => {
+        console.log('checkIfFollowUpBooked', data);
+        console.log('checkIfFollowUpBookedcount', data.checkIfFollowUpBooked);
+        setIsfollowucount(data.checkIfFollowUpBooked);
+        console.log('setIsfollowucount', data.checkIfFollowUpBooked);
+        setdisplayoverlay(true);
+        props.navigation.push(AppRoutes.ConsultDetails, {
+          CaseSheet: item.id,
+          DoctorInfo: item.doctorInfo,
+          FollowUp: dataval.followUp,
+          appointmentType: item.appointmentType,
+          DisplayId: item.displayId,
+          Displayoverlay: true,
+          isFollowcount: data.checkIfFollowUpBooked,
+          BlobName: dataval.blobName,
+        });
+      })
+      .catch((error) => {
+        console.log('Error occured', { error });
+      });
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
@@ -437,9 +503,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           onClickClose={() => {
             setdisplayOrderPopup(false);
           }}
-          getData={(data: (PickerImage | PickerImage[])[]) => {
-            console.log(data);
-          }}
+          getData={(data: (PickerImage | PickerImage[])[]) => {}}
         />
       )}
       {loading && <Spinner />}

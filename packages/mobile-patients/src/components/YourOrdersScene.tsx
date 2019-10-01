@@ -39,7 +39,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
 
   useEffect(() => {
     if (!currentPatient) {
-      console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
@@ -53,8 +52,6 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   });
 
   const orders = (!loading && g(data, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
-  // !loading && console.log({ orders });
-  // !loading && error && console.log({ error });
 
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
@@ -81,10 +78,10 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     }
   };
 
-  const getStatusType = (
+  const getSortedList = (
     orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
-    const sortedList = orderStatusList.sort(
+    return orderStatusList.sort(
       (a, b) =>
         moment(b!.statusDate)
           .toDate()
@@ -93,21 +90,19 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           .toDate()
           .getTime()
     );
+  };
+
+  const getStatusType = (
+    orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
+  ) => {
+    const sortedList = getSortedList(orderStatusList);
     return g(sortedList[0], 'orderStatus')!;
   };
 
   const getStatusDesc = (
     orderStatusList: (GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus | null)[]
   ) => {
-    const sortedList = orderStatusList.sort(
-      (a, b) =>
-        moment(b!.statusDate)
-          .toDate()
-          .getTime() -
-        moment(a!.statusDate)
-          .toDate()
-          .getTime()
-    );
+    const sortedList = getSortedList(orderStatusList);
     return getOrderStatusText(g(sortedList[0], 'orderStatus')!);
   };
 

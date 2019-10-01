@@ -232,7 +232,11 @@ export const Header: React.FC = (props) => {
                       </span>
 
                       {isJuniorDoctor ? (
-                        <span title="My Profile">
+                        <span
+                          title="My Profile"
+                          className={`${window.location.href.includes('/jd-profile') &&
+                            classes.menuItemActive}`}
+                        >
                           <Link to={clientRoutes.juniorDoctorProfile()}>
                             <img
                               onClick={() => setSelectedTab(6)}

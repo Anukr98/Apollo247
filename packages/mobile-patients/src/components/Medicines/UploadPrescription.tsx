@@ -23,22 +23,28 @@ import {
   EPrescription,
   EPrescriptionDisableOption,
   PhysicalPrescription,
-} from '../ShoppingCartProvider';
-import { BottomPopUp } from '../ui/BottomPopUp';
-import { EPrescriptionCard } from '../ui/EPrescriptionCard';
-import { Spinner } from '../ui/Spinner';
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { SelectEPrescriptionModal } from './SelectEPrescriptionModal';
 import { Mutation } from 'react-apollo';
-import { UPLOAD_FILE, SAVE_PRESCRIPTION_MEDICINE_ORDER } from '../../graphql/profiles';
-import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
+import {
+  UPLOAD_FILE,
+  SAVE_PRESCRIPTION_MEDICINE_ORDER,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
 import { useApolloClient } from 'react-apollo-hooks';
-import { g } from '../../helpers/helperFunctions';
+import { g, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   SavePrescriptionMedicineOrder,
   SavePrescriptionMedicineOrderVariables,
-} from '../../graphql/types/SavePrescriptionMedicineOrder';
-import { MEDICINE_DELIVERY_TYPE, PrescriptionMedicineInput } from '../../graphql/types/globalTypes';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
+} from '@aph/mobile-patients/src/graphql/types/SavePrescriptionMedicineOrder';
+import {
+  MEDICINE_DELIVERY_TYPE,
+  PrescriptionMedicineInput,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -85,11 +91,12 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface UploadPrescriptionProps extends NavigationScreenProps {
-  disabledOption: EPrescriptionDisableOption;
-  phyPrescriptionsProp: PhysicalPrescription;
-  ePrescriptionsProp: EPrescription;
-}
+export interface UploadPrescriptionProps
+  extends NavigationScreenProps<{
+    disabledOption: EPrescriptionDisableOption;
+    phyPrescriptionsProp: PhysicalPrescription[];
+    ePrescriptionsProp: EPrescription[];
+  }> {}
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
   const disabledOption = props.navigation.getParam('disabledOption');
@@ -129,12 +136,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
     setshowSpinner(true);
     const ePresUrls = EPrescriptions.map((item) => item.uploadedUrl);
     let ePresAndPhysicalPresUrls = [...ePresUrls];
-    console.log({ ePresAndPhysicalPresUrls });
 
     try {
       if (PhysicalPrescriptions.length > 0) {
         const uploadedFiles = await uploadMultipleFiles(PhysicalPrescriptions);
-        console.log({ uploadedFiles });
         const uploadedUrls = uploadedFiles.map(({ data }) => g(data, 'uploadFile', 'filePath')!);
         ePresAndPhysicalPresUrls = [...ePresAndPhysicalPresUrls, ...uploadedUrls];
       }
@@ -147,7 +152,6 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         patinetAddressId: '0',
         // patinetAddressId: '402e9de2-7301-4350-917b-66f9890ff5a4',
       };
-      console.log({ prescriptionMedicineInput });
 
       const { data } = await client.mutate<
         SavePrescriptionMedicineOrder,
@@ -162,7 +166,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         setBottomErrorPopup(true);
       }
     } catch (error) {
-      console.log({ error });
+      aphConsole.log({ error });
       setshowSpinner(false);
       setBottomErrorPopup(true);
     }
