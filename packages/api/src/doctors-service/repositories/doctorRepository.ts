@@ -155,6 +155,10 @@ export class DoctorRepository extends Repository<Doctor> {
   }
 
   sortByRankingAlgorithm(a: Doctor, b: Doctor, docIds: string[]) {
+    //Experienced doctor on top
+    if (a.experience > b.experience) return -1;
+    if (a.experience > b.experience) return 1;
+
     //STAR_APOLLO doctor on top
     if (a.doctorType == DoctorType.STAR_APOLLO && b.doctorType != DoctorType.STAR_APOLLO) return -1;
     if (a.doctorType != DoctorType.STAR_APOLLO && b.doctorType == DoctorType.STAR_APOLLO) return 1;
@@ -254,7 +258,12 @@ export class DoctorRepository extends Repository<Doctor> {
     return doctorsResult;
   }
 
-  getDoctorsAvailability(doctors: Doctor[], selectedDates: string[], now?: AppointmentDateTime) {
+  getDoctorsAvailability(
+    consultModeFilter: ConsultMode,
+    doctors: Doctor[],
+    selectedDates: string[],
+    now?: AppointmentDateTime
+  ) {
     const doctorAvailability: DoctorAvailability = {};
     //filtering doctors by consultHours of selected dates
     const selectedDays: string[] = [];
@@ -270,13 +279,19 @@ export class DoctorRepository extends Repository<Doctor> {
         //logic when availableNow filter is selected
         if (now) {
           let nowDate = format(now.startDateTime, 'yyyy-MM-dd');
+
           const nowStartTime = format(now.startDateTime, 'HH:mm');
           if (nowStartTime >= '18:30') {
             nowDate = format(addDays(now.startDateTime, 1), 'yyyy-MM-dd');
           }
           const nowDay = format(new Date(nowDate), 'EEEE').toUpperCase();
 
-          if (day.weekDay == nowDay) {
+          if (
+            day.weekDay == nowDay &&
+            (consultModeFilter == ConsultMode.BOTH ||
+              day.consultMode == ConsultMode.BOTH ||
+              day.consultMode == consultModeFilter)
+          ) {
             const alignedStartTime = this.getNextAlignedSlot(now.startDateTime);
             const alignedEndTime = this.getNextAlignedSlot(now.endDateTime);
             const nowSlots = this.getSlotsInBetween(alignedStartTime, alignedEndTime);
@@ -304,7 +319,12 @@ export class DoctorRepository extends Repository<Doctor> {
         //logic when dates are selected
         const slotsCount = this.getNumberOfIntervalSlots(day.startTime, day.endTime);
         if (selectedDays.length > 0) {
-          if (selectedDays.includes(day.weekDay)) {
+          if (
+            selectedDays.includes(day.weekDay) &&
+            (consultModeFilter == ConsultMode.BOTH ||
+              day.consultMode == ConsultMode.BOTH ||
+              day.consultMode == consultModeFilter)
+          ) {
             const availabilityDate = selectedDates[selectedDays.indexOf(day.weekDay)];
             const defaultConsultModeSlotsCount: ConsultModeAvailability = {
               onlineSlots: 0,
@@ -374,7 +394,7 @@ export class DoctorRepository extends Repository<Doctor> {
   //return all time slots between any two times in a day
   getSlotsInBetween(startTime: string, endTime: string) {
     const { startDateObj, endDateObj } = this.getDateObjectsFromTimes(startTime, endTime);
-    const slotsCount = Math.ceil(Math.abs(differenceInMinutes(endDateObj, startDateObj))) / 15;
+    const slotsCount = Math.ceil(Math.abs(differenceInMinutes(endDateObj, startDateObj)) / 15);
 
     const slotTime = startDateObj.getUTCHours() + ':' + startDateObj.getUTCMinutes();
     let slotDateTime = new Date(format(startDateObj, 'yyyy-MM-dd') + ' ' + slotTime);
