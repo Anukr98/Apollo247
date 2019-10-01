@@ -144,11 +144,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
 
   const client = useApolloClient();
 
-  useEffect(() => {
+  const NextAvailableSlotAPI = () => {
     getNetStatus().then((status) => {
       if (status) {
         console.log('Network status', status);
-        checkIfReschedule();
         nextAvailableSlot();
       } else {
         setNetworkStatus(true);
@@ -156,7 +155,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         console.log('Network status failed', status);
       }
     });
-  }, []);
+  };
 
   useEffect(() => {
     const dateValidate = moment(moment().format('YYYY-MM-DD')).diff(
@@ -184,6 +183,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     .format('YYYY-MM-DD');
 
   const nextAvailableSlot = () => {
+    setshowSpinner(true);
     client
       .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
         query: NEXT_AVAILABLE_SLOT,
@@ -196,6 +196,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         fetchPolicy: 'no-cache',
       })
       .then((availabilitySlot) => {
+        setshowSpinner(false);
+
         if (
           availabilitySlot &&
           availabilitySlot.data &&
@@ -209,7 +211,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         }
       })
       .catch((e: any) => {
+        setshowSpinner(false);
         console.log('error', e);
+      })
+      .finally(() => {
+        checkIfReschedule();
       });
   };
 
@@ -248,11 +254,14 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         })
         .catch((e: any) => {
           setshowSpinner(false);
-
           const error = JSON.parse(JSON.stringify(e));
           console.log('Error occured while checkIfRescheduleprofile', error);
+        })
+        .finally(() => {
+          setResheduleoverlay(true);
         });
     } catch (error) {
+      setshowSpinner(false);
       console.log(error, 'error');
     }
   };
@@ -274,46 +283,46 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     };
 
     console.log(bookRescheduleInput, 'bookRescheduleInput');
-    if (!rescheduleApICalled) {
-      setshowSpinner(true);
-      setRescheduleApICalled(true);
-      client
-        .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
-          mutation: BOOK_APPOINTMENT_RESCHEDULE,
-          variables: {
-            bookRescheduleAppointmentInput: bookRescheduleInput,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data: any) => {
-          console.log(data, 'data');
-          setshowSpinner(false);
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [
-                NavigationActions.navigate({
-                  routeName: AppRoutes.TabBar,
-                  params: {
-                    Data:
-                      data.data &&
-                      data.data.bookRescheduleAppointment &&
-                      data.data.bookRescheduleAppointment.appointmentDetails,
-                    DoctorName:
-                      props.navigation.state.params!.data &&
-                      props.navigation.state.params!.data.doctorInfo &&
-                      props.navigation.state.params!.data.doctorInfo.firstName,
-                  },
-                }),
-              ],
-            })
-          );
-        })
-        .catch((e: string) => {
-          setBottompopup(true);
-        });
-    }
+    // if (!rescheduleApICalled) {
+    setshowSpinner(true);
+    setRescheduleApICalled(true);
+    client
+      .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
+        mutation: BOOK_APPOINTMENT_RESCHEDULE,
+        variables: {
+          bookRescheduleAppointmentInput: bookRescheduleInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        console.log(data, 'data');
+        setshowSpinner(false);
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.TabBar,
+                params: {
+                  Data:
+                    data.data &&
+                    data.data.bookRescheduleAppointment &&
+                    data.data.bookRescheduleAppointment.appointmentDetails,
+                  DoctorName:
+                    props.navigation.state.params!.data &&
+                    props.navigation.state.params!.data.doctorInfo &&
+                    props.navigation.state.params!.data.doctorInfo.firstName,
+                },
+              }),
+            ],
+          })
+        );
+      })
+      .catch((e: string) => {
+        setBottompopup(true);
+      });
+    // }
   };
   const acceptChange = () => {
     try {
@@ -486,7 +495,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
                 try {
-                  dateIsAfter ? setResheduleoverlay(true) : null;
+                  dateIsAfter ? NextAvailableSlotAPI() : null;
                 } catch (error) {}
               }}
             />

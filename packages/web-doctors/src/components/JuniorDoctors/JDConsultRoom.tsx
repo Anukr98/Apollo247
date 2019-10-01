@@ -191,6 +191,7 @@ const useStyles = makeStyles((theme: Theme) => {
     contentGroup: {
       display: 'flex',
       paddingBottom: 30,
+      position: 'relative',
     },
     leftSection: {
       width: 'calc(50% - 1px)',

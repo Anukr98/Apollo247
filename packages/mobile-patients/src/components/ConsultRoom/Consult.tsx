@@ -208,7 +208,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
     };
+  }, []);
 
+  useEffect(() => {
     try {
       setNewAppointmentTime(
         props.navigation.getParam('Data')
@@ -723,7 +725,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             paddingLeft: 3,
                           }}
                         >
-                              {day1.diff(day2, 'days')} more {day1.diff(day2, 'days') == 1 ? 'day' : 'days'}
+                          {day1.diff(day2, 'days')} more{' '}
+                          {day1.diff(day2, 'days') == 1 ? 'day' : 'days'}
                         </Text>
                       </View>
                     </View>
