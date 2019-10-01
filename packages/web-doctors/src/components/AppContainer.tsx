@@ -76,6 +76,7 @@ const App: React.FC = () => {
           appointmentId: ':appointmentId',
           patientId: ':patientId',
           queueId: ':queueId',
+          isActive: ':isActive',
         })}
         component={JDConsultRoom}
       />

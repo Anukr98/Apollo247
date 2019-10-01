@@ -148,7 +148,7 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {activeConsults.map(({ id, patient, appointment }, index) => {
+            {activeConsults.map(({ id, patient, appointment, isActive }, index) => {
               isActiveConsultsAvailable = true;
               return (
                 <Link
@@ -157,6 +157,7 @@ export const JuniorDoctor: React.FC = (props) => {
                     appointmentId: appointment.id,
                     patientId: patient.id,
                     queueId: String(id),
+                    isActive: isActive ? 'active' : 'done',
                   })}
                 >
                   <ActiveConsultCard
@@ -174,7 +175,7 @@ export const JuniorDoctor: React.FC = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
-            {pastConsults.map(({ id, patient, appointment }) => {
+            {pastConsults.map(({ id, patient, appointment, isActive }) => {
               isPastConsultsAvailable = true;
               return (
                 <Link
@@ -183,6 +184,7 @@ export const JuniorDoctor: React.FC = (props) => {
                     appointmentId: appointment.id,
                     patientId: patient.id,
                     queueId: String(id),
+                    isActive: isActive ? 'active' : 'done',
                   })}
                 >
                   <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
