@@ -59,6 +59,7 @@ export interface HeaderProps {
   leftText?: leftText;
   rightText?: rightText;
   title?: string;
+  titleStyle?: StyleProp<TextStyle>;
   leftIcon?: 'backArrow' | 'close' | 'backArrowWhite';
   rightIcon?: string;
   rightComponent?: React.ReactNode;
@@ -97,12 +98,12 @@ export const Header: React.FC<HeaderProps> = (props) => {
       </View>
       <View style={{ flexGrow: 1 }}>
         {title && (
-          <Text style={[styles.titleTextStyle, { marginHorizontal: 10 }]} numberOfLines={1}>
+          <Text style={[styles.titleTextStyle, props.titleStyle]} numberOfLines={1}>
             {title}
           </Text>
         )}
       </View>
-      <View style={{ flex: 1, alignItems: 'flex-end' }}>
+      <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
         {rightText && (
           <Text style={styles.rightTextStyle} onPress={rightText.onPress}>
             {rightText.title}

@@ -275,6 +275,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         leftIcon="backArrow"
         onPressLeftIcon={() => props.navigation.goBack()}
         title={_title}
+        titleStyle={{ marginHorizontal: 10 }}
         container={{ borderBottomWidth: 0 }}
       />
 
