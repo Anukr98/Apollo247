@@ -4,6 +4,7 @@ export interface JDConsultRoomParams {
   appointmentId: string;
   patientId: string;
   queueId: string;
+  isActive: string;
 }
 
 export const clientRoutes = {
@@ -22,8 +23,8 @@ export const clientRoutes = {
   juniorDoctorProfile: () => '/jd-profile',
   ConsultTabs: (appointmentId: string, patientId: string, tabValue: string) =>
     `/Consulttabs/${appointmentId}/${patientId}/${tabValue}`,
-  JDConsultRoom: ({ appointmentId, patientId, queueId }: JDConsultRoomParams) =>
-    `/jd-consultroom/${appointmentId}/${patientId}/${queueId}`,
+  JDConsultRoom: ({ appointmentId, patientId, queueId, isActive }: JDConsultRoomParams) =>
+    `/jd-consultroom/${appointmentId}/${patientId}/${queueId}/${isActive}`,
 };
 
 export const clientBaseUrl = () => webDoctorsBaseUrl();
