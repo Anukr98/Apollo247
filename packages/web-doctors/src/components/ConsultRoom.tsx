@@ -517,13 +517,19 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </div>
             ) : (
               <div>
-                <span>
-                  {isURL(rowData.message) ? (
-                    <a href={rowData.message}> {rowData.message}</a>
-                  ) : (
-                    rowData.message
-                  )}
-                </span>
+                {rowData.message === documentUpload ? (
+                  <div style={{ width: '200px', height: 'auto' }}>
+                    <a href={rowData.url} target="_blank">
+                      <img
+                        style={{ width: '200px', height: 'auto' }}
+                        src={rowData.url}
+                        alt={rowData.url}
+                      />
+                    </a>
+                  </div>
+                ) : (
+                  <span>{rowData.message}</span>
+                )}
               </div>
             )}
           </div>
