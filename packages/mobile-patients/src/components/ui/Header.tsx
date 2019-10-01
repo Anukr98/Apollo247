@@ -72,7 +72,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
 
   return (
     <View style={[styles.container, props.container]}>
-      <View style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
+      <View style={{ flexGrow: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
         {props.leftText ? (
           <TouchableOpacity activeOpacity={1} onPress={props.leftText.onPress} style={{}}>
             <Text style={styles.titleTextStyle} numberOfLines={1}>
@@ -95,9 +95,9 @@ export const Header: React.FC<HeaderProps> = (props) => {
           </TouchableOpacity>
         )}
       </View>
-      <View>
+      <View style={{ flexGrow: 1 }}>
         {title && (
-          <Text style={styles.titleTextStyle} numberOfLines={1}>
+          <Text style={[styles.titleTextStyle, { marginHorizontal: 10 }]} numberOfLines={1}>
             {title}
           </Text>
         )}
