@@ -70,7 +70,6 @@ type TimeArray = {
 
 export interface ConsultOnlineProps {
   doctor: getDoctorDetailsById_getDoctorDetailsById | null;
-  // timeArray: TimeArray;
   date: Date;
   setDate: (arg0: Date) => void;
   setNextAvailableSlot: (arg0: string) => void;
@@ -83,7 +82,6 @@ export interface ConsultOnlineProps {
   selectedTimeSlot: string;
   setshowSpinner: (arg0: boolean) => void;
   availableSlots?: [];
-  SelectedSlotTitle?: string;
   scrollToSlots: (top?: number) => void;
   setshowOfflinePopup: (arg0: boolean) => void;
 }
@@ -118,9 +116,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     { label: 'Night', time: [] },
   ]);
 
-  const [selectedtiming, setselectedtiming] = useState<string>(
-    props.SelectedSlotTitle ? props.SelectedSlotTitle : timings[0].title
-  );
+  const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
   const [selectedCTA, setselectedCTA] = useState<string>(onlineCTA[0]);
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
 
@@ -135,26 +131,14 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     checkAvailabilitySlot();
   }, [props.date, date]);
 
-  // useEffect(() => {
-  //   if (props.SelectedSlotTitle && selectedtiming !== props.SelectedSlotTitle) {
-  //     setselectedtiming(props.SelectedSlotTitle);
-  //   }
-  // }, [props.SelectedSlotTitle]);
-
-  // useEffect(() => {
-  //   fetchSlots(date);
-  // }, []);
-
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
     console.log(availableSlots, 'setTimeArrayData availableSlots');
     setselectedtiming(timeArray[0].label);
 
     const array = await divideSlots(availableSlots, date);
-    console.log(array, 'array', timeArray, 'timeArray.......');
     if (array !== timeArray) settimeArray(array);
     for (const i in array) {
       if (array[i].time.length > 0) {
-        // setSelectedSlotTitle(array[i].label);
         setselectedtiming(array[i].label);
         props.setselectedTimeSlot(array[i].time[0]);
         props.scrollToSlots();
@@ -332,14 +316,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       <CalendarView
         date={date}
         onPressDate={(selectedDate) => {
-          // setDate(date);
           console.log('selectedDate', selectedDate !== date, selectedDate, date);
-
-          // if (
-          //   Moment(selectedDate).format('YYYY-MM-DD') !== Moment(date).format('YYYY-MM-DD') &&
-          //   props.setshowSpinner
-          // )
-          //   props.setshowSpinner(true);
           props.setDate(selectedDate);
           props.setselectedTimeSlot('');
           fetchSlots(selectedDate);
@@ -353,7 +330,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     );
   };
 
-  console.log(date, 'date online', props.SelectedSlotTitle, 'SelectedSlotTitle', selectedtiming);
   return (
     <View>
       <View

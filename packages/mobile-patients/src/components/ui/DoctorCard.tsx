@@ -1,5 +1,5 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
+import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
 import { DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
 import { SAVE_SEARCH } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -12,7 +12,6 @@ import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
 import string from '@aph/mobile-patients/src/strings/strings.json';
-import Moment from 'moment';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -25,11 +24,12 @@ import {
   ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { theme } from '../../theme/theme';
+import {
+  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
+  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
+} from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
-import { getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
-import { nextAvailability } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
+import { theme } from '../../theme/theme';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -118,6 +118,9 @@ export interface DoctorCardProps extends NavigationScreenProps {
     | (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[]
     | null;
   saveSearch?: boolean;
+  doctorsNextAvailability?:
+    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
+    | null;
 }
 
 export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
@@ -126,6 +129,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
 
   const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
     (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
+  >([]);
+  const [doctorsNextAvailability, setdoctorsNextAvailability] = useState<
+    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
+    | null
   >([]);
   const rowData = props.rowData;
   const { currentPatient } = useAllCurrentPatients();
@@ -162,6 +169,34 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
           timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
         }
         setavailableTime(nextSlot);
+        setavailableInMin(timeDiff);
+      }
+    },
+    [rowData]
+  );
+
+  const setNextAvailability = useCallback(
+    (
+      doctorAvailalbeSlots:
+        | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
+        | null
+    ) => {
+      const filterData = doctorAvailalbeSlots
+        ? doctorAvailalbeSlots.filter((item) => {
+            if (item && rowData) {
+              return item.doctorId === rowData.id;
+            }
+          })
+        : [];
+      if (filterData.length > 0 && filterData[0]!.referenceSlot) {
+        const nextSlot = filterData[0] ? filterData[0]!.referenceSlot : ''; //availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!
+        let timeDiff: number = 0;
+        const today: Date = new Date();
+        const date2: Date = new Date(nextSlot);
+        if (date2 && today) {
+          timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+        }
+        setavailableTime(nextSlot);
 
         setavailableInMin(timeDiff);
       }
@@ -173,8 +208,21 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     if (props.doctorAvailalbeSlots && props.doctorAvailalbeSlots !== doctorAvailalbeSlots) {
       setdoctorAvailalbeSlots(props.doctorAvailalbeSlots);
       setAvailability(props.doctorAvailalbeSlots);
+    } else if (
+      props.doctorsNextAvailability &&
+      props.doctorsNextAvailability != doctorsNextAvailability
+    ) {
+      setdoctorsNextAvailability(props.doctorsNextAvailability);
+      setNextAvailability(props.doctorsNextAvailability);
     }
-  }, [props.doctorAvailalbeSlots, doctorAvailalbeSlots, setAvailability]);
+  }, [
+    props.doctorAvailalbeSlots,
+    doctorAvailalbeSlots,
+    setAvailability,
+    props.doctorsNextAvailability,
+    doctorsNextAvailability,
+    setNextAvailability,
+  ]);
 
   // const todayDate = new Date().toISOString().slice(0, 10);
   // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
@@ -253,28 +301,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
     });
   };
 
-  const availabilityText = () => {
-    if (availableInMin) {
-      // if (availableInMin === 0) {
-      //   return 'AVAILABLE NOW';
-      // } else
-      if (availableInMin > 0 && availableInMin < 60) {
-        return ` AVAILABLE IN ${availableInMin} MIN${availableInMin == 1 ? '' : 'S'}`;
-      }
-      // else if (availableInMin > 15 && availableInMin <= 45) {
-      //   return `AVAILABLE IN ${availableInMin} MINS`;
-      // else if (availableInMin === 60) {
-      //   return `AVAILABLE IN 1 HOUR`;
-      // }
-      // else if (availableInMin > 60) {
-      //   return `TODAY ${Moment(new Date(availableTime), 'h:mm a').format('h:mm a')}`;
-      // }
-    }
-  };
-
   if (rowData) {
-    //console.log(availableInMin, 'availableInMin', rowData.firstName, availableTime);
-
     return (
       <TouchableOpacity
         key={rowData.id}
