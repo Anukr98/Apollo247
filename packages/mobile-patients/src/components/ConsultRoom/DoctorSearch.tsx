@@ -751,7 +751,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 renderSpecialistRow(item, index, possibleMatches.specialties!.length, true)
               }
               keyExtractor={(_, index) => index.toString()}
-              numColumns={2}
+              numColumns={1}
             />
           </View>
         )}
