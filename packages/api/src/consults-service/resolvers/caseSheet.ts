@@ -505,6 +505,7 @@ const createSeniorDoctorCaseSheet: Resolver<
       followUpDate: juniorDoctorcaseSheet.followUpDate,
       otherInstructions: juniorDoctorcaseSheet.otherInstructions,
       symptoms: juniorDoctorcaseSheet.symptoms,
+      medicinePrescription: juniorDoctorcaseSheet.medicinePrescription,
       consultType: appointmentData.appointmentType,
       doctorId: appointmentData.doctorId,
       patientId: appointmentData.patientId,
