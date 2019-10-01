@@ -155,7 +155,7 @@ export class DoctorRepository extends Repository<Doctor> {
   }
 
   sortByRankingAlgorithm(a: Doctor, b: Doctor, docIds: string[]) {
-    //STAR_APOLLO doctor on top
+    //Experienced doctor on top
     if (a.experience > b.experience) return -1;
     if (a.experience > b.experience) return 1;
 
