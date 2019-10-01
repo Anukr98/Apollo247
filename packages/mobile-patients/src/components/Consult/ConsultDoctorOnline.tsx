@@ -10,7 +10,10 @@ import {
   NightUnselected,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { NEXT_AVAILABLE_SLOT } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  NEXT_AVAILABLE_SLOT,
+  GET_AVAILABLE_SLOTS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import {
   GetDoctorNextAvailableSlot,
@@ -28,6 +31,7 @@ import {
   getNetStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { BottomPopUp } from '../ui/BottomPopUp';
+import { getDoctorAvailableSlots } from '../../graphql/types/getDoctorAvailableSlots';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -79,6 +83,8 @@ export interface ConsultDoctorOnlineProps {
   selectedTimeSlot: string;
   setshowSpinner?: (arg0: boolean) => void;
   availableSlots?: [];
+  scrollToSlots: (top?: number) => void;
+  setshowOfflinePopup: (arg0: boolean) => void;
 }
 export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) => {
   const timings = [
@@ -112,6 +118,12 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
   const [date, setDate] = useState<Date>(props.date);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
   const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
+  const [timeArray, settimeArray] = useState<TimeArray>([
+    { label: 'Morning', time: [] },
+    { label: 'Afternoon', time: [] },
+    { label: 'Evening', time: [] },
+    { label: 'Night', time: [] },
+  ]);
 
   useEffect(() => {
     if (date !== props.date) {
@@ -121,6 +133,7 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
       if (status) {
         console.log('Network status', status);
         checkAvailabilitySlot();
+        fetchSlots();
       } else {
         setNetworkStatus(true);
         console.log('Network status failed', status);
@@ -132,6 +145,68 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
     //   setavailableSlots(props.availableSlots);
     // }
   }, [props.date, date]);
+
+  const setTimeArrayData = async (availableSlots: string[], date: Date) => {
+    console.log(availableSlots, 'setTimeArrayData availableSlots');
+    setselectedtiming(timeArray[0].label);
+
+    const array = await divideSlots(availableSlots, date);
+    console.log(array, 'array', timeArray, 'timeArray.......');
+    if (array !== timeArray) settimeArray(array);
+    for (const i in array) {
+      if (array[i].time.length > 0) {
+        // setSelectedSlotTitle(array[i].label);
+        setselectedtiming(array[i].label);
+        props.setselectedTimeSlot(array[i].time[0]);
+        props.scrollToSlots();
+        break;
+      }
+    }
+  };
+
+  const fetchSlots = (selectedDate: Date = date) => {
+    console.log('fetchSlots', selectedDate);
+
+    getNetStatus().then((status) => {
+      if (status) {
+        props.setshowSpinner && props.setshowSpinner(true);
+        const availableDate = Moment(selectedDate).format('YYYY-MM-DD');
+        client
+          .query<getDoctorAvailableSlots>({
+            query: GET_AVAILABLE_SLOTS,
+            fetchPolicy: 'no-cache',
+            variables: {
+              DoctorAvailabilityInput: {
+                availableDate: availableDate,
+                doctorId: props.doctor ? props.doctor.id : '',
+              },
+            },
+          })
+          .then(({ data }) => {
+            try {
+              console.log(data, 'availableSlots', availableDate);
+              if (
+                data &&
+                data.getDoctorAvailableSlots &&
+                data.getDoctorAvailableSlots.availableSlots
+              ) {
+                setTimeArrayData(data.getDoctorAvailableSlots.availableSlots, selectedDate);
+              }
+              props.setshowSpinner && props.setshowSpinner(false);
+            } catch {
+              props.setshowSpinner && props.setshowSpinner(false);
+            }
+          })
+          .catch((e: string) => {
+            props.setshowSpinner && props.setshowSpinner(false);
+            console.log('Error occured', e);
+          });
+      } else {
+        props.setshowSpinner && props.setshowSpinner(false);
+        props.setshowOfflinePopup(true);
+      }
+    });
+  };
 
   const todayDate = new Date().toISOString().slice(0, 10);
 
@@ -263,6 +338,7 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
             props.setshowSpinner(true);
           props.setDate(selectedDate);
           props.setselectedTimeSlot('');
+          fetchSlots(selectedDate);
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {

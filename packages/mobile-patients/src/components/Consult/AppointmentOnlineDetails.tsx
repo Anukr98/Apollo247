@@ -210,19 +210,20 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         .format('DD MMM h:mm A')}`;
       setAppointmentTime(time);
     }
+  }, []);
 
+  const NextAvailableSlotAPI = () => {
     getNetStatus().then((status) => {
       if (status) {
         console.log('Network status', status);
         fetchNextDoctorAvailableData();
-        checkIfReschedule();
       } else {
         setNetworkStatus(true);
         setshowSpinner(false);
         console.log('Network status failed', status);
       }
     });
-  }, []);
+  };
 
   const todayDate = moment
     .utc(data.appointmentDateTime)
@@ -253,6 +254,9 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         setshowSpinner(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while GetDoctorNextAvailableSlot', error);
+      })
+      .finally(() => {
+        checkIfReschedule();
       });
   };
 
@@ -310,54 +314,51 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
     console.log(bookRescheduleInput, 'bookRescheduleInput');
 
-    if (!rescheduleApICalled) {
-      setshowSpinner(true);
-      setRescheduleApICalled(true);
-      client
-        .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
-          mutation: BOOK_APPOINTMENT_RESCHEDULE,
-          variables: {
-            bookRescheduleAppointmentInput: bookRescheduleInput,
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((data: any) => {
-          console.log(data, 'data reschedule');
-          setshowSpinner(false);
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [
-                NavigationActions.navigate({
-                  routeName: AppRoutes.TabBar,
-                  params: {
-                    Data:
-                      data.data &&
-                      data.data.bookRescheduleAppointment &&
-                      data.data.bookRescheduleAppointment.appointmentDetails,
-                    DoctorName:
-                      props.navigation.state.params!.data &&
-                      props.navigation.state.params!.data.doctorInfo &&
-                      props.navigation.state.params!.data.doctorInfo.firstName,
-                  },
-                }),
-              ],
-            })
-          );
-        })
-        .catch((e: string) => {
-          setshowSpinner(false);
-          console.log('Error occured while accept appid', e);
-          const error = JSON.parse(JSON.stringify(e));
-          const errorMessage = error && error.message;
-          console.log('Error occured while accept appid', errorMessage, error);
-          Alert.alert(
-            'Error',
-            'Opps ! The selected slot is unavailable. Please choose a different one'
-          );
-        });
-    }
+    // if (!rescheduleApICalled) {
+    setshowSpinner(true);
+    setRescheduleApICalled(true);
+    client
+      .mutate<bookRescheduleAppointment, bookRescheduleAppointmentVariables>({
+        mutation: BOOK_APPOINTMENT_RESCHEDULE,
+        variables: {
+          bookRescheduleAppointmentInput: bookRescheduleInput,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        console.log(data, 'data reschedule');
+        setshowSpinner(false);
+        props.navigation.dispatch(
+          StackActions.reset({
+            index: 0,
+            key: null,
+            actions: [
+              NavigationActions.navigate({
+                routeName: AppRoutes.TabBar,
+                params: {
+                  Data:
+                    data.data &&
+                    data.data.bookRescheduleAppointment &&
+                    data.data.bookRescheduleAppointment.appointmentDetails,
+                  DoctorName:
+                    props.navigation.state.params!.data &&
+                    props.navigation.state.params!.data.doctorInfo &&
+                    props.navigation.state.params!.data.doctorInfo.firstName,
+                },
+              }),
+            ],
+          })
+        );
+      })
+      .catch((e: string) => {
+        setshowSpinner(false);
+        console.log('Error occured while accept appid', e);
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while accept appid', errorMessage, error);
+        setBottompopup(true);
+      });
+    // }
   };
 
   const checkIfReschedule = () => {
@@ -398,8 +399,12 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           setshowSpinner(false);
           const error = JSON.parse(JSON.stringify(e));
           console.log('Error occured while checkIfRescheduleprofile', error);
+        })
+        .finally(() => {
+          setResheduleoverlay(true);
         });
     } catch (error) {
+      setshowSpinner(false);
       console.log(error, 'error');
     }
   };
@@ -475,7 +480,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
                 try {
-                  dateIsAfter ? setResheduleoverlay(true) : null;
+                  dateIsAfter ? NextAvailableSlotAPI() : null;
                 } catch (error) {}
               }}
             />
