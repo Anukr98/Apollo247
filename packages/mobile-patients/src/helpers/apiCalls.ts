@@ -23,6 +23,7 @@ interface PharmaOverview {
   generic: string;
   Doseform: string;
   Unit: string;
+  Strength: string;
   Strengh: string;
   Overview:
     | {

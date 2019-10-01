@@ -664,3 +664,11 @@ export const ToggleOn: React.FC<IconProps> = (props) => (
 export const ChatSend: React.FC<IconProps> = (props) => (
   <IconBase style={{ height: 24, width: 24 }} {...props} source={require('./icons/ChatSend.png')} />
 );
+
+export const PatientDefaultImage: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 100, width: 100 }}
+    {...props}
+    source={require('./icons/no-photo-icon-round.png')}
+  />
+);

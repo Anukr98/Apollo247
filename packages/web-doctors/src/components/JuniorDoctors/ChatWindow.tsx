@@ -245,6 +245,7 @@ interface ConsultRoomProps {
   appointmentId: string;
   doctorId: string;
   patientId: string;
+  disableChat: boolean;
 }
 
 let timerIntervalId: any;
@@ -697,7 +698,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               onChange={(event) => {
                 setMessageText(event.currentTarget.value);
               }}
-              // disabled={!props.disableChat}
+              disabled={props.disableChat}
             />
             {/* {props.disableChat && (
               <Button className={classes.chatsendcircle} variant="contained" component="label">
@@ -721,77 +722,82 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 />
               </Button>
             )} */}
-            <Button
-              className={classes.chatsendcircle}
-              variant="contained"
-              component="label"
-              disabled={fileUploading}
-            >
-              <img src={require('images/ic_add_circle.svg')} alt="" />
-              <input
-                type="file"
-                style={{ display: 'none' }}
+
+            {!props.disableChat && (
+              <Button
+                className={classes.chatsendcircle}
+                variant="contained"
+                component="label"
                 disabled={fileUploading}
-                // onChange={async (e) => {
-                //   setIsUploading(false);
-                //   setUploadedFileUrl(null);
-                //   const files = e.currentTarget.files;
-                //   const file = files && files.length > 0 ? files[0] : null;
-                //   if (file) {
-                //     setIsUploading(true);
-                //     const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
-                //       throw error;
-                //     });
-                //     const url = client.getBlobUrl(aphBlob.name);
-                //     console.log(aphBlob, url);
-                //     setUploadedFileUrl(url);
-                //     setIsUploading(false);
-                //   }
-                // }}
-                onChange={async (e) => {
-                  const fileNames = e.target.files;
-                  if (fileNames && fileNames.length > 0) {
-                    setFileUploading(true);
-                    const file = fileNames[0] || null;
-                    const fileExtension = file.name.split('.').pop();
-                    const fileSize = file.size;
-                    if (fileSize > 2000000) {
-                      setFileUploadErrorMessage(
-                        'Invalid File Size. File size must be less than 2MB'
-                      );
-                      setIsDialogOpen(true);
-                    } else if (
-                      fileExtension &&
-                      (fileExtension.toLowerCase() === 'png' ||
-                        fileExtension.toLowerCase() === 'jpg' ||
-                        fileExtension.toLowerCase() === 'pdf' ||
-                        fileExtension.toLowerCase() === 'jpeg')
-                    ) {
-                      if (file) {
-                        const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
-                          throw error;
-                        });
-                        const url = client.getBlobUrl(aphBlob.name);
-                        const uploadObject = {
-                          id: doctorId,
-                          fileType: `image`,
-                          message: `^^#DocumentUpload`,
-                          url: url,
-                          isTyping: true,
-                        };
-                        sendMsg(uploadObject, true);
-                        setFileUploading(false);
+              >
+                <img src={require('images/ic_add_circle.svg')} alt="" />
+                <input
+                  type="file"
+                  style={{ display: 'none' }}
+                  disabled={fileUploading}
+                  // onChange={async (e) => {
+                  //   setIsUploading(false);
+                  //   setUploadedFileUrl(null);
+                  //   const files = e.currentTarget.files;
+                  //   const file = files && files.length > 0 ? files[0] : null;
+                  //   if (file) {
+                  //     setIsUploading(true);
+                  //     const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
+                  //       throw error;
+                  //     });
+                  //     const url = client.getBlobUrl(aphBlob.name);
+                  //     console.log(aphBlob, url);
+                  //     setUploadedFileUrl(url);
+                  //     setIsUploading(false);
+                  //   }
+                  // }}
+                  onChange={async (e) => {
+                    const fileNames = e.target.files;
+                    if (fileNames && fileNames.length > 0) {
+                      setFileUploading(true);
+                      const file = fileNames[0] || null;
+                      const fileExtension = file.name.split('.').pop();
+                      const fileSize = file.size;
+                      if (fileSize > 2000000) {
+                        setFileUploadErrorMessage(
+                          'Invalid File Size. File size must be less than 2MB'
+                        );
+                        setIsDialogOpen(true);
+                      } else if (
+                        fileExtension &&
+                        (fileExtension.toLowerCase() === 'png' ||
+                          fileExtension.toLowerCase() === 'jpg' ||
+                          fileExtension.toLowerCase() === 'pdf' ||
+                          fileExtension.toLowerCase() === 'jpeg')
+                      ) {
+                        if (file) {
+                          const aphBlob = await client
+                            .uploadBrowserFile({ file })
+                            .catch((error) => {
+                              throw error;
+                            });
+                          const url = client.getBlobUrl(aphBlob.name);
+                          const uploadObject = {
+                            id: doctorId,
+                            fileType: `image`,
+                            message: `^^#DocumentUpload`,
+                            url: url,
+                            isTyping: true,
+                          };
+                          sendMsg(uploadObject, true);
+                          setFileUploading(false);
+                        }
+                      } else {
+                        setFileUploadErrorMessage(
+                          'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
+                        );
+                        setIsDialogOpen(true);
                       }
-                    } else {
-                      setFileUploadErrorMessage(
-                        'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
-                      );
-                      setIsDialogOpen(true);
                     }
-                  }
-                }}
-              />
-            </Button>
+                  }}
+                />
+              </Button>
+            )}
           </div>
         )}
       </div>

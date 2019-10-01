@@ -46,10 +46,13 @@ import {
   View,
   BackHandler,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { ArrowRight } from '../ui/Icons';
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   searchContainer: {
@@ -81,17 +84,30 @@ const styles = StyleSheet.create({
   },
   listSpecialistView: {
     ...theme.viewStyles.cardViewStyle,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 16,
+    flexDirection: 'row',
   },
   rowSpecialistStyles: {
-    ...theme.fonts.IBMPlexSansSemiBold(13),
-    paddingHorizontal: 9,
-    paddingTop: 11,
-    paddingBottom: 12,
-    color: theme.colors.SEARCH_TITLE_COLOR,
-    textAlign: 'center',
+    ...theme.fonts.IBMPlexSansMedium(14),
+    marginLeft: 16,
+    marginTop: 12,
+    color: theme.colors.SHERPA_BLUE,
+    textAlign: 'left',
+    height: 24,
+    width: width - 168,
+    lineHeight: 24,
+    paddingRight: 1,
+  },
+  rowDescriptionSpecialistStyles: {
+    ...theme.fonts.IBMPlexSansMedium(12),
+    marginLeft: 16,
+    color: theme.colors.LIGHT_BLUE,
+    textAlign: 'left',
+    height: 24,
+    width: width - 168,
+    opacity: 0.6,
+    lineHeight: 20,
+    letterSpacing: 0.04,
+    paddingRight: 1,
   },
   helpView: {
     marginTop: 40,
@@ -463,7 +479,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     // const SpecialitiesList = Specialities;
 
     const SpecialitiesList = searchText.length > 2 ? searchSpecialities : Specialities;
-    //  console.log(SpecialitiesList, 'SpecialitiesList');
+    // console.log(SpecialitiesList, 'SpecialitiesList');
     if (SpecialitiesList && SpecialitiesList.length > 0 && displaySpeialist) {
       return (
         <View>
@@ -495,7 +511,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               renderSpecialistRow(item, index, SpecialitiesList.length, searchText.length > 2)
             }
             keyExtractor={(_, index) => index.toString()}
-            numColumns={2}
+            numColumns={1}
           />
         </View>
       );
@@ -530,12 +546,13 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 }
               }}
               style={{
-                width: '50%',
-                paddingHorizontal: 8,
+                // flex: 1,
+                width: '100%',
+                paddingHorizontal: 20,
                 marginVertical: 8,
-                marginTop: rowID === 0 || rowID === 1 ? 16 : 8,
-                marginBottom: length === rowID + 1 || (length - 1) % 2 === 1 ? 16 : 8,
-                height: 100,
+                marginTop: rowID === 0 ? 16 : 6,
+                marginBottom: length === rowID + 1 ? 16 : 6,
+                // height: 100,
               }}
               key={rowID}
             >
@@ -543,13 +560,34 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 {rowData.image && (
                   <Image
                     source={{
+                      // uri: 'https://apollouatstg.blob.core.windows.net/hospitals/ic_cardiology.png',
                       uri: rowData.image,
                     }}
                     resizeMode={'contain'}
-                    style={{ height: 36, width: 36 }}
+                    style={{
+                      height: 40,
+                      width: 40,
+                      marginVertical: 14,
+                      marginLeft: 16,
+                    }}
                   />
                 )}
-                <Text style={styles.rowSpecialistStyles}>{rowData.name!.toUpperCase()}</Text>
+                <View>
+                  <Text numberOfLines={1} style={styles.rowSpecialistStyles}>
+                    {rowData.name}
+                  </Text>
+                  <Text numberOfLines={1} style={styles.rowDescriptionSpecialistStyles}>
+                    {rowData.userFriendlyNomenclature}
+                  </Text>
+                </View>
+                <ArrowRight
+                  style={{
+                    height: 24,
+                    width: 24,
+                    marginVertical: 22,
+                  }}
+                  resizeMode={'contain'}
+                />
               </View>
               {data ? console.log(data, 'savesearch data') : null}
               {error ? console.log(error, 'savesearch error') : null}

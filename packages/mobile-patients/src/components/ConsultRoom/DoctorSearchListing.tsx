@@ -35,6 +35,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  BackHandler,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 
@@ -179,14 +180,25 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       }
     });
 
+    const handleBackPress = async () => {
+      props.navigation.goBack();
+      return false;
+    };
+
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       console.log('didFocus');
       setshowSpinner(true);
       fetchSpecialityFilterData();
+      BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    });
+
+    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
     });
 
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
+      willBlurSubscription && willBlurSubscription.remove();
     };
   }, []);
 

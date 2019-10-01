@@ -165,9 +165,23 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     return medicineOverview.map((data, index, array) => {
       const desc = data.CaptionDesc || '';
       let trimmedDesc = desc.charAt(0) == '.' ? desc.slice(1).trim() : desc;
-      if (data.Caption == 'HOW IT WORKS' || 'USES') {
+
+      if (data.Caption == 'HOW IT WORKS' || data.Caption == 'USES') {
         trimmedDesc = `${medicineName} ${trimmedDesc}`;
       }
+
+      const splitByEntities = trimmedDesc.split('&amp;lt;br /&amp;gt;');
+      trimmedDesc = splitByEntities
+        .map((item) => {
+          let _item = item.trim().replace('. ', '');
+          if (_item.charAt(0) == '.') {
+            _item = _item.substring(1);
+          }
+          return _item || null;
+        })
+        .filter((item) => item)
+        .join('\n');
+
       return (
         <View key={index}>
           <Text style={styles.heading}>{data.Caption}</Text>
