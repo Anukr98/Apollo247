@@ -155,10 +155,6 @@ export class DoctorRepository extends Repository<Doctor> {
   }
 
   sortByRankingAlgorithm(a: Doctor, b: Doctor, docIds: string[]) {
-    //Experienced doctor on top
-    if (a.experience > b.experience) return -1;
-    if (a.experience > b.experience) return 1;
-
     //STAR_APOLLO doctor on top
     if (a.doctorType == DoctorType.STAR_APOLLO && b.doctorType != DoctorType.STAR_APOLLO) return -1;
     if (a.doctorType != DoctorType.STAR_APOLLO && b.doctorType == DoctorType.STAR_APOLLO) return 1;
@@ -174,6 +170,10 @@ export class DoctorRepository extends Repository<Doctor> {
     //payroll doctors at last
     if (a.doctorType != DoctorType.PAYROLL && b.doctorType == DoctorType.PAYROLL) return -1;
     if (a.doctorType == DoctorType.PAYROLL && b.doctorType != DoctorType.PAYROLL) return 1;
+
+    //Experienced doctor on top
+    if (a.experience > b.experience) return -1;
+    if (a.experience < b.experience) return 1;
 
     return 0;
   }
