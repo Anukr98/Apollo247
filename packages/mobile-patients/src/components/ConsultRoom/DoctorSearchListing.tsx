@@ -14,6 +14,7 @@ import {
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
+  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { ConsultMode, Gender, Range } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
@@ -132,6 +133,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
   >([]);
   const [doctorIds, setdoctorIds] = useState<(string | null)[]>([]);
+
+  const [doctorsNextAvailability, setdoctorsNextAvailability] = useState<
+    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
+    | null
+  >([]);
+
   const [
     specialities,
     setspecialities,
@@ -139,6 +146,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     null
   );
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+
+  const [filterMode, setfilterMode] = useState<ConsultMode>(ConsultMode.BOTH);
 
   const [scrollY] = useState(new Animated.Value(0));
   const { currentPatient } = useAllCurrentPatients();
@@ -173,7 +182,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     getNetStatus().then((status) => {
       if (status) {
         fetchCurrentLocation();
-        fetchSpecialityFilterData(FilterData);
+        fetchSpecialityFilterData(filterMode, FilterData);
       } else {
         setshowSpinner(false);
         setshowOfflinePopup(true);
@@ -186,7 +195,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     };
 
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      console.log('didFocus');
       setshowSpinner(true);
       fetchSpecialityFilterData();
       BackHandler.addEventListener('hardwareBackPress', handleBackPress);
@@ -224,8 +232,11 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
   };
 
-  const fetchSpecialityFilterData = (SearchData: filterDataType[] = FilterData) => {
-    console.log('FilterData1111111', SearchData);
+  const fetchSpecialityFilterData = (
+    filterMode: ConsultMode = ConsultMode.BOTH,
+    SearchData: filterDataType[] = FilterData
+  ) => {
+    console.log('FilterData1111111', SearchData, filterMode, 'filterMode');
     const experienceArray: Range[] = [];
     if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
       SearchData[1].selectedOptions.forEach((element: string) => {
@@ -308,6 +319,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       gender: SearchData[4].selectedOptions,
       language: SearchData[5].selectedOptions,
       ...availableNow,
+      consultMode: filterMode,
     };
     console.log(FilterInput, 'FilterInput');
 
@@ -326,35 +338,34 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             data && data.getDoctorsBySpecialtyAndFilters
               ? data.getDoctorsBySpecialtyAndFilters
               : null;
-          if (filterGetData && filterGetData.doctors && doctorsList !== filterGetData.doctors) {
-            const ids = filterGetData.doctors
-              ? filterGetData.doctors.map((item) => item && item.id)
-              : [];
-            const prevIds = [...doctorIds];
-            if (ids !== prevIds) {
-              prevIds.push(...ids);
-              setdoctorIds(prevIds);
-              prevIds.length > 0 && fetchNextSlots(prevIds);
+          if (filterGetData) {
+            if (filterGetData.doctors) {
+              const ids = filterGetData.doctors
+                ? filterGetData.doctors.map((item) => item && item.id)
+                : [];
+              const prevIds = [...doctorIds];
+              if (ids !== prevIds) {
+                prevIds.push(...ids);
+                setdoctorIds(prevIds);
+                prevIds.length > 0 && fetchNextSlots(prevIds);
+              }
+              setDoctorsList(filterGetData.doctors);
+              prevIds.length === 0 && setshowSpinner(false);
             }
-            setDoctorsList(filterGetData.doctors);
-            prevIds.length === 0 && setshowSpinner(false);
-          }
 
-          if (
-            filterGetData &&
-            filterGetData.doctorsAvailability &&
-            doctorsAvailability !== filterGetData.doctorsAvailability
-          ) {
-            setdoctorsAvailability(filterGetData.doctorsAvailability);
-            setshowSpinner(false);
-          }
-          if (
-            filterGetData &&
-            filterGetData.specialty &&
-            specialities !== filterGetData.specialty
-          ) {
-            setspecialities(filterGetData.specialty);
-            setshowSpinner(false);
+            if (filterGetData.doctorsAvailability) {
+              setdoctorsAvailability(filterGetData.doctorsAvailability);
+              setshowSpinner(false);
+            }
+            if (filterGetData.specialty) {
+              setspecialities(filterGetData.specialty);
+              setshowSpinner(false);
+            }
+
+            if (filterGetData.doctorsNextAvailability) {
+              setdoctorsNextAvailability(filterGetData.doctorsNextAvailability);
+              setshowSpinner(false);
+            }
           }
         } catch {}
       })
@@ -561,12 +572,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           key={index}
           rowData={rowData}
           navigation={props.navigation}
-          doctorAvailalbeSlots={doctorAvailalbeSlots}
+          // doctorAvailalbeSlots={doctorAvailalbeSlots}
+          doctorsNextAvailability={doctorsNextAvailability}
         />
       );
     return null;
   };
   const consultionType = (id: string, filter: ConsultMode) => {
+    console.log(id, 'consultionType', filter);
+
     doctorsAvailability;
     let filterType = false;
     doctorsAvailability &&
@@ -584,13 +598,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderDoctorSearches = (filter?: ConsultMode) => {
-    const doctors = filter
-      ? doctorsList.filter(
-          (obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null) => {
-            return consultionType(obj!.id, filter) || consultionType(obj!.id, ConsultMode.BOTH);
-          }
-        )
-      : doctorsList;
+    const doctors = doctorsList; // filter
+    // ? doctorsList.filter(
+    //     (obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null) => {
+    //       return consultionType(obj!.id, filter) || consultionType(obj!.id, ConsultMode.BOTH);
+    //     }
+    //   )
+    // : doctorsList;
     if (doctors.length === 0 && !showSpinner) {
       return (
         <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 64 }}>
@@ -684,7 +698,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             backgroundColor: theme.colors.CARD_BG,
           }}
           data={tabs}
-          onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+          onChange={(selectedTab: string) => {
+            setselectedTab(selectedTab);
+            const selectedFilterMode =
+              selectedTab === tabs[0].title
+                ? ConsultMode.BOTH
+                : selectedTab === tabs[1].title
+                ? ConsultMode.ONLINE
+                : ConsultMode.PHYSICAL;
+            setfilterMode(selectedFilterMode);
+            fetchSpecialityFilterData(selectedFilterMode);
+          }}
           selectedTab={selectedTab}
         />
       </Animated.View>
@@ -817,7 +841,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             setFilterData(selecteddata);
             getNetStatus().then((status) => {
               if (status) {
-                fetchSpecialityFilterData(selecteddata);
+                fetchSpecialityFilterData(filterMode, selecteddata);
               } else {
                 setshowSpinner(false);
                 setshowOfflinePopup(true);

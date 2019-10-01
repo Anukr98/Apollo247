@@ -11,14 +11,12 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import {
   BOOK_APPOINTMENT,
   BOOK_FOLLOWUP_APPOINTMENT,
-  GET_AVAILABLE_SLOTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { bookAppointment } from '@aph/mobile-patients/src/graphql/types/bookAppointment';
 import {
   BookFollowUpAppointment,
   BookFollowUpAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/BookFollowUpAppointment';
-import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 import {
   getDoctorDetailsById_getDoctorDetailsById,
   getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
@@ -28,9 +26,9 @@ import {
   BookAppointmentInput,
   DoctorType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { divideSlots, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -89,13 +87,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
       : [{ title: 'Consult Online' }];
 
-  // const [timeArray, settimeArray] = useState<TimeArray>([
-  //   { label: 'Morning', time: [] },
-  //   { label: 'Afternoon', time: [] },
-  //   { label: 'Evening', time: [] },
-  //   { label: 'Night', time: [] },
-  // ]);
-
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
 
@@ -105,11 +96,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [availableInMin, setavailableInMin] = useState<Number>(0);
   const [showSuccessPopUp, setshowSuccessPopUp] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
-  const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
   const [AppointmentExistAlert, setAppointmentExistAlert] = useState<boolean>(false);
   const scrollViewRef = React.useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
-  const [SelectedSlotTitle, setSelectedSlotTitle] = useState<string>('');
 
   const todayDate = new Date().toDateString().split('T')[0];
   console.log(todayDate, 'todayDatetodayDate', new Date().toDateString());
@@ -117,106 +106,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const scrollToSlots = (top: number = 400) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
   };
-
-  // const setTimeArrayData = async (availableSlots: string[], date: Date) => {
-  //   console.log(availableSlots, 'setTimeArrayData availableSlots');
-
-  //   const array = await divideSlots(availableSlots, date);
-  //   console.log(array, 'array', timeArray, 'timeArray.......');
-  //   if (array !== timeArray) settimeArray(array);
-  //   for (const i in array) {
-  //     if (array[i].time.length > 0) {
-  //       setSelectedSlotTitle(array[i].label);
-  //       setselectedTimeSlot(array[i].time[0]);
-  //       scrollToSlots();
-  //       break;
-  //     }
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchSlots(date);
-  // }, []);
-
-  // const fetchSlots = (date: Date) => {
-  //   console.log('fetchSlots', date);
-
-  //   getNetStatus().then((status) => {
-  //     if (status) {
-  //       setshowSpinner(true);
-  //       const availableDate = moment(date).format('YYYY-MM-DD');
-  //       client
-  //         .query<getDoctorAvailableSlots>({
-  //           query: GET_AVAILABLE_SLOTS,
-  //           fetchPolicy: 'no-cache',
-  //           variables: {
-  //             DoctorAvailabilityInput: {
-  //               availableDate: availableDate,
-  //               doctorId: props.doctorId,
-  //             },
-  //           },
-  //         })
-  //         .then(({ data }) => {
-  //           try {
-  //             console.log(data, 'availableSlots', availableSlots);
-  //             if (
-  //               data &&
-  //               data.getDoctorAvailableSlots &&
-  //               data.getDoctorAvailableSlots.availableSlots &&
-  //               availableSlots !== data.getDoctorAvailableSlots.availableSlots
-  //             ) {
-  //               setshowSpinner(false);
-  //               setTimeArrayData(data.getDoctorAvailableSlots.availableSlots, date);
-  //               setavailableSlots(data.getDoctorAvailableSlots.availableSlots);
-  //             }
-  //           } catch {}
-  //         })
-  //         .catch((e: string) => {
-  //           showSpinner && setshowSpinner(false);
-  //           console.log('Error occured', e);
-  //         });
-  //     } else {
-  //       setshowSpinner(false);
-  //       setshowOfflinePopup(true);
-  //     }
-  //   });
-  // };
-
-  // console.log(availableDate, 'dateeeeeeee', props.doctorId, 'doctorId');
-  // const availabilityData = useQuery<getDoctorAvailableSlots>(GET_AVAILABLE_SLOTS, {
-  //   fetchPolicy: 'no-cache',
-  //   variables: {
-  //     DoctorAvailabilityInput: {
-  //       availableDate: availableDate,
-  //       doctorId: props.doctorId,
-  //     },
-  //   },
-  // });
-
-  // if (availabilityData.error) {
-  //   console.log('error', availabilityData.error);
-  //   showSpinner && setshowSpinner(false);
-  // } else {
-  //   console.log(availabilityData.data, 'availableSlots', availableSlots);
-  //   if (
-  //     availabilityData &&
-  //     availabilityData.data &&
-  //     availabilityData.data.getDoctorAvailableSlots &&
-  //     availabilityData.data.getDoctorAvailableSlots.availableSlots &&
-  //     availableSlots !== availabilityData.data.getDoctorAvailableSlots.availableSlots
-  //   ) {
-  //     setshowSpinner(false);
-  //     console.log(
-  //       availableDate,
-  //       'dateeeeeeee',
-  //       availableSlots,
-  //       'availableSlots1111',
-  //       availabilityData.data.getDoctorAvailableSlots.availableSlots
-  //     );
-  //     setTimeArrayData(availabilityData.data.getDoctorAvailableSlots.availableSlots, date);
-  //     setavailableSlots(availabilityData.data.getDoctorAvailableSlots.availableSlots);
-  //   }
-  // }
 
   const onSubmitBookAppointment = () => {
     console.log('BookAppointment flow');
@@ -398,11 +287,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           }}
         >
           <View
-            // isVisible={props.dispalyoverlay}
-            // windowBackgroundColor="rgba(0, 0, 0, .41)"
-            // overlayBackgroundColor={theme.colors.DEFAULT_BACKGROUND_COLOR}
-
-            // onBackdropPress={() => props.setdisplayoverlay(false)}
             style={{
               backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
               marginTop: 16,
@@ -410,7 +294,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               height: 'auto',
               maxHeight: height - 98,
               padding: 0,
-              // margin: 0,
               borderRadius: 10,
               overflow: 'hidden',
             }}
@@ -423,7 +306,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               data={tabs}
               onChange={(selectedTab: string) => {
                 setDate(new Date());
-                // fetchSlots(new Date());//removed
                 setselectedTab(selectedTab);
                 setselectedTimeSlot('');
                 setisConsultOnline(true);
@@ -435,15 +317,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               {selectedTab === tabs[0].title ? (
                 <ConsultOnline
                   doctor={props.doctor}
-                  // timeArray={timeArray}
                   date={date}
                   setDate={(date) => {
                     console.log(date, 'setDate');
                     setDate(date);
-                    // fetchSlots(date);//removed
-                    // scrollViewRef.current &&
-                    //   scrollViewRef.current.scrollTo &&
-                    //   scrollViewRef.current.scrollTo({ x: 0, y: 510, animated: true });
                   }}
                   nextAvailableSlot={nextAvailableSlot}
                   setNextAvailableSlot={setNextAvailableSlot}
@@ -454,7 +331,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setselectedTimeSlot={setselectedTimeSlot}
                   selectedTimeSlot={selectedTimeSlot}
                   setshowSpinner={setshowSpinner}
-                  SelectedSlotTitle={SelectedSlotTitle}
                   scrollToSlots={scrollToSlots}
                   setshowOfflinePopup={setshowOfflinePopup}
                 />
