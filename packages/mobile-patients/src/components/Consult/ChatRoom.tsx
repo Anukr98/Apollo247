@@ -2145,7 +2145,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const AudioCall = () => {
     return (
       <View style={audioCallStyles}>
-        {!convertVideo && <DoctorCall style={audioCallImageStyles} />}
+        {!convertVideo && (
+          <View>
+            {appointmentData.doctorInfo.photoUrl ? (
+              <View style={[audioCallImageStyles, { backgroundColor: 'white' }]}>
+                <Image
+                  source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                  style={audioCallImageStyles}
+                  resizeMode={'contain'}
+                />
+              </View>
+            ) : (
+              <DoctorImage style={audioCallImageStyles} />
+            )}
+          </View>
+        )}
+        {/* {!convertVideo && <DoctorCall style={audioCallImageStyles} />} */}
         <View
           style={{
             position: 'absolute',

@@ -1,30 +1,8 @@
 // Development
-const Configuration = {
-  LOG_ENVIRONMENT: 'debug',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-  PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
-  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
-  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
-  DELIVERY_CHARGES: 25,
-  PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
-  PRO_TOKBOX_KEY: '46429002',
-  PRO_PUBNUB_PUBLISH: 'pub-c-d32f262d-c014-471d-95fe-b45903651cfd',
-  PRO_PUBNUB_SUBSCRIBER: 'sub-c-015f75e4-daca-11e9-85e7-eae1db32c94a',
-  // PRO_PUBNUB_PUBLISH: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
-  // PRO_PUBNUB_SUBSCRIBER: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
-  PHARMA_AUTH_TOKEN: 'dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-  PHARMA_AUTH_TOKEN_OLD: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-  PHARMA_BASE_URL: 'http://13.126.95.18',
-  // PHARMA_UAT_BASE_URL: 'http://uat.apollopharmacy.in',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
-};
-
-// QA
 // const Configuration = {
-//   LOG_ENVIRONMENT: 'release',
+//   LOG_ENVIRONMENT: 'debug',
 //   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-//   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
+//   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
 //   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
 //   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
 //   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
@@ -33,11 +11,33 @@ const Configuration = {
 //   PRO_TOKBOX_KEY: '46429002',
 //   PRO_PUBNUB_PUBLISH: 'pub-c-d32f262d-c014-471d-95fe-b45903651cfd',
 //   PRO_PUBNUB_SUBSCRIBER: 'sub-c-015f75e4-daca-11e9-85e7-eae1db32c94a',
-//   PHARMA_AUTH_TOKEN: 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
+//   // PRO_PUBNUB_PUBLISH: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
+//   // PRO_PUBNUB_SUBSCRIBER: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
+//   PHARMA_AUTH_TOKEN: 'dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
 //   PHARMA_AUTH_TOKEN_OLD: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
-//   PHARMA_BASE_URL: 'https://www.apollopharmacy.in',
+//   PHARMA_BASE_URL: 'http://13.126.95.18',
+//   // PHARMA_UAT_BASE_URL: 'http://uat.apollopharmacy.in',
 //   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
 // };
+
+// QA
+const Configuration = {
+  LOG_ENVIRONMENT: 'release',
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  DELIVERY_CHARGES: 25,
+  PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-d32f262d-c014-471d-95fe-b45903651cfd',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-015f75e4-daca-11e9-85e7-eae1db32c94a',
+  PHARMA_AUTH_TOKEN: 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
+  PHARMA_AUTH_TOKEN_OLD: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+  PHARMA_BASE_URL: 'https://www.apollopharmacy.in',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+};
 
 // Production
 // const Configuration = {
