@@ -1,5 +1,4 @@
-import { Button, CircularProgress, Theme } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
+import { Button, CircularProgress } from '@material-ui/core';
 import { format } from 'date-fns';
 import { GET_BLOCKED_CALENDAR, REMOVE_BLOCKED_CALENDAR_ITEM } from 'graphql/doctors';
 import {
@@ -10,10 +9,6 @@ import React from 'react';
 import { Mutation } from 'react-apollo';
 import { Item } from 'components/blocked-calendar/BlockedCalendar';
 
-const useStyles = makeStyles((theme: Theme) => {
-  return {};
-});
-
 export interface BlockedCalendarItemProps {
   doctorId: string;
   item: Item;
@@ -21,7 +16,6 @@ export interface BlockedCalendarItemProps {
 }
 
 export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) => {
-  const classes = useStyles();
   const { item, doctorId, onEdit } = props;
   const sameDay = item.start.getDate() === item.end.getDate();
   const dateText = sameDay

@@ -134,6 +134,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         },
       })
       .then((_data) => {
+        console.log('data', _data);
         const formatDate = (date: string) =>
           moment(date)
             .clone()
@@ -187,6 +188,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
+        console.log('data', data);
         loading && setLoading(false);
         const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
         setmedicalRecords(records);
@@ -205,24 +207,25 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       });
   }, []);
 
-  useEffect(() => {
-    fetchPastData();
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   fetchPastData();
+  //   fetchData();
+  // }, []);
 
   // useEffect(() => {
   //   fetchData();
   // }, []);
+
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       fetchPastData();
-      fetchData(true);
+      fetchData();
       setDisplayFilter(false);
     });
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
     };
-  }, [props.navigation, fetchData]);
+  }, [props.navigation]);
 
   const renderDeleteMedicalOrder = (MedicaId: string) => {
     client

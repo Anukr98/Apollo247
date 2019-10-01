@@ -9,10 +9,8 @@ import {
   FormControlLabel,
   RadioGroup,
   TextField,
-  Theme,
 } from '@material-ui/core';
 import { DialogProps } from '@material-ui/core/Dialog';
-import { makeStyles } from '@material-ui/styles';
 import {
   ADD_BLOCKED_CALENDAR_ITEM,
   GET_BLOCKED_CALENDAR,
@@ -33,10 +31,6 @@ import {
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
-const useStyles = makeStyles((theme: Theme) => {
-  return {};
-});
-
 export interface BlockedCalendarAddModalProps {
   dialogProps: DialogProps & { onClose: () => void };
   doctorId: string;
@@ -49,7 +43,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     DURATION = 'DURATION',
   }
   const { item, dialogProps, doctorId } = props;
-  const classes = useStyles();
   const [selectedValue, setSelectedValue] = useState(RadioValues.DURATION);
   const daySelected = selectedValue === RadioValues.DAY;
   const durationSelected = selectedValue === RadioValues.DURATION;
