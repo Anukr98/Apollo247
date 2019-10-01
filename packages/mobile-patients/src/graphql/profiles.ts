@@ -389,6 +389,12 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         specialistSingularTerm
         specialistPluralTerm
       }
+      doctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
+      }
     }
   }
 `;

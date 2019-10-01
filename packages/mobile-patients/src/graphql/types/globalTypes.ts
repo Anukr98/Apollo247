@@ -263,6 +263,7 @@ export interface FilterDoctorInput {
   gender?: (Gender | null)[] | null;
   language?: (string | null)[] | null;
   location?: string | null;
+  consultMode?: ConsultMode | null;
 }
 
 export interface HelpEmailInput {
