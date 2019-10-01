@@ -235,6 +235,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         id
         name
         image
+        userFriendlyNomenclature
       }
       possibleMatches {
         doctors {
@@ -255,6 +256,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           id
           name
           image
+          userFriendlyNomenclature
         }
       }
       otherDoctors {
@@ -281,6 +283,10 @@ export const GET_ALL_SPECIALTIES = gql`
       id
       name
       image
+      # specialistSingularTerm
+      # specialistPluralTerm
+      userFriendlyNomenclature
+      # displayOrder
     }
   }
 `;
@@ -318,6 +324,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           streetLine1
           streetLine2
           streetLine3
+          imageUrl
         }
       }
       starTeam {

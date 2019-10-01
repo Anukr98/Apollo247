@@ -723,7 +723,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             paddingLeft: 3,
                           }}
                         >
-                          {day1.diff(day2, 'days')} more days
+                              {day1.diff(day2, 'days')} more {day1.diff(day2, 'days') == 1 ? 'day' : 'days'}
                         </Text>
                       </View>
                     </View>
