@@ -531,7 +531,10 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                           {/* {clinic.image && ( */}
                           <Image
                             source={{
-                              uri: 'https://via.placeholder.com/328x136',
+                              uri:
+                                item && item.facility.imageUrl
+                                  ? item.facility.imageUrl
+                                  : 'https://via.placeholder.com/328x136',
                             }}
                             style={{
                               height: 136,

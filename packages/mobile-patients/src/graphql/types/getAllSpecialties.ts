@@ -11,6 +11,7 @@ export interface getAllSpecialties_getAllSpecialties {
   id: string;
   name: string;
   image: string | null;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface getAllSpecialties {
