@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Theme, Button, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphInput } from '@aph/web-ui-components';
+import { AphInput, AphTextField } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
@@ -76,9 +76,9 @@ const useStyles = makeStyles((theme: Theme) => {
       align: 'right',
     },
     inputWidth: {
-      width: '60 %',
-      align: 'left',
-      paddingRight: 26,
+      '& input': {
+        paddingRight: 35,
+      },
     },
     showIncomingBox: {
       color: '#f00',
@@ -685,7 +685,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         )}
         {(!showVideo || showVideoChat) && (
           <div className={classes.chatFooter}>
-            <AphInput
+            <AphTextField
               className={classes.inputWidth}
               inputProps={{ type: 'text' }}
               placeholder="Type here..."
