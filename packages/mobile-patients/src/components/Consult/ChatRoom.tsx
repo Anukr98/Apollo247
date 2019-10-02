@@ -8,6 +8,7 @@ import {
   BackCameraIcon,
   ChatCallIcon,
   ChatIcon,
+  ChatSend,
   ChatWithNotification,
   DoctorCall,
   DoctorImage,
@@ -22,16 +23,12 @@ import {
   UnMuteIcon,
   VideoOffIcon,
   VideoOnIcon,
-  ChatSend,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  ADD_TO_CONSULT_QUEUE,
   BOOK_APPOINTMENT_RESCHEDULE,
   BOOK_APPOINTMENT_TRANSFER,
-  CHECK_IF_RESCHDULE,
-  NEXT_AVAILABLE_SLOT,
   UPDATE_APPOINTMENT_SESSION,
   UPLOAD_CHAT_FILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -63,6 +60,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   KeyboardEvent,
+  Linking,
   NativeModules,
   PermissionsAndroid,
   Platform,
@@ -72,13 +70,12 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  CameraRoll,
-  Linking,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import InCallManager from 'react-native-incall-manager';
 import KeepAwake from 'react-native-keep-awake';
+import SoftInputMode from 'react-native-set-soft-input-mode';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 // import {
 //   addToConsultQueue,
@@ -89,26 +86,17 @@ import {
   bookRescheduleAppointmentVariables,
 } from '../../graphql/types/bookRescheduleAppointment';
 import {
-  checkIfReschedule,
-  checkIfRescheduleVariables,
-} from '../../graphql/types/checkIfReschedule';
-import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlotVariables,
-} from '../../graphql/types/GetDoctorNextAvailableSlot';
-import {
   uploadChatDocument,
   uploadChatDocumentVariables,
 } from '../../graphql/types/uploadChatDocument';
-import { Spinner } from '../ui/Spinner';
-import { OverlayRescheduleView } from './OverlayRescheduleView';
-import SoftInputMode from 'react-native-set-soft-input-mode';
-import { AppConfig } from '../../strings/AppConfig';
 import {
   addToConsultQueue,
-  getNextAvailableSlots,
   checkIfRescheduleAppointment,
+  getNextAvailableSlots,
 } from '../../helpers/clientCalls';
+import { AppConfig } from '../../strings/AppConfig';
+import { Spinner } from '../ui/Spinner';
+import { OverlayRescheduleView } from './OverlayRescheduleView';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
