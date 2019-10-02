@@ -443,6 +443,9 @@ export class Facility extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
+  @Column({ nullable: true })
+  zipcode: string;
+
   @BeforeUpdate()
   updateDateUpdate() {
     this.updatedDate = new Date();
