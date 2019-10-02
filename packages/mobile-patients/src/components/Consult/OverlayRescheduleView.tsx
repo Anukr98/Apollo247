@@ -360,7 +360,10 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   doctor={props.doctor}
                   timeArray={timeArray}
                   date={date}
-                  setDate={setDate}
+                  setDate={(date) => {
+                    console.log(date, 'setDate');
+                    setDate(date);
+                  }}
                   nextAvailableSlot={nextAvailableSlot}
                   setNextAvailableSlot={setNextAvailableSlot}
                   isConsultOnline={isConsultOnline}
@@ -369,6 +372,9 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   availableInMin={availableInMin}
                   setselectedTimeSlot={setselectedTimeSlot}
                   selectedTimeSlot={selectedTimeSlot}
+                  scrollToSlots={scrollToSlots}
+                  setshowOfflinePopup={setshowOfflinePopup}
+                  setshowSpinner={setshowSpinner}
                 />
               ) : (
                 <ConsultPhysical
@@ -377,11 +383,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   setDate={(date) => {
                     console.log(date, 'setDate');
                     setDate(date);
-                    // fetchSlots(date);//removed
                     scrollToSlots(350);
-                    // scrollViewRef.current &&
-                    //   scrollViewRef.current.scrollTo &&
-                    //   scrollViewRef.current.scrollTo({ x: 0, y: 465, animated: true });
                   }}
                   setselectedTimeSlot={setselectedTimeSlot}
                   selectedTimeSlot={selectedTimeSlot}

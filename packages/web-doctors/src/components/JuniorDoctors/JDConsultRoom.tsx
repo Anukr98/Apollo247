@@ -114,6 +114,10 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'flex-end',
       padding: 15,
     },
+    noDoctorImage: {
+      padding: 20,
+      paddingBottom: 0,
+    },
     patientImage: {
       paddingRight: 7,
       '& img': {
@@ -549,7 +553,7 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo.getJuniorDoctorCaseSheet.patientDetails &&
     !isNull(casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.photoUrl)
       ? casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.photoUrl
-      : require('images/PatientImage.png');
+      : '';
 
   if (patientAppointmentTimeUtc !== '') {
     appointmentDateIST = format(
@@ -932,10 +936,16 @@ export const JDConsultRoom: React.FC = () => {
                     </div>
                   </div>
                   <div className={classes.patientSection}>
-                    <div className={classes.patientImage}>
+                    <div
+                      className={`${classes.patientImage}  ${
+                        patientPhotoUrl === '' ? classes.noDoctorImage : ''
+                      }`}
+                    >
                       <img
                         style={{ width: '100px' }}
-                        src={patientPhotoUrl}
+                        src={
+                          patientPhotoUrl !== '' ? patientPhotoUrl : require('images/no_photo.png')
+                        }
                         alt="Patient Profile Photo"
                       />
                     </div>
