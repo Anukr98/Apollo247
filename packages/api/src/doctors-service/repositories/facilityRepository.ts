@@ -69,4 +69,10 @@ export class FacilityRepository extends Repository<Facility> {
       });
     });
   }
+
+  getfacilityDetails(id: string) {
+    return this.findOne({
+      where: [{ id }],
+    });
+  }
 }
