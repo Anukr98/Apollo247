@@ -59,11 +59,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 > = async (parent, args, { doctorsDb, consultsDb }) => {
   const searchTextLowerCase = args.searchText.trim().toLowerCase();
 
-  let matchedDoctors,
-    matchedSpecialties,
+  let matchedDoctors: Doctor[] = [],
+    matchedSpecialties: DoctorSpecialty[] = [],
     matchedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-  let possibleDoctors, possibleSpecialties, possibleDoctorsNextAvailability;
-  let otherDoctors,
+  let possibleDoctors: Doctor[] = [],
+    possibleSpecialties: DoctorSpecialty[] = [],
+    possibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
+  let otherDoctors: Doctor[] = [],
     otherDoctorsNextAvailability: DoctorSlotAvailability[] = [];
   try {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
@@ -106,11 +108,11 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       const {
         sortedPossibleDoctors,
         allPossibleSpecialties,
-        doctorNextAvailSlots,
+        sortedPossibleDoctorsNextAvailability,
       } = await getPossibleDoctorsAndSpecialties(args.patientId, doctorsDb, consultsDb);
       possibleDoctors = sortedPossibleDoctors;
       possibleSpecialties = allPossibleSpecialties;
-      possibleDoctorsNextAvailability = doctorNextAvailSlots.doctorAvailalbeSlots;
+      possibleDoctorsNextAvailability = sortedPossibleDoctorsNextAvailability;
     }
   } catch (searchError) {
     throw new AphError(AphErrorMessages.SEARCH_DOCTOR_ERROR, undefined, { searchError });
@@ -137,80 +139,26 @@ const getPossibleDoctorsAndSpecialties = async (
 ) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
-  const consultsRepository = consultsDb.getCustomRepository(AppointmentRepository);
 
   let allPossibleDoctors: Doctor[] = [];
   let allPossibleSpecialties: DoctorSpecialty[] = [];
   let sortedPossibleDoctors: Doctor[] = [];
+  let sortedPossibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
   allPossibleDoctors = await doctorRepository.searchByName('');
   allPossibleSpecialties = await specialtyRepository.searchByName('');
 
-  //get patient and matched doctors previous appointments starts here
-  const possibleDoctorIds = allPossibleDoctors.map((doctor) => {
-    return doctor.id;
-  });
-
-  const doctorNextAvailSlots = await doctorRepository.getDoctorsNextAvailableSlot(
-    possibleDoctorIds,
-    ConsultMode.BOTH,
+  //get Sorted Doctors List
+  const { sortedDoctors, sortedDoctorsNextAvailability } = await getSortedDoctors(
+    allPossibleDoctors,
+    patientId,
     doctorsDb,
     consultsDb
   );
 
-  if (allPossibleDoctors.length > 1) {
-    //get consult now and book now doctors by available time
-    const {
-      consultNowDoctors,
-      bookNowDoctors,
-    } = await doctorRepository.getConsultAndBookNowDoctors(
-      doctorNextAvailSlots.doctorAvailalbeSlots,
-      allPossibleDoctors
-    );
+  sortedPossibleDoctors = sortedDoctors;
+  sortedPossibleDoctorsNextAvailability = sortedDoctorsNextAvailability;
 
-    //apply sort algorithm on ConsultNow doctors
-    if (consultNowDoctors.length > 1) {
-      //get patient and matched doctors previous appointments starts here
-      const consultNowDocIds = consultNowDoctors.map((doctor) => {
-        return doctor.id;
-      });
-      const previousAppointments = await consultsRepository.getPatientAndDoctorsAppointments(
-        patientId,
-        consultNowDocIds
-      );
-      const consultedDoctorIds = previousAppointments.map((appt) => {
-        return appt.doctorId;
-      });
-      //get patient and matched doctors previous appointments ends here
-
-      consultNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-        return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
-      });
-    }
-
-    //apply sort algorithm on BookNow doctors
-    if (bookNowDoctors.length > 1) {
-      //get patient and matched doctors previous appointments starts here
-      const consultNowDocIds = bookNowDoctors.map((doctor) => {
-        return doctor.id;
-      });
-      const previousAppointments = await consultsRepository.getPatientAndDoctorsAppointments(
-        patientId,
-        consultNowDocIds
-      );
-      const consultedDoctorIds = previousAppointments.map((appt) => {
-        return appt.doctorId;
-      });
-      //get patient and matched doctors previous appointments ends here
-
-      bookNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-        return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
-      });
-    }
-
-    sortedPossibleDoctors = consultNowDoctors.concat(bookNowDoctors);
-  }
-
-  return { sortedPossibleDoctors, allPossibleSpecialties, doctorNextAvailSlots };
+  return { sortedPossibleDoctors, allPossibleSpecialties, sortedPossibleDoctorsNextAvailability };
 };
 
 const getSortedDoctors = async (
