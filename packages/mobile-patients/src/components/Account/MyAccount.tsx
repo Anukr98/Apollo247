@@ -1,6 +1,10 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Location, NotificaitonAccounts } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Location,
+  NotificaitonAccounts,
+  PatientDefaultImage,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -220,7 +224,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               // profileDetails.photoUrl &&
               // profileDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
               <Animated.Image
-                source={require('../ui/icons/PatientImage.png')}
+                source={require('../ui/icons/no-photo-icon-round.png')}
                 style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
                 resizeMode={'contain'}
               />
@@ -228,6 +232,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               //   style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
               // />
               // )
+              // <PatientDefaultImage
+              //   style={{ top: 10, height: 140, width: 140 }}
+              //   resizeMode={'contain'}
+              // />
             }
           </View>
         </Animated.View>
@@ -308,7 +316,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              QA V 1.0(22)
+              QA V 1.0(26)
             </Text>
           </View>
         </Animated.ScrollView>

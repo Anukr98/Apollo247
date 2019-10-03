@@ -574,5 +574,14 @@ export interface RxPdfData {
     qualifications: string;
     registrationNumber: string;
   };
+  hospitalAddress: {
+    name: string;
+    streetLine1: string;
+    streetLine2: string;
+    city: string;
+    zipcode: string;
+    state: string;
+    country: string;
+  };
 }
 ///////////////////////////////////////////////////////////

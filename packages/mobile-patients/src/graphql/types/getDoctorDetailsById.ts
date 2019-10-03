@@ -24,6 +24,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById_doctorHospital_facili
   streetLine1: string | null;
   streetLine2: string | null;
   streetLine3: string | null;
+  imageUrl: string | null;
 }
 
 export interface getDoctorDetailsById_getDoctorDetailsById_doctorHospital {

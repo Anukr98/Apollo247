@@ -415,6 +415,9 @@ export class Facility extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true, type: 'text' })
+  imageUrl: string;
+
   @Column({ nullable: true })
   latitude: string;
 
@@ -439,6 +442,9 @@ export class Facility extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+
+  @Column({ nullable: true })
+  zipcode: string;
 
   @BeforeUpdate()
   updateDateUpdate() {

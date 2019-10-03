@@ -8,15 +8,13 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
-import { GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
 import {
   getDoctorsBySpecialtyAndFilters,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors,
-  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability,
+  getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
 import { ConsultMode, Gender, Range } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
@@ -28,6 +26,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import {
   Animated,
   AsyncStorage,
+  BackHandler,
   PermissionsAndroid,
   Platform,
   SafeAreaView,
@@ -69,7 +68,7 @@ export interface DoctorSearchListingProps extends NavigationScreenProps {}
 export type filterDataType = {
   label: string;
   options: string[];
-  selectedOptions: string[]; // | { minimum: number; maximum: number }[];
+  selectedOptions: string[];
 };
 
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
@@ -117,20 +116,25 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
   >([]);
-  const [doctorsAvailability, setdoctorsAvailability] = useState<
-    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[]
-    | null
-  >([]);
-
   const [FilterData, setFilterData] = useState<filterDataType[]>([...filterData]);
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
-  const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
-    (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
+  // const [doctorsAvailability, setdoctorsAvailability] = useState<
+  //   | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[]
+  //   | null
+  // >([]);
+  // const [doctorAvailalbeSlots, setdoctorAvailalbeSlots] = useState<
+  //   (GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots | null)[] | null
+  // >([]);
+  // const [doctorIds, setdoctorIds] = useState<(string | null)[]>([]);
+
+  const [doctorsNextAvailability, setdoctorsNextAvailability] = useState<
+    | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability | null)[]
+    | null
   >([]);
-  const [doctorIds, setdoctorIds] = useState<(string | null)[]>([]);
+
   const [
     specialities,
     setspecialities,
@@ -138,6 +142,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     null
   );
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+
+  const [filterMode, setfilterMode] = useState<ConsultMode>(ConsultMode.BOTH);
 
   const [scrollY] = useState(new Animated.Value(0));
   const { currentPatient } = useAllCurrentPatients();
@@ -172,92 +178,63 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     getNetStatus().then((status) => {
       if (status) {
         fetchCurrentLocation();
-        fetchSpecialityFilterData(FilterData);
+        fetchSpecialityFilterData(filterMode, FilterData);
       } else {
         setshowSpinner(false);
         setshowOfflinePopup(true);
       }
     });
+
+    const handleBackPress = async () => {
+      props.navigation.goBack();
+      return false;
+    };
+
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      setshowSpinner(true);
+      fetchSpecialityFilterData();
+      BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    });
+
+    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+    });
+
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+      willBlurSubscription && willBlurSubscription.remove();
+    };
   }, []);
 
-  const fetchNextSlots = (doctorIds: (string | null)[]) => {
-    console.log(doctorIds, 'doctorIds fetchNextSlots');
-    const todayDate = new Date().toISOString().slice(0, 10);
-    // const availability = useQuery<GetDoctorNextAvailableSlot>(NEXT_AVAILABLE_SLOT, {
-    //   fetchPolicy: 'no-cache',
-    //   variables: {
-    //     DoctorNextAvailableSlotInput: {
-    //       doctorIds: doctorIds,
-    //       availableDate: todayDate,
-    //     },
-    //   },
-    // });
+  // const fetchNextSlots = (doctorIds: (string | null)[]) => {
+  //   const todayDate = new Date().toISOString().slice(0, 10);
 
-    // if (availability.error) {
-    //   console.log('error', availability.error);
-    // } else {
-    //   console.log('doctorIds fetchNextSlots result', availability);
-    //   if (
-    //     availability &&
-    //     availability.data &&
-    //     availability.data.getDoctorNextAvailableSlot &&
-    //     availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-    //     doctorAvailalbeSlots !== availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-    //   ) {
-    //     setdoctorAvailalbeSlots(availability.data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
-    //   }
-    // }
+  //   getNextAvailableSlots(client, doctorIds, todayDate)
+  //     .then(({ data }: any) => {
+  //       try {
+  //         console.log(data, 'data res');
+  //         if (data) {
+  //           if (doctorAvailalbeSlots !== data) {
+  //             setdoctorAvailalbeSlots(data);
+  //             setshowSpinner(false);
+  //           }
+  //         }
+  //       } catch {}
+  //     })
+  //     .catch((e: string) => {
+  //       setshowSpinner(false);
+  //       console.log('Error occured ', e);
+  //     });
+  // };
 
-    getNextAvailableSlots(client, doctorIds, todayDate)
-      .then(({ data }: any) => {
-        console.log(data, 'data res');
-        if (data) {
-          if (doctorAvailalbeSlots !== data) {
-            setdoctorAvailalbeSlots(data);
-            setshowSpinner(false);
-          }
-        }
-      })
-      .catch((e: string) => {
-        setshowSpinner(false);
-        console.log('Error occured ', e);
-      });
-
-    // client
-    //   .query<GetDoctorNextAvailableSlot>({
-    //     query: NEXT_AVAILABLE_SLOT,
-    //     variables: {
-    //       DoctorNextAvailableSlotInput: {
-    //         doctorIds: doctorIds,
-    //         availableDate: todayDate,
-    //       },
-    //     },
-    //     fetchPolicy: 'no-cache',
-    //   })
-    //   .then(({ data }) => {
-    //     console.log(data, 'data res');
-
-    //     if (data) {
-    //       if (
-    //         data &&
-    //         data.getDoctorNextAvailableSlot &&
-    //         data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-    //         doctorAvailalbeSlots !== data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
-    //       ) {
-    //         setdoctorAvailalbeSlots(data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
-    //       }
-    //     }
-    //   })
-    //   .catch((e: string) => {
-    //     console.log('Error occured while searching Doctor', e);
-    //   });
-  };
-
-  const fetchSpecialityFilterData = (FilterData: filterDataType[]) => {
-    console.log('FilterData1111111', FilterData);
+  const fetchSpecialityFilterData = (
+    filterMode: ConsultMode = ConsultMode.BOTH,
+    SearchData: filterDataType[] = FilterData
+  ) => {
+    console.log('FilterData1111111', SearchData, filterMode, 'filterMode');
     const experienceArray: Range[] = [];
-    if (FilterData[1].selectedOptions && FilterData[1].selectedOptions.length > 0)
-      FilterData[1].selectedOptions.forEach((element: string) => {
+    if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
+      SearchData[1].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         let object: Range | null = {};
         if (splitArray.length > 0)
@@ -271,8 +248,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       });
 
     const feesArray: Range[] = [];
-    if (FilterData[3].selectedOptions && FilterData[3].selectedOptions.length > 0)
-      FilterData[3].selectedOptions.forEach((element: string) => {
+    if (SearchData[3].selectedOptions && SearchData[3].selectedOptions.length > 0)
+      SearchData[3].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
         console.log(splitArray, 'splitArray');
         let object: Range | null = {};
@@ -290,11 +267,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     let availableNow = {};
     const availabilityArray: string[] = [];
     const today = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
-    console.log('moment', moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'));
-    if (FilterData[2].selectedOptions && FilterData[2].selectedOptions.length > 0)
-      FilterData[2].selectedOptions.forEach((element: string) => {
+    if (SearchData[2].selectedOptions && SearchData[2].selectedOptions.length > 0)
+      SearchData[2].selectedOptions.forEach((element: string) => {
         if (element === 'Now') {
-          // availabilityArray.push(today);
           availableNow = {
             availableNow: moment(new Date())
               .utc()
@@ -327,38 +302,22 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         } else {
           availabilityArray.push(element);
         }
-        // new Date().getTime() + 24 * 60 * 60 * 1000;
       });
-    console.log(
-      experienceArray,
-      'experienceArray',
-      availabilityArray,
-      'availabilityArray',
-      feesArray,
-      'feesArray',
-      availableNow,
-      'availableNow'
-    );
 
     const FilterInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
       specialty: props.navigation.state.params ? props.navigation.state.params!.specialityId : '',
-      city: FilterData[0].selectedOptions,
+      city: SearchData[0].selectedOptions,
       experience: experienceArray,
       availability: availabilityArray,
       fees: feesArray,
-      gender: FilterData[4].selectedOptions,
-      language: FilterData[5].selectedOptions,
+      gender: SearchData[4].selectedOptions,
+      language: SearchData[5].selectedOptions,
       ...availableNow,
+      consultMode: filterMode,
     };
+    console.log(FilterInput, 'FilterInput');
 
-    console.log(
-      props.navigation.state.params,
-      'speciality',
-      FilterData,
-      'FilterDataFilterDataFilterData',
-      FilterInput
-    );
     client
       .query<getDoctorsBySpecialtyAndFilters>({
         query: DOCTOR_SPECIALITY_BY_FILTERS,
@@ -368,97 +327,51 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         },
       })
       .then(({ data }) => {
-        console.log('getDoctorsBySpecialtyAndFilters ', data);
-        const filterGetData =
-          data && data.getDoctorsBySpecialtyAndFilters
-            ? data.getDoctorsBySpecialtyAndFilters
-            : null;
-        if (filterGetData && filterGetData.doctors && doctorsList !== filterGetData.doctors) {
-          const ids = filterGetData.doctors
-            ? filterGetData.doctors.map((item) => item && item.id)
-            : [];
-          const prevIds = [...doctorIds];
-          if (ids !== prevIds) {
-            prevIds.push(...ids);
-            setdoctorIds(prevIds);
-            prevIds.length > 0 && fetchNextSlots(prevIds);
-          }
-          console.log(doctorIds, 'doctorIds otherDoctors', filterGetData.doctors);
-          setDoctorsList(filterGetData.doctors);
-          prevIds.length === 0 && setshowSpinner(false);
-        }
+        try {
+          console.log('getDoctorsBySpecialtyAndFilters ', data);
+          const filterGetData =
+            data && data.getDoctorsBySpecialtyAndFilters
+              ? data.getDoctorsBySpecialtyAndFilters
+              : null;
+          if (filterGetData) {
+            if (filterGetData.doctors) {
+              // const ids = filterGetData.doctors
+              //   ? filterGetData.doctors.map((item) => item && item.id)
+              //   : [];
+              // const prevIds = [...doctorIds];
+              // if (ids !== prevIds) {
+              //   prevIds.push(...ids);
+              //   setdoctorIds(prevIds);
+              //   prevIds.length > 0 && fetchNextSlots(prevIds);
+              // }
+              // prevIds.length === 0 && setshowSpinner(false);
+              setDoctorsList(filterGetData.doctors);
+            }
 
-        if (
-          filterGetData &&
-          filterGetData.doctorsAvailability &&
-          doctorsAvailability !== filterGetData.doctorsAvailability
-        ) {
-          setdoctorsAvailability(filterGetData.doctorsAvailability);
-          setshowSpinner(false);
-        }
-        if (filterGetData && filterGetData.specialty && specialities !== filterGetData.specialty) {
-          setspecialities(filterGetData.specialty);
-          setshowSpinner(false);
-        }
+            // if (filterGetData.doctorsAvailability) {
+            //   setdoctorsAvailability(filterGetData.doctorsAvailability);
+            //   setshowSpinner(false);
+            // }
+            if (filterGetData.specialty) {
+              setspecialities(filterGetData.specialty);
+              setshowSpinner(false);
+            }
+
+            if (filterGetData.doctorsNextAvailability) {
+              setdoctorsNextAvailability(filterGetData.doctorsNextAvailability);
+              setshowSpinner(false);
+            }
+          }
+        } catch {}
       })
       .catch((e: string) => {
         setshowSpinner(false);
         console.log('Error occured while searching Doctor', e);
       });
-
-    // const { data, error } = useQuery<getDoctorsBySpecialtyAndFilters>(DOCTOR_SPECIALITY_BY_FILTERS, {
-    //   fetchPolicy: 'no-cache',
-    //   variables: {
-    //     filterInput: FilterInput,
-    //   },
-    // });
-    // if (error) {
-    //   setshowSpinner(false);
-    //   console.log('error', error);
-    // } else {
-    //   console.log('getDoctorsBySpecialtyAndFilters ', data);
-    //   const filterGetData =
-    //     data && data.getDoctorsBySpecialtyAndFilters ? data.getDoctorsBySpecialtyAndFilters : null;
-    //   if (filterGetData && filterGetData.doctors && doctorsList !== filterGetData.doctors) {
-    //     const ids = filterGetData.doctors ? filterGetData.doctors.map((item) => item && item.id) : [];
-    //     const prevIds = [...doctorIds];
-    //     if (ids !== prevIds) {
-    //       prevIds.push(...ids);
-    //       setdoctorIds(prevIds);
-    //       fetchNextSlots(prevIds);
-    //     }
-    //     console.log(doctorIds, 'doctorIds otherDoctors', filterGetData.doctors);
-    //     setDoctorsList(filterGetData.doctors);
-    //     setshowSpinner(false);
-    //   }
-
-    //   if (
-    //     filterGetData &&
-    //     filterGetData.doctorsAvailability &&
-    //     doctorsAvailability !== filterGetData.doctorsAvailability
-    //   ) {
-    //     setdoctorsAvailability(filterGetData.doctorsAvailability);
-    //     setshowSpinner(false);
-    //   }
-    //   if (filterGetData && filterGetData.specialty && specialities !== filterGetData.specialty) {
-    //     setspecialities(filterGetData.specialty);
-    //     setshowSpinner(false);
-    //   }
-    // }
   };
 
   const handleScroll = () => {
     // console.log(e, 'jvjhvhm');
-  };
-
-  const findAddressFromLocationString = (searchstring: string, key: string) => {
-    return new Promise((resolve, reject) => {
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-      axios
-        .get(url)
-        .then(resolve)
-        .catch(reject);
-    });
   };
 
   const autoSearch = (searchText: string) => {
@@ -469,22 +382,23 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${key}`
           )
           .then((obj) => {
-            console.log(obj, 'places');
-            if (obj.data.predictions) {
-              const address = obj.data.predictions.map(
-                (item: {
-                  place_id: string;
-                  structured_formatting: {
-                    main_text: string;
-                  };
-                }) => {
-                  return { name: item.structured_formatting.main_text, placeId: item.place_id };
-                }
-              );
-              console.log(address, 'address');
-              setlocationSearchList(address);
-              // setcurrentLocation(address.toUpperCase());
-            }
+            try {
+              console.log(obj, 'places');
+              if (obj.data.predictions) {
+                const address = obj.data.predictions.map(
+                  (item: {
+                    place_id: string;
+                    structured_formatting: {
+                      main_text: string;
+                    };
+                  }) => {
+                    return { name: item.structured_formatting.main_text, placeId: item.place_id };
+                  }
+                );
+                console.log(address, 'address');
+                setlocationSearchList(address);
+              }
+            } catch {}
           })
           .catch((error) => {
             console.log(error);
@@ -538,27 +452,29 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             axios
               .get(url)
               .then((obj) => {
-                console.log(obj);
-                if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
-                ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(
-                    address,
-                    'address',
-                    obj.data.results[0].geometry.location,
-                    'location'
-                  );
-                  setcurrentLocation(address.toUpperCase());
-                  AsyncStorage.setItem(
-                    'location',
-                    JSON.stringify({
-                      latlong: obj.data.results[0].geometry.location,
-                      name: address.toUpperCase(),
-                    })
-                  );
-                }
+                try {
+                  console.log(obj);
+                  if (
+                    obj.data.results.length > 0 &&
+                    obj.data.results[0].address_components.length > 0
+                  ) {
+                    const address = obj.data.results[0].address_components[0].short_name;
+                    console.log(
+                      address,
+                      'address',
+                      obj.data.results[0].geometry.location,
+                      'location'
+                    );
+                    setcurrentLocation(address.toUpperCase());
+                    AsyncStorage.setItem(
+                      'location',
+                      JSON.stringify({
+                        latlong: obj.data.results[0].geometry.location,
+                        name: address.toUpperCase(),
+                      })
+                    );
+                  }
+                } catch {}
               })
               .catch((error) => {
                 console.log(error, 'geocode error');
@@ -651,36 +567,40 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           key={index}
           rowData={rowData}
           navigation={props.navigation}
-          doctorAvailalbeSlots={doctorAvailalbeSlots}
+          // doctorAvailalbeSlots={doctorAvailalbeSlots}
+          doctorsNextAvailability={doctorsNextAvailability}
         />
       );
     return null;
   };
-  const consultionType = (id: string, filter: ConsultMode) => {
-    doctorsAvailability;
-    let filterType = false;
-    doctorsAvailability &&
-      doctorsAvailability.forEach((element) => {
-        if (
-          element &&
-          element.doctorId === id &&
-          element.availableModes &&
-          element.availableModes.includes(filter)
-        ) {
-          filterType = true;
-        }
-      });
-    return filterType;
-  };
+
+  // const consultionType = (id: string, filter: ConsultMode) => {
+  //   console.log(id, 'consultionType', filter);
+
+  //   doctorsAvailability;
+  //   let filterType = false;
+  //   doctorsAvailability &&
+  //     doctorsAvailability.forEach((element) => {
+  //       if (
+  //         element &&
+  //         element.doctorId === id &&
+  //         element.availableModes &&
+  //         element.availableModes.includes(filter)
+  //       ) {
+  //         filterType = true;
+  //       }
+  //     });
+  //   return filterType;
+  // };
 
   const renderDoctorSearches = (filter?: ConsultMode) => {
-    const doctors = filter
-      ? doctorsList.filter(
-          (obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null) => {
-            return consultionType(obj!.id, filter) || consultionType(obj!.id, ConsultMode.BOTH);
-          }
-        )
-      : doctorsList;
+    const doctors = doctorsList; // filter
+    // ? doctorsList.filter(
+    //     (obj: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null) => {
+    //       return consultionType(obj!.id, filter) || consultionType(obj!.id, ConsultMode.BOTH);
+    //     }
+    //   )
+    // : doctorsList;
     if (doctors.length === 0 && !showSpinner) {
       return (
         <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 64 }}>
@@ -757,7 +677,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           transform: [{ translateY: headMov }],
           zIndex: 2,
           elevation: 2,
-          // ...theme.viewStyles.shadowStyle,
         }}
       >
         <Animated.View style={{ paddingHorizontal: 20, top: 0, opacity: imgOp }}>
@@ -775,7 +694,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             backgroundColor: theme.colors.CARD_BG,
           }}
           data={tabs}
-          onChange={(selectedTab: string) => setselectedTab(selectedTab)}
+          onChange={(selectedTab: string) => {
+            setselectedTab(selectedTab);
+            const selectedFilterMode =
+              selectedTab === tabs[0].title
+                ? ConsultMode.BOTH
+                : selectedTab === tabs[1].title
+                ? ConsultMode.ONLINE
+                : ConsultMode.PHYSICAL;
+            setfilterMode(selectedFilterMode);
+            fetchSpecialityFilterData(selectedFilterMode);
+          }}
           selectedTab={selectedTab}
         />
       </Animated.View>
@@ -792,7 +721,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             position: 'absolute',
             left: 0,
             right: 0,
-            top: 0, //40
+            top: 0,
             bottom: 0,
             alignItems: 'center',
             zIndex: 15,
@@ -819,7 +748,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             <View style={{ flexDirection: 'row' }}>
               <View style={{ flex: 7 }}>
                 <TextInputComponent
-                  // conatinerstyles={{ flex: 1, height: 64 }}
                   value={currentLocation}
                   onChangeText={(value) => {
                     setcurrentLocation(value);
@@ -870,8 +798,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     }
   };
 
-  console.log(FilterData, 'FilterData', showSpinner, 'displayFilter', displayFilter);
-
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView
@@ -911,7 +837,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             setFilterData(selecteddata);
             getNetStatus().then((status) => {
               if (status) {
-                fetchSpecialityFilterData(selecteddata);
+                fetchSpecialityFilterData(filterMode, selecteddata);
               } else {
                 setshowSpinner(false);
                 setshowOfflinePopup(true);

@@ -39,6 +39,7 @@ export interface CapsuleViewProps {
   title?: string;
   onPress?: TouchableOpacityProps['onPress'];
   isActive?: boolean;
+  upperCase?: boolean;
 }
 
 export const CapsuleView: React.FC<CapsuleViewProps> = (props) => {
@@ -55,6 +56,7 @@ export const CapsuleView: React.FC<CapsuleViewProps> = (props) => {
             styles.titleTextStyle,
             !props.isActive ? styles.disabledTextStyle : null,
             props.titleTextStyle,
+            props.upperCase ? { textTransform: 'uppercase' } : {},
           ]}
         >
           {props.title}
@@ -66,4 +68,5 @@ export const CapsuleView: React.FC<CapsuleViewProps> = (props) => {
 
 CapsuleView.defaultProps = {
   isActive: true,
+  upperCase: false,
 };

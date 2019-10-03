@@ -198,6 +198,7 @@ export const Calendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [viewSelection, setViewSelection] = useState<string>('day');
   const [monthSelected, setMonthSelected] = useState<string>(moment(today).format('MMMM'));
+
   //console.log(moment(today).format('MMMM'));
   const [range, setRange] = useState<{ start: string | Date; end: string | Date }>(
     viewSelection === 'day'

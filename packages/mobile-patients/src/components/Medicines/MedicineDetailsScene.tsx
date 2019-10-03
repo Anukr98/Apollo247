@@ -1,7 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
@@ -9,6 +8,7 @@ import {
   MedicineProduct,
   MedicineProductDetails,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
@@ -92,16 +92,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const { addCartItem, cartItems } = useShoppingCart();
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
   const isOutOfStock = !medicineDetails!.is_in_stock;
+  const medicineName = medicineDetails.name;
 
   useEffect(() => {
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
-        console.log({ data: data.productdp[0] || {} });
         setmedicineDetails(data.productdp[0] || {});
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err, 'MedicineDetailsScene err');
+        aphConsole.log('MedicineDetailsScene err', err);
         setLoading(false);
       });
   }, []);
@@ -164,7 +164,24 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const renderTitleAndDescriptionList = () => {
     return medicineOverview.map((data, index, array) => {
       const desc = data.CaptionDesc || '';
-      const trimmedDesc = desc.charAt(0) == '.' ? desc.slice(1).trim() : desc;
+      let trimmedDesc = desc.charAt(0) == '.' ? desc.slice(1).trim() : desc;
+
+      if (data.Caption == 'HOW IT WORKS' || data.Caption == 'USES') {
+        trimmedDesc = `${medicineName} ${trimmedDesc}`;
+      }
+
+      const splitByEntities = trimmedDesc.split('&amp;lt;br /&amp;gt;');
+      trimmedDesc = splitByEntities
+        .map((item) => {
+          let _item = item.trim().replace('. ', '');
+          if (_item.charAt(0) == '.') {
+            _item = _item.substring(1);
+          }
+          return _item || null;
+        })
+        .filter((item) => item)
+        .join('\n');
+
       return (
         <View key={index}>
           <Text style={styles.heading}>{data.Caption}</Text>
@@ -174,6 +191,80 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         </View>
       );
     });
+  };
+
+  const renderBasicDetails = () => {
+    if (!loading) {
+      let composition = '';
+      const description = medicineDetails.name;
+      const pack = medicineDetails.mou;
+      const price = medicineDetails.price;
+      const pharmaOverview = medicineDetails!.PharmaOverview[0] || {};
+      const doseForm = pharmaOverview.Doseform;
+
+      const _composition = {
+        generic: pharmaOverview.generic
+          ? pharmaOverview.generic.indexOf('+') > -1
+            ? pharmaOverview.generic.split('+').map((item) => item.trim())
+            : [pharmaOverview.generic]
+          : [],
+        unit: pharmaOverview.Unit
+          ? pharmaOverview.Unit.indexOf('+') > -1
+            ? pharmaOverview.Unit.split('+').map((item) => item.trim())
+            : [pharmaOverview.Unit]
+          : [],
+        strength:
+          pharmaOverview.Strength || pharmaOverview.Strengh
+            ? (pharmaOverview.Strength || pharmaOverview.Strengh).indexOf('+') > -1
+              ? (pharmaOverview.Strength || pharmaOverview.Strengh)
+                  .split('+')
+                  .map((item) => item.trim())
+              : [pharmaOverview.Strength || pharmaOverview.Strengh]
+            : [],
+      };
+      composition = [...Array.from({ length: _composition.generic.length })]
+        .map(
+          (_, index) =>
+            `${_composition.generic[index]}-${_composition.strength[index]}${_composition.unit[index]}`
+        )
+        .join('+');
+
+      return (
+        <>
+          {!!composition && (
+            <View>
+              <Text style={styles.heading}>{'Composition'.toUpperCase()}</Text>
+              <Text style={[styles.description, { marginBottom: 16 }]}>{composition}</Text>
+            </View>
+          )}
+          {!!doseForm && (
+            <View>
+              <Text style={styles.heading}>{'Dose Form'.toUpperCase()}</Text>
+              <Text style={[styles.description, { marginBottom: 16 }]}>{doseForm}</Text>
+            </View>
+          )}
+          {!!description && (
+            <View>
+              <Text style={styles.heading}>{'Description'.toUpperCase()}</Text>
+              <Text style={[styles.description, { marginBottom: 16 }]}>{description}</Text>
+            </View>
+          )}
+          {!!price && (
+            <View>
+              <Text style={styles.heading}>{'Price'.toUpperCase()}</Text>
+              <Text style={[styles.description, { marginBottom: 16 }]}>Rs. {price.toFixed(2)}</Text>
+            </View>
+          )}
+          {!!pack && (
+            <View>
+              <Text style={styles.heading}>{'Pack'.toUpperCase()}</Text>
+              <Text style={[styles.description, { marginBottom: 0 }]}>{pack}</Text>
+            </View>
+          )}
+          {!loading && medicineOverview.length != 0 && <View style={styles.separator} />}
+        </>
+      );
+    }
   };
 
   const _title = props.navigation.getParam('title');
@@ -198,7 +289,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         />
       )}
 
-      {!loading && medicineOverview.length == 0 && (
+      {/* {!loading && medicineOverview.length == 0 && (
         <View style={{ flex: 1 }}>
           <View style={styles.cardStyle}>
             {renderNote()}
@@ -214,12 +305,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             />
           </View>
         </View>
-      )}
+      )} */}
 
-      {!loading && medicineOverview.length > 0 && (
+      {!loading && (
         <ScrollView bounces={false}>
           <View style={styles.cardStyle}>
             {renderNote()}
+            {renderBasicDetails()}
             {renderTitleAndDescriptionList()}
           </View>
         </ScrollView>

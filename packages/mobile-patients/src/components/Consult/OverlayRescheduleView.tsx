@@ -94,6 +94,13 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
   const [showSuccessPopUp, setshowSuccessPopUp] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
+  const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+
+  const scrollViewRef = React.useRef<any>(null);
+
+  const scrollToSlots = (top: number = 400) => {
+    scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
+  };
 
   const setTimeArrayData = (availableSlots: string[]) => {
     const array = divideSlots(availableSlots, date);
@@ -347,13 +354,16 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                 Reschedule
               </Text>
             </View>
-            <ScrollView bounces={false}>
+            <ScrollView bounces={false} ref={scrollViewRef}>
               {props.renderTab === 'Consult Online' ? (
                 <ConsultDoctorOnline
                   doctor={props.doctor}
                   timeArray={timeArray}
                   date={date}
-                  setDate={setDate}
+                  setDate={(date) => {
+                    console.log(date, 'setDate');
+                    setDate(date);
+                  }}
                   nextAvailableSlot={nextAvailableSlot}
                   setNextAvailableSlot={setNextAvailableSlot}
                   isConsultOnline={isConsultOnline}
@@ -362,16 +372,25 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   availableInMin={availableInMin}
                   setselectedTimeSlot={setselectedTimeSlot}
                   selectedTimeSlot={selectedTimeSlot}
+                  scrollToSlots={scrollToSlots}
+                  setshowOfflinePopup={setshowOfflinePopup}
+                  setshowSpinner={setshowSpinner}
                 />
               ) : (
                 <ConsultPhysical
                   doctor={props.doctor}
                   clinics={props.clinics}
-                  setDate={setDate}
+                  setDate={(date) => {
+                    console.log(date, 'setDate');
+                    setDate(date);
+                    scrollToSlots(350);
+                  }}
                   setselectedTimeSlot={setselectedTimeSlot}
                   selectedTimeSlot={selectedTimeSlot}
-                  timeArray={timeArray}
                   date={date}
+                  scrollToSlots={scrollToSlots}
+                  setshowOfflinePopup={setshowOfflinePopup}
+                  setshowSpinner={setshowSpinner}
                 />
               )}
               <View style={{ height: 96 }} />

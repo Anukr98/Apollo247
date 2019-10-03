@@ -114,7 +114,6 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
   // const todayDate = new Date().toDateString().split('T')[0];
   const todayDate = moment(new Date()).format('YYYY-MM-DD');
 
-  console.log(availableSlots, 'availableSlots divideSlots');
   const array: TimeArray = [
     { label: 'Morning', time: [] },
     { label: 'Afternoon', time: [] },
@@ -287,8 +286,24 @@ export function g(obj: any, ...props: string[]) {
 
 export const getNetStatus = async () => {
   const status = await NetInfo.getConnectionInfo().then((connectionInfo) => {
-    console.log(connectionInfo, 'connectionInfo');
     return connectionInfo.type !== 'none';
   });
   return status;
+};
+
+export const nextAvailability = (nextSlot: string) => {
+  const today: Date = new Date();
+  const date2: Date = new Date(nextSlot);
+  const secs = (date2 as any) - (today as any);
+  const mins = Math.ceil(secs / (60 * 1000));
+  let hours: number = 0;
+  if (mins > 0 && mins < 60) {
+    return `available in ${mins} min${mins > 1 ? 's' : ''}`;
+  } else if (mins >= 60 && mins < 1380) {
+    hours = Math.ceil(mins / 60);
+    return `available in ${hours} hour${hours > 1 ? 's' : ''}`;
+  } else if (mins >= 1380) {
+    const days = Math.ceil(mins / (24 * 60));
+    return `available in ${days} day${days > 1 ? 's' : ''}`;
+  }
 };
