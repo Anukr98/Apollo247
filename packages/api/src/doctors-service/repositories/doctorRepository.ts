@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, Brackets } from 'typeorm';
+import { EntityRepository, Repository, Brackets, Connection } from 'typeorm';
 import { Doctor, ConsultMode, DoctorType } from 'doctors-service/entities';
 import {
   Range,
@@ -7,11 +7,16 @@ import {
   DateAvailability,
   ConsultModeAvailability,
   AppointmentDateTime,
+  DoctorSlotAvailability,
+  DoctorSlotAvailabilityObject,
+  DoctorsObject,
 } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { format, differenceInMinutes, addMinutes, addDays } from 'date-fns';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
@@ -155,10 +160,6 @@ export class DoctorRepository extends Repository<Doctor> {
   }
 
   sortByRankingAlgorithm(a: Doctor, b: Doctor, docIds: string[]) {
-    //Experienced doctor on top
-    if (a.experience > b.experience) return -1;
-    if (a.experience > b.experience) return 1;
-
     //STAR_APOLLO doctor on top
     if (a.doctorType == DoctorType.STAR_APOLLO && b.doctorType != DoctorType.STAR_APOLLO) return -1;
     if (a.doctorType != DoctorType.STAR_APOLLO && b.doctorType == DoctorType.STAR_APOLLO) return 1;
@@ -175,7 +176,148 @@ export class DoctorRepository extends Repository<Doctor> {
     if (a.doctorType != DoctorType.PAYROLL && b.doctorType == DoctorType.PAYROLL) return -1;
     if (a.doctorType == DoctorType.PAYROLL && b.doctorType != DoctorType.PAYROLL) return 1;
 
+    //Experienced doctor on top
+    if (a.experience > b.experience) return -1;
+    if (a.experience < b.experience) return 1;
+
     return 0;
+  }
+
+  async getDoctorsNextAvailableSlot(
+    doctorIds: string[],
+    consultModeFilter: ConsultMode,
+    doctorsDb: Connection,
+    consultsDb: Connection
+  ) {
+    const appts = consultsDb.getCustomRepository(AppointmentRepository);
+    const doctorAvailalbeSlots: DoctorSlotAvailability[] = [];
+
+    function slots(doctorId: string) {
+      return new Promise<DoctorSlotAvailability>(async (resolve) => {
+        let onlineSlot: string = '';
+        let physicalSlot: string = '';
+
+        const consultHrsRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
+        const consultHrsOnline = await consultHrsRepo.checkByDoctorAndConsultMode(
+          doctorId,
+          'ONLINE'
+        );
+        if (consultHrsOnline > 0) {
+          //if the slot is empty check for next day
+          let nextDate = new Date();
+          while (true) {
+            const nextSlot = await appts.getDoctorNextSlotDate(
+              doctorId,
+              nextDate,
+              doctorsDb,
+              'ONLINE'
+            );
+            if (nextSlot != '' && nextSlot != undefined) {
+              onlineSlot = nextSlot;
+              break;
+            }
+            nextDate = addDays(nextDate, 1);
+          }
+        }
+
+        const consultHrsPhysical = await consultHrsRepo.checkByDoctorAndConsultMode(
+          doctorId,
+          'PHYSICAL'
+        );
+        if (consultHrsPhysical > 0) {
+          //if the slot is empty check for next day
+          let nextDate = new Date();
+          while (true) {
+            const nextSlot = await appts.getDoctorNextSlotDate(
+              doctorId,
+              nextDate,
+              doctorsDb,
+              'PHYSICAL'
+            );
+            if (nextSlot != '' && nextSlot != undefined) {
+              physicalSlot = nextSlot;
+              break;
+            }
+            nextDate = addDays(nextDate, 1);
+          }
+        }
+
+        let referenceSlot;
+        if (consultModeFilter == ConsultMode.ONLINE) {
+          referenceSlot = onlineSlot;
+        } else if (consultModeFilter == ConsultMode.PHYSICAL) {
+          referenceSlot = physicalSlot;
+        } else {
+          if (onlineSlot == '' && physicalSlot != '') referenceSlot = physicalSlot;
+          else if (physicalSlot == '' && onlineSlot != '') referenceSlot = onlineSlot;
+          else referenceSlot = onlineSlot < physicalSlot ? onlineSlot : physicalSlot;
+        }
+
+        const doctorSlot: DoctorSlotAvailability = {
+          doctorId,
+          onlineSlot,
+          physicalSlot,
+          referenceSlot,
+          currentDateTime: new Date(),
+          availableInMinutes: Math.abs(differenceInMinutes(new Date(), new Date(referenceSlot))),
+        };
+        doctorAvailalbeSlots.push(doctorSlot);
+        resolve(doctorSlot);
+      });
+    }
+    const promises: object[] = [];
+    doctorIds.map(async (doctorId) => {
+      promises.push(slots(doctorId));
+    });
+    await Promise.all(promises);
+    return { doctorAvailalbeSlots };
+  }
+
+  async getConsultAndBookNowDoctors(
+    doctorNextAvailSlots: DoctorSlotAvailability[],
+    finalDoctorsList: Doctor[]
+  ) {
+    //sort doctors by available time
+    doctorNextAvailSlots.sort((a, b) => a.availableInMinutes - b.availableInMinutes);
+
+    const consultNowDoctorSlots = doctorNextAvailSlots.filter((doctor) => {
+      return doctor.availableInMinutes <= 60;
+    });
+    const bookNowDoctorSlots = doctorNextAvailSlots.filter((doctor) => {
+      return doctor.availableInMinutes > 60;
+    });
+    //create key-pair object to map with doctors data object
+    const timeSortedConsultNowDoctorSlots: DoctorSlotAvailabilityObject = {};
+    consultNowDoctorSlots.forEach((doctorSlot) => {
+      timeSortedConsultNowDoctorSlots[doctorSlot.doctorId] = doctorSlot;
+    });
+
+    const timeSortedBookNowDoctorSlots: DoctorSlotAvailabilityObject = {};
+    bookNowDoctorSlots.forEach((doctorSlot) => {
+      timeSortedBookNowDoctorSlots[doctorSlot.doctorId] = doctorSlot;
+    });
+
+    //map to real doctors data
+    const consultNowDoctorsObject: DoctorsObject = {};
+    for (const docId in timeSortedConsultNowDoctorSlots) {
+      const matchedDoctor = finalDoctorsList.filter((finalDoc) => {
+        return finalDoc.id == docId;
+      });
+      consultNowDoctorsObject[docId] = matchedDoctor[0];
+    }
+
+    const bookNowDoctorsObject: DoctorsObject = {};
+    for (const docId in timeSortedBookNowDoctorSlots) {
+      const matchedDoctor = finalDoctorsList.filter((finalDoc) => {
+        return finalDoc.id == docId;
+      });
+      bookNowDoctorsObject[docId] = matchedDoctor[0];
+    }
+
+    return {
+      consultNowDoctors: Object.values(consultNowDoctorsObject),
+      bookNowDoctors: Object.values(bookNowDoctorsObject),
+    };
   }
 
   async filterDoctors(filterInput: FilterDoctorInput) {

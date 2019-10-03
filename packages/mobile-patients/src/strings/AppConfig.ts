@@ -13,7 +13,7 @@ const Configuration = {
   PRO_PUBNUB_SUBSCRIBER: 'sub-c-015f75e4-daca-11e9-85e7-eae1db32c94a',
   // PRO_PUBNUB_PUBLISH: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
   // PRO_PUBNUB_SUBSCRIBER: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
-  PHARMA_AUTH_TOKEN: 'dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
+  PHARMA_AUTH_TOKEN: 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
   PHARMA_AUTH_TOKEN_OLD: 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms',
   PHARMA_BASE_URL: 'http://13.126.95.18',
   // PHARMA_UAT_BASE_URL: 'http://uat.apollopharmacy.in',

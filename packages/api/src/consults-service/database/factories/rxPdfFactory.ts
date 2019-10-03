@@ -36,5 +36,15 @@ export const buildRxPdfData = (): RxPdfData => {
     registrationNumber: faker.random.alphaNumeric(8).toUpperCase(),
   };
 
-  return { prescriptions, generalAdvice, diagnoses, doctorInfo };
+  const hospitalAddress = {
+    name: '',
+    streetLine1: '',
+    streetLine2: '',
+    city: '',
+    zipcode: '',
+    state: '',
+    country: '',
+  };
+
+  return { prescriptions, generalAdvice, diagnoses, doctorInfo, hospitalAddress };
 };
