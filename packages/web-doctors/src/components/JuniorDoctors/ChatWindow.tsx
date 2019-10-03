@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Theme, Button, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphInput, AphTextField } from '@aph/web-ui-components';
+import { AphTextField } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
@@ -233,7 +233,7 @@ interface MessagesObjectProps {
   id: string;
   message: string;
   username: string;
-  text: string;
+  automatedText: string;
   duration: string;
   url: string;
 }
@@ -261,25 +261,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
-  // const [chatUploadFile, setChatUploadFile] = useState<string | ArrayBuffer | null>(null);
-  // const [chatUploadFileExtension, setChatUploadFileExtension] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
-  // const [isUploading, setIsUploading] = useState(false);
-  // const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
-
-  // console.log(chatUploadFile, chatUploadFileExtension, 'file upload....');
-
-  // const getFileSizeInMBs = (fileSize: number) => {
-  //   let i = 0;
-  //   while (fileSize > 900) {
-  //     fileSize /= 1024;
-  //     i++;
-  //   }
-  //   console.log(i, 'increment....');
-  //   return Math.round(fileSize * 100) / 100;
-  // };
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -294,6 +278,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
+
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;
@@ -380,9 +365,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== audioCallMsg &&
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
-          message.message.message !== startConsult &&
-          message.message.message !== startConsultjr &&
-          message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult
@@ -433,6 +415,17 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       }
     );
   };
+  const getAutomatedMessage = (rowData: MessagesObjectProps) => {
+    if (
+      rowData.message === startConsult ||
+      rowData.message === startConsultjr ||
+      rowData.message === stopConsult
+    ) {
+      return rowData.automatedText;
+    } else {
+      return rowData.message;
+    }
+  };
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
       rowData.id === doctorId &&
@@ -440,9 +433,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
-      rowData.message !== startConsult &&
-      rowData.message !== startConsultjr &&
-      rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
@@ -494,7 +484,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                   <img src={rowData.url} alt={rowData.url} />
                 </a>
               ) : (
-                <span>{rowData.message}</span>
+                <span>{getAutomatedMessage(rowData)}</span>
               )}
             </div>
           )}
@@ -507,9 +497,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
-      rowData.message !== startConsult &&
-      rowData.message !== startConsultjr &&
-      rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
@@ -567,7 +554,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                   </a>
                 </div>
               ) : (
-                <span>{rowData.message}</span>
+                <span>{getAutomatedMessage(rowData)}</span>
               )}
             </div>
           )}

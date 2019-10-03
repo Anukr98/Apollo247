@@ -1013,6 +1013,9 @@ export const JDConsultRoom: React.FC = () => {
                     saving={saving}
                     startAppointment={startAppointment}
                     startAppointmentClick={startAppointmentClick}
+                    assignedDoctorSalutation={assignedDoctorSalutation}
+                    assignedDoctorFirstName={assignedDoctorFirstName}
+                    assignedDoctorLastName={assignedDoctorLastName}
                   />
                 )}
                 <div className={classes.contentGroup}>
