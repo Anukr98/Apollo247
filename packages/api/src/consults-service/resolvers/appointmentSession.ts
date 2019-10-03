@@ -206,6 +206,7 @@ const createAppointmentSession: Resolver<
   if (!process.env.OPENTOK_KEY && !process.env.OPENTOK_SECRET) {
     throw new AphError(AphErrorMessages.INVALID_OPENTOK_KEYS);
   }
+
   const opentok_key = process.env.OPENTOK_KEY ? process.env.OPENTOK_KEY : '';
   const opentok_secret = process.env.OPENTOK_SECRET ? process.env.OPENTOK_SECRET : '';
   const opentok = new openTok(opentok_key, opentok_secret);
@@ -215,7 +216,10 @@ const createAppointmentSession: Resolver<
     doctorId = '';
   let appointmentDateTime: Date = new Date();
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  if (createAppointmentSessionInput.requestRole != REQUEST_ROLES.DOCTOR) {
+  if (
+    createAppointmentSessionInput.requestRole != REQUEST_ROLES.DOCTOR &&
+    createAppointmentSessionInput.requestRole != REQUEST_ROLES.JUNIOR
+  ) {
     throw new AphError(AphErrorMessages.INVALID_REQUEST_ROLE);
   }
   const apptDetails = await apptRepo.findById(createAppointmentSessionInput.appointmentId);
@@ -235,6 +239,15 @@ const createAppointmentSession: Resolver<
   );
 
   if (apptSessionDets) {
+    if (
+      createAppointmentSessionInput.requestRole == REQUEST_ROLES.DOCTOR &&
+      apptDetails.status != STATUS.IN_PROGRESS
+    ) {
+      await apptRepo.updateAppointmentStatus(
+        createAppointmentSessionInput.appointmentId,
+        STATUS.IN_PROGRESS
+      );
+    }
     // send notification
     const pushNotificationInput = {
       appointmentId: createAppointmentSessionInput.appointmentId,
@@ -278,10 +291,15 @@ const createAppointmentSession: Resolver<
     consultStartDateTime: new Date(),
   };
   const repo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
-  await apptRepo.updateAppointmentStatus(
-    createAppointmentSessionInput.appointmentId,
-    STATUS.IN_PROGRESS
-  );
+  if (
+    createAppointmentSessionInput.requestRole == REQUEST_ROLES.DOCTOR &&
+    apptDetails.status != STATUS.IN_PROGRESS
+  ) {
+    await apptRepo.updateAppointmentStatus(
+      createAppointmentSessionInput.appointmentId,
+      STATUS.IN_PROGRESS
+    );
+  }
   await repo.saveAppointmentSession(appointmentSessionAttrs);
   // send notification
   const pushNotificationInput = {
