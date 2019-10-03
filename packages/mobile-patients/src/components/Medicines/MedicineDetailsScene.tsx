@@ -13,6 +13,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -310,6 +311,18 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         <ScrollView bounces={false}>
           <View style={styles.cardStyle}>
             {renderNote()}
+            {Object.keys(medicineDetails).length == 0 && (
+              <Card
+                cardContainer={[
+                  styles.noDataCard,
+                  { marginTop: medicineDetails!.is_prescription_required == '1' ? -10 : 5 },
+                ]}
+                heading={'Uh oh! :('}
+                description={'Something went wrong.'}
+                descriptionTextStyle={{ fontSize: 14 }}
+                headingTextStyle={{ fontSize: 14 }}
+              />
+            )}
             {renderBasicDetails()}
             {renderTitleAndDescriptionList()}
           </View>
