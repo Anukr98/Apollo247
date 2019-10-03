@@ -114,6 +114,10 @@ const useStyles = makeStyles((theme: Theme) => {
       alignItems: 'flex-end',
       padding: 15,
     },
+    noDoctorImage: {
+      padding: 20,
+      paddingBottom: 0,
+    },
     patientImage: {
       paddingRight: 7,
       '& img': {
@@ -187,6 +191,7 @@ const useStyles = makeStyles((theme: Theme) => {
     contentGroup: {
       display: 'flex',
       paddingBottom: 30,
+      position: 'relative',
     },
     leftSection: {
       width: 'calc(50% - 1px)',
@@ -367,10 +372,9 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const JDConsultRoom: React.FC = () => {
   const classes = useStyles();
-  const { patientId, appointmentId, queueId } = useParams<JDConsultRoomParams>();
+  const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDiagnosisDialogOpen, setIsDiagnosisDialogOpen] = React.useState(false);
-  const [newCaseSheet, setNewCaseSheet] = React.useState<boolean>(false);
   // let showConsultButtons = false;
 
   const { currentPatient: currentDoctor, isSignedIn } = useAuth();
@@ -393,18 +397,6 @@ export const JDConsultRoom: React.FC = () => {
       appointmentId: appointmentId,
     },
   });
-
-  // if (newCaseSheet) {
-  //   return (
-  //     <Redirect
-  //       to={clientRoutes.JDConsultRoom({
-  //         appointmentId: appointmentId,
-  //         patientId: patientId,
-  //         queueId: queueId,
-  //       })}
-  //     />
-  //   );
-  // }
 
   const [isEnded, setIsEnded] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
@@ -561,7 +553,7 @@ export const JDConsultRoom: React.FC = () => {
     casesheetInfo.getJuniorDoctorCaseSheet.patientDetails &&
     !isNull(casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.photoUrl)
       ? casesheetInfo.getJuniorDoctorCaseSheet.patientDetails.photoUrl
-      : require('images/PatientImage.png');
+      : '';
 
   if (patientAppointmentTimeUtc !== '') {
     appointmentDateIST = format(
@@ -771,6 +763,7 @@ export const JDConsultRoom: React.FC = () => {
                   appointmentId: appointmentId,
                   patientId: patientId,
                   queueId: queueId,
+                  isActive: 'active',
                 });
               })
               .catch((e: ApolloError) => {
@@ -857,7 +850,7 @@ export const JDConsultRoom: React.FC = () => {
         variables: {
           createAppointmentSessionInput: {
             appointmentId,
-            requestRole: REQUEST_ROLES.DOCTOR,
+            requestRole: REQUEST_ROLES.JUNIOR,
           },
         },
       })
@@ -943,10 +936,16 @@ export const JDConsultRoom: React.FC = () => {
                     </div>
                   </div>
                   <div className={classes.patientSection}>
-                    <div className={classes.patientImage}>
+                    <div
+                      className={`${classes.patientImage}  ${
+                        patientPhotoUrl === '' ? classes.noDoctorImage : ''
+                      }`}
+                    >
                       <img
                         style={{ width: '100px' }}
-                        src={patientPhotoUrl}
+                        src={
+                          patientPhotoUrl !== '' ? patientPhotoUrl : require('images/no_photo.png')
+                        }
                         alt="Patient Profile Photo"
                       />
                     </div>
@@ -996,23 +995,26 @@ export const JDConsultRoom: React.FC = () => {
                   </div>
                 </div>
                 {/* patient and doctors details end */}
-                <JDCallPopover
-                  setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
-                  createSessionAction={createSessionAction}
-                  saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
-                  endConsultAction={endConsultAction}
-                  appointmentId={appointmentId}
-                  appointmentDateTime={appointmentDateTime}
-                  doctorId={doctorId}
-                  isEnded={isEnded}
-                  caseSheetId={caseSheetId}
-                  prescriptionPdf={prescriptionPdf}
-                  sessionId={sessionId}
-                  token={token}
-                  saving={saving}
-                  startAppointment={startAppointment}
-                  startAppointmentClick={startAppointmentClick}
-                />
+
+                {isActive === 'active' && (
+                  <JDCallPopover
+                    setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
+                    createSessionAction={createSessionAction}
+                    saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
+                    endConsultAction={endConsultAction}
+                    appointmentId={appointmentId}
+                    appointmentDateTime={appointmentDateTime}
+                    doctorId={doctorId}
+                    isEnded={isEnded}
+                    caseSheetId={caseSheetId}
+                    prescriptionPdf={prescriptionPdf}
+                    sessionId={sessionId}
+                    token={token}
+                    saving={saving}
+                    startAppointment={startAppointment}
+                    startAppointmentClick={startAppointmentClick}
+                  />
+                )}
                 <div className={classes.contentGroup}>
                   <div className={classes.leftSection}>
                     <div className={classes.blockGroup}>
@@ -1048,6 +1050,7 @@ export const JDConsultRoom: React.FC = () => {
                           appointmentId={appointmentId}
                           doctorId={doctorId}
                           patientId={patientId}
+                          disableChat={isActive === 'done' ? true : false}
                         />
                       </div>
                     </div>

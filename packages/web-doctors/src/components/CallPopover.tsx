@@ -1244,6 +1244,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     return '';
   };
+
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
@@ -1314,7 +1315,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 disabled={
                   startAppointmentButton ||
                   disableOnTransfer ||
-                  appointmentInfo!.appointmentState !== 'NEW' ||
+                  (appointmentInfo!.appointmentState !== 'NEW' &&
+                    appointmentInfo!.appointmentState !== 'TRANSFER') ||
                   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                     appointmentInfo!.status !== STATUS.PENDING)
                 }
@@ -1397,7 +1399,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               disabled={
                 startAppointmentButton ||
                 disableOnTransfer ||
-                appointmentInfo!.appointmentState !== 'NEW' ||
+                (appointmentInfo!.appointmentState !== 'NEW' &&
+                  appointmentInfo!.appointmentState !== 'TRANSFER') ||
                 (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                   appointmentInfo!.status !== STATUS.PENDING)
               }

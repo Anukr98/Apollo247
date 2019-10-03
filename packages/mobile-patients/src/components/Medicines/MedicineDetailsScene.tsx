@@ -82,6 +82,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
+  const [apiError, setApiError] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const _medicineOverview =
     medicineDetails!.PharmaOverview &&
@@ -97,11 +98,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   useEffect(() => {
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
-        setmedicineDetails(data.productdp[0] || {});
+        setmedicineDetails((data && data.productdp && data.productdp[0]) || {});
         setLoading(false);
       })
       .catch((err) => {
         aphConsole.log('MedicineDetailsScene err', err);
+        setApiError(!!err);
         setLoading(false);
       });
   }, []);
@@ -162,51 +164,63 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderTitleAndDescriptionList = () => {
-    return medicineOverview.map((data, index, array) => {
-      const desc = data.CaptionDesc || '';
-      let trimmedDesc = desc.charAt(0) == '.' ? desc.slice(1).trim() : desc;
-      if (data.Caption == 'HOW IT WORKS' || 'USES') {
-        trimmedDesc = `${medicineName} ${trimmedDesc}`;
-      }
-      return (
-        <View key={index}>
-          <Text style={styles.heading}>{data.Caption}</Text>
-          <Text style={[styles.description, index == array.length - 1 ? { marginBottom: 0 } : {}]}>
-            {trimmedDesc}
-          </Text>
-        </View>
-      );
-    });
+    return medicineOverview
+      .filter((item) => item.CaptionDesc)
+      .map((data, index, array) => {
+        const desc = data.CaptionDesc || '';
+        let trimmedDesc = desc.charAt(0) == '.' ? desc.slice(1).trim() : desc;
+
+        if (data.Caption == 'HOW IT WORKS' || data.Caption == 'USES') {
+          trimmedDesc = `${medicineName} ${trimmedDesc}`;
+        }
+
+        const splitByEntities = trimmedDesc.split('&amp;lt;br /&amp;gt;');
+        trimmedDesc = splitByEntities
+          .map((item) => {
+            let _item = item.trim().replace('. ', '');
+            if (_item.charAt(0) == '.') {
+              _item = _item.substring(1);
+            }
+            return _item || null;
+          })
+          .filter((item) => item)
+          .join('\n');
+
+        return (
+          <View key={index}>
+            <Text style={styles.heading}>{data.Caption}</Text>
+            <Text
+              style={[styles.description, index == array.length - 1 ? { marginBottom: 0 } : {}]}
+            >
+              {trimmedDesc}
+            </Text>
+          </View>
+        );
+      });
+  };
+
+  const formatComposition = (value: string) => {
+    return value
+      ? value.indexOf('+') > -1
+        ? value.split('+').map((item) => item.trim())
+        : [value]
+      : [];
   };
 
   const renderBasicDetails = () => {
-    if (!loading) {
+    if (!loading && !apiError) {
       let composition = '';
       const description = medicineDetails.name;
       const pack = medicineDetails.mou;
       const price = medicineDetails.price;
-      const pharmaOverview = medicineDetails!.PharmaOverview[0] || {};
+      const pharmaOverview =
+        (medicineDetails!.PharmaOverview && medicineDetails!.PharmaOverview[0]) || {};
       const doseForm = pharmaOverview.Doseform;
 
       const _composition = {
-        generic: pharmaOverview.generic
-          ? pharmaOverview.generic.indexOf('+') > -1
-            ? pharmaOverview.generic.split('+').map((item) => item.trim())
-            : [pharmaOverview.generic]
-          : [],
-        unit: pharmaOverview.Unit
-          ? pharmaOverview.Unit.indexOf('+') > -1
-            ? pharmaOverview.Unit.split('+').map((item) => item.trim())
-            : [pharmaOverview.Unit]
-          : [],
-        strength:
-          pharmaOverview.Strength || pharmaOverview.Strengh
-            ? (pharmaOverview.Strength || pharmaOverview.Strengh).indexOf('+') > -1
-              ? (pharmaOverview.Strength || pharmaOverview.Strengh)
-                  .split('+')
-                  .map((item) => item.trim())
-              : [pharmaOverview.Strength || pharmaOverview.Strengh]
-            : [],
+        generic: formatComposition(pharmaOverview.generic),
+        unit: formatComposition(pharmaOverview.Unit),
+        strength: formatComposition(pharmaOverview.Strength || pharmaOverview.Strengh),
       };
       composition = [...Array.from({ length: _composition.generic.length })]
         .map(
@@ -254,15 +268,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const _title = props.navigation.getParam('title');
-  const shouldTrim = _title.length > 18 ? '...' : '';
-  const formattedTile = `${_title}${shouldTrim}`.substr(0, 25).toUpperCase();
 
   return (
     <SafeAreaView style={theme.viewStyles.container}>
       <Header
         leftIcon="backArrow"
         onPressLeftIcon={() => props.navigation.goBack()}
-        title={formattedTile}
+        title={_title}
+        titleStyle={{ marginHorizontal: 10 }}
         container={{ borderBottomWidth: 0 }}
       />
 

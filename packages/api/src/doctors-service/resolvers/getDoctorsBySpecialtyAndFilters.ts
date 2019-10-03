@@ -13,8 +13,17 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   type FilterDoctorsResult {
     doctors: [DoctorDetails]
+    doctorsNextAvailability: [DoctorSlotAvailability]
     doctorsAvailability: [DoctorConsultModeAvailability]
     specialty: DoctorSpecialty
+  }
+  type DoctorSlotAvailability {
+    doctorId: String
+    onlineSlot: String
+    physicalSlot: String
+    referenceSlot: String
+    currentDateTime: Date
+    availableInMinutes: Int
   }
   type DoctorConsultModeAvailability {
     doctorId: ID
@@ -35,6 +44,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     gender: [Gender]
     language: [String]
     location: String
+    consultMode: ConsultMode
   }
   extend type Query {
     getDoctorsBySpecialtyAndFilters(filterInput: FilterDoctorInput): FilterDoctorsResult
@@ -43,6 +53,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
 
 type FilterDoctorsResult = {
   doctors: Doctor[];
+  doctorsNextAvailability: DoctorSlotAvailability[];
   doctorsAvailability: DoctorConsultModeAvailability[];
   specialty: DoctorSpecialty;
 };
@@ -67,6 +78,7 @@ export type FilterDoctorInput = {
   gender: string[];
   language: string[];
   location: string;
+  consultMode: ConsultMode;
 };
 
 export type ConsultModeAvailability = {
@@ -77,6 +89,18 @@ export type ConsultModeAvailability = {
 export type DateAvailability = { [index: string]: ConsultModeAvailability };
 export type DoctorAvailability = { [index: string]: DateAvailability };
 export type AppointmentDateTime = { startDateTime: Date; endDateTime: Date };
+export type DoctorsObject = { [index: string]: Doctor };
+
+export type DoctorSlotAvailability = {
+  doctorId: string;
+  onlineSlot: string;
+  physicalSlot: string;
+  referenceSlot: string;
+  currentDateTime: Date;
+  availableInMinutes: number;
+};
+
+export type DoctorSlotAvailabilityObject = { [index: string]: DoctorSlotAvailability };
 
 const getDoctorsBySpecialtyAndFilters: Resolver<
   null,
@@ -87,6 +111,12 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   let filteredDoctors;
   const doctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
   let specialtyDetails;
+  const consultModeFilter = args.filterInput.consultMode
+    ? args.filterInput.consultMode
+    : ConsultMode.BOTH;
+
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const consultsRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   try {
     const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
@@ -95,8 +125,6 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
     }
 
-    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    const consultsRepo = consultsDb.getCustomRepository(AppointmentRepository);
     filteredDoctors = await doctorRepository.filterDoctors(args.filterInput);
     // console.log('basic filtered doctors: ',filteredDoctors)
 
@@ -153,6 +181,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
     //get filtered doctors consulthours and consult modes
     const doctorsConsultModeSlots = doctorRepository.getDoctorsAvailability(
+      consultModeFilter,
       filteredDoctors,
       selectedDates,
       nowDateTime
@@ -235,14 +264,83 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   //filtering the doctors list based on their availability
   const finalDoctorsList = filteredDoctors.filter((doctor) => {
     return doctorsConsultModeAvailability.some((availabilityObject) => {
-      return (
-        availabilityObject.doctorId == doctor.id && availabilityObject.availableModes.length > 0
-      );
+      if (consultModeFilter == ConsultMode.BOTH) {
+        return (
+          availabilityObject.doctorId == doctor.id && availabilityObject.availableModes.length > 0
+        );
+      } else {
+        return (
+          availabilityObject.doctorId == doctor.id &&
+          (availabilityObject.availableModes.includes(consultModeFilter) ||
+            availabilityObject.availableModes.includes(ConsultMode.BOTH))
+        );
+      }
     });
   });
 
+  //logic to sort based on next availability time
+  const finalDoctorIds = finalDoctorsList.map((doctor) => {
+    return doctor.id;
+  });
+
+  const doctorNextAvailSlots = await doctorRepository.getDoctorsNextAvailableSlot(
+    finalDoctorIds,
+    consultModeFilter,
+    doctorsDb,
+    consultsDb
+  );
+
+  //get consult now and book now doctors by available time
+  const { consultNowDoctors, bookNowDoctors } = await doctorRepository.getConsultAndBookNowDoctors(
+    doctorNextAvailSlots.doctorAvailalbeSlots,
+    finalDoctorsList
+  );
+
+  //apply sort algorithm on ConsultNow doctors
+  if (consultNowDoctors.length > 1) {
+    //get patient and matched doctors previous appointments starts here
+    const consultNowDocIds = consultNowDoctors.map((doctor) => {
+      return doctor.id;
+    });
+    const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
+      args.filterInput.patientId,
+      consultNowDocIds
+    );
+    const consultedDoctorIds = previousAppointments.map((appt) => {
+      return appt.doctorId;
+    });
+    //get patient and matched doctors previous appointments ends here
+
+    consultNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
+      return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
+    });
+  }
+
+  //apply sort algorithm on BookNow doctors
+  if (bookNowDoctors.length > 1) {
+    //get patient and matched doctors previous appointments starts here
+    const consultNowDocIds = bookNowDoctors.map((doctor) => {
+      return doctor.id;
+    });
+    const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
+      args.filterInput.patientId,
+      consultNowDocIds
+    );
+    const consultedDoctorIds = previousAppointments.map((appt) => {
+      return appt.doctorId;
+    });
+    //get patient and matched doctors previous appointments ends here
+
+    bookNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
+      return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
+    });
+  }
+
+  const finalSortedDoctors = consultNowDoctors.concat(bookNowDoctors);
+
   return {
-    doctors: finalDoctorsList,
+    doctors: finalSortedDoctors,
+    doctorsNextAvailability: doctorNextAvailSlots.doctorAvailalbeSlots,
     doctorsAvailability: doctorsConsultModeAvailability,
     specialty: specialtyDetails,
   };

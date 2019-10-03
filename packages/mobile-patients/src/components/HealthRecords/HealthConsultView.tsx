@@ -18,6 +18,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Linking,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
@@ -26,6 +27,7 @@ import { g } from '../../helpers/helperFunctions';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { AppConfig } from '../../strings/AppConfig';
 import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
+import RNFetchBlob from 'react-native-fetch-blob';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -150,6 +152,51 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
   });
+
+  const downloadPrescription = () => {
+    console.log('pharama', item);
+    if (item.blobName == null) {
+      Alert.alert('No Image');
+    } else {
+      if (Platform.OS === 'ios') {
+        try {
+          Linking.openURL(AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item.blobName)).catch(
+            (err) => console.error('An error occurred', err)
+          );
+        } catch {}
+      }
+      let dirs = RNFetchBlob.fs.dirs;
+
+      setLoading(true);
+      RNFetchBlob.config({
+        fileCache: true,
+        addAndroidDownloads: {
+          useDownloadManager: true,
+          notification: false,
+          mime: 'application/pdf',
+          path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+          description: 'File downloaded by download manager.',
+        },
+      })
+        .fetch('GET', AppConfig.Configuration.DOCUMENT_BASE_URL.concat(item.blobName), {
+          //some headers ..
+        })
+        .then((res) => {
+          setLoading(false);
+          if (Platform.OS === 'android') {
+            Alert.alert('Download Complete');
+          }
+          Platform.OS === 'ios'
+            ? RNFetchBlob.ios.previewDocument(res.path())
+            : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+        })
+        .catch((err) => {
+          console.log('error ', err);
+          setLoading(false);
+          // ...
+        });
+    }
+  };
   const requestReadSmsPermission = async () => {
     try {
       const resuts = await PermissionsAndroid.requestMultiple([
@@ -251,7 +298,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                               );
                             })}
                           </View>
-                          <TouchableOpacity>
+                          <TouchableOpacity onPress={() => downloadPrescription()}>
                             <PrescriptionSkyBlue />
                           </TouchableOpacity>
                         </View>
@@ -450,9 +497,11 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                         }}
                       >
                         <View style={{ flexDirection: 'row' }}>
-                          <View style={{ marginTop: 10 }}>
-                            <MedicineIcon />
-                          </View>
+                          <TouchableOpacity onPress={() => console.log('pharma', item)}>
+                            <View style={{ marginTop: 10 }}>
+                              <MedicineIcon />
+                            </View>
+                          </TouchableOpacity>
 
                           <View style={{ marginLeft: 30 }}>
                             <Text

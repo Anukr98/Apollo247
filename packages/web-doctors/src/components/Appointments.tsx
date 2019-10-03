@@ -591,8 +591,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
         <DialogTitle className={classes.popoverTile}>Apollo 24x7</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            You are not permitted to start Consult as there is no Casesheet created by Junior
-            Doctor.
+            You can start this consultation only after Junior Doctor has filled the case sheet.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
