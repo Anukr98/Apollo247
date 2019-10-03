@@ -850,7 +850,7 @@ export const JDConsultRoom: React.FC = () => {
         variables: {
           createAppointmentSessionInput: {
             appointmentId,
-            requestRole: REQUEST_ROLES.DOCTOR,
+            requestRole: REQUEST_ROLES.JUNIOR,
           },
         },
       })
