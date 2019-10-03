@@ -451,7 +451,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </span>
             )}
             {rowData.duration === '00 : 00' ? (
-              <span className={classes.none}>
+              <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
                 {rowData.message.toLocaleLowerCase() === 'video call ended'
                   ? 'You missed a video call'
