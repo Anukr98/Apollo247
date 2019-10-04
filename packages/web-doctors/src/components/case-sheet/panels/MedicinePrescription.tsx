@@ -401,6 +401,7 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
+let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
@@ -491,6 +492,8 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const fetchMedicines = async (value: any) => {
+    const CancelToken = axios.CancelToken;
+    cancel && cancel();
     setLoading(true);
     const FinalSearchdata: any = [];
     await axios
@@ -502,6 +505,10 @@ export const MedicinePrescription: React.FC = () => {
             Authorization: apiDetails.authToken,
             Accept: '*/*',
           },
+          cancelToken: new CancelToken(function executor(c) {
+            // An executor function receives a cancel function as a parameter
+            cancel = c;
+          }),
         }
       )
       .then((result) => {
