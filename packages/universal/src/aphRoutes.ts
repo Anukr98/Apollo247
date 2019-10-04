@@ -5,7 +5,7 @@ export const getPortStr = (port: string) => (port === '80' || port === '443' ? '
 const buildUrl = ({ application, port }: { application: string; port: string }) => {
   const protocol = process.env.USE_SSL === 'false' ? 'http' : 'https';
   if (environment === 'production') return `${protocol}://${application}.apollo247.com`;
-  if (environment === 'local') return `https://aph.dev.api.popcornapps.com/`;
+  if (environment === 'local') return `${protocol}://localhost${getPortStr(port)}`;
   return `${protocol}://aph.${environment}.${application}.popcornapps.com${getPortStr(port)}`;
 };
 
