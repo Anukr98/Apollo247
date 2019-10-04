@@ -1008,7 +1008,31 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const { setCaseSheetEdit, autoCloseCaseSheet } = useContext(CaseSheetContextJrd);
 
   useEffect(() => {
-    if (autoCloseCaseSheet) unSubscribeBrowserButtonsListener();
+    if (autoCloseCaseSheet) {
+      const text = {
+        id: props.doctorId,
+        isTyping: true,
+        message:
+          'Thank you ' +
+          patientDetails!.firstName +
+          ' ' +
+          patientDetails!.lastName +
+          '! We will share these details with Dr. ' +
+          props.assignedDoctorFirstName +
+          ' ' +
+          props.assignedDoctorLastName +
+          "'who will be here with you at your scheduled consult time.",
+      };
+      pubnub.publish(
+        {
+          message: text,
+          channel: channel,
+          storeInHistory: true,
+        },
+        (status, response) => {}
+      );
+      unSubscribeBrowserButtonsListener();
+    }
   }, [autoCloseCaseSheet]);
 
   useEffect(() => {
