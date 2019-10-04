@@ -55,7 +55,7 @@ export const Navigation: React.FC = (props) => {
     <div className={classes.appNavigation} data-cypress="Navigation">
       <Link
         title="Home"
-        to={clientRoutes.welcome()}
+        to={isJuniorDoctor ? clientRoutes.juniorDoctor() : clientRoutes.welcome()}
         className={` ${(window.location.href.toLowerCase().includes('/calendar') ||
           window.location.href.toLowerCase().includes('/junior-doctor') ||
           window.location.href.toLowerCase().includes('/jd-consultroom')) &&

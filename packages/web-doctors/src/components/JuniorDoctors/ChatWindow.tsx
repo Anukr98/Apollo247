@@ -461,7 +461,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       return (
         <div className={classes.doctorChatRow}>
           {rowData.duration === '00 : 00' ? (
-            <div className={classes.callStatusMessage}>
+            <div className={classes.none}>
               <div className={classes.messageText}>
                 <span>
                   <img src={require('images/ic_missedcall.svg')} />

@@ -95,6 +95,24 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
+    darkGreenaddBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
+      padding: 0,
+      position: 'absolute',
+      right: 0,
+      bottom: '40px',
+      marginTop: 12,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
+      },
+    },
     inputRoot: {
       marginTop: 10,
       '&:before': {
@@ -243,21 +261,6 @@ const useStyles = makeStyles((theme: Theme) =>
         width: '100%',
         textAlign: 'left',
         whiteSpace: 'normal',
-      },
-    },
-    btnAddDoctor: {
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
-      color: theme.palette.action.selected,
-      fontSize: 14,
-      fontWeight: 600,
-      // pointerEvents: 'none',
-      paddingLeft: 4,
-      '&:hover': {
-        backgroundColor: 'transparent',
-      },
-      '& img': {
-        marginRight: 8,
       },
     },
   })
@@ -467,9 +470,8 @@ export const DiagnosticPrescription: React.FC = () => {
       )}
       {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
         <div className={classes.addNewDiagnostic}>
-          <div>{`do you want to add '${otherDiagnostic}' in Tests ?`} </div>
           <AphButton
-            className={classes.addBtn}
+            className={classes.darkGreenaddBtn}
             onClick={() => {
               if (otherDiagnostic.trim() !== '') {
                 selectedValues!.splice(idx, 0, {
@@ -488,7 +490,7 @@ export const DiagnosticPrescription: React.FC = () => {
               }
             }}
           >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> Add Test
+            <img src={require('images/ic_add_circle.svg')} alt="" />
           </AphButton>
         </div>
       )}

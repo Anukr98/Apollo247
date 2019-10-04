@@ -112,6 +112,24 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
+    darkGreenaddBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
+      marginLeft: '417px',
+      position: 'absolute',
+      top: 0,
+      padding: 0,
+      marginTop: 12,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
+      },
+    },
     medicineBox: {
       borderRadius: 5,
       border: 'solid 1px rgba(2, 71, 91, 0.15)',
@@ -173,6 +191,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     searchFrom: {
       padding: 0,
+      position: 'relative',
     },
     loaderDiv: {
       textAlign: 'center',
@@ -181,6 +200,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dialogContent: {
       padding: 20,
+      position: 'relative',
       '& h6': {
         fontSize: 14,
         fontWeight: 500,
@@ -896,35 +916,32 @@ export const MedicinePrescription: React.FC = () => {
                       <Paper {...options.containerProps} square className={classes.searchpopup}>
                         {options.children}
                       </Paper>
-                      {medicine.length > 2 && !loading && !isSuggestionFetched && (
-                        <div className={classes.addNewMedicine}>
-                          <div>{`do you want to add '${medicine}' in Medicine ?`}</div>
-                          <AphButton
-                            className={classes.addBtn}
-                            onClick={() => {
-                              setState({
-                                single: '',
-                                popper: '',
-                              });
-                              setShowDosage(true);
-                              setSelectedValue(medicine);
-                              setSelectedId('IB01');
-                              setLoading(false);
-                              setMedicine('');
-                            }}
-                          >
-                            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD MEDICINE
-                          </AphButton>
-                        </div>
-                      )}
-                      {loading ? (
-                        <div className={classes.loaderDiv}>
-                          <CircularProgress />
-                        </div>
-                      ) : null}
                     </Scrollbars>
                   )}
                 />
+                {medicine.length > 2 && !loading && !isSuggestionFetched && (
+                  <AphButton
+                    className={classes.darkGreenaddBtn}
+                    onClick={() => {
+                      setState({
+                        single: '',
+                        popper: '',
+                      });
+                      setShowDosage(true);
+                      setSelectedValue(medicine);
+                      setSelectedId('IB01');
+                      setLoading(false);
+                      setMedicine('');
+                    }}
+                  >
+                    <img src={require('images/ic_add_circle.svg')} alt="" />
+                  </AphButton>
+                )}
+                {loading ? (
+                  <div className={classes.loaderDiv}>
+                    <CircularProgress />
+                  </div>
+                ) : null}
               </div>
             ) : (
               <div>
