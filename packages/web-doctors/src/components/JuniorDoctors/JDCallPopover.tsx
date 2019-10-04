@@ -603,6 +603,9 @@ interface CallPopoverProps {
   saving: boolean;
   startAppointmentClick: (startAppointment: boolean) => void;
   startAppointment: boolean;
+  assignedDoctorSalutation: string;
+  assignedDoctorFirstName: string;
+  assignedDoctorLastName: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -623,7 +626,7 @@ let stoppedConsulTimer: number;
 
 export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
-  const { appointmentInfo } = useContext(CaseSheetContextJrd);
+  const { appointmentInfo, patientDetails } = useContext(CaseSheetContextJrd);
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
@@ -1002,14 +1005,20 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     publishKey: publishkey,
     ssl: true,
   };
-  const { setCaseSheetEdit } = useContext(CaseSheetContextJrd);
+  const { setCaseSheetEdit, autoCloseCaseSheet } = useContext(CaseSheetContextJrd);
+
+  useEffect(() => {
+    if (autoCloseCaseSheet) unSubscribeBrowserButtonsListener();
+  }, [autoCloseCaseSheet]);
+
   useEffect(() => {
     const apptClosedTime = moment(new Date(props.appointmentDateTime));
     const presentTime = moment(new Date());
     apptClosedTime.diff(presentTime) > 0
       ? setDisableStartConsult(false)
       : setDisableStartConsult(true);
-  });
+  }, [props.appointmentDateTime]);
+
   useEffect(() => {
     if (props.isEnded) {
       onStopConsult();
@@ -1017,6 +1026,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartAppointmentButton(true);
     }
   }, [props.isEnded]);
+
   useEffect(() => {
     setTextOtherTransfer;
     if (reason === 'Other') {
@@ -1050,9 +1060,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== audioCallMsg &&
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
-          message.message.message !== startConsult &&
-          message.message.message !== startConsultjr &&
-          message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult
@@ -1075,6 +1082,20 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       //message: startConsult,
       message: startConsultjr,
       isTyping: true,
+      automatedText:
+        'Hi ' +
+        patientDetails!.firstName +
+        ' ' +
+        patientDetails!.lastName +
+        '! :) I am from Dr. ' +
+        props.assignedDoctorFirstName +
+        ' ' +
+        props.assignedDoctorLastName +
+        "'s team. Sorry that you aren’t in the best state. We'll do our best to make things better. Let's get a few quick questions out of the way before Dr. " +
+        props.assignedDoctorFirstName +
+        ' ' +
+        props!.assignedDoctorLastName +
+        ' starts the consultation.',
     };
     subscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1091,6 +1112,16 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: stopConsult,
       isTyping: true,
+      automatedText:
+        'Thank you ' +
+        patientDetails!.firstName +
+        ' ' +
+        patientDetails!.lastName +
+        ', I have everything I need. I will share these details with Dr. ' +
+        props.assignedDoctorFirstName +
+        ' ' +
+        props.assignedDoctorLastName +
+        ', who will be here with you soon.',
     };
     unSubscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1270,6 +1301,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 onClick={() => {
                   unSubscribeBrowserButtonsListener();
                   stopInterval();
+                  onStopConsult();
                   props.endConsultAction();
                   setDisableOnTransfer(true);
                 }}

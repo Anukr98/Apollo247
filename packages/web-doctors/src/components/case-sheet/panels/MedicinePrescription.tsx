@@ -401,7 +401,6 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
-
 let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {

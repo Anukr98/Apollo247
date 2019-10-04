@@ -149,7 +149,7 @@ interface MessagesObjectProps {
   id: string;
   message: string;
   username: string;
-  text: string;
+  automatedText: string;
   duration: string;
   url: string;
 }
@@ -274,9 +274,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== audioCallMsg &&
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
-          message.message.message !== startConsult &&
-          message.message.message !== startConsultjr &&
-          message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult
@@ -295,28 +292,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       pubnub.unsubscribe({ channels: [channel] });
     };
   }, []);
-  // function getCookieValue() {
-  //   const name = 'action=';
-  //   const ca = document.cookie.split(';');
-  //   for (let i = 0; i < ca.length; i++) {
-  //     let c = ca[i];
-  //     while (c.charAt(0) === ' ') {
-  //       c = c.substring(1);
-  //     }
-  //     if (c.indexOf(name) === 0) {
-  //       return c.substring(name.length, c.length);
-  //     }
-  //   }
-  //   return '';
-  // }
-  // useEffect(() => {
-  //   //if (props.startConsult !== isVideoCall) {
-  //   if (getCookieValue() !== '') {
-  //     setIsVideoCall(props.startConsult === 'videocall' ? true : false);
-  //     setMessageText(videoCallMsg);
-  //     autoSend();
-  //   }
-  // }, []);
 
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
@@ -358,26 +333,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     );
   };
-  const autoSend = () => {
-    const text = {
-      id: doctorId,
-      message: props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
-      isTyping: true,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
-    actionBtn();
+  const getAutomatedMessage = (rowData: MessagesObjectProps) => {
+    if (
+      rowData.message === startConsult ||
+      rowData.message === startConsultjr ||
+      rowData.message === stopConsult
+    ) {
+      return rowData.automatedText;
+    } else {
+      return rowData.message;
+    }
   };
-
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
       rowData.id === doctorId &&
@@ -385,9 +351,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
-      rowData.message !== startConsult &&
-      rowData.message !== startConsultjr &&
-      rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
@@ -414,13 +377,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </div>
             ) : (
               <div>
-                <span>
-                  {isURL(rowData.message) ? (
-                    <a href={rowData.message}> {rowData.message}</a>
-                  ) : (
-                    rowData.message
-                  )}
-                </span>
+                <span>{getAutomatedMessage(rowData)}</span>
               </div>
             )}
           </div>
@@ -432,9 +389,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
-      rowData.message !== startConsult &&
-      rowData.message !== startConsultjr &&
-      rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
@@ -476,7 +430,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     </a>
                   </div>
                 ) : (
-                  <span>{rowData.message}</span>
+                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
               </div>
             )}
@@ -488,9 +442,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
-      rowData.message !== startConsult &&
-      rowData.message !== startConsultjr &&
-      rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
@@ -528,7 +479,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     </a>
                   </div>
                 ) : (
-                  <span>{rowData.message}</span>
+                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
               </div>
             )}
