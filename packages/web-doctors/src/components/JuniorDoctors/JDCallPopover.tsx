@@ -1002,14 +1002,20 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     publishKey: publishkey,
     ssl: true,
   };
-  const { setCaseSheetEdit } = useContext(CaseSheetContextJrd);
+  const { setCaseSheetEdit, autoCloseCaseSheet } = useContext(CaseSheetContextJrd);
+
+  useEffect(() => {
+    if (autoCloseCaseSheet) unSubscribeBrowserButtonsListener();
+  }, [autoCloseCaseSheet]);
+
   useEffect(() => {
     const apptClosedTime = moment(new Date(props.appointmentDateTime));
     const presentTime = moment(new Date());
     apptClosedTime.diff(presentTime) > 0
       ? setDisableStartConsult(false)
       : setDisableStartConsult(true);
-  });
+  }, [props.appointmentDateTime]);
+
   useEffect(() => {
     if (props.isEnded) {
       onStopConsult();
@@ -1017,6 +1023,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartAppointmentButton(true);
     }
   }, [props.isEnded]);
+
   useEffect(() => {
     setTextOtherTransfer;
     if (reason === 'Other') {

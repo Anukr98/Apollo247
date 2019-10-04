@@ -248,6 +248,7 @@ interface ConsultRoomProps {
   patientId: string;
   disableChat: boolean;
   isNewMessage: (isNewMessage: boolean) => void;
+  autoCloseCaseSheet: boolean;
 }
 
 // let timerIntervalId: any;
@@ -285,6 +286,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   //   console.log(i, 'increment....');
   //   return Math.round(fileSize * 100) / 100;
   // };
+
+  // this hook is used to send auto chat message when the consult is closed by system
+  useEffect(() => {
+    console.log('auto close case sheet action....', props.autoCloseCaseSheet);
+  }, [props.autoCloseCaseSheet]);
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';

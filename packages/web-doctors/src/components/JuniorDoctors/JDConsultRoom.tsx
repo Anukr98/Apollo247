@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Theme, Button, Avatar, CircularProgress } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
@@ -79,6 +79,7 @@ import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import ReactCountdownClock from 'react-countdown-clock';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -379,8 +380,10 @@ export const JDConsultRoom: React.FC = () => {
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDiagnosisDialogOpen, setIsDiagnosisDialogOpen] = React.useState(false);
+  // const [isAutoSubmitDialogOpened, setIsAutoSubmitDialogOpened] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
   const [isNewMessage, setIsNewMessage] = React.useState(false);
+  const [notesJrd, setNotesJrd] = React.useState('');
 
   const { currentPatient: currentDoctor, isSignedIn } = useAuth();
   const doctorId = currentDoctor!.id;
@@ -450,6 +453,7 @@ export const JDConsultRoom: React.FC = () => {
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
+  const [autoCloseCaseSheet, setAutoCloseCaseSheet] = useState<boolean>(false);
   /* case sheet data*/
 
   let assignedDoctorFirstName = '',
@@ -509,6 +513,7 @@ export const JDConsultRoom: React.FC = () => {
 
   const setCasesheetNotes = (notes: string) => {
     customNotes = notes; // this will be used in saving case sheet.
+    setNotesJrd(customNotes);
   };
 
   // retrieve patient details
@@ -602,8 +607,6 @@ export const JDConsultRoom: React.FC = () => {
       },
     },
   });
-
-  // console.log('hello..............', notes, customNotes);
 
   useEffect(() => {
     if (isSignedIn) {
@@ -781,38 +784,31 @@ export const JDConsultRoom: React.FC = () => {
     }
   }, [appointmentId, client, isSignedIn]);
 
-  // const symptomsRef = useRef(symptoms);
-  // const startConsultRef = useRef(startConsult);
-  // const diagnosisRef = useRef(diagnosis);
-  // const medicinePrescriptionRef = useRef(medicinePrescription);
-  // const diagnosticPrescriptionRef = useRef(diagnosticPrescription);
-  // const otherInsturctionsRef = useRef();
-
+  // this effect triggers when jrd not performed any action on the page.
   useEffect(() => {
-    // console.log('ref is...', customNotes);
-    const timer = setTimeout(() => {
-      // track all the actions a JD performs on the page.
-      const isActionHappend =
-        startConsult.length > 0 ||
-        (symptoms && symptoms.length > 0) ||
-        (diagnosis && diagnosis.length > 0) ||
-        (medicinePrescription && medicinePrescription.length > 0) ||
-        (diagnosticPrescription && diagnosticPrescription.length > 0) ||
-        (otherInstructions && otherInstructions.length > 0);
-      // console.log(
-      //   startConsult,
-      //   startConsult.length,
-      //   symptoms && symptoms.length,
-      //   diagnosis && diagnosis.length,
-      //   medicinePrescription && medicinePrescription.length,
-      //   diagnosticPrescription && diagnosticPrescription.length,
-      //   otherInstructions && otherInstructions.length
-      // );
-      // console.log('action happened.......', isActionHappend);
-      if (!isActionHappend) setJrdNoFillDialog(true);
-    }, 10000); // show the reminder to jr.doctor when he/she not filled anything for more than one minute.
-    return () => clearTimeout(timer);
+    // console.log(caseSheetEdit, 'case sheet edit....');
+    if (caseSheetEdit) {
+      const timer = setTimeout(() => {
+        // track all the actions a JD performs on the page.
+        const isActionHappend =
+          startConsult.length > 0 ||
+          (symptoms && symptoms.length > 0) ||
+          (diagnosis && diagnosis.length > 0) ||
+          (medicinePrescription && medicinePrescription.length > 0) ||
+          (diagnosticPrescription && diagnosticPrescription.length > 0) ||
+          (otherInstructions && otherInstructions.length > 0) ||
+          (notesJrd && notesJrd.length > 0);
+
+        // console.log(isActionHappend, 'action happened.....');
+
+        if (!isActionHappend) {
+          setJrdNoFillDialog(true);
+        }
+      }, 60000); // show the reminder to jr.doctor when he/she not filled anything for more than one minute.
+      return () => clearTimeout(timer);
+    }
   }, [
+    caseSheetEdit,
     startConsult,
     symptoms,
     diagnosis,
@@ -823,10 +819,26 @@ export const JDConsultRoom: React.FC = () => {
     lifeStyle,
     familyHistory,
     isNewMessage,
+    notesJrd,
   ]);
 
+  // if this function triggered it implies that Jrd has not performed any action on popup.
+  const triggerAutoEndConsult = () => {
+    setJrdNoFillDialog(false);
+
+    // trigger auto close sheet action and pass it to conext for sending out chat message.
+    setAutoCloseCaseSheet(true);
+
+    // end consult automatically.
+    endConsultAutoAction();
+
+    // redirect back to consults.
+    window.location.href = clientRoutes.juniorDoctor();
+  };
+
   const saveCasesheetAction = (flag: boolean) => {
-    if (diagnosis!.length > 0) {
+    // console.log(diagnosis && diagnosis.length, diagnosis!, flag);
+    if ((diagnosis && diagnosis.length > 0) || flag) {
       setSaving(true);
       client
         .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
@@ -879,6 +891,17 @@ export const JDConsultRoom: React.FC = () => {
     } else {
       setIsDiagnosisDialogOpen(true);
     }
+  };
+
+  // this will trigger end consult automatically after one minute
+  const endConsultAutoAction = () => {
+    mutationRemoveConsult();
+    savePatientAllergiesMutation();
+    savePatientFamilyHistoryMutation();
+    savePatientLifeStyleMutation();
+    saveCasesheetAction(true);
+    // trigger auto submit popup
+    // setIsAutoSubmitDialogOpened(true);
   };
 
   const startAppointmentClick = (startAppointment: boolean) => {
@@ -960,6 +983,7 @@ export const JDConsultRoom: React.FC = () => {
             healthVault: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.healthVault,
             pastAppointments: casesheetInfo!.getJuniorDoctorCaseSheet!.pastAppointments,
             setCasesheetNotes,
+            autoCloseCaseSheet,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
@@ -1095,6 +1119,7 @@ export const JDConsultRoom: React.FC = () => {
                           patientId={patientId}
                           disableChat={isActive === 'done' ? true : false}
                           isNewMessage={(isNewMessage: boolean) => setIsNewMessage(isNewMessage)}
+                          autoCloseCaseSheet={autoCloseCaseSheet}
                         />
                       </div>
                     </div>
@@ -1140,6 +1165,13 @@ export const JDConsultRoom: React.FC = () => {
           <DialogContentText>
             Hi! Seems like you've gone offline. Please click on 'OK' to continue chatting with your
             patient.
+            <ReactCountdownClock
+              seconds={60}
+              color="#fcb716"
+              alpha={0.9}
+              size={50}
+              onComplete={() => triggerAutoEndConsult()}
+            />
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -1156,7 +1188,6 @@ export const JDConsultRoom: React.FC = () => {
       </Dialog>
 
       <Dialog open={isDiagnosisDialogOpen} onClose={() => setIsDiagnosisDialogOpen(false)}>
-        <DialogTitle>&nbsp;</DialogTitle>
         <DialogContent>
           <DialogContentText>Please enter diagnosis</DialogContentText>
         </DialogContent>
@@ -1166,6 +1197,30 @@ export const JDConsultRoom: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* <Dialog
+        open={isAutoSubmitDialogOpened}
+        onClose={() => setIsAutoSubmitDialogOpened(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle className={classes.popoverTile}>Apollo 24x7 - Auto Action</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Casesheet has been auto submitted.</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsAutoSubmitDialogOpened(false);
+              window.location.href = clientRoutes.juniorDoctor();
+            }}
+            autoFocus
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog> */}
     </div>
   );
 };
