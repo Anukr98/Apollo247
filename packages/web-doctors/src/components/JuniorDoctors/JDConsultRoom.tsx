@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme, Button, Avatar, CircularProgress } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
@@ -367,6 +367,10 @@ const useStyles = makeStyles((theme: Theme) => {
         display: 'none',
       },
     },
+    popoverTile: {
+      color: '#fcb716',
+      fontWeight: 500,
+    },
   };
 });
 
@@ -375,7 +379,8 @@ export const JDConsultRoom: React.FC = () => {
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isDiagnosisDialogOpen, setIsDiagnosisDialogOpen] = React.useState(false);
-  // let showConsultButtons = false;
+  const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
+  const [isNewMessage, setIsNewMessage] = React.useState(false);
 
   const { currentPatient: currentDoctor, isSignedIn } = useAuth();
   const doctorId = currentDoctor!.id;
@@ -398,8 +403,8 @@ export const JDConsultRoom: React.FC = () => {
     },
   });
 
-  const [isEnded, setIsEnded] = useState<boolean>(false);
-  const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
+  const [isEnded] = useState<boolean>(false);
+  const [prescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
@@ -452,7 +457,9 @@ export const JDConsultRoom: React.FC = () => {
     assignedDoctorMobile = '',
     assignedDoctorSpecialty = '',
     assignedDoctorPhoto = '',
-    assignedDoctorSalutation = '';
+    assignedDoctorSalutation = '',
+    customNotes = '',
+    appointmentDateIST = '';
 
   const {
     data: assignedDoctorDetailsData,
@@ -500,13 +507,9 @@ export const JDConsultRoom: React.FC = () => {
 
   // console.log(assignedDoctorDetailsData, assignedDoctorDetailsLoading, assignedDoctorDetailsError);
 
-  /* need to be worked later */
-  let customNotes = '';
   const setCasesheetNotes = (notes: string) => {
     customNotes = notes; // this will be used in saving case sheet.
   };
-
-  let appointmentDateIST = '';
 
   // retrieve patient details
   const patientFirstName =
@@ -560,16 +563,10 @@ export const JDConsultRoom: React.FC = () => {
       new Date(patientAppointmentTimeUtc).getTime(),
       'dd/MM/yyyy, hh:mm a'
     );
-
-    // show/hide consult now buttons.
-    // if (new Date(patientAppointmentTimeUtc).getTime() >= new Date().getTime())
-    //   showConsultButtons = true;
   }
-  // console.log('patient details....', casesheetInfo.getJuniorDoctorCaseSheet.patientDetails);
+
   const patientRelationHeader =
     patientRelation === Relation.ME ? ' Self' : _startCase(_toLower(patientRelation));
-
-  // console.log(patientAllergies, '--------------');
 
   const savePatientAllergiesMutation = useMutation<
     UpdatePatientAllergies,
@@ -605,6 +602,8 @@ export const JDConsultRoom: React.FC = () => {
       },
     },
   });
+
+  // console.log('hello..............', notes, customNotes);
 
   useEffect(() => {
     if (isSignedIn) {
@@ -781,6 +780,50 @@ export const JDConsultRoom: React.FC = () => {
       };
     }
   }, [appointmentId, client, isSignedIn]);
+
+  // const symptomsRef = useRef(symptoms);
+  // const startConsultRef = useRef(startConsult);
+  // const diagnosisRef = useRef(diagnosis);
+  // const medicinePrescriptionRef = useRef(medicinePrescription);
+  // const diagnosticPrescriptionRef = useRef(diagnosticPrescription);
+  // const otherInsturctionsRef = useRef();
+
+  useEffect(() => {
+    // console.log('ref is...', customNotes);
+    const timer = setTimeout(() => {
+      // track all the actions a JD performs on the page.
+      const isActionHappend =
+        startConsult.length > 0 ||
+        (symptoms && symptoms.length > 0) ||
+        (diagnosis && diagnosis.length > 0) ||
+        (medicinePrescription && medicinePrescription.length > 0) ||
+        (diagnosticPrescription && diagnosticPrescription.length > 0) ||
+        (otherInstructions && otherInstructions.length > 0);
+      // console.log(
+      //   startConsult,
+      //   startConsult.length,
+      //   symptoms && symptoms.length,
+      //   diagnosis && diagnosis.length,
+      //   medicinePrescription && medicinePrescription.length,
+      //   diagnosticPrescription && diagnosticPrescription.length,
+      //   otherInstructions && otherInstructions.length
+      // );
+      // console.log('action happened.......', isActionHappend);
+      if (!isActionHappend) setJrdNoFillDialog(true);
+    }, 10000); // show the reminder to jr.doctor when he/she not filled anything for more than one minute.
+    return () => clearTimeout(timer);
+  }, [
+    startConsult,
+    symptoms,
+    diagnosis,
+    medicinePrescription,
+    diagnosticPrescription,
+    otherInstructions,
+    allergies,
+    lifeStyle,
+    familyHistory,
+    isNewMessage,
+  ]);
 
   const saveCasesheetAction = (flag: boolean) => {
     if (diagnosis!.length > 0) {
@@ -1051,6 +1094,7 @@ export const JDConsultRoom: React.FC = () => {
                           doctorId={doctorId}
                           patientId={patientId}
                           disableChat={isActive === 'done' ? true : false}
+                          isNewMessage={(isNewMessage: boolean) => setIsNewMessage(isNewMessage)}
                         />
                       </div>
                     </div>
@@ -1061,6 +1105,7 @@ export const JDConsultRoom: React.FC = () => {
           </Scrollbars>
         </CaseSheetContextJrd.Provider>
       )}
+
       <Dialog
         open={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
@@ -1083,6 +1128,33 @@ export const JDConsultRoom: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={jrdNoFillDialog}
+        onClose={() => setJrdNoFillDialog(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle className={classes.popoverTile}>Apollo 24x7 - Alert</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Hi! Seems like you've gone offline. Please click on 'OK' to continue chatting with your
+            patient.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setJrdNoFillDialog(false);
+            }}
+            autoFocus
+          >
+            Ok
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Dialog open={isDiagnosisDialogOpen} onClose={() => setIsDiagnosisDialogOpen(false)}>
         <DialogTitle>&nbsp;</DialogTitle>
         <DialogContent>

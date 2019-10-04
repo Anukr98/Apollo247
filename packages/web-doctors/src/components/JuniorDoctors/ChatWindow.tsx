@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Theme, Button, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphInput, AphTextField } from '@aph/web-ui-components';
+import { AphTextField } from '@aph/web-ui-components';
+// import { AphInput, AphTextField } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
-import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
-import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
-import { useMutation } from 'react-apollo-hooks';
+// import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
+// import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
+// import { useMutation } from 'react-apollo-hooks';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -246,18 +247,22 @@ interface ConsultRoomProps {
   doctorId: string;
   patientId: string;
   disableChat: boolean;
+  isNewMessage: (isNewMessage: boolean) => void;
 }
 
-let timerIntervalId: any;
-let stoppedConsulTimer: number;
+// let timerIntervalId: any;
+// let stoppedConsulTimer: number;
+
 export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
+  const isVideoCall = false;
+
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [msg, setMsg] = useState<string>('');
-  const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
+  // const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
@@ -309,7 +314,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const pubnub = new Pubnub(config);
   let insertText: MessagesObjectProps[] = [];
 
-  const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
+  // const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
 
   const timerMinuts = Math.floor(startingTime / 60);
@@ -317,17 +322,17 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
   const startIntervalTimer = (timer: number) => {
-    setstartTimerAppoinmentt(true);
-    timerIntervalId = setInterval(() => {
+    // setstartTimerAppoinmentt(true);
+    setInterval(() => {
       timer = timer + 1;
-      stoppedConsulTimer = timer;
+      // stoppedConsulTimer = timer;
       setStartingTime(timer);
     }, 1000);
   };
 
-  const mutationUploadChatDocument = useMutation<UploadChatDocument, UploadChatDocumentVariables>(
-    UPLOAD_CHAT_DOCUMENT
-  );
+  // const mutationUploadChatDocument = useMutation<UploadChatDocument, UploadChatDocumentVariables>(
+  //   UPLOAD_CHAT_DOCUMENT
+  // );
 
   const srollToBottomAction = () => {
     setTimeout(() => {
@@ -343,18 +348,20 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       setMsg('');
     }
   };
-  const isURL = (str: string) => {
-    const pattern = new RegExp(
-      '^(https?:\\/\\/)?' + // protocol
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
-      '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-      '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-        '(\\#[-a-z\\d_]*)?$',
-      'i'
-    ); // fragment locator
-    return pattern.test(str);
-  };
+
+  // const isURL = (str: string) => {
+  //   const pattern = new RegExp(
+  //     '^(https?:\\/\\/)?' + // protocol
+  //     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
+  //     '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+  //     '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+  //     '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+  //       '(\\#[-a-z\\d_]*)?$',
+  //     'i'
+  //   ); // fragment locator
+  //   return pattern.test(str);
+  // };
+
   useEffect(() => {
     if (isCallAccepted) {
       startIntervalTimer(0);
@@ -373,7 +380,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: (message) => {
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
-        console.log(message.message);
+        // console.log(message.message);
         if (
           !showVideoChat &&
           message.message.message !== videoCallMsg &&
@@ -388,6 +395,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== followupconsult
         ) {
           setIsNewMsg(true);
+          props.isNewMessage(true);
         }
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
@@ -433,6 +441,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       }
     );
   };
+
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
       rowData.id === doctorId &&
@@ -578,20 +587,24 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       return '';
     }
   };
+
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
           return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
         })
       : '';
+
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
     srollToBottomAction();
   };
-  const actionBtn = () => {
-    setShowVideo(true);
-  };
+
+  // const actionBtn = () => {
+  //   setShowVideo(true);
+  // };
+
   const sendMsg = (msgObject: any, isStoreInHistory: boolean) => {
     pubnub.publish(
       {
@@ -605,6 +618,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       }
     );
   };
+
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -627,6 +641,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     };
     sendMsg(stoptext, true);
   };
+
   const stopAudioVideoCallpatient = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -640,6 +655,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     };
     sendMsg(text, true);
   };
+
   const convertCall = () => {
     setConvertVideo(!convertVideo);
     setTimeout(() => {
@@ -650,6 +666,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       sendMsg(text, false);
     }, 10);
   };
+
   return (
     <div className={classes.root}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
