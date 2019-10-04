@@ -403,6 +403,8 @@ interface errorObject {
 }
 let cancel: any;
 
+let cancel: any;
+
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
   const {
