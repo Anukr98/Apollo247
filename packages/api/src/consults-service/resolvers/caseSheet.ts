@@ -46,6 +46,11 @@ export type DiagnosticJson = {
 };
 
 export const caseSheetTypeDefs = gql`
+  enum CASESHEET_STATUS {
+    PENDING
+    COMPLETED
+  }
+
   enum DoctorType {
     APOLLO
     PAYROLL
@@ -71,6 +76,14 @@ export const caseSheetTypeDefs = gql`
     BEFORE_FOOD
   }
 
+  enum MEDICINE_UNITS {
+    TABLET
+    CAPSULE
+    ML
+    DROPS
+    NA
+  }
+
   enum Relation {
     ME
     MOTHER
@@ -81,11 +94,6 @@ export const caseSheetTypeDefs = gql`
     WIFE
     HUSBAND
     OTHER
-  }
-
-  enum CASESHEET_STATUS {
-    PENDING
-    COMPLETED
   }
 
   type Appointment {
@@ -146,6 +154,7 @@ export const caseSheetTypeDefs = gql`
   type MedicinePrescription {
     medicineConsumptionDurationInDays: String
     medicineDosage: String
+    medicineUnit: MEDICINE_UNITS
     medicineInstructions: String
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]

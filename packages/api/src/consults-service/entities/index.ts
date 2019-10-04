@@ -347,6 +347,14 @@ export enum CASESHEET_STATUS {
   COMPLETED = 'COMPLETED',
 }
 
+export enum MEDICINE_UNITS {
+  TABLET = 'TABLET',
+  CAPSULE = 'CAPSULE',
+  ML = 'ML',
+  DROPS = 'DROPS',
+  NA = 'NA',
+}
+
 export type CaseSheetMedicinePrescription = {
   id: string;
   externalId: string;
