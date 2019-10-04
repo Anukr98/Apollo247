@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, Not } from 'typeorm';
 import {
   MedicineOrders,
   MedicineOrderLineItems,
@@ -68,7 +68,7 @@ export class MedicineOrdersRepository extends Repository<MedicineOrders> {
 
   findByPatientId(patient: string, offset?: number, limit?: number) {
     return this.find({
-      where: { patient },
+      where: { patient, currentStatus: Not(MEDICINE_ORDER_STATUS.QUOTE) },
       relations: ['medicineOrderLineItems', 'medicineOrderPayments'],
       skip: offset,
       take: limit,
