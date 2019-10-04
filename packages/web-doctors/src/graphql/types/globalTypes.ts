@@ -16,6 +16,11 @@ export enum AccountType {
   SAVINGS = "SAVINGS",
 }
 
+export enum CASESHEET_STATUS {
+  COMPLETED = "COMPLETED",
+  PENDING = "PENDING",
+}
+
 export enum ConsultMode {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
@@ -176,6 +181,7 @@ export interface UpdateCaseSheetInput {
   otherInstructions?: string | null;
   medicinePrescription?: string | null;
   id?: string | null;
+  status?: CASESHEET_STATUS | null;
 }
 
 export interface UpdatePatientInput {

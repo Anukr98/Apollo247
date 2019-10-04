@@ -14,6 +14,8 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           symptoms {
             symptom
           }
+          status
+          doctorType
         }
         patientInfo {
           id
