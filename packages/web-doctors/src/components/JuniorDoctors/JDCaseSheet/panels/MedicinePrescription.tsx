@@ -473,8 +473,6 @@ interface errorObject {
 }
 let cancel: any;
 
-let cancel: any;
-
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
   const {
@@ -1037,7 +1035,7 @@ export const MedicinePrescription: React.FC = () => {
                           </AphSelect>
                         </div>
                       </div>
-                      {/** 
+                      {/**
                       <div className={classes.numberTablets}>
                         <img
                           src={require('images/ic_minus.svg')}

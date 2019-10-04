@@ -1294,6 +1294,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 onClick={() => {
                   unSubscribeBrowserButtonsListener();
                   stopInterval();
+                  onStopConsult();
                   props.endConsultAction();
                   setDisableOnTransfer(true);
                 }}
