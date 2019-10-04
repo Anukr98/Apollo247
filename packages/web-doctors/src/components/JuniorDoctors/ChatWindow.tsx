@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Theme, Button, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphInput, AphTextField } from '@aph/web-ui-components';
+import { AphInput, AphTextField, AphButton } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
@@ -108,12 +108,15 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.15)',
       position: 'relative',
       borderRadius: '0 0 10px 10px',
+      display: 'flex',
     },
     chatsendcircle: {
-      position: 'absolute',
-      right: 0,
       backgroundColor: 'transparent',
       boxShadow: 'none',
+      minWidth: 'auto',
+      padding: 0,
+      marginRight: 16,
+      paddingTop: 8,
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -224,6 +227,20 @@ const useStyles = makeStyles((theme: Theme) => {
       '& >div': {
         top: '10px !important',
         bottom: '10px !important',
+      },
+    },
+    chatSendBtn: {
+      boxShadow: 'none',
+      backgroundColor: 'transparent',
+      minWidth: 'auto',
+      padding: 0,
+      marginLeft: 16,
+      paddingTop: 8,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '&:focus': {
+        backgroundColor: 'transparent',
       },
     },
   };
@@ -685,44 +702,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         )}
         {(!showVideo || showVideoChat) && (
           <div className={classes.chatFooter}>
-            <AphTextField
-              className={classes.inputWidth}
-              inputProps={{ type: 'text' }}
-              placeholder="Type here..."
-              value={messageText}
-              onKeyPress={(e) => {
-                if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-                  send();
-                }
-              }}
-              onChange={(event) => {
-                setMessageText(event.currentTarget.value);
-              }}
-              disabled={props.disableChat}
-            />
-            {/* {props.disableChat && (
-              <Button className={classes.chatsendcircle} variant="contained" component="label">
-                <img src={require('images/ic_add_circle.svg')} alt="" />
-                <input
-                  type="file"
-                  style={{ display: 'none' }}
-                  onChange={(e) => {
-                    const fileNames = e.target.files;
-                    if (fileNames && fileNames.length > 0) {
-                      const reader = new FileReader();
-                      reader.onload = () => {
-                        const dataURL = reader.result;
-                        setChatUploadFile(dataURL);
-                        mutationUploadChatDocument();
-                        // console.log(dataURL);
-                      };
-                      reader.readAsDataURL(fileNames[0]);
-                    }
-                  }}
-                />
-              </Button>
-            )} */}
-
             {!props.disableChat && (
               <Button
                 className={classes.chatsendcircle}
@@ -798,6 +777,46 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 />
               </Button>
             )}
+            <AphTextField
+              className={classes.inputWidth}
+              inputProps={{ type: 'text' }}
+              placeholder="Type here..."
+              value={messageText}
+              onKeyPress={(e) => {
+                if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                  send();
+                }
+              }}
+              onChange={(event) => {
+                setMessageText(event.currentTarget.value);
+              }}
+              disabled={props.disableChat}
+            />
+            <AphButton className={classes.chatSendBtn}>
+              <img src={require('images/ic_send.svg')} alt="" />
+            </AphButton>
+            {/* {props.disableChat && (
+              <Button className={classes.chatsendcircle} variant="contained" component="label">
+                <img src={require('images/ic_add_circle.svg')} alt="" />
+                <input
+                  type="file"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const fileNames = e.target.files;
+                    if (fileNames && fileNames.length > 0) {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const dataURL = reader.result;
+                        setChatUploadFile(dataURL);
+                        mutationUploadChatDocument();
+                        // console.log(dataURL);
+                      };
+                      reader.readAsDataURL(fileNames[0]);
+                    }
+                  }}
+                />
+              </Button>
+            )} */}
           </div>
         )}
       </div>
