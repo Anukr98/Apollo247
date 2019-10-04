@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
-import { CaseSheet, Appointment } from 'consults-service/entities';
+import { CaseSheet, Appointment, CASESHEET_STATUS } from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -83,6 +83,11 @@ export const caseSheetTypeDefs = gql`
     OTHER
   }
 
+  enum CASESHEET_STATUS {
+    PENDING
+    COMPLETED
+  }
+
   type Appointment {
     id: String!
     appointmentDateTime: DateTime!
@@ -127,6 +132,7 @@ export const caseSheetTypeDefs = gql`
     otherInstructions: [OtherInstructions]
     patientId: String
     symptoms: [SymptomList]
+    status: String
   }
 
   type Diagnosis {
@@ -214,6 +220,7 @@ export const caseSheetTypeDefs = gql`
     otherInstructions: String
     medicinePrescription: String
     id: String
+    status: CASESHEET_STATUS
   }
 
   type DiagnosisJson {
@@ -351,6 +358,7 @@ type UpdateCaseSheetInput = {
   otherInstructions: string;
   medicinePrescription: string;
   id: string;
+  status: CASESHEET_STATUS;
 };
 
 type UpdateCaseSheetInputArgs = { UpdateCaseSheetInput: UpdateCaseSheetInput };
@@ -388,6 +396,7 @@ const updateCaseSheet: Resolver<
   getCaseSheetData.followUp = inputArguments.followUp;
   if (followUpDate) getCaseSheetData.followUpDate = followUpDate;
   getCaseSheetData.followUpAfterInDays = followUpAfterInDays;
+  getCaseSheetData.status = inputArguments.status;
 
   //convert casesheet to prescription
   const client = new AphStorageClient(
@@ -395,7 +404,6 @@ const updateCaseSheet: Resolver<
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
   const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb);
-  console.log(rxPdfData);
   const pdfDocument = generateRxPdfDocument(rxPdfData);
   const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
   if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);

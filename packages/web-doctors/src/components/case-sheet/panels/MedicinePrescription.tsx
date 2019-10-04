@@ -932,7 +932,7 @@ export const MedicinePrescription: React.FC = () => {
                       </Paper>
                     )}
                   />
-                  {medicine.length > 2 && !loading && !isSuggestionFetched && (
+                  {medicine.length > 2 && !loading && (
                     <div>
                       <span>
                         <AphButton
