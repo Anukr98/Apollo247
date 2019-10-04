@@ -144,8 +144,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const onPressPay = () => {
-    setdisablePay(true);
     getNetStatus().then((status) => {
+      setdisablePay(true);
       if (status) {
         if (props.FollowUp == false) {
           const timeSlot =
