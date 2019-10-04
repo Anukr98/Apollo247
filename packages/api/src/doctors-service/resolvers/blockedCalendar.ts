@@ -91,6 +91,20 @@ const addBlockedCalendarItem: Resolver<
   const overlap = doesItemOverlap(itemToAdd, existingItems);
   if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
   await bciRepo.save(itemToAdd);
+
+  //push notification logic
+  const rescheduleRepo = context.consultsDb.getCustomRepository(
+    RescheduleAppointmentDetailsRepository
+  );
+  await rescheduleRepo.getAppointmentsAndReschedule(
+    doctorId,
+    start,
+    end,
+    context.consultsDb,
+    context.doctorsDb,
+    context.patientsDb
+  );
+
   const blockedCalendar = await bciRepo.find({ doctorId });
   return { blockedCalendar };
 };
