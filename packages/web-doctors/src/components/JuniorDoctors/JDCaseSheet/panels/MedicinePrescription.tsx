@@ -9,7 +9,7 @@ import {
   createStyles,
   CircularProgress,
 } from '@material-ui/core';
-import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
+import { AphTextField, AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -395,6 +395,50 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: 35,
       paddingRight: 35,
       wordBreak: 'break-word',
+    },
+    colGroup: {
+      display: 'flex',
+      '& >div:first-child': {
+        paddingRight: 20,
+      },
+      '& >div:last-child': {
+        paddingLeft: 20,
+      },
+    },
+    divCol: {
+      marginBottom: 20,
+      width: '50%',
+    },
+    tobeTakenGroup: {
+      '& button:last-child': {
+        marginRight: 0,
+      },
+    },
+    noPadding: {
+      paddingBottom: 0,
+    },
+    menuPaper: {
+      width: 200,
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
+      marginTop: 34,
+      '& ul': {
+        padding: 0,
+        '& li': {
+          minHeight: 'auto',
+          color: '#02475b',
+          fontSize: 16,
+          fontWeight: 500,
+          '&:hover': {
+            backgroundColor: '#f0f4f5',
+          },
+        },
+      },
+    },
+    menuSelected: {
+      backgroundColor: '#f0f4f5 !important',
+      color: '#02475b !important',
+      fontWeight: 'bold',
     },
   })
 );
@@ -953,10 +997,46 @@ export const MedicinePrescription: React.FC = () => {
               </div>
             ) : (
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(54vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Dosage</div>
+                      <div className={classes.colGroup}>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                            Dosage*
+                          </div>
+                          <AphTextField />
+                        </div>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                            Units*
+                          </div>
+                          <AphSelect
+                            MenuProps={{
+                              classes: {
+                                paper: classes.menuPaper,
+                              },
+                              anchorOrigin: {
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                              },
+                              transformOrigin: {
+                                vertical: 'top',
+                                horizontal: 'right',
+                              },
+                            }}
+                          >
+                            <MenuItem classes={{ selected: classes.menuSelected }}>tablet</MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }}>
+                              capsule
+                            </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }}>ml</MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }}>drops</MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }}>NA</MenuItem>
+                          </AphSelect>
+                        </div>
+                      </div>
+                      {/** 
                       <div className={classes.numberTablets}>
                         <img
                           src={require('images/ic_minus.svg')}
@@ -978,6 +1058,49 @@ export const MedicinePrescription: React.FC = () => {
                           }}
                         />
                       </div>
+                      **/}
+                    </div>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.colGroup}>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                            Duration of Consumption*
+                          </div>
+                          <AphTextField
+                            placeholder=""
+                            inputProps={{ maxLength: 6 }}
+                            value={consumptionDuration}
+                            onChange={(event: any) => {
+                              setConsumptionDuration(event.target.value);
+                            }}
+                            error={errorState.durationErr}
+                          />
+                          {errorState.durationErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please Enter Duration in days(Number only)
+                            </FormHelperText>
+                          )}{' '}
+                        </div>
+                        <div className={classes.divCol}>
+                          <div className={classes.sectionTitle}>To be taken</div>
+                          <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
+                            {tobeTakenHtml}
+                          </div>
+                          {errorState.tobeTakenErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.tobeTakenErr}
+                            >
+                              Please select to be taken.
+                            </FormHelperText>
+                          )}
+                        </div>
+                      </div>
                     </div>
                     <div className={classes.sectionGroup}>
                       <div className={classes.sectionTitle}>Time of the Day</div>
@@ -993,43 +1116,9 @@ export const MedicinePrescription: React.FC = () => {
                       )}
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>To be taken</div>
-                      <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                      {errorState.tobeTakenErr && (
-                        <FormHelperText
-                          className={classes.helpText}
-                          component="div"
-                          error={errorState.tobeTakenErr}
-                        >
-                          Please select to be taken.
-                        </FormHelperText>
-                      )}
-                    </div>
-                    <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Duration of Consumption(In days)</div>
-                      <div className={classes.numberTablets}>
-                        <AphTextField
-                          placeholder=""
-                          inputProps={{ maxLength: 6 }}
-                          value={consumptionDuration}
-                          onChange={(event: any) => {
-                            setConsumptionDuration(event.target.value);
-                          }}
-                          error={errorState.durationErr}
-                        />
-                        {errorState.durationErr && (
-                          <FormHelperText
-                            className={classes.helpText}
-                            component="div"
-                            error={errorState.durationErr}
-                          >
-                            Please Enter Duration in days(Number only)
-                          </FormHelperText>
-                        )}
+                      <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                        Instructions (if any)
                       </div>
-                    </div>
-                    <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Instructions (if any)</div>
                       <div className={classes.numberTablets}>
                         <AphTextField
                           value={medicineInstruction}
