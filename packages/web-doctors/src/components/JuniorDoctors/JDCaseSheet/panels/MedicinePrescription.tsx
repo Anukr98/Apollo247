@@ -971,7 +971,7 @@ export const MedicinePrescription: React.FC = () => {
                     </Scrollbars>
                   )}
                 />
-                {medicine.length > 2 && !loading && !isSuggestionFetched && (
+                {medicine.length > 2 && !loading && (
                   <AphButton
                     className={classes.darkGreenaddBtn}
                     onClick={() => {
