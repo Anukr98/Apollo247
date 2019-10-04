@@ -569,6 +569,7 @@ export const UPDATE_CASESHEET = gql`
       otherInstructions {
         instruction
       }
+      status
     }
   }
 `;

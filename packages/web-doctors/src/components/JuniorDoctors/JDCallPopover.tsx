@@ -590,7 +590,7 @@ interface errorObjectReshedule {
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
-  saveCasesheetAction: (onlySave: boolean) => void;
+  saveCasesheetAction: (onlySave: boolean, endConsult: boolean) => void;
   endConsultAction: () => void;
   appointmentId: string;
   appointmentDateTime: string;
@@ -1289,7 +1289,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 classes={{ root: classes.saveBtn, disabled: classes.saveBtnDisabled }}
                 disabled={props.saving}
                 onClick={() => {
-                  props.saveCasesheetAction(true);
+                  props.saveCasesheetAction(true, false);
                 }}
               >
                 Save
