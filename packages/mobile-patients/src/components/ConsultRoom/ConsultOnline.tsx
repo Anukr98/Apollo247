@@ -10,20 +10,15 @@ import {
   NightUnselected,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import {
-  NEXT_AVAILABLE_SLOT,
-  GET_AVAILABLE_SLOTS,
-} from '@aph/mobile-patients/src/graphql/profiles';
+import { GET_AVAILABLE_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
+import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 import { getDoctorDetailsById_getDoctorDetailsById } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlotVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
-import {
-  timeTo12HrFormat,
-  nextAvailability,
-  getNetStatus,
   divideSlots,
+  getNetStatus,
+  nextAvailability,
+  timeTo12HrFormat,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -31,7 +26,6 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Text, View } from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
-import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -131,25 +125,30 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     checkAvailabilitySlot();
   }, [props.date, date]);
 
+  useEffect(() => {
+    if (NextAvailableSlot && timeArray) {
+      for (const i in timeArray) {
+        if (timeArray[i].time.length > 0) {
+          if (timeArray[i].time.includes(NextAvailableSlot)) {
+            setselectedtiming(timeArray[i].label);
+            props.setselectedTimeSlot(NextAvailableSlot);
+            props.scrollToSlots();
+            break;
+          }
+        }
+      }
+    }
+  }, [NextAvailableSlot, timeArray]);
+
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
-    console.log(availableSlots, 'setTimeArrayData availableSlots');
+    console.log(availableSlots, 'setTimeArrayData availableSlots', NextAvailableSlot);
     setselectedtiming(timeArray[0].label);
 
     const array = await divideSlots(availableSlots, date);
     if (array !== timeArray) settimeArray(array);
-    for (const i in array) {
-      if (array[i].time.length > 0) {
-        setselectedtiming(array[i].label);
-        props.setselectedTimeSlot(array[i].time[0]);
-        props.scrollToSlots();
-        break;
-      }
-    }
   };
 
   const fetchSlots = (selectedDate: Date = date) => {
-    console.log('fetchSlots', selectedDate);
-
     getNetStatus().then((status) => {
       if (status) {
         props.setshowSpinner(true);
@@ -196,30 +195,26 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const checkAvailabilitySlot = () => {
     console.log('checkAvailabilitySlot consult online');
     props.setshowSpinner && props.setshowSpinner(true);
-    client
-      .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
-        query: NEXT_AVAILABLE_SLOT,
-        variables: {
-          DoctorNextAvailableSlotInput: {
-            doctorIds: props.doctor ? [props.doctor.id] : [],
-            availableDate: todayDate,
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
+
+    const todayDate = new Date().toISOString().slice(0, 10);
+
+    getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
+      // client
+      //   .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
+      //     query: NEXT_AVAILABLE_SLOT,
+      //     variables: {
+      //       DoctorNextAvailableSlotInput: {
+      //         doctorIds:
+      //         availableDate: todayDate,
+      //       },
+      //     },
+      //     fetchPolicy: 'no-cache',
+      //   })
+      .then(({ data }: any) => {
         try {
           props.setshowSpinner && props.setshowSpinner(false);
-          if (
-            data &&
-            data.getDoctorNextAvailableSlot &&
-            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots &&
-            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots.length > 0 &&
-            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-            data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot &&
-            availableInMin === 0
-          ) {
-            const nextSlot = data.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]!.availableSlot;
+          if (data[0] && data[0]!.availableSlot && availableInMin === 0) {
+            const nextSlot = data[0]!.availableSlot;
             // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
             let timeDiff: Number = 0;
             const today: Date = new Date();
@@ -227,7 +222,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             if (date2 && today) {
               timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
             }
-            console.log(timeDiff, 'timeDiff', nextSlot);
+            console.log(timeDiff, 'timeDiff', nextSlot, date2);
 
             props.setNextAvailableSlot(nextSlot);
             props.setavailableInMin(timeDiff);
@@ -238,7 +233,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             }
             setDate(date2);
             props.setDate(date2);
-            console.log(nextAvailability(nextSlot), 'nextAvailability'); //next slot
             fetchSlots(date2);
           }
         } catch {}
@@ -329,6 +323,8 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       />
     );
   };
+
+  console.log(timeArray, NextAvailableSlot, 'render NextAvailableSlot');
 
   return (
     <View>

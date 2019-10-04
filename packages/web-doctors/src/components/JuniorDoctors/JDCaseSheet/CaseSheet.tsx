@@ -174,13 +174,21 @@ const HistoryAndLifeStyle: React.FC<HistoryAndLifeStyleProps> = (props) => {
 export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
   const classes = useStyles();
   const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContextJrd);
-  const [symptoms, setSymptoms] = useState<boolean>(caseSheetEdit);
-  const [healthVault, setHealthVault] = useState<boolean>(caseSheetEdit);
-  const [diagnosis, setDiagnosis] = useState<boolean>(caseSheetEdit);
-  const [medicinePrescription, setMedicinePrescription] = useState<boolean>(caseSheetEdit);
-  const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(caseSheetEdit);
-  const [otherInstructions, setOtherInstructions] = useState<boolean>(caseSheetEdit);
-  const [patientHistory, setPatientHistory] = useState<boolean>(caseSheetEdit);
+  // const [symptoms, setSymptoms] = useState<boolean>(caseSheetEdit);
+  // const [healthVault, setHealthVault] = useState<boolean>(caseSheetEdit);
+  // const [diagnosis, setDiagnosis] = useState<boolean>(caseSheetEdit);
+  // const [medicinePrescription, setMedicinePrescription] = useState<boolean>(caseSheetEdit);
+  // const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(caseSheetEdit);
+  // const [otherInstructions, setOtherInstructions] = useState<boolean>(caseSheetEdit);
+  // const [patientHistory, setPatientHistory] = useState<boolean>(caseSheetEdit);
+
+  const [symptoms, setSymptoms] = useState<boolean>(true);
+  const [healthVault, setHealthVault] = useState<boolean>(true);
+  const [diagnosis, setDiagnosis] = useState<boolean>(true);
+  const [medicinePrescription, setMedicinePrescription] = useState<boolean>(true);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(true);
+  const [otherInstructions, setOtherInstructions] = useState<boolean>(true);
+  const [patientHistory, setPatientHistory] = useState<boolean>(true);
 
   useEffect(() => {
     if (caseSheetEdit) {

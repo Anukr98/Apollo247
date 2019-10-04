@@ -231,6 +231,12 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         city
         photoUrl
       }
+      doctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
+      }
       specialties {
         id
         name
@@ -252,6 +258,12 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           city
           photoUrl
         }
+        doctorsNextAvailability {
+          doctorId
+          onlineSlot
+          physicalSlot
+          referenceSlot
+        }
         specialties {
           id
           name
@@ -272,6 +284,12 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         qualification
         city
         photoUrl
+      }
+      otherDoctorsNextAvailability {
+        doctorId
+        onlineSlot
+        physicalSlot
+        referenceSlot
       }
     }
   }
