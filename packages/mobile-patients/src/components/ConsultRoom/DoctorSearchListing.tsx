@@ -231,7 +231,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     filterMode: ConsultMode = ConsultMode.BOTH,
     SearchData: filterDataType[] = FilterData
   ) => {
-    console.log('FilterData1111111', SearchData, filterMode, 'filterMode');
     const experienceArray: Range[] = [];
     if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
       SearchData[1].selectedOptions.forEach((element: string) => {
@@ -251,7 +250,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (SearchData[3].selectedOptions && SearchData[3].selectedOptions.length > 0)
       SearchData[3].selectedOptions.forEach((element: string) => {
         const splitArray = element.split(' - ');
-        console.log(splitArray, 'splitArray');
         let object: Range | null = {};
         if (splitArray.length > 0)
           object = {
@@ -316,7 +314,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       ...availableNow,
       consultMode: filterMode,
     };
-    console.log(FilterInput, 'FilterInput');
 
     client
       .query<getDoctorsBySpecialtyAndFilters>({
@@ -328,7 +325,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       })
       .then(({ data }) => {
         try {
-          console.log('getDoctorsBySpecialtyAndFilters ', data);
           const filterGetData =
             data && data.getDoctorsBySpecialtyAndFilters
               ? data.getDoctorsBySpecialtyAndFilters
@@ -383,7 +379,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           )
           .then((obj) => {
             try {
-              console.log(obj, 'places');
               if (obj.data.predictions) {
                 const address = obj.data.predictions.map(
                   (item: {
@@ -395,7 +390,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                     return { name: item.structured_formatting.main_text, placeId: item.place_id };
                   }
                 );
-                console.log(address, 'address');
                 setlocationSearchList(address);
               }
             } catch {}
@@ -416,10 +410,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           )
           .then((obj) => {
             try {
-              console.log(obj, 'places details');
               if (obj.data.result.geometry && obj.data.result.geometry.location) {
-                console.log(obj.data.result.geometry.location, 'obj.data.geometry.location');
-
                 AsyncStorage.setItem(
                   'location',
                   JSON.stringify({ latlong: obj.data.result.geometry.location, name: item.name })
@@ -439,32 +430,22 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const fetchCurrentLocation = () => {
     AsyncStorage.getItem('location').then((item) => {
       const location = item ? JSON.parse(item) : null;
-      console.log(item, 'AsyncStorage item', location);
       if (location) {
         location.name && setcurrentLocation(location.name.toUpperCase());
       } else {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-            console.log(searchstring, 'getCurrentPosition searchstring');
-
             const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
             axios
               .get(url)
               .then((obj) => {
                 try {
-                  console.log(obj);
                   if (
                     obj.data.results.length > 0 &&
                     obj.data.results[0].address_components.length > 0
                   ) {
                     const address = obj.data.results[0].address_components[0].short_name;
-                    console.log(
-                      address,
-                      'address',
-                      obj.data.results[0].geometry.location,
-                      'location'
-                    );
                     setcurrentLocation(address.toUpperCase());
                     AsyncStorage.setItem(
                       'location',
@@ -695,6 +676,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           }}
           data={tabs}
           onChange={(selectedTab: string) => {
+            setshowSpinner(true);
             setselectedTab(selectedTab);
             const selectedFilterMode =
               selectedTab === tabs[0].title
@@ -712,7 +694,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const renderPopup = () => {
-    console.log(showLocationpopup, 'showLocationpopup', locationSearchList);
     if (showLocationpopup) {
       return (
         <TouchableOpacity
@@ -832,7 +813,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             setDisplayFilter(false);
           }}
           setData={(selecteddata) => {
-            console.log('selecteddata', selecteddata);
             setshowSpinner(true);
             setFilterData(selecteddata);
             getNetStatus().then((status) => {

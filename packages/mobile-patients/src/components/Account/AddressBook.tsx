@@ -54,6 +54,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   }, [currentPatient]);
 
   const { data, error } = useQuery<getPatientAddressList>(GET_PATIENT_ADDRESS_LIST, {
+    fetchPolicy: 'no-cache',
     variables: {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
     },

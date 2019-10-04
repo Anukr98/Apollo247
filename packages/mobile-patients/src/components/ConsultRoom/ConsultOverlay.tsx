@@ -76,12 +76,6 @@ export interface ConsultOverlayProps extends NavigationScreenProps {
 }
 export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const client = useApolloClient();
-  console.log('FollowUp', props.FollowUp);
-  console.log('appointmentType', props.appointmentType);
-  console.log('patientId', props.patientId);
-  console.log('appointmentType', props.appointmentType);
-  console.log('appointmentId', props.appointmentId);
-  console.log('doctorId', props.doctorId);
   const tabs =
     props.doctor!.doctorType !== DoctorType.PAYROLL
       ? [{ title: 'Consult Online' }, { title: 'Visit Clinic' }]
@@ -99,16 +93,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [AppointmentExistAlert, setAppointmentExistAlert] = useState<boolean>(false);
   const scrollViewRef = React.useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [disablePay, setdisablePay] = useState<boolean>(false);
 
   const todayDate = new Date().toDateString().split('T')[0];
-  console.log(todayDate, 'todayDatetodayDate', new Date().toDateString());
 
   const scrollToSlots = (top: number = 400) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
   };
 
   const onSubmitBookAppointment = () => {
-    console.log('BookAppointment flow');
     setshowSpinner(true);
     const timeSlot =
       tabs[0].title === selectedTab &&
@@ -128,8 +121,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           ? props.clinics[0].facility.id
           : '',
     };
-    console.log(appointmentInput, 'appointmentInput');
-
     client
       .mutate<bookAppointment>({
         mutation: BOOK_APPOINTMENT,
@@ -139,16 +130,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        console.log('bookAppointment data', data), setshowSpinner(false), setshowSuccessPopUp(true);
+        setshowSpinner(false);
+        setshowSuccessPopUp(true);
       })
       .catch((error) => {
         try {
-          console.log(
-            'bookAppointment error',
-            // error.graphQLErrors,
-            error.message
-          ),
-            setshowSpinner(false),
+          setshowSpinner(false),
             (error.message.split(':')[1].trim() == 'APPOINTMENT_EXIST_ERROR' ||
               error.message.split(':')[1].trim() === 'APPOINTMENT_BOOK_DATE_ERROR') &&
               setAppointmentExistAlert(true);
@@ -157,10 +144,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const onPressPay = () => {
+    setdisablePay(true);
     getNetStatus().then((status) => {
       if (status) {
         if (props.FollowUp == false) {
-          console.log('BookfollowupAppointment flow');
           const timeSlot =
             tabs[0].title === selectedTab &&
             isConsultOnline &&
@@ -168,13 +155,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             0 < availableInMin!
               ? nextAvailableSlot
               : selectedTimeSlot;
-          console.log('time', timeSlot);
-          console.log('FollowUp', props.FollowUp);
-          console.log('appointmentType', props.appointmentType);
-          console.log('patientId', props.patientId);
-          console.log('appointmentType', props.appointmentType);
-          console.log('appointmentId', props.appointmentId);
-          console.log('doctorId', props.doctorId);
           const input = {
             patientId: props.patientId,
             doctorId: props.doctorId,
@@ -192,14 +172,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               fetchPolicy: 'no-cache',
             })
             .then((_data: any) => {
-              console.log('BookFollowUpAppointment', _data);
               props.navigation.navigate(AppRoutes.Consult);
             })
             .catch((e: any) => {
               try {
                 const error = JSON.parse(JSON.stringify(e));
                 const errorMessage = error && error.message;
-                console.log('Error occured while BookFollowUpAppointment ', errorMessage, error);
                 Alert.alert('Error', errorMessage);
               } catch {}
             });
@@ -229,10 +207,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               : props.doctor!.physicalConsultationFees
           }`}
           disabled={
-            tabs[0].title === selectedTab &&
-            isConsultOnline &&
-            availableInMin! <= 60 &&
-            0 < availableInMin!
+            disablePay
+              ? true
+              : tabs[0].title === selectedTab &&
+                isConsultOnline &&
+                availableInMin! <= 60 &&
+                0 < availableInMin!
               ? false
               : selectedTimeSlot === ''
               ? true
@@ -319,7 +299,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   doctor={props.doctor}
                   date={date}
                   setDate={(date) => {
-                    console.log(date, 'setDate');
                     setDate(date);
                   }}
                   nextAvailableSlot={nextAvailableSlot}
@@ -339,7 +318,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   doctor={props.doctor}
                   clinics={props.clinics}
                   setDate={(date) => {
-                    console.log(date, 'setDate');
                     setDate(date);
                     // fetchSlots(date);//removed
                     scrollToSlots(350);

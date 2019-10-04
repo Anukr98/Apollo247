@@ -155,7 +155,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   ]);
 
   useEffect(() => {
-    console.log(timeArray, NextAvailableSlot, 'NextAvailableSlot');
     if (NextAvailableSlot && timeArray) {
       for (const i in timeArray) {
         if (timeArray[i].time.length > 0) {
@@ -194,22 +193,18 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   };
 
   const fetchLocation = useCallback(() => {
-    console.log('fetchLocation');
     let searchstring = '';
 
     AsyncStorage.getItem('location').then((item) => {
       const location = item ? JSON.parse(item) : null;
-      console.log(item, 'AsyncStorage item', location.latlong);
       if (location.latlong) {
         searchstring = `${location.latlong.lat}, ${location.latlong.lng}`;
       } else {
         Permissions.request('location')
           .then((response) => {
-            console.log(response, 'permission response');
             if (response === 'authorized') {
               navigator.geolocation.getCurrentPosition(
                 (position) => {
-                  console.log(searchstring, ' AsyncStorage searchstring');
                   searchstring = position.coords.latitude + ', ' + position.coords.longitude;
 
                   // }
@@ -277,7 +272,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   const setTimeArrayData = async (availableSlots: string[], selectedDate: Date = date) => {
     setselectedtiming(timeArray[0].label);
     const array = await divideSlots(availableSlots, selectedDate);
-    console.log(array, 'array', timeArray, 'timeArray', availableSlots, date);
     settimeArray(array);
   };
 
@@ -375,14 +369,12 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   };
 
   const renderLocation = () => {
-    console.log(selectedClinic, 'selectedClinic');
     return (
       <View style={{ marginTop: 10 }}>
         <View style={{ paddingTop: 5, paddingBottom: 10 }}>
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              console.log('TouchableOpacity onpress');
               setShowPopup(!showPopup);
             }}
           >
@@ -452,8 +444,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     );
   };
   const Popup = () => {
-    console.log(showPopup, 'Popup');
-
     return (
       <View>
         <View
