@@ -65,7 +65,9 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
   const renderRadioButtonList = () => {
     return addressList.map((address, i) => (
       <RadioSelectionItem
-        title={`${address.addressLine1}, ${address.addressLine2}\n${address.landmark}\n${address.city}, ${address.state} - ${address.zipcode}`}
+        title={`${address.addressLine1}, ${address.addressLine2}\n${address.landmark}${
+          address.landmark ? ',\n' : ''
+        }${address.city}, ${address.state} - ${address.zipcode}`}
         isSelected={selectedId === address.id}
         onPress={() => {
           setselectedPinCode(address.zipcode!);

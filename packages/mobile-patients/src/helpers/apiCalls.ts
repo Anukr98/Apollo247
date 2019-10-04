@@ -295,58 +295,27 @@ export const pinCodeServiceabilityApi = (
   );
 };
 
-// export const pinCodeServiceabilityApi = (
-//   pinCode: string
-// ): Promise<AxiosResponse<{ Availability: boolean }>> => {
-//   return new Promise((res, rej) => {
-//     Axios.post(
-//       // `${config.PHARMA_BASE_URL}/popcsrchpin_api.php`,
-//       `${config.PHARMA_BASE_URL}/popcsrchpin_api.php`, //Production
-//       { params: pinCode },
-//       {
-//         headers: {
-//           Authorization: config.PHARMA_AUTH_TOKEN,
-//         },
-//       }
-//     )
-//       .then(({ data }) => {
-//         // const response = data as { Stores: Store[]; stores_count: number };
-//         // const Availability = response.stores_count == 0 ? false : true;
-//         // res(({ data: { Availability: Availability } } as any) as Promise<
-//         //   AxiosResponse<{ Availability: boolean }>
-//         // >);
-//         // not checking serviceability because of Pharmacy API errors
-//         res(({ data: { Availability: true } } as any) as Promise<
-//           AxiosResponse<{ Availability: boolean }>
-//         >);
-//       })
-//       .catch((e) => {
-//         // rej(e);
-//         res(({ data: { Availability: true } } as any) as Promise<
-//           AxiosResponse<{ Availability: boolean }>
-//         >);
-//       });
-//   });
-// };
+type GooglePlacecType =
+  | 'postal_code'
+  | 'locality'
+  | 'administrative_area_level_2'
+  | 'administrative_area_level_1'
+  | 'country';
 
-// export const pinCodeServiceabilityApi = (
-//   pinCode: string
-//   category: 'FMCG' | 'PHARMA'
-// ): Promise<AxiosResponse<{ Availability: boolean; catg: 'FMCG' | 'PHARMA' }>> => {
-//   return Axios.post(
-//     `${config.PHARMA_UAT_BASE_URL}/pincode_api.php`,
-//     {
-//       postalcode: pinCode,
-//       skucategory: [
-//         {
-//           SKU: category,
-//         },
-//       ],
-//     },
-//     {
-//       headers: {
-//         Authorization: config.AUTH_TOKEN_OLD,
-//       },
-//     }
-//   );
-// };
+interface PlacesApiResponse {
+  results: {
+    address_components: {
+      long_name: string;
+      short_name: string;
+      types: GooglePlacecType[];
+    }[];
+  }[];
+}
+
+export const getPlaceInfoByPincode = (
+  pincode: string
+): Promise<AxiosResponse<PlacesApiResponse>> => {
+  const apiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&sensor=true&key=${apiKey}`;
+  return Axios.get(url);
+};
