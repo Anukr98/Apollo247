@@ -347,7 +347,7 @@ export enum CASESHEET_STATUS {
   COMPLETED = 'COMPLETED',
 }
 
-export enum MEDICINE_UNITS {
+export enum MEDICINE_UNIT {
   TABLET = 'TABLET',
   CAPSULE = 'CAPSULE',
   ML = 'ML',

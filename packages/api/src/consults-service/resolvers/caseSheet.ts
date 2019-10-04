@@ -76,7 +76,7 @@ export const caseSheetTypeDefs = gql`
     BEFORE_FOOD
   }
 
-  enum MEDICINE_UNITS {
+  enum MEDICINE_UNIT {
     TABLET
     CAPSULE
     ML
@@ -154,7 +154,7 @@ export const caseSheetTypeDefs = gql`
   type MedicinePrescription {
     medicineConsumptionDurationInDays: String
     medicineDosage: String
-    medicineUnit: MEDICINE_UNITS
+    medicineUnit: MEDICINE_UNIT
     medicineInstructions: String
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
