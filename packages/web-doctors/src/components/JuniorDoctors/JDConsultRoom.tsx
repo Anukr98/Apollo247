@@ -28,7 +28,7 @@ import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import { REQUEST_ROLES, Gender } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, Gender, CASESHEET_STATUS } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
@@ -782,7 +782,7 @@ export const JDConsultRoom: React.FC = () => {
     }
   }, [appointmentId, client, isSignedIn]);
 
-  const saveCasesheetAction = (flag: boolean) => {
+  const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
     if (diagnosis!.length > 0) {
       setSaving(true);
       client
@@ -803,6 +803,7 @@ export const JDConsultRoom: React.FC = () => {
               medicinePrescription:
                 medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
               id: caseSheetId,
+              status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
             },
           },
           fetchPolicy: 'no-cache',
@@ -832,7 +833,7 @@ export const JDConsultRoom: React.FC = () => {
       savePatientFamilyHistoryMutation();
       savePatientLifeStyleMutation();
       setIsDialogOpen(true);
-      saveCasesheetAction(false);
+      saveCasesheetAction(false, true);
     } else {
       setIsDiagnosisDialogOpen(true);
     }
@@ -1000,7 +1001,9 @@ export const JDConsultRoom: React.FC = () => {
                   <JDCallPopover
                     setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                     createSessionAction={createSessionAction}
-                    saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
+                    saveCasesheetAction={(flag: boolean, endConsult: boolean) =>
+                      saveCasesheetAction(flag, endConsult)
+                    }
                     endConsultAction={endConsultAction}
                     appointmentId={appointmentId}
                     appointmentDateTime={appointmentDateTime}

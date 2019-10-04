@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { STATUS, APPOINTMENT_TYPE } from "./globalTypes";
+import { STATUS, APPOINTMENT_TYPE, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorAppointments
@@ -16,6 +16,8 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet {
   __typename: "CaseSheet";
   symptoms: (GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet_symptoms | null)[] | null;
+  status: string | null;
+  doctorType: DoctorType | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_patientInfo {
