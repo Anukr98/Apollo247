@@ -271,6 +271,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const startDate = new Date(inputStartDate + 'T18:30');
     return this.find({
       where: { patientId, appointmentDateTime: MoreThan(startDate), status: Not(STATUS.CANCELLED) },
+      order: { appointmentDateTime: 'DESC' },
     });
   }
 

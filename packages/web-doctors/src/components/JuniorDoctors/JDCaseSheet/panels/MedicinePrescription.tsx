@@ -471,7 +471,6 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
-
 let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {
@@ -971,7 +970,7 @@ export const MedicinePrescription: React.FC = () => {
                     </Scrollbars>
                   )}
                 />
-                {medicine.length > 2 && !loading && !isSuggestionFetched && (
+                {medicine.length > 2 && !loading && (
                   <AphButton
                     className={classes.darkGreenaddBtn}
                     onClick={() => {
@@ -1036,7 +1035,7 @@ export const MedicinePrescription: React.FC = () => {
                           </AphSelect>
                         </div>
                       </div>
-                      {/** 
+                      {/**
                       <div className={classes.numberTablets}>
                         <img
                           src={require('images/ic_minus.svg')}
