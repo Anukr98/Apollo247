@@ -998,9 +998,10 @@ export const MedicinePrescription: React.FC = () => {
               </div>
             ) : (
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(54vh' }}>
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
+                      {/** 
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
@@ -1043,7 +1044,7 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                      {/** 
+                      **/}
                       <div className={classes.numberTablets}>
                         <img
                           src={require('images/ic_minus.svg')}
@@ -1065,8 +1066,8 @@ export const MedicinePrescription: React.FC = () => {
                           }}
                         />
                       </div>
-                      **/}
                     </div>
+                    {/**
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
@@ -1108,6 +1109,47 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </div>
                       </div>
+                    </div>
+                    **/}
+                    <div className={classes.sectionGroup}>
+                      <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                        Duration of Consumption*
+                      </div>
+                      <div className={`${classes.numberTablets}`}>
+                        <AphTextField
+                          placeholder=""
+                          inputProps={{ maxLength: 6 }}
+                          value={consumptionDuration}
+                          onChange={(event: any) => {
+                            setConsumptionDuration(event.target.value);
+                          }}
+                          error={errorState.durationErr}
+                        />
+                        {errorState.durationErr && (
+                          <FormHelperText
+                            className={classes.helpText}
+                            component="div"
+                            error={errorState.durationErr}
+                          >
+                            Please Enter Duration in days(Number only)
+                          </FormHelperText>
+                        )}{' '}
+                      </div>
+                    </div>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.sectionTitle}>To be taken</div>
+                      <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
+                        {tobeTakenHtml}
+                      </div>
+                      {errorState.tobeTakenErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.tobeTakenErr}
+                        >
+                          Please select to be taken.
+                        </FormHelperText>
+                      )}
                     </div>
                     <div className={classes.sectionGroup}>
                       <div className={classes.sectionTitle}>Time of the Day</div>

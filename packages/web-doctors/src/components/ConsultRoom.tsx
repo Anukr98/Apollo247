@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphInput } from '@aph/web-ui-components';
+import { AphInput, AphButton } from '@aph/web-ui-components';
 import { Consult } from 'components/Consult';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
@@ -59,11 +59,8 @@ const useStyles = makeStyles((theme: Theme) => {
       align: 'right',
     },
     inputWidth: {
-      width: '60 %',
       align: 'left',
-      paddingRight: 26,
     },
-
     showIncomingBox: {
       color: '#f00',
     },
@@ -107,6 +104,15 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       width: '100%',
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
+      '& >div': {
+        display: 'flex',
+        '& button': {
+          boxShadow: 'none',
+          padding: 0,
+          paddingTop: 8,
+          minWidth: 'auto',
+        },
+      },
     },
     chatsendcircle: {
       position: 'absolute',
@@ -141,6 +147,13 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'block',
     },
     none: {
+      display: 'none',
+    },
+    addImgBtn: {
+      marginRight: 16,
+    },
+    sendBtn: {
+      marginLeft: 16,
       display: 'none',
     },
   };
@@ -623,23 +636,28 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           )}
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatFooterSection}>
-              <AphInput
-                className={classes.inputWidth}
-                inputProps={{ type: 'text' }}
-                placeholder="Type here..."
-                value={messageText}
-                onKeyPress={(e) => {
-                  if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-                    send();
-                  }
-                }}
-                onChange={(event) => {
-                  setMessageText(event.currentTarget.value);
-                }}
-              />
-              <Button className={classes.chatsendcircle}>
-                <img src={require('images/ic_add_circle.svg')} alt="" />
-              </Button>
+              <div>
+                <Button className={classes.addImgBtn}>
+                  <img src={require('images/ic_add_circle.svg')} alt="" />
+                </Button>
+                <AphInput
+                  className={classes.inputWidth}
+                  inputProps={{ type: 'text' }}
+                  placeholder="Type here..."
+                  value={messageText}
+                  onKeyPress={(e: any) => {
+                    if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                      send();
+                    }
+                  }}
+                  onChange={(event: any) => {
+                    setMessageText(event.currentTarget.value);
+                  }}
+                />
+                <AphButton className={classes.sendBtn}>
+                  <img src={require('images/ic_send.svg')} alt="" />
+                </AphButton>
+              </div>
             </div>
           )}
         </div>
