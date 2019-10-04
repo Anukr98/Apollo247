@@ -236,6 +236,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
       marginLeft: 16,
       paddingTop: 8,
+      display: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
       },
