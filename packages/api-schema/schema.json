@@ -6650,6 +6650,18 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "status",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -15946,10 +15958,43 @@
               "ofType": null
             },
             "defaultValue": null
+          },
+          {
+            "name": "status",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "CASESHEET_STATUS",
+              "ofType": null
+            },
+            "defaultValue": null
           }
         ],
         "interfaces": null,
         "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "CASESHEET_STATUS",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "PENDING",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "COMPLETED",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
         "possibleTypes": null
       },
       {

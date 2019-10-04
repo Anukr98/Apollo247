@@ -341,6 +341,12 @@ export enum MEDICINE_TO_BE_TAKEN {
   AFTER_FOOD = 'AFTER_FOOD',
   BEFORE_FOOD = 'BEFORE_FOOD',
 }
+
+export enum CASESHEET_STATUS {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+}
+
 export type CaseSheetMedicinePrescription = {
   id: string;
   externalId: string;
@@ -413,6 +419,9 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ nullable: true })
   patientId: string;
+
+  @Column({ nullable: true, default: CASESHEET_STATUS.PENDING })
+  status: CASESHEET_STATUS;
 
   @Column({ nullable: true, type: 'json' })
   symptoms: string;
