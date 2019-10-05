@@ -236,7 +236,6 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
       marginLeft: 16,
       paddingTop: 8,
-      display: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -791,17 +790,24 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               inputProps={{ type: 'text' }}
               placeholder="Type here..."
               value={messageText}
-              onKeyPress={(e) => {
-                if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-                  send();
-                }
-              }}
+              // onKeyPress={(e) => {
+              //   if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+              //     send();
+              //   }
+              // }}
               onChange={(event) => {
                 setMessageText(event.currentTarget.value);
               }}
               disabled={props.disableChat}
             />
-            <AphButton className={classes.chatSendBtn}>
+            <AphButton
+              className={classes.chatSendBtn}
+              onClick={() => {
+                if (messageText.trim() !== '') {
+                  send();
+                }
+              }}
+            >
               <img src={require('images/ic_send.svg')} alt="" />
             </AphButton>
             {/* {props.disableChat && (

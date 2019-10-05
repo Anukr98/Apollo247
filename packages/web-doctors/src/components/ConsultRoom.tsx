@@ -154,7 +154,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sendBtn: {
       marginLeft: 16,
-      display: 'none',
     },
   };
 });
@@ -645,16 +644,23 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   inputProps={{ type: 'text' }}
                   placeholder="Type here..."
                   value={messageText}
-                  onKeyPress={(e: any) => {
-                    if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-                      send();
-                    }
-                  }}
+                  // onKeyPress={(e: any) => {
+                  //   if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                  //     send();
+                  //   }
+                  // }}
                   onChange={(event: any) => {
                     setMessageText(event.currentTarget.value);
                   }}
                 />
-                <AphButton className={classes.sendBtn}>
+                <AphButton
+                  className={classes.sendBtn}
+                  onClick={() => {
+                    if (messageText.trim() !== '') {
+                      send();
+                    }
+                  }}
+                >
                   <img src={require('images/ic_send.svg')} alt="" />
                 </AphButton>
               </div>

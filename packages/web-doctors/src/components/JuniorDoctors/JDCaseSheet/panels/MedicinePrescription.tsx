@@ -471,6 +471,7 @@ interface errorObject {
   daySlotErr: boolean;
   tobeTakenErr: boolean;
   durationErr: boolean;
+  dosageErr: boolean;
 }
 
 let cancel: any;
@@ -490,6 +491,7 @@ export const MedicinePrescription: React.FC = () => {
     daySlotErr: false,
     tobeTakenErr: false,
     durationErr: false,
+    dosageErr: false,
   });
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
@@ -759,18 +761,50 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if (daySlotsSelected.length === 0) {
-      setErrorState({ ...errorState, daySlotErr: true, tobeTakenErr: false, durationErr: false });
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (daySlotsSelected.length === 0) {
+      setErrorState({
+        ...errorState,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        durationErr: false,
+        dosageErr: false,
+      });
     } else if (isTobeTakenSelected.length === 0) {
-      setErrorState({ ...errorState, tobeTakenErr: true, daySlotErr: false, durationErr: false });
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: true,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: false,
+      });
     } else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
       Number(consumptionDuration) < 1
     ) {
-      setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
     } else {
-      setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
         medicineDosage: tabletsCount,
@@ -820,7 +854,6 @@ export const MedicinePrescription: React.FC = () => {
         return slot;
       });
       setDaySlots(dayslots);
-
       setMedicineInstruction('');
       setConsumptionDuration('');
       setTabletsCount(1);
@@ -998,16 +1031,29 @@ export const MedicinePrescription: React.FC = () => {
               </div>
             ) : (
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(54vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
-                      {/** 
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             Dosage*
                           </div>
-                          <AphTextField />
+                          <AphTextField
+                            value={tabletsCount}
+                            onChange={(event: any) => {
+                              setTabletsCount(event.target.value);
+                            }}
+                          />
+                          {errorState.dosageErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please Enter Dosage(Number only)
+                            </FormHelperText>
+                          )}
                         </div>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
@@ -1044,7 +1090,7 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                      **/}
+                      {/** 
                       <div className={classes.numberTablets}>
                         <img
                           src={require('images/ic_minus.svg')}
@@ -1066,8 +1112,8 @@ export const MedicinePrescription: React.FC = () => {
                           }}
                         />
                       </div>
+                      **/}
                     </div>
-                    {/**
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
@@ -1091,7 +1137,7 @@ export const MedicinePrescription: React.FC = () => {
                             >
                               Please Enter Duration in days(Number only)
                             </FormHelperText>
-                          )}{' '}
+                          )}
                         </div>
                         <div className={classes.divCol}>
                           <div className={classes.sectionTitle}>To be taken</div>
@@ -1109,47 +1155,6 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </div>
                       </div>
-                    </div>
-                    **/}
-                    <div className={classes.sectionGroup}>
-                      <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                        Duration of Consumption*
-                      </div>
-                      <div className={`${classes.numberTablets}`}>
-                        <AphTextField
-                          placeholder=""
-                          inputProps={{ maxLength: 6 }}
-                          value={consumptionDuration}
-                          onChange={(event: any) => {
-                            setConsumptionDuration(event.target.value);
-                          }}
-                          error={errorState.durationErr}
-                        />
-                        {errorState.durationErr && (
-                          <FormHelperText
-                            className={classes.helpText}
-                            component="div"
-                            error={errorState.durationErr}
-                          >
-                            Please Enter Duration in days(Number only)
-                          </FormHelperText>
-                        )}{' '}
-                      </div>
-                    </div>
-                    <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>To be taken</div>
-                      <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
-                        {tobeTakenHtml}
-                      </div>
-                      {errorState.tobeTakenErr && (
-                        <FormHelperText
-                          className={classes.helpText}
-                          component="div"
-                          error={errorState.tobeTakenErr}
-                        >
-                          Please select to be taken.
-                        </FormHelperText>
-                      )}
                     </div>
                     <div className={classes.sectionGroup}>
                       <div className={classes.sectionTitle}>Time of the Day</div>
