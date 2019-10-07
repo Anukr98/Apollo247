@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme, Button, Avatar, CircularProgress } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
@@ -53,6 +53,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { clientRoutes } from 'helpers/clientRoutes';
+import IdleTimer from 'react-idle-timer';
+
 /* patient related queries and mutations */
 import {
   SAVE_PATIENT_FAMILY_HISTORY,
@@ -372,6 +374,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fcb716',
       fontWeight: 500,
     },
+    countdownLoader: {
+      position: 'absolute',
+      right: 12,
+      top: 12,
+    },
   };
 });
 
@@ -416,6 +423,7 @@ export const JDConsultRoom: React.FC = () => {
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [saving, setSaving] = useState<boolean>(false);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+  const [isAudioVideoCall, setIsAuditoVideoCall] = React.useState<boolean>(false);
 
   const [allergies, setPatientAllergies] = useState<string>('');
   const [lifeStyle, setPatientLifeStyle] = useState<string>('');
@@ -784,6 +792,7 @@ export const JDConsultRoom: React.FC = () => {
     }
   }, [appointmentId, client, isSignedIn]);
 
+  /*
   // this effect triggers when jrd not performed any action on the page.
   useEffect(() => {
     // console.log(caseSheetEdit, 'case sheet edit....');
@@ -821,6 +830,7 @@ export const JDConsultRoom: React.FC = () => {
     isNewMessage,
     notesJrd,
   ]);
+*/
 
   // if this function triggered it implies that Jrd has not performed any action on popup.
   const triggerAutoEndConsult = () => {
@@ -943,10 +953,26 @@ export const JDConsultRoom: React.FC = () => {
     }, 10);
   };
 
+  const idleTimerRef = useRef(null);
+  const idleTimeValueInMinutes = 1;
+
+  // console.log(startConsult, 'start consult is.....', isAudioVideoCall);
+
   return !loaded ? (
     <LinearProgress />
   ) : (
     <div className={classes.root}>
+      {isActive === 'active' && !isAudioVideoCall && (
+        <IdleTimer
+          ref={idleTimerRef}
+          element={document}
+          onIdle={(e) => {
+            setJrdNoFillDialog(true);
+          }}
+          debounce={250}
+          timeout={1000 * 60 * idleTimeValueInMinutes}
+        />
+      )}
       <div className={classes.headerSticky}>
         <Header />
       </div>
@@ -1086,6 +1112,9 @@ export const JDConsultRoom: React.FC = () => {
                     assignedDoctorSalutation={assignedDoctorSalutation}
                     assignedDoctorFirstName={assignedDoctorFirstName}
                     assignedDoctorLastName={assignedDoctorLastName}
+                    isAudioVideoCallEnded={(isAudioVideoCall: boolean) => {
+                      setIsAuditoVideoCall(isAudioVideoCall);
+                    }}
                   />
                 )}
                 <div className={classes.contentGroup}>
@@ -1171,13 +1200,15 @@ export const JDConsultRoom: React.FC = () => {
           <DialogContentText>
             Hi! Seems like you've gone offline. Please click on 'OK' to continue chatting with your
             patient.
-            <ReactCountdownClock
-              seconds={60}
-              color="#fcb716"
-              alpha={0.9}
-              size={50}
-              onComplete={() => triggerAutoEndConsult()}
-            />
+            <div className={classes.countdownLoader}>
+              <ReactCountdownClock
+                seconds={60}
+                color="#fcb716"
+                alpha={0.9}
+                size={50}
+                onComplete={() => triggerAutoEndConsult()}
+              />
+            </div>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
