@@ -154,6 +154,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     sendBtn: {
       marginLeft: 16,
+      //display: 'none',
     },
   };
 });
