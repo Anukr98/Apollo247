@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { UpdateCaseSheetInput, MEDICINE_TIMINGS } from "./globalTypes";
+import { UpdateCaseSheetInput, MEDICINE_TIMINGS, MEDICINE_UNIT } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: UpdateCaseSheet
@@ -30,6 +30,7 @@ export interface UpdateCaseSheet_updateCaseSheet_medicinePrescription {
   medicineName: string | null;
   medicineDosage: string | null;
   medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
   medicineInstructions: string | null;
 }
 

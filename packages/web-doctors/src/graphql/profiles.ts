@@ -208,6 +208,7 @@ export const CREATE_CASESHEET_FOR_JRD = gql`
         medicineConsumptionDurationInDays
         medicineDosage
         medicineInstructions
+        medicineUnit
         medicineTimings
         medicineToBeTaken
         medicineName
@@ -263,6 +264,7 @@ export const CREATE_CASESHEET_FOR_SRD = gql`
         medicineDosage
         medicineInstructions
         medicineTimings
+        medicineUnit
         medicineToBeTaken
         medicineName
         id
@@ -302,6 +304,7 @@ export const GET_CASESHEET_JRD = gql`
           medicineToBeTaken
           medicineInstructions
           medicineTimings
+          medicineUnit
           medicineConsumptionDurationInDays
         }
         otherInstructions {
@@ -556,6 +559,7 @@ export const UPDATE_CASESHEET = gql`
         medicineName
         medicineDosage
         medicineTimings
+        medicineUnit
         medicineInstructions
       }
       notes

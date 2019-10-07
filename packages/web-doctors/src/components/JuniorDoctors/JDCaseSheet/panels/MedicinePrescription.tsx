@@ -496,6 +496,7 @@ export const MedicinePrescription: React.FC = () => {
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>(1);
+  const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
       id: 'morning',
@@ -634,6 +635,7 @@ export const MedicinePrescription: React.FC = () => {
     setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
     setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
     setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
+    setMedicineUnit(selectedMedicinesArr![idx].medicineUnit!);
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
     setSelectedId(selectedMedicinesArr![idx].id!);
     setIsDialogOpen(true);
@@ -643,6 +645,7 @@ export const MedicinePrescription: React.FC = () => {
   };
   useEffect(() => {
     if (idx >= 0) {
+      console.log(11111111111111);
       setSelectedMedicines(selectedMedicines);
       setSelectedMedicinesArr(selectedMedicinesArr);
     }
@@ -652,6 +655,7 @@ export const MedicinePrescription: React.FC = () => {
   }
   useEffect(() => {
     if (selectedMedicinesArr && selectedMedicinesArr!.length) {
+      console.log(selectedMedicinesArr, selectedMedicinesArr.length);
       selectedMedicinesArr!.forEach((res: any) => {
         const inputParamsArr: any = {
           medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
@@ -661,6 +665,7 @@ export const MedicinePrescription: React.FC = () => {
           medicineToBeTaken: res.medicineToBeTaken,
           medicineName: res.medicineName,
           id: res.id,
+          medicineUnit: res.medicineUnit,
         };
         const inputParams: any = {
           id: res.medicineName.trim(),
@@ -674,6 +679,7 @@ export const MedicinePrescription: React.FC = () => {
             .join(',')
             .toLowerCase()}`,
           selected: true,
+          medicineUnit: res.medicineUnit,
         };
         // const xArr = selectedMedicinesArr;
         // xArr!.push(inputParamsArr);
@@ -709,6 +715,7 @@ export const MedicinePrescription: React.FC = () => {
     });
     setToBeTakenSlots(slots);
   };
+  console.log(selectedMedicines);
   const selectedMedicinesHtml = selectedMedicines.map(
     (_medicine: MedicineObject | null, index: number) => {
       const medicine = _medicine!;
@@ -813,6 +820,7 @@ export const MedicinePrescription: React.FC = () => {
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
         id: selectedId,
+        medicineUnit: medicineUnit,
       };
       console.log(selectedValue);
 
@@ -824,6 +832,7 @@ export const MedicinePrescription: React.FC = () => {
         daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
         duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
+        medicineUnit: medicineUnit,
       };
       if (isUpdate) {
         const xArr = selectedMedicinesArr;
@@ -840,6 +849,7 @@ export const MedicinePrescription: React.FC = () => {
         x.push(inputParams);
         setSelectedMedicines(x);
       }
+      console.log(selectedMedicines);
       setIsDialogOpen(false);
       setIsUpdate(false);
       setShowDosage(false);
@@ -859,6 +869,7 @@ export const MedicinePrescription: React.FC = () => {
       setTabletsCount(1);
       setSelectedValue('');
       setSelectedId('');
+      setMedicineUnit('TABLET');
     }
   };
   const toBeTaken = (value: any) => {
@@ -1020,7 +1031,7 @@ export const MedicinePrescription: React.FC = () => {
                       });
                       setShowDosage(true);
                       setSelectedValue(medicine);
-                      setSelectedId('IB01');
+                      setSelectedId('');
                       setLoading(false);
                       setMedicine('');
                     }}
@@ -1061,6 +1072,7 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                           <div className={classes.unitsSelect}>
                             <AphSelect
+                              value={medicineUnit}
                               MenuProps={{
                                 classes: {
                                   paper: classes.menuPaper,
@@ -1074,18 +1086,28 @@ export const MedicinePrescription: React.FC = () => {
                                   horizontal: 'right',
                                 },
                               }}
+                              onChange={(e: any) => {
+                                setMedicineUnit(e.target.value as string);
+                              }}
                             >
-                              <MenuItem classes={{ selected: classes.menuSelected }}>
-                                tablet
+                              <MenuItem value="TABLET" classes={{ selected: classes.menuSelected }}>
+                                TABLET
                               </MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }}>
-                                capsule
+                              <MenuItem
+                                value="CAPSULE"
+                                classes={{ selected: classes.menuSelected }}
+                              >
+                                CAPSULE
                               </MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }}>ml</MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }}>
-                                drops
+                              <MenuItem value="ML" classes={{ selected: classes.menuSelected }}>
+                                ML
                               </MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }}>NA</MenuItem>
+                              <MenuItem value="DROPS" classes={{ selected: classes.menuSelected }}>
+                                DROPS
+                              </MenuItem>
+                              <MenuItem value="NA" classes={{ selected: classes.menuSelected }}>
+                                NA
+                              </MenuItem>
                             </AphSelect>
                           </div>
                         </div>
