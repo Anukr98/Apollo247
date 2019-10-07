@@ -168,6 +168,24 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
+    darkGreenaddBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
+      position: 'absolute',
+      left: '414px',
+      top: '0px',
+      padding: 0,
+      marginTop: 12,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
+      },
+    },
     medicineHeading: {
       fontSize: 14,
       fontWeight: 500,
@@ -229,6 +247,7 @@ const useStyles = makeStyles((theme: Theme) =>
     dialogContent: {
       padding: 20,
       minHeight: 450,
+      position: 'relative',
       '& h6': {
         fontSize: 14,
         fontWeight: 500,
@@ -382,6 +401,7 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
+let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
@@ -472,6 +492,8 @@ export const MedicinePrescription: React.FC = () => {
   };
 
   const fetchMedicines = async (value: any) => {
+    const CancelToken = axios.CancelToken;
+    cancel && cancel();
     setLoading(true);
     const FinalSearchdata: any = [];
     await axios
@@ -483,6 +505,10 @@ export const MedicinePrescription: React.FC = () => {
             Authorization: apiDetails.authToken,
             Accept: '*/*',
           },
+          cancelToken: new CancelToken(function executor(c) {
+            // An executor function receives a cancel function as a parameter
+            cancel = c;
+          }),
         }
       )
       .then((result) => {
@@ -904,12 +930,11 @@ export const MedicinePrescription: React.FC = () => {
                       </Paper>
                     )}
                   />
-                  {medicine.length > 2 && !loading && !isSuggestionFetched && (
+                  {medicine.length > 2 && !loading && (
                     <div>
                       <span>
-                        {`do you want to add '${medicine}' in Medicine ?`}
                         <AphButton
-                          className={classes.btnAddDoctor}
+                          className={classes.darkGreenaddBtn}
                           variant="contained"
                           color="primary"
                           onClick={() => {
@@ -924,7 +949,7 @@ export const MedicinePrescription: React.FC = () => {
                             setMedicine('');
                           }}
                         >
-                          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD MEDICINE
+                          <img src={require('images/ic_add_circle.svg')} alt="" />
                         </AphButton>
                       </span>
                     </div>

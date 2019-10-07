@@ -8,6 +8,7 @@ import {
   BackCameraIcon,
   ChatCallIcon,
   ChatIcon,
+  ChatSend,
   ChatWithNotification,
   DoctorCall,
   DoctorImage,
@@ -22,16 +23,12 @@ import {
   UnMuteIcon,
   VideoOffIcon,
   VideoOnIcon,
-  ChatSend,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  ADD_TO_CONSULT_QUEUE,
   BOOK_APPOINTMENT_RESCHEDULE,
   BOOK_APPOINTMENT_TRANSFER,
-  CHECK_IF_RESCHDULE,
-  NEXT_AVAILABLE_SLOT,
   UPDATE_APPOINTMENT_SESSION,
   UPLOAD_CHAT_FILE,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -63,6 +60,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   KeyboardEvent,
+  Linking,
   NativeModules,
   PermissionsAndroid,
   Platform,
@@ -72,13 +70,12 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  CameraRoll,
-  Linking,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
 import InCallManager from 'react-native-incall-manager';
 import KeepAwake from 'react-native-keep-awake';
+import SoftInputMode from 'react-native-set-soft-input-mode';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 // import {
 //   addToConsultQueue,
@@ -89,26 +86,17 @@ import {
   bookRescheduleAppointmentVariables,
 } from '../../graphql/types/bookRescheduleAppointment';
 import {
-  checkIfReschedule,
-  checkIfRescheduleVariables,
-} from '../../graphql/types/checkIfReschedule';
-import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlotVariables,
-} from '../../graphql/types/GetDoctorNextAvailableSlot';
-import {
   uploadChatDocument,
   uploadChatDocumentVariables,
 } from '../../graphql/types/uploadChatDocument';
-import { Spinner } from '../ui/Spinner';
-import { OverlayRescheduleView } from './OverlayRescheduleView';
-import SoftInputMode from 'react-native-set-soft-input-mode';
-import { AppConfig } from '../../strings/AppConfig';
 import {
   addToConsultQueue,
-  getNextAvailableSlots,
   checkIfRescheduleAppointment,
+  getNextAvailableSlots,
 } from '../../helpers/clientCalls';
+import { AppConfig } from '../../strings/AppConfig';
+import { Spinner } from '../ui/Spinner';
+import { OverlayRescheduleView } from './OverlayRescheduleView';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -783,6 +771,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const transferReschedule = (rowData: any, index: number) => {
+    console.log('rowData', rowData);
     return (
       <>
         {rowData.message === transferConsultMsg ? (
@@ -1432,6 +1421,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const messageView = (rowData: any, index: number) => {
+    console.log('messageView', rowData);
     return (
       <View
         style={{
@@ -1504,6 +1494,46 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
               </View>
             </TouchableOpacity>
+          ) : rowData.message === '^^#startconsultJr' ? (
+            <View
+              style={{
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  textAlign: 'left',
+                }}
+              >
+                {rowData.automatedText}
+              </Text>
+            </View>
+          ) : rowData.message === '^^#stopconsult' ? (
+            <View
+              style={{
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  textAlign: 'left',
+                }}
+              >
+                {rowData.automatedText}
+              </Text>
+            </View>
           ) : (
             <View
               style={{
@@ -1725,15 +1755,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (
       rowData.message === typingMsg ||
       rowData.message === startConsultMsg ||
-      rowData.message === stopConsultMsg ||
+      // rowData.message === stopConsultMsg ||
       rowData.message === endCallMsg ||
       rowData.message === audioCallMsg ||
       rowData.message === videoCallMsg ||
-      rowData.message === acceptedCallMsg ||
-      rowData.message === startConsultjr
+      rowData.message === acceptedCallMsg
+      // rowData.message === startConsultjr
     ) {
       return null;
     }
+
     if (rowData.id !== patientId) {
       leftComponent++;
       rightComponent = 0;

@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
-import { CaseSheet, Appointment } from 'consults-service/entities';
+import { CaseSheet, Appointment, CASESHEET_STATUS } from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -46,6 +46,11 @@ export type DiagnosticJson = {
 };
 
 export const caseSheetTypeDefs = gql`
+  enum CASESHEET_STATUS {
+    PENDING
+    COMPLETED
+  }
+
   enum DoctorType {
     APOLLO
     PAYROLL
@@ -69,6 +74,14 @@ export const caseSheetTypeDefs = gql`
   enum MEDICINE_TO_BE_TAKEN {
     AFTER_FOOD
     BEFORE_FOOD
+  }
+
+  enum MEDICINE_UNIT {
+    TABLET
+    CAPSULE
+    ML
+    DROPS
+    NA
   }
 
   enum Relation {
@@ -127,6 +140,7 @@ export const caseSheetTypeDefs = gql`
     otherInstructions: [OtherInstructions]
     patientId: String
     symptoms: [SymptomList]
+    status: String
   }
 
   type Diagnosis {
@@ -140,6 +154,7 @@ export const caseSheetTypeDefs = gql`
   type MedicinePrescription {
     medicineConsumptionDurationInDays: String
     medicineDosage: String
+    medicineUnit: MEDICINE_UNIT
     medicineInstructions: String
     medicineTimings: [MEDICINE_TIMINGS]
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
@@ -214,6 +229,7 @@ export const caseSheetTypeDefs = gql`
     otherInstructions: String
     medicinePrescription: String
     id: String
+    status: CASESHEET_STATUS
   }
 
   type DiagnosisJson {
@@ -312,10 +328,16 @@ const getCaseSheet: Resolver<
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
+  //get patient info
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (doctorData == null && mobileNumber != patientDetails.mobileNumber)
+    throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
   let juniorDoctorNotes = '';
@@ -324,11 +346,6 @@ const getCaseSheet: Resolver<
   const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(appointmentData.id);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
   juniorDoctorNotes = caseSheetDetails.notes;
-
-  //get patient info
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
-  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(
@@ -350,6 +367,7 @@ type UpdateCaseSheetInput = {
   otherInstructions: string;
   medicinePrescription: string;
   id: string;
+  status: CASESHEET_STATUS;
 };
 
 type UpdateCaseSheetInputArgs = { UpdateCaseSheetInput: UpdateCaseSheetInput };
@@ -370,7 +388,7 @@ const updateCaseSheet: Resolver<
     throw new AphError(AphErrorMessages.INVALID_DATE_FORMAT);
 
   const followUpAfterInDays =
-    inputArguments.followUpAfterInDays == '' ? 0 : <Number>inputArguments.followUpAfterInDays;
+    inputArguments.followUpAfterInDays == '' ? 0 : <number>inputArguments.followUpAfterInDays;
   const followUpDate = inputArguments.followUpDate == '' ? null : <Date>inputArguments.followUpDate;
 
   //validate casesheetid
@@ -378,36 +396,32 @@ const updateCaseSheet: Resolver<
   const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
-  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = {
-    ...inputArguments,
-    symptoms: JSON.parse(inputArguments.symptoms),
-    diagnosis: JSON.parse(inputArguments.diagnosis),
-    diagnosticPrescription: JSON.parse(inputArguments.diagnosticPrescription),
-    otherInstructions: JSON.parse(inputArguments.otherInstructions),
-    medicinePrescription: JSON.parse(inputArguments.medicinePrescription),
-    followUpDate: followUpDate,
-    followUpAfterInDays: followUpAfterInDays,
-  };
-
-  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
-
-  const getUpdatedCaseSheet = await caseSheetRepo.getCaseSheetById(inputArguments.id);
-  if (getUpdatedCaseSheet == null) throw new AphError(AphErrorMessages.UPDATE_CASESHEET_ERROR);
+  getCaseSheetData.symptoms = JSON.parse(inputArguments.symptoms);
+  getCaseSheetData.notes = inputArguments.notes;
+  getCaseSheetData.diagnosis = JSON.parse(inputArguments.diagnosis);
+  getCaseSheetData.diagnosticPrescription = JSON.parse(inputArguments.diagnosticPrescription);
+  getCaseSheetData.otherInstructions = JSON.parse(inputArguments.otherInstructions);
+  getCaseSheetData.medicinePrescription = JSON.parse(inputArguments.medicinePrescription);
+  getCaseSheetData.followUp = inputArguments.followUp;
+  if (followUpDate) getCaseSheetData.followUpDate = followUpDate;
+  getCaseSheetData.followUpAfterInDays = followUpAfterInDays;
+  getCaseSheetData.status = inputArguments.status;
 
   //convert casesheet to prescription
   const client = new AphStorageClient(
     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
-  const rxPdfData = await convertCaseSheetToRxPdfData(getUpdatedCaseSheet, doctorsDb);
+  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb);
   const pdfDocument = generateRxPdfDocument(rxPdfData);
   const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
   if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
-  caseSheetRepo.updateCaseSheet(getUpdatedCaseSheet.id, { blobName: blob.name });
+  getCaseSheetData.blobName = blob.name;
 
-  getUpdatedCaseSheet.blobName = blob.name;
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
 
-  return getUpdatedCaseSheet;
+  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
+  return getCaseSheetData;
 };
 
 const searchDiagnosis: Resolver<

@@ -142,7 +142,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         })
         .catch((e) => {
           setLoading!(false);
-          handleGraphQlError(e, 'Unable to fetch user address');
+          showAphAlert!({
+            title: `Uh oh.. :(`,
+            description: `Something went wrong, unable to fetch addresses.`,
+          });
         })) ||
       setLoading!(false);
   }, [currentPatientId]);
@@ -348,7 +351,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           return (
             <RadioSelectionItem
               key={item.id}
-              title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}\n${item.city}, ${item.state} - ${item.zipcode}`}
+              title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}${
+                item.landmark ? ',\n' : ''
+              }${item.city}, ${item.state} - ${item.zipcode}`}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 checkServicability(item);

@@ -199,6 +199,8 @@ export const Calendar: React.FC = () => {
   const [viewSelection, setViewSelection] = useState<string>('day');
   const [monthSelected, setMonthSelected] = useState<string>(moment(today).format('MMMM'));
 
+  const pageRefreshTimeInSeconds = 30;
+
   //console.log(moment(today).format('MMMM'));
   const [range, setRange] = useState<{ start: string | Date; end: string | Date }>(
     viewSelection === 'day'
@@ -216,12 +218,15 @@ export const Calendar: React.FC = () => {
     const newDate = new Date(increaseDate.setMonth(increaseDate.getMonth() + 1));
     setSelectedDate(startOfMonth(newDate as Date));
   };
+
   const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
     variables: {
       startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
       endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
     },
     fetchPolicy: 'no-cache',
+    pollInterval: pageRefreshTimeInSeconds * 1000,
+    notifyOnNetworkStatusChange: true,
   });
 
   return (

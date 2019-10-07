@@ -341,6 +341,20 @@ export enum MEDICINE_TO_BE_TAKEN {
   AFTER_FOOD = 'AFTER_FOOD',
   BEFORE_FOOD = 'BEFORE_FOOD',
 }
+
+export enum CASESHEET_STATUS {
+  PENDING = 'PENDING',
+  COMPLETED = 'COMPLETED',
+}
+
+export enum MEDICINE_UNIT {
+  TABLET = 'TABLET',
+  CAPSULE = 'CAPSULE',
+  ML = 'ML',
+  DROPS = 'DROPS',
+  NA = 'NA',
+}
+
 export type CaseSheetMedicinePrescription = {
   id: string;
   externalId: string;
@@ -413,6 +427,9 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ nullable: true })
   patientId: string;
+
+  @Column({ nullable: true, default: CASESHEET_STATUS.PENDING })
+  status: CASESHEET_STATUS;
 
   @Column({ nullable: true, type: 'json' })
   symptoms: string;
@@ -573,6 +590,15 @@ export interface RxPdfData {
     lastName: string;
     qualifications: string;
     registrationNumber: string;
+  };
+  hospitalAddress: {
+    name: string;
+    streetLine1: string;
+    streetLine2: string;
+    city: string;
+    zipcode: string;
+    state: string;
+    country: string;
   };
 }
 ///////////////////////////////////////////////////////////

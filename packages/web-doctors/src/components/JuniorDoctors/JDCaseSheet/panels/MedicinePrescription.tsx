@@ -9,7 +9,7 @@ import {
   createStyles,
   CircularProgress,
 } from '@material-ui/core';
-import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
+import { AphTextField, AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -112,6 +112,19 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
+    darkGreenaddBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      position: 'absolute',
+      top: 20,
+      right: 20,
+      padding: 0,
+      minWidth: 'auto',
+      '&:hover': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+      },
+    },
     medicineBox: {
       borderRadius: 5,
       border: 'solid 1px rgba(2, 71, 91, 0.15)',
@@ -173,6 +186,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     searchFrom: {
       padding: 0,
+      position: 'relative',
     },
     loaderDiv: {
       textAlign: 'center',
@@ -181,6 +195,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dialogContent: {
       padding: 20,
+      position: 'relative',
       '& h6': {
         fontSize: 14,
         fontWeight: 500,
@@ -197,6 +212,9 @@ const useStyles = makeStyles((theme: Theme) =>
       '& >div:first-child': {
         padding: 20,
         paddingBottom: 0,
+      },
+      '& input': {
+        paddingRight: 30,
       },
     },
     searchpopup: {
@@ -376,6 +394,53 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingRight: 35,
       wordBreak: 'break-word',
     },
+    colGroup: {
+      display: 'flex',
+      '& >div:first-child': {
+        paddingRight: 20,
+      },
+      '& >div:last-child': {
+        paddingLeft: 20,
+      },
+    },
+    divCol: {
+      marginBottom: 20,
+      width: '50%',
+    },
+    tobeTakenGroup: {
+      '& button:last-child': {
+        marginRight: 0,
+      },
+    },
+    noPadding: {
+      paddingBottom: 0,
+    },
+    menuPaper: {
+      width: 200,
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
+      marginTop: 34,
+      '& ul': {
+        padding: 0,
+        '& li': {
+          minHeight: 'auto',
+          color: '#02475b',
+          fontSize: 16,
+          fontWeight: 500,
+          '&:hover': {
+            backgroundColor: '#f0f4f5',
+          },
+        },
+      },
+    },
+    menuSelected: {
+      backgroundColor: '#f0f4f5 !important',
+      color: '#02475b !important',
+      fontWeight: 'bold',
+    },
+    unitsSelect: {
+      marginTop: -7,
+    },
   })
 );
 
@@ -407,6 +472,8 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
+
+let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {
   const classes = useStyles();
@@ -489,6 +556,8 @@ export const MedicinePrescription: React.FC = () => {
         });
   }
   const fetchMedicines = async (value: any) => {
+    const CancelToken = axios.CancelToken;
+    cancel && cancel();
     setLoading(true);
     const FinalSearchdata: any = [];
     await axios
@@ -500,6 +569,10 @@ export const MedicinePrescription: React.FC = () => {
             Authorization: apiDetails.authToken,
             Accept: '*/*',
           },
+          cancelToken: new CancelToken(function executor(c) {
+            // An executor function receives a cancel function as a parameter
+            cancel = c;
+          }),
         }
       )
       .then((result) => {
@@ -895,43 +968,83 @@ export const MedicinePrescription: React.FC = () => {
                     <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
                       <Paper {...options.containerProps} square className={classes.searchpopup}>
                         {options.children}
+                        {loading ? (
+                          <div className={classes.loaderDiv}>
+                            <CircularProgress />
+                          </div>
+                        ) : null}
                       </Paper>
-                      {medicine.length > 2 && !loading && !isSuggestionFetched && (
-                        <div className={classes.addNewMedicine}>
-                          <div>{`do you want to add '${medicine}' in Medicine ?`}</div>
-                          <AphButton
-                            className={classes.addBtn}
-                            onClick={() => {
-                              setState({
-                                single: '',
-                                popper: '',
-                              });
-                              setShowDosage(true);
-                              setSelectedValue(medicine);
-                              setSelectedId('IB01');
-                              setLoading(false);
-                              setMedicine('');
-                            }}
-                          >
-                            <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD MEDICINE
-                          </AphButton>
-                        </div>
-                      )}
-                      {loading ? (
-                        <div className={classes.loaderDiv}>
-                          <CircularProgress />
-                        </div>
-                      ) : null}
                     </Scrollbars>
                   )}
                 />
+                {medicine.length > 2 && !loading && (
+                  <AphButton
+                    className={classes.darkGreenaddBtn}
+                    onClick={() => {
+                      setState({
+                        single: '',
+                        popper: '',
+                      });
+                      setShowDosage(true);
+                      setSelectedValue(medicine);
+                      setSelectedId('IB01');
+                      setLoading(false);
+                      setMedicine('');
+                    }}
+                  >
+                    <img src={require('images/ic_add_circle.svg')} alt="" />
+                  </AphButton>
+                )}
               </div>
             ) : (
               <div>
                 <Scrollbars autoHide={true} style={{ height: 'calc(54vh' }}>
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Dosage</div>
+                      {/** 
+                      <div className={classes.colGroup}>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                            Dosage*
+                          </div>
+                          <AphTextField />
+                        </div>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                            Units*
+                          </div>
+                          <div className={classes.unitsSelect}>
+                            <AphSelect
+                              MenuProps={{
+                                classes: {
+                                  paper: classes.menuPaper,
+                                },
+                                anchorOrigin: {
+                                  vertical: 'bottom',
+                                  horizontal: 'right',
+                                },
+                                transformOrigin: {
+                                  vertical: 'top',
+                                  horizontal: 'right',
+                                },
+                              }}
+                            >
+                              <MenuItem classes={{ selected: classes.menuSelected }}>
+                                tablet
+                              </MenuItem>
+                              <MenuItem classes={{ selected: classes.menuSelected }}>
+                                capsule
+                              </MenuItem>
+                              <MenuItem classes={{ selected: classes.menuSelected }}>ml</MenuItem>
+                              <MenuItem classes={{ selected: classes.menuSelected }}>
+                                drops
+                              </MenuItem>
+                              <MenuItem classes={{ selected: classes.menuSelected }}>NA</MenuItem>
+                            </AphSelect>
+                          </div>
+                        </div>
+                      </div>
+                      **/}
                       <div className={classes.numberTablets}>
                         <img
                           src={require('images/ic_minus.svg')}
@@ -954,35 +1067,55 @@ export const MedicinePrescription: React.FC = () => {
                         />
                       </div>
                     </div>
+                    {/**
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Time of the Day</div>
-                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                      {errorState.daySlotErr && (
-                        <FormHelperText
-                          className={classes.helpText}
-                          component="div"
-                          error={errorState.daySlotErr}
-                        >
-                          Please select to be day slot.
-                        </FormHelperText>
-                      )}
+                      <div className={classes.colGroup}>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                            Duration of Consumption*
+                          </div>
+                          <AphTextField
+                            placeholder=""
+                            inputProps={{ maxLength: 6 }}
+                            value={consumptionDuration}
+                            onChange={(event: any) => {
+                              setConsumptionDuration(event.target.value);
+                            }}
+                            error={errorState.durationErr}
+                          />
+                          {errorState.durationErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please Enter Duration in days(Number only)
+                            </FormHelperText>
+                          )}{' '}
+                        </div>
+                        <div className={classes.divCol}>
+                          <div className={classes.sectionTitle}>To be taken</div>
+                          <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
+                            {tobeTakenHtml}
+                          </div>
+                          {errorState.tobeTakenErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.tobeTakenErr}
+                            >
+                              Please select to be taken.
+                            </FormHelperText>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                    **/}
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>To be taken</div>
-                      <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                      {errorState.tobeTakenErr && (
-                        <FormHelperText
-                          className={classes.helpText}
-                          component="div"
-                          error={errorState.tobeTakenErr}
-                        >
-                          Please select to be taken.
-                        </FormHelperText>
-                      )}
-                    </div>
-                    <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Duration of Consumption(In days)</div>
-                      <div className={classes.numberTablets}>
+                      <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                        Duration of Consumption*
+                      </div>
+                      <div className={`${classes.numberTablets}`}>
                         <AphTextField
                           placeholder=""
                           inputProps={{ maxLength: 6 }}
@@ -1000,11 +1133,41 @@ export const MedicinePrescription: React.FC = () => {
                           >
                             Please Enter Duration in days(Number only)
                           </FormHelperText>
-                        )}
+                        )}{' '}
                       </div>
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Instructions (if any)</div>
+                      <div className={classes.sectionTitle}>To be taken</div>
+                      <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
+                        {tobeTakenHtml}
+                      </div>
+                      {errorState.tobeTakenErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.tobeTakenErr}
+                        >
+                          Please select to be taken.
+                        </FormHelperText>
+                      )}
+                    </div>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.sectionTitle}>Time of the Day</div>
+                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                      {errorState.daySlotErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.daySlotErr}
+                        >
+                          Please select to be day slot.
+                        </FormHelperText>
+                      )}
+                    </div>
+                    <div className={classes.sectionGroup}>
+                      <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                        Instructions (if any)
+                      </div>
                       <div className={classes.numberTablets}>
                         <AphTextField
                           value={medicineInstruction}

@@ -40,6 +40,7 @@ import {
 import Permissions from 'react-native-permissions';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
 import moment from 'moment';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -136,6 +137,8 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   const [type, setType] = useState<CALENDAR_TYPE>(CALENDAR_TYPE.MONTH);
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [availableSlots, setavailableSlots] = useState<string[] | null>([]);
+  const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
+
   const [
     selectedClinic,
     setselectedClinic,
@@ -151,23 +154,57 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     { label: 'Night', time: [] },
   ]);
 
+  useEffect(() => {
+    if (NextAvailableSlot && timeArray) {
+      for (const i in timeArray) {
+        if (timeArray[i].time.length > 0) {
+          if (timeArray[i].time.includes(NextAvailableSlot)) {
+            setselectedtiming(timeArray[i].label);
+            props.setselectedTimeSlot(NextAvailableSlot);
+            props.scrollToSlots();
+            break;
+          }
+        }
+      }
+    }
+  }, [NextAvailableSlot, timeArray]);
+
+  const checkAvailabilitySlot = () => {
+    props.setshowSpinner && props.setshowSpinner(true);
+    const todayDate = new Date().toISOString().slice(0, 10);
+    getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
+      .then(({ data }: any) => {
+        try {
+          props.setshowSpinner && props.setshowSpinner(false);
+          if (data[0] && data[0]!.physicalAvailableSlot) {
+            const nextSlot = data[0]!.physicalAvailableSlot;
+            const date2: Date = new Date(nextSlot);
+            setNextAvailableSlot(nextSlot);
+            setDate(date2);
+            props.setDate(date2);
+            fetchPhysicalSlots(date2);
+          }
+        } catch {}
+      })
+      .catch((e: any) => {
+        props.setshowSpinner && props.setshowSpinner(false);
+        console.log('error', e);
+      });
+  };
+
   const fetchLocation = useCallback(() => {
-    console.log('fetchLocation');
     let searchstring = '';
 
     AsyncStorage.getItem('location').then((item) => {
       const location = item ? JSON.parse(item) : null;
-      console.log(item, 'AsyncStorage item', location.latlong);
       if (location.latlong) {
         searchstring = `${location.latlong.lat}, ${location.latlong.lng}`;
       } else {
         Permissions.request('location')
           .then((response) => {
-            console.log(response, 'permission response');
             if (response === 'authorized') {
               navigator.geolocation.getCurrentPosition(
                 (position) => {
-                  console.log(searchstring, ' AsyncStorage searchstring');
                   searchstring = position.coords.latitude + ', ' + position.coords.longitude;
 
                   // }
@@ -221,6 +258,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
 
   useEffect(() => {
     fetchPhysicalSlots(date);
+    checkAvailabilitySlot();
   }, []);
 
   useEffect(() => {
@@ -234,20 +272,11 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   const setTimeArrayData = async (availableSlots: string[], selectedDate: Date = date) => {
     setselectedtiming(timeArray[0].label);
     const array = await divideSlots(availableSlots, selectedDate);
-    console.log(array, 'array', timeArray, 'timeArray', availableSlots);
-    if (array !== timeArray) settimeArray(array);
-    for (const i in array) {
-      if (array[i].time.length > 0) {
-        setselectedtiming(array[i].label);
-        props.setselectedTimeSlot(array[i].time[0]);
-        props.scrollToSlots();
-        break;
-      }
-    }
+    settimeArray(array);
   };
 
-  const fetchPhysicalSlots = (date: Date) => {
-    const availableDate = date.toISOString().split('T')[0];
+  const fetchPhysicalSlots = (selectedDate: Date) => {
+    const availableDate = moment(selectedDate).format('YYYY-MM-DD');
     props.setshowSpinner(true);
     client
       .query<getDoctorPhysicalAvailableSlots>({
@@ -263,14 +292,13 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       })
       .then(({ data }) => {
         try {
-          console.log(data, 'fetchPhysicalSlots');
           if (
             data &&
             data.getDoctorPhysicalAvailableSlots &&
             data.getDoctorPhysicalAvailableSlots.availableSlots
           ) {
             props.setshowSpinner(false);
-            setTimeArrayData(data.getDoctorPhysicalAvailableSlots.availableSlots, date);
+            setTimeArrayData(data.getDoctorPhysicalAvailableSlots.availableSlots, selectedDate);
             setavailableSlots(data.getDoctorPhysicalAvailableSlots.availableSlots);
           }
         } catch {}
@@ -341,14 +369,12 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   };
 
   const renderLocation = () => {
-    console.log(selectedClinic, 'selectedClinic');
     return (
       <View style={{ marginTop: 10 }}>
         <View style={{ paddingTop: 5, paddingBottom: 10 }}>
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              console.log('TouchableOpacity onpress');
               setShowPopup(!showPopup);
             }}
           >
@@ -418,8 +444,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     );
   };
   const Popup = () => {
-    console.log(showPopup, 'Popup');
-
     return (
       <View>
         <View
@@ -452,7 +476,6 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
     );
   };
 
-  console.log(showPopup, 'showPopup');
   return (
     <View>
       <View

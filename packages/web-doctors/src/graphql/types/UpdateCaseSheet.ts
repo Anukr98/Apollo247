@@ -63,6 +63,7 @@ export interface UpdateCaseSheet_updateCaseSheet {
   patientId: string | null;
   symptoms: (UpdateCaseSheet_updateCaseSheet_symptoms | null)[] | null;
   otherInstructions: (UpdateCaseSheet_updateCaseSheet_otherInstructions | null)[] | null;
+  status: string | null;
 }
 
 export interface UpdateCaseSheet {

@@ -141,7 +141,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const whereClause = {
       patientId,
       appointmentDateTime: LessThan(new Date()),
-      status: Not(STATUS.CANCELLED),
+      status: STATUS.COMPLETED,
       appointmentType: In([APPOINTMENT_TYPE.ONLINE, APPOINTMENT_TYPE.PHYSICAL]),
     };
     if (filter && filter.length > 0) {
@@ -271,6 +271,7 @@ export class AppointmentRepository extends Repository<Appointment> {
     const startDate = new Date(inputStartDate + 'T18:30');
     return this.find({
       where: { patientId, appointmentDateTime: MoreThan(startDate), status: Not(STATUS.CANCELLED) },
+      order: { appointmentDateTime: 'DESC' },
     });
   }
 
@@ -384,7 +385,16 @@ export class AppointmentRepository extends Repository<Appointment> {
     doctorId: string,
     doctorsDb: Connection
   ) {
-    const weekDay = format(appointmentDate, 'EEEE').toUpperCase();
+    const givenApptDate = format(appointmentDate, 'yyyy-MM-dd');
+    const checkStart = new Date(givenApptDate + 'T18:30');
+    const checkEnd = new Date(givenApptDate + 'T23:59');
+    let weekDay = format(appointmentDate, 'EEEE').toUpperCase();
+    let nextDate = appointmentDate;
+    if (appointmentDate >= checkStart && appointmentDate <= checkEnd) {
+      nextDate = addDays(appointmentDate, 1);
+      weekDay = format(nextDate, 'EEEE').toUpperCase();
+    }
+    console.log(weekDay, 'weekday');
     //console.log('entered here', selDate, weekDay);
     let consultFlag = false;
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
@@ -399,8 +409,8 @@ export class AppointmentRepository extends Repository<Appointment> {
       docConsultHrs.map((docConsultHr) => {
         if (consultFlag == false) {
           //get the slots of the day first
-          let st = `${appointmentDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-          const ed = `${appointmentDate.toDateString()} ${docConsultHr.endTime.toString()}`;
+          let st = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+          const ed = `${nextDate.toDateString()} ${docConsultHr.endTime.toString()}`;
           let consultStartTime = new Date(st);
           const consultEndTime = new Date(ed);
           console.log(consultStartTime, consultEndTime);

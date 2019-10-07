@@ -14,6 +14,7 @@ import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import fs from 'fs';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { Connection } from 'typeorm';
+import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet> & {
@@ -92,10 +93,38 @@ export const convertCaseSheetToRxPdfData = async (
     registrationNumber: '',
   };
 
+  let hospitalAddress = {
+    name: '',
+    streetLine1: '',
+    streetLine2: '',
+    city: '',
+    zipcode: '',
+    state: '',
+    country: '',
+  };
+
   if (caseSheet.doctorId) {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const doctordata = await doctorRepository.getDoctorProfileData(caseSheet.doctorId);
-    if (doctordata != null)
+
+    const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+    let hospitalDetails;
+    if (caseSheet.appointment)
+      hospitalDetails = await facilityRepo.getfacilityDetails(caseSheet.appointment.hospitalId);
+
+    if (doctordata != null) {
+      if (hospitalDetails) {
+        hospitalAddress = {
+          name: hospitalDetails.name,
+          streetLine1: hospitalDetails.streetLine1,
+          streetLine2: hospitalDetails.streetLine2,
+          city: hospitalDetails.city,
+          zipcode: hospitalDetails.zipcode,
+          state: hospitalDetails.state,
+          country: hospitalDetails.country,
+        };
+      }
+
       doctorInfo = {
         salutation: doctordata.salutation,
         firstName: doctordata.firstName,
@@ -103,9 +132,10 @@ export const convertCaseSheetToRxPdfData = async (
         qualifications: doctordata.qualification,
         registrationNumber: doctordata.registrationNumber,
       };
+    }
   }
 
-  return { prescriptions, generalAdvice, diagnoses, doctorInfo };
+  return { prescriptions, generalAdvice, diagnoses, doctorInfo, hospitalAddress };
 };
 
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
@@ -150,21 +180,18 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const headerEndY = 120;
 
-  const renderHeader = () => {
+  const renderHeader = (hospitalAddress: RxPdfData['hospitalAddress']) => {
     doc.image(loadAsset('apollo-logo.png'), margin, margin / 2, { height: 85 });
+    const addressLastLine =
+      hospitalAddress.city + ', ' + hospitalAddress.state + ' ' + hospitalAddress.zipcode;
 
-    doc
-      .fontSize(9.5)
-      .text('1860 500 1066', 370, margin)
-      .moveDown(0.5)
-      .text('Apollo Hospitals')
-      .moveDown(0.5)
-      .text('No. 1, Old No. 28, , Platform Road Near Mantri')
-      .moveDown(0.5)
-      .text('Square Mall, Hotel Swathi, Sheshadripuram')
-      .moveDown(0.5)
-      .text('Bangalore, KA 560020');
+    doc.fontSize(9.5).text(hospitalAddress.name, 370, margin);
+    doc.moveDown(0.5).text(hospitalAddress.streetLine1);
+    if (hospitalAddress.streetLine2) doc.moveDown(0.5).text(hospitalAddress.streetLine2);
+    doc.moveDown(0.5).text(addressLastLine);
+    if (!hospitalAddress.streetLine2) doc.moveDown(0.5);
 
+    doc.moveDown(2);
     drawHorizontalDivider(headerEndY)
       .moveDown()
       .moveDown()
@@ -287,11 +314,11 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   doc.on('pageAdded', () => {
     renderFooter();
-    renderHeader();
+    renderHeader(rxPdfData.hospitalAddress);
   });
 
   renderFooter();
-  renderHeader();
+  renderHeader(rxPdfData.hospitalAddress);
 
   if (!_isEmpty(rxPdfData.prescriptions)) {
     renderPrescriptions(rxPdfData.prescriptions);

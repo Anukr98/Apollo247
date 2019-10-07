@@ -989,9 +989,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== audioCallMsg &&
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
-          message.message.message !== startConsult &&
-          message.message.message !== startConsultjr &&
-          message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult
@@ -1013,6 +1010,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: startConsult,
       isTyping: true,
+      automatedText:
+        'Dr. ' +
+        currentPatient!.firstName +
+        ' ' +
+        currentPatient!.lastName +
+        ' has joined your chat!',
     };
     subscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1397,7 +1400,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.consultIcon}
               aria-describedby={idThreeDots}
               disabled={
-                startAppointmentButton ||
                 disableOnTransfer ||
                 (appointmentInfo!.appointmentState !== 'NEW' &&
                   appointmentInfo!.appointmentState !== 'TRANSFER') ||

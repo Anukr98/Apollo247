@@ -60,6 +60,7 @@ function renderSuggestion(
           {part.text}
         </span>
       ))}
+      <img src={require('images/ic-add.svg')} alt="" />
     </MenuItem>
   );
 }
@@ -152,6 +153,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     autoSuggestBox: {
       position: 'relative',
+      '& input': {
+        paddingRight: 30,
+      },
     },
     searchpopup: {
       borderRadius: 10,
@@ -221,9 +225,22 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     addNewDiagnostic: {
-      paddingTop: 16,
       color: '#02475b',
       fontSize: 16,
+      position: 'relative',
+      '& button': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        position: 'absolute',
+        right: 0,
+        padding: 0,
+        minWidth: 'auto',
+        bottom: 5,
+        '&:hover': {
+          backgroundColor: 'transparent',
+          boxShadow: 'none',
+        },
+      },
     },
     othersBtn: {
       border: '1px solid rgba(2, 71, 91, 0.15)',
@@ -243,21 +260,6 @@ const useStyles = makeStyles((theme: Theme) =>
         width: '100%',
         textAlign: 'left',
         whiteSpace: 'normal',
-      },
-    },
-    btnAddDoctor: {
-      backgroundColor: 'transparent',
-      boxShadow: 'none',
-      color: theme.palette.action.selected,
-      fontSize: 14,
-      fontWeight: 600,
-      // pointerEvents: 'none',
-      paddingLeft: 4,
-      '&:hover': {
-        backgroundColor: 'transparent',
-      },
-      '& img': {
-        marginRight: 8,
       },
     },
   })
@@ -467,9 +469,7 @@ export const DiagnosticPrescription: React.FC = () => {
       )}
       {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
         <div className={classes.addNewDiagnostic}>
-          <div>{`do you want to add '${otherDiagnostic}' in Tests ?`} </div>
           <AphButton
-            className={classes.addBtn}
             onClick={() => {
               if (otherDiagnostic.trim() !== '') {
                 selectedValues!.splice(idx, 0, {
@@ -488,7 +488,7 @@ export const DiagnosticPrescription: React.FC = () => {
               }
             }}
           >
-            <img src={require('images/ic_dark_plus.svg')} alt="" /> Add Test
+            <img src={require('images/ic_add_circle.svg')} alt="" />
           </AphButton>
         </div>
       )}

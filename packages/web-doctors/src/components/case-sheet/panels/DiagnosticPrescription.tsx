@@ -191,6 +191,23 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
+    darkGreenaddBtn: {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      color: theme.palette.action.selected,
+      fontSize: 14,
+      fontWeight: 600,
+      position: 'absolute',
+      right: 0,
+      bottom: '30px',
+      paddingLeft: 4,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '& img': {
+        marginRight: 8,
+      },
+    },
     searchpopup: {
       borderRadius: 10,
       boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
@@ -429,10 +446,8 @@ export const DiagnosticPrescription: React.FC = () => {
         {lengthOfSuggestions === 0 && otherDiagnostic.length > 2 && (
           <div>
             <span>
-              {`do you want to add '${otherDiagnostic}' in Tests ?`}
-              {'  '}
               <AphButton
-                className={classes.btnAddDoctor}
+                className={classes.darkGreenaddBtn}
                 variant="contained"
                 color="primary"
                 onClick={() => {
@@ -453,7 +468,7 @@ export const DiagnosticPrescription: React.FC = () => {
                   }
                 }}
               >
-                <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TEST
+                <img src={require('images/ic_add_circle.svg')} alt="" />
               </AphButton>
             </span>
           </div>

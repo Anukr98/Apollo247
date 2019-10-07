@@ -59,6 +59,7 @@ export interface HeaderProps {
   leftText?: leftText;
   rightText?: rightText;
   title?: string;
+  titleStyle?: StyleProp<TextStyle>;
   leftIcon?: 'backArrow' | 'close' | 'backArrowWhite';
   rightIcon?: string;
   rightComponent?: React.ReactNode;
@@ -72,7 +73,7 @@ export const Header: React.FC<HeaderProps> = (props) => {
 
   return (
     <View style={[styles.container, props.container]}>
-      <View style={{ flex: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
+      <View style={{ flexGrow: 1, alignItems: 'flex-start', justifyContent: 'center' }}>
         {props.leftText ? (
           <TouchableOpacity activeOpacity={1} onPress={props.leftText.onPress} style={{}}>
             <Text style={styles.titleTextStyle} numberOfLines={1}>
@@ -95,14 +96,14 @@ export const Header: React.FC<HeaderProps> = (props) => {
           </TouchableOpacity>
         )}
       </View>
-      <View>
+      <View style={{ flexGrow: 1 }}>
         {title && (
-          <Text style={styles.titleTextStyle} numberOfLines={1}>
+          <Text style={[styles.titleTextStyle, props.titleStyle]} numberOfLines={1}>
             {title}
           </Text>
         )}
       </View>
-      <View style={{ flex: 1, alignItems: 'flex-end' }}>
+      <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
         {rightText && (
           <Text style={styles.rightTextStyle} onPress={rightText.onPress}>
             {rightText.title}
