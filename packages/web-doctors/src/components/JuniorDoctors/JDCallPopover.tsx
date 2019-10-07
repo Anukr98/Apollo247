@@ -1407,6 +1407,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.needHelp}
               onClick={() => {
                 handleClose();
+                props.isAudioVideoCallEnded(true);
                 props.setStartConsultAction(false);
                 autoSend(audioCallMsg);
                 setIsVideoCall(false);
@@ -1421,6 +1422,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.needHelp}
               onClick={() => {
                 handleClose();
+                props.isAudioVideoCallEnded(true);
                 props.setStartConsultAction(true);
                 autoSend(videoCallMsg);
                 setIsVideoCall(true);
