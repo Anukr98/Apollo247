@@ -374,6 +374,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fcb716',
       fontWeight: 500,
     },
+    countdownLoader: {
+      position: 'absolute',
+      right: 12,
+      top: 12,
+    },
   };
 });
 
@@ -1189,13 +1194,15 @@ export const JDConsultRoom: React.FC = () => {
           <DialogContentText>
             Hi! Seems like you've gone offline. Please click on 'OK' to continue chatting with your
             patient.
-            <ReactCountdownClock
-              seconds={60}
-              color="#fcb716"
-              alpha={0.9}
-              size={50}
-              onComplete={() => triggerAutoEndConsult()}
-            />
+            <div className={classes.countdownLoader}>
+              <ReactCountdownClock
+                seconds={60}
+                color="#fcb716"
+                alpha={0.9}
+                size={50}
+                onComplete={() => triggerAutoEndConsult()}
+              />
+            </div>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
