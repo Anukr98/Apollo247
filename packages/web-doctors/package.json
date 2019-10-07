@@ -104,6 +104,7 @@
     "react-custom-scrollbars": "^4.2.1",
     "react-dom": "16.8.6",
     "react-hot-loader": "^4.9.0",
+    "react-idle-timer": "^4.2.9",
     "react-pdf": "^4.1.0",
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",
