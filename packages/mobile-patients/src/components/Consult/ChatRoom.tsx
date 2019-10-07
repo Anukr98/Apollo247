@@ -771,6 +771,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const transferReschedule = (rowData: any, index: number) => {
+    console.log('rowData', rowData);
     return (
       <>
         {rowData.message === transferConsultMsg ? (
@@ -1420,6 +1421,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const messageView = (rowData: any, index: number) => {
+    console.log('messageView', rowData);
     return (
       <View
         style={{
@@ -1492,6 +1494,46 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 />
               </View>
             </TouchableOpacity>
+          ) : rowData.message === '^^#startconsultJr' ? (
+            <View
+              style={{
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  textAlign: 'left',
+                }}
+              >
+                {rowData.automatedText}
+              </Text>
+            </View>
+          ) : rowData.message === '^^#stopconsult' ? (
+            <View
+              style={{
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  textAlign: 'left',
+                }}
+              >
+                {rowData.automatedText}
+              </Text>
+            </View>
           ) : (
             <View
               style={{
@@ -1713,15 +1755,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (
       rowData.message === typingMsg ||
       rowData.message === startConsultMsg ||
-      rowData.message === stopConsultMsg ||
+      // rowData.message === stopConsultMsg ||
       rowData.message === endCallMsg ||
       rowData.message === audioCallMsg ||
       rowData.message === videoCallMsg ||
-      rowData.message === acceptedCallMsg ||
-      rowData.message === startConsultjr
+      rowData.message === acceptedCallMsg
+      // rowData.message === startConsultjr
     ) {
       return null;
     }
+
     if (rowData.id !== patientId) {
       leftComponent++;
       rightComponent = 0;

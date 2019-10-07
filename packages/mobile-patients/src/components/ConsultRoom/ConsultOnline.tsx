@@ -141,7 +141,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   }, [NextAvailableSlot, timeArray]);
 
   const setTimeArrayData = async (availableSlots: string[], date: Date) => {
-    console.log(availableSlots, 'setTimeArrayData availableSlots', NextAvailableSlot);
     setselectedtiming(timeArray[0].label);
 
     const array = await divideSlots(availableSlots, date);
@@ -166,7 +165,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
           })
           .then(({ data }) => {
             try {
-              console.log(data, 'availableSlots', availableDate);
               if (
                 data &&
                 data.getDoctorAvailableSlots &&
@@ -193,7 +191,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const client = useApolloClient();
 
   const checkAvailabilitySlot = () => {
-    console.log('checkAvailabilitySlot consult online');
     props.setshowSpinner && props.setshowSpinner(true);
 
     const todayDate = new Date().toISOString().slice(0, 10);
@@ -222,8 +219,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             if (date2 && today) {
               timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
             }
-            console.log(timeDiff, 'timeDiff', nextSlot, date2);
-
             props.setNextAvailableSlot(nextSlot);
             props.setavailableInMin(timeDiff);
             setavailableInMin(timeDiff);
@@ -244,7 +239,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   };
 
   const renderTimings = () => {
-    console.log(timeArray, 'timeArray123456789', selectedtiming);
     return (
       <View>
         <TabsComponent
@@ -310,7 +304,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       <CalendarView
         date={date}
         onPressDate={(selectedDate) => {
-          console.log('selectedDate', selectedDate !== date, selectedDate, date);
           props.setDate(selectedDate);
           props.setselectedTimeSlot('');
           fetchSlots(selectedDate);
@@ -323,8 +316,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
       />
     );
   };
-
-  console.log(timeArray, NextAvailableSlot, 'render NextAvailableSlot');
 
   return (
     <View>

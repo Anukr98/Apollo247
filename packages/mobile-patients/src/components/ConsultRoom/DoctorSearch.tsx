@@ -196,7 +196,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const fetchSearchData = (searchTextString: string = searchText) => {
     if (searchTextString.length > 2) {
-      console.log(searchTextString, 'searchTextString');
       setisSearching(true);
       client
         .query<SearchDoctorAndSpecialtyByName>({
@@ -209,7 +208,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         })
         .then(({ data }) => {
           try {
-            console.log('searchText', searchText, searchTextString, data);
             const searchData =
               data && data.SearchDoctorAndSpecialtyByName
                 ? data.SearchDoctorAndSpecialtyByName
@@ -255,7 +253,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       .then(({ data }) => {
         try {
           if (data && data.getAllSpecialties && Specialities !== data.getAllSpecialties) {
-            console.log('data', data.getAllSpecialties);
             setSpecialities(data.getAllSpecialties);
             setshowSpinner(false);
           }
@@ -288,7 +285,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         console.log('Error occured', e);
       })
       .finally(() => {
-        console.log('finally');
         fetchSpecialities();
         !!searchText && fetchSearchData();
       });
@@ -305,7 +301,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     });
 
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      console.log('didFocus searchText', !!searchText, searchText);
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
       !!searchText && fetchSearchData();
     });
@@ -321,7 +316,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   }, [searchText]);
 
   const backDataFunctionality = async () => {
-    console.log('backDataFunctionality hardwareBackPress');
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     const movedata = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
     if (movedata == 'MoveDoctor') {
@@ -785,8 +779,6 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       );
     return null;
   };
-
-  console.log('render searchText', searchText, searchText);
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>

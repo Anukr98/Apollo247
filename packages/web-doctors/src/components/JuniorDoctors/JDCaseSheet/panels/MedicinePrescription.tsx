@@ -115,19 +115,14 @@ const useStyles = makeStyles((theme: Theme) =>
     darkGreenaddBtn: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      color: theme.palette.action.selected,
-      fontSize: 14,
-      fontWeight: 600,
-      marginLeft: '417px',
       position: 'absolute',
-      top: 0,
+      top: 20,
+      right: 20,
       padding: 0,
-      marginTop: 12,
+      minWidth: 'auto',
       '&:hover': {
         backgroundColor: 'transparent',
-      },
-      '& img': {
-        marginRight: 8,
+        boxShadow: 'none',
       },
     },
     medicineBox: {
@@ -217,6 +212,9 @@ const useStyles = makeStyles((theme: Theme) =>
       '& >div:first-child': {
         padding: 20,
         paddingBottom: 0,
+      },
+      '& input': {
+        paddingRight: 30,
       },
     },
     searchpopup: {
@@ -440,6 +438,9 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b !important',
       fontWeight: 'bold',
     },
+    unitsSelect: {
+      marginTop: -7,
+    },
   })
 );
 
@@ -471,6 +472,7 @@ interface errorObject {
   tobeTakenErr: boolean;
   durationErr: boolean;
 }
+
 let cancel: any;
 
 export const MedicinePrescription: React.FC = () => {
@@ -966,6 +968,11 @@ export const MedicinePrescription: React.FC = () => {
                     <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
                       <Paper {...options.containerProps} square className={classes.searchpopup}>
                         {options.children}
+                        {loading ? (
+                          <div className={classes.loaderDiv}>
+                            <CircularProgress />
+                          </div>
+                        ) : null}
                       </Paper>
                     </Scrollbars>
                   )}
@@ -988,17 +995,13 @@ export const MedicinePrescription: React.FC = () => {
                     <img src={require('images/ic_add_circle.svg')} alt="" />
                   </AphButton>
                 )}
-                {loading ? (
-                  <div className={classes.loaderDiv}>
-                    <CircularProgress />
-                  </div>
-                ) : null}
               </div>
             ) : (
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(54vh' }}>
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
+                      {/** 
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
@@ -1010,32 +1013,38 @@ export const MedicinePrescription: React.FC = () => {
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             Units*
                           </div>
-                          <AphSelect
-                            MenuProps={{
-                              classes: {
-                                paper: classes.menuPaper,
-                              },
-                              anchorOrigin: {
-                                vertical: 'bottom',
-                                horizontal: 'right',
-                              },
-                              transformOrigin: {
-                                vertical: 'top',
-                                horizontal: 'right',
-                              },
-                            }}
-                          >
-                            <MenuItem classes={{ selected: classes.menuSelected }}>tablet</MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }}>
-                              capsule
-                            </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }}>ml</MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }}>drops</MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }}>NA</MenuItem>
-                          </AphSelect>
+                          <div className={classes.unitsSelect}>
+                            <AphSelect
+                              MenuProps={{
+                                classes: {
+                                  paper: classes.menuPaper,
+                                },
+                                anchorOrigin: {
+                                  vertical: 'bottom',
+                                  horizontal: 'right',
+                                },
+                                transformOrigin: {
+                                  vertical: 'top',
+                                  horizontal: 'right',
+                                },
+                              }}
+                            >
+                              <MenuItem classes={{ selected: classes.menuSelected }}>
+                                tablet
+                              </MenuItem>
+                              <MenuItem classes={{ selected: classes.menuSelected }}>
+                                capsule
+                              </MenuItem>
+                              <MenuItem classes={{ selected: classes.menuSelected }}>ml</MenuItem>
+                              <MenuItem classes={{ selected: classes.menuSelected }}>
+                                drops
+                              </MenuItem>
+                              <MenuItem classes={{ selected: classes.menuSelected }}>NA</MenuItem>
+                            </AphSelect>
+                          </div>
                         </div>
                       </div>
-                      {/**
+                      **/}
                       <div className={classes.numberTablets}>
                         <img
                           src={require('images/ic_minus.svg')}
@@ -1057,8 +1066,8 @@ export const MedicinePrescription: React.FC = () => {
                           }}
                         />
                       </div>
-                      **/}
                     </div>
+                    {/**
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
@@ -1100,6 +1109,47 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </div>
                       </div>
+                    </div>
+                    **/}
+                    <div className={classes.sectionGroup}>
+                      <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                        Duration of Consumption*
+                      </div>
+                      <div className={`${classes.numberTablets}`}>
+                        <AphTextField
+                          placeholder=""
+                          inputProps={{ maxLength: 6 }}
+                          value={consumptionDuration}
+                          onChange={(event: any) => {
+                            setConsumptionDuration(event.target.value);
+                          }}
+                          error={errorState.durationErr}
+                        />
+                        {errorState.durationErr && (
+                          <FormHelperText
+                            className={classes.helpText}
+                            component="div"
+                            error={errorState.durationErr}
+                          >
+                            Please Enter Duration in days(Number only)
+                          </FormHelperText>
+                        )}{' '}
+                      </div>
+                    </div>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.sectionTitle}>To be taken</div>
+                      <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
+                        {tobeTakenHtml}
+                      </div>
+                      {errorState.tobeTakenErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.tobeTakenErr}
+                        >
+                          Please select to be taken.
+                        </FormHelperText>
+                      )}
                     </div>
                     <div className={classes.sectionGroup}>
                       <div className={classes.sectionTitle}>Time of the Day</div>
