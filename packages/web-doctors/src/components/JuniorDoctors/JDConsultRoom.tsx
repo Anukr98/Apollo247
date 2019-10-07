@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Theme, Button, Avatar, CircularProgress } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
@@ -53,6 +53,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { clientRoutes } from 'helpers/clientRoutes';
+import IdleTimer from 'react-idle-timer';
+
 /* patient related queries and mutations */
 import {
   SAVE_PATIENT_FAMILY_HISTORY,
@@ -784,6 +786,7 @@ export const JDConsultRoom: React.FC = () => {
     }
   }, [appointmentId, client, isSignedIn]);
 
+  /*
   // this effect triggers when jrd not performed any action on the page.
   useEffect(() => {
     // console.log(caseSheetEdit, 'case sheet edit....');
@@ -821,6 +824,7 @@ export const JDConsultRoom: React.FC = () => {
     isNewMessage,
     notesJrd,
   ]);
+*/
 
   // if this function triggered it implies that Jrd has not performed any action on popup.
   const triggerAutoEndConsult = () => {
@@ -943,10 +947,24 @@ export const JDConsultRoom: React.FC = () => {
     }, 10);
   };
 
+  const idleTimerRef = useRef(null);
+  const idleTimeValueInMinutes = 1;
+
   return !loaded ? (
     <LinearProgress />
   ) : (
     <div className={classes.root}>
+      {isActive === 'active' && (
+        <IdleTimer
+          ref={idleTimerRef}
+          element={document}
+          onIdle={(e) => {
+            setJrdNoFillDialog(true);
+          }}
+          debounce={250}
+          timeout={1000 * 60 * idleTimeValueInMinutes}
+        />
+      )}
       <div className={classes.headerSticky}>
         <Header />
       </div>
