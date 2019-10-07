@@ -423,6 +423,7 @@ export const JDConsultRoom: React.FC = () => {
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [saving, setSaving] = useState<boolean>(false);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+  const [isAudioVideoCall, setIsAuditoVideoCall] = React.useState<boolean>(false);
 
   const [allergies, setPatientAllergies] = useState<string>('');
   const [lifeStyle, setPatientLifeStyle] = useState<string>('');
@@ -955,11 +956,13 @@ export const JDConsultRoom: React.FC = () => {
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 1;
 
+  // console.log(startConsult, 'start consult is.....', isAudioVideoCall);
+
   return !loaded ? (
     <LinearProgress />
   ) : (
     <div className={classes.root}>
-      {isActive === 'active' && (
+      {isActive === 'active' && !isAudioVideoCall && (
         <IdleTimer
           ref={idleTimerRef}
           element={document}
@@ -1109,6 +1112,9 @@ export const JDConsultRoom: React.FC = () => {
                     assignedDoctorSalutation={assignedDoctorSalutation}
                     assignedDoctorFirstName={assignedDoctorFirstName}
                     assignedDoctorLastName={assignedDoctorLastName}
+                    isAudioVideoCallEnded={(isAudioVideoCall: boolean) => {
+                      setIsAuditoVideoCall(isAudioVideoCall);
+                    }}
                   />
                 )}
                 <div className={classes.contentGroup}>
