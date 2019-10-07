@@ -705,7 +705,14 @@ export const MedicinePrescription: React.FC = () => {
     });
     setDaySlots(slots);
   };
-
+  const toBeTaken = (value: any) => {
+    const arry: any = [];
+    value.map((slot: any) => {
+      const x = slot.replace('_', ' ').toLowerCase();
+      arry.push(x);
+    });
+    return arry;
+  };
   const toBeTakenSlotsToggleAction = (slotId: string) => {
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       if (slotId === slot.id) {
@@ -716,15 +723,25 @@ export const MedicinePrescription: React.FC = () => {
     setToBeTakenSlots(slots);
   };
   console.log(selectedMedicines);
-  const selectedMedicinesHtml = selectedMedicines.map(
-    (_medicine: MedicineObject | null, index: number) => {
+  const selectedMedicinesHtml = selectedMedicinesArr!.map(
+    (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
+      const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days ${toBeTaken(
+        medicine.medicineToBeTaken
+      )
+        .join(',')
+        .toLowerCase()}`;
+      const unitHtml =
+        medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
+          ? medicine.medicineUnit.toLowerCase()
+          : 'times';
       return (
         <div key={index} className={classes.medicineBox}>
-          <div key={medicine.id}>
-            <div className={classes.medicineName}>{medicine.name}</div>
+          <div key={_uniqueId('med_id_')}>
+            <div className={classes.medicineName}>{medicine.medicineName}</div>
             <div className={classes.medicineInfo}>
-              {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
+              {medicine.medicineTimings.length} {unitHtml} a day (
+              {medicine.medicineTimings.join(' , ').toLowerCase()}) for {duration}
             </div>
           </div>
           <div className={classes.actionGroup}>
@@ -871,14 +888,6 @@ export const MedicinePrescription: React.FC = () => {
       setSelectedId('');
       setMedicineUnit('TABLET');
     }
-  };
-  const toBeTaken = (value: any) => {
-    const arry: any = [];
-    value.map((slot: any) => {
-      const x = slot.replace('_', ' ').toLowerCase();
-      arry.push(x);
-    });
-    return arry;
   };
 
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {

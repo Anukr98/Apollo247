@@ -468,6 +468,7 @@ export const GET_CASESHEET = gql`
           medicineToBeTaken
           medicineInstructions
           medicineTimings
+          medicineUnit
           medicineConsumptionDurationInDays
         }
         otherInstructions {
