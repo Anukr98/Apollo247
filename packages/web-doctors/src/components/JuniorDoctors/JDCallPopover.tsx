@@ -606,6 +606,7 @@ interface CallPopoverProps {
   assignedDoctorSalutation: string;
   assignedDoctorFirstName: string;
   assignedDoctorLastName: string;
+  isAudioVideoCallEnded: (isAudioVideoCall: boolean) => void;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -709,15 +710,18 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const [disableStartConsult, setDisableStartConsult] = useState<boolean>(false);
   useEffect(() => {
     if (isCallAccepted) {
+      props.isAudioVideoCallEnded(true);
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
     setShowVideoChat(false);
     const cookieStr = `action=`;
     document.cookie = cookieStr + ';path=/;';
+    props.isAudioVideoCallEnded(false);
     const text = {
       id: props.doctorId,
       message: stopcallMsg,
@@ -758,6 +762,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
     stopIntervalTimer();
     //setIsVideoCall(false);
   };
+
   const autoSend = (callType: string) => {
     const text = {
       id: props.doctorId,
@@ -792,6 +797,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       message: stopcallMsg,
       isTyping: true,
     };
+    props.isAudioVideoCallEnded(false);
     pubnub.publish(
       {
         channel: channel,
