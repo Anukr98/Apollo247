@@ -1400,7 +1400,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.consultIcon}
               aria-describedby={idThreeDots}
               disabled={
-                startAppointmentButton ||
                 disableOnTransfer ||
                 (appointmentInfo!.appointmentState !== 'NEW' &&
                   appointmentInfo!.appointmentState !== 'TRANSFER') ||
