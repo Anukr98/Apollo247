@@ -3552,6 +3552,30 @@
             "defaultValue": null
           },
           {
+            "name": "specialtySearchType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "SpecialtySearchType",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "specialtyName",
+            "description": null,
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
             "name": "city",
             "description": null,
             "type": {
@@ -3668,6 +3692,29 @@
         ],
         "interfaces": null,
         "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "SpecialtySearchType",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "ID",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "NAME",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
         "possibleTypes": null
       },
       {
