@@ -15,6 +15,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { Connection } from 'typeorm';
+import { ApiConstants } from 'ApiConstants';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   enum SpecialtySearchType {
@@ -46,7 +47,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   }
   input FilterDoctorInput {
     patientId: ID
-    specialty: ID!
+    specialty: ID
     specialtySearchType: SpecialtySearchType
     specialtyName: [String]
     city: [String]
@@ -68,7 +69,7 @@ type FilterDoctorsResult = {
   doctors: Doctor[];
   doctorsNextAvailability: DoctorSlotAvailability[];
   doctorsAvailability: DoctorConsultModeAvailability[];
-  specialty: DoctorSpecialty;
+  specialty?: DoctorSpecialty;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -123,32 +124,108 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   DoctorsServiceContext,
   FilterDoctorsResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
+  let finalConsultNowDoctors: Doctor[] = [],
+    finalBookNowDoctors: Doctor[] = [],
+    finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
+    finalDoctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
+  let finalSpecialtyDetails;
+
+  const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
+
   if (
     args.filterInput.specialtySearchType &&
     args.filterInput.specialtySearchType == SpecialtySearchType.NAME
   ) {
-    const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
-    const specialtyIds = await specialtiesRepo.findSpecialtyIdsByNames(
-      args.filterInput.specialtyName
+    if (!args.filterInput.specialtyName) {
+      throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, {});
+    }
+
+    let specialtyIds;
+    if (args.filterInput.specialtyName.length === 0) {
+      const generalPhysicianName = ApiConstants.GENERAL_PHYSICIAN.toString();
+      specialtyIds = await specialtiesRepo.findSpecialtyIdsByNames([generalPhysicianName]);
+    } else {
+      specialtyIds = await specialtiesRepo.findSpecialtyIdsByNames(args.filterInput.specialtyName);
+    }
+
+    if (specialtyIds.length === 1) {
+      finalSpecialtyDetails = await specialtiesRepo.findById(specialtyIds[0].id);
+      if (!finalSpecialtyDetails) {
+        throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
+      }
+    }
+
+    if (specialtyIds.length >= 1) {
+      args.filterInput.specialty = specialtyIds[0].id;
+      const {
+        consultNowDoctors,
+        bookNowDoctors,
+        doctorNextAvailSlots,
+        doctorsConsultModeAvailability,
+      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+
+      finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
+      finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
+      finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
+        doctorNextAvailSlots.doctorAvailalbeSlots
+      );
+      finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
+        doctorsConsultModeAvailability
+      );
+    }
+
+    if (specialtyIds.length >= 2) {
+      args.filterInput.specialty = specialtyIds[1].id;
+      const {
+        consultNowDoctors,
+        bookNowDoctors,
+        doctorNextAvailSlots,
+        doctorsConsultModeAvailability,
+      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+
+      finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
+      finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
+      finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
+        doctorNextAvailSlots.doctorAvailalbeSlots
+      );
+      finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
+        doctorsConsultModeAvailability
+      );
+    }
+  } else {
+    if (!args.filterInput.specialty) {
+      throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, {});
+    }
+
+    finalSpecialtyDetails = await specialtiesRepo.findById(args.filterInput.specialty);
+    if (!finalSpecialtyDetails) {
+      throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
+    }
+
+    const {
+      consultNowDoctors,
+      bookNowDoctors,
+      doctorNextAvailSlots,
+      doctorsConsultModeAvailability,
+    } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+
+    finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
+    finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
+    finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
+      doctorNextAvailSlots.doctorAvailalbeSlots
     );
-    console.log('matched Specialties: ', specialtyIds);
+    finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
+      doctorsConsultModeAvailability
+    );
   }
 
-  const {
-    consultNowDoctors,
-    bookNowDoctors,
-    doctorNextAvailSlots,
-    doctorsConsultModeAvailability,
-    specialtyDetails,
-  } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
-
-  const finalSortedDoctors = consultNowDoctors.concat(bookNowDoctors);
+  const finalSortedDoctors = finalConsultNowDoctors.concat(finalBookNowDoctors);
 
   return {
     doctors: finalSortedDoctors,
-    doctorsNextAvailability: doctorNextAvailSlots.doctorAvailalbeSlots,
-    doctorsAvailability: doctorsConsultModeAvailability,
-    specialty: specialtyDetails,
+    doctorsNextAvailability: finalDoctorNextAvailSlots,
+    doctorsAvailability: finalDoctorsConsultModeAvailability,
+    specialty: finalSpecialtyDetails,
   };
 };
 
@@ -388,7 +465,6 @@ const applyFilterLogic = async (
     bookNowDoctors,
     doctorNextAvailSlots,
     doctorsConsultModeAvailability,
-    specialtyDetails,
   };
 };
 
