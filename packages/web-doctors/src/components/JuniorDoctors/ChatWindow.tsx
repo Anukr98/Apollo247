@@ -791,11 +791,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               inputProps={{ type: 'text' }}
               placeholder="Type here..."
               value={messageText}
-              // onKeyPress={(e) => {
-              //   if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-              //     send();
-              //   }
-              // }}
+              onKeyPress={(e) => {
+                if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                  send();
+                }
+              }}
               onChange={(event) => {
                 setMessageText(event.currentTarget.value);
               }}
