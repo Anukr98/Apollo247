@@ -41,6 +41,7 @@ import { AppRoutes } from '../NavigatorContainer';
 import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
 import { Download } from '../ui/Icons';
 import { Spinner } from '../ui/Spinner';
+import { MEDICINE_UNIT } from '../../graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -303,12 +304,21 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             if (!medicineDetails.is_in_stock) {
               return null;
             }
+            const _qty =
+              medPrescription[index]!.medicineUnit == MEDICINE_UNIT.CAPSULE ||
+              medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
+                ? ((medPrescription[index]!.medicineTimings || []).length || 1) *
+                  parseInt(medPrescription[index]!.medicineConsumptionDurationInDays || '1')
+                : 1;
+            const qty = Math.ceil(_qty / parseInt(medicineDetails.mou || '1'));
+
             return {
               id: medicineDetails!.sku!,
               mou: medicineDetails.mou,
               name: medicineDetails!.name,
               price: medicineDetails!.price,
-              quantity: parseInt(medPrescription[index]!.medicineDosage!),
+              // quantity: parseInt(medPrescription[index]!.medicineDosage!),
+              quantity: qty,
               prescriptionRequired: medicineDetails.is_prescription_required == '1',
             } as ShoppingCartItem;
           })
@@ -373,8 +383,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         <View style={styles.labelViewStyle}>
                           <Text style={styles.labelStyle}>{item.medicineName}</Text>
                         </View>
+
                         <Text style={styles.dataTextStyle}>
-                          {item.medicineDosage}
+                          {item.medicineDosage + ` ` + item.medicineUnit}
+                          {parseInt(item.medicineDosage || '1') > 1 &&
+                          (item.medicineUnit == MEDICINE_UNIT.TABLET ||
+                            item.medicineUnit == MEDICINE_UNIT.CAPSULE)
+                            ? 'S'
+                            : ''}
                           {item.medicineTimings
                             ? `\n${
                                 item.medicineTimings.length
@@ -384,7 +400,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                                 item.medicineConsumptionDurationInDays
                               } days\n`
                             : ''}
-
                           {item.medicineToBeTaken
                             ? item.medicineToBeTaken
                                 .map(

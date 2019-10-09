@@ -525,6 +525,7 @@ export const GET_CASESHEET_DETAILS = gql`
           medicineToBeTaken
           medicineName
           id
+          medicineUnit
         }
         notes
         otherInstructions {
@@ -901,6 +902,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
             medicineToBeTaken
             medicineName
             id
+            medicineUnit
           }
           symptoms {
             symptom

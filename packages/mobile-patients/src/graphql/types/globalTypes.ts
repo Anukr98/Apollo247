@@ -101,6 +101,14 @@ export enum MEDICINE_TO_BE_TAKEN {
   BEFORE_FOOD = "BEFORE_FOOD",
 }
 
+export enum MEDICINE_UNIT {
+  CAPSULE = "CAPSULE",
+  DROPS = "DROPS",
+  ML = "ML",
+  NA = "NA",
+  TABLET = "TABLET",
+}
+
 export enum MedicalRecordType {
   EHR = "EHR",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
