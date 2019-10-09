@@ -726,22 +726,29 @@ export const MedicinePrescription: React.FC = () => {
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
-      const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days ${toBeTaken(
-        medicine.medicineToBeTaken
-      )
-        .join(',')
-        .toLowerCase()}`;
+      const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days`;
+      const whenString =
+        medicine.medicineToBeTaken.length > 0
+          ? toBeTaken(medicine.medicineToBeTaken)
+              .join(', ')
+              .toLowerCase()
+          : '';
       const unitHtml =
         medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
           ? medicine.medicineUnit.toLowerCase()
           : 'times';
+      const timesString =
+        medicine.medicineTimings.length > 0
+          ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
+          : '';
       return (
         <div key={index} className={classes.medicineBox}>
           <div key={_uniqueId('med_id_')}>
             <div className={classes.medicineName}>{medicine.medicineName}</div>
             <div className={classes.medicineInfo}>
-              {medicine.medicineTimings.length} {unitHtml} a day (
-              {medicine.medicineTimings.join(' , ').toLowerCase()}) for {duration}
+              {/*medicine.medicineTimings.length*/}
+              {medicine.medicineDosage} {unitHtml} a day {timesString.length > 0 && timesString} for{' '}
+              {duration} {whenString.length > 0 && whenString}
             </div>
           </div>
           <div className={classes.actionGroup}>
@@ -793,7 +800,7 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         dosageErr: true,
       });
-    } else if (daySlotsSelected.length === 0) {
+    } /* else if (daySlotsSelected.length === 0) {
       setErrorState({
         ...errorState,
         daySlotErr: true,
@@ -809,7 +816,7 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         dosageErr: false,
       });
-    } else if (
+    }*/ else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
       Number(consumptionDuration) < 1
@@ -1060,6 +1067,7 @@ export const MedicinePrescription: React.FC = () => {
                             Dosage*
                           </div>
                           <AphTextField
+                            inputProps={{ maxLength: 6 }}
                             value={tabletsCount}
                             onChange={(event: any) => {
                               setTabletsCount(event.target.value);
@@ -1100,19 +1108,19 @@ export const MedicinePrescription: React.FC = () => {
                               }}
                             >
                               <MenuItem value="TABLET" classes={{ selected: classes.menuSelected }}>
-                                TABLET
+                                tablet
                               </MenuItem>
                               <MenuItem
                                 value="CAPSULE"
                                 classes={{ selected: classes.menuSelected }}
                               >
-                                CAPSULE
+                                capsule
                               </MenuItem>
                               <MenuItem value="ML" classes={{ selected: classes.menuSelected }}>
-                                ML
+                                ml
                               </MenuItem>
                               <MenuItem value="DROPS" classes={{ selected: classes.menuSelected }}>
-                                DROPS
+                                drops
                               </MenuItem>
                               <MenuItem value="NA" classes={{ selected: classes.menuSelected }}>
                                 NA

@@ -656,23 +656,30 @@ export const MedicinePrescription: React.FC = () => {
   const selectedMedicinesHtml = selectedMedicinesArr!.map((_medicine: any, index: number) => {
     const medicine = _medicine!;
 
-    const durationt = `${Number(medicine.medicineConsumptionDurationInDays)} days ${toBeTaken(
-      medicine.medicineToBeTaken
-    )
-      .join(',')
-      .toLowerCase()}`;
+    const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days`;
+    const whenString =
+      medicine.medicineToBeTaken.length > 0
+        ? toBeTaken(medicine.medicineToBeTaken)
+            .join(', ')
+            .toLowerCase()
+        : '';
     const unitHtml =
       medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
         ? medicine.medicineUnit.toLowerCase()
         : 'times';
+    const timesString =
+      medicine.medicineTimings.length > 0
+        ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
+        : '';
 
     return (
       <div key={index} style={{ position: 'relative' }}>
         <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
           <h5>{medicine.medicineName}</h5>
           <h6>
-            {medicine.medicineTimings.length} {unitHtml} a day (
-            {medicine.medicineTimings.join(' , ').toLowerCase()}) for {durationt}
+            {/*medicine.medicineTimings.length*/}
+            {medicine.medicineDosage} {unitHtml} a day {timesString.length > 0 && timesString} for{' '}
+            {duration} {whenString.length > 0 && whenString}
           </h6>
           {/* <img
     className={classes.checkImg}
@@ -742,7 +749,7 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         dosageErr: true,
       });
-    } else if (daySlotsSelected.length === 0) {
+    } /*else if (daySlotsSelected.length === 0) {
       setErrorState({
         ...errorState,
         daySlotErr: true,
@@ -758,7 +765,7 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         dosageErr: false,
       });
-    } else if (
+    }*/ else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
       Number(consumptionDuration) < 1
@@ -1011,8 +1018,9 @@ export const MedicinePrescription: React.FC = () => {
                   <div className={classes.dialogContent}>
                     <Grid container spacing={2}>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Dosage</h6>
+                        <h6>Dosage*</h6>
                         <AphTextField
+                          inputProps={{ maxLength: 6 }}
                           value={tabletsCount}
                           onChange={(event: any) => {
                             setTabletsCount(event.target.value);
@@ -1050,15 +1058,15 @@ export const MedicinePrescription: React.FC = () => {
                             setMedicineUnit(e.target.value as string);
                           }}
                         >
-                          <MenuItem value="TABLET">TABLET</MenuItem>
-                          <MenuItem value="CAPSULE">CAPSULE</MenuItem>
-                          <MenuItem value="ML">ML</MenuItem>
-                          <MenuItem value="DROPS">DROPS</MenuItem>
+                          <MenuItem value="TABLET">tablet</MenuItem>
+                          <MenuItem value="CAPSULE">capsule</MenuItem>
+                          <MenuItem value="ML">ml</MenuItem>
+                          <MenuItem value="DROPS">drops</MenuItem>
                           <MenuItem value="NA">NA</MenuItem>
                         </AphSelect>
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Duration of Consumption</h6>
+                        <h6>Duration of Consumption*</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
                             placeholder=""
