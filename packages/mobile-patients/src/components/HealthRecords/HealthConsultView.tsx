@@ -296,8 +296,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                 return (
                                   <View style={{ flex: 1, paddingRight: 20 }}>
                                     <Text style={styles.descriptionTextStyles}>
-                                      {value.symptom},{value.since},{value.howOften},
-                                      {value.severity}
+                                      {value.symptom}
                                     </Text>
                                   </View>
                                 );
