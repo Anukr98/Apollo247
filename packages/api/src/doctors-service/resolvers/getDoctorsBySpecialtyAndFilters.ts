@@ -192,6 +192,25 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         doctorsConsultModeAvailability
       );
     }
+
+    if (specialtyIds.length >= 3) {
+      args.filterInput.specialty = specialtyIds[2].id;
+      const {
+        consultNowDoctors,
+        bookNowDoctors,
+        doctorNextAvailSlots,
+        doctorsConsultModeAvailability,
+      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+
+      finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
+      finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
+      finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
+        doctorNextAvailSlots.doctorAvailalbeSlots
+      );
+      finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
+        doctorsConsultModeAvailability
+      );
+    }
   } else {
     if (!args.filterInput.specialty) {
       throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, {});
