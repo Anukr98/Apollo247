@@ -360,6 +360,7 @@ export type CaseSheetMedicinePrescription = {
   externalId: string;
   medicineConsumptionDurationInDays: number;
   medicineDosage: string;
+  medicineUnit: string;
   medicineInstructions?: string;
   medicineTimings: MEDICINE_TIMINGS[];
   medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
