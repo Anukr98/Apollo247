@@ -35,6 +35,7 @@ const buildMedicinePrescription = (): CaseSheetMedicinePrescription => {
     medicineName: faker.commerce.productName(),
     medicineConsumptionDurationInDays: _random(3, 20),
     medicineDosage: `${timesPerDay} times/day`,
+    medicineUnit: '',
     medicineInstructions: faker.random.boolean ? faker.lorem.sentences(_random(1, 5)) : undefined,
     medicineTimings: _times(timesPerDay, () => randomEnum(MEDICINE_TIMINGS)),
     medicineToBeTaken: _times(timesPerDay, () => randomEnum(MEDICINE_TO_BE_TAKEN)),
