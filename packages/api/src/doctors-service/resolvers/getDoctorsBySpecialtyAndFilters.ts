@@ -1,7 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Doctor, DoctorSpecialty, ConsultMode } from 'doctors-service/entities/';
+import {
+  Doctor,
+  DoctorSpecialty,
+  ConsultMode,
+  SpecialtySearchType,
+} from 'doctors-service/entities/';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { format, addMinutes, addDays } from 'date-fns';
@@ -11,6 +16,11 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
+  enum SpecialtySearchType {
+    ID
+    NAME
+  }
+
   type FilterDoctorsResult {
     doctors: [DoctorDetails]
     doctorsNextAvailability: [DoctorSlotAvailability]
@@ -36,6 +46,8 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   input FilterDoctorInput {
     patientId: ID
     specialty: ID!
+    specialtySearchType: SpecialtySearchType
+    specialtyName: [String]
     city: [String]
     experience: [Range]
     availability: [String]
@@ -70,6 +82,8 @@ export type Range = {
 export type FilterDoctorInput = {
   patientId: string;
   specialty: string;
+  specialtySearchType: SpecialtySearchType;
+  specialtyName: string[];
   city: string[];
   experience: Range[];
   availability: string[];
@@ -123,6 +137,16 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     specialtyDetails = await specialtiesRepo.findById(args.filterInput.specialty);
     if (!specialtyDetails) {
       throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
+    }
+
+    if (
+      args.filterInput.specialtySearchType &&
+      args.filterInput.specialtySearchType == SpecialtySearchType.NAME
+    ) {
+      const specialtyIds = await specialtiesRepo.findSpecialtyIdsByNames(
+        args.filterInput.specialtyName
+      );
+      console.log('matched Specialties: ', specialtyIds);
     }
 
     filteredDoctors = await doctorRepository.filterDoctors(args.filterInput);
