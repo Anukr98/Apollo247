@@ -17,6 +17,7 @@ export interface MedicineProduct {
   thumbnail: string;
   type_id: string;
   mou: string;
+  manufacturer: string;
 }
 
 interface PharmaOverview {
@@ -173,11 +174,11 @@ export const getMedicineDetailsApi = (
   productSku: string
 ): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
   return Axios.post(
-    `${config.PHARMA_BASE_URL}/popcsrchpdp_api.php`,
+    `${config.MED_DETAIL_API_URL}/popcsrchpdp_api.php`,
     { params: productSku },
     {
       headers: {
-        Authorization: config.PHARMA_AUTH_TOKEN,
+        Authorization: config.MED_DETAIL_API_TOKEN,
       },
     }
   );
@@ -192,11 +193,11 @@ export const searchMedicineApi = (
   cancel && cancel();
 
   return Axios.post(
-    `${config.PHARMA_BASE_URL}/popcsrchprd_api.php`,
+    `${config.MED_SEARCH_API_URL}/popcsrchprd_api.php`,
     { params: searchText },
     {
       headers: {
-        Authorization: config.PHARMA_AUTH_TOKEN,
+        Authorization: config.MED_SEARCH_API_TOKEN,
         'Content-Type': 'application/json',
       },
       cancelToken: new CancelToken(function executor(c) {
