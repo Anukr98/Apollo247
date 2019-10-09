@@ -391,7 +391,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       });
       const clinicAddress =
         doctorClinics.length > 0 && doctorDetails.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.name}, ${doctorClinics[0].facility.city}`
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
           : '';
 
       return (

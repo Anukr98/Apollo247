@@ -156,6 +156,11 @@ export enum Salutation {
   MRS = "MRS",
 }
 
+export enum SpecialtySearchType {
+  ID = "ID",
+  NAME = "NAME",
+}
+
 export enum TRANSFER_INITIATED_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
@@ -263,6 +268,8 @@ export interface DoctorPhysicalAvailabilityInput {
 export interface FilterDoctorInput {
   patientId?: string | null;
   specialty: string;
+  specialtySearchType?: SpecialtySearchType | null;
+  specialtyName?: (string | null)[] | null;
   city?: (string | null)[] | null;
   experience?: (Range | null)[] | null;
   availability?: (string | null)[] | null;

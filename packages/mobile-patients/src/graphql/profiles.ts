@@ -230,6 +230,17 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         qualification
         city
         photoUrl
+        doctorType
+        doctorHospital {
+          facility {
+            id
+            name
+            streetLine1
+            streetLine2
+            streetLine3
+            city
+          }
+        }
       }
       doctorsNextAvailability {
         doctorId
@@ -257,6 +268,18 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           qualification
           city
           photoUrl
+          doctorType
+          doctorHospital {
+            facility {
+              id
+              name
+              streetLine1
+              streetLine2
+              streetLine3
+              city
+              facilityType
+            }
+          }
         }
         doctorsNextAvailability {
           doctorId
@@ -284,6 +307,18 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         qualification
         city
         photoUrl
+        doctorType
+        doctorHospital {
+          facility {
+            id
+            name
+            streetLine1
+            streetLine2
+            streetLine3
+            city
+            facilityType
+          }
+        }
       }
       otherDoctorsNextAvailability {
         doctorId
@@ -359,6 +394,18 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
             name
             image
           }
+          doctorType
+          doctorHospital {
+            facility {
+              id
+              name
+              streetLine1
+              streetLine2
+              streetLine3
+              city
+              facilityType
+            }
+          }
         }
         isActive
       }
@@ -397,6 +444,18 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         languages
         consultHours {
           consultMode
+        }
+        doctorType
+        doctorHospital {
+          facility {
+            id
+            name
+            streetLine1
+            streetLine2
+            streetLine3
+            city
+            facilityType
+          }
         }
       }
       doctorsAvailability {
