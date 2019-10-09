@@ -207,10 +207,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       });
   }, []);
 
-  // useEffect(() => {
-  //   fetchPastData();
-  //   fetchData();
-  // }, []);
+  useEffect(() => {
+    fetchPastData();
+    fetchData();
+  }, []);
 
   // useEffect(() => {
   //   fetchData();

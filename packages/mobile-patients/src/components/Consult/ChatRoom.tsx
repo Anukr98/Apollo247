@@ -665,12 +665,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setIsAudio(true);
         setOnSubscribe(true);
         InCallManager.startRingtone('_BUNDLE_');
-        InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+        InCallManager.start({ media: 'audio'}); // audio/video, default: audio
+       // console.log("AUDIO_CALL_STARTED");
+
+       // InCallManager.chooseAudioRoute('EARPIECE')
       } else if (message.message.message === videoCallMsg) {
         setOnSubscribe(true);
         setIsAudio(false);
         InCallManager.startRingtone('_BUNDLE_');
         InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+
       } else if (message.message.message === startConsultMsg) {
         stopInterval();
         startInterval(timer);
