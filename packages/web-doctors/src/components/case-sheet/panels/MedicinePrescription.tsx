@@ -11,7 +11,7 @@ import {
   createStyles,
   CircularProgress,
 } from '@material-ui/core';
-import { AphTextField, AphButton, AphDialogTitle } from '@aph/web-ui-components';
+import { AphTextField, AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
@@ -246,14 +246,14 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dialogContent: {
       padding: 20,
-      minHeight: 450,
+      minHeight: 400,
       position: 'relative',
       '& h6': {
         fontSize: 14,
         fontWeight: 500,
         color: 'rgba(2, 71, 91, 0.6)',
-        marginBottom: 10,
-        marginTop: 0,
+        marginBottom: 5,
+        marginTop: 5,
         lineHeight: 'normal',
       },
     },
@@ -278,7 +278,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 16,
       color: '#02475b',
       fontWeight: 500,
-      marginBottom: 20,
+      marginBottom: 0,
       '& button': {
         border: '1px solid #00b38e',
         padding: '5px 10px',
@@ -370,6 +370,9 @@ const useStyles = makeStyles((theme: Theme) =>
         },
       },
     },
+    selectDropdown: {
+      paddingTop: 3,
+    },
   })
 );
 
@@ -400,6 +403,7 @@ interface errorObject {
   daySlotErr: boolean;
   tobeTakenErr: boolean;
   durationErr: boolean;
+  dosageErr: boolean;
 }
 let cancel: any;
 
@@ -418,10 +422,12 @@ export const MedicinePrescription: React.FC = () => {
     daySlotErr: false,
     tobeTakenErr: false,
     durationErr: false,
+    dosageErr: false,
   });
   const { caseSheetEdit } = useContext(CaseSheetContext);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>(1);
+  const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
       id: 'morning',
@@ -568,6 +574,7 @@ export const MedicinePrescription: React.FC = () => {
     setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
     setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
     setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
+    setMedicineUnit(selectedMedicinesArr![idx].medicineUnit!);
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
     setSelectedId(selectedMedicinesArr![idx].id!);
     setIsDialogOpen(true);
@@ -594,6 +601,7 @@ export const MedicinePrescription: React.FC = () => {
           medicineTimings: res.medicineTimings,
           medicineToBeTaken: res.medicineToBeTaken,
           medicineName: res.medicineName,
+          medicineUnit: res.medicineUnit,
           id: res.id,
         };
         const inputParams: any = {
@@ -608,6 +616,7 @@ export const MedicinePrescription: React.FC = () => {
             .join(',')
             .toLowerCase()}`,
           selected: true,
+          medicineUnit: res.medicineUnit,
         };
         // const xArr = selectedMedicinesArr;
         // xArr!.push(inputParamsArr);
@@ -652,13 +661,17 @@ export const MedicinePrescription: React.FC = () => {
     )
       .join(',')
       .toLowerCase()}`;
+    const unitHtml =
+      medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
+        ? medicine.medicineUnit.toLowerCase()
+        : 'times';
 
     return (
       <div key={index} style={{ position: 'relative' }}>
         <Paper key={medicine.id} className={`${classes.paper} ${classes.activeCard}`}>
           <h5>{medicine.medicineName}</h5>
           <h6>
-            {medicine.medicineTimings.length} times a day (
+            {medicine.medicineTimings.length} {unitHtml} a day (
             {medicine.medicineTimings.join(' , ').toLowerCase()}) for {durationt}
           </h6>
           {/* <img
@@ -721,18 +734,50 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if (daySlotsSelected.length === 0) {
-      setErrorState({ ...errorState, daySlotErr: true, tobeTakenErr: false, durationErr: false });
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } else if (daySlotsSelected.length === 0) {
+      setErrorState({
+        ...errorState,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        durationErr: false,
+        dosageErr: false,
+      });
     } else if (isTobeTakenSelected.length === 0) {
-      setErrorState({ ...errorState, tobeTakenErr: true, daySlotErr: false, durationErr: false });
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: true,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: false,
+      });
     } else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
       Number(consumptionDuration) < 1
     ) {
-      setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
     } else {
-      setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
         medicineDosage: tabletsCount,
@@ -741,6 +786,7 @@ export const MedicinePrescription: React.FC = () => {
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
         id: selectedId,
+        medicineUnit: medicineUnit,
       };
       console.log(selectedValue);
 
@@ -752,6 +798,7 @@ export const MedicinePrescription: React.FC = () => {
         daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
         duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
+        medicineUnit: medicineUnit,
       };
       if (isUpdate) {
         const xArr = selectedMedicinesArr;
@@ -786,6 +833,7 @@ export const MedicinePrescription: React.FC = () => {
       setMedicineInstruction('');
       setConsumptionDuration('');
       setTabletsCount(1);
+      setMedicineUnit('TABLET');
       setSelectedValue('');
       setSelectedId('');
     }
@@ -961,90 +1009,115 @@ export const MedicinePrescription: React.FC = () => {
               <div>
                 <div>
                   <div className={classes.dialogContent}>
-                    <div>
-                      <h6>Dosage</h6>
-                      <div className={classes.numberTablets}>
-                        <img
-                          src={require('images/ic_minus.svg')}
-                          alt="removeBtn"
-                          onClick={() => {
-                            if (tabletsCount > 1) {
-                              setTabletsCount(tabletsCount - 1);
-                            }
-                          }}
-                        />
-                        <span className={classes.tabletcontent}>{tabletsCount} tablets</span>
-                        <img
-                          src={require('images/ic_plus.svg')}
-                          alt="addbtn"
-                          onClick={() => {
-                            if (tabletsCount > 0 && tabletsCount < 5) {
-                              setTabletsCount(tabletsCount + 1);
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <h6>Time of the Day</h6>
-                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                      {errorState.daySlotErr && (
-                        <FormHelperText
-                          className={classes.helpText}
-                          component="div"
-                          error={errorState.daySlotErr}
-                        >
-                          Please select to be day slot.
-                        </FormHelperText>
-                      )}
-                    </div>
-                    <div>
-                      <h6>To be taken</h6>
-                      <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                      {errorState.tobeTakenErr && (
-                        <FormHelperText
-                          className={classes.helpText}
-                          component="div"
-                          error={errorState.tobeTakenErr}
-                        >
-                          Please select to be taken.
-                        </FormHelperText>
-                      )}
-                    </div>
-                    <div>
-                      <h6>Duration of Consumption(In days)</h6>
-                      <div className={classes.numberTablets}>
+                    <Grid container spacing={2}>
+                      <Grid item lg={6} md={6} xs={12}>
+                        <h6>Dosage</h6>
                         <AphTextField
-                          placeholder=""
-                          inputProps={{ maxLength: 6 }}
-                          value={consumptionDuration}
+                          value={tabletsCount}
                           onChange={(event: any) => {
-                            setConsumptionDuration(event.target.value);
+                            setTabletsCount(event.target.value);
                           }}
-                          error={errorState.durationErr}
                         />
-                        {errorState.durationErr && (
+                        {errorState.dosageErr && (
                           <FormHelperText
                             className={classes.helpText}
                             component="div"
                             error={errorState.durationErr}
                           >
-                            Please Enter Duration in days(Number only)
+                            Please Enter Dosage(Number only)
                           </FormHelperText>
                         )}
-                      </div>
-                    </div>
-                    <div>
-                      <h6>Instructions (if any)</h6>
-                      <div className={classes.numberTablets}>
-                        <AphTextField
-                          value={medicineInstruction}
-                          onChange={(event: any) => {
-                            setMedicineInstruction(event.target.value);
+                      </Grid>
+                      <Grid item lg={6} md={6} xs={12}>
+                        <h6>Units*</h6>
+                        <AphSelect
+                          style={{ paddingTop: 3 }}
+                          value={medicineUnit}
+                          MenuProps={{
+                            // classes: {
+                            //   paper: classes.menuPaper,
+                            // },
+                            anchorOrigin: {
+                              vertical: 'bottom',
+                              horizontal: 'right',
+                            },
+                            transformOrigin: {
+                              vertical: 'top',
+                              horizontal: 'right',
+                            },
                           }}
-                        />
-                      </div>
-                    </div>
+                          onChange={(e: any) => {
+                            setMedicineUnit(e.target.value as string);
+                          }}
+                        >
+                          <MenuItem value="TABLET">TABLET</MenuItem>
+                          <MenuItem value="CAPSULE">CAPSULE</MenuItem>
+                          <MenuItem value="ML">ML</MenuItem>
+                          <MenuItem value="DROPS">DROPS</MenuItem>
+                          <MenuItem value="NA">NA</MenuItem>
+                        </AphSelect>
+                      </Grid>
+                      <Grid item lg={6} md={6} xs={12}>
+                        <h6>Duration of Consumption</h6>
+                        <div className={classes.numberTablets}>
+                          <AphTextField
+                            placeholder=""
+                            inputProps={{ maxLength: 6 }}
+                            value={consumptionDuration}
+                            onChange={(event: any) => {
+                              setConsumptionDuration(event.target.value);
+                            }}
+                            error={errorState.durationErr}
+                          />
+                          {errorState.durationErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please Enter Duration in days(Number only)
+                            </FormHelperText>
+                          )}
+                        </div>
+                      </Grid>
+                      <Grid item lg={6} md={6} xs={12}>
+                        <h6>To be taken</h6>
+                        <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                        {errorState.tobeTakenErr && (
+                          <FormHelperText
+                            className={classes.helpText}
+                            component="div"
+                            error={errorState.tobeTakenErr}
+                          >
+                            Please select to be taken.
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item lg={12} xs={12}>
+                        <h6>Time of the Day</h6>
+                        <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                        {errorState.daySlotErr && (
+                          <FormHelperText
+                            className={classes.helpText}
+                            component="div"
+                            error={errorState.daySlotErr}
+                          >
+                            Please select to be day slot.
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item lg={12} xs={12}>
+                        <h6>Instructions (if any)</h6>
+                        <div className={classes.numberTablets}>
+                          <AphTextField
+                            value={medicineInstruction}
+                            onChange={(event: any) => {
+                              setMedicineInstruction(event.target.value);
+                            }}
+                          />
+                        </div>
+                      </Grid>
+                    </Grid>
                   </div>
                 </div>
                 <div className={classes.dialogActions}>
