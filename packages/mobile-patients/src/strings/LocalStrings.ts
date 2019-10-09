@@ -30,8 +30,40 @@ const login = {
   all_consults: 'All Consults',
   distance: 'Distance',
 };
+const Appointment = {
+  cancelconsult: 'CANCEL CONSULT',
+  reschduleinsted: 'RESCHEDULE INSTEAD',
+  cancelMessage:
+    'Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!',
+  ok: 'OK, GOT IT',
+  errorMessage: 'Opps ! The selected slot is unavailable. Please choose a different one',
+  hi: 'Hi:)',
+  startConsult: 'START CONSULTATION',
+  reschdule: 'RESCHEDULE',
+  payment: 'Payment',
+  order: 'ORDER SUMMARY',
+  amount: 'Amount Paid',
+  upcoming: 'UPCOMING ONLINE VISIT',
+  cancel: 'Cancel',
+};
+const Notification = {
+  address: 'Address Book',
+  Notification: 'Notification Settings',
+};
+const AddFile = {
+  photo: 'TAKE A PHOTO',
+  gallery: 'CHOOSE FROM GALLERY',
+  instructions: 'Instructions For Uploading Files',
+  clearPicture: 'Take clear Picture of your entire file.',
+  details: ' Doctor details & date of the prescription should be clearly visible.',
+  jpg: ' Use JPG and PNG file format only.',
+  mb: 'File should not be of more than 5mb.',
+};
 
 export const LocalStrings = {
   ...common,
   ...login,
+  ...Appointment,
+  ...Notification,
+  ...AddFile,
 };
