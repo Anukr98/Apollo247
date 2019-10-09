@@ -226,12 +226,12 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                           .then((res) => {
                             setLoading(false);
 
-                            // if (Platform.OS === 'ios') {
-                            //   try {
-                            //     CameraRoll.saveToCameraRoll(arr[i]);
-                            //   } catch {}
-                            // }
-                            Alert.alert('Download Complete');
+                            if (Platform.OS === 'android') {
+                              try {
+                                Alert.alert('Download Complete');
+                              } catch {}
+                            }
+
                             Platform.OS === 'ios'
                               ? RNFetchBlob.ios.previewDocument(res.path())
                               : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
@@ -282,7 +282,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
               <Image
                 source={{ uri: item }}
                 style={{
-                  // flex: 1,
                   width: '100%',
                   height: 425,
                 }}
@@ -291,20 +290,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             </View>
           ))}
         </ScrollView>
-        {/* {url == null ? null : (
-          <Image
-            style={{
-              width: 327,
-              height: 344,
-              marginLeft: 16,
-              marginRight: 16,
-              marginTop: 30,
-              alignSelf: 'center',
-            }}
-            source={{ uri: url }}
-          />
-        )} */}
-
         <View
           style={{
             marginLeft: 20,

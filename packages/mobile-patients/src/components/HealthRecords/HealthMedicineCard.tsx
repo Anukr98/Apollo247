@@ -4,15 +4,7 @@ import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  deletePatientMedicalRecord,
-  deletePatientMedicalRecordVariables,
-} from '../../graphql/types/deletePatientMedicalRecord';
-import { DELETE_PATIENT_MEDICAL_RECORD } from '../../graphql/profiles';
-import { NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from '../NavigatorContainer';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const styles = StyleSheet.create({
   viewStyle: {
