@@ -217,7 +217,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       const pharmaOverview =
         (medicineDetails!.PharmaOverview && medicineDetails!.PharmaOverview[0]) || {};
       const doseForm = pharmaOverview.Doseform;
-
+      const manufacturer = medicineDetails.manufacturer || '';
       const _composition = {
         generic: formatComposition(pharmaOverview.generic),
         unit: formatComposition(pharmaOverview.Unit),
@@ -230,37 +230,29 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         )
         .join('+');
 
+      const basicDetails: [string, string | number][] = [
+        ['Manufacturer', manufacturer],
+        ['Composition', composition],
+        ['Dose Form', doseForm],
+        ['Description', description],
+        ['Price', price],
+        ['Pack', pack],
+      ];
+
       return (
         <>
-          {!!composition && (
-            <View>
-              <Text style={styles.heading}>{'Composition'.toUpperCase()}</Text>
-              <Text style={[styles.description, { marginBottom: 16 }]}>{composition}</Text>
-            </View>
-          )}
-          {!!doseForm && (
-            <View>
-              <Text style={styles.heading}>{'Dose Form'.toUpperCase()}</Text>
-              <Text style={[styles.description, { marginBottom: 16 }]}>{doseForm}</Text>
-            </View>
-          )}
-          {!!description && (
-            <View>
-              <Text style={styles.heading}>{'Description'.toUpperCase()}</Text>
-              <Text style={[styles.description, { marginBottom: 16 }]}>{description}</Text>
-            </View>
-          )}
-          {!!price && (
-            <View>
-              <Text style={styles.heading}>{'Price'.toUpperCase()}</Text>
-              <Text style={[styles.description, { marginBottom: 16 }]}>Rs. {price.toFixed(2)}</Text>
-            </View>
-          )}
-          {!!pack && (
-            <View>
-              <Text style={styles.heading}>{'Pack'.toUpperCase()}</Text>
-              <Text style={[styles.description, { marginBottom: 0 }]}>{pack}</Text>
-            </View>
+          {basicDetails.map(
+            (item, i, array) =>
+              !!item[1] && (
+                <View key={i}>
+                  <Text style={styles.heading}>{item[0].toUpperCase()}</Text>
+                  <Text
+                    style={[styles.description, { marginBottom: i == array.length - 1 ? 0 : 16 }]}
+                  >
+                    {item[1]}
+                  </Text>
+                </View>
+              )
           )}
           {!loading && medicineOverview.length != 0 && <View style={styles.separator} />}
         </>

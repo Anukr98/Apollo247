@@ -51,8 +51,10 @@ export const BottomPopUp: React.FC<ButtonProps> = (props) => {
   return (
     <View style={[styles.showPopUp, props.style]}>
       <View style={styles.subViewPopup}>
-        <Text style={styles.congratulationsTextStyle}>{props.title}</Text>
-        <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
+        {!!props.title && <Text style={styles.congratulationsTextStyle}>{props.title}</Text>}
+        {!!props.description && (
+          <Text style={styles.congratulationsDescriptionStyle}>{props.description}</Text>
+        )}
         {props.children}
         <Mascot style={{ position: 'absolute', top: -32, right: 20 }} />
       </View>

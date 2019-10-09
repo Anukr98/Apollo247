@@ -24,7 +24,6 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Alert,
   SafeAreaView,
   StyleProp,
   StyleSheet,
@@ -36,12 +35,16 @@ import {
 import { Slider } from 'react-native-elements';
 import firebase from 'react-native-firebase';
 import { NavigationScreenProps } from 'react-navigation';
-import { SAVE_MEDICINE_ORDER, SAVE_MEDICINE_ORDER_PAYMENT } from '../graphql/profiles';
-import { SaveMedicineOrderPaymentVariables } from '../graphql/types/SaveMedicineOrderPayment';
-import { handleGraphQlError } from '../helpers/helperFunctions';
-import { AppRoutes } from './NavigatorContainer';
-import { BottomPopUp } from './ui/BottomPopUp';
-import { Spinner } from './ui/Spinner';
+import {
+  SAVE_MEDICINE_ORDER,
+  SAVE_MEDICINE_ORDER_PAYMENT,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { SaveMedicineOrderPaymentVariables } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPayment';
+import { handleGraphQlError, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -169,7 +172,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     orderAutoId: 0,
   });
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
-
+  const { showAphAlert } = useUIElements();
   const {
     deliveryAddressId,
     storeId,
@@ -228,7 +231,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         console.log({ errorCode, errorMessage });
         setShowSpinner(false);
         if (errorCode || errorMessage) {
-          Alert.alert('Alert', `Order Failed, ${errorMessage}`);
+          showAphAlert!({
+            title: `Uh oh.. :(`,
+            description: `Order failed, ${errorMessage}.`,
+          });
           // Order-failed
         } else {
           // Order-Success
@@ -245,9 +251,11 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       })
       .catch((e) => {
         setShowSpinner(false);
-        console.error('Came to catch  ');
-        console.log({ e });
-        handleGraphQlError(e);
+        aphConsole.log({ e });
+        showAphAlert!({
+          title: `Uh oh.. :(`,
+          description: `Something went wrong, unable to place order.`,
+        });
       });
   };
 

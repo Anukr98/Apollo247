@@ -303,6 +303,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   };
 
   useEffect(() => {
+    // update cart items from async storage the very first time app opened
     const updateCartItemsFromStorage = async () => {
       try {
         const cartItemsFromStorage = await AsyncStorage.multiGet([
