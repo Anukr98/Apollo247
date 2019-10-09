@@ -2,33 +2,39 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { SAVE_PATIENT_ADDRESS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   savePatientAddress,
   savePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  g,
+  handleGraphQlError,
+  aphConsole,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
-  Alert,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Platform,
-  KeyboardAvoidingView,
-  Dimensions,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { PatientAddressInput } from '../../graphql/types/globalTypes';
-import { pinCodeServiceabilityApi } from '../../helpers/apiCalls';
-import { DropDown, DropDownProps } from '../ui/DropDown';
+import { PatientAddressInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  pinCodeServiceabilityApi,
+  getPlaceInfoByPincode,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { DropDown, DropDownProps } from '@aph/mobile-patients/src/components/ui/DropDown';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -78,6 +84,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
   const { getPatientApiCall } = useAuth();
+  const { showAphAlert } = useUIElements();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -97,8 +104,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     pincode.length == 6 &&
     city &&
     city.length > 1 &&
-    landMark &&
-    landMark.length > 1 &&
     state &&
     state.length > 1;
 
@@ -128,7 +133,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       ]);
 
       setshowSpinner(false);
-      const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
+      // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
+      const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
       addAddress && addAddress(address);
 
       if (pinAvailabilityResult.data.Availability || addOnly) {
@@ -136,11 +142,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         props.navigation.goBack();
       } else {
         setDeliveryAddressId && setDeliveryAddressId('');
-        Alert.alert(
-          'Alert',
-          'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
-          [{ text: 'Ok', onPress: () => props.navigation.goBack() }]
-        );
+        showAphAlert!({
+          title: 'Uh oh.. :(',
+          description:
+            'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+          onPressOk: () => props.navigation.goBack(),
+        });
       }
     } catch (error) {
       setshowSpinner(false);
@@ -152,6 +159,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     if (currentPatient) {
       setuserName(currentPatient.firstName!);
       setuserId(currentPatient.id);
+      setphoneNumber(currentPatient.mobileNumber.replace('+91', '') || '');
     }
   }, [currentPatient]);
 
@@ -169,6 +177,40 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     );
   };
 
+  const validateAndSetPincode = (pincode: string) => {
+    if (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) {
+      setpincode(pincode);
+      pincode.length == 6 && updateCityStateByPincode(pincode);
+    }
+  };
+
+  const updateCityStateByPincode = (pincode: string) => {
+    aphConsole.log('updateCityStateByPincode');
+    getPlaceInfoByPincode(pincode)
+      .then(({ data }) => {
+        aphConsole.log({ data });
+        const results = g(data, 'results') || [];
+        if (results.length == 0) return;
+        const addrComponents = results[0].address_components || [];
+        const city = (
+          addrComponents.find(
+            (item) =>
+              item.types.indexOf('locality') > -1 ||
+              item.types.indexOf('administrative_area_level_2') > -1
+          ) || {}
+        ).long_name;
+        const state = (
+          addrComponents.find((item) => item.types.indexOf('administrative_area_level_1') > -1) ||
+          {}
+        ).long_name;
+        setcity(city || '');
+        setstate(state || '');
+      })
+      .catch((e) => {
+        aphConsole.error({ e });
+      });
+  };
+
   const renderAddress = () => {
     return (
       <View
@@ -178,7 +220,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           padding: 16,
         }}
       >
-        <TouchableOpacity
+        {/* <TouchableOpacity
           activeOpacity={1}
           // onPress={() => {
           //   setShowPopup(true);
@@ -187,9 +229,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         >
           <View style={styles.placeholderViewStyle}>
             <Text style={[styles.placeholderTextStyle]}>{userName}</Text>
-            {/* <DropdownGreen size="sm" /> */}
+            <DropdownGreen size="sm" />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         {showPopup && (
           <DropDown
             cardContainer={{ position: 'absolute', top: 10, zIndex: 1, width: '100%' }}
@@ -207,6 +249,11 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           />
         )}
         <TextInputComponent
+          value={userName}
+          onChangeText={(text) => (text == '' || /^[A-Za-z\s.]+$/.test(text)) && setuserName(text)}
+          placeholder={'Name'}
+        />
+        <TextInputComponent
           value={phoneNumber}
           onChangeText={(phoneNumber) =>
             (phoneNumber == '' || /^[6-9]{1}\d{0,9}$/.test(phoneNumber)) &&
@@ -222,8 +269,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         />
         <TextInputComponent
           value={pincode}
-          onChangeText={(pincode) =>
-            (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) && setpincode(pincode)
+          onChangeText={
+            (pincode) => validateAndSetPincode(pincode)
+            // (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) && setpincode(pincode)
           }
           placeholder={'Pincode'}
           maxLength={6}
@@ -231,7 +279,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         <TextInputComponent
           value={landMark}
           onChangeText={(landMark) => setlandMark(landMark)}
-          placeholder={'Land Mark'}
+          placeholder={'Land Mark (optional)'}
         />
         <TextInputComponent
           value={city}
@@ -260,7 +308,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
         <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} {...keyboardVerticalOffset}>
-          <ScrollView>{renderAddress()}</ScrollView>
+          <ScrollView bounces={false}>{renderAddress()}</ScrollView>
           {/* <StickyBottomComponent defaultBG> */}
           <View
             style={{

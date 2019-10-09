@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Theme, Button, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphInput, AphTextField, AphButton } from '@aph/web-ui-components';
+import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
-import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
-import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
-import { useMutation } from 'react-apollo-hooks';
+// import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
+// import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
+// import { useMutation } from 'react-apollo-hooks';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -236,6 +236,7 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 0,
       marginLeft: 16,
       paddingTop: 8,
+      //display: 'none',
       '&:hover': {
         backgroundColor: 'transparent',
       },
@@ -250,7 +251,7 @@ interface MessagesObjectProps {
   id: string;
   message: string;
   username: string;
-  text: string;
+  automatedText: string;
   duration: string;
   url: string;
 }
@@ -263,40 +264,34 @@ interface ConsultRoomProps {
   doctorId: string;
   patientId: string;
   disableChat: boolean;
+  isNewMessage: (isNewMessage: boolean) => void;
+  autoCloseCaseSheet: boolean;
 }
 
-let timerIntervalId: any;
-let stoppedConsulTimer: number;
+// let timerIntervalId: any;
+// let stoppedConsulTimer: number;
+
 export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
+  const isVideoCall = false;
+
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [msg, setMsg] = useState<string>('');
-  const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
+  // const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
-  // const [chatUploadFile, setChatUploadFile] = useState<string | ArrayBuffer | null>(null);
-  // const [chatUploadFileExtension, setChatUploadFileExtension] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
-  // const [isUploading, setIsUploading] = useState(false);
-  // const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
 
-  // console.log(chatUploadFile, chatUploadFileExtension, 'file upload....');
-
-  // const getFileSizeInMBs = (fileSize: number) => {
-  //   let i = 0;
-  //   while (fileSize > 900) {
-  //     fileSize /= 1024;
-  //     i++;
-  //   }
-  //   console.log(i, 'increment....');
-  //   return Math.round(fileSize * 100) / 100;
-  // };
+  // this hook is used to send auto chat message when the consult is closed by system
+  useEffect(() => {
+    console.log('auto close case sheet action....', props.autoCloseCaseSheet);
+  }, [props.autoCloseCaseSheet]);
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -311,6 +306,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
+
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;
@@ -326,7 +322,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const pubnub = new Pubnub(config);
   let insertText: MessagesObjectProps[] = [];
 
-  const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
+  // const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
 
   const timerMinuts = Math.floor(startingTime / 60);
@@ -334,17 +330,17 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
   const startIntervalTimer = (timer: number) => {
-    setstartTimerAppoinmentt(true);
-    timerIntervalId = setInterval(() => {
+    // setstartTimerAppoinmentt(true);
+    setInterval(() => {
       timer = timer + 1;
-      stoppedConsulTimer = timer;
+      // stoppedConsulTimer = timer;
       setStartingTime(timer);
     }, 1000);
   };
 
-  const mutationUploadChatDocument = useMutation<UploadChatDocument, UploadChatDocumentVariables>(
-    UPLOAD_CHAT_DOCUMENT
-  );
+  // const mutationUploadChatDocument = useMutation<UploadChatDocument, UploadChatDocumentVariables>(
+  //   UPLOAD_CHAT_DOCUMENT
+  // );
 
   const srollToBottomAction = () => {
     setTimeout(() => {
@@ -360,18 +356,20 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       setMsg('');
     }
   };
-  const isURL = (str: string) => {
-    const pattern = new RegExp(
-      '^(https?:\\/\\/)?' + // protocol
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
-      '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-      '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-        '(\\#[-a-z\\d_]*)?$',
-      'i'
-    ); // fragment locator
-    return pattern.test(str);
-  };
+
+  // const isURL = (str: string) => {
+  //   const pattern = new RegExp(
+  //     '^(https?:\\/\\/)?' + // protocol
+  //     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
+  //     '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+  //     '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+  //     '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+  //       '(\\#[-a-z\\d_]*)?$',
+  //     'i'
+  //   ); // fragment locator
+  //   return pattern.test(str);
+  // };
+
   useEffect(() => {
     if (isCallAccepted) {
       startIntervalTimer(0);
@@ -390,21 +388,19 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: (message) => {
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
-        console.log(message.message);
+        // console.log(message.message);
         if (
           !showVideoChat &&
           message.message.message !== videoCallMsg &&
           message.message.message !== audioCallMsg &&
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
-          message.message.message !== startConsult &&
-          message.message.message !== startConsultjr &&
-          message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult
         ) {
           setIsNewMsg(true);
+          props.isNewMessage(true);
         }
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
@@ -450,6 +446,17 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       }
     );
   };
+  const getAutomatedMessage = (rowData: MessagesObjectProps) => {
+    if (
+      rowData.message === startConsult ||
+      rowData.message === startConsultjr ||
+      rowData.message === stopConsult
+    ) {
+      return rowData.automatedText;
+    } else {
+      return rowData.message;
+    }
+  };
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
       rowData.id === doctorId &&
@@ -457,9 +464,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
-      rowData.message !== startConsult &&
-      rowData.message !== startConsultjr &&
-      rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
@@ -511,7 +515,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                   <img src={rowData.url} alt={rowData.url} />
                 </a>
               ) : (
-                <span>{rowData.message}</span>
+                <span>{getAutomatedMessage(rowData)}</span>
               )}
             </div>
           )}
@@ -524,9 +528,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
-      rowData.message !== startConsult &&
-      rowData.message !== startConsultjr &&
-      rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
@@ -584,7 +585,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                   </a>
                 </div>
               ) : (
-                <span>{rowData.message}</span>
+                <span>{getAutomatedMessage(rowData)}</span>
               )}
             </div>
           )}
@@ -595,20 +596,24 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       return '';
     }
   };
+
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
           return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
         })
       : '';
+
   const toggelChatVideo = () => {
     setIsNewMsg(false);
     setShowVideoChat(!showVideoChat);
     srollToBottomAction();
   };
-  const actionBtn = () => {
-    setShowVideo(true);
-  };
+
+  // const actionBtn = () => {
+  //   setShowVideo(true);
+  // };
+
   const sendMsg = (msgObject: any, isStoreInHistory: boolean) => {
     pubnub.publish(
       {
@@ -622,6 +627,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       }
     );
   };
+
   const stopAudioVideoCall = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -644,6 +650,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     };
     sendMsg(stoptext, true);
   };
+
   const stopAudioVideoCallpatient = () => {
     setIsCallAccepted(false);
     setShowVideo(false);
@@ -657,6 +664,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     };
     sendMsg(text, true);
   };
+
   const convertCall = () => {
     setConvertVideo(!convertVideo);
     setTimeout(() => {
@@ -667,6 +675,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       sendMsg(text, false);
     }, 10);
   };
+
   return (
     <div className={classes.root}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
@@ -792,7 +801,14 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               }}
               disabled={props.disableChat}
             />
-            <AphButton className={classes.chatSendBtn}>
+            <AphButton
+              className={classes.chatSendBtn}
+              onClick={() => {
+                if (messageText.trim() !== '') {
+                  send();
+                }
+              }}
+            >
               <img src={require('images/ic_send.svg')} alt="" />
             </AphButton>
             {/* {props.disableChat && (

@@ -148,6 +148,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       obj!.doctorType === 'PAYROLL'
     );
   });
+  console.log('pharama', item);
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -284,27 +285,36 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                       )}
                     </View>
                     <View style={styles.separatorStyles} />
-                    <View>
-                      {g(item, 'symptoms') ? (
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <View style={{ flexDirection: 'column' }}>
-                            {item.symptoms.map((value: any) => {
-                              return (
-                                <View style={{ flex: 2 }}>
-                                  <Text style={styles.descriptionTextStyles}>
-                                    {value.symptom},{value.since},{value.howOften},{value.severity}
-                                  </Text>
-                                </View>
-                              );
-                            })}
+                    <View
+                      style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}
+                    >
+                      <View>
+                        {g(item, 'symptoms') ? (
+                          <View>
+                            <View style={{ flexDirection: 'column' }}>
+                              {item.symptoms.map((value: any) => {
+                                return (
+                                  <View style={{ flex: 1, paddingRight: 20 }}>
+                                    <Text style={styles.descriptionTextStyles}>
+                                      {value.symptom}
+                                    </Text>
+                                  </View>
+                                );
+                              })}
+                            </View>
                           </View>
+                        ) : (
+                          <Text style={styles.descriptionTextStyles}>No Symptoms</Text>
+                        )}
+                      </View>
+
+                      <View>
+                        {g(item, 'blobName') ? (
                           <TouchableOpacity onPress={() => downloadPrescription()}>
                             <PrescriptionSkyBlue />
                           </TouchableOpacity>
-                        </View>
-                      ) : (
-                        <Text style={styles.descriptionTextStyles}>No Symptoms</Text>
-                      )}
+                        ) : null}
+                      </View>
                     </View>
                   </View>
                 </View>

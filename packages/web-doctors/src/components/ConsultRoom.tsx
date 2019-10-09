@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphInput } from '@aph/web-ui-components';
+import { AphInput, AphButton } from '@aph/web-ui-components';
 import { Consult } from 'components/Consult';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
@@ -59,11 +59,8 @@ const useStyles = makeStyles((theme: Theme) => {
       align: 'right',
     },
     inputWidth: {
-      width: '60 %',
       align: 'left',
-      paddingRight: 26,
     },
-
     showIncomingBox: {
       color: '#f00',
     },
@@ -107,6 +104,15 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#fff',
       width: '100%',
       boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.2)',
+      '& >div': {
+        display: 'flex',
+        '& button': {
+          boxShadow: 'none',
+          padding: 0,
+          paddingTop: 8,
+          minWidth: 'auto',
+        },
+      },
     },
     chatsendcircle: {
       position: 'absolute',
@@ -143,13 +149,20 @@ const useStyles = makeStyles((theme: Theme) => {
     none: {
       display: 'none',
     },
+    addImgBtn: {
+      marginRight: 16,
+    },
+    sendBtn: {
+      marginLeft: 16,
+      //display: 'none',
+    },
   };
 });
 interface MessagesObjectProps {
   id: string;
   message: string;
   username: string;
-  text: string;
+  automatedText: string;
   duration: string;
   url: string;
 }
@@ -274,9 +287,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== audioCallMsg &&
           message.message.message !== stopcallMsg &&
           message.message.message !== acceptcallMsg &&
-          message.message.message !== startConsult &&
-          message.message.message !== startConsultjr &&
-          message.message.message !== stopConsult &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult
@@ -295,28 +305,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       pubnub.unsubscribe({ channels: [channel] });
     };
   }, []);
-  // function getCookieValue() {
-  //   const name = 'action=';
-  //   const ca = document.cookie.split(';');
-  //   for (let i = 0; i < ca.length; i++) {
-  //     let c = ca[i];
-  //     while (c.charAt(0) === ' ') {
-  //       c = c.substring(1);
-  //     }
-  //     if (c.indexOf(name) === 0) {
-  //       return c.substring(name.length, c.length);
-  //     }
-  //   }
-  //   return '';
-  // }
-  // useEffect(() => {
-  //   //if (props.startConsult !== isVideoCall) {
-  //   if (getCookieValue() !== '') {
-  //     setIsVideoCall(props.startConsult === 'videocall' ? true : false);
-  //     setMessageText(videoCallMsg);
-  //     autoSend();
-  //   }
-  // }, []);
 
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
@@ -358,26 +346,17 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       }
     );
   };
-  const autoSend = () => {
-    const text = {
-      id: doctorId,
-      message: props.startConsult === 'videocall' ? videoCallMsg : audioCallMsg,
-      isTyping: true,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
-    actionBtn();
+  const getAutomatedMessage = (rowData: MessagesObjectProps) => {
+    if (
+      rowData.message === startConsult ||
+      rowData.message === startConsultjr ||
+      rowData.message === stopConsult
+    ) {
+      return rowData.automatedText;
+    } else {
+      return rowData.message;
+    }
   };
-
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
       rowData.id === doctorId &&
@@ -385,9 +364,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
-      rowData.message !== startConsult &&
-      rowData.message !== startConsultjr &&
-      rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
@@ -414,13 +390,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               </div>
             ) : (
               <div>
-                <span>
-                  {isURL(rowData.message) ? (
-                    <a href={rowData.message}> {rowData.message}</a>
-                  ) : (
-                    rowData.message
-                  )}
-                </span>
+                <span>{getAutomatedMessage(rowData)}</span>
               </div>
             )}
           </div>
@@ -432,9 +402,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
-      rowData.message !== startConsult &&
-      rowData.message !== startConsultjr &&
-      rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
@@ -476,7 +443,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     </a>
                   </div>
                 ) : (
-                  <span>{rowData.message}</span>
+                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
               </div>
             )}
@@ -488,9 +455,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== audioCallMsg &&
       rowData.message !== stopcallMsg &&
       rowData.message !== acceptcallMsg &&
-      rowData.message !== startConsult &&
-      rowData.message !== startConsultjr &&
-      rowData.message !== stopConsult &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult
@@ -528,7 +492,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     </a>
                   </div>
                 ) : (
-                  <span>{rowData.message}</span>
+                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
               </div>
             )}
@@ -672,23 +636,35 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           )}
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatFooterSection}>
-              <AphInput
-                className={classes.inputWidth}
-                inputProps={{ type: 'text' }}
-                placeholder="Type here..."
-                value={messageText}
-                onKeyPress={(e) => {
-                  if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-                    send();
-                  }
-                }}
-                onChange={(event) => {
-                  setMessageText(event.currentTarget.value);
-                }}
-              />
-              <Button className={classes.chatsendcircle}>
-                <img src={require('images/ic_add_circle.svg')} alt="" />
-              </Button>
+              <div>
+                <Button className={classes.addImgBtn}>
+                  <img src={require('images/ic_add_circle.svg')} alt="" />
+                </Button>
+                <AphInput
+                  className={classes.inputWidth}
+                  inputProps={{ type: 'text' }}
+                  placeholder="Type here..."
+                  value={messageText}
+                  onKeyPress={(e: any) => {
+                    if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                      send();
+                    }
+                  }}
+                  onChange={(event: any) => {
+                    setMessageText(event.currentTarget.value);
+                  }}
+                />
+                <AphButton
+                  className={classes.sendBtn}
+                  onClick={() => {
+                    if (messageText.trim() !== '') {
+                      send();
+                    }
+                  }}
+                >
+                  <img src={require('images/ic_send.svg')} alt="" />
+                </AphButton>
+              </div>
             </div>
           )}
         </div>

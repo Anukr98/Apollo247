@@ -16,6 +16,11 @@ export enum AccountType {
   SAVINGS = "SAVINGS",
 }
 
+export enum CASESHEET_STATUS {
+  COMPLETED = "COMPLETED",
+  PENDING = "PENDING",
+}
+
 export enum ConsultMode {
   BOTH = "BOTH",
   ONLINE = "ONLINE",
@@ -55,6 +60,14 @@ export enum MEDICINE_TIMINGS {
 export enum MEDICINE_TO_BE_TAKEN {
   AFTER_FOOD = "AFTER_FOOD",
   BEFORE_FOOD = "BEFORE_FOOD",
+}
+
+export enum MEDICINE_UNIT {
+  CAPSULE = "CAPSULE",
+  DROPS = "DROPS",
+  ML = "ML",
+  NA = "NA",
+  TABLET = "TABLET",
 }
 
 export enum REQUEST_ROLES {
@@ -176,6 +189,7 @@ export interface UpdateCaseSheetInput {
   otherInstructions?: string | null;
   medicinePrescription?: string | null;
   id?: string | null;
+  status?: CASESHEET_STATUS | null;
 }
 
 export interface UpdatePatientInput {

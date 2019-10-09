@@ -27,6 +27,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
+import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet as caseSheetInfo } from 'graphql/types/GetDoctorAppointments';
 
 export interface Appointment {
   id: string;
@@ -407,6 +408,13 @@ export const Appointments: React.FC<AppointmentsProps> = ({
         >
           {appointments.map((appointment, idx) => {
             // return appointment.caseSheet.length > 0 ? (
+            const jrdCaseSheet =
+              appointment.caseSheet.length > 0
+                ? appointment.caseSheet.filter(
+                    (cdetails: caseSheetInfo) =>
+                      cdetails.doctorType === 'JUNIOR' && cdetails.status === 'COMPLETED'
+                  )
+                : [];
             const appointmentCard = (
               <Card
                 className={classes.card}
@@ -546,9 +554,7 @@ export const Appointments: React.FC<AppointmentsProps> = ({
                   }}
                 >
                   <div>
-                    {appointment!.caseSheet &&
-                    appointment!.caseSheet !== null &&
-                    appointment!.caseSheet.length > 0 ? (
+                    {jrdCaseSheet.length > 0 ? (
                       <Link to={`/consulttabs/${appointment.id}/${appointment.patientId}/0`}>
                         {appointmentCard}
                       </Link>

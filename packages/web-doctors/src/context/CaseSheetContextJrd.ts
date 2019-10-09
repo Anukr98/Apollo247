@@ -83,6 +83,7 @@ export interface CaseSheetContextPropsJrd {
     | null;
   pastAppointments: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments[] | null;
   setCasesheetNotes: (notes: string) => void;
+  autoCloseCaseSheet: boolean;
 }
 
 export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
@@ -115,5 +116,6 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   setFollowUpDate: () => {},
   healthVault: null,
   pastAppointments: null,
-  setCasesheetNotes: (notes: string) => {},
+  setCasesheetNotes: () => {},
+  autoCloseCaseSheet: false,
 });

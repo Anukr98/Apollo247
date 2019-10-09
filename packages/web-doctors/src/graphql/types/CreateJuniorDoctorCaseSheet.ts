@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_UNIT, MEDICINE_TIMINGS, MEDICINE_TO_BE_TAKEN } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: CreateJuniorDoctorCaseSheet
@@ -38,6 +38,7 @@ export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_medicin
   medicineConsumptionDurationInDays: string | null;
   medicineDosage: string | null;
   medicineInstructions: string | null;
+  medicineUnit: MEDICINE_UNIT | null;
   medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
   medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
   medicineName: string | null;

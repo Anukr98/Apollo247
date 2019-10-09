@@ -40,6 +40,11 @@ export enum FacilityType {
   CLINIC = 'CLINIC',
 }
 
+export enum SpecialtySearchType {
+  ID = 'ID',
+  NAME = 'NAME',
+}
+
 export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
