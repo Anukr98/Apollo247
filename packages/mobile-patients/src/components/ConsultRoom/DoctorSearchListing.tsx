@@ -163,7 +163,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [currentPatient]);
 
   const client = useApolloClient();
-  const params = props.navigation.state.params ? props.navigation.state.params.specialities : null;
+  const params = props.navigation.getParam('specialities') || null;
 
   const requestLocationPermission = async () => {
     try {
@@ -316,10 +316,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       : [];
     const FilterInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-      specialty:
-        props.navigation.state.params && props.navigation.state.params!.specialityId
-          ? props.navigation.state.params!.specialityId
-          : '',
+      specialty: props.navigation.getParam('specialityId') || '',
       city: SearchData[0].selectedOptions,
       experience: experienceArray,
       availability: availabilityArray,
@@ -546,7 +543,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    const movedata = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
+    const movedata = props.navigation.getParam('MoveDoctor') || '';
     if (movedata == 'MoveDoctor') {
       props.navigation.push(AppRoutes.SymptomChecker);
     } else {
