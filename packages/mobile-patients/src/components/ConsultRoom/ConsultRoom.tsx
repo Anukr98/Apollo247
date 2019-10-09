@@ -638,10 +638,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   key={i}
                   onPress={() => {
                     if (i === 0) {
-                      props.navigation.navigate(AppRoutes.DoctorSearch, {
-                        MoveDoctor: '',
-                        searchText: '',
-                      });
+                      props.navigation.navigate(AppRoutes.DoctorSearch);
                     } else if (i == 1) {
                       props.navigation.navigate(AppRoutes.SearchMedicineScene);
                     }

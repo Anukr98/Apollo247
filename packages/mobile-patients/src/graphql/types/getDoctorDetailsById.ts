@@ -38,6 +38,22 @@ export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDo
   image: string | null;
 }
 
+export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility {
+  __typename: "Facility";
+  id: string;
+  name: string;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  city: string | null;
+  facilityType: string;
+}
+
+export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility;
+}
+
 export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor {
   __typename: "Profile";
   id: string;
@@ -49,6 +65,8 @@ export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDo
   photoUrl: string | null;
   qualification: string | null;
   specialty: getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty;
+  doctorType: DoctorType;
+  doctorHospital: getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital[];
 }
 
 export interface getDoctorDetailsById_getDoctorDetailsById_starTeam {

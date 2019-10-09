@@ -14,7 +14,12 @@ import {
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsNextAvailability,
   getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_specialty,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorsBySpecialtyAndFilters';
-import { ConsultMode, Gender, Range } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  ConsultMode,
+  Gender,
+  Range,
+  SpecialtySearchType,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
@@ -36,6 +41,7 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   topView: {
@@ -157,6 +163,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   }, [currentPatient]);
 
   const client = useApolloClient();
+  const params = props.navigation.state.params ? props.navigation.state.params.specialities : null;
 
   const requestLocationPermission = async () => {
     try {
@@ -185,19 +192,19 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       }
     });
 
-    const handleBackPress = async () => {
-      props.navigation.goBack();
-      return false;
-    };
+    // const handleBackPress = async () => {
+    //   props.navigation.goBack();
+    //   return false;
+    // };
 
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       setshowSpinner(true);
       fetchSpecialityFilterData();
-      BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
     });
 
     const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     });
 
     return () => {
@@ -302,9 +309,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         }
       });
 
+    console.log(params, 'params specialities');
+
+    const specialtyName = params
+      ? { specialtyName: params, specialtySearchType: SpecialtySearchType.NAME }
+      : [];
     const FilterInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-      specialty: props.navigation.state.params ? props.navigation.state.params!.specialityId : '',
+      specialty:
+        props.navigation.state.params && props.navigation.state.params!.specialityId
+          ? props.navigation.state.params!.specialityId
+          : '',
       city: SearchData[0].selectedOptions,
       experience: experienceArray,
       availability: availabilityArray,
@@ -313,7 +328,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       language: SearchData[5].selectedOptions,
       ...availableNow,
       consultMode: filterMode,
+      ...specialtyName,
     };
+    console.log(FilterInput, 'FilterInput');
 
     client
       .query<getDoctorsBySpecialtyAndFilters>({
@@ -324,6 +341,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         },
       })
       .then(({ data }) => {
+        console.log(data, 'dataaaaa');
+
         try {
           const filterGetData =
             data && data.getDoctorsBySpecialtyAndFilters
@@ -525,6 +544,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     );
   };
 
+  const backDataFunctionality = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    const movedata = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
+    if (movedata == 'MoveDoctor') {
+      props.navigation.push(AppRoutes.SymptomChecker);
+    } else {
+      props.navigation.goBack();
+    }
+    return false;
+  };
+
   const renderTopView = () => {
     return (
       <View style={styles.topView}>
@@ -532,7 +562,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
           rightComponent={<RightHeader />}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={backDataFunctionality}
         />
       </View>
     );
@@ -583,6 +613,12 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     //   )
     // : doctorsList;
     if (doctors.length === 0 && !showSpinner) {
+      const specialistSingular =
+        specialities && specialities.specialistSingularTerm
+          ? specialities.specialistSingularTerm
+          : params && params.length === 1
+          ? params[0]
+          : 'Specialist';
       return (
         <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 64 }}>
           <Card
@@ -596,16 +632,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             heading={'Uh oh! :('}
             description={
               filter === ConsultMode.PHYSICAL
-                ? `There is no ${
-                    specialities && specialities.specialistSingularTerm
-                      ? specialities.specialistSingularTerm
-                      : ''
-                  } available for Physical Consult. Please you try Online Consultation.`
-                : `There is no ${
-                    specialities && specialities.specialistSingularTerm
-                      ? specialities.specialistSingularTerm
-                      : ''
-                  } available to match your filters. Please try again with different filters.`
+                ? `There is no ${specialistSingular} available for Physical Consult. Please you try Online Consultation.`
+                : `There is no ${specialistSingular} available to match your filters. Please try again with different filters.`
             }
             descriptionTextStyle={{ fontSize: 14 }}
             headingTextStyle={{ fontSize: 14 }}
@@ -666,7 +694,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             {string.common.best_doctor_text}
             {specialities && specialities.specialistPluralTerm
               ? specialities.specialistPluralTerm
-              : ''}
+              : params && params.length === 1
+              ? params[0]
+              : 'Specialists'}
           </Text>
         </Animated.View>
 
