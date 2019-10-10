@@ -3,47 +3,46 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
-  DoctorImage,
-  DropdownGreen,
-  Mascot,
   ConsultationRoom,
+  DoctorImage,
   MyHealth,
-  ShoppingCart,
   Person,
+  ShoppingCart,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { SAVE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
+import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
+import {
+  saveDeviceToken,
+  saveDeviceTokenVariables,
+} from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   AsyncStorage,
   Dimensions,
   Image,
   ImageSourcePropType,
+  Linking,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Linking,
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
+import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  saveDeviceToken,
-  saveDeviceTokenVariables,
-} from '@aph/mobile-patients/src/graphql/types/saveDeviceToken';
-import { SAVE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
-import firebase from 'react-native-firebase';
-import DeviceInfo from 'react-native-device-info';
-import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { NotificationListener } from '../NotificationListener';
 
 const { width, height } = Dimensions.get('window');
 
@@ -735,6 +734,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </View>
       </BottomPopUp> */}
       {showSpinner && <Spinner />}
+      <NotificationListener />
     </View>
   );
 };
