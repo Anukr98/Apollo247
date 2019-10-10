@@ -734,7 +734,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </View>
       </BottomPopUp> */}
       {showSpinner && <Spinner />}
-      <NotificationListener />
+      <NotificationListener navigation={props.navigation} />
     </View>
   );
 };
