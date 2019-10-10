@@ -2,11 +2,40 @@ import React, { useEffect } from 'react';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { aphConsole } from '../helpers/helperFunctions';
+import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from './NavigatorContainer';
 
-export interface NotificationListenerProps {}
+type CustomNotificationType = 'Reschedule-Appointment' | 'Upload-Prescription-Order' | '';
+
+export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { showAphAlert } = useUIElements();
+
+  const processNotification = (notification: Notification) => {
+    const { title, body, data } = notification;
+    const notificationType: CustomNotificationType = data.type;
+    aphConsole.log({ notificationType, title, body, data });
+
+    switch (notificationType) {
+      case 'Reschedule-Appointment':
+        {
+          console.log('Reschedule-Appointment called');
+        }
+        break;
+
+      case 'Upload-Prescription-Order':
+        {
+          console.log('Upload-Prescription-Order called');
+          props.navigation.navigate(AppRoutes.YourCart);
+        }
+        break;
+
+      default:
+        break;
+    }
+  };
 
   useEffect(() => {
     console.log('createNotificationListeners');
@@ -15,38 +44,21 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
      * Triggered when a particular notification has been received in foreground
      * */
     const notificationListener = firebase.notifications().onNotification((notification) => {
-      const { title, body, data } = notification;
-      console.log('notificationListener', { notification });
-
-      // const data = JSON.parse(notification.data.gcm.notification.data);
-      console.log('notificationListener data', { data });
-
-      showAphAlert!({
-        title: `Uh oh.. :)`,
-        description: body,
-      });
+      processNotification(notification);
     });
 
     /*
      * If your app is closed, you can check if it was opened by a notification being clicked / tapped / opened as follows:
      * */
-    const notificationOpen = firebase
+    firebase
       .notifications()
       .getInitialNotification()
       .then((_notificationOpen: NotificationOpen) => {
         if (_notificationOpen) {
           // App was opened by a notification
           // Get the action triggered by the notification being opened
-          const action = _notificationOpen.action;
-          // Get information about the notification that was opened
-          const notification: Notification = _notificationOpen.notification;
-          console.log('onNotificationOpened', notification);
-
-          const { title, body } = _notificationOpen.notification;
-          showAphAlert!({
-            title: `Uh oh.. :)`,
-            description: body,
-          });
+          // const action = _notificationOpen.action;
+          processNotification(_notificationOpen.notification);
         }
       })
       .catch(() => {});
@@ -59,13 +71,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       .onNotificationOpened((notificationOpen: NotificationOpen) => {
         if (notificationOpen) {
           const notification: Notification = notificationOpen.notification;
-          console.log('onNotificationOpened', notification);
-
-          const { title, body } = notificationOpen.notification;
-          showAphAlert!({
-            title: `Uh oh.. :)`,
-            description: body,
-          });
+          processNotification(notification);
         }
       });
 
