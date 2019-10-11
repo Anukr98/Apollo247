@@ -324,7 +324,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
             <AvailabilityCapsule availableTime={availableTime} styles={styles.availableView} />
-            {/* {props.displayButton && 
+            {/* {props.displayButton &&
             availableInMin !== undefined ? (
               <CapsuleView
                 upperCase
@@ -338,8 +338,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               {rowData.photoUrl &&
               rowData.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
                 <Image
-                  style={{ width: 80, height: 80, borderRadius: 40 }}
+                  style={{ height: 80, borderRadius: 40 }}
                   source={{ uri: rowData.photoUrl }}
+                  resizeMode={'contain'}
                 />
               ) : (
                 <DoctorPlaceholderImage />
