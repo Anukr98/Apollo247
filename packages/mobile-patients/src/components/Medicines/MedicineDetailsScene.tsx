@@ -175,15 +175,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           trimmedDesc = `${medicineName} ${trimmedDesc}`;
         }
 
-        const splitByEntities = trimmedDesc.split('&amp;lt;br /&amp;gt;');
-        trimmedDesc = splitByEntities
-          .map((item) => {
-            let _item = item.trim().replace('. ', '');
-            if (_item.charAt(0) == '.') {
-              _item = _item.substring(1);
-            }
-            return _item || null;
-          })
+        trimmedDesc = trimmedDesc
+          .replace(/&amp;deg;/g, '°')
+          .replace(/&#039;/g, "'")
+          .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
+          .replace(/&amp;lt;br \/&amp;gt;/g, '\n');
+
+        trimmedDesc = trimmedDesc
+          .split('\n')
           .filter((item) => item)
           .join('\n');
 
