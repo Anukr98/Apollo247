@@ -161,10 +161,10 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           if (timeArray[i].time.includes(NextAvailableSlot)) {
             setselectedtiming(timeArray[i].label);
             props.setselectedTimeSlot(NextAvailableSlot);
-            props.scrollToSlots();
             break;
           }
         }
+        props.scrollToSlots(350);
       }
     }
   }, [NextAvailableSlot, timeArray]);
