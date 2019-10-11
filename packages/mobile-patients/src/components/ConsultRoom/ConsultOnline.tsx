@@ -132,11 +132,11 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
           if (timeArray[i].time.includes(NextAvailableSlot)) {
             setselectedtiming(timeArray[i].label);
             props.setselectedTimeSlot(NextAvailableSlot);
-            props.scrollToSlots();
             break;
           }
         }
       }
+      props.scrollToSlots();
     }
   }, [NextAvailableSlot, timeArray]);
 
