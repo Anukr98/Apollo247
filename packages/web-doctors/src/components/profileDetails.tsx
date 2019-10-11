@@ -261,7 +261,7 @@ export const MyAccount: React.FC = (props) => {
                         }
                         className={classes.bigAvatar}
                       />
-                      <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
+                      {doctorProfile.doctorType === 'STAR_APOLLO'?<img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />:'' }
                     </div>
                     <div className={classes.doctorSectionLeft}>
                       <Typography variant="h4">
