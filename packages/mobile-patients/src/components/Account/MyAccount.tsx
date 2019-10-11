@@ -1,10 +1,6 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  Location,
-  NotificaitonAccounts,
-  PatientDefaultImage,
-} from '@aph/mobile-patients/src/components/ui/Icons';
+import { Location, NotificaitonAccounts } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -27,7 +23,6 @@ import {
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { getNetStatus } from '../../helpers/helperFunctions';
-import { BottomPopUp } from '../ui/BottomPopUp';
 import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
 const { height, width } = Dimensions.get('window');
@@ -324,31 +319,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
       {renderAnimatedHeader()}
       {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
-      {/* {networkStatus && (
-        <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
-          <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              style={{
-                height: 60,
-                paddingRight: 25,
-                backgroundColor: 'transparent',
-              }}
-              onPress={() => {
-                setNetworkStatus(false);
-              }}
-            >
-              <Text
-                style={{
-                  paddingTop: 16,
-                  ...theme.viewStyles.yellowTextStyle,
-                }}
-              >
-                OK, GOT IT
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </BottomPopUp>
-      )} */}
       {showSpinner && <Spinner />}
     </View>
   );
