@@ -24,6 +24,7 @@ export const NoInterNetPopup: React.FC<NoInterNetPopupProps> = (props) => {
     <BottomPopUp
       title={'Oops!'}
       description={'There is no internet. Please check your internet connection.'}
+      onPressBack={props.onClickClose}
     >
       <View style={{ height: 60, alignItems: 'flex-end' }}>
         <TouchableOpacity

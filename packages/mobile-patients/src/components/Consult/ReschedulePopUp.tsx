@@ -5,13 +5,11 @@ import {
   getDoctorDetailsById_getDoctorDetailsById_doctorHospital,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps, NavigationActions } from 'react-navigation';
 import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { getNetStatus } from '../../helpers/helperFunctions';
-import { BottomPopUp } from '../ui/BottomPopUp';
-import { StackActions } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
 import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 
@@ -314,38 +312,6 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
         </View>
       </View>
       {networkStatus && <NoInterNetPopup onClickClose={() => networkBack()} />}
-      {/* {networkStatus && (
-        <BottomPopUp title={'Hi:)'} description="Please check your Internet connection!">
-          <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              style={{
-                height: 60,
-                paddingRight: 25,
-                backgroundColor: 'transparent',
-              }}
-              onPress={() => {
-                setNetworkStatus(false);
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                  })
-                );
-              }}
-            >
-              <Text
-                style={{
-                  paddingTop: 16,
-                  ...theme.viewStyles.yellowTextStyle,
-                }}
-              >
-                OK, GOT IT
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </BottomPopUp>
-      )} */}
     </View>
   );
 };
