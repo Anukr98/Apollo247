@@ -1089,15 +1089,28 @@ export const GET_APPOINTMENT_DATA = gql`
   query getAppointmentData($appointmentId: String!) {
     getAppointmentData(appointmentId: $appointmentId) {
       appointmentsHistory {
+        appointmentType
         id
+        patientId
+        appointmentDateTime
+        status
+        hospitalId
         doctorId
-        appointmentState
         isFollowUp
+        rescheduleCount
         doctorInfo {
           id
+          salutation
           firstName
-
           lastName
+          experience
+          specialty {
+            name
+          }
+          qualification
+          city
+          photoUrl
+          doctorType
         }
       }
     }
