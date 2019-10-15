@@ -257,11 +257,19 @@ export const MyAccount: React.FC = (props) => {
                         src={
                           doctorProfile.photoUrl
                             ? doctorProfile.photoUrl
-                            : require('images/no_photo.png')
+                            : require('images/no_person_icon.svg')
                         }
                         className={classes.bigAvatar}
                       />
-                      {doctorProfile.doctorType === 'STAR_APOLLO'?<img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />:'' }
+                      {doctorProfile.doctorType === 'STAR_APOLLO' ? (
+                        <img
+                          alt=""
+                          src={require('images/ic_star.svg')}
+                          className={classes.starImg}
+                        />
+                      ) : (
+                        ''
+                      )}
                     </div>
                     <div className={classes.doctorSectionLeft}>
                       <Typography variant="h4">

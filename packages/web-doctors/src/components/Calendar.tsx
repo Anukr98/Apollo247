@@ -173,7 +173,9 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
         details: {
           patientName: `${patientInfo!.firstName} ${patientInfo!.lastName}`,
           checkups: symptoms,
-          avatar: require('images/ic_patientchat.png'),
+          avatar: patientInfo!.photoUrl
+            ? patientInfo!.photoUrl
+            : require('images/no_photo_icon_round.svg'),
         },
       };
     }

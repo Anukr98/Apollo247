@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Theme, Button, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
@@ -14,6 +14,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -329,6 +330,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const timerSeconds = startingTime - timerMinuts * 60;
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
+  const { patientDetails } = useContext(CaseSheetContext);
+
   const startIntervalTimer = (timer: number) => {
     // setstartTimerAppoinmentt(true);
     setInterval(() => {
@@ -505,7 +508,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 <div className={classes.patientAvatar}>
                   <Avatar
                     className={classes.avatar}
-                    src={require('images/ic_patientchat.png')}
+                    src={
+                      patientDetails && patientDetails.photoUrl
+                        ? patientDetails!.photoUrl
+                        : require('images/no_photo_icon_round.svg')
+                    }
                     alt=""
                   />
                 </div>
@@ -569,7 +576,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 <div className={classes.patientAvatar}>
                   <Avatar
                     className={classes.avatar}
-                    src={require('images/ic_patientchat.png')}
+                    src={
+                      patientDetails && patientDetails.photoUrl
+                        ? patientDetails!.photoUrl
+                        : require('images/no_photo_icon_round.svg')
+                    }
                     alt=""
                   />
                 </div>
