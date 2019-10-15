@@ -428,7 +428,7 @@ const useStyles = makeStyles((theme: Theme) =>
           fontSize: 16,
           fontWeight: 500,
           '&:hover': {
-            backgroundColor: '#f0f4f5',
+            backgroundColor: '#fff',
           },
         },
       },
