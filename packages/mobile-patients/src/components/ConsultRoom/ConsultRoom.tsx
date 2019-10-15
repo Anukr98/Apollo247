@@ -516,7 +516,12 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           backgroundColor: 'transparent',
           flexDirection: 'row',
           width: width,
-          height: isIphoneX() ? 80 : 50,
+          height: showPopUp ? 0 : isIphoneX() ? 87 : 57,
+          shadowColor: 'black',
+          shadowOffset: { width: 0, height: -10 },
+          shadowOpacity: 0.2,
+          shadowRadius: 10,
+          elevation: 10,
         }}
       >
         {tabBarOptions.map((tabBarOptions, i) => (
@@ -539,7 +544,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View
                 style={{
                   width: width / 4,
-                  height: 50,
+                  height: 57,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
@@ -552,7 +557,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     fontSize: 7,
                     letterSpacing: 0.5,
                     textAlign: 'center',
-                    marginTop: 5,
+                    marginTop: 8,
                     color: '#02475b',
                   }}
                 >
