@@ -601,7 +601,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <Text style={styles.labelStyle}>Dr. {doctorDetails.firstName}’s Team</Text>
             <Text style={styles.labelStyle}>
               {doctorDetails.starTeam.length}
-              {doctorDetails.starTeam.length == 1 ? 'Doctor' : 'Doctors'}
+              {doctorDetails.starTeam.length == 1 ? ' Doctor' : ' Doctors'}
             </Text>
           </View>
           <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
