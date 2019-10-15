@@ -5,7 +5,7 @@ import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { theme } from '../../theme/theme';
 import { EPrescription, PhysicalPrescription, useShoppingCart } from '../ShoppingCartProvider';
 import { EPrescriptionCard } from '../ui/EPrescriptionCard';
-import { CrossYellow } from '../ui/Icons';
+import { CrossYellow, FileBig } from '../ui/Icons';
 import { TextInputComponent } from '../ui/TextInputComponent';
 import { SelectEPrescriptionModal } from './SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from './UploadPrescriprionPopup';
@@ -117,15 +117,24 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                 width: 54,
               }}
             >
-              <Image
-                style={{
-                  height: 40,
-                  width: 30,
-                  borderRadius: 5,
-                }}
-                source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
-                // source={{ uri: item.path }}
-              />
+              {item.fileType == 'pdf' ? (
+                <FileBig
+                  style={{
+                    height: 45,
+                    width: 30,
+                    borderRadius: 5,
+                  }}
+                />
+              ) : (
+                <Image
+                  style={{
+                    height: 40,
+                    width: 30,
+                    borderRadius: 5,
+                  }}
+                  source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
+                />
+              )}
             </View>
             <View style={{ flex: 1 }}>
               <TextInputComponent

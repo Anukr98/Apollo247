@@ -1,7 +1,7 @@
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossYellow } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CrossYellow, FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
@@ -207,15 +207,24 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 width: 54,
               }}
             >
-              <Image
-                style={{
-                  height: 40,
-                  width: 30,
-                  borderRadius: 5,
-                }}
-                source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
-                // source={{ uri: item.path }}
-              />
+              {item.fileType == 'pdf' ? (
+                <FileBig
+                  style={{
+                    height: 45,
+                    width: 30,
+                    borderRadius: 5,
+                  }}
+                />
+              ) : (
+                <Image
+                  style={{
+                    height: 40,
+                    width: 30,
+                    borderRadius: 5,
+                  }}
+                  source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
+                />
+              )}
             </View>
             <View style={{ flex: 1 }}>
               <TextInputComponent
