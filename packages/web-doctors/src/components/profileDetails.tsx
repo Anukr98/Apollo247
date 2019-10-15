@@ -257,7 +257,7 @@ export const MyAccount: React.FC = (props) => {
                         src={
                           doctorProfile.photoUrl
                             ? doctorProfile.photoUrl
-                            : require('images/no_photo.png')
+                            : require('images/no_person_icon.svg')
                         }
                         className={classes.bigAvatar}
                       />

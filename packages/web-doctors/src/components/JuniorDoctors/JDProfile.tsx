@@ -95,7 +95,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
     },
     noDoctorImage: {
-      padding: 20,
       paddingBottom: 0,
     },
   };

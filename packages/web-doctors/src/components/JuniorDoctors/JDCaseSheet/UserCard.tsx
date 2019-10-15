@@ -53,7 +53,7 @@ export const UserCard: React.FC = () => {
   const photoUrl =
     patientDetails && patientDetails!.photoUrl && patientDetails!.photoUrl !== null
       ? patientDetails!.photoUrl
-      : require('images/ic_patientchat.png');
+      : require('images/no_person_icon.svg');
   return loading && !patientDetails ? (
     <CircularProgress />
   ) : (

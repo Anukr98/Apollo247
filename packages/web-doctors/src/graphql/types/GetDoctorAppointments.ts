@@ -25,6 +25,7 @@ export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory
   id: string;
   firstName: string | null;
   lastName: string | null;
+  photoUrl: string | null;
 }
 
 export interface GetDoctorAppointments_getDoctorAppointments_appointmentsHistory {
