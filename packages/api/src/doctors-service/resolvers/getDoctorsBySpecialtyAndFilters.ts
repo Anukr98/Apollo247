@@ -1,7 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Doctor, DoctorSpecialty, ConsultMode } from 'doctors-service/entities/';
+import {
+  Doctor,
+  DoctorSpecialty,
+  ConsultMode,
+  SpecialtySearchType,
+} from 'doctors-service/entities/';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { format, addMinutes, addDays } from 'date-fns';
@@ -9,8 +14,15 @@ import { format, addMinutes, addDays } from 'date-fns';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { Connection } from 'typeorm';
+import { ApiConstants } from 'ApiConstants';
 
 export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
+  enum SpecialtySearchType {
+    ID
+    NAME
+  }
+
   type FilterDoctorsResult {
     doctors: [DoctorDetails]
     doctorsNextAvailability: [DoctorSlotAvailability]
@@ -35,7 +47,9 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
   }
   input FilterDoctorInput {
     patientId: ID
-    specialty: ID!
+    specialty: ID
+    specialtySearchType: SpecialtySearchType
+    specialtyName: [String]
     city: [String]
     experience: [Range]
     availability: [String]
@@ -55,7 +69,7 @@ type FilterDoctorsResult = {
   doctors: Doctor[];
   doctorsNextAvailability: DoctorSlotAvailability[];
   doctorsAvailability: DoctorConsultModeAvailability[];
-  specialty: DoctorSpecialty;
+  specialty?: DoctorSpecialty;
 };
 
 export type DoctorConsultModeAvailability = {
@@ -70,6 +84,8 @@ export type Range = {
 export type FilterDoctorInput = {
   patientId: string;
   specialty: string;
+  specialtySearchType: SpecialtySearchType;
+  specialtyName: string[];
   city: string[];
   experience: Range[];
   availability: string[];
@@ -108,24 +124,151 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   DoctorsServiceContext,
   FilterDoctorsResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
+  let finalConsultNowDoctors: Doctor[] = [],
+    finalBookNowDoctors: Doctor[] = [],
+    finalDoctorNextAvailSlots: DoctorSlotAvailability[] = [],
+    finalDoctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
+  let finalSpecialtyDetails;
+
+  const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
+
+  if (
+    args.filterInput.specialtySearchType &&
+    args.filterInput.specialtySearchType == SpecialtySearchType.NAME
+  ) {
+    if (!args.filterInput.specialtyName) {
+      throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, {});
+    }
+
+    let specialtyIds;
+    if (args.filterInput.specialtyName.length === 0) {
+      const generalPhysicianName = ApiConstants.GENERAL_PHYSICIAN.toString();
+      specialtyIds = await specialtiesRepo.findSpecialtyIdsByNames([generalPhysicianName]);
+    } else {
+      specialtyIds = await specialtiesRepo.findSpecialtyIdsByNames(args.filterInput.specialtyName);
+    }
+
+    if (specialtyIds.length === 1) {
+      finalSpecialtyDetails = await specialtiesRepo.findById(specialtyIds[0].id);
+      if (!finalSpecialtyDetails) {
+        throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
+      }
+    }
+
+    if (specialtyIds.length >= 1) {
+      args.filterInput.specialty = specialtyIds[0].id;
+      const {
+        consultNowDoctors,
+        bookNowDoctors,
+        doctorNextAvailSlots,
+        doctorsConsultModeAvailability,
+      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+
+      finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
+      finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
+      finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
+        doctorNextAvailSlots.doctorAvailalbeSlots
+      );
+      finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
+        doctorsConsultModeAvailability
+      );
+    }
+
+    if (specialtyIds.length >= 2) {
+      args.filterInput.specialty = specialtyIds[1].id;
+      const {
+        consultNowDoctors,
+        bookNowDoctors,
+        doctorNextAvailSlots,
+        doctorsConsultModeAvailability,
+      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+
+      finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
+      finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
+      finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
+        doctorNextAvailSlots.doctorAvailalbeSlots
+      );
+      finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
+        doctorsConsultModeAvailability
+      );
+    }
+
+    if (specialtyIds.length >= 3) {
+      args.filterInput.specialty = specialtyIds[2].id;
+      const {
+        consultNowDoctors,
+        bookNowDoctors,
+        doctorNextAvailSlots,
+        doctorsConsultModeAvailability,
+      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+
+      finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
+      finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
+      finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
+        doctorNextAvailSlots.doctorAvailalbeSlots
+      );
+      finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
+        doctorsConsultModeAvailability
+      );
+    }
+  } else {
+    if (!args.filterInput.specialty) {
+      throw new AphError(AphErrorMessages.FILTER_DOCTORS_ERROR, undefined, {});
+    }
+
+    finalSpecialtyDetails = await specialtiesRepo.findById(args.filterInput.specialty);
+    if (!finalSpecialtyDetails) {
+      throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
+    }
+
+    const {
+      consultNowDoctors,
+      bookNowDoctors,
+      doctorNextAvailSlots,
+      doctorsConsultModeAvailability,
+    } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+
+    finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
+    finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
+    finalDoctorNextAvailSlots = finalDoctorNextAvailSlots.concat(
+      doctorNextAvailSlots.doctorAvailalbeSlots
+    );
+    finalDoctorsConsultModeAvailability = finalDoctorsConsultModeAvailability.concat(
+      doctorsConsultModeAvailability
+    );
+  }
+
+  const finalSortedDoctors = finalConsultNowDoctors.concat(finalBookNowDoctors);
+
+  return {
+    doctors: finalSortedDoctors,
+    doctorsNextAvailability: finalDoctorNextAvailSlots,
+    doctorsAvailability: finalDoctorsConsultModeAvailability,
+    specialty: finalSpecialtyDetails,
+  };
+};
+
+const applyFilterLogic = async (
+  filterInput: FilterDoctorInput,
+  doctorsDb: Connection,
+  consultsDb: Connection
+) => {
   let filteredDoctors;
   const doctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
   let specialtyDetails;
-  const consultModeFilter = args.filterInput.consultMode
-    ? args.filterInput.consultMode
-    : ConsultMode.BOTH;
+  const consultModeFilter = filterInput.consultMode ? filterInput.consultMode : ConsultMode.BOTH;
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const consultsRepo = consultsDb.getCustomRepository(AppointmentRepository);
 
   try {
     const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
-    specialtyDetails = await specialtiesRepo.findById(args.filterInput.specialty);
+    specialtyDetails = await specialtiesRepo.findById(filterInput.specialty);
     if (!specialtyDetails) {
       throw new AphError(AphErrorMessages.INVALID_SPECIALTY_ID, undefined, {});
     }
 
-    filteredDoctors = await doctorRepository.filterDoctors(args.filterInput);
+    filteredDoctors = await doctorRepository.filterDoctors(filterInput);
     // console.log('basic filtered doctors: ',filteredDoctors)
 
     //apply sort algorithm
@@ -135,7 +278,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         return doctor.id;
       });
       const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
-        args.filterInput.patientId,
+        filterInput.patientId,
         filteredDoctorIds
       );
       const consultedDoctorIds = previousAppointments.map((appt) => {
@@ -155,8 +298,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 
     //preparin required input parameters based on availability filters selected
     const appointmentDateTimes: AppointmentDateTime[] = [];
-    const availabilityDates = args.filterInput.availability;
-    const selectedNow = args.filterInput.availableNow;
+    const availabilityDates = filterInput.availability;
+    const selectedNow = filterInput.availableNow;
     const selectedDates: string[] = [];
     let nowDateTime;
     if (selectedNow && selectedNow != '') {
@@ -303,7 +446,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       return doctor.id;
     });
     const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
-      args.filterInput.patientId,
+      filterInput.patientId,
       consultNowDocIds
     );
     const consultedDoctorIds = previousAppointments.map((appt) => {
@@ -323,7 +466,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       return doctor.id;
     });
     const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
-      args.filterInput.patientId,
+      filterInput.patientId,
       consultNowDocIds
     );
     const consultedDoctorIds = previousAppointments.map((appt) => {
@@ -336,13 +479,11 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
     });
   }
 
-  const finalSortedDoctors = consultNowDoctors.concat(bookNowDoctors);
-
   return {
-    doctors: finalSortedDoctors,
-    doctorsNextAvailability: doctorNextAvailSlots.doctorAvailalbeSlots,
-    doctorsAvailability: doctorsConsultModeAvailability,
-    specialty: specialtyDetails,
+    consultNowDoctors,
+    bookNowDoctors,
+    doctorNextAvailSlots,
+    doctorsConsultModeAvailability,
   };
 };
 

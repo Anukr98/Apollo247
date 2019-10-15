@@ -266,7 +266,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             return;
           }
           props.navigation.navigate(AppRoutes.UploadPrescription, {
-            disabledOption: 'CAMERA_AND_GALLERY' as EPrescriptionDisableOption,
             ePrescriptionsProp: selectedEPres,
           });
         }}
@@ -337,7 +336,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           if (selectedType == 'CAMERA_AND_GALLERY') {
             if (response.length == 0) return;
             props.navigation.navigate(AppRoutes.UploadPrescription, {
-              disabledOption: 'E-PRESCRIPTION' as EPrescriptionDisableOption,
               phyPrescriptionsProp: response,
             });
           } else {

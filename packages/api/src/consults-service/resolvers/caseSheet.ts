@@ -345,7 +345,9 @@ const getCaseSheet: Resolver<
   //check whether there is a senior doctor case-sheet
   const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(appointmentData.id);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
-  juniorDoctorNotes = caseSheetDetails.notes;
+
+  const juniorDoctorcaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);
+  if (juniorDoctorcaseSheet != null) juniorDoctorNotes = juniorDoctorcaseSheet.notes;
 
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(
@@ -412,6 +414,7 @@ const updateCaseSheet: Resolver<
     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
+
   const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb);
   const pdfDocument = generateRxPdfDocument(rxPdfData);
   const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);

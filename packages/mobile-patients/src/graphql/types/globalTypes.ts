@@ -101,6 +101,14 @@ export enum MEDICINE_TO_BE_TAKEN {
   BEFORE_FOOD = "BEFORE_FOOD",
 }
 
+export enum MEDICINE_UNIT {
+  CAPSULE = "CAPSULE",
+  DROPS = "DROPS",
+  ML = "ML",
+  NA = "NA",
+  TABLET = "TABLET",
+}
+
 export enum MedicalRecordType {
   EHR = "EHR",
   OPERATIVE_REPORT = "OPERATIVE_REPORT",
@@ -146,6 +154,11 @@ export enum Salutation {
   DR = "DR",
   MR = "MR",
   MRS = "MRS",
+}
+
+export enum SpecialtySearchType {
+  ID = "ID",
+  NAME = "NAME",
 }
 
 export enum TRANSFER_INITIATED_TYPE {
@@ -255,6 +268,8 @@ export interface DoctorPhysicalAvailabilityInput {
 export interface FilterDoctorInput {
   patientId?: string | null;
   specialty: string;
+  specialtySearchType?: SpecialtySearchType | null;
+  specialtyName?: (string | null)[] | null;
   city?: (string | null)[] | null;
   experience?: (Range | null)[] | null;
   availability?: (string | null)[] | null;

@@ -856,7 +856,7 @@ export const JDConsultRoom: React.FC = () => {
           variables: {
             UpdateCaseSheetInput: {
               symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-              notes: customNotes.length > 0 ? customNotes : null,
+              notes: notesJrd.length > 0 ? notesJrd : null,
               diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
               diagnosticPrescription:
                 diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,

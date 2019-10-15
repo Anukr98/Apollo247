@@ -153,11 +153,10 @@ export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
           {patient.photoUrl ? (
             <Avatar src={patient.photoUrl} className={classes.avatar} />
           ) : (
-            <Avatar className={classes.avatar}>
-              {id}
-              {(patient.firstName || '').charAt(0)}
-              {(patient.lastName || '').charAt(0)}
-            </Avatar>
+            <Avatar
+              src={require('images/no_photo_icon_round.svg')}
+              className={classes.avatar}
+            ></Avatar>
           )}
         </div>
         <div className={classes.cardContent}>

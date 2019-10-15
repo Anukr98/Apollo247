@@ -320,7 +320,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setDate={(date) => {
                     setDate(date);
                     // fetchSlots(date);//removed
-                    scrollToSlots(350);
                     // scrollViewRef.current &&
                     //   scrollViewRef.current.scrollTo &&
                     //   scrollViewRef.current.scrollTo({ x: 0, y: 465, animated: true });

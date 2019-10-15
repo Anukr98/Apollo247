@@ -7,7 +7,7 @@ import {
   getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor,
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { GetDoctorNextAvailableSlot_getDoctorNextAvailableSlot_doctorAvailalbeSlots } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { SEARCH_TYPE, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { saveSearch } from '@aph/mobile-patients/src/graphql/types/saveSearch';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import { Star } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   doctorLocation: {
-    marginBottom: 16,
     paddingTop: 2,
     paddingLeft: 0,
     ...theme.fonts.IBMPlexSansMedium(12),
@@ -106,11 +105,11 @@ type rowData = {
 };
 
 export interface DoctorCardProps extends NavigationScreenProps {
-  rowData:
-    | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors
-    | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors
-    | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
-    | null;
+  rowData: any;
+  // | SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors
+  // | getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors
+  // | getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor
+  // | null;
   onPress?: (doctorId: string) => void;
   displayButton?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -302,6 +301,17 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
 
   if (rowData) {
+    const doctorClinics = rowData.doctorHospital.filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+    const clinicAddress =
+      doctorClinics.length > 0 && rowData.doctorType !== DoctorType.PAYROLL
+        ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+            doctorClinics[0].facility.city
+          }`
+        : '';
+
     return (
       <TouchableOpacity
         key={rowData.id}
@@ -314,7 +324,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
           <View style={{ flexDirection: 'row' }}>
             <AvailabilityCapsule availableTime={availableTime} styles={styles.availableView} />
-            {/* {props.displayButton && 
+            {/* {props.displayButton &&
             availableInMin !== undefined ? (
               <CapsuleView
                 upperCase
@@ -328,8 +338,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               {rowData.photoUrl &&
               rowData.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
                 <Image
-                  style={{ width: 80, height: 80, borderRadius: 40 }}
+                  style={{ height: 80, borderRadius: 40 }}
                   source={{ uri: rowData.photoUrl }}
+                  resizeMode={'contain'}
                 />
               ) : (
                 <DoctorPlaceholderImage />
@@ -339,7 +350,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <Star style={{ height: 28, width: 28, position: 'absolute', top: 66, left: 30 }} />
             ) : null} */}
             </View>
-            <View style={{ flex: 1, paddingRight: 16 }}>
+            <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
               <Text style={styles.doctorNameStyles}>
                 Dr. {rowData.firstName} {rowData.lastName}
               </Text>
@@ -349,7 +360,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 {Number(rowData.experience) > 1 ? 'S' : ''}
               </Text>
               <Text style={styles.educationTextStyles}>{rowData.qualification}</Text>
-              <Text style={styles.doctorLocation}>{rowData.city}</Text>
+              {!!clinicAddress && <Text style={styles.doctorLocation}>{clinicAddress}</Text>}
             </View>
           </View>
           {props.displayButton && (

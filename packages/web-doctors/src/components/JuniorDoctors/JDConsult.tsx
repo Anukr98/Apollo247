@@ -214,7 +214,10 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                 }
               >
                 {!subscribeToVideo && !props.showVideoChat && (
-                  <img className={classes.minimizeImg} src={require('images/patient_01.png')} />
+                  <img
+                    className={classes.minimizeImg}
+                    src={require('images/DefaultPatient_Video.svg')}
+                  />
                 )}
                 {/* <div
                   className={
@@ -235,7 +238,11 @@ export const JDConsult: React.FC<ConsultProps> = (props) => {
                   <div>
                     {!subscribeToVideo && (
                       <img
-                        src={require('images/ic_patientchat.png')}
+                        src={
+                          patientDetails!.photoUrl
+                            ? patientDetails!.photoUrl
+                            : require('images/DefaultPatient_Video.svg')
+                        }
                         className={classes.minimizeVideoImg}
                       />
                     )}

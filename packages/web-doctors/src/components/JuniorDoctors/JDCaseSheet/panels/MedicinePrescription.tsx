@@ -471,6 +471,7 @@ interface errorObject {
   daySlotErr: boolean;
   tobeTakenErr: boolean;
   durationErr: boolean;
+  dosageErr: boolean;
 }
 
 let cancel: any;
@@ -490,10 +491,12 @@ export const MedicinePrescription: React.FC = () => {
     daySlotErr: false,
     tobeTakenErr: false,
     durationErr: false,
+    dosageErr: false,
   });
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [consumptionDuration, setConsumptionDuration] = React.useState<string>('');
   const [tabletsCount, setTabletsCount] = React.useState<number>(1);
+  const [medicineUnit, setMedicineUnit] = React.useState<string>('TABLET');
   const [daySlots, setDaySlots] = React.useState<SlotsObject[]>([
     {
       id: 'morning',
@@ -632,6 +635,7 @@ export const MedicinePrescription: React.FC = () => {
     setMedicineInstruction(selectedMedicinesArr![idx].medicineInstructions!);
     setConsumptionDuration(selectedMedicinesArr![idx].medicineConsumptionDurationInDays!);
     setTabletsCount(Number(selectedMedicinesArr![idx].medicineDosage!));
+    setMedicineUnit(selectedMedicinesArr![idx].medicineUnit!);
     setSelectedValue(selectedMedicinesArr![idx].medicineName!);
     setSelectedId(selectedMedicinesArr![idx].id!);
     setIsDialogOpen(true);
@@ -641,6 +645,7 @@ export const MedicinePrescription: React.FC = () => {
   };
   useEffect(() => {
     if (idx >= 0) {
+      console.log(11111111111111);
       setSelectedMedicines(selectedMedicines);
       setSelectedMedicinesArr(selectedMedicinesArr);
     }
@@ -650,6 +655,7 @@ export const MedicinePrescription: React.FC = () => {
   }
   useEffect(() => {
     if (selectedMedicinesArr && selectedMedicinesArr!.length) {
+      console.log(selectedMedicinesArr, selectedMedicinesArr.length);
       selectedMedicinesArr!.forEach((res: any) => {
         const inputParamsArr: any = {
           medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
@@ -659,6 +665,7 @@ export const MedicinePrescription: React.FC = () => {
           medicineToBeTaken: res.medicineToBeTaken,
           medicineName: res.medicineName,
           id: res.id,
+          medicineUnit: res.medicineUnit,
         };
         const inputParams: any = {
           id: res.medicineName.trim(),
@@ -672,6 +679,7 @@ export const MedicinePrescription: React.FC = () => {
             .join(',')
             .toLowerCase()}`,
           selected: true,
+          medicineUnit: res.medicineUnit,
         };
         // const xArr = selectedMedicinesArr;
         // xArr!.push(inputParamsArr);
@@ -697,7 +705,14 @@ export const MedicinePrescription: React.FC = () => {
     });
     setDaySlots(slots);
   };
-
+  const toBeTaken = (value: any) => {
+    const arry: any = [];
+    value.map((slot: any) => {
+      const x = slot.replace('_', ' ').toLowerCase();
+      arry.push(x);
+    });
+    return arry;
+  };
   const toBeTakenSlotsToggleAction = (slotId: string) => {
     const slots = toBeTakenSlots.map((slot: SlotsObject) => {
       if (slotId === slot.id) {
@@ -707,15 +722,33 @@ export const MedicinePrescription: React.FC = () => {
     });
     setToBeTakenSlots(slots);
   };
-  const selectedMedicinesHtml = selectedMedicines.map(
-    (_medicine: MedicineObject | null, index: number) => {
+  console.log(selectedMedicines);
+  const selectedMedicinesHtml = selectedMedicinesArr!.map(
+    (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
+      const duration = `${Number(medicine.medicineConsumptionDurationInDays)} days`;
+      const whenString =
+        medicine.medicineToBeTaken.length > 0
+          ? toBeTaken(medicine.medicineToBeTaken)
+              .join(', ')
+              .toLowerCase()
+          : '';
+      const unitHtml =
+        medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
+          ? medicine.medicineUnit.toLowerCase()
+          : 'times';
+      const timesString =
+        medicine.medicineTimings.length > 0
+          ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
+          : '';
       return (
         <div key={index} className={classes.medicineBox}>
-          <div key={medicine.id}>
-            <div className={classes.medicineName}>{medicine.name}</div>
+          <div key={_uniqueId('med_id_')}>
+            <div className={classes.medicineName}>{medicine.medicineName}</div>
             <div className={classes.medicineInfo}>
-              {medicine.times} times a day ({medicine.daySlots}) for {medicine.duration}
+              {/*medicine.medicineTimings.length*/}
+              {medicine.medicineDosage} {unitHtml} a day {timesString.length > 0 && timesString} for{' '}
+              {duration} {whenString.length > 0 && whenString}
             </div>
           </div>
           <div className={classes.actionGroup}>
@@ -759,18 +792,50 @@ export const MedicinePrescription: React.FC = () => {
       }
       return slot.selected !== false;
     });
-    if (daySlotsSelected.length === 0) {
-      setErrorState({ ...errorState, daySlotErr: true, tobeTakenErr: false, durationErr: false });
+    if ((tabletsCount && isNaN(Number(tabletsCount))) || Number(tabletsCount) < 1) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: false,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: true,
+      });
+    } /* else if (daySlotsSelected.length === 0) {
+      setErrorState({
+        ...errorState,
+        daySlotErr: true,
+        tobeTakenErr: false,
+        durationErr: false,
+        dosageErr: false,
+      });
     } else if (isTobeTakenSelected.length === 0) {
-      setErrorState({ ...errorState, tobeTakenErr: true, daySlotErr: false, durationErr: false });
-    } else if (
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: true,
+        daySlotErr: false,
+        durationErr: false,
+        dosageErr: false,
+      });
+    }*/ else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
       Number(consumptionDuration) < 1
     ) {
-      setErrorState({ ...errorState, durationErr: true, daySlotErr: false, tobeTakenErr: false });
+      setErrorState({
+        ...errorState,
+        durationErr: true,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
     } else {
-      setErrorState({ ...errorState, durationErr: false, daySlotErr: false, tobeTakenErr: false });
+      setErrorState({
+        ...errorState,
+        durationErr: false,
+        daySlotErr: false,
+        tobeTakenErr: false,
+        dosageErr: false,
+      });
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
         medicineDosage: tabletsCount,
@@ -779,6 +844,7 @@ export const MedicinePrescription: React.FC = () => {
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
         id: selectedId,
+        medicineUnit: medicineUnit,
       };
       console.log(selectedValue);
 
@@ -790,6 +856,7 @@ export const MedicinePrescription: React.FC = () => {
         daySlots: `${daySlotsArr.join(',').toLowerCase()}`,
         duration: `${consumptionDuration} day(s) ${toBeTaken(toBeTakenSlotsArr).join(',')}`,
         selected: true,
+        medicineUnit: medicineUnit,
       };
       if (isUpdate) {
         const xArr = selectedMedicinesArr;
@@ -806,6 +873,7 @@ export const MedicinePrescription: React.FC = () => {
         x.push(inputParams);
         setSelectedMedicines(x);
       }
+      console.log(selectedMedicines);
       setIsDialogOpen(false);
       setIsUpdate(false);
       setShowDosage(false);
@@ -820,21 +888,13 @@ export const MedicinePrescription: React.FC = () => {
         return slot;
       });
       setDaySlots(dayslots);
-
       setMedicineInstruction('');
       setConsumptionDuration('');
       setTabletsCount(1);
       setSelectedValue('');
       setSelectedId('');
+      setMedicineUnit('TABLET');
     }
-  };
-  const toBeTaken = (value: any) => {
-    const arry: any = [];
-    value.map((slot: any) => {
-      const x = slot.replace('_', ' ').toLowerCase();
-      arry.push(x);
-    });
-    return arry;
   };
 
   const tobeTakenHtml = toBeTakenSlots.map((_tobeTakenitem: SlotsObject | null, index: number) => {
@@ -987,7 +1047,7 @@ export const MedicinePrescription: React.FC = () => {
                       });
                       setShowDosage(true);
                       setSelectedValue(medicine);
-                      setSelectedId('IB01');
+                      setSelectedId('');
                       setLoading(false);
                       setMedicine('');
                     }}
@@ -998,16 +1058,30 @@ export const MedicinePrescription: React.FC = () => {
               </div>
             ) : (
               <div>
-                <Scrollbars autoHide={true} style={{ height: 'calc(54vh' }}>
+                <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
                   <div className={classes.dialogContent}>
                     <div className={classes.sectionGroup}>
-                      {/** 
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
                             Dosage*
                           </div>
-                          <AphTextField />
+                          <AphTextField
+                            inputProps={{ maxLength: 6 }}
+                            value={tabletsCount}
+                            onChange={(event: any) => {
+                              setTabletsCount(event.target.value);
+                            }}
+                          />
+                          {errorState.dosageErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please Enter Dosage(Number only)
+                            </FormHelperText>
+                          )}
                         </div>
                         <div className={classes.divCol}>
                           <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
@@ -1015,6 +1089,7 @@ export const MedicinePrescription: React.FC = () => {
                           </div>
                           <div className={classes.unitsSelect}>
                             <AphSelect
+                              value={medicineUnit}
                               MenuProps={{
                                 classes: {
                                   paper: classes.menuPaper,
@@ -1028,23 +1103,33 @@ export const MedicinePrescription: React.FC = () => {
                                   horizontal: 'right',
                                 },
                               }}
+                              onChange={(e: any) => {
+                                setMedicineUnit(e.target.value as string);
+                              }}
                             >
-                              <MenuItem classes={{ selected: classes.menuSelected }}>
+                              <MenuItem value="TABLET" classes={{ selected: classes.menuSelected }}>
                                 tablet
                               </MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }}>
+                              <MenuItem
+                                value="CAPSULE"
+                                classes={{ selected: classes.menuSelected }}
+                              >
                                 capsule
                               </MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }}>ml</MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }}>
+                              <MenuItem value="ML" classes={{ selected: classes.menuSelected }}>
+                                ml
+                              </MenuItem>
+                              <MenuItem value="DROPS" classes={{ selected: classes.menuSelected }}>
                                 drops
                               </MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }}>NA</MenuItem>
+                              <MenuItem value="NA" classes={{ selected: classes.menuSelected }}>
+                                NA
+                              </MenuItem>
                             </AphSelect>
                           </div>
                         </div>
                       </div>
-                      **/}
+                      {/** 
                       <div className={classes.numberTablets}>
                         <img
                           src={require('images/ic_minus.svg')}
@@ -1066,8 +1151,8 @@ export const MedicinePrescription: React.FC = () => {
                           }}
                         />
                       </div>
+                      **/}
                     </div>
-                    {/**
                     <div className={classes.sectionGroup}>
                       <div className={classes.colGroup}>
                         <div className={classes.divCol}>
@@ -1091,7 +1176,7 @@ export const MedicinePrescription: React.FC = () => {
                             >
                               Please Enter Duration in days(Number only)
                             </FormHelperText>
-                          )}{' '}
+                          )}
                         </div>
                         <div className={classes.divCol}>
                           <div className={classes.sectionTitle}>To be taken</div>
@@ -1109,47 +1194,6 @@ export const MedicinePrescription: React.FC = () => {
                           )}
                         </div>
                       </div>
-                    </div>
-                    **/}
-                    <div className={classes.sectionGroup}>
-                      <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                        Duration of Consumption*
-                      </div>
-                      <div className={`${classes.numberTablets}`}>
-                        <AphTextField
-                          placeholder=""
-                          inputProps={{ maxLength: 6 }}
-                          value={consumptionDuration}
-                          onChange={(event: any) => {
-                            setConsumptionDuration(event.target.value);
-                          }}
-                          error={errorState.durationErr}
-                        />
-                        {errorState.durationErr && (
-                          <FormHelperText
-                            className={classes.helpText}
-                            component="div"
-                            error={errorState.durationErr}
-                          >
-                            Please Enter Duration in days(Number only)
-                          </FormHelperText>
-                        )}{' '}
-                      </div>
-                    </div>
-                    <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>To be taken</div>
-                      <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
-                        {tobeTakenHtml}
-                      </div>
-                      {errorState.tobeTakenErr && (
-                        <FormHelperText
-                          className={classes.helpText}
-                          component="div"
-                          error={errorState.tobeTakenErr}
-                        >
-                          Please select to be taken.
-                        </FormHelperText>
-                      )}
                     </div>
                     <div className={classes.sectionGroup}>
                       <div className={classes.sectionTitle}>Time of the Day</div>

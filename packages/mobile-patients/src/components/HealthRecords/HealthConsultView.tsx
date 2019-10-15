@@ -28,6 +28,7 @@ import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { AppConfig } from '../../strings/AppConfig';
 import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
 import RNFetchBlob from 'react-native-fetch-blob';
+import { MEDICINE_UNIT } from '../../graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -296,8 +297,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                 return (
                                   <View style={{ flex: 1, paddingRight: 20 }}>
                                     <Text style={styles.descriptionTextStyles}>
-                                      {value.symptom},{value.since},{value.howOften},
-                                      {value.severity}
+                                      {value.symptom}
                                     </Text>
                                   </View>
                                 );
@@ -379,12 +379,28 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                     if (!medicineDetails.is_in_stock) {
                                       return null;
                                     }
+
+                                    const _qty =
+                                      medPrescription[index]!.medicineUnit ==
+                                        MEDICINE_UNIT.CAPSULE ||
+                                      medPrescription[index]!.medicineUnit == MEDICINE_UNIT.TABLET
+                                        ? ((medPrescription[index]!.medicineTimings || []).length ||
+                                            1) *
+                                          parseInt(
+                                            medPrescription[index]!
+                                              .medicineConsumptionDurationInDays || '1'
+                                          )
+                                        : 1;
+                                    const qty = Math.ceil(
+                                      _qty / parseInt(medicineDetails.mou || '1')
+                                    );
+
                                     return {
                                       id: medicineDetails!.sku!,
                                       mou: medicineDetails.mou,
                                       name: medicineDetails!.name,
                                       price: medicineDetails!.price,
-                                      quantity: parseInt(medPrescription[index]!.medicineDosage!),
+                                      quantity: qty,
                                       prescriptionRequired:
                                         medicineDetails.is_prescription_required == '1',
                                     } as ShoppingCartItem;

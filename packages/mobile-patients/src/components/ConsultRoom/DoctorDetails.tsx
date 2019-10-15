@@ -19,12 +19,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/getDoctorDetailsById';
 import { ConsultMode, DoctorType } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import {
-  g,
-  timeDiffFromNow,
-  getNetStatus,
-  nextAvailability,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, timeDiffFromNow, getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -391,7 +386,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
       });
       const clinicAddress =
         doctorClinics.length > 0 && doctorDetails.doctorType !== DoctorType.PAYROLL
-          ? `${doctorClinics[0].facility.name}, ${doctorClinics[0].facility.city}`
+          ? `${doctorClinics[0].facility.name}${doctorClinics[0].facility.name ? ', ' : ''}${
+              doctorClinics[0].facility.city
+            }`
           : '';
 
       return (
@@ -429,13 +426,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     Rs. {doctorDetails.onlineConsultationFees}
                   </Text>
                   <AvailabilityCapsule availableTime={availableTime} />
-                  {/* {!!availableTime ? (
-                    <CapsuleView
-                      upperCase
-                      title={nextAvailability(availableTime)}
-                      isActive={availableInMin && availableInMin <= 15 ? true : false}
-                    />
-                  ) : null} */}
                 </View>
                 {doctorDetails.doctorType !== DoctorType.PAYROLL && (
                   <View style={styles.horizontalSeparatorStyle} />
@@ -448,15 +438,6 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                         Rs. {doctorDetails.physicalConsultationFees}
                       </Text>
                       <AvailabilityCapsule availableTime={physicalAvailableTime} />
-                      {/* {!!physicalAvailableTime ? (
-                        <CapsuleView
-                          upperCase
-                          title={nextAvailability(physicalAvailableTime)}
-                          isActive={
-                            availableInMinPhysical && availableInMinPhysical <= 15 ? true : false
-                          }
-                        />
-                      ) : null} */}
                     </>
                   )}
                 </View>

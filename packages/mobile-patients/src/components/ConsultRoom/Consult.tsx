@@ -293,29 +293,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         setshowSpinner(false);
         console.log('Error occured', e);
       });
-
-    // const { data, error } = useQuery<getPatinetAppointments>(GET_PATIENT_APPOINTMENTS, {
-    //   fetchPolicy: 'no-cache',
-    //   variables: {
-    //     patientAppointmentsInput: inputData,
-    //   },
-    // });
-
-    // if (error) {
-    //   console.log('error', error);
-    //   setshowSpinner(false);
-    // } else {
-    //   console.log(data, 'GET_PATIENT_APPOINTMENTS');
-    //   if (
-    //     data &&
-    //     data.getPatinetAppointments &&
-    //     data.getPatinetAppointments.patinetAppointments &&
-    //     consultations !== data.getPatinetAppointments.patinetAppointments
-    //   ) {
-    //     setconsultations(data.getPatinetAppointments.patinetAppointments);
-    //     setshowSpinner(false);
-    //   }
-    // }
   };
 
   const Popup = () => (
@@ -520,7 +497,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 );
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
           const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
-          console.log('dateIsAfterconsult', dateIsAfterconsult);
+
           var day1 = moment(appointmentDateTime).add(7, 'days');
 
           var day2 = moment(new Date());
@@ -608,7 +585,24 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       )}
 
                       <View style={styles.separatorStyle} />
-                      {item.isFollowUp == 'true' ? null : (
+                      {item.isFollowUp == 'true' ? (
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                          }}
+                        >
+                          <Text style={styles.consultTextStyles}>
+                            {item.appointmentType === 'ONLINE' ? 'Online' : 'Physical'} Consultation
+                          </Text>
+                          {item.appointmentType === 'ONLINE' ? (
+                            <OnlineConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                          ) : (
+                            <PhysicalConsult style={{ marginTop: 13, height: 15, width: 15 }} />
+                          )}
+                        </View>
+                      ) : (
                         <View
                           style={{
                             flexDirection: 'row',

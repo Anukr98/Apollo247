@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, getTime } from 'date-fns';
 import path from 'path';
 import PDFDocument from 'pdfkit';
 import {
@@ -43,7 +43,11 @@ export const convertCaseSheetToRxPdfData = async (
       const name = csRx.medicineName;
       const ingredients = [] as string[];
       const timings = csRx.medicineTimings.map(_capitalize).join(', ');
-      const frequency = `${csRx.medicineDosage} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
+      const frequency = `${
+        csRx.medicineDosage
+      } ${csRx.medicineUnit.toLowerCase()} (${timings}) for ${
+        csRx.medicineConsumptionDurationInDays
+      } days`;
       const instructions = csRx.medicineInstructions;
       return { name, ingredients, frequency, instructions } as PrescriptionData;
     });
@@ -353,7 +357,7 @@ export const uploadRxPdf = async (
   caseSheetId: string,
   pdfDoc: PDFKit.PDFDocument
 ) => {
-  const name = `${caseSheetId}.pdf`;
+  const name = `${caseSheetId}_${getTime(new Date())}.pdf`;
   const filePath = loadAsset(name);
   pdfDoc.pipe(fs.createWriteStream(filePath));
   await delay(300);

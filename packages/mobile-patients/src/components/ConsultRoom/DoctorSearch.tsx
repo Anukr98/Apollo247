@@ -119,10 +119,10 @@ const styles = StyleSheet.create({
 export interface DoctorSearchProps extends NavigationScreenProps {}
 
 export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
-  const params = props.navigation.state.params ? props.navigation.state.params!.searchText : '';
+  // const params = props.navigation.state.params ? props.navigation.state.params!.searchText : '';
   // const MoveDoctor = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
 
-  const [searchText, setSearchText] = useState<string>(params);
+  const [searchText, setSearchText] = useState<string>('');
   const [pastSearch, setPastSearch] = useState<boolean>(true);
   const [needHelp, setNeedHelp] = useState<boolean>(true);
   const [displaySpeialist, setdisplaySpeialist] = useState<boolean>(true);
@@ -317,12 +317,12 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    const movedata = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
-    if (movedata == 'MoveDoctor') {
-      props.navigation.push(AppRoutes.SymptomChecker);
-    } else {
-      props.navigation.goBack();
-    }
+    // const movedata = props.navigation.state.params ? props.navigation.state.params!.MoveDoctor : '';
+    // if (movedata == 'MoveDoctor') {
+    //   props.navigation.push(AppRoutes.SymptomChecker);
+    // } else {
+    props.navigation.goBack();
+    // }
     return false;
   };
   const renderSearch = () => {
@@ -653,8 +653,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 });
               }}
             >
-              {data ? console.log(data, 'savesearch doctor data ') : null}
-              {error ? console.log(error, 'savesearch doctor error') : null}
+              {/* {data ? console.log(data, 'savesearch doctor data ') : null}
+              {error ? console.log(error, 'savesearch doctor error') : null} */}
             </DoctorCard>
           )}
         </Mutation>
@@ -796,9 +796,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               keyboardDismissMode="on-drag"
               onScrollBeginDrag={Keyboard.dismiss}
             >
-              {props.navigation.state.params!.MoveDoctor == 'MoveDoctor'
-                ? null
-                : renderPastSearch()}
+              {// props.navigation.state.params!.MoveDoctor == 'MoveDoctor'
+              // ? null
+              // :
+              renderPastSearch()}
               {renderDoctorSearches()}
               {renderSpecialist()}
               {searchText.length > 2 &&

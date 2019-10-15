@@ -621,7 +621,11 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             <Paper className={classes.serviceItem}>
               <div className={classes.avatarBlock}>
                 <img alt="" src={require('images/no_photo.png')} className={classes.bigAvatar} />
-                <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
+                {doctor.doctorType === 'STAR_APOLLO' ? (
+                  <img alt="" src={require('images/ic_star.svg')} className={classes.starImg} />
+                ) : (
+                  ''
+                )}
               </div>
               <Typography variant="h4">
                 {doctor.salutation!.charAt(0).toUpperCase()}

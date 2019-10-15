@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput, AphButton } from '@aph/web-ui-components';
 import { Consult } from 'components/Consult';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -358,6 +359,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
   };
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
+    const { patientDetails } = useContext(CaseSheetContext);
     if (
       rowData.id === doctorId &&
       rowData.message !== videoCallMsg &&
@@ -414,7 +416,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           <div className={rowData.duration ? classes.callMsg : classes.petient}>
             {rightComponent == 1 && !rowData.duration && (
               <span className={classes.boldTxt}>
-                <img className={classes.patientIcon} src={require('images/ic_patientchat.png')} />
+                <img
+                  className={classes.patientIcon}
+                  src={
+                    patientDetails!.photoUrl
+                      ? patientDetails!.photoUrl
+                      : require('images/no_photo_icon_round.svg')
+                  }
+                />
               </span>
             )}
             {rowData.duration === '00 : 00' ? (
@@ -645,11 +654,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   inputProps={{ type: 'text' }}
                   placeholder="Type here..."
                   value={messageText}
-                  // onKeyPress={(e: any) => {
-                  //   if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
-                  //     send();
-                  //   }
-                  // }}
+                  onKeyPress={(e: any) => {
+                    if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                      send();
+                    }
+                  }}
                   onChange={(event: any) => {
                     setMessageText(event.currentTarget.value);
                   }}

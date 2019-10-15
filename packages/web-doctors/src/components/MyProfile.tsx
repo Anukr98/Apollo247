@@ -878,7 +878,6 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                     e.preventDefault();
                   }
                 }}
-                startAdornment={<InputAdornment position="start"></InputAdornment>}
               />
               {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? (
                 <FormHelperText

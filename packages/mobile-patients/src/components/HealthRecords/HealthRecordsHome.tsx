@@ -100,13 +100,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
-  const [bookFollowUp, setBookFollowUp] = useState<boolean>(true);
   const [isfollowcount, setIsfollowucount] = useState<number>(0);
-  const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
 
-  const [doctorId, setDoctorId] = useState<any>();
-  const [doctorInfo, setDoctorInfo] = useState<any>();
-  const [appointmentFollowUpId, setAppointmentFollowUpId] = useState<any>();
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -150,14 +145,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             ...c,
           };
         });
-
-        // setTabs([
-        //   ...tabs.map((item) =>
-        //     item.title == tabs[0].title
-        //       ? { ...item, count: `${consults.length + medOrders.length}` }
-        //       : item
-        //   ),
-        // ]);
         setselectedTab(`${tabs[0].title}`);
 
         medOrders.forEach((c) => {
@@ -166,7 +153,22 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             ...c,
           };
         });
-        setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
+        const array = Object.keys(consultsAndMedOrders)
+          .map((i) => consultsAndMedOrders[i])
+          .sort(
+            (a: any, b: any) =>
+              moment(b.bookingDate || b.quoteDateTime)
+                .toDate()
+                .getTime() -
+              moment(a.bookingDate || a.quoteDateTime)
+                .toDate()
+                .getTime()
+          );
+
+        console.log('sort', array);
+        setarrayValues(array);
+        //setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
+
         setLoading(false);
       })
       .catch((e) => {
@@ -192,13 +194,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         loading && setLoading(false);
         const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
         setmedicalRecords(records);
-        // setTabs([
-        //   ...tabs.map((item) =>
-        //     item.title == tabs[1].title
-        //       ? { ...item, count: `${data.getPatientMedicalRecords!.medicalRecords!.length}` }
-        //       : item
-        //   ),
-        // ]);
       })
       .catch((error) => {
         loading && setLoading(false);
@@ -207,10 +202,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       });
   }, []);
 
-  // useEffect(() => {
-  //   fetchPastData();
-  //   fetchData();
-  // }, []);
+  useEffect(() => {
+    fetchPastData();
+    fetchData();
+  }, []);
 
   // useEffect(() => {
   //   fetchData();
@@ -321,34 +316,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     );
   };
 
-  // const consultionType = (id: string, filter: ConsultMode) => {
-  //   doctorsAvailability;
-  //   let filterType = false;
-  //   doctorsAvailability &&
-  //     doctorsAvailability.forEach((element) => {
-  //       if (
-  //         element &&
-  //         element.doctorId === id &&
-  //         element.availableModes &&
-  //         element.availableModes.includes(filter)
-  //       ) {
-  //         filterType = true;
-  //       }
-  //     });
-  //   return filterType;
-  // };
-
   const renderConsults = () => {
-    // const arrayValuesFilter =
-    //   filterData[0].selectedOptions && filterData[0].selectedOptions.length
-    //     ? arrayValues.filter(
-    //         (item: any) => {
-    //           return consultionType(item.appointmentType);
-    //         }
-    //         // item && item.appointmentType && filterData[0].selectedOptions.split(' ') ===
-    //       )
-    //     : arrayValues;
-    // console.log(arrayValuesFilter, 'arrayValues', arrayValues);
     return (
       <View>
         {arrayValues && arrayValues.length !== 0 && renderFilter()}
@@ -446,10 +414,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
-        console.log('checkIfFollowUpBooked', data);
-        console.log('checkIfFollowUpBookedcount', data.checkIfFollowUpBooked);
         setIsfollowucount(data.checkIfFollowUpBooked);
-        console.log('setIsfollowucount', data.checkIfFollowUpBooked);
         setdisplayoverlay(true);
         props.navigation.push(AppRoutes.ConsultDetails, {
           CaseSheet: item.id,

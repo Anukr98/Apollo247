@@ -132,7 +132,7 @@ export const AllPatient: React.FC<AllPatientProps> = (props) => {
         const photoUrl =
           patient! && patient!.photoUrl && patient!.photoUrl !== null
             ? patient!.photoUrl
-            : require('images/ic_patientchat.png');
+            : require('images/no_photo_icon_round.svg');
         return (
           <div key={patient.patientid}>
             <Card

@@ -93,13 +93,11 @@ const styles = StyleSheet.create({
 
 export interface UploadPrescriptionProps
   extends NavigationScreenProps<{
-    disabledOption: EPrescriptionDisableOption;
     phyPrescriptionsProp: PhysicalPrescription[];
     ePrescriptionsProp: EPrescription[];
   }> {}
 
 export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => {
-  const disabledOption = props.navigation.getParam('disabledOption');
   const phyPrescriptionsProp = props.navigation.getParam('phyPrescriptionsProp') || [];
   const ePrescriptionsProp = props.navigation.getParam('ePrescriptionsProp') || [];
 
@@ -462,7 +460,11 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       <UploadPrescriprionPopup
         isVisible={ShowPopop}
         disabledOption={
-          EPrescriptions.length == 0 && PhysicalPrescriptions.length == 0 ? 'NONE' : disabledOption
+          EPrescriptions.length == 0 && PhysicalPrescriptions.length == 0
+            ? 'NONE'
+            : EPrescriptions.length > 0
+            ? 'CAMERA_AND_GALLERY'
+            : 'E-PRESCRIPTION'
         }
         type="nonCartFlow"
         optionTexts={{

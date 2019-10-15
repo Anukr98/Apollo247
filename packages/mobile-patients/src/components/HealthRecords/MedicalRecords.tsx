@@ -1,18 +1,12 @@
 import { HealthMedicineCard } from '@aph/mobile-patients/src/components/HealthRecords/HealthMedicineCard';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { AddFileIcon, NoData } from '@aph/mobile-patients/src/components/ui/Icons';
-import { DELETE_PATIENT_MEDICAL_RECORD } from '@aph/mobile-patients/src/graphql/profiles';
-import { getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords } from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import {
-  deletePatientMedicalRecord,
-  deletePatientMedicalRecordVariables,
-} from '../../graphql/types/deletePatientMedicalRecord';
 import { Button } from '../ui/Button';
 
 const styles = StyleSheet.create({
@@ -110,7 +104,6 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
                         });
                       }}
                       onPressDelete={() => {
-                        //  props.renderDeleteMedicalOrder(item.id);
                         Alert.alert(
                           'Delete Record',
                           '',

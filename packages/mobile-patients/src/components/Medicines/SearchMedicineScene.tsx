@@ -42,6 +42,7 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { handleGraphQlError, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -139,7 +140,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
-
+  const { showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -186,7 +187,10 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;
     aphConsole.log({ errorResponse: e.response, error }); //remove this line later
-    Alert.alert('Alert', error || 'Unknown error occurred.');
+    showAphAlert!({
+      title: `Uh oh.. :(`,
+      description: `Something went wrong.`,
+    });
   };
 
   const onSearchMedicine = (_searchText: string) => {
@@ -233,7 +237,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     is_prescription_required,
   }: MedicineProduct) => {
     savePastSeacrh(sku, name).catch((e) => {
-      handleGraphQlError(e);
+      aphConsole.log({ e });
     });
     addCartItem &&
       addCartItem({
@@ -434,7 +438,10 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       pinCodeServiceabilityApi(text)
         .then(({ data: { Availability } }) => {
           if (!Availability) {
-            Alert.alert('Alert', 'Sorry! This pincode is not serviceable.');
+            showAphAlert!({
+              title: `Uh oh.. :(`,
+              description: `Sorry! This pincode is not serviceable.`,
+            });
           }
         })
         .catch((e) => {

@@ -62,6 +62,14 @@ export enum MEDICINE_TO_BE_TAKEN {
   BEFORE_FOOD = "BEFORE_FOOD",
 }
 
+export enum MEDICINE_UNIT {
+  CAPSULE = "CAPSULE",
+  DROPS = "DROPS",
+  ML = "ML",
+  NA = "NA",
+  TABLET = "TABLET",
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",

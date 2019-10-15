@@ -20,13 +20,13 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   const onSubmitClick = async () => {
     const ss = await $Generator({ type: 'showSpeciality' });
 
-    let speciality = '';
+    let specialities = [];
     if (ss && ss.specialists && ss.specialists.length) {
-      console.log(ss.specialists[0].speciality);
-      speciality = ss.specialists[0].speciality;
+      specialities = ss.specialists.map((item: { speciality: string }) => item.speciality.trim());
+      console.log(specialities, 'specialities');
     }
-    props.navigation.push(AppRoutes.DoctorSearch, {
-      searchText: speciality,
+    props.navigation.push(AppRoutes.DoctorSearchListing, {
+      specialities: specialities,
       MoveDoctor: 'MoveDoctor',
     });
   };

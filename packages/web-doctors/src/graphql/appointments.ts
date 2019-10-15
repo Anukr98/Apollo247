@@ -21,6 +21,7 @@ export const GET_DOCTOR_APPOINTMENTS = gql`
           id
           firstName
           lastName
+          photoUrl
         }
       }
       newPatientsList

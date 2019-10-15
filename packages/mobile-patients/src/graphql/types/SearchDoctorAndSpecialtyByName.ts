@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Salutation } from "./globalTypes";
+import { Salutation, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SearchDoctorAndSpecialtyByName
@@ -11,6 +11,21 @@ import { Salutation } from "./globalTypes";
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty {
   __typename: "DoctorSpecialties";
   name: string;
+}
+
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital_facility {
+  __typename: "Facility";
+  id: string;
+  name: string;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  city: string | null;
+}
+
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital_facility;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors {
@@ -25,6 +40,8 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   qualification: string | null;
   city: string | null;
   photoUrl: string | null;
+  doctorType: DoctorType;
+  doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital[];
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctorsNextAvailability {
@@ -48,6 +65,22 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
   name: string;
 }
 
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_doctorHospital_facility {
+  __typename: "Facility";
+  id: string;
+  name: string;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  city: string | null;
+  facilityType: string;
+}
+
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_doctorHospital_facility;
+}
+
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors {
   __typename: "DoctorDetails";
   id: string;
@@ -60,6 +93,8 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
   qualification: string | null;
   city: string | null;
   photoUrl: string | null;
+  doctorType: DoctorType;
+  doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_doctorHospital[];
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctorsNextAvailability {
@@ -90,6 +125,22 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_o
   name: string;
 }
 
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_doctorHospital_facility {
+  __typename: "Facility";
+  id: string;
+  name: string;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  city: string | null;
+  facilityType: string;
+}
+
+export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_doctorHospital_facility;
+}
+
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors {
   __typename: "DoctorDetails";
   id: string;
@@ -102,6 +153,8 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_o
   qualification: string | null;
   city: string | null;
   photoUrl: string | null;
+  doctorType: DoctorType;
+  doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_doctorHospital[];
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctorsNextAvailability {

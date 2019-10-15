@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { FilterDoctorInput, Salutation, ConsultMode } from "./globalTypes";
+import { FilterDoctorInput, Salutation, ConsultMode, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getDoctorsBySpecialtyAndFilters
@@ -19,6 +19,22 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   consultMode: ConsultMode;
 }
 
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital_facility {
+  __typename: "Facility";
+  id: string;
+  name: string;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  city: string | null;
+  facilityType: string;
+}
+
+export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital_facility;
+}
+
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors {
   __typename: "DoctorDetails";
   id: string;
@@ -33,6 +49,8 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   onlineConsultationFees: string;
   languages: string | null;
   consultHours: (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_consultHours | null)[] | null;
+  doctorType: DoctorType;
+  doctorHospital: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_doctorHospital[];
 }
 
 export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability {
