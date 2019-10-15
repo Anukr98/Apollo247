@@ -4,7 +4,6 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { addMinutes, format, differenceInMinutes, addDays } from 'date-fns';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 export const getAvailableSlotsTypeDefs = gql`
   input DoctorAvailabilityInput {
@@ -42,7 +41,7 @@ const getDoctorAvailableSlots: Resolver<
   const weekDay = format(DoctorAvailabilityInput.availableDate, 'EEEE').toUpperCase();
   const timeSlots = await consultHourRep.getConsultHours(DoctorAvailabilityInput.doctorId, weekDay);
   let availableSlots: string[] = [];
-  let availableSlotsReturn: string[] = [];
+  //let availableSlotsReturn: string[] = [];
   if (timeSlots && timeSlots.length > 0) {
     timeSlots.map((timeSlot) => {
       let st = `${DoctorAvailabilityInput.availableDate.toDateString()} ${timeSlot.startTime.toString()}`;
@@ -61,7 +60,7 @@ const getDoctorAvailableSlots: Resolver<
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
       //console.log(slotsCount, 'slots count');
       //console.log(startTime, 'slot start time');
-      availableSlotsReturn = Array(slotsCount)
+      Array(slotsCount)
         .fill(0)
         .map(() => {
           const stTime = startTime;
@@ -111,32 +110,12 @@ const getDoctorAvailableSlots: Resolver<
       }
     });
   }
-  const bciRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
-  const blockedSlots = await bciRepo.getBlockedSlots(
+  const doctorBblockedSlots = await appts.getDoctorBlockedSlots(
+    DoctorAvailabilityInput.doctorId,
     DoctorAvailabilityInput.availableDate,
-    DoctorAvailabilityInput.doctorId
+    doctorsDb
   );
-  const doctorBblockedSlots: string[] = [];
-  if (blockedSlots.length > 0) {
-    blockedSlots.map((blockedSlot) => {
-      const blockedSlotsCount =
-        (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * 4;
-      let slot = blockedSlot.start;
-      console.log(
-        blockedSlotsCount,
-        'blocked count',
-        differenceInMinutes(blockedSlot.end, blockedSlot.start)
-      );
-      Array(blockedSlotsCount)
-        .fill(0)
-        .map(() => {
-          const genBlockSlot =
-            format(slot, 'yyyy-MM-dd') + 'T' + format(slot, 'hh:mm') + ':00.000Z';
-          doctorBblockedSlots.push(genBlockSlot);
-          slot = addMinutes(slot, 15);
-        });
-    });
-    console.log(doctorBblockedSlots, 'doctor slots');
+  if (doctorBblockedSlots.length > 0) {
     availableSlots = availableSlots.filter((val) => !doctorBblockedSlots.includes(val));
   }
 
