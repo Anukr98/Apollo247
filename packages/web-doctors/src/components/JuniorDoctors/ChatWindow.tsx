@@ -389,8 +389,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
+        resetMessagesAction();
         // console.log(message.message);
         if (
           !showVideoChat &&
