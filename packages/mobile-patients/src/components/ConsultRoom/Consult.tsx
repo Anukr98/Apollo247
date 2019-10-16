@@ -38,6 +38,7 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { STATUS } from '../../graphql/types/globalTypes';
 
 const { width, height } = Dimensions.get('window');
 
@@ -681,48 +682,68 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         </Text>
                       </View>
                     </View>
-                  ) : dateIsAfterconsult ? (
-                    <Text style={styles.prepareForConsult}>{string.common.prepareForConsult}</Text>
+                  ) : item.status == STATUS.PENDING || dateIsAfterconsult ? (
+                    <TouchableOpacity
+                      activeOpacity={1}
+                      onPress={() => {
+                        props.navigation.navigate(AppRoutes.ChatRoom, {
+                          data: item,
+                        });
+                      }}
+                    >
+                      <Text style={styles.prepareForConsult}>
+                        {string.common.prepareForConsult}
+                      </Text>
+                    </TouchableOpacity>
                   ) : (
                     <View>
-                      <Text style={[styles.prepareForConsult, { paddingBottom: -16 }]}>
-                        CHAT WITH DOCTOR
-                      </Text>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignSelf: 'flex-end',
-                          paddingBottom: -16,
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => {
+                          props.navigation.navigate(AppRoutes.ChatRoom, {
+                            data: item,
+                          });
                         }}
                       >
-                        <Text
+                        <Text style={[styles.prepareForConsult, { paddingBottom: -16 }]}>
+                          CHAT WITH DOCTOR
+                        </Text>
+                        <View
                           style={{
-                            ...theme.fonts.IBMPlexSansMedium(12),
-                            color: '#02475b',
-                            opacity: 0.6,
-                            letterSpacing: 0.04,
-                            textAlign: 'right',
-                            paddingBottom: 16,
+                            flexDirection: 'row',
+                            alignSelf: 'flex-end',
+                            paddingBottom: -16,
                           }}
                         >
-                          You can chat with the doctor
-                        </Text>
-                        <Text
-                          style={{
-                            ...theme.fonts.IBMPlexSansSemiBold(12),
-                            color: '#02475b',
-                            opacity: 0.6,
-                            letterSpacing: 0.04,
-                            textAlign: 'right',
-                            paddingBottom: 16,
-                            marginRight: 15,
-                            paddingLeft: 3,
-                          }}
-                        >
-                          {day1.diff(day2, 'days')} more{' '}
-                          {day1.diff(day2, 'days') == 1 ? 'day' : 'days'}
-                        </Text>
-                      </View>
+                          <Text
+                            style={{
+                              ...theme.fonts.IBMPlexSansMedium(12),
+                              color: '#02475b',
+                              opacity: 0.6,
+                              letterSpacing: 0.04,
+                              textAlign: 'right',
+                              paddingBottom: 16,
+                            }}
+                          >
+                            You can chat with the doctor
+                          </Text>
+                          <Text
+                            style={{
+                              ...theme.fonts.IBMPlexSansSemiBold(12),
+                              color: '#02475b',
+                              opacity: 0.6,
+                              letterSpacing: 0.04,
+                              textAlign: 'right',
+                              paddingBottom: 16,
+                              marginRight: 15,
+                              paddingLeft: 3,
+                            }}
+                          >
+                            {day1.diff(day2, 'days')} more{' '}
+                            {day1.diff(day2, 'days') == 1 ? 'day' : 'days'}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
                     </View>
                   )}
                 </View>
