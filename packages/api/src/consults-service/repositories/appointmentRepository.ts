@@ -699,7 +699,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           .fill(0)
           .map(() => {
             const genBlockSlot =
-              format(slot, 'yyyy-MM-dd') + 'T' + format(slot, 'hh:mm') + ':00.000Z';
+              format(slot, 'yyyy-MM-dd') + 'T' + format(slot, 'HH:mm') + ':00.000Z';
             doctorBblockedSlots.push(genBlockSlot);
             slot = addMinutes(slot, 15);
           });
