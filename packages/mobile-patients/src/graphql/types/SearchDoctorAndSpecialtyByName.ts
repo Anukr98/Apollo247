@@ -11,6 +11,7 @@ import { Salutation, DoctorType } from "./globalTypes";
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty {
   __typename: "DoctorSpecialties";
   name: string;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital_facility {
@@ -63,6 +64,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_s
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty {
   __typename: "DoctorSpecialties";
   name: string;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_doctorHospital_facility {
@@ -123,6 +125,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_specialty {
   __typename: "DoctorSpecialties";
   name: string;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_doctorHospital_facility {

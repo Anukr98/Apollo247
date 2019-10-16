@@ -359,6 +359,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 {rowData.experience} YR
                 {Number(rowData.experience) > 1 ? 'S' : ''}
               </Text>
+              {rowData.specialty && rowData.specialty.userFriendlyNomenclature ? (
+                <Text style={styles.doctorSpecializationStyles}>
+                  {rowData.specialty.userFriendlyNomenclature}
+                </Text>
+              ) : null}
               <Text style={styles.educationTextStyles}>{rowData.qualification}</Text>
               {!!clinicAddress && <Text style={styles.doctorLocation}>{clinicAddress}</Text>}
             </View>

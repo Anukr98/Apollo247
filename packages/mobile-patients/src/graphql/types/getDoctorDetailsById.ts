@@ -11,6 +11,7 @@ import { Salutation, DoctorType, ConsultMode, WeekDay } from "./globalTypes";
 export interface getDoctorDetailsById_getDoctorDetailsById_specialty {
   __typename: "DoctorSpecialties";
   name: string;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface getDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility {
@@ -36,6 +37,7 @@ export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDo
   __typename: "DoctorSpecialties";
   name: string;
   image: string | null;
+  userFriendlyNomenclature: string | null;
 }
 
 export interface getDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility {
