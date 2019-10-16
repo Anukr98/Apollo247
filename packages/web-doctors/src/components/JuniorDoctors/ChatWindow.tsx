@@ -457,6 +457,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     ) {
       return rowData.automatedText;
     } else {
+      srollToBottomAction();
       return rowData.message;
     }
   };
