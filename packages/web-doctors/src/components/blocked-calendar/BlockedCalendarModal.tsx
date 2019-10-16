@@ -65,8 +65,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     }
   }, [daySelected, start]);
 
-  const dateInvalid =
-    !start || !end || new Date(end) < new Date(start);
+  const dateInvalid = !start || !end || new Date(end) < new Date(start);
   const timeInvalid = daySelected ? !startTime || !endTime || endTime <= startTime : false;
 
   let invalidStTime = false;
@@ -74,12 +73,28 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   if (start) {
     const stTm = new Date(start).toLocaleDateString().split('/');
     const TodatTm = new Date().toLocaleDateString().split('/');
-    invalidStTime = stTm[2] + '/' + stTm[0] + '/' + stTm[1] < TodatTm[2] + '/' + TodatTm[0] + '/' + TodatTm[1];
-
-    if (daySelected && startTime && stTm[2] + '/' + stTm[0] + '/' + stTm[1] === TodatTm[2] + '/' + TodatTm[0] + '/' + TodatTm[1] && format(
-      new Date(),
-      'HH:mm'
-    ).toString() > startTime) {
+    invalidStTime =
+      stTm[2] +
+        '/' +
+        (stTm[0] && stTm[0].length < 2 ? '0' + stTm[0] : stTm[0]) +
+        '/' +
+        (stTm[1] && stTm[1].length < 2 ? '0' + stTm[1] : stTm[1]) <
+      TodatTm[2] + '/' + TodatTm[0] + '/' + TodatTm[1];
+    console.log(
+      stTm[2] +
+        '/' +
+        (stTm[0] && stTm[0].length < 2 ? '0' + stTm[0] : stTm[0]) +
+        '/' +
+        (stTm[1] && stTm[1].length < 2 ? '0' + stTm[1] : stTm[1]),
+      TodatTm[2] + '/' + TodatTm[0] + '/' + TodatTm[1]
+    );
+    if (
+      daySelected &&
+      startTime &&
+      stTm[2] + '/' + stTm[0] + '/' + stTm[1] ===
+        TodatTm[2] + '/' + TodatTm[0] + '/' + TodatTm[1] &&
+      format(new Date(), 'HH:mm').toString() > startTime
+    ) {
       invalidTime = true;
     }
   }

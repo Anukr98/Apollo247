@@ -5,23 +5,44 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { aphConsole } from '../helpers/helperFunctions';
 import { NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from './NavigatorContainer';
+import { useApolloClient } from 'react-apollo-hooks';
+import { GET_APPOINTMENT_DATA } from '../graphql/profiles';
+import {
+  getAppointmentData,
+  getAppointmentDataVariables,
+} from '../graphql/types/getAppointmentData';
+import { useAllCurrentPatients } from '../hooks/authHooks';
 
-type CustomNotificationType = 'Reschedule-Appointment' | 'Upload-Prescription-Order' | '';
+type CustomNotificationType = 'Reschedule-Appointment' | 'Upload-Prescription-Order' | 'Chat-Room';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
+  const { currentPatient } = useAllCurrentPatients();
+
   const { showAphAlert } = useUIElements();
+  const client = useApolloClient();
 
   const processNotification = (notification: Notification) => {
     const { title, body, data } = notification;
-    const notificationType: CustomNotificationType = data.type;
+    const notificationType = data.type as CustomNotificationType;
     aphConsole.log({ notificationType, title, body, data });
 
     switch (notificationType) {
       case 'Reschedule-Appointment':
         {
           console.log('Reschedule-Appointment called');
+          let userName =
+            currentPatient && currentPatient.firstName
+              ? currentPatient.firstName.split(' ')[0]
+              : '';
+          userName = userName.toLowerCase();
+          let doctorName = 'Anuradha';
+          showAphAlert!({
+            title: `Hi ${userName},`,
+            description: `Unfortunately ${doctorName} will not be able to make it for your appointment due to an emergency`,
+            onPressOk: () => {},
+          });
         }
         break;
 
@@ -29,6 +50,19 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         {
           console.log('Upload-Prescription-Order called');
           props.navigation.navigate(AppRoutes.YourCart);
+        }
+        break;
+
+      case 'Chat-Room':
+        {
+          console.log('Chat-Room');
+          showAphAlert!({
+            title: 'Hi :)',
+            description: 'Dr. Sushma is waiting for you in chat room. Please join.',
+            onPressOk: () => {
+              getAppointmentData(data.appointmentId);
+            },
+          });
         }
         break;
 
@@ -81,6 +115,35 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       onNotificationListener();
     };
   }, []);
+
+  const getAppointmentData = (appointmentId: string) => {
+    client
+      .query<getAppointmentData, getAppointmentDataVariables>({
+        query: GET_APPOINTMENT_DATA,
+        variables: {
+          appointmentId: appointmentId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data: any) => {
+        try {
+          console.log(
+            'GetDoctorNextAvailableSlot',
+            _data.data.getAppointmentData.appointmentsHistory
+          );
+          const appointmentData = _data.data.getAppointmentData.appointmentsHistory;
+          if (appointmentData) {
+            props.navigation.navigate(AppRoutes.ChatRoom, {
+              data: appointmentData[0],
+            });
+          }
+        } catch (error) {}
+      })
+      .catch((e: any) => {
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('Error occured while GetDoctorNextAvailableSlot', error);
+      });
+  };
 
   return null;
 };
