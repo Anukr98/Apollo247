@@ -33,7 +33,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   // return <Button title={'show speciality'} onPress={onSubmitClick} />;
   return (
     <Button
-      title={'show speciality'}
+      title={'show doctors'}
       onPress={onSubmitClick}
       style={{
         // flex: 1,
