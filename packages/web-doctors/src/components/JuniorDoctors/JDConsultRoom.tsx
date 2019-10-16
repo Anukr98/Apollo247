@@ -847,7 +847,7 @@ export const JDConsultRoom: React.FC = () => {
 
   const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
     // console.log(diagnosis && diagnosis.length, diagnosis!, flag);
-    if (flag) {
+    if (diagnosis || flag) {
       setSaving(true);
       client
         .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
