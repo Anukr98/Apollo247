@@ -615,10 +615,10 @@ export const JDConsultRoom: React.FC = () => {
     },
   });
 
-  const scrollbars = useRef(null);
+  const scrollbars = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (caseSheetEdit && scrollbars != null) {
-      const elem = (scrollbars!.current as unknown) as HTMLDivElement;
+    if (caseSheetEdit && scrollbars) {
+      const elem = scrollbars.current as HTMLDivElement;
       elem.scrollIntoView({ block: 'end', behavior: 'smooth' });
     }
   }, [caseSheetEdit, scrollbars]);
