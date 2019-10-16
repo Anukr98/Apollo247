@@ -420,9 +420,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
       const newmessage: MessagesObjectProps[] = [];
-      res.messages.forEach((element, index) => {
-        newmessage[index] = element.entry;
-      });
+      res != null &&
+        res.messages.forEach((element, index) => {
+          newmessage[index] = element.entry;
+        });
       insertText = newmessage;
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);

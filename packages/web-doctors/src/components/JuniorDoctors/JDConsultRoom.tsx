@@ -615,6 +615,14 @@ export const JDConsultRoom: React.FC = () => {
     },
   });
 
+  const scrollbars = useRef(null);
+  useEffect(() => {
+    if (caseSheetEdit && scrollbars != null) {
+      const elem = (scrollbars!.current as unknown) as HTMLDivElement;
+      elem.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    }
+  }, [caseSheetEdit, scrollbars]);
+
   useEffect(() => {
     if (isSignedIn) {
       client
@@ -1155,6 +1163,7 @@ export const JDConsultRoom: React.FC = () => {
                 </div>
               </div>
             </div>
+            <div ref={scrollbars} />
           </Scrollbars>
         </CaseSheetContextJrd.Provider>
       )}
