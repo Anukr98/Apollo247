@@ -267,7 +267,7 @@ export interface DoctorPhysicalAvailabilityInput {
 
 export interface FilterDoctorInput {
   patientId?: string | null;
-  specialty: string;
+  specialty?: string | null;
   specialtySearchType?: SpecialtySearchType | null;
   specialtyName?: (string | null)[] | null;
   city?: (string | null)[] | null;
