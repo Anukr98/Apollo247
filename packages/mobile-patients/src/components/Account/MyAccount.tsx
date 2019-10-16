@@ -311,7 +311,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              PRO V 1.0(5)
+              Dev V 1.0(32)
             </Text>
           </View>
         </Animated.ScrollView>
