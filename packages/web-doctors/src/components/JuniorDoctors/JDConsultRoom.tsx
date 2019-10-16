@@ -386,7 +386,6 @@ export const JDConsultRoom: React.FC = () => {
   const classes = useStyles();
   const { patientId, appointmentId, queueId, isActive } = useParams<JDConsultRoomParams>();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [isDiagnosisDialogOpen, setIsDiagnosisDialogOpen] = React.useState(false);
   // const [isAutoSubmitDialogOpened, setIsAutoSubmitDialogOpened] = React.useState(false);
   const [jrdNoFillDialog, setJrdNoFillDialog] = React.useState(false);
   const [isNewMessage, setIsNewMessage] = React.useState(false);
@@ -615,6 +614,14 @@ export const JDConsultRoom: React.FC = () => {
       },
     },
   });
+
+  const scrollbars = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (caseSheetEdit && scrollbars) {
+      const elem = scrollbars.current as HTMLDivElement;
+      elem.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    }
+  }, [caseSheetEdit, scrollbars]);
 
   useEffect(() => {
     if (isSignedIn) {
@@ -848,7 +855,7 @@ export const JDConsultRoom: React.FC = () => {
 
   const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
     // console.log(diagnosis && diagnosis.length, diagnosis!, flag);
-    if ((diagnosis && diagnosis.length > 0) || flag) {
+    if (diagnosis || flag) {
       setSaving(true);
       client
         .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
@@ -886,22 +893,16 @@ export const JDConsultRoom: React.FC = () => {
           setSaving(false);
           console.log('Error occured while update casesheet', e);
         });
-    } else {
-      setIsDiagnosisDialogOpen(true);
     }
   };
 
   const endConsultAction = () => {
-    if (diagnosis!.length > 0) {
-      mutationRemoveConsult();
-      savePatientAllergiesMutation();
-      savePatientFamilyHistoryMutation();
-      savePatientLifeStyleMutation();
-      setIsDialogOpen(true);
-      saveCasesheetAction(false, true);
-    } else {
-      setIsDiagnosisDialogOpen(true);
-    }
+    mutationRemoveConsult();
+    savePatientAllergiesMutation();
+    savePatientFamilyHistoryMutation();
+    savePatientLifeStyleMutation();
+    setIsDialogOpen(true);
+    saveCasesheetAction(false, true);
   };
 
   // this will trigger end consult automatically after one minute
@@ -1162,6 +1163,7 @@ export const JDConsultRoom: React.FC = () => {
                 </div>
               </div>
             </div>
+            <div ref={scrollbars} />
           </Scrollbars>
         </CaseSheetContextJrd.Provider>
       )}
@@ -1220,17 +1222,6 @@ export const JDConsultRoom: React.FC = () => {
             autoFocus
           >
             Ok
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={isDiagnosisDialogOpen} onClose={() => setIsDiagnosisDialogOpen(false)}>
-        <DialogContent>
-          <DialogContentText>Please enter diagnosis</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button color="primary" onClick={() => setIsDiagnosisDialogOpen(false)} autoFocus>
-            OK
           </Button>
         </DialogActions>
       </Dialog>

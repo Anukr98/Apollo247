@@ -389,8 +389,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => {},
       message: (message) => {
+        console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
+        resetMessagesAction();
         // console.log(message.message);
         if (
           !showVideoChat &&
@@ -420,9 +422,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const getHistory = () => {
     pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
       const newmessage: MessagesObjectProps[] = [];
-      res.messages.forEach((element, index) => {
-        newmessage[index] = element.entry;
-      });
+      res &&
+        res.messages.forEach((element, index) => {
+          newmessage[index] = element.entry;
+        });
       insertText = newmessage;
       if (messages.length !== newmessage.length) {
         setMessages(newmessage);
@@ -457,6 +460,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     ) {
       return rowData.automatedText;
     } else {
+      srollToBottomAction();
       return rowData.message;
     }
   };

@@ -665,16 +665,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setIsAudio(true);
         setOnSubscribe(true);
         InCallManager.startRingtone('_BUNDLE_');
-        InCallManager.start({ media: 'audio'}); // audio/video, default: audio
-       // console.log("AUDIO_CALL_STARTED");
+        InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+        // console.log("AUDIO_CALL_STARTED");
 
-       // InCallManager.chooseAudioRoute('EARPIECE')
+        // InCallManager.chooseAudioRoute('EARPIECE')
       } else if (message.message.message === videoCallMsg) {
         setOnSubscribe(true);
         setIsAudio(false);
         InCallManager.startRingtone('_BUNDLE_');
         InCallManager.start({ media: 'audio' }); // audio/video, default: audio
-
       } else if (message.message.message === startConsultMsg) {
         stopInterval();
         startInterval(timer);
@@ -730,7 +729,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         ? height - e.endCoordinates.height - 200
         : Platform.OS === 'ios'
         ? height - e.endCoordinates.height - 190
-        : height - e.endCoordinates.height - 450
+        : height - e.endCoordinates.height
     );
 
     setTimeout(() => {
