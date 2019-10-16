@@ -42,6 +42,7 @@ type AphAlertParams = {
   title?: string;
   description?: string;
   children?: React.ReactNode;
+  unDismissable?: boolean;
   style?: StyleProp<ViewStyle>;
   onPressOk?: () => void;
 };
@@ -64,8 +65,10 @@ export const UIElementsProvider: React.FC = (props) => {
 
   const handleBack = async () => {
     console.log('handleBack Called');
-    // setLoading(false);
-    setAlertVisible(false);
+    if (!alertParams.unDismissable) {
+      // setLoading(false);
+      hideAphAlert();
+    }
     return true;
   };
 
@@ -79,11 +82,9 @@ export const UIElementsProvider: React.FC = (props) => {
         style={styles.okButtonStyle}
         onPress={() => {
           if (alertParams.onPressOk) {
-            setAlertVisible(false);
             alertParams.onPressOk();
           } else {
-            setAlertVisible(false);
-            setAlertParams({});
+            hideAphAlert();
           }
         }}
       >
@@ -97,8 +98,13 @@ export const UIElementsProvider: React.FC = (props) => {
           title={alertParams.title}
           description={alertParams.description}
           style={alertParams.style}
+          onPressBack={() => {
+            if (!alertParams.unDismissable) {
+              hideAphAlert();
+            }
+          }}
         >
-          {alertParams.children ? alertParams.children : renderOkButton}
+          {alertParams.children || renderOkButton}
         </BottomPopUp>
       )
     );
@@ -111,6 +117,7 @@ export const UIElementsProvider: React.FC = (props) => {
 
   const hideAphAlert = () => {
     setAlertVisible(false);
+    setAlertParams({});
   };
 
   return (

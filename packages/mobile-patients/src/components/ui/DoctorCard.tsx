@@ -338,7 +338,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               {rowData.photoUrl &&
               rowData.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
                 <Image
-                  style={{ height: 80, borderRadius: 40 }}
+                  style={{ height: 80, borderRadius: 40, width: 80 }}
                   source={{ uri: rowData.photoUrl }}
                   resizeMode={'contain'}
                 />

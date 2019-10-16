@@ -53,6 +53,14 @@ export const TabBar = createBottomTabNavigator(routeConfigMap, {
     activeBackgroundColor: theme.colors.LIGHT_BLUE,
     style: {
       borderTopColor: 'transparent',
+      shadowColor: 'black',
+      shadowOffset: { width: 0, height: -10 },
+      shadowOpacity: 0.2,
+      shadowRadius: 10,
+      elevation: 10,
+      borderTopWidth: 0,
+      top: 1,
+      height: 57,
     },
     labelStyle: {
       borderTopColor: 'transparent',
@@ -60,8 +68,11 @@ export const TabBar = createBottomTabNavigator(routeConfigMap, {
       fontSize: 7,
       letterSpacing: 0.5,
       textAlign: 'center',
-      marginTop: 9,
-      marginBottom: 7,
+      marginBottom: 8,
+    },
+    iconStyle: {
+      marginTop: 8,
+      marginBottom: 8,
     },
   },
 });

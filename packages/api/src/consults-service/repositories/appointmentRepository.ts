@@ -28,6 +28,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { format, addMinutes, differenceInMinutes, addDays, subDays } from 'date-fns';
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -451,7 +452,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       docConsultHrs = await consultHoursRepo.getAnyPhysicalConsultHours(doctorId, weekDay);
     }
 
-    const availableSlots: string[] = [];
+    let availableSlots: string[] = [];
     let availableSlotsReturn: string[] = [];
     const inputStartDate = format(addDays(selectedDate, -1), 'yyyy-MM-dd');
     const currentStartDate = new Date(inputStartDate + 'T18:30');
@@ -519,6 +520,14 @@ export class AppointmentRepository extends Repository<Appointment> {
             availableSlots.splice(availableSlots.indexOf(aptSlot), 1);
           }
         });
+      }
+      const doctorBblockedSlots = await this.getDoctorBlockedSlots(
+        doctorId,
+        selectedDate,
+        doctorsDb
+      );
+      if (doctorBblockedSlots.length > 0) {
+        availableSlots = availableSlots.filter((val) => !doctorBblockedSlots.includes(val));
       }
       let finalSlot = '';
       let foundFlag = 0;
@@ -667,5 +676,36 @@ export class AppointmentRepository extends Repository<Appointment> {
           createErrors,
         });
       });
+  }
+
+  async getDoctorBlockedSlots(doctorId: string, availableDate: Date, doctorsDb: Connection) {
+    const bciRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
+    const blockedSlots = await bciRepo.getBlockedSlots(availableDate, doctorId);
+    const doctorBblockedSlots: string[] = [];
+    if (blockedSlots.length > 0) {
+      blockedSlots.map((blockedSlot) => {
+        let blockedSlotsCount =
+          (Math.abs(differenceInMinutes(blockedSlot.end, blockedSlot.start)) / 60) * 4;
+        let slot = blockedSlot.start;
+        if (!Number.isInteger(blockedSlotsCount)) {
+          blockedSlotsCount = Math.ceil(blockedSlotsCount);
+        }
+        console.log(
+          blockedSlotsCount,
+          'blocked count',
+          differenceInMinutes(blockedSlot.end, blockedSlot.start)
+        );
+        Array(blockedSlotsCount)
+          .fill(0)
+          .map(() => {
+            const genBlockSlot =
+              format(slot, 'yyyy-MM-dd') + 'T' + format(slot, 'hh:mm') + ':00.000Z';
+            doctorBblockedSlots.push(genBlockSlot);
+            slot = addMinutes(slot, 15);
+          });
+      });
+      console.log(doctorBblockedSlots, 'doctor slots');
+    }
+    return doctorBblockedSlots;
   }
 }

@@ -88,75 +88,35 @@ export const Star: React.FC<IconProps> = (props) => (
 );
 
 export const ConsultationRoom: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    style={{ marginTop: 8 }}
-    {...props}
-    source={require('./icons/ic_consultroom.png')}
-  />
+  <IconBase size="sm" {...props} source={require('./icons/ic_consultroom.png')} />
 );
 
 export const MyHealth: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    style={{ marginTop: 8 }}
-    {...props}
-    source={require('./icons/ic_myhealth.png')}
-  />
+  <IconBase size="sm" {...props} source={require('./icons/ic_myhealth.png')} />
 );
 
 export const ShoppingCart: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    style={{ marginTop: 8 }}
-    {...props}
-    source={require('./icons/ic_medsntest.png')}
-  />
+  <IconBase size="sm" {...props} source={require('./icons/ic_medsntest.png')} />
 );
 
 export const Person: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    style={{ marginTop: 8 }}
-    {...props}
-    source={require('./icons/ic_account.png')}
-  />
+  <IconBase size="sm" {...props} source={require('./icons/ic_account.png')} />
 );
 
 export const ConsultationRoomFocused: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    style={{ marginTop: 8 }}
-    {...props}
-    source={require('./icons/ic_consultroom_white.png')}
-  />
+  <IconBase size="sm" {...props} source={require('./icons/ic_consultroom_white.png')} />
 );
 
 export const MyHealthFocused: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    style={{ marginTop: 8 }}
-    {...props}
-    source={require('./icons/ic_myhealth_best.png')}
-  />
+  <IconBase size="sm" {...props} source={require('./icons/ic_myhealth_best.png')} />
 );
 
 export const ShoppingCartFocused: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    style={{ marginTop: 8 }}
-    {...props}
-    source={require('./icons/ic_medsntest_white.png')}
-  />
+  <IconBase size="sm" {...props} source={require('./icons/ic_medsntest_white.png')} />
 );
 
 export const PersonFocused: React.FC<IconProps> = (props) => (
-  <IconBase
-    size="sm"
-    style={{ marginTop: 8 }}
-    {...props}
-    source={require('./icons/ic_account_white.png')}
-  />
+  <IconBase size="sm" {...props} source={require('./icons/ic_account_white.png')} />
 );
 
 export const GeneralPhysician: React.FC<IconProps> = (props) => (
