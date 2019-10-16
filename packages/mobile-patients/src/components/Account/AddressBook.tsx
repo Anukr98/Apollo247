@@ -91,9 +91,9 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       addresses &&
       addresses.map((address, i) => (
         <View style={styles.cardStyle} key={i}>
-          <Text style={styles.textStyle}>{`${address.landmark ? address.landmark : ''} ${
-            address.addressLine1
-          } ${address.addressLine2}\n ${address.city ? `${address.city}\n ` : ''}${
+          <Text style={styles.textStyle}>{`${address.addressLine1}${
+            address.addressLine2 ? ' ' + address.addressLine2 : ''
+          } \n${address.landmark ? `${address.landmark}\n` : ''}${
             address.city ? `${address.city}, ` : ''
           }${address.state ? `${address.state}- ` : ''}${address.zipcode}`}</Text>
         </View>
