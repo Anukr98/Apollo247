@@ -128,6 +128,10 @@ export const getDoctorDetailsTypeDefs = gql`
     id: ID!
     image: String
     name: String!
+    specialistSingularTerm: String
+    specialistPluralTerm: String
+    userFriendlyNomenclature: String
+    displayOrder: Int
   }
 
   type Facility {
