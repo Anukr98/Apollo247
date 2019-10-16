@@ -50,7 +50,7 @@ const getDoctorPhysicalAvailableSlots: Resolver<
     weekDay,
     DoctorPhysicalAvailabilityInput.facilityId
   );
-  const availableSlots: string[] = [];
+  let availableSlots: string[] = [];
   let availableSlotsReturn: string[] = [];
   if (timeSlots && timeSlots.length > 0) {
     timeSlots.map((timeSlot) => {
@@ -118,6 +118,15 @@ const getDoctorPhysicalAvailableSlots: Resolver<
         availableSlots.splice(availableSlots.indexOf(sl), 1);
       }
     });
+  }
+
+  const doctorBblockedSlots = await appts.getDoctorBlockedSlots(
+    DoctorPhysicalAvailabilityInput.doctorId,
+    DoctorPhysicalAvailabilityInput.availableDate,
+    doctorsDb
+  );
+  if (doctorBblockedSlots.length > 0) {
+    availableSlots = availableSlots.filter((val) => !doctorBblockedSlots.includes(val));
   }
 
   return { availableSlots };
