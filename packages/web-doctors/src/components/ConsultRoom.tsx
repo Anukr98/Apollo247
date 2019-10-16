@@ -618,7 +618,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
-        {showVideo && (
+        {/* {showVideo && (
           <Consult
             toggelChatVideo={() => toggelChatVideo()}
             stopAudioVideoCall={() => stopAudioVideoCall()}
@@ -633,7 +633,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             isNewMsg={isNewMsg}
             convertCall={() => convertCall()}
           />
-        )}
+        )} */}
         <div>
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
