@@ -132,11 +132,13 @@ app.post('/paymed-response', (req, res) => {
   const transactionStatus = payload.STATUS === 'TXN_FAILURE' ? 'failed' : 'success';
 
   /* never execute a transaction if the payment status is failed */
-  if (reqSource === 'web') {
-    const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
-    res.redirect(redirectUrl);
-  } else {
-    res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
+  if (transactionStatus === 'failed') {
+    if (reqSource === 'web') {
+      const redirectUrl = `${process.env.PORTAL_URL}?orderAutoId=${req.session.orderAutoId}&status=${transactionStatus}`;
+      res.redirect(redirectUrl);
+    } else {
+      res.redirect(`/mob-error?tk=${token}&status=${transactionStatus}`);
+    }
   }
 
   /*save response in apollo24x7*/
