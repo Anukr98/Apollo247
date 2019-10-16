@@ -117,11 +117,15 @@ const updateBlockedCalendarItem: Resolver<
 > = async (parent, { id, doctorId, start, end }, context) => {
   checkAuth(doctorId, context);
   const { bciRepo } = getRepos(context);
-  const itemToUpdate = await bciRepo.findOneOrFail(id);
+  /*const itemToUpdate = await bciRepo.findOneOrFail(id);
   const existingItems = (await bciRepo.find({ doctorId })).filter(
     (item) => item.id !== itemToUpdate.id
   );
   const overlap = doesItemOverlap(itemToUpdate, existingItems);
+  if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);*/
+  const itemToAdd = bciRepo.create({ doctorId, start, end });
+  const existingItems = await bciRepo.find({ doctorId });
+  const overlap = doesItemOverlap(itemToAdd, existingItems);
   if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
   await bciRepo.update({ id, doctorId }, { start, end });
   const blockedCalendar = await bciRepo.find({ doctorId });
