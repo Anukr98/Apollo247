@@ -882,6 +882,9 @@ export class Coupon extends BaseEntity {
 //patientMedicalHistory starts
 @Entity()
 export class PatientMedicalHistory extends BaseEntity {
+  @Column({ nullable: true })
+  bp: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;
 
