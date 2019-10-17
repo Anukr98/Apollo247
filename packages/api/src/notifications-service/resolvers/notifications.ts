@@ -205,13 +205,29 @@ export async function sendNotification(
   admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
 
   //building payload
-  const payload = {
+  let payload = {
     notification: {
       title: notificationTitle,
       body: notificationBody,
     },
+    data: {},
   };
 
+  if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+      },
+      data: {
+        type: 'Reschedule-Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+      },
+    };
+  }
+  console.log(payload, 'notification payload', pushNotificationInput.notificationType);
   //options
   const options = {
     priority: NotificationPriority.high,
@@ -266,6 +282,12 @@ const testPushNotification: Resolver<
     notification: {
       title: 'Test Push notification title',
       body: 'Test Push notification body',
+    },
+    data: {
+      type: 'Reschedule-Appointment',
+      appointmentData: '1234',
+      doctorName: 'junior',
+      patientName: 'krishna',
     },
   };
 
