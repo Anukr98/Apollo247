@@ -14,6 +14,9 @@ import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { useAuth } from 'hooks/authHooks';
 import { AphLinearProgress } from '@aph/web-ui-components';
+import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
+import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -114,7 +117,7 @@ export const JuniorDoctor: React.FC = (props) => {
   const currentDoctor = useCurrentPatient();
   const { isSigningIn } = useAuth();
 
-  const { data, loading, error } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
+  const { data, loading, error, stopPolling } = useQuery<GetConsultQueue, GetConsultQueueVariables>(
     GET_CONSULT_QUEUE,
     {
       skip: !currentDoctor,
@@ -126,9 +129,30 @@ export const JuniorDoctor: React.FC = (props) => {
     }
   );
 
+  const {
+    data: doctorDetailsData,
+    error: doctorDetailsError,
+    loading: doctorDetailsLoading,
+  } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
+
+  const currentStatus =
+    doctorDetailsData &&
+    doctorDetailsData.getDoctorDetails &&
+    doctorDetailsData.getDoctorDetails.onlineStatus;
+
+  if (currentStatus === DOCTOR_ONLINE_STATUS.AWAY) stopPolling();
+
   let content: [React.ReactNode, React.ReactNode] = [null, null];
   let isActiveConsultsAvailable,
     isPastConsultsAvailable = false;
+
+  if (
+    doctorDetailsLoading ||
+    doctorDetailsError ||
+    !doctorDetailsData ||
+    !doctorDetailsData.getDoctorDetails
+  )
+    return null;
 
   if (error) content = [<div>An error occured :(</div>, <div>An error occured :(</div>];
   if (loading && _isEmpty(data)) content = [<AphLinearProgress />, <AphLinearProgress />];
@@ -171,7 +195,6 @@ export const JuniorDoctor: React.FC = (props) => {
           </div>
         </div>
       </Scrollbars>,
-
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
         <div className={classes.customScroll}>
           <div className={classes.boxGroup}>
