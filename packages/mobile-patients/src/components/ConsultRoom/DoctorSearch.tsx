@@ -757,7 +757,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   };
 
   const renderOtherSUggestedDoctors = () => {
-    if (otherDoctors)
+    if (otherDoctors && otherDoctors.length)
       return (
         <View>
           <SectionHeaderComponent
