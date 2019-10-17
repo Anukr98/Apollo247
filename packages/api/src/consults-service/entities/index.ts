@@ -601,5 +601,12 @@ export interface RxPdfData {
     state: string;
     country: string;
   };
+  patientInfo: {
+    firstName: string;
+    lastName: string;
+    gender: string;
+    uhid: string;
+    age: string;
+  };
 }
 ///////////////////////////////////////////////////////////
