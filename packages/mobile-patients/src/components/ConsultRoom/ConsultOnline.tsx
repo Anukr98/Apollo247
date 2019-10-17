@@ -286,7 +286,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
                         }}
                       >
                         {`Dr. ${
-                          props.doctor ? props.doctor.firstName : ''
+                          props.doctor ? `${props.doctor.firstName} ${props.doctor.lastName}` : ''
                         } is not available in the ${selectedtiming.toLowerCase()} slot :(`}
                       </Text>
                     );
@@ -336,7 +336,9 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               ...theme.fonts.IBMPlexSansMedium(14),
             }}
           >
-            {`${props.doctor ? `Dr. ${props.doctor.firstName}` : 'Doctor'} is ${
+            {`${
+              props.doctor ? `Dr. ${props.doctor.firstName} ${props.doctor.lastName}` : 'Doctor'
+            } is ${
               availableInMin <= 60 && availableInMin > 0
                 ? `${nextAvailability(NextAvailableSlot)}`
                 : // ? `in ${availableInMin} min${availableInMin == 1 ? '' : 's'}`
@@ -346,7 +348,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             }!\nWould you like to consult now or schedule for later?`}
           </Text>
         ) : null}
-
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
           <Button
             title="Consult Now"
