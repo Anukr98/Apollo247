@@ -325,6 +325,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         isVisible={ShowPopop}
         disabledOption="NONE"
         type="nonCartFlow"
+        heading={'Upload Prescription(s)'}
+        instructionHeading={'Instructions For Uploading Prescriptions'}
+        instructions={[
+          'Take clear picture of your entire prescription.',
+          'Doctor details & date of the prescription should be clearly visible.',
+          'Medicines will be dispensed as per prescription.',
+        ]}
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'CHOOSE\nFROM GALLERY',

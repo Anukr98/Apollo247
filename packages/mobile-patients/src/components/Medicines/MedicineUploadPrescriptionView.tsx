@@ -70,6 +70,13 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
       <UploadPrescriprionPopup
         isVisible={showPopup}
         disabledOption={'NONE'}
+        heading={'Upload Prescription(s)'}
+        instructionHeading={'Instructions For Uploading Prescriptions'}
+        instructions={[
+          'Take clear picture of your entire prescription.',
+          'Doctor details & date of the prescription should be clearly visible.',
+          'Medicines will be dispensed as per prescription.',
+        ]}
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'UPLOAD FROM\nGALLERY',
