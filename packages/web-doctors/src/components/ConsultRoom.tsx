@@ -290,8 +290,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== acceptcallMsg &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
-          message.message.message !== followupconsult && 
-          message.message.message !== startConsult
+          message.message.message !== followupconsult 
         ) {
           setIsNewMsg(true);
         }else{
