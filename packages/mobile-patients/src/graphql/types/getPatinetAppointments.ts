@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, Salutation, DoctorType } from "./globalTypes";
+import { PatientAppointmentsInput, APPOINTMENT_TYPE, STATUS, APPOINTMENT_STATE, Salutation, DoctorType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: getPatinetAppointments
@@ -58,6 +58,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
   displayId: number | null;
   isFollowUp: string;
   rescheduleCount: number | null;
+  appointmentState: APPOINTMENT_STATE | null;
   doctorInfo: getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo | null;
 }
 

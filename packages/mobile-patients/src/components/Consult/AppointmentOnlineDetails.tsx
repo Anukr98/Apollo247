@@ -165,6 +165,9 @@ export interface AppointmentOnlineDetailsProps extends NavigationScreenProps {}
 export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> = (props) => {
   const data = props.navigation.state.params!.data;
   const doctorDetails = data.doctorInfo;
+  const movedFrom = props.navigation.state.params!.from;
+  console.log('data', data);
+
   const dateIsAfter = moment(data.appointmentDateTime).isAfter(moment(new Date()));
   const [cancelAppointment, setCancelAppointment] = useState<boolean>(false);
   const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
@@ -186,6 +189,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
+    }
+
+    if (movedFrom === 'notification') {
+      NextAvailableSlotAPI();
     }
   }, [currentPatient]);
 

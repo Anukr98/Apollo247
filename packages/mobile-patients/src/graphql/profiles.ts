@@ -182,6 +182,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         isFollowUp
         rescheduleCount
         displayId
+        appointmentState
         doctorInfo {
           id
           salutation
