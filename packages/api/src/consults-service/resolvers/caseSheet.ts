@@ -2,7 +2,16 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
-import { CaseSheet, Appointment, CASESHEET_STATUS } from 'consults-service/entities';
+import {
+  CaseSheet,
+  Appointment,
+  CASESHEET_STATUS,
+  CaseSheetMedicinePrescription,
+  CaseSheetDiagnosis,
+  CaseSheetSymptom,
+  CaseSheetDiagnosisPrescription,
+  CaseSheetOtherInstruction,
+} from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -96,6 +105,19 @@ export const caseSheetTypeDefs = gql`
     OTHER
   }
 
+  type Address {
+    id: ID!
+    addressLine1: String
+    addressLine2: String
+    city: String
+    mobileNumber: String
+    state: String
+    zipcode: String
+    landmark: String
+    createdDate: Date
+    updatedDate: Date
+  }
+
   type Appointment {
     id: String!
     appointmentDateTime: DateTime!
@@ -147,7 +169,42 @@ export const caseSheetTypeDefs = gql`
     name: String
   }
 
+  input DiagnosisInput {
+    name: String
+  }
+
+  type DiagnosisJson {
+    name: String
+    id: String
+  }
+
+  type DiagnosticJson {
+    itemid: String
+    itemname: String
+    itemcode: String
+    ItemAliasName: String
+    FromAgeInDays: Int
+    ToAgeInDays: Int
+    Gender: String
+    LabName: String
+    LabCode: String
+    LabID: Int
+    Rate: Int
+    ScheduleRate: Int
+    FromDate: String
+    ToDate: String
+    ItemType: String
+    TestInPackage: String
+    NABL_CAP: String
+    ItemRemarks: String
+    Discounted: String
+  }
+
   type DiagnosticPrescription {
+    itemname: String
+  }
+
+  input DiagnosticPrescriptionInput {
     itemname: String
   }
 
@@ -162,21 +219,23 @@ export const caseSheetTypeDefs = gql`
     id: String
   }
 
+  input MedicinePrescriptionInput {
+    medicineConsumptionDurationInDays: String
+    medicineDosage: String
+    medicineUnit: MEDICINE_UNIT
+    medicineInstructions: String
+    medicineTimings: [MEDICINE_TIMINGS]
+    medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
+    medicineName: String
+    id: String
+  }
+
   type OtherInstructions {
     instruction: String
   }
 
-  type Address {
-    id: ID!
-    addressLine1: String
-    addressLine2: String
-    city: String
-    mobileNumber: String
-    state: String
-    zipcode: String
-    landmark: String
-    createdDate: Date
-    updatedDate: Date
+  input OtherInstructionsInput {
+    instruction: String
   }
 
   type PatientDetails {
@@ -211,6 +270,13 @@ export const caseSheetTypeDefs = gql`
     relation: String
   }
 
+  input SymptomInput {
+    symptom: String
+    since: String
+    howOften: String
+    severity: String
+  }
+
   type SymptomList {
     symptom: String
     since: String
@@ -232,35 +298,23 @@ export const caseSheetTypeDefs = gql`
     status: CASESHEET_STATUS
   }
 
-  type DiagnosisJson {
-    name: String
-    id: String
-  }
-
-  type DiagnosticJson {
-    itemid: String
-    itemname: String
-    itemcode: String
-    ItemAliasName: String
-    FromAgeInDays: Int
-    ToAgeInDays: Int
-    Gender: String
-    LabName: String
-    LabCode: String
-    LabID: Int
-    Rate: Int
-    ScheduleRate: Int
-    FromDate: String
-    ToDate: String
-    ItemType: String
-    TestInPackage: String
-    NABL_CAP: String
-    ItemRemarks: String
-    Discounted: String
+  input ModifyCaseSheetInput {
+    symptoms: [SymptomInput]
+    notes: String
+    diagnosis: [DiagnosisInput]
+    diagnosticPrescription: [DiagnosticPrescriptionInput]
+    followUp: Boolean
+    followUpDate: String
+    followUpAfterInDays: String
+    otherInstructions: [OtherInstructionsInput]
+    medicinePrescription: [MedicinePrescriptionInput]
+    id: String!
+    status: CASESHEET_STATUS
   }
 
   extend type Mutation {
     updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
+    modifyCaseSheet(ModifyCaseSheetInput: ModifyCaseSheetInput): CaseSheet
     createJuniorDoctorCaseSheet(appointmentId: String): CaseSheet
     createSeniorDoctorCaseSheet(appointmentId: String): CaseSheet
   }
@@ -427,6 +481,84 @@ const updateCaseSheet: Resolver<
   return getCaseSheetData;
 };
 
+type ModifyCaseSheetInput = {
+  symptoms: CaseSheetSymptom[];
+  notes: string;
+  diagnosis: CaseSheetDiagnosis[];
+  diagnosticPrescription: CaseSheetDiagnosisPrescription[];
+  followUp: boolean;
+  followUpDate: string;
+  followUpAfterInDays: string;
+  otherInstructions: CaseSheetOtherInstruction[];
+  medicinePrescription: CaseSheetMedicinePrescription[];
+  id: string;
+  status: CASESHEET_STATUS;
+};
+
+type ModifyCaseSheetInputArgs = { ModifyCaseSheetInput: ModifyCaseSheetInput };
+
+const modifyCaseSheet: Resolver<
+  null,
+  ModifyCaseSheetInputArgs,
+  ConsultServiceContext,
+  CaseSheet
+> = async (parent, { ModifyCaseSheetInput }, { consultsDb, doctorsDb }) => {
+  console.log(ModifyCaseSheetInput);
+
+  console.log(ModifyCaseSheetInput.symptoms);
+
+  //const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
+  const inputArguments = ModifyCaseSheetInput;
+  //validate date
+  if (inputArguments.followUpDate && isNaN(new Date(inputArguments.followUpDate).valueOf()))
+    throw new AphError(AphErrorMessages.INVALID_DATE_FORMAT);
+
+  //const followUpAfterInDays = inputArguments.followUpAfterInDays == '' ? 0 : inputArguments.followUpAfterInDays;
+  //const followUpDate = inputArguments.followUpDate == '' ? null : inputArguments.followUpDate;
+
+  //validate casesheetid
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
+  if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+
+  if (!(inputArguments.symptoms === undefined)) {
+    getCaseSheetData.symptoms = JSON.parse(JSON.stringify(inputArguments.symptoms));
+  }
+
+  console.log(getCaseSheetData.symptoms);
+  /*getCaseSheetData.symptoms = JSON.parse(JSON.stringify(inputArguments.symptoms));
+  getCaseSheetData.notes = inputArguments.notes;
+  getCaseSheetData.diagnosis = JSON.parse(JSON.stringify(inputArguments.diagnosis));
+  getCaseSheetData.diagnosticPrescription = JSON.parse(
+    JSON.stringify(inputArguments.diagnosticPrescription)
+  );
+  getCaseSheetData.otherInstructions = JSON.parse(JSON.stringify(inputArguments.otherInstructions));
+  getCaseSheetData.medicinePrescription = JSON.parse(
+    JSON.stringify(inputArguments.medicinePrescription)
+  );
+  getCaseSheetData.followUp = inputArguments.followUp;
+  if (followUpDate) getCaseSheetData.followUpDate = new Date(followUpDate);
+  getCaseSheetData.followUpAfterInDays = <number>followUpAfterInDays;
+  getCaseSheetData.status = inputArguments.status; */
+
+  //convert casesheet to prescription
+  const client = new AphStorageClient(
+    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+    process.env.AZURE_STORAGE_CONTAINER_NAME
+  );
+
+  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb);
+  const pdfDocument = generateRxPdfDocument(rxPdfData);
+  const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
+  if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+  getCaseSheetData.blobName = blob.name;
+
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
+
+  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
+  return getCaseSheetData;
+};
+
 const searchDiagnosis: Resolver<
   null,
   { searchString: string },
@@ -543,6 +675,7 @@ export const caseSheetResolvers = {
   },
   Mutation: {
     updateCaseSheet,
+    modifyCaseSheet,
     createJuniorDoctorCaseSheet,
     createSeniorDoctorCaseSheet,
   },

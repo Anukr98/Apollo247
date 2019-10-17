@@ -491,6 +491,12 @@ export class Patient extends BaseEntity {
   )
   patientNotificationSettings: PatientNotificationSettings;
 
+  @OneToOne(
+    (type) => PatientMedicalHistory,
+    (patientMedicalHistory) => patientMedicalHistory.patient
+  )
+  patientMedicalHistory: PatientMedicalHistory;
+
   @Column({ nullable: true, type: 'text' })
   photoUrl: string;
 
@@ -872,3 +878,55 @@ export class Coupon extends BaseEntity {
   }
 }
 //Coupon ends
+
+//patientMedicalHistory starts
+@Entity()
+export class PatientMedicalHistory extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ nullable: true, type: 'text' })
+  dietAllergies: string;
+
+  @Column({ nullable: true, type: 'text' })
+  drugAllergies: string;
+
+  @Column({ nullable: true })
+  height: string;
+
+  @Column({ nullable: true, type: 'text' })
+  menstrualHistory: string;
+
+  @Column({ nullable: true, type: 'text' })
+  pastMedicalHistory: string;
+
+  @Column({ nullable: true, type: 'text' })
+  pastSurgicalHistory: string;
+
+  @OneToOne((type) => Patient, (patient) => patient.patientMedicalHistory)
+  @JoinColumn()
+  patient: Patient;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  temperature: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @Column({ nullable: true })
+  weight: string;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//patientMedicalHistory ends
