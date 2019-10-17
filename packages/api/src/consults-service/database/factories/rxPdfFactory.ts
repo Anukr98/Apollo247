@@ -46,5 +46,13 @@ export const buildRxPdfData = (): RxPdfData => {
     country: '',
   };
 
-  return { prescriptions, generalAdvice, diagnoses, doctorInfo, hospitalAddress };
+  const patientInfo = {
+    firstName: '',
+    lastName: '',
+    gender: '',
+    uhid: '',
+    age: '',
+  };
+
+  return { prescriptions, generalAdvice, diagnoses, doctorInfo, hospitalAddress, patientInfo };
 };
