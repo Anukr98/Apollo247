@@ -45,11 +45,8 @@ export const convertCaseSheetToRxPdfData = async (
       const name = csRx.medicineName;
       const ingredients = [] as string[];
       const timings = csRx.medicineTimings.map(_capitalize).join(', ');
-      const frequency = `${
-        csRx.medicineDosage
-      } ${csRx.medicineUnit.toLowerCase()} (${timings}) for ${
-        csRx.medicineConsumptionDurationInDays
-      } days`;
+      const medicineUnit = csRx.medicineUnit === undefined ? '' : csRx.medicineUnit.toLowerCase();
+      const frequency = `${csRx.medicineDosage} ${medicineUnit} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
       const instructions = csRx.medicineInstructions;
       return { name, ingredients, frequency, instructions } as PrescriptionData;
     });
