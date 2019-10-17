@@ -29,12 +29,7 @@ interface OptionType {
   sku: string;
 }
 
-let suggestions: OptionType[] = [
-  { label: 'Ibuprofen, 200 mg', sku: 'IB01' },
-  { label: 'Ibugesic plus, 1.5% wwa', sku: 'IB02' },
-  { label: 'Ibuenatal', sku: 'IB03' },
-  { label: 'Ibuenatal', sku: 'IB04' },
-];
+let suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -470,22 +465,7 @@ export const MedicinePrescription: React.FC = () => {
   const [medicine, setMedicine] = useState('');
   const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
-    const inputValue = deburr(value.trim()).toLowerCase();
-    const inputLength = inputValue.length;
-    let count = 0;
-
-    return inputLength === 0
-      ? []
-      : suggestions.filter((suggestion) => {
-          const keep =
-            count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
-
-          if (keep) {
-            count += 1;
-          }
-
-          return keep;
-        });
+    return suggestions;
   }
 
   const toBeTaken = (value: any) => {
