@@ -267,45 +267,30 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   async getPatinetUpcomingAppointments(patientId: string) {
-    //const startDate = new Date();
-    const inputStartDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
-    const weekPastDate = new Date(inputStartDate + 'T18:30');
+    const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
+    const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
 
-    const todayDate = format(new Date(), 'yyyy-MM-dd');
-    const todayEndTime = new Date(todayDate + 'T18:30');
-
-    //get past appointments till one week
-    const weekPastAppts = await this.find({
+    //get upcoming appointments from current time.
+    const upcomingAppts = await this.find({
       where: {
         patientId,
-        appointmentDateTime: Between(weekPastDate, new Date()),
-        status: Not(STATUS.CANCELLED),
-      },
-      order: { appointmentDateTime: 'DESC' },
-    });
-
-    //get upcoming appointments for today.
-    const todayUpcomingAppts = await this.find({
-      where: {
-        patientId,
-        appointmentDateTime: Between(new Date(), todayEndTime),
+        appointmentDateTime: MoreThan(new Date()),
         status: Not(STATUS.CANCELLED),
       },
       order: { appointmentDateTime: 'ASC' },
     });
 
-    //get future date appointments
-    const futureDateAppts = await this.find({
+    //get past appointments till one week
+    const weekPastAppts = await this.find({
       where: {
         patientId,
-        appointmentDateTime: MoreThan(todayEndTime),
+        appointmentDateTime: Between(weekPastDateUTC, new Date()),
         status: Not(STATUS.CANCELLED),
       },
       order: { appointmentDateTime: 'DESC' },
     });
 
-    let consultRoomAppts = todayUpcomingAppts.concat(futureDateAppts);
-    consultRoomAppts = consultRoomAppts.concat(weekPastAppts);
+    const consultRoomAppts = upcomingAppts.concat(weekPastAppts);
     return consultRoomAppts;
   }
 
