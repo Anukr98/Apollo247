@@ -258,7 +258,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
       '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
       '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-        '(\\#[-a-z\\d_]*)?$',
+      '(\\#[-a-z\\d_]*)?$',
       'i'
     ); // fragment locator
     return pattern.test(str);
@@ -277,7 +277,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getHistory(0);
 
     pubnub.addListener({
-      status: (statusEvent) => {},
+      status: (statusEvent) => { },
       message: (message) => {
         insertText[insertText.length] = message.message;
         console.log(message.message);
@@ -409,10 +409,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              <div>
-                <span>{getAutomatedMessage(rowData)}</span>
-              </div>
-            )}
+                  <div>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                  </div>
+                )}
           </div>
         </div>
       );
@@ -458,22 +458,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              <div>
-                {rowData.message === documentUpload ? (
-                  <div style={{ width: '200px', height: 'auto' }}>
-                    <a href={rowData.url} target="_blank">
-                      <img
-                        style={{ width: '200px', height: 'auto' }}
-                        src={rowData.url}
-                        alt={rowData.url}
-                      />
-                    </a>
+                  <div>
+                    {rowData.message === documentUpload ? (
+                      <div style={{ width: '200px', height: 'auto' }}>
+                        <a href={rowData.url} target="_blank">
+                          <img
+                            style={{ width: '200px', height: 'auto' }}
+                            src={rowData.url}
+                            alt={rowData.url}
+                          />
+                        </a>
+                      </div>
+                    ) : (
+                        <span>{getAutomatedMessage(rowData)}</span>
+                      )}
                   </div>
-                ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -507,22 +507,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              <div>
-                {rowData.message === documentUpload ? (
-                  <div style={{ width: '200px', height: 'auto' }}>
-                    <a href={rowData.url} target="_blank">
-                      <img
-                        style={{ width: '200px', height: 'auto' }}
-                        src={rowData.url}
-                        alt={rowData.url}
-                      />
-                    </a>
+                  <div>
+                    {rowData.message === documentUpload ? (
+                      <div style={{ width: '200px', height: 'auto' }}>
+                        <a href={rowData.url} target="_blank">
+                          <img
+                            style={{ width: '200px', height: 'auto' }}
+                            src={rowData.url}
+                            alt={rowData.url}
+                          />
+                        </a>
+                      </div>
+                    ) : (
+                        <span>{getAutomatedMessage(rowData)}</span>
+                      )}
                   </div>
-                ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -534,8 +534,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-        })
+        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+      })
       : '';
   const toggelChatVideo = () => {
     setIsNewMsg(false);
@@ -572,7 +572,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
     };
     pubnub.publish(
@@ -629,14 +629,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           channel: channel,
           storeInHistory: false,
         },
-        (status, response) => {}
+        (status, response) => { }
       );
     }, 10);
   };
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
-        {showVideo && (
+        {/* {showVideo && (
           <Consult
             toggelChatVideo={() => toggelChatVideo()}
             stopAudioVideoCall={() => stopAudioVideoCall()}
@@ -651,7 +651,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             isNewMsg={isNewMsg}
             convertCall={() => convertCall()}
           />
-        )}
+        )} */}
         <div>
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
