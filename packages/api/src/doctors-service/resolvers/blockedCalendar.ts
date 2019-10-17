@@ -74,7 +74,7 @@ const getBlockedCalendar: Resolver<
 > = async (parent, { doctorId }, context) => {
   checkAuth(doctorId, context);
   const { bciRepo } = getRepos(context);
-  const blockedCalendar = await bciRepo.find({ doctorId });
+  const blockedCalendar = await bciRepo.find({ where: { doctorId }, order: { start: 'ASC' } });
   return { blockedCalendar };
 };
 

@@ -251,6 +251,8 @@ export async function sendNotification(
       throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
     });
 
+  console.log(notificationResponse, 'notificationResponse');
+
   return notificationResponse;
 }
 
