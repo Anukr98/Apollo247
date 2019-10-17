@@ -84,11 +84,15 @@ export interface UploadPrescriprionPopupProps {
   type?: 'cartOrMedicineFlow' | 'nonCartFlow';
   isVisible: boolean;
   disabledOption: EPrescriptionDisableOption;
+  heading: string;
   optionTexts: {
     camera: string;
     gallery: string;
     prescription: string;
   };
+  instructionHeading?: string;
+  instructions?: string[];
+  hideTAndCs?: boolean;
   onClickClose: () => void;
   onResponse: (
     selectedType: EPrescriptionDisableOption,
@@ -281,7 +285,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             color: theme.colors.LIGHT_BLUE,
           }}
         >
-          Upload Prescription(s)
+          {props.heading}
         </Text>
       </View>
     );
@@ -332,7 +336,18 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     );
   };
 
+  const renderInstructionPoint = (index: string, text: string, style: StyleProp<ViewStyle>) => {
+    return (
+      <View key={index} style={[{ flexDirection: 'row', flex: 1 }, style]}>
+        <Text style={[styles.instructionsStyle, { flex: 0.1 }]}>{index}</Text>
+        <Text style={[[styles.instructionsStyle, { flex: 0.9 }]]}>{text}</Text>
+      </View>
+    );
+  };
+
   const renderInstructions = () => {
+    const instructions = props.instructions || [];
+    if (instructions.length == 0) return null;
     return (
       <View
         style={{
@@ -341,33 +356,26 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         }}
       >
         <View style={styles.separatorStyle} />
-        <Text style={styles.lableStyle}>Instructions For Uploading Prescriptions</Text>
-        <View style={{ flexDirection: 'row', flex: 1 }}>
-          <Text style={[styles.instructionsStyle, { flex: 0.1 }]}>1.</Text>
-          <Text style={[[styles.instructionsStyle, { flex: 0.9 }]]}>
-            Take clear picture of your entire prescription.
-          </Text>
-        </View>
-        <View style={{ flexDirection: 'row', flex: 1 }}>
-          <Text style={[styles.instructionsStyle, { flex: 0.1 }]}>2.</Text>
-          <Text style={[[styles.instructionsStyle, { flex: 0.9 }]]}>
-            Doctor details & date of the prescription should be clearly visible.
-          </Text>
-        </View>
-        <View style={{ flexDirection: 'row', flex: 1 }}>
-          <Text style={[styles.instructionsStyle, { flex: 0.1 }]}>3.</Text>
-          <Text style={[styles.instructionsStyle, { flex: 0.9, paddingBottom: 15 }]}>
-            Medicines will be dispensed as per prescription.
-          </Text>
-        </View>
-        {renderTermsAndCondns()}
+        <Text style={styles.lableStyle}>{props.instructionHeading}</Text>
+        {instructions.map((item, index) =>
+          renderInstructionPoint(
+            `${index + 1}.`,
+            item,
+            instructions.length - 1 == index ? { paddingBottom: 15 } : {}
+          )
+        )}
       </View>
     );
   };
 
   const renderTermsAndCondns = () => {
     return (
-      <View>
+      <View
+        style={{
+          marginHorizontal: 16,
+          justifyContent: 'center',
+        }}
+      >
         <View style={styles.separatorStyle} />
         <Text
           style={{
@@ -433,6 +441,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
             {props.type == 'nonCartFlow' && renderOrderSteps()}
             {renderOptions()}
             {renderInstructions()}
+            {!props.hideTAndCs && renderTermsAndCondns()}
           </ScrollView>
         </SafeAreaView>
         {showSpinner && <Spinner />}
