@@ -12,6 +12,32 @@ import {
   getAppointmentDataVariables,
 } from '../graphql/types/getAppointmentData';
 import { useAllCurrentPatients } from '../hooks/authHooks';
+import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+
+const styles = StyleSheet.create({
+  rescheduleTextStyles: {
+    ...theme.viewStyles.yellowTextStyle,
+    marginVertical: 10,
+    textAlign: 'center',
+  },
+  claimStyles: {
+    flex: 0.5,
+    marginLeft: 5,
+    marginRight: 8,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    ...theme.viewStyles.shadowStyle,
+  },
+  rescheduletyles: {
+    flex: 0.5,
+    marginRight: 5,
+    marginLeft: 8,
+    backgroundColor: theme.colors.APP_YELLOW_COLOR,
+    borderRadius: 10,
+    ...theme.viewStyles.shadowStyle,
+  },
+});
 
 type CustomNotificationType = 'Reschedule-Appointment' | 'Upload-Prescription-Order' | 'Chat-Room';
 
@@ -20,28 +46,56 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
 
   const processNotification = (notification: Notification) => {
     const { title, body, data } = notification;
     const notificationType = data.type as CustomNotificationType;
     aphConsole.log({ notificationType, title, body, data });
+    aphConsole.log('notification', notification);
 
     switch (notificationType) {
       case 'Reschedule-Appointment':
         {
           console.log('Reschedule-Appointment called');
-          let userName =
-            currentPatient && currentPatient.firstName
-              ? currentPatient.firstName.split(' ')[0]
-              : '';
-          userName = userName.toLowerCase();
-          let doctorName = 'Anuradha';
+          let userName = data.patientName;
+          let doctorName = data.doctorName;
+
           showAphAlert!({
             title: `Hi ${userName},`,
             description: `Unfortunately ${doctorName} will not be able to make it for your appointment due to an emergency`,
-            onPressOk: () => {},
+            children: (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginHorizontal: 20,
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-end',
+                  marginVertical: 18,
+                }}
+              >
+                <TouchableOpacity
+                  style={styles.claimStyles}
+                  onPress={() => {
+                    hideAphAlert && hideAphAlert();
+                  }}
+                >
+                  <Text style={styles.rescheduleTextStyles}>{'CLAIM REFUND'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.rescheduletyles}
+                  onPress={() => {
+                    console.log('data.appointmentId', data.appointmentId);
+                    getAppointmentData(data.appointmentId, notificationType);
+                  }}
+                >
+                  <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
+                    {'RESCHEDULE'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ),
           });
         }
         break;
@@ -55,13 +109,43 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
       case 'Chat-Room':
         {
+          let doctorName = data.doctorName;
+
           console.log('Chat-Room');
           showAphAlert!({
             title: 'Hi :)',
-            description: 'Dr. Sushma is waiting for you in chat room. Please join.',
-            onPressOk: () => {
-              getAppointmentData(data.appointmentId);
-            },
+            description: `Dr. ${doctorName} is waiting for you in chat room. Please join.`,
+            children: (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginHorizontal: 20,
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-end',
+                  marginVertical: 18,
+                }}
+              >
+                <TouchableOpacity
+                  style={styles.claimStyles}
+                  onPress={() => {
+                    hideAphAlert && hideAphAlert();
+                  }}
+                >
+                  <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.rescheduletyles}
+                  onPress={() => {
+                    console.log('data.appointmentId', data.appointmentId);
+                    getAppointmentData(data.appointmentId, notificationType);
+                  }}
+                >
+                  <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
+                    {'CONSULT ROOM'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ),
           });
         }
         break;
@@ -78,6 +162,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
      * Triggered when a particular notification has been received in foreground
      * */
     const notificationListener = firebase.notifications().onNotification((notification) => {
+      console.log('notificationListener');
       processNotification(notification);
     });
 
@@ -89,6 +174,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       .getInitialNotification()
       .then((_notificationOpen: NotificationOpen) => {
         if (_notificationOpen) {
+          console.log('_notificationOpen');
+
           // App was opened by a notification
           // Get the action triggered by the notification being opened
           // const action = _notificationOpen.action;
@@ -104,6 +191,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       .notifications()
       .onNotificationOpened((notificationOpen: NotificationOpen) => {
         if (notificationOpen) {
+          console.log('notificationOpen');
+
           const notification: Notification = notificationOpen.notification;
           processNotification(notification);
         }
@@ -116,7 +205,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     };
   }, []);
 
-  const getAppointmentData = (appointmentId: string) => {
+  const getAppointmentData = (appointmentId: string, notificationType: string) => {
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
@@ -133,9 +222,35 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           );
           const appointmentData = _data.data.getAppointmentData.appointmentsHistory;
           if (appointmentData) {
-            props.navigation.navigate(AppRoutes.ChatRoom, {
-              data: appointmentData[0],
-            });
+            hideAphAlert && hideAphAlert();
+
+            switch (notificationType) {
+              case 'Reschedule-Appointment':
+                {
+                  appointmentData[0].appointmentType === 'ONLINE'
+                    ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                        data: appointmentData[0],
+                        from: 'notification',
+                      })
+                    : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                        data: appointmentData[0],
+                        from: 'notification',
+                      });
+                }
+                break;
+
+              case 'Chat-Room':
+                {
+                  hideAphAlert && hideAphAlert();
+                  props.navigation.navigate(AppRoutes.ChatRoom, {
+                    data: appointmentData[0],
+                  });
+                }
+                break;
+
+              default:
+                break;
+            }
           }
         } catch (error) {}
       })
@@ -144,6 +259,5 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         console.log('Error occured while GetDoctorNextAvailableSlot', error);
       });
   };
-
   return null;
 };

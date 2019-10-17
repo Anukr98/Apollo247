@@ -111,6 +111,9 @@ export interface AppointmentDetailsProps extends NavigationScreenProps {}
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
   const data = props.navigation.state.params!.data;
   const doctorDetails = data.doctorInfo;
+
+  const movedFrom = props.navigation.state.params!.from;
+
   // console.log('doctorDetails', doctorDetails);
 
   // console.log(
@@ -139,6 +142,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
+    }
+
+    if (movedFrom === 'notification') {
+      NextAvailableSlotAPI();
     }
   }, [currentPatient]);
 

@@ -514,9 +514,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   item.appointmentType === 'ONLINE'
                     ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
                         data: item,
+                        from: 'Consult',
                       })
                     : props.navigation.navigate(AppRoutes.AppointmentDetails, {
                         data: item,
+                        from: 'Consult',
                       });
                 }}
               >
