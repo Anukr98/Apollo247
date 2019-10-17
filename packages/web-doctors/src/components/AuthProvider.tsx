@@ -61,25 +61,35 @@ export const AuthContext = React.createContext<AuthContextProps>({
   isLoginPopupVisible: false,
   setIsLoginPopupVisible: null,
 });
-
+const isLocal = process.env.NODE_ENV === 'local';
+const isDevelopment = process.env.NODE_ENV === 'development';
 let apolloClient: ApolloClient<any>;
-const buildApolloClient = (authToken: string) => {
-  const errorLink = onError(({ networkError, operation, forward }: ErrorResponse) => {
-    // There's a bug in the apollo typedefs and `statusCode` is not recognized, but it's there
-    if (networkError && (networkError as any).statusCode === 401) {
-      console.log(networkError, operation);
+const buildApolloClient = (authToken: string, handleUnauthenticated: () => void) => {
+  const errorLink = onError((error) => {
+    const { graphQLErrors, operation, forward } = error;
+    if (isLocal || isDevelopment) console.error(error);
+
+    if (graphQLErrors) {
+      const unauthenticatedError = graphQLErrors.some(
+        (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
+      );
+      if (unauthenticatedError) {
+        handleUnauthenticated();
+      }
     }
     return forward(operation);
   });
   const authLink = setContext((_, { headers }) => ({
-    headers: { ...headers, Authorization: authToken },
+    headers: {
+      ...headers,
+      Authorization: authToken,
+    },
   }));
   const httpLink = createHttpLink({ uri: apiRoutes.graphql() });
   const link = errorLink.concat(authLink).concat(httpLink);
   const cache = apolloClient ? apolloClient.cache : new InMemoryCache();
   return new ApolloClient({ link, cache });
 };
-
 const projectId = process.env.FIREBASE_PROJECT_ID;
 const app = firebase.initializeApp({
   projectId,
@@ -92,10 +102,10 @@ const app = firebase.initializeApp({
 });
 
 let otpVerifier: firebase.auth.ConfirmationResult;
-
 export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
-  apolloClient = buildApolloClient(authToken);
+  apolloClient = buildApolloClient(authToken, () => getFirebaseToken());
+
   const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
 
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
@@ -175,6 +185,10 @@ export const AuthProvider: React.FC = (props) => {
       .then(() => window.location.replace('/'));
 
   useEffect(() => {
+    getFirebaseToken();
+  }, []);
+
+  const getFirebaseToken = () => {
     app.auth().onAuthStateChanged(async (user) => {
       if (user) {
         const [jwt, jwtError] = await wait(user.getIdToken());
@@ -189,9 +203,7 @@ export const AuthProvider: React.FC = (props) => {
 
         setIsSigningIn(true);
         const [signInResult, signInError] = await wait(
-          apolloClient.mutate<GetDoctorDetails, GetDoctorDetails>({
-            mutation: GET_DOCTOR_DETAILS,
-          })
+          apolloClient.mutate<GetDoctorDetails, GetDoctorDetails>({ mutation: GET_DOCTOR_DETAILS })
         );
         if (signInError || !signInResult.data || !signInResult.data.getDoctorDetails) {
           if (signInError) console.error(signInError);
@@ -206,7 +218,7 @@ export const AuthProvider: React.FC = (props) => {
       }
       setIsSigningIn(false);
     });
-  }, []);
+  };
   return (
     <ApolloProvider client={apolloClient}>
       <ApolloHooksProvider client={apolloClient}>

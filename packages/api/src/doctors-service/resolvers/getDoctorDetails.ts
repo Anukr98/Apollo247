@@ -128,6 +128,10 @@ export const getDoctorDetailsTypeDefs = gql`
     id: ID!
     image: String
     name: String!
+    specialistSingularTerm: String
+    specialistPluralTerm: String
+    userFriendlyNomenclature: String
+    displayOrder: Int
   }
 
   type Facility {
@@ -171,6 +175,8 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine2: String
     streetLine3: String
     zip: String
+    onlineConsultationFees: String!
+    physicalConsultationFees: String!
     doctorHospital: [DoctorHospital!]!
     specialty: DoctorSpecialties!
   }

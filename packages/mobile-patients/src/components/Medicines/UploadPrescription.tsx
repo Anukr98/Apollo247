@@ -316,7 +316,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       />
     );
   };
-
+  /*
   const renderDeliveryPinCode = () => {
     return (
       <View style={styles.deliveryPinCodeContaner}>
@@ -334,6 +334,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       </View>
     );
   };
+  */
 
   const [bottomErrorPopup, setBottomErrorPopup] = useState<boolean>(false);
 
@@ -430,7 +431,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
           onPressLeftIcon={() => props.navigation.goBack()}
         />
         <ScrollView bounces={false} style={{ flex: 1 }}>
-          {renderDeliveryPinCode()}
+          {/* {renderDeliveryPinCode()} */}
           {renderPhysicalPrescriptions()}
           {renderEPrescriptions()}
         </ScrollView>
@@ -476,6 +477,13 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
             : 'E-PRESCRIPTION'
         }
         type="nonCartFlow"
+        heading={'Upload Prescription(s)'}
+        instructionHeading={'Instructions For Uploading Prescriptions'}
+        instructions={[
+          'Take clear picture of your entire prescription.',
+          'Doctor details & date of the prescription should be clearly visible.',
+          'Medicines will be dispensed as per prescription.',
+        ]}
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'CHOOSE\nFROM GALLERY',

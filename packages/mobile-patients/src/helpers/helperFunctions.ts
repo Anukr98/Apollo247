@@ -137,18 +137,12 @@ export const divideSlots = (availableSlots: string[], date: Date) => {
       .local()
       .format('HH:mm'); //.format('HH:mm');
     const slotTime = moment(formatedSlot, 'HH:mm');
-    console.log(
-      todayDate,
-      'todayDate',
-      moment(new Date()).format('YYYY-MM-DD'),
-      new Date(IOSFormat).toDateString().split('T')[0]
-    );
 
     if (
       todayDate === moment(date).format('YYYY-MM-DD') && //date.toDateString().split('T')[0] &&
       todayDate !== moment(IOSFormat).format('YYYY-MM-DD') //new Date(IOSFormat).toDateString().split('T')[0])
     ) {
-      console.log('today past');
+      // console.log('today past');
     } else {
       if (new Date() < new Date(IOSFormat)) {
         if (slotTime.isBetween(nightEndTime, afternoonStartTime)) {

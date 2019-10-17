@@ -225,6 +225,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         experience
         specialty {
           name
+          userFriendlyNomenclature
         }
         specialization
         qualification
@@ -263,6 +264,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           experience
           specialty {
             name
+            userFriendlyNomenclature
           }
           specialization
           qualification
@@ -302,6 +304,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         experience
         specialty {
           name
+          userFriendlyNomenclature
         }
         specialization
         qualification
@@ -362,6 +365,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       photoUrl
       specialty {
         name
+        userFriendlyNomenclature
       }
       registrationNumber
       onlineConsultationFees
@@ -393,6 +397,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
           specialty {
             name
             image
+            userFriendlyNomenclature
           }
           doctorType
           doctorHospital {
@@ -439,6 +444,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         specialty {
           name
           image
+          userFriendlyNomenclature
         }
         onlineConsultationFees
         languages

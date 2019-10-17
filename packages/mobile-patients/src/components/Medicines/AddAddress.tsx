@@ -84,7 +84,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
   const { getPatientApiCall } = useAuth();
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert } = useUIElements();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -95,11 +95,11 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const client = useApolloClient();
   const isAddressValid =
     userName &&
-    userName.length > 1 &&
+    // userName.length > 1 &&
     phoneNumber &&
     phoneNumber.length == 10 &&
     addressLine1 &&
-    addressLine1.length > 1 &&
+    // addressLine1.length > 1 &&
     pincode &&
     pincode.length == 6 &&
     city &&
@@ -146,7 +146,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           title: 'Uh oh.. :(',
           description:
             'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
-          onPressOk: () => props.navigation.goBack(),
+          onPressOk: () => {
+            props.navigation.goBack();
+            hideAphAlert!();
+          },
         });
       }
     } catch (error) {
@@ -250,7 +253,11 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         )}
         <TextInputComponent
           value={userName}
-          onChangeText={(text) => (text == '' || /^[A-Za-z\s.]+$/.test(text)) && setuserName(text)}
+          onChangeText={(text) =>
+            text.startsWith(' ') || text.startsWith('.')
+              ? null
+              : (text == '' || /^([a-zA-Z.\s])+$/.test(text)) && setuserName(text)
+          }
           placeholder={'Name'}
         />
         <TextInputComponent
@@ -264,7 +271,22 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         />
         <TextInputComponent
           value={addressLine1}
-          onChangeText={(addressLine1) => setaddressLine1(addressLine1)}
+          onChangeText={(addressLine1) => {
+            if (addressLine1 == '') {
+              setaddressLine1(addressLine1);
+            }
+            if (
+              addressLine1.startsWith(' ') ||
+              addressLine1.startsWith('.') ||
+              addressLine1.startsWith(',') ||
+              addressLine1.startsWith('-')
+            ) {
+              return;
+            }
+            if (/^([a-zA-Z0-9,.-\s])+$/.test(addressLine1)) {
+              setaddressLine1(addressLine1);
+            }
+          }}
           placeholder={'Address Line 1'}
         />
         <TextInputComponent
@@ -278,17 +300,25 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         />
         <TextInputComponent
           value={landMark}
-          onChangeText={(landMark) => setlandMark(landMark)}
+          onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
           placeholder={'Land Mark (optional)'}
         />
         <TextInputComponent
           value={city}
-          onChangeText={(city) => setcity(city)}
+          onChangeText={(city) =>
+            city.startsWith(' ') || city.startsWith('.')
+              ? null
+              : (city == '' || /^([a-zA-Z0-9.\s])+$/.test(city)) && setcity(city)
+          }
           placeholder={'City'}
         />
         <TextInputComponent
           value={state}
-          onChangeText={(state) => setstate(state)}
+          onChangeText={(state) =>
+            state.startsWith(' ') || state.startsWith('.')
+              ? null
+              : (state == '' || /^([a-zA-Z0-9.\s])+$/.test(state)) && setstate(state)
+          }
           placeholder={'State'}
           textInputprops={{
             onSubmitEditing: () => {

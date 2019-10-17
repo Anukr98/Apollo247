@@ -266,14 +266,32 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
-  getPatinetUpcomingAppointments(patientId: string) {
-    //const startDate = new Date();
-    const inputStartDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
-    const startDate = new Date(inputStartDate + 'T18:30');
-    return this.find({
-      where: { patientId, appointmentDateTime: MoreThan(startDate), status: Not(STATUS.CANCELLED) },
+  async getPatinetUpcomingAppointments(patientId: string) {
+    const weekPastDate = format(addDays(new Date(), -7), 'yyyy-MM-dd');
+    const weekPastDateUTC = new Date(weekPastDate + 'T18:30');
+
+    //get upcoming appointments from current time.
+    const upcomingAppts = await this.find({
+      where: {
+        patientId,
+        appointmentDateTime: MoreThan(new Date()),
+        status: Not(STATUS.CANCELLED),
+      },
+      order: { appointmentDateTime: 'ASC' },
+    });
+
+    //get past appointments till one week
+    const weekPastAppts = await this.find({
+      where: {
+        patientId,
+        appointmentDateTime: Between(weekPastDateUTC, new Date()),
+        status: Not(STATUS.CANCELLED),
+      },
       order: { appointmentDateTime: 'DESC' },
     });
+
+    const consultRoomAppts = upcomingAppts.concat(weekPastAppts);
+    return consultRoomAppts;
   }
 
   getPatientAndDoctorsAppointments(patientId: string, doctorIds: string[]) {
@@ -699,7 +717,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           .fill(0)
           .map(() => {
             const genBlockSlot =
-              format(slot, 'yyyy-MM-dd') + 'T' + format(slot, 'hh:mm') + ':00.000Z';
+              format(slot, 'yyyy-MM-dd') + 'T' + format(slot, 'HH:mm') + ':00.000Z';
             doctorBblockedSlots.push(genBlockSlot);
             slot = addMinutes(slot, 15);
           });
