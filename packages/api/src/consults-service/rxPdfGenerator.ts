@@ -15,6 +15,7 @@ import fs from 'fs';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { Connection } from 'typeorm';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet> & {
@@ -22,7 +23,8 @@ export const convertCaseSheetToRxPdfData = async (
     otherInstructions: CaseSheet['otherInstructions'];
     diagnosis: CaseSheet['diagnosis'];
   },
-  doctorsDb: Connection
+  doctorsDb: Connection,
+  patientsDb: Connection
 ): Promise<RxPdfData> => {
   const caseSheetMedicinePrescription = JSON.parse(
     JSON.stringify(caseSheet.medicinePrescription)
@@ -107,6 +109,35 @@ export const convertCaseSheetToRxPdfData = async (
     country: '',
   };
 
+  let patientInfo = {
+    firstName: '',
+    lastName: '',
+    gender: '',
+    uhid: '',
+    age: '',
+  };
+
+  if (caseSheet.patientId) {
+    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+    const patientData = await patientRepo.findById(caseSheet.patientId);
+    if (patientData != null) {
+      const patientAge =
+        patientData.dateOfBirth === null
+          ? ''
+          : Math.abs(
+              new Date(Date.now()).getUTCFullYear() -
+                new Date(patientData.dateOfBirth).getUTCFullYear()
+            ).toString();
+      patientInfo = {
+        firstName: patientData.firstName,
+        lastName: patientData.lastName,
+        gender: patientData.gender,
+        uhid: patientData.uhid,
+        age: patientAge,
+      };
+    }
+  }
+
   if (caseSheet.doctorId) {
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const doctordata = await doctorRepository.getDoctorProfileData(caseSheet.doctorId);
@@ -139,7 +170,7 @@ export const convertCaseSheetToRxPdfData = async (
     }
   }
 
-  return { prescriptions, generalAdvice, diagnoses, doctorInfo, hospitalAddress };
+  return { prescriptions, generalAdvice, diagnoses, doctorInfo, hospitalAddress, patientInfo };
 };
 
 const assetsDir = <string>process.env.ASSETS_DIRECTORY;
@@ -149,6 +180,7 @@ const loadAsset = (file: string) => path.resolve(assetsDir, file);
 export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => {
   const margin = 35;
   const indentedMargin = margin + 30;
+  const patientIndentedMargin = margin + 100;
 
   const doc = new PDFDocument({ margin });
 
@@ -216,7 +248,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
     const rx = loadAsset('rx-icon.png');
-    doc.image(rx, margin, headerEndY + 40, { width: 35 });
+    doc.image(rx, margin, headerEndY + 60, { width: 35 });
 
     renderSectionTitle('PRESCRIPTION', headerEndY + 100);
 
@@ -316,6 +348,44 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     }
   };
 
+  const renderpatients = (patientInfo: RxPdfData['patientInfo']) => {
+    renderSectionTitle('PATIENT DETAILS:');
+
+    const nameLine = `NAME            ${patientInfo.firstName} ${patientInfo.lastName}`;
+    const age = `AGE               ${patientInfo.age}`;
+    const gender = `GENDER        ${patientInfo.gender}`;
+    const uhid = `UHID               ${patientInfo.uhid}`;
+
+    if (nameLine) {
+      doc
+        .fillColor('black')
+        .font('Helvetica-Bold')
+        .fontSize(8);
+      doc.text(nameLine, patientIndentedMargin, headerEndY + 30).moveDown(0.4);
+    }
+    doc
+      .fillColor('black')
+      .font('Helvetica-Bold')
+      .fontSize(8);
+    if (patientInfo.age) {
+      doc.text(age, patientIndentedMargin).moveDown(0.4);
+    }
+    doc
+      .fillColor('black')
+      .font('Helvetica-Bold')
+      .fontSize(8);
+    if (patientInfo.gender) {
+      doc.text(gender, patientIndentedMargin).moveDown(0.4);
+    }
+    doc
+      .fillColor('black')
+      .font('Helvetica-Bold')
+      .fontSize(8);
+    if (patientInfo.uhid) {
+      doc.text(uhid, patientIndentedMargin).moveDown(0.4);
+    }
+  };
+
   doc.on('pageAdded', () => {
     renderFooter();
     renderHeader(rxPdfData.hospitalAddress);
@@ -323,6 +393,11 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   renderFooter();
   renderHeader(rxPdfData.hospitalAddress);
+
+  if (!_isEmpty(rxPdfData.patientInfo)) {
+    renderpatients(rxPdfData.patientInfo);
+    doc.moveDown(1.5);
+  }
 
   if (!_isEmpty(rxPdfData.prescriptions)) {
     renderPrescriptions(rxPdfData.prescriptions);
