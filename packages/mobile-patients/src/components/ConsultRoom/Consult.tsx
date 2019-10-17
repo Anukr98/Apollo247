@@ -498,11 +498,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 );
           const isActive = minutes > 0 && minutes <= 15 ? true : false;
           const dateIsAfterconsult = moment(appointmentDateTime).isAfter(moment(new Date()));
+          console.log(item.status);
 
           var day1 = moment(appointmentDateTime).add(7, 'days');
-
           var day2 = moment(new Date());
-
           day1.diff(day2, 'days'); // 1
 
           return (
