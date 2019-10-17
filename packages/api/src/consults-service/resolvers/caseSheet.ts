@@ -16,7 +16,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { Patient } from 'profiles-service/entities';
+import { Patient, PatientFamilyHistory } from 'profiles-service/entities';
 import { DiagnosisData } from 'consults-service/data/diagnosis';
 import { DiagnosticData } from 'consults-service/data/diagnostics';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
@@ -310,6 +310,8 @@ export const caseSheetTypeDefs = gql`
     medicinePrescription: [MedicinePrescriptionInput]
     id: String!
     status: CASESHEET_STATUS
+    lifeStyle: String
+    familyHistory: String
   }
 
   extend type Mutation {
@@ -493,6 +495,8 @@ type ModifyCaseSheetInput = {
   medicinePrescription: CaseSheetMedicinePrescription[];
   id: string;
   status: CASESHEET_STATUS;
+  lifeStyle: string;
+  familyHistory: string;
 };
 
 type ModifyCaseSheetInputArgs = { ModifyCaseSheetInput: ModifyCaseSheetInput };
@@ -565,6 +569,12 @@ const modifyCaseSheet: Resolver<
   if (!(inputArguments.status === undefined)) {
     getCaseSheetData.status = inputArguments.status;
   }
+
+  //familyHistory update starts
+  if (!(inputArguments.familyHistory === undefined)) {
+  }
+
+  //familyHistory update ends
 
   //convert casesheet to prescription
   const client = new AphStorageClient(
