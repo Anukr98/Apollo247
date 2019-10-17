@@ -304,8 +304,8 @@ export const caseSheetTypeDefs = gql`
     diagnosis: [DiagnosisInput]
     diagnosticPrescription: [DiagnosticPrescriptionInput]
     followUp: Boolean
-    followUpDate: String
-    followUpAfterInDays: String
+    followUpDate: Date
+    followUpAfterInDays: Int
     otherInstructions: [OtherInstructionsInput]
     medicinePrescription: [MedicinePrescriptionInput]
     id: String!
@@ -487,8 +487,8 @@ type ModifyCaseSheetInput = {
   diagnosis: CaseSheetDiagnosis[];
   diagnosticPrescription: CaseSheetDiagnosisPrescription[];
   followUp: boolean;
-  followUpDate: string;
-  followUpAfterInDays: string;
+  followUpDate: Date;
+  followUpAfterInDays: number;
   otherInstructions: CaseSheetOtherInstruction[];
   medicinePrescription: CaseSheetMedicinePrescription[];
   id: string;
@@ -503,18 +503,7 @@ const modifyCaseSheet: Resolver<
   ConsultServiceContext,
   CaseSheet
 > = async (parent, { ModifyCaseSheetInput }, { consultsDb, doctorsDb }) => {
-  console.log(ModifyCaseSheetInput);
-
-  console.log(ModifyCaseSheetInput.symptoms);
-
-  //const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
   const inputArguments = ModifyCaseSheetInput;
-  //validate date
-  if (inputArguments.followUpDate && isNaN(new Date(inputArguments.followUpDate).valueOf()))
-    throw new AphError(AphErrorMessages.INVALID_DATE_FORMAT);
-
-  //const followUpAfterInDays = inputArguments.followUpAfterInDays == '' ? 0 : inputArguments.followUpAfterInDays;
-  //const followUpDate = inputArguments.followUpDate == '' ? null : inputArguments.followUpDate;
 
   //validate casesheetid
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
@@ -522,24 +511,60 @@ const modifyCaseSheet: Resolver<
   if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
 
   if (!(inputArguments.symptoms === undefined)) {
+    if (inputArguments.symptoms && inputArguments.symptoms.length === 0)
+      throw new AphError(AphErrorMessages.INVALID_SYMPTOMS_LIST);
     getCaseSheetData.symptoms = JSON.parse(JSON.stringify(inputArguments.symptoms));
   }
 
-  console.log(getCaseSheetData.symptoms);
-  /*getCaseSheetData.symptoms = JSON.parse(JSON.stringify(inputArguments.symptoms));
-  getCaseSheetData.notes = inputArguments.notes;
-  getCaseSheetData.diagnosis = JSON.parse(JSON.stringify(inputArguments.diagnosis));
-  getCaseSheetData.diagnosticPrescription = JSON.parse(
-    JSON.stringify(inputArguments.diagnosticPrescription)
-  );
-  getCaseSheetData.otherInstructions = JSON.parse(JSON.stringify(inputArguments.otherInstructions));
-  getCaseSheetData.medicinePrescription = JSON.parse(
-    JSON.stringify(inputArguments.medicinePrescription)
-  );
-  getCaseSheetData.followUp = inputArguments.followUp;
-  if (followUpDate) getCaseSheetData.followUpDate = new Date(followUpDate);
-  getCaseSheetData.followUpAfterInDays = <number>followUpAfterInDays;
-  getCaseSheetData.status = inputArguments.status; */
+  if (!(inputArguments.notes === undefined)) {
+    getCaseSheetData.notes = inputArguments.notes;
+  }
+
+  if (!(inputArguments.diagnosis === undefined)) {
+    if (inputArguments.diagnosis && inputArguments.diagnosis.length === 0)
+      throw new AphError(AphErrorMessages.INVALID_DIAGNOSIS_LIST);
+    getCaseSheetData.diagnosis = JSON.parse(JSON.stringify(inputArguments.diagnosis));
+  }
+
+  if (!(inputArguments.diagnosticPrescription === undefined)) {
+    if (inputArguments.diagnosticPrescription && inputArguments.diagnosticPrescription.length === 0)
+      throw new AphError(AphErrorMessages.INVALID_DIAGNOSTIC_PRESCRIPTION_LIST);
+    getCaseSheetData.diagnosticPrescription = JSON.parse(
+      JSON.stringify(inputArguments.diagnosticPrescription)
+    );
+  }
+
+  if (!(inputArguments.otherInstructions === undefined)) {
+    if (inputArguments.otherInstructions && inputArguments.otherInstructions.length === 0)
+      throw new AphError(AphErrorMessages.INVALID_DIAGNOSTIC_PRESCRIPTION_LIST);
+    getCaseSheetData.otherInstructions = JSON.parse(
+      JSON.stringify(inputArguments.otherInstructions)
+    );
+  }
+
+  if (!(inputArguments.medicinePrescription === undefined)) {
+    if (inputArguments.medicinePrescription && inputArguments.medicinePrescription.length === 0)
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_LIST);
+    getCaseSheetData.medicinePrescription = JSON.parse(
+      JSON.stringify(inputArguments.medicinePrescription)
+    );
+  }
+
+  if (!(inputArguments.followUp === undefined)) {
+    getCaseSheetData.followUp = inputArguments.followUp;
+  }
+
+  if (!(inputArguments.followUpDate === undefined)) {
+    if (getCaseSheetData.followUpDate) getCaseSheetData.followUpDate = inputArguments.followUpDate;
+  }
+
+  if (!(inputArguments.followUpAfterInDays === undefined)) {
+    getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
+  }
+
+  if (!(inputArguments.status === undefined)) {
+    getCaseSheetData.status = inputArguments.status;
+  }
 
   //convert casesheet to prescription
   const client = new AphStorageClient(
