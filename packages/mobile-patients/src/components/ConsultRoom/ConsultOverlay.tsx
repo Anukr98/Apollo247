@@ -54,6 +54,13 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
+  congratulationsDescriptionStyle: {
+    marginHorizontal: 24,
+    marginTop: 8,
+    color: theme.colors.SKY_BLUE,
+    ...theme.fonts.IBMPlexSansMedium(17),
+    lineHeight: 24,
+  },
 });
 
 type TimeArray = {
@@ -135,10 +142,14 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       })
       .catch((error) => {
         try {
-          setshowSpinner(false),
-            (error.message.split(':')[1].trim() == 'APPOINTMENT_EXIST_ERROR' ||
-              error.message.split(':')[1].trim() === 'APPOINTMENT_BOOK_DATE_ERROR') &&
-              setAppointmentExistAlert(true);
+          setshowSpinner(false);
+          const message = error.message.split(':')[1].trim();
+          if (
+            message == 'APPOINTMENT_EXIST_ERROR' ||
+            message === 'APPOINTMENT_BOOK_DATE_ERROR' ||
+            message === 'DOCTOR_SLOT_BLOCKED'
+          )
+            setAppointmentExistAlert(true);
         } catch (error) {}
       });
   };
@@ -223,6 +234,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       </StickyBottomComponent>
     );
   };
+  const successSteps = [
+    'Let’s get you feeling better in 5 simple steps :)',
+    '1. Answer some quick questions',
+    '2. Connect with your doctor',
+    '3. Get a prescription and meds, if necessary',
+    '4. Avail 1 free follow-up*',
+    '5. Chat with your doctor*',
+    '* 7 days after your first consultation.',
+  ];
 
   return (
     <View
@@ -342,9 +362,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
         <BottomPopUp
           title={'Appointment Confirmation'}
           description={`Your appointment has been successfully booked with Dr. ${
-            props.doctor && props.doctor!.firstName ? props.doctor!.firstName : ''
-          }`}
+            props.doctor ? `${props.doctor.firstName} ${props.doctor.lastName}` : ''
+          }.`}
         >
+          <ScrollView bounces={false}>
+            <Text style={styles.congratulationsDescriptionStyle}>{successSteps.join('\n')}</Text>
+          </ScrollView>
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               activeOpacity={1}
