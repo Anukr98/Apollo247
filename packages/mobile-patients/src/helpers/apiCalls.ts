@@ -42,6 +42,67 @@ export interface MedicineProductDetailsResponse {
   productdp: MedicineProductDetails[];
 }
 
+export interface MedicineProductsResponse {
+  product_count: number;
+  products: MedicineProduct[];
+}
+
+export interface Store {
+  storeid: string;
+  storename: string;
+  address: string;
+  workinghrs: string;
+  phone: string;
+  city: string;
+  state: string;
+  message: string;
+}
+
+interface InventoryCheckApiResponse {
+  InvChkResult: {
+    Message: string; //"Data Founds" | "Authentication Failure-Invalid Token" | "No Items to Check Inventory"
+    Status: boolean;
+    item:
+      | {
+          artCode: string;
+          batch: string;
+          expDate: string; //'2024-05-30 00:00:00.0'
+          mrp: number;
+          qoh: number;
+        }[]
+      | null;
+  };
+}
+
+type CityOptions =
+  | 'hyderabad'
+  | 'bengaluru'
+  | 'chennai'
+  | 'delhi'
+  | 'kolkata'
+  | 'mumbai'
+  | 'vijaywada'
+  | 'ahmedabad'
+  | 'all';
+
+type GooglePlacesType =
+  | 'postal_code'
+  | 'locality'
+  | 'administrative_area_level_2'
+  | 'administrative_area_level_1'
+  | 'country';
+
+interface PlacesApiResponse {
+  results: {
+    address_components: {
+      long_name: string;
+      short_name: string;
+      types: GooglePlacesType[];
+    }[];
+  }[];
+}
+
+/*
 export interface CartItem extends Partial<MedicineProduct> {
   item_id: number;
   sku: string;
@@ -51,11 +112,6 @@ export interface CartItem extends Partial<MedicineProduct> {
   extension_attributes: {
     image_url: string;
   };
-}
-
-export interface MedicineProductsResponse {
-  product_count: number;
-  products: MedicineProduct[];
 }
 
 export interface Customer {
@@ -116,21 +172,12 @@ export interface CartInfoResponse {
   extension_attributes: ExtensionAttributes;
   grand_total: number;
 }
+*/
 
-export interface Store {
-  storeid: string;
-  storename: string;
-  address: string;
-  workinghrs: string;
-  phone: string;
-  city: string;
-  state: string;
-  message: string;
-}
 // 9f15bdd0fcd5423190c2e877ba0228A24
 // const AUTH_TOKEN = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
-const config = AppConfig.Configuration;
 
+/*
 export const getQuoteId = async () =>
   (await AsyncStorage.getItem('QUOTE_ID')) || (await generateAndSaveQuoteId()); // in-progress, need to optimize
 
@@ -168,44 +215,6 @@ export const generateAndSaveCartId = async (): Promise<number> => {
 
 export const generateQuoteIdApi = (): Promise<AxiosResponse<{ quote_id: string }>> => {
   return Axios.get(`http://api.apollopharmacy.in/apollo_api.php?type=guest_quote`);
-};
-
-export const getMedicineDetailsApi = (
-  productSku: string
-): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
-  return Axios.post(
-    `${config.MED_DETAIL_API_URL}/popcsrchpdp_api.php`,
-    { params: productSku },
-    {
-      headers: {
-        Authorization: config.MED_DETAIL_API_TOKEN,
-      },
-    }
-  );
-};
-
-let cancel: any;
-
-export const searchMedicineApi = (
-  searchText: string
-): Promise<AxiosResponse<MedicineProductsResponse>> => {
-  const CancelToken = Axios.CancelToken;
-  cancel && cancel();
-
-  return Axios.post(
-    `${config.MED_SEARCH_API_URL}/popcsrchprd_api.php`,
-    { params: searchText },
-    {
-      headers: {
-        Authorization: config.MED_SEARCH_API_TOKEN,
-        'Content-Type': 'application/json',
-      },
-      cancelToken: new CancelToken(function executor(c) {
-        // An executor function receives a cancel function as a parameter
-        cancel = c;
-      }),
-    }
-  );
 };
 
 export const getCartInfoApi = async (): Promise<AxiosResponse<CartInfoResponse>> => {
@@ -258,17 +267,58 @@ export const removeProductFromCartApi = async (
     }
   );
 };
+*/
+
+const config = AppConfig.Configuration;
+
+export const getMedicineDetailsApi = (
+  productSku: string
+): Promise<AxiosResponse<MedicineProductDetailsResponse>> => {
+  return Axios.post(
+    `${config.MED_DETAIL[0]}/popcsrchpdp_api.php`,
+    { params: productSku },
+    {
+      headers: {
+        Authorization: config.MED_DETAIL[1],
+      },
+    }
+  );
+};
+
+let cancel: any;
+
+export const searchMedicineApi = (
+  searchText: string
+): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancel && cancel();
+
+  return Axios.post(
+    `${config.MED_SEARCH[0]}/popcsrchprd_api.php`,
+    { params: searchText },
+    {
+      headers: {
+        Authorization: config.MED_SEARCH[1],
+        'Content-Type': 'application/json',
+      },
+      cancelToken: new CancelToken(function executor(c) {
+        // An executor function receives a cancel function as a parameter
+        cancel = c;
+      }),
+    }
+  );
+};
 
 export const searchPickupStoresApi = async (
   pincode: string
 ): Promise<AxiosResponse<{ Stores: Store[]; stores_count: number }>> => {
   return Axios.post(
     // `${config.PHARMA_BASE_URL}/popcsrchpin_api.php`,
-    `${config.PHARMA_BASE_URL}/searchpin_api.php`, //Production
+    `${config.STORES_LIST[0]}/searchpin_api.php`, //Production
     { params: pincode },
     {
       headers: {
-        Authorization: config.PHARMA_AUTH_TOKEN,
+        Authorization: config.STORES_LIST[1],
       },
     }
   );
@@ -279,7 +329,7 @@ export const pinCodeServiceabilityApi = (
 ): Promise<AxiosResponse<{ Availability: boolean }>> => {
   return Axios.post(
     // `${config.PHARMA_UAT_BASE_URL}/pincode_api.php`,
-    `${config.PHARMA_BASE_URL}/servicability_api.php`, //Production
+    `${config.PIN_SERVICEABILITY[0]}/servicability_api.php`, //Production
     {
       postalcode: pinCode,
       skucategory: [
@@ -290,28 +340,50 @@ export const pinCodeServiceabilityApi = (
     },
     {
       headers: {
-        Authorization: config.PHARMA_AUTH_TOKEN,
+        Authorization: config.PIN_SERVICEABILITY[1],
       },
     }
   );
 };
 
-type GooglePlacecType =
-  | 'postal_code'
-  | 'locality'
-  | 'administrative_area_level_2'
-  | 'administrative_area_level_1'
-  | 'country';
+export const inventoryCheckApi = (
+  itemIds: string[]
+): Promise<AxiosResponse<InventoryCheckApiResponse>> => {
+  return Axios.post(
+    `${config.INVENTORY_CHECK[0]}/INV_CHECK`, //Production
+    {
+      siteid: '14057',
+      Itemid: itemIds.map((ItemID) => ({ ItemID })),
+    },
+    {
+      headers: {
+        Token: config.INVENTORY_CHECK[1],
+      },
+    }
+  );
+};
 
-interface PlacesApiResponse {
-  results: {
-    address_components: {
-      long_name: string;
-      short_name: string;
-      types: GooglePlacecType[];
-    }[];
-  }[];
-}
+export const getPopularProductsBasedOnCityApi = (
+  city: CityOptions
+): Promise<AxiosResponse<InventoryCheckApiResponse>> => {
+  return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
+};
+
+export const getMedicineSearchSuggestionsApi = (
+  params: string
+): Promise<AxiosResponse<InventoryCheckApiResponse>> => {
+  return Axios.post(
+    `${config.MED_SEARCH_SUGGESTION[0]}/popcsrchss_api.php`,
+    {
+      params: params,
+    },
+    {
+      headers: {
+        Authorization: config.MED_SEARCH_SUGGESTION[1],
+      },
+    }
+  );
+};
 
 export const getPlaceInfoByPincode = (
   pincode: string
