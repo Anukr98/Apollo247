@@ -274,7 +274,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       withPresence: true,
     });
 
-    getHistory();
+    getHistory(0);
 
     pubnub.addListener({
       status: (statusEvent) => {},
@@ -290,10 +290,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== acceptcallMsg &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
-          message.message.message !== followupconsult 
+          message.message.message !== followupconsult
         ) {
           setIsNewMsg(true);
-        }else{
+        } else {
           setIsNewMsg(false);
         }
         if (message.message && message.message.message === acceptcallMsg) {
@@ -301,7 +301,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
         srollToBottomAction();
         resetMessagesAction();
-        getHistory();
+        //getHistory(0);
       },
     });
     return function cleanup() {
@@ -309,18 +309,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
   }, []);
 
-  const getHistory = () => {
-    pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
-      const newmessage: MessagesObjectProps[] = [];
-      res.messages.forEach((element, index) => {
-        newmessage[index] = element.entry;
-      });
-      insertText = newmessage;
-      if (messages.length !== newmessage.length) {
+  const getHistory = (timetoken: number) => {
+    pubnub.history(
+      {
+        channel: channel,
+        reverse: true,
+        count: 1000,
+        stringifiedTimeToken: true,
+        start: timetoken,
+      },
+      (status, res) => {
+        const newmessage: MessagesObjectProps[] = messages;
+        console.log(newmessage);
+        res.messages.forEach((element, index) => {
+          //newmessage[index] = element.entry;
+          newmessage.push(element.entry);
+        });
+        insertText = newmessage;
+        //if (messages.length !== newmessage.length) {
         setMessages(newmessage);
+        //}
+        const end: number = res.endTimeToken ? res.endTimeToken : 1;
+        if (res.messages.length == 100) {
+          getHistory(end);
+        }
+        resetMessagesAction();
+        srollToBottomAction();
       }
-      srollToBottomAction();
-    });
+    );
   };
 
   const send = () => {
@@ -620,7 +636,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
-        {/* {showVideo && (
+        {showVideo && (
           <Consult
             toggelChatVideo={() => toggelChatVideo()}
             stopAudioVideoCall={() => stopAudioVideoCall()}
@@ -635,7 +651,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             isNewMsg={isNewMsg}
             convertCall={() => convertCall()}
           />
-        )} */}
+        )}
         <div>
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatContainer}>
