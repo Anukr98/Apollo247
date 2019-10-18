@@ -6,17 +6,19 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 @EntityRepository(PatientFamilyHistory)
 export class PatientFamilyHistoryRepository extends Repository<PatientFamilyHistory> {
   savePatientFamilyHistory(patientFamilyHistoryAttrs: Partial<PatientFamilyHistory>) {
-    return this.create(patientFamilyHistoryAttrs)
-      .save()
-      .catch((patientFamilyHistoryError) => {
-        throw new AphError(AphErrorMessages.SAVE_PATIENT_FAMILY_HISTORY_ERROR, undefined, {
-          patientFamilyHistoryError,
-        });
+    return this.save(this.create(patientFamilyHistoryAttrs)).catch((patientFamilyHistoryError) => {
+      throw new AphError(AphErrorMessages.SAVE_PATIENT_FAMILY_HISTORY_ERROR, undefined, {
+        patientFamilyHistoryError,
       });
+    });
   }
 
   getPatientFamilyHistoryList(patient: string) {
     return this.find({ where: { patient } });
+  }
+
+  getPatientFamilyHistory(patient: string) {
+    return this.findOne({ where: { patient }, order: { createdDate: 'DESC' } });
   }
 
   updatePatientFamilyHistory(id: string, patientFamilyHistoryAttrs: Partial<PatientFamilyHistory>) {

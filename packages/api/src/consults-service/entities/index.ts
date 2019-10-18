@@ -429,6 +429,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   patientId: string;
 
+  @Column({ nullable: true, default: false })
+  sentToPatient: boolean;
+
   @Column({ nullable: true, default: CASESHEET_STATUS.PENDING })
   status: CASESHEET_STATUS;
 
