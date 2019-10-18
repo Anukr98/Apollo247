@@ -11,16 +11,39 @@ import {
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View, Image } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
 
 const styles = StyleSheet.create({
-  cardStyle: {
-    ...theme.viewStyles.cardViewStyle,
-    backgroundColor: theme.colors.WHITE,
-    margin: 20,
-    padding: 16,
+  mainView: {
+    backgroundColor: theme.colors.CARD_BG,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    ...theme.viewStyles.shadowStyle,
+  },
+  doctorNameStyle: {
+    paddingTop: 8,
+    paddingBottom: 2,
+    ...theme.fonts.IBMPlexSansSemiBold(23),
+    color: theme.colors.LIGHT_BLUE,
+  },
+  labelStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.LIGHT_BLUE,
+    paddingBottom: 3.5,
+  },
+  descriptionStyle: {
+    paddingTop: 7.5,
+    paddingBottom: 16,
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SKY_BLUE,
+  },
+  labelViewStyle: {
+    paddingTop: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   noteContainerStyle: {
     flexDirection: 'row',
@@ -33,18 +56,21 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     letterSpacing: 0.04,
   },
+  separatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
   heading: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.LIGHT_BLUE,
-    lineHeight: 20,
-    marginBottom: 8,
+    ...theme.fonts.IBMPlexSansMedium(10),
+    color: theme.colors.light_label,
+    letterSpacing: 0.35,
+    marginBottom: 2,
   },
   description: {
-    ...theme.fonts.IBMPlexSansMedium(16),
-    color: theme.colors.SKY_BLUE,
-    letterSpacing: 0.04,
-    lineHeight: 24,
-    marginBottom: 16,
+    ...theme.fonts.IBMPlexSansMedium(10),
+    color: theme.colors.LIGHT_BLUE,
+    letterSpacing: 0.25,
+    marginBottom: 8,
   },
   bottonButtonContainer: {
     flexDirection: 'row',
@@ -64,12 +90,13 @@ const styles = StyleSheet.create({
     marginTop: 15,
     marginBottom: 24,
   },
-  noDataCard: {
-    height: 'auto',
-    shadowRadius: 0,
-    shadowOffset: { width: 0, height: 0 },
-    shadowColor: 'white',
-    elevation: 0,
+  imageView: {
+    width: 80,
+    marginLeft: 20,
+  },
+  doctorImage: {
+    width: 80,
+    height: 80,
   },
 });
 
@@ -164,6 +191,76 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   };
 
+  const renderTopView = () => {
+    return (
+      <View style={styles.mainView}>
+        <View
+          style={{
+            flexDirection: 'row',
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.doctorNameStyle}>Crocin Advance Tab</Text>
+            {renderBasicDetails()}
+          </View>
+          <View style={styles.imageView}>
+            {true ? <Image source={{ uri: '' }} style={styles.doctorImage} /> : null}
+          </View>
+        </View>
+        <View style={[styles.separatorStyle, { marginTop: 4 }]} />
+      </View>
+    );
+  };
+
+  const FirstRoute = (props) => {
+    console.log(props.route.key, 'props');
+
+    return (
+      <View style={[{ backgroundColor: theme.colors.WHITE, flex: 1, paddingVertical: 13 }]}>
+        <View
+          style={{
+            marginHorizontal: 20,
+            paddingTop: 15.5,
+          }}
+        >
+          <Text
+            style={{
+              color: theme.colors.SHERPA_BLUE,
+              ...theme.fonts.IBMPlexSansMedium(16),
+              lineHeight: 24,
+            }}
+          >
+            description
+          </Text>
+        </View>
+      </View>
+    );
+  };
+  const renderTabBar = (props) => (
+    <TabBar
+      {...props}
+      scrollEnabled
+      indicatorStyle={styles.indicator}
+      style={styles.tabbar}
+      tabStyle={styles.tab}
+      labelStyle={styles.label}
+    />
+  );
+
+  const renderTabs = () => {
+    return (
+      <TabView
+        navigationState={{ index: selectedTab, routes }}
+        renderScene={SceneMap({
+          A: FirstRoute,
+          B: FirstRoute,
+        })}
+        renderTabBar={renderTabBar}
+        onIndexChange={(index) => setselectedTab(index)}
+      />
+    );
+  };
+
   const renderTitleAndDescriptionList = () => {
     return medicineOverview
       .filter((item) => item.CaptionDesc)
@@ -232,10 +329,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       const basicDetails: [string, string | number][] = [
         ['Manufacturer', manufacturer],
         ['Composition', composition],
-        ['Dose Form', doseForm],
-        ['Description', description],
-        ['Price', price],
-        ['Pack', pack],
+        // ['Dose Form', doseForm],
+        // ['Description', description],
+        // ['Price', price],
+        ['Pack Of', pack],
       ];
 
       return (
@@ -244,12 +341,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             (item, i, array) =>
               !!item[1] && (
                 <View key={i}>
-                  <Text style={styles.heading}>{item[0].toUpperCase()}</Text>
-                  <Text
-                    style={[styles.description, { marginBottom: i == array.length - 1 ? 0 : 16 }]}
-                  >
-                    {item[1]}
-                  </Text>
+                  <Text style={styles.heading}>{item[0]}</Text>
+                  <Text style={[styles.description]}>{item[1]}</Text>
                 </View>
               )
           )}
@@ -266,9 +359,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       <Header
         leftIcon="backArrow"
         onPressLeftIcon={() => props.navigation.goBack()}
-        title={_title}
+        title={'PRODUCT DETAIL'}
         titleStyle={{ marginHorizontal: 10 }}
-        container={{ borderBottomWidth: 0 }}
+        container={{ borderBottomWidth: 0, ...theme.viewStyles.shadowStyle }}
       />
 
       {loading && (
@@ -279,28 +372,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           color="green"
         />
       )}
-
-      {/* {!loading && medicineOverview.length == 0 && (
-        <View style={{ flex: 1 }}>
-          <View style={styles.cardStyle}>
-            {renderNote()}
-            <Card
-              cardContainer={[
-                styles.noDataCard,
-                { marginTop: medicineDetails!.is_prescription_required == '1' ? -10 : 5 },
-              ]}
-              heading={'Uh oh! :('}
-              description={'No Data Found!'}
-              descriptionTextStyle={{ fontSize: 14 }}
-              headingTextStyle={{ fontSize: 14 }}
-            />
-          </View>
-        </View>
-      )} */}
-
       {!loading && (
         <ScrollView bounces={false}>
-          <View style={styles.cardStyle}>
+          {renderTopView()}
+          {renderTabs()}
+
+          {/* <View style={styles.cardStyle}>
             {renderNote()}
             {Object.keys(medicineDetails).length == 0 && (
               <Card
@@ -316,7 +393,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             )}
             {renderBasicDetails()}
             {renderTitleAndDescriptionList()}
-          </View>
+          </View> */}
         </ScrollView>
       )}
 
