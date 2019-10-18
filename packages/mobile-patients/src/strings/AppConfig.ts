@@ -16,6 +16,7 @@ const PharmaApiConfig = {
       'cTfznn4yhybBR7WSrNJn1g==',
     ],
     SHOP_BY_CITY: ['https://uat.apollopharmacy.in'],
+    IMAGES_BASE_URL: ['https://www.apollopharmacy.in/pub/media/catalog/product'],
   },
   prod: {
     MED_SEARCH: ['https://www.apollopharmacy.in', 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d'],
@@ -34,6 +35,7 @@ const PharmaApiConfig = {
       'cTfznn4yhybBR7WSrNJn1g==',
     ],
     SHOP_BY_CITY: ['https://www.apollopharmacy.in'],
+    IMAGES_BASE_URL: ['https://www.apollopharmacy.in/pub/media/catalog/product'],
   },
 };
 
