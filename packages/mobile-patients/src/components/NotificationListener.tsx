@@ -216,14 +216,14 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       })
       .then((_data: any) => {
         try {
+          hideAphAlert && hideAphAlert();
+
           console.log(
             'GetDoctorNextAvailableSlot',
             _data.data.getAppointmentData.appointmentsHistory
           );
           const appointmentData = _data.data.getAppointmentData.appointmentsHistory;
           if (appointmentData) {
-            hideAphAlert && hideAphAlert();
-
             switch (notificationType) {
               case 'Reschedule-Appointment':
                 {
@@ -241,7 +241,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
               case 'Chat-Room':
                 {
-                  hideAphAlert && hideAphAlert();
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: appointmentData[0],
                   });
@@ -252,7 +251,9 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 break;
             }
           }
-        } catch (error) {}
+        } catch (error) {
+          hideAphAlert && hideAphAlert();
+        }
       })
       .catch((e: any) => {
         const error = JSON.parse(JSON.stringify(e));

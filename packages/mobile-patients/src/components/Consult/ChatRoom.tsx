@@ -683,6 +683,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === startConsultMsg) {
         stopInterval();
         startInterval(timer);
+        setjrDoctorJoined(false);
         updateSessionAPI();
         checkingAppointmentDates();
         addMessages(message);
