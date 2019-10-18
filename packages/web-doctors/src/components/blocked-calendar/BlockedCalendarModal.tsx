@@ -46,7 +46,17 @@ export interface BlockedCalendarAddModalProps {
   doctorId: string;
   item?: Item | null;
 }
+const getFormattedDate = (date: any) => {
+  const year = date.getFullYear();
 
+  let month = (1 + date.getMonth()).toString();
+  month = month.length > 1 ? month : '0' + month;
+
+  let day = date.getDate().toString();
+  day = day.length > 1 ? day : '0' + day;
+
+  return year + '-' + month + '-' + day;
+}
 export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (props) => {
   enum RadioValues {
     DAY = 'DAY',
@@ -209,6 +219,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     },
   });
   const classes = useStyles();
+
+
   const [selectedDate, setSelectedDate] = React.useState(new Date('2019-10-17T21:11:54'));
   return (
     <Dialog
@@ -249,7 +261,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                     id="date-picker-inline"
                     label="From"
                     value={start}
-                    onChange={(date) => { setStart(date ? date.toString() : '') }}
+                    minDate={new Date()}
+                    onChange={(date) => { setStart(date ? getFormattedDate(date) : '') }}
                     KeyboardButtonProps={{
                       'aria-label': 'change date',
                     }}
@@ -261,12 +274,13 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       className={classes.KeyboardDatePicker}
                       disableToolbar
                       variant="inline"
-                      format="MM-dd-yyyy"
+                      format="MM/dd/yyyy"
                       margin="normal"
                       id="date-picker-inline"
                       label="To"
+                      minDate={new Date()}
                       value={end}
-                      onChange={(date) => { console.log(date ? date.toString() : ''); setEnd(date ? date.toString() : '') }}
+                      onChange={(date) => { setEnd(date ? getFormattedDate(date) : '') }}
                       KeyboardButtonProps={{
                         'aria-label': 'change date',
                       }}
@@ -346,8 +360,11 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                     disabled={loading || invalid}
                     variant="contained"
                     onClick={() => {
+                      //2019-10-18 2019-10-18
+                      console.log(start, end);
                       const startDate = parse(start, 'yyyy-MM-dd', new Date());
                       const endDate = parse(end, 'yyyy-MM-dd', new Date());
+                      console.log(startDate, endDate);
                       if (durationSelected) {
                         startDate.setHours(0);
                         startDate.setMinutes(0);
@@ -383,6 +400,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         setIsOverlapError(isOverlapError);
                       };
                       const isUpdate = item && item.id != null;
+                      console.log(addArgs);
                       if (isUpdate) {
                         const updateArgs = {
                           ...addArgs,
