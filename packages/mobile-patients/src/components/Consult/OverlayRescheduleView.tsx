@@ -22,6 +22,7 @@ import {
   BookAppointmentInput,
   BookRescheduleAppointmentInput,
   TRANSFER_INITIATED_TYPE,
+  APPOINTMENT_STATE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { divideSlots } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -246,8 +247,14 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                     appointmentId: props.appointmentId,
                     doctorId: props.doctorId,
                     newDateTimeslot: timeSlot,
-                    initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-                    initiatedId: props.patientId,
+                    initiatedBy:
+                      props.data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+                        ? TRANSFER_INITIATED_TYPE.DOCTOR
+                        : TRANSFER_INITIATED_TYPE.PATIENT,
+                    initiatedId:
+                      props.data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+                        ? props.doctorId
+                        : props.patientId,
                     patientId: props.patientId,
                     rescheduledId: '',
                   };

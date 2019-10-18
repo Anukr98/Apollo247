@@ -18,6 +18,7 @@ import parse from 'autosuggest-highlight/parse';
 import { isEmpty, debounce, trim, deburr } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import Scrollbars from 'react-custom-scrollbars';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -29,12 +30,7 @@ interface OptionType {
   sku: string;
 }
 
-let suggestions: OptionType[] = [
-  { label: 'Ibuprofen, 200 mg', sku: 'IB01' },
-  { label: 'Ibugesic plus, 1.5% wwa', sku: 'IB02' },
-  { label: 'Ibuenatal', sku: 'IB03' },
-  { label: 'Ibuenatal', sku: 'IB04' },
-];
+let suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
   const { classes, inputRef = () => {}, ref, ...other } = inputProps;
@@ -68,7 +64,10 @@ function renderSuggestion(
     <MenuItem selected={isHighlighted} component="div">
       <div>
         {parts.map((part) => (
-          <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
+          <span
+            key={part.text}
+            style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
+          >
             {part.text}
           </span>
         ))}
@@ -470,22 +469,7 @@ export const MedicinePrescription: React.FC = () => {
   const [medicine, setMedicine] = useState('');
   const [searchInput, setSearchInput] = useState('');
   function getSuggestions(value: string) {
-    const inputValue = deburr(value.trim()).toLowerCase();
-    const inputLength = inputValue.length;
-    let count = 0;
-
-    return inputLength === 0
-      ? []
-      : suggestions.filter((suggestion) => {
-          const keep =
-            count < 5 && suggestion.label.slice(0, inputLength).toLowerCase() === inputValue;
-
-          if (keep) {
-            count += 1;
-          }
-
-          return keep;
-        });
+    return suggestions;
   }
 
   const toBeTaken = (value: any) => {
@@ -519,7 +503,7 @@ export const MedicinePrescription: React.FC = () => {
       )
       .then((result) => {
         const medicines = result.data.products ? result.data.products : [];
-        medicines.slice(0, 10).forEach((res: any) => {
+        medicines.forEach((res: any) => {
           const data = { label: '', sku: '' };
           data.label = res.name;
           data.sku = res.sku;
@@ -980,9 +964,11 @@ export const MedicinePrescription: React.FC = () => {
                       suggestion: classes.suggestion,
                     }}
                     renderSuggestionsContainer={(options) => (
-                      <Paper {...options.containerProps} square>
-                        {options.children}
-                      </Paper>
+                      <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                        <Paper {...options.containerProps} square>
+                          {options.children}
+                        </Paper>
+                      </Scrollbars>
                     )}
                   />
                   {medicine.length > 2 && !loading && (

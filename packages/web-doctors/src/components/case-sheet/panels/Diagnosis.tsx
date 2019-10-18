@@ -57,7 +57,10 @@ function renderSuggestion(
     <MenuItem selected={isHighlighted} component="div">
       <div>
         {parts.map((part) => (
-          <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
+          <span
+            key={part.text}
+            style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
+          >
             {part.text}
           </span>
         ))}
@@ -266,22 +269,7 @@ export const Diagnosis: React.FC = () => {
       });
   };
   const getSuggestions = (value: string) => {
-    const inputValue = deburr(value.trim()).toLowerCase();
-    const inputLength = inputValue.length;
-    let count = 0;
-
-    return inputLength === 0
-      ? []
-      : suggestions.filter((suggestion) => {
-          const keep =
-            count < 5 && suggestion.name.slice(0, inputLength).toLowerCase() === inputValue;
-
-          if (keep) {
-            count += 1;
-          }
-
-          return keep;
-        });
+    return suggestions;
   };
 
   function getSuggestionValue(suggestion: OptionType) {

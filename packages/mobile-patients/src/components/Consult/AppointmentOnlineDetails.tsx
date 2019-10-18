@@ -37,7 +37,10 @@ import {
   Alert,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  TRANSFER_INITIATED_TYPE,
+  APPOINTMENT_STATE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
@@ -113,6 +116,11 @@ const styles = StyleSheet.create({
     marginLeft: 20,
     marginRight: 8,
     backgroundColor: 'white',
+  },
+  reschduleWaitButtonStyle: {
+    marginLeft: width / 2 - 60,
+    backgroundColor: 'white',
+    width: 120,
   },
   mainView: {
     backgroundColor: theme.colors.CARD_BG,
@@ -313,8 +321,14 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         availability.data!.getDoctorNextAvailableSlot! &&
         availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0] &&
         availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0].availableSlot,
-      initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-      initiatedId: data.patientId,
+      initiatedBy:
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+          ? TRANSFER_INITIATED_TYPE.DOCTOR
+          : TRANSFER_INITIATED_TYPE.PATIENT,
+      initiatedId:
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+          ? doctorDetails.id
+          : data.patientId,
       patientId: data.patientId,
       rescheduledId: '',
     };
@@ -483,7 +497,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           <StickyBottomComponent defaultBG style={{ paddingHorizontal: 0 }}>
             <Button
               title={'RESCHEDULE'}
-              style={styles.reschduleButtonStyle}
+              style={[
+                data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+                  ? styles.reschduleWaitButtonStyle
+                  : styles.reschduleButtonStyle,
+              ]}
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
                 try {
@@ -491,16 +509,17 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 } catch (error) {}
               }}
             />
-
-            <Button
-              title={'START CONSULTATION'}
-              style={styles.startConsultText}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.ChatRoom, {
-                  data: data,
-                });
-              }}
-            />
+            {data.appointmentState != APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
+              <Button
+                title={'START CONSULTATION'}
+                style={styles.startConsultText}
+                onPress={() => {
+                  props.navigation.navigate(AppRoutes.ChatRoom, {
+                    data: data,
+                  });
+                }}
+              />
+            ) : null}
           </StickyBottomComponent>
         </SafeAreaView>
         {bottompopup && (

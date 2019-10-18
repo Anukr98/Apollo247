@@ -354,7 +354,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       setTimeout(() => {
         setDoctorJoined(false);
-      }, 4000);
+      }, 10000);
 
       client
         .mutate<updateAppointmentSession, updateAppointmentSessionVariables>({
@@ -603,15 +603,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           if (messages.length !== newmessage.length) {
             if (newmessage[newmessage.length - 1].message === startConsultMsg) {
+              setjrDoctorJoined(false);
               updateSessionAPI();
               checkingAppointmentDates();
-              setjrDoctorJoined(false);
             }
 
             if (newmessage[newmessage.length - 1].message === startConsultjr) {
+              setjrDoctorJoined(true);
               updateSessionAPI();
               checkingAppointmentDates();
-              setjrDoctorJoined(true);
             }
 
             insertText = newmessage;
@@ -683,6 +683,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === startConsultMsg) {
         stopInterval();
         startInterval(timer);
+        setjrDoctorJoined(false);
         updateSessionAPI();
         checkingAppointmentDates();
         addMessages(message);
@@ -690,6 +691,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
         setConvertVideo(false);
+        addMessages(message);
       } else if (
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
@@ -708,6 +710,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setConvertVideo(false);
       } else if (message.message.message === startConsultjr) {
         console.log('succss1');
+        setjrDoctorJoined(true);
+        updateSessionAPI();
+        checkingAppointmentDates();
         addMessages(message);
       }
       // } else if (message.message.message === stopConsultMsg) {
@@ -1521,17 +1526,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 borderRadius: 10,
               }}
             >
-              <Text
-                style={{
-                  color: '#ffffff',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  ...theme.fonts.IBMPlexSansMedium(15),
-                  textAlign: 'left',
-                }}
-              >
-                {rowData.automatedText}
-              </Text>
+              {rowData.automatedText ? (
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.automatedText}
+                </Text>
+              ) : null}
             </View>
           ) : rowData.message === '^^#startconsult' ? (
             <View
@@ -1541,17 +1548,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 borderRadius: 10,
               }}
             >
-              <Text
-                style={{
-                  color: '#ffffff',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  ...theme.fonts.IBMPlexSansMedium(15),
-                  textAlign: 'left',
-                }}
-              >
-                {rowData.automatedText}
-              </Text>
+              {rowData.automatedText ? (
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.automatedText}
+                </Text>
+              ) : null}
             </View>
           ) : rowData.message === '^^#stopconsult' ? (
             <View
@@ -1561,17 +1570,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 borderRadius: 10,
               }}
             >
-              <Text
-                style={{
-                  color: '#ffffff',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  ...theme.fonts.IBMPlexSansMedium(15),
-                  textAlign: 'left',
-                }}
-              >
-                {rowData.automatedText}
-              </Text>
+                    {rowData.automatedText ? (
+                      <Text
+                        style={{
+                          color: '#ffffff',
+                          paddingHorizontal: 16,
+                          paddingVertical: 12,
+                          ...theme.fonts.IBMPlexSansMedium(15),
+                          textAlign: 'left',
+                        }}
+                      >
+                        {rowData.automatedText}
+                      </Text>
+                    ) : null}
             </View>
           ) : (
             <View
@@ -3145,7 +3156,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               {jrDoctorJoined
                 ? `Junior doctor has joined`
-                : `Dr. ${appointmentData.doctorInfo.firstName} has joined!`}
+                : `Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName} has joined!`}
             </Text>
           </View>
         ) : null}
