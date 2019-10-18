@@ -354,7 +354,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       setTimeout(() => {
         setDoctorJoined(false);
-      }, 4000);
+      }, 10000);
 
       client
         .mutate<updateAppointmentSession, updateAppointmentSessionVariables>({
@@ -603,15 +603,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           if (messages.length !== newmessage.length) {
             if (newmessage[newmessage.length - 1].message === startConsultMsg) {
+              setjrDoctorJoined(false);
               updateSessionAPI();
               checkingAppointmentDates();
-              setjrDoctorJoined(false);
             }
 
             if (newmessage[newmessage.length - 1].message === startConsultjr) {
+              setjrDoctorJoined(true);
               updateSessionAPI();
               checkingAppointmentDates();
-              setjrDoctorJoined(true);
             }
 
             insertText = newmessage;
@@ -690,6 +690,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
         setConvertVideo(false);
+        addMessages(message);
       } else if (
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
@@ -708,6 +709,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         setConvertVideo(false);
       } else if (message.message.message === startConsultjr) {
         console.log('succss1');
+        setjrDoctorJoined(true);
+        updateSessionAPI();
+        checkingAppointmentDates();
         addMessages(message);
       }
       // } else if (message.message.message === stopConsultMsg) {

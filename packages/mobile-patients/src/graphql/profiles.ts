@@ -1104,6 +1104,7 @@ export const GET_APPOINTMENT_DATA = gql`
         hospitalId
         doctorId
         isFollowUp
+        displayId
         rescheduleCount
         doctorInfo {
           id
@@ -1111,6 +1112,8 @@ export const GET_APPOINTMENT_DATA = gql`
           firstName
           lastName
           experience
+          onlineConsultationFees
+          physicalConsultationFees
           specialty {
             name
           }
