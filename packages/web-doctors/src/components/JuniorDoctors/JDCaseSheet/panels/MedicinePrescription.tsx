@@ -62,7 +62,7 @@ function renderSuggestion(
   return (
     <MenuItem selected={isHighlighted} component="div">
       {parts.map((part) => (
-        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400 }}>
+        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}>
           {part.text}
         </span>
       ))}
