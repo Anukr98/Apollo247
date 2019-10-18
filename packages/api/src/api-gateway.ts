@@ -88,6 +88,11 @@ export type Resolver<Parent, Args, Context, Result> = (
     webDoctorsBaseUrl(),
     'http://localhost:3000',
     'http://localhost:3001',
+    'https://healthcare.api.crm8.dynamics.com',
+    '183.82.124.217',
+    '104.211.90.216',
+    'https://popcornapps-sandbox.api.crm8.dynamics.com',
+    '104.211.216.178',
   ];
 
   const server = new ApolloServer({
