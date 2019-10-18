@@ -567,7 +567,7 @@ const modifyCaseSheet: Resolver<
 
   if (!(inputArguments.otherInstructions === undefined)) {
     if (inputArguments.otherInstructions && inputArguments.otherInstructions.length === 0)
-      throw new AphError(AphErrorMessages.INVALID_DIAGNOSTIC_PRESCRIPTION_LIST);
+      throw new AphError(AphErrorMessages.INVALID_OTHER_INSTRUCTIONS_LIST);
     getCaseSheetData.otherInstructions = JSON.parse(
       JSON.stringify(inputArguments.otherInstructions)
     );
