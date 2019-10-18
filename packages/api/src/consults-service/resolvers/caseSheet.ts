@@ -130,6 +130,7 @@ export const caseSheetTypeDefs = gql`
   type Appointment {
     id: String!
     appointmentDateTime: DateTime!
+    appointmentDocuments: [AppointmentDocuments]
     appointmentState: String
     appointmentType: APPOINTMENT_TYPE!
     displayId: String!
@@ -147,16 +148,24 @@ export const caseSheetTypeDefs = gql`
     doctorInfo: Profile @provides(fields: "id")
   }
 
+  type AppointmentDocuments {
+    documentPath: String
+  }
+
   type CaseSheetFullDetails {
     caseSheetDetails: CaseSheet
     patientDetails: PatientDetails
     pastAppointments: [Appointment]
     juniorDoctorNotes: String
+    juniorDoctorCaseSheet: CaseSheet
   }
 
   type CaseSheet {
     appointment: Appointment
     blobName: String
+    createdDate: Date
+    createdDoctorId: String
+    createdDoctorProfile: Profile @provides(fields: "id")
     consultType: String
     diagnosis: [Diagnosis]
     diagnosticPrescription: [DiagnosticPrescription]
@@ -172,6 +181,7 @@ export const caseSheetTypeDefs = gql`
     patientId: String
     symptoms: [SymptomList]
     status: String
+    sentToPatient: Boolean
   }
 
   type Diagnosis {
@@ -248,7 +258,6 @@ export const caseSheetTypeDefs = gql`
   }
 
   type PatientDetails {
-    patientAddress: [Address]
     allergies: String
     dateOfBirth: Date
     emailAddress: String
@@ -260,6 +269,8 @@ export const caseSheetTypeDefs = gql`
     lastName: String
     lifeStyle: [PatientLifeStyle]
     mobileNumber: String
+    patientAddress: [Address]
+    patientMedicalHistory: PatientMedicalHistory
     photoUrl: String
     uhid: String
     relation: Relation
@@ -267,6 +278,18 @@ export const caseSheetTypeDefs = gql`
 
   type PatientLifeStyle {
     description: String
+  }
+
+  type PatientMedicalHistory {
+    bp: String
+    dietAllergies: String
+    drugAllergies: String
+    height: String
+    menstrualHistory: String
+    pastMedicalHistory: String
+    pastSurgicalHistory: String
+    temperature: String
+    weight: String
   }
 
   type PatientHealthVault {
@@ -395,6 +418,7 @@ const getCaseSheet: Resolver<
     patientDetails: Patient;
     pastAppointments: Appointment[];
     juniorDoctorNotes: string;
+    juniorDoctorCaseSheet: CaseSheet;
   }
 > = async (parent, args, { mobileNumber, consultsDb, doctorsDb, patientsDb }) => {
   //check appointment id
@@ -405,6 +429,7 @@ const getCaseSheet: Resolver<
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
+  console.log(patientDetails);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //get loggedin user details
@@ -420,8 +445,10 @@ const getCaseSheet: Resolver<
   const caseSheetDetails = await caseSheetRepo.getSeniorDoctorCaseSheet(appointmentData.id);
   if (caseSheetDetails == null) throw new AphError(AphErrorMessages.NO_CASESHEET_EXIST);
 
-  const juniorDoctorcaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);
-  if (juniorDoctorcaseSheet != null) juniorDoctorNotes = juniorDoctorcaseSheet.notes;
+  const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentData.id);
+  if (juniorDoctorCaseSheet == null)
+    throw new AphError(AphErrorMessages.JUNIOR_DOCTOR_CASESHEET_NOT_CREATED);
+  juniorDoctorNotes = juniorDoctorCaseSheet.notes;
 
   //get past appointment details
   const pastAppointments = await appointmentRepo.getPastAppointments(
@@ -429,7 +456,13 @@ const getCaseSheet: Resolver<
     appointmentData.patientId
   );
 
-  return { caseSheetDetails, patientDetails, pastAppointments, juniorDoctorNotes };
+  return {
+    caseSheetDetails,
+    patientDetails,
+    pastAppointments,
+    juniorDoctorNotes,
+    juniorDoctorCaseSheet,
+  };
 };
 
 type UpdateCaseSheetInput = {
@@ -833,6 +866,11 @@ export const caseSheetResolvers = {
   Appointment: {
     doctorInfo(appointments: Appointment) {
       return { __typename: 'Profile', id: appointments.doctorId };
+    },
+  },
+  CaseSheet: {
+    doctorInfo(caseSheet: CaseSheet) {
+      return { __typename: 'Profile', id: caseSheet.createdDoctorId };
     },
   },
   Mutation: {
