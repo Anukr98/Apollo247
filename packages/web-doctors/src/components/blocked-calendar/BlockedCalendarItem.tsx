@@ -23,14 +23,10 @@ export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) =
     : `${format(item.start, 'P')} - ${format(item.end, 'P')}`;
   const timeText = sameDay ? `${format(item.start, 'p')} - ${format(item.end, 'p')}` : 'All slots';
   return (
-    <div style={{ color: 'black' }}>
-      <span style={{ width: '30%', display: 'inline-block' }}>{dateText}</span>
-      <span style={{ width: '30%', display: 'inline-block' }}>{timeText}</span>
-      <Button
-        variant="text"
-        style={{ color: 'black', width: '20%', display: 'inline-block' }}
-        onClick={() => onEdit(item)}
-      >
+    <div style={{ color: 'black', display: 'flex', justifyContent: 'space-between' }}>
+      <span>{dateText}</span>
+      <span>{timeText}</span>
+      <Button variant="text" style={{ color: 'black' }} onClick={() => onEdit(item)}>
         EDIT
       </Button>
       <Mutation<RemoveBlockedCalendarItem, RemoveBlockedCalendarItemVariables>

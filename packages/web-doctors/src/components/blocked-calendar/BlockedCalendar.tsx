@@ -5,9 +5,6 @@ import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { BlockedCalendarItem } from 'components/blocked-calendar/BlockedCalendarItem';
 import { BlockedCalendarAddModal } from 'components/blocked-calendar/BlockedCalendarModal';
-import { Theme } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
-import { AphButton } from '@aph/web-ui-components';
 
 export type Item = { id: number; start: Date; end: Date };
 export interface BlockedCalendarProps {
@@ -51,39 +48,8 @@ export const BlockedCalendar: React.FC<BlockedCalendarProps> = (props) => {
       />
     ));
   }
-  const useStyles = makeStyles((theme: Theme) => {
-    return {
-      blockcalendarSection: {
-        marginTop: 20,
-        borderTop: '2px solid rgba(2, 71, 91, 0.05)',
-        paddingTop: 15,
-        '& h2': {
-          fontSize: 16,
-          fontWeight: 600,
-          color: '#02475b',
-        },
-      },
-      addblockedHours: {
-        fontSize: 14,
-        fontWeight: 700,
-        color: '#fc9916',
-        marginTop: 10,
-        textTransform: 'uppercase',
-        backgroundColor: 'transparent',
-        boxShadow: 'none',
-        paddingLeft: 4,
-        '& img': {
-          marginRight: 10,
-        },
-        '&:hover': {
-          backgroundColor: 'transparent',
-        },
-      },
-    };
-  });
-  const classes = useStyles();
   return (
-    <div data-cypress="BlockedCalendar" className={classes.blockcalendarSection}>
+    <div data-cypress="BlockedCalendar">
       <BlockedCalendarAddModal
         item={itemToEdit}
         doctorId={doctorId}
@@ -98,14 +64,9 @@ export const BlockedCalendar: React.FC<BlockedCalendarProps> = (props) => {
       <h2>Blocked Calendar</h2>
       <div>{content}</div>
       <div>
-        <AphButton
-          variant="contained"
-          color="primary"
-          classes={{ root: classes.addblockedHours }}
-          onClick={() => setShowAddModal(true)}
-        >
-          <img src={require('images/ic_dark_plus.svg')} alt="" /> Add Blocked Hours
-        </AphButton>
+        <Button variant="contained" onClick={() => setShowAddModal(true)}>
+          Add Blocked Hours
+        </Button>
       </div>
     </div>
   );
