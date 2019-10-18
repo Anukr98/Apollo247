@@ -107,6 +107,8 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
       fontSize: 18,
       fontWeight: 500,
+      height: 350,
+      overflow: 'auto',
     },
     root: {
       flexGrow: 1,
