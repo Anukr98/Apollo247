@@ -18,6 +18,7 @@ import parse from 'autosuggest-highlight/parse';
 import { isEmpty, debounce, trim, deburr } from 'lodash';
 import axios from 'axios';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import Scrollbars from 'react-custom-scrollbars';
 
 const apiDetails = {
   url: process.env.PHARMACY_MED_SEARCH_URL,
@@ -107,8 +108,6 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#02475b',
       fontSize: 18,
       fontWeight: 500,
-      height: 350,
-      overflow: 'auto',
     },
     root: {
       flexGrow: 1,
@@ -962,9 +961,11 @@ export const MedicinePrescription: React.FC = () => {
                       suggestion: classes.suggestion,
                     }}
                     renderSuggestionsContainer={(options) => (
-                      <Paper {...options.containerProps} square>
-                        {options.children}
-                      </Paper>
+                      <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                        <Paper {...options.containerProps} square>
+                          {options.children}
+                        </Paper>
+                      </Scrollbars>
                     )}
                   />
                   {medicine.length > 2 && !loading && (
