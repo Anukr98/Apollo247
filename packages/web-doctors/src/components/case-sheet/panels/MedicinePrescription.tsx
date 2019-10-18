@@ -500,7 +500,7 @@ export const MedicinePrescription: React.FC = () => {
       )
       .then((result) => {
         const medicines = result.data.products ? result.data.products : [];
-        medicines.slice(0, 10).forEach((res: any) => {
+        medicines.forEach((res: any) => {
           const data = { label: '', sku: '' };
           data.label = res.name;
           data.sku = res.sku;
