@@ -991,11 +991,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== acceptcallMsg &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
-          message.message.message !== followupconsult  && 
+          message.message.message !== followupconsult &&
           message.message.message !== startConsult
         ) {
           setIsNewMsg(true);
-        }else{
+        } else {
           setIsNewMsg(false);
         }
         if (message.message && message.message.message === acceptcallMsg) {
