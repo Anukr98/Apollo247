@@ -38,7 +38,7 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { STATUS } from '../../graphql/types/globalTypes';
+import { STATUS, APPOINTMENT_STATE } from '../../graphql/types/globalTypes';
 
 const { width, height } = Dimensions.get('window');
 
@@ -683,19 +683,42 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         </Text>
                       </View>
                     </View>
-                  ) : item.status == STATUS.PENDING || dateIsAfterconsult ? (
-                    <TouchableOpacity
-                      activeOpacity={1}
-                      onPress={() => {
-                        props.navigation.navigate(AppRoutes.ChatRoom, {
-                          data: item,
-                        });
-                      }}
-                    >
-                      <Text style={styles.prepareForConsult}>
-                        {string.common.prepareForConsult}
-                      </Text>
-                    </TouchableOpacity>
+                  ) : item.status == STATUS.PENDING ||
+                    dateIsAfterconsult ||
+                    item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
+                    <View>
+                      {item.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
+                        <TouchableOpacity
+                          activeOpacity={1}
+                          onPress={() => {
+                            item.appointmentType === 'ONLINE'
+                              ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
+                                  data: item,
+                                  from: 'notification',
+                                })
+                              : props.navigation.navigate(AppRoutes.AppointmentDetails, {
+                                  data: item,
+                                  from: 'notification',
+                                });
+                          }}
+                        >
+                          <Text style={styles.prepareForConsult}>RESCHEDULE</Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          activeOpacity={1}
+                          onPress={() => {
+                            props.navigation.navigate(AppRoutes.ChatRoom, {
+                              data: item,
+                            });
+                          }}
+                        >
+                          <Text style={styles.prepareForConsult}>
+                            {string.common.prepareForConsult}
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   ) : (
                     <View>
                       <TouchableOpacity
