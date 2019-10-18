@@ -37,7 +37,10 @@ import {
   GetDoctorNextAvailableSlot,
   GetDoctorNextAvailableSlotVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
-import { TRANSFER_INITIATED_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  TRANSFER_INITIATED_TYPE,
+  APPOINTMENT_STATE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
@@ -96,6 +99,17 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
+  reschduleButtonStyle: {
+    flex: 0.4,
+    marginLeft: 20,
+    marginRight: 8,
+    backgroundColor: 'white',
+  },
+  reschduleWaitButtonStyle: {
+    marginLeft: width / 2 - 60,
+    backgroundColor: 'white',
+    width: 120,
+  },
 });
 
 type rescheduleType = {
@@ -111,6 +125,9 @@ export interface AppointmentDetailsProps extends NavigationScreenProps {}
 export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => {
   const data = props.navigation.state.params!.data;
   const doctorDetails = data.doctorInfo;
+
+  const movedFrom = props.navigation.state.params!.from;
+
   // console.log('doctorDetails', doctorDetails);
 
   // console.log(
@@ -139,6 +156,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
+    }
+
+    if (movedFrom === 'notification') {
+      NextAvailableSlotAPI();
     }
   }, [currentPatient]);
 
@@ -276,8 +297,14 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         availability.data!.getDoctorNextAvailableSlot! &&
         availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0] &&
         availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0].availableSlot,
-      initiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
-      initiatedId: data.patientId,
+      initiatedBy:
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+          ? TRANSFER_INITIATED_TYPE.DOCTOR
+          : TRANSFER_INITIATED_TYPE.PATIENT,
+      initiatedId:
+        data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+          ? doctorDetails.id
+          : data.patientId,
       patientId: data.patientId,
       rescheduledId: '',
     };
@@ -486,12 +513,11 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           <StickyBottomComponent defaultBG style={{ paddingHorizontal: 0 }}>
             <Button
               title={'RESCHEDULE'}
-              style={{
-                flex: 0.4,
-                marginLeft: 20,
-                marginRight: 8,
-                backgroundColor: 'white',
-              }}
+              style={[
+                data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+                  ? styles.reschduleWaitButtonStyle
+                  : styles.reschduleButtonStyle,
+              ]}
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
                 try {
@@ -499,19 +525,21 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 } catch (error) {}
               }}
             />
-            <Button
-              title={'START CONSULTATION'}
-              style={{
-                flex: 0.6,
-                marginRight: 20,
-                marginLeft: 8,
-              }}
-              onPress={() => {
-                props.navigation.navigate(AppRoutes.ChatRoom, {
-                  data: data,
-                });
-              }}
-            />
+            {data.appointmentState != APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
+              <Button
+                title={'START CONSULTATION'}
+                style={{
+                  flex: 0.6,
+                  marginRight: 20,
+                  marginLeft: 8,
+                }}
+                onPress={() => {
+                  props.navigation.navigate(AppRoutes.ChatRoom, {
+                    data: data,
+                  });
+                }}
+              />
+            ) : null}
           </StickyBottomComponent>
         </SafeAreaView>
         {bottompopup && (

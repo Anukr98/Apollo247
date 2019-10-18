@@ -97,6 +97,8 @@ import {
 import { AppConfig } from '../../strings/AppConfig';
 import { Spinner } from '../ui/Spinner';
 import { OverlayRescheduleView } from './OverlayRescheduleView';
+import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
+import { SelectEPrescriptionModal } from '../Medicines/SelectEPrescriptionModal';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -157,6 +159,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [isAudio, setIsAudio] = useState<boolean>(false);
   const [isAudioCall, setIsAudioCall] = useState<boolean>(false);
   const [showAudioPipView, setShowAudioPipView] = useState<boolean>(true);
+  const [showPopup, setShowPopup] = useState(false);
   const [talkStyles, setTalkStyles] = useState<object>({
     flex: 1,
     backgroundColor: 'black',
@@ -212,6 +215,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [hideStatusBar, setHideStatusBar] = useState<boolean>(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [chatReceived, setChatReceived] = useState(false);
+  const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [doctorJoined, setDoctorJoined] = useState(false);
   const [apiCalled, setApiCalled] = useState(false);
   const [userName, setuserName] = useState<string>('');
@@ -350,7 +354,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       setTimeout(() => {
         setDoctorJoined(false);
-      }, 4000);
+      }, 10000);
 
       client
         .mutate<updateAppointmentSession, updateAppointmentSessionVariables>({
@@ -510,6 +514,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       },
       message: (message) => {
+        console.log('messageevent', message);
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
@@ -598,15 +603,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
           if (messages.length !== newmessage.length) {
             if (newmessage[newmessage.length - 1].message === startConsultMsg) {
+              setjrDoctorJoined(false);
               updateSessionAPI();
               checkingAppointmentDates();
-              setjrDoctorJoined(false);
             }
 
             if (newmessage[newmessage.length - 1].message === startConsultjr) {
+              setjrDoctorJoined(true);
               updateSessionAPI();
               checkingAppointmentDates();
-              setjrDoctorJoined(true);
             }
 
             insertText = newmessage;
@@ -660,6 +665,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const pubNubMessages = (message: Pubnub.MessageEvent) => {
+    console.log('pubNubMessages', message);
     if (message.message.isTyping) {
       if (message.message.message === audioCallMsg) {
         setIsAudio(true);
@@ -677,12 +683,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === startConsultMsg) {
         stopInterval();
         startInterval(timer);
+        setjrDoctorJoined(false);
         updateSessionAPI();
         checkingAppointmentDates();
+        addMessages(message);
       } else if (message.message.message === stopConsultMsg) {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
         setConvertVideo(false);
+        addMessages(message);
       } else if (
         message.message.message === 'Audio call ended' ||
         message.message.message === 'Video call ended'
@@ -699,13 +708,25 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === covertAudioMsg) {
         console.log('covertVideoMsg', covertAudioMsg);
         setConvertVideo(false);
+      } else if (message.message.message === startConsultjr) {
+        console.log('succss1');
+        setjrDoctorJoined(true);
+        updateSessionAPI();
+        checkingAppointmentDates();
+        addMessages(message);
       }
+      // } else if (message.message.message === stopConsultMsg) {
+      //   console.log('succss1');
+      //   addMessages(message);
+      // }
     } else {
+      console.log('succss');
       addMessages(message);
     }
   };
 
   const addMessages = (message: Pubnub.MessageEvent) => {
+    console.log('addMessages', addMessages);
     insertText[insertText.length] = message.message;
     setMessages(() => [...(insertText as [])]);
     if (!isCall || !isAudioCall) {
@@ -1424,7 +1445,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const messageView = (rowData: any, index: number) => {
-    console.log('messageView', rowData);
+    //console.log('messageView', rowData);
     return (
       <View
         style={{
@@ -1498,6 +1519,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               </View>
             </TouchableOpacity>
           ) : rowData.message === '^^#startconsultJr' ? (
+            <View
+              style={{
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#ffffff',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  ...theme.fonts.IBMPlexSansMedium(15),
+                  textAlign: 'left',
+                }}
+              >
+                {rowData.automatedText}
+              </Text>
+            </View>
+          ) : rowData.message === '^^#startconsult' ? (
             <View
               style={{
                 backgroundColor: '#0087ba',
@@ -1757,7 +1798,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   ) => {
     if (
       rowData.message === typingMsg ||
-      rowData.message === startConsultMsg ||
+      //rowData.message === startConsultMsg ||
       // rowData.message === stopConsultMsg ||
       rowData.message === endCallMsg ||
       rowData.message === audioCallMsg ||
@@ -2910,55 +2951,148 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
   };
 
-  const uploadDocument = (resource: any) => {
-    try {
-      const fileType = resource.uri!.substring(resource.uri!.lastIndexOf('.') + 1);
-      console.log('upload fileType', fileType);
-      setLoading(true);
+  const uploadDocument = (resource: any, base66: any, type: any) => {
+    console.log('upload fileType', base66);
+    console.log('upload fileType', base66);
+    console.log('upload fileType', type);
+    console.log('upload fileType', channel);
+    setLoading(true);
+    client
+      .mutate<uploadChatDocument, uploadChatDocumentVariables>({
+        mutation: UPLOAD_CHAT_FILE,
+        fetchPolicy: 'no-cache',
+        variables: {
+          fileType: type,
+          base64FileInput: base66, //resource.data,
+          appointmentId: channel,
+        },
+      })
+      .then((data) => {
+        console.log('upload data', data);
+        setLoading(false);
 
-      client
-        .mutate<uploadChatDocument, uploadChatDocumentVariables>({
-          mutation: UPLOAD_CHAT_FILE,
-          fetchPolicy: 'no-cache',
-          variables: {
-            fileType: fileType,
-            base64FileInput: resource.data,
-            appointmentId: channel,
+        const text = {
+          id: patientId,
+          message: imageconsult,
+          fileType: 'image',
+          url: data.data && data.data.uploadChatDocument.filePath,
+        };
+
+        pubnub.publish(
+          {
+            channel: channel,
+            message: text,
+            storeInHistory: true,
+            sendByPost: true,
           },
-        })
-        .then((data) => {
-          console.log('upload data', data);
-          setLoading(false);
+          (status, response) => {}
+        );
+        KeepAwake.activate();
+      })
+      .catch((e) => {
+        setLoading(false);
+        KeepAwake.activate();
+        console.log('upload data error', e);
+      });
+    // try {
+    //   const fileType = resource.uri!.substring(resource.uri!.lastIndexOf('.') + 1);
+    //   console.log('upload fileType', fileType);
+    //   setLoading(true);
+    //   console.log('upload fileType', base66);
+    //   console.log('upload fileType', type);
+    //   console.log('upload fileType', channel);
+    //   client
+    //     .mutate<uploadChatDocument, uploadChatDocumentVariables>({
+    //       mutation: UPLOAD_CHAT_FILE,
+    //       fetchPolicy: 'no-cache',
+    //       variables: {
+    //         fileType: type,
+    //         base64FileInput: base66, //resource.data,
+    //         appointmentId: channel,
+    //       },
+    //     })
+    //     .then((data) => {
+    //       console.log('upload data', data);
+    //       setLoading(false);
 
-          const text = {
-            id: patientId,
-            message: imageconsult,
-            fileType: 'image',
-            url: data.data && data.data.uploadChatDocument.filePath,
-          };
+    //       const text = {
+    //         id: patientId,
+    //         message: imageconsult,
+    //         fileType: 'image',
+    //         url: data.data && data.data.uploadChatDocument.filePath,
+    //       };
 
-          pubnub.publish(
-            {
-              channel: channel,
-              message: text,
-              storeInHistory: true,
-              sendByPost: true,
-            },
-            (status, response) => {}
-          );
-          KeepAwake.activate();
-        })
-        .catch((e) => {
-          setLoading(false);
-          KeepAwake.activate();
-
-          console.log('upload data error', e);
-        });
-    } catch (error) {
-      setLoading(false);
-    }
+    //       pubnub.publish(
+    //         {
+    //           channel: channel,
+    //           message: text,
+    //           storeInHistory: true,
+    //           sendByPost: true,
+    //         },
+    //         (status, response) => {}
+    //       );
+    //       KeepAwake.activate();
+    //     })
+    //     .catch((e) => {
+    //       setLoading(false);
+    //       KeepAwake.activate();
+    //       console.log('upload data error', e);
+    //     });
+    // } catch (error) {
+    //   setLoading(false);
+    // }
   };
 
+  const uploadPrescriptionPopup = () => {
+    return (
+      <UploadPrescriprionPopup
+        heading="Attach File(s)"
+        instructionHeading="Instructions For Uploading Files"
+        instructions={[
+          'Take clear Picture of your entire file.',
+          'Doctor details & date of the test should be clearly visible.',
+          'Only PDF / JPG / PNG type files up to 2 mb are allowed',
+        ]}
+        isVisible={isDropdownVisible}
+        disabledOption={'NONE'}
+        optionTexts={{
+          camera: 'TAKE A PHOTO',
+          gallery: 'CHOOSE FROM\nGALLERY',
+          prescription: 'UPLOAD\nFROMPHR',
+        }}
+        hideTAndCs={false}
+        onClickClose={() => setDropdownVisible(false)}
+        onResponse={(selectedType, response) => {
+          console.log('res', response);
+          setDropdownVisible(false);
+          if (selectedType == 'CAMERA_AND_GALLERY') {
+            console.log('ca');
+            uploadDocument(response, response[0].base64, response[0].fileType);
+            //updatePhysicalPrescriptions(response);
+          } else {
+            setSelectPrescriptionVisible(true);
+          }
+        }}
+      />
+    );
+  };
+  const renderPrescriptionModal = () => {
+    return (
+      <SelectEPrescriptionModal
+        onSubmit={(selectedEPres) => {
+          console.log('selectedEPres', selectedEPres);
+
+          setSelectPrescriptionVisible(false);
+          if (selectedEPres.length == 0) {
+            return;
+          }
+          //setEPrescriptions && setEPrescriptions([...selectedEPres]);
+        }}
+        //selectedEprescriptionIds={ePrescriptions.map((item) => item.id)}
+        isVisible={isSelectPrescriptionVisible}
+      />
+    );
+  };
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
 
@@ -3040,6 +3174,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                 }}
                 onPress={async () => {
+                  console.log('isDropdownVisible', isDropdownVisible);
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >
@@ -3051,6 +3186,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <TextInput
                   autoCorrect={false}
                   placeholder="Type here…"
+                  multiline={true}
                   style={{
                     marginLeft: 16,
                     marginTop: 5,
@@ -3185,7 +3321,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         />
       )}
       <View>
-        {isDropdownVisible == true ? (
+        {/* {isDropdownVisible == true ? (
           <View
             style={{
               width: 200,
@@ -3233,8 +3369,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               ]}
             />
           </View>
-        ) : null}
+        ) : null} */}
       </View>
+
+      {uploadPrescriptionPopup()}
+      {renderPrescriptionModal()}
+
       {loading && <Spinner />}
     </View>
   );

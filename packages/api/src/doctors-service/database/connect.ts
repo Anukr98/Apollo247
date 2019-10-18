@@ -39,6 +39,7 @@ import {
   PatientNotificationSettings,
   SearchHistory,
   MedicineOrderInvoice,
+  PatientMedicalHistory,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -107,6 +108,7 @@ export const connect = async () => {
         MedicalRecords,
         MedicalRecordParameters,
         MedicineOrderInvoice,
+        PatientMedicalHistory,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

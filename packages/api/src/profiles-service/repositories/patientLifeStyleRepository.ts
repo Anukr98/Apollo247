@@ -6,17 +6,19 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 @EntityRepository(PatientLifeStyle)
 export class PatientLifeStyleRepository extends Repository<PatientLifeStyle> {
   savePatientLifeStyle(patientLifeStyleAttrs: Partial<PatientLifeStyle>) {
-    return this.create(patientLifeStyleAttrs)
-      .save()
-      .catch((patientLifeStyleError) => {
-        throw new AphError(AphErrorMessages.SAVE_PATIENT_LIFE_STYLE_ERROR, undefined, {
-          patientLifeStyleError,
-        });
+    return this.save(this.create(patientLifeStyleAttrs)).catch((patientLifeStyleError) => {
+      throw new AphError(AphErrorMessages.SAVE_PATIENT_LIFE_STYLE_ERROR, undefined, {
+        patientLifeStyleError,
       });
+    });
   }
 
   getPatientLifeStyleList(patient: string) {
     return this.find({ where: { patient } });
+  }
+
+  getPatientLifeStyle(patient: string) {
+    return this.findOne({ where: { patient }, order: { createdDate: 'DESC' } });
   }
 
   updatePatientLifeStyle(id: string, patientLifeStyleAttrs: Partial<PatientLifeStyle>) {

@@ -429,6 +429,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   patientId: string;
 
+  @Column({ nullable: true, default: false })
+  sentToPatient: boolean;
+
   @Column({ nullable: true, default: CASESHEET_STATUS.PENDING })
   status: CASESHEET_STATUS;
 
@@ -600,6 +603,13 @@ export interface RxPdfData {
     zipcode: string;
     state: string;
     country: string;
+  };
+  patientInfo: {
+    firstName: string;
+    lastName: string;
+    gender: string;
+    uhid: string;
+    age: string;
   };
 }
 ///////////////////////////////////////////////////////////

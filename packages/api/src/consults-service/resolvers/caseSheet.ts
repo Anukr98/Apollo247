@@ -2,12 +2,27 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
-import { CaseSheet, Appointment, CASESHEET_STATUS } from 'consults-service/entities';
+import {
+  CaseSheet,
+  Appointment,
+  CASESHEET_STATUS,
+  CaseSheetMedicinePrescription,
+  CaseSheetDiagnosis,
+  CaseSheetSymptom,
+  CaseSheetDiagnosisPrescription,
+  CaseSheetOtherInstruction,
+} from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { Patient } from 'profiles-service/entities';
+import {
+  Patient,
+  PatientFamilyHistory,
+  PatientLifeStyle,
+  PatientMedicalHistory,
+  Gender,
+} from 'profiles-service/entities';
 import { DiagnosisData } from 'consults-service/data/diagnosis';
 import { DiagnosticData } from 'consults-service/data/diagnostics';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
@@ -17,6 +32,9 @@ import {
   uploadRxPdf,
 } from 'consults-service/rxPdfGenerator';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { PatientFamilyHistoryRepository } from 'profiles-service/repositories/patientFamilyHistoryRepository';
+import { PatientLifeStyleRepository } from 'profiles-service/repositories/patientLifeStyleRepository';
+import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 
 export type DiagnosisJson = {
   name: string;
@@ -96,6 +114,19 @@ export const caseSheetTypeDefs = gql`
     OTHER
   }
 
+  type Address {
+    id: ID!
+    addressLine1: String
+    addressLine2: String
+    city: String
+    mobileNumber: String
+    state: String
+    zipcode: String
+    landmark: String
+    createdDate: Date
+    updatedDate: Date
+  }
+
   type Appointment {
     id: String!
     appointmentDateTime: DateTime!
@@ -147,7 +178,42 @@ export const caseSheetTypeDefs = gql`
     name: String
   }
 
+  input DiagnosisInput {
+    name: String
+  }
+
+  type DiagnosisJson {
+    name: String
+    id: String
+  }
+
+  type DiagnosticJson {
+    itemid: String
+    itemname: String
+    itemcode: String
+    ItemAliasName: String
+    FromAgeInDays: Int
+    ToAgeInDays: Int
+    Gender: String
+    LabName: String
+    LabCode: String
+    LabID: Int
+    Rate: Int
+    ScheduleRate: Int
+    FromDate: String
+    ToDate: String
+    ItemType: String
+    TestInPackage: String
+    NABL_CAP: String
+    ItemRemarks: String
+    Discounted: String
+  }
+
   type DiagnosticPrescription {
+    itemname: String
+  }
+
+  input DiagnosticPrescriptionInput {
     itemname: String
   }
 
@@ -162,21 +228,23 @@ export const caseSheetTypeDefs = gql`
     id: String
   }
 
+  input MedicinePrescriptionInput {
+    medicineConsumptionDurationInDays: String
+    medicineDosage: String
+    medicineUnit: MEDICINE_UNIT
+    medicineInstructions: String
+    medicineTimings: [MEDICINE_TIMINGS]
+    medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
+    medicineName: String
+    id: String
+  }
+
   type OtherInstructions {
     instruction: String
   }
 
-  type Address {
-    id: ID!
-    addressLine1: String
-    addressLine2: String
-    city: String
-    mobileNumber: String
-    state: String
-    zipcode: String
-    landmark: String
-    createdDate: Date
-    updatedDate: Date
+  input OtherInstructionsInput {
+    instruction: String
   }
 
   type PatientDetails {
@@ -211,6 +279,13 @@ export const caseSheetTypeDefs = gql`
     relation: String
   }
 
+  input SymptomInput {
+    symptom: String
+    since: String
+    howOften: String
+    severity: String
+  }
+
   type SymptomList {
     symptom: String
     since: String
@@ -232,35 +307,34 @@ export const caseSheetTypeDefs = gql`
     status: CASESHEET_STATUS
   }
 
-  type DiagnosisJson {
-    name: String
-    id: String
-  }
-
-  type DiagnosticJson {
-    itemid: String
-    itemname: String
-    itemcode: String
-    ItemAliasName: String
-    FromAgeInDays: Int
-    ToAgeInDays: Int
-    Gender: String
-    LabName: String
-    LabCode: String
-    LabID: Int
-    Rate: Int
-    ScheduleRate: Int
-    FromDate: String
-    ToDate: String
-    ItemType: String
-    TestInPackage: String
-    NABL_CAP: String
-    ItemRemarks: String
-    Discounted: String
+  input ModifyCaseSheetInput {
+    symptoms: [SymptomInput]
+    notes: String
+    diagnosis: [DiagnosisInput]
+    diagnosticPrescription: [DiagnosticPrescriptionInput]
+    followUp: Boolean
+    followUpDate: Date
+    followUpAfterInDays: Int
+    otherInstructions: [OtherInstructionsInput]
+    medicinePrescription: [MedicinePrescriptionInput]
+    id: String!
+    status: CASESHEET_STATUS
+    lifeStyle: String
+    familyHistory: String
+    dietAllergies: String
+    drugAllergies: String
+    height: String
+    menstrualHistory: String
+    pastMedicalHistory: String
+    pastSurgicalHistory: String
+    temperature: String
+    weight: String
+    bp: String
   }
 
   extend type Mutation {
     updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
+    modifyCaseSheet(ModifyCaseSheetInput: ModifyCaseSheetInput): CaseSheet
     createJuniorDoctorCaseSheet(appointmentId: String): CaseSheet
     createSeniorDoctorCaseSheet(appointmentId: String): CaseSheet
   }
@@ -379,7 +453,7 @@ const updateCaseSheet: Resolver<
   UpdateCaseSheetInputArgs,
   ConsultServiceContext,
   CaseSheet
-> = async (parent, { UpdateCaseSheetInput }, { consultsDb, doctorsDb }) => {
+> = async (parent, { UpdateCaseSheetInput }, { consultsDb, doctorsDb, patientsDb }) => {
   const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
 
   //validate date
@@ -415,7 +489,227 @@ const updateCaseSheet: Resolver<
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
 
-  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb);
+  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientsDb);
+  const pdfDocument = generateRxPdfDocument(rxPdfData);
+  const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
+  if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+  getCaseSheetData.blobName = blob.name;
+
+  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
+
+  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
+  return getCaseSheetData;
+};
+
+type ModifyCaseSheetInput = {
+  symptoms: CaseSheetSymptom[];
+  notes: string;
+  diagnosis: CaseSheetDiagnosis[];
+  diagnosticPrescription: CaseSheetDiagnosisPrescription[];
+  followUp: boolean;
+  followUpDate: Date;
+  followUpAfterInDays: number;
+  otherInstructions: CaseSheetOtherInstruction[];
+  medicinePrescription: CaseSheetMedicinePrescription[];
+  id: string;
+  status: CASESHEET_STATUS;
+  lifeStyle: string;
+  familyHistory: string;
+  dietAllergies: string;
+  drugAllergies: string;
+  height: string;
+  menstrualHistory: string;
+  pastMedicalHistory: string;
+  pastSurgicalHistory: string;
+  temperature: string;
+  weight: string;
+  bp: string;
+};
+
+type ModifyCaseSheetInputArgs = { ModifyCaseSheetInput: ModifyCaseSheetInput };
+
+const modifyCaseSheet: Resolver<
+  null,
+  ModifyCaseSheetInputArgs,
+  ConsultServiceContext,
+  CaseSheet
+> = async (parent, { ModifyCaseSheetInput }, { consultsDb, doctorsDb, patientsDb }) => {
+  const inputArguments = ModifyCaseSheetInput;
+
+  //validate casesheetid
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
+  if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+
+  if (!(inputArguments.symptoms === undefined)) {
+    if (inputArguments.symptoms && inputArguments.symptoms.length === 0)
+      throw new AphError(AphErrorMessages.INVALID_SYMPTOMS_LIST);
+    getCaseSheetData.symptoms = JSON.parse(JSON.stringify(inputArguments.symptoms));
+  }
+
+  if (!(inputArguments.notes === undefined)) {
+    getCaseSheetData.notes = inputArguments.notes;
+  }
+
+  if (!(inputArguments.diagnosis === undefined)) {
+    if (inputArguments.diagnosis && inputArguments.diagnosis.length === 0)
+      throw new AphError(AphErrorMessages.INVALID_DIAGNOSIS_LIST);
+    getCaseSheetData.diagnosis = JSON.parse(JSON.stringify(inputArguments.diagnosis));
+  }
+
+  if (!(inputArguments.diagnosticPrescription === undefined)) {
+    if (inputArguments.diagnosticPrescription && inputArguments.diagnosticPrescription.length === 0)
+      throw new AphError(AphErrorMessages.INVALID_DIAGNOSTIC_PRESCRIPTION_LIST);
+    getCaseSheetData.diagnosticPrescription = JSON.parse(
+      JSON.stringify(inputArguments.diagnosticPrescription)
+    );
+  }
+
+  if (!(inputArguments.otherInstructions === undefined)) {
+    if (inputArguments.otherInstructions && inputArguments.otherInstructions.length === 0)
+      throw new AphError(AphErrorMessages.INVALID_DIAGNOSTIC_PRESCRIPTION_LIST);
+    getCaseSheetData.otherInstructions = JSON.parse(
+      JSON.stringify(inputArguments.otherInstructions)
+    );
+  }
+
+  if (!(inputArguments.medicinePrescription === undefined)) {
+    if (inputArguments.medicinePrescription && inputArguments.medicinePrescription.length === 0)
+      throw new AphError(AphErrorMessages.INVALID_MEDICINE_PRESCRIPTION_LIST);
+    getCaseSheetData.medicinePrescription = JSON.parse(
+      JSON.stringify(inputArguments.medicinePrescription)
+    );
+  }
+
+  if (!(inputArguments.followUp === undefined)) {
+    getCaseSheetData.followUp = inputArguments.followUp;
+  }
+
+  if (!(inputArguments.followUpDate === undefined)) {
+    if (getCaseSheetData.followUpDate) getCaseSheetData.followUpDate = inputArguments.followUpDate;
+  }
+
+  if (!(inputArguments.followUpAfterInDays === undefined)) {
+    getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
+  }
+
+  if (!(inputArguments.status === undefined)) {
+    getCaseSheetData.status = inputArguments.status;
+  }
+
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.findById(getCaseSheetData.patientId);
+  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
+  //familyHistory upsert starts
+  if (!(inputArguments.familyHistory === undefined)) {
+    const familyHistoryInputs: Partial<PatientFamilyHistory> = {
+      patient: patientData,
+      description:
+        inputArguments.familyHistory.length > 0 ? inputArguments.familyHistory : undefined,
+    };
+    const familyHistoryRepo = patientsDb.getCustomRepository(PatientFamilyHistoryRepository);
+    const familyHistoryRecord = await familyHistoryRepo.getPatientFamilyHistory(
+      getCaseSheetData.patientId
+    );
+
+    if (familyHistoryRecord == null) {
+      //create
+      await familyHistoryRepo.savePatientFamilyHistory(familyHistoryInputs);
+    } else {
+      //update
+      await familyHistoryRepo.updatePatientFamilyHistory(
+        familyHistoryRecord.id,
+        familyHistoryInputs
+      );
+    }
+  }
+  //familyHistory upsert ends
+
+  //lifestyle upsert starts
+  if (!(inputArguments.lifeStyle === undefined)) {
+    const lifeStyleInputs: Partial<PatientLifeStyle> = {
+      patient: patientData,
+      description: inputArguments.lifeStyle.length > 0 ? inputArguments.lifeStyle : undefined,
+    };
+    const lifeStyleRepo = patientsDb.getCustomRepository(PatientLifeStyleRepository);
+    const lifeStyleRecord = await lifeStyleRepo.getPatientLifeStyle(getCaseSheetData.patientId);
+
+    if (lifeStyleRecord == null) {
+      //create
+      await lifeStyleRepo.savePatientLifeStyle(lifeStyleInputs);
+    } else {
+      //update
+      await lifeStyleRepo.updatePatientLifeStyle(lifeStyleRecord.id, lifeStyleInputs);
+    }
+  }
+  //lifestyle upsert ends
+
+  //medicalHistory upsert starts
+  const medicalHistoryInputs: Partial<PatientMedicalHistory> = {
+    patient: patientData,
+  };
+
+  if (!(inputArguments.bp === undefined))
+    medicalHistoryInputs.bp = inputArguments.bp.length > 0 ? inputArguments.bp : undefined;
+
+  if (!(inputArguments.weight === undefined))
+    medicalHistoryInputs.weight =
+      inputArguments.weight.length > 0 ? inputArguments.weight : undefined;
+
+  if (!(inputArguments.temperature === undefined))
+    medicalHistoryInputs.temperature =
+      inputArguments.temperature.length > 0 ? inputArguments.temperature : undefined;
+
+  if (!(inputArguments.pastSurgicalHistory === undefined))
+    medicalHistoryInputs.pastSurgicalHistory =
+      inputArguments.pastSurgicalHistory.length > 0
+        ? inputArguments.pastSurgicalHistory
+        : undefined;
+
+  if (!(inputArguments.pastMedicalHistory === undefined))
+    medicalHistoryInputs.pastMedicalHistory =
+      inputArguments.pastMedicalHistory.length > 0 ? inputArguments.pastMedicalHistory : undefined;
+
+  if (!(inputArguments.menstrualHistory === undefined)) {
+    if (patientData.gender === Gender.FEMALE)
+      medicalHistoryInputs.menstrualHistory =
+        inputArguments.menstrualHistory.length > 0 ? inputArguments.menstrualHistory : undefined;
+  }
+
+  if (!(inputArguments.height === undefined)) medicalHistoryInputs.height = inputArguments.height;
+  if (!(inputArguments.drugAllergies === undefined))
+    medicalHistoryInputs.drugAllergies =
+      inputArguments.drugAllergies.length > 0 ? inputArguments.drugAllergies : undefined;
+
+  if (!(inputArguments.dietAllergies === undefined))
+    medicalHistoryInputs.dietAllergies =
+      inputArguments.dietAllergies.length > 0 ? inputArguments.dietAllergies : undefined;
+
+  const medicalHistoryRepo = patientsDb.getCustomRepository(PatientMedicalHistoryRepository);
+  const medicalHistoryRecord = await medicalHistoryRepo.getPatientMedicalHistory(
+    getCaseSheetData.patientId
+  );
+  if (medicalHistoryRecord == null) {
+    //create
+    await medicalHistoryRepo.savePatientMedicalHistory(medicalHistoryInputs);
+  } else {
+    //update
+    await medicalHistoryRepo.updatePatientMedicalHistory(
+      medicalHistoryRecord.id,
+      medicalHistoryInputs
+    );
+  }
+
+  //medicalHistory upsert ends
+
+  //convert casesheet to prescription
+  const client = new AphStorageClient(
+    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
+    process.env.AZURE_STORAGE_CONTAINER_NAME
+  );
+
+  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientsDb);
   const pdfDocument = generateRxPdfDocument(rxPdfData);
   const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
   if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
@@ -543,6 +837,7 @@ export const caseSheetResolvers = {
   },
   Mutation: {
     updateCaseSheet,
+    modifyCaseSheet,
     createJuniorDoctorCaseSheet,
     createSeniorDoctorCaseSheet,
   },

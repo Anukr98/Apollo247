@@ -39,6 +39,7 @@ import {
   MedicalRecords,
   MedicalRecordParameters,
   MedicineOrderInvoice,
+  PatientMedicalHistory,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -102,6 +103,7 @@ export const connect = async () => {
         MedicalRecords,
         MedicalRecordParameters,
         MedicineOrderInvoice,
+        PatientMedicalHistory,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

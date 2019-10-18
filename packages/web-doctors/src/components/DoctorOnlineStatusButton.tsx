@@ -77,6 +77,8 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
                     doctorId: id,
                     onlineStatus: newStatus,
                   },
+                }).then(() => {
+                  window.location.reload();
                 });
               }
             }}
