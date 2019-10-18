@@ -429,7 +429,6 @@ const getCaseSheet: Resolver<
   //get patient info
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
-  console.log(patientDetails);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //get loggedin user details
