@@ -727,7 +727,13 @@ export class AppointmentRepository extends Repository<Appointment> {
     return doctorBblockedSlots;
   }
 
-  getAllAppointments() {
-    return this.find();
+  getAllAppointments(fromDate: Date, toDate: Date, limit: number) {
+    const newStartDate = new Date(format(addDays(fromDate, -1), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(toDate, 'yyyy-MM-dd') + 'T18:30');
+    return this.find({
+      where: { bookingDate: Between(newStartDate, newEndDate) },
+      order: { bookingDate: 'DESC' },
+      take: limit,
+    });
   }
 }
