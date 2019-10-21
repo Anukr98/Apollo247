@@ -726,4 +726,8 @@ export class AppointmentRepository extends Repository<Appointment> {
     }
     return doctorBblockedSlots;
   }
+
+  getAllAppointments() {
+    return this.find();
+  }
 }
