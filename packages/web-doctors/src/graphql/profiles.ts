@@ -329,31 +329,42 @@ export const GET_CASESHEET_JRD = gql`
         notes
       }
       patientDetails {
-        id
         allergies
-        lifeStyle {
-          description
-        }
+        dateOfBirth
+        emailAddress
+        firstName
         familyHistory {
           description
           relation
         }
-        patientAddress {
-          city
-        }
-        dateOfBirth
-        emailAddress
-        firstName
-        lastName
         gender
-        mobileNumber
-        uhid
-        photoUrl
-        relation
         healthVault {
           imageUrls
           reportUrls
         }
+        id
+        lastName
+        lifeStyle {
+          description
+        }
+        mobileNumber
+        patientAddress {
+          city
+        }
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+        }
+        photoUrl
+        uhid
+        relation
       }
       pastAppointments {
         id

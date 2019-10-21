@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -69,6 +70,16 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export const Vitals: React.FC = () => {
   const classes = useStyles();
+  const {
+    height,
+    setHeight,
+    weight,
+    setWeight,
+    bp,
+    setBp,
+    temperature,
+    setTemperature,
+  } = useContext(CaseSheetContextJrd);
 
   return (
     <div className={classes.root}>
@@ -77,15 +88,23 @@ export const Vitals: React.FC = () => {
           <div className={classes.sectionGroup}>
             <div className={classes.sectionTitle}>Height</div>
             <div className={classes.contentBox}>
-              <AphTextField fullWidth multiline placeholder="160 cms" value="160 cms" />
-              <div className={classes.boxActions}>
-                <AphButton>
-                  <img src={require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
-                <AphButton>
-                  <img src={require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
-              </div>
+              <AphTextField
+                fullWidth
+                value={height}
+                onChange={(e) => {
+                  setHeight(e.target.value);
+                }}
+              />
+              {height !== '' && (
+                <div className={classes.boxActions}>
+                  <AphButton>
+                    <img src={require('images/round_edit_24_px.svg')} alt="" />
+                  </AphButton>
+                  <AphButton>
+                    <img src={require('images/ic_cancel_green.svg')} alt="" />
+                  </AphButton>
+                </div>
+              )}
             </div>
           </div>
         </Grid>
@@ -93,15 +112,23 @@ export const Vitals: React.FC = () => {
           <div className={classes.sectionGroup}>
             <div className={classes.sectionTitle}>Weight</div>
             <div className={classes.contentBox}>
-              <AphTextField fullWidth multiline placeholder="67 kgs" value="67 kgs" />
-              <div className={classes.boxActions}>
-                <AphButton>
-                  <img src={require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
-                <AphButton>
-                  <img src={require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
-              </div>
+              <AphTextField
+                fullWidth
+                value={weight}
+                onChange={(e) => {
+                  setWeight(e.target.value);
+                }}
+              />
+              {weight !== '' && (
+                <div className={classes.boxActions}>
+                  <AphButton>
+                    <img src={require('images/round_edit_24_px.svg')} alt="" />
+                  </AphButton>
+                  <AphButton>
+                    <img src={require('images/ic_cancel_green.svg')} alt="" />
+                  </AphButton>
+                </div>
+              )}
             </div>
           </div>
         </Grid>
@@ -109,15 +136,23 @@ export const Vitals: React.FC = () => {
           <div className={classes.sectionGroup}>
             <div className={classes.sectionTitle}>BP</div>
             <div className={classes.contentBox}>
-              <AphTextField fullWidth multiline placeholder="120/80 mm Hg" value="120/80 mm Hg" />
-              <div className={classes.boxActions}>
-                <AphButton>
-                  <img src={require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
-                <AphButton>
-                  <img src={require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
-              </div>
+              <AphTextField
+                fullWidth
+                value={bp}
+                onChange={(e) => {
+                  setBp(e.target.value);
+                }}
+              />
+              {bp !== '' && (
+                <div className={classes.boxActions}>
+                  <AphButton>
+                    <img src={require('images/round_edit_24_px.svg')} alt="" />
+                  </AphButton>
+                  <AphButton>
+                    <img src={require('images/ic_cancel_green.svg')} alt="" />
+                  </AphButton>
+                </div>
+              )}
             </div>
           </div>
         </Grid>
@@ -125,15 +160,23 @@ export const Vitals: React.FC = () => {
           <div className={classes.sectionGroup}>
             <div className={classes.sectionTitle}>Temperature</div>
             <div className={classes.contentBox}>
-              <AphTextField fullWidth multiline placeholder="-" value="-" />
-              <div className={classes.boxActions}>
-                <AphButton>
-                  <img src={require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
-                <AphButton>
-                  <img src={require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
-              </div>
+              <AphTextField
+                fullWidth
+                value={temperature}
+                onChange={(e) => {
+                  setTemperature(e.target.value);
+                }}
+              />
+              {temperature !== '' && (
+                <div className={classes.boxActions}>
+                  <AphButton>
+                    <img src={require('images/round_edit_24_px.svg')} alt="" />
+                  </AphButton>
+                  <AphButton>
+                    <img src={require('images/ic_cancel_green.svg')} alt="" />
+                  </AphButton>
+                </div>
+              )}
             </div>
           </div>
         </Grid>

@@ -635,7 +635,7 @@ export const MedicinePrescription: React.FC = () => {
   }
   useEffect(() => {
     if (selectedMedicinesArr && selectedMedicinesArr!.length) {
-      console.log(selectedMedicinesArr, selectedMedicinesArr.length);
+      // console.log(selectedMedicinesArr, selectedMedicinesArr.length);
       selectedMedicinesArr!.forEach((res: any) => {
         const inputParamsArr: any = {
           medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
@@ -702,7 +702,7 @@ export const MedicinePrescription: React.FC = () => {
     });
     setToBeTakenSlots(slots);
   };
-  console.log(selectedMedicines);
+  // console.log(selectedMedicines);
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
