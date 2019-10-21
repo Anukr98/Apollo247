@@ -50,14 +50,6 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
     setshowTabs(true);
   }, []);
 
-  const tabs = [
-    { title: 'A' },
-    { title: 'B' },
-    { title: 'C' },
-    { title: 'D' },
-    { title: 'E' },
-    { title: 'F' },
-  ];
   const routes = [
     { key: 'A', title: 'A' },
     { key: 'B', title: 'B' },
