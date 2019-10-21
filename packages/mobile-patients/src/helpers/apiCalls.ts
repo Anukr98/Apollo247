@@ -13,7 +13,7 @@ export interface MedicineProduct {
   special_price: number;
   sku: string;
   small_image: string;
-  status: number; // 1, 2 (1 = in-stock, 2= out-of-stock)
+  status: number;
   thumbnail: string;
   type_id: string;
   mou: string;
@@ -369,9 +369,9 @@ export const getPopularProductsBasedOnCityApi = (
   return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
 };
 
-export const getMedicineSearchSuggestionsApi = (
+export const medicineSearchSuggestionsApi = (
   params: string
-): Promise<AxiosResponse<InventoryCheckApiResponse>> => {
+): Promise<AxiosResponse<MedicineProductsResponse>> => {
   return Axios.post(
     `${config.MED_SEARCH_SUGGESTION[0]}/popcsrchss_api.php`,
     {

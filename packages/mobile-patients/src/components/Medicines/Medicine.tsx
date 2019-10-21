@@ -8,17 +8,18 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   CartIcon,
   FileBig,
+  InjectionIcon,
   MedicineIcon,
   NotificationIcon,
-  ChatSend,
+  SearchSendIcon,
+  SyrupBottleIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { UserIntro } from '@aph/mobile-patients/src/components/ui/UserIntro';
-import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
+import Axios from 'axios';
 import React, { useState } from 'react';
 import {
   Dimensions,
@@ -33,6 +34,7 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { MedicineProduct, medicineSearchSuggestionsApi } from '../../helpers/apiCalls';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -73,53 +75,27 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <View
         style={{
-          height: 225 - 54,
           justifyContent: 'space-between',
+          flexDirection: 'row',
+          marginTop: 16,
+          marginHorizontal: 20,
         }}
       >
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-          }}
-        >
-          <UserIntro
-            style={{
-              height: 109,
-            }}
-            description={string.home.description}
+        <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}>
+          <ApolloLogo />
+        </TouchableOpacity>
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() =>
+              props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true })
+            }
+            style={{ right: 20 }}
           >
-            <View
-              style={{
-                height: 83,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginHorizontal: 20,
-              }}
-            >
-              <TouchableOpacity
-                style={{ marginTop: 20 }}
-                onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
-              >
-                <ApolloLogo />
-              </TouchableOpacity>
-              <View style={{ flexDirection: 'row', marginTop: 16 }}>
-                <TouchableOpacity
-                  activeOpacity={1}
-                  onPress={() =>
-                    props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true })
-                  }
-                  style={{ right: 20 }}
-                >
-                  <CartIcon style={{}} />
-                  {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
-                </TouchableOpacity>
-                <NotificationIcon />
-              </View>
-            </View>
-          </UserIntro>
+            <CartIcon style={{}} />
+            {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
+          </TouchableOpacity>
+          <NotificationIcon />
         </View>
       </View>
     );
@@ -591,49 +567,201 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const [searchText, setSearchText] = useState<string>('');
+  const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const onSearchMedicine = (_searchText: string) => {
+    setSearchText(_searchText);
+    if (!(_searchText && _searchText.length > 2)) {
+      setMedicineList([]);
+      return;
+    }
+    setIsLoading(true);
+    medicineSearchSuggestionsApi(_searchText)
+      .then(({ data }) => {
+        console.log({ data });
+
+        const products = data.products || [];
+        setMedicineList(products);
+        setIsLoading(false);
+      })
+      .catch((e) => {
+        console.log({ e });
+
+        if (!Axios.isCancel(e)) {
+          setIsLoading(false);
+        }
+      });
+  };
+
+  interface SuggestionType {
+    name: string;
+    price: number;
+    isOutOfStock: boolean;
+    type: 'syrup' | 'injection' | 'tablet';
+    imgUri?: string;
+    showSeparator?: boolean;
+    style?: ViewStyle;
+  }
+  const renderSearchSuggestionItem = (data: SuggestionType) => {
+    const styles = StyleSheet.create({
+      containerStyle: {
+        ...data.style,
+      },
+      iconAndDetailsContainerStyle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 9.5,
+        marginHorizontal: 12,
+      },
+      iconOrImageContainerStyle: {
+        width: 40,
+      },
+      nameAndPriceViewStyle: {
+        flex: 1,
+      },
+    });
+
+    const renderNamePriceAndInStockStatus = () => {
+      return (
+        <View style={styles.nameAndPriceViewStyle}>
+          <Text
+            numberOfLines={1}
+            style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}
+          >
+            {data.name}
+          </Text>
+          {data.isOutOfStock ? (
+            <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
+              {'Out Of Stock'}
+            </Text>
+          ) : (
+            <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
+              {data.price}
+            </Text>
+          )}
+        </View>
+      );
+    };
+
+    const renderIconOrImage = () => {
+      return (
+        <View style={styles.iconOrImageContainerStyle}>
+          {data.type == 'tablet' ? (
+            <MedicineIcon />
+          ) : data.type == 'injection' ? (
+            <InjectionIcon />
+          ) : (
+            <SyrupBottleIcon />
+          )}
+        </View>
+      );
+    };
+
+    return (
+      <View style={styles.containerStyle} key={data.name}>
+        <View style={styles.iconAndDetailsContainerStyle}>
+          {renderIconOrImage()}
+          <View style={{ width: 16 }} />
+          {renderNamePriceAndInStockStatus()}
+        </View>
+        {data.showSeparator ? <Spearator /> : null}
+      </View>
+    );
+  };
+
   const renderSearchBar = () => {
-    const styles = StyleSheet.create({});
+    const styles = StyleSheet.create({
+      inputStyle: {
+        minHeight: 29,
+        ...theme.fonts.IBMPlexSansMedium(18),
+      },
+      inputContainerStyle: {
+        borderBottomColor: '#00b38e',
+        borderBottomWidth: 2,
+        marginHorizontal: 10,
+      },
+      rightIconContainerStyle: {
+        height: 24,
+      },
+      style: {
+        paddingBottom: 18.5,
+      },
+      containerStyle: {
+        marginBottom: 19,
+        marginTop: 18,
+      },
+    });
     return (
       <Input
+        value={searchText}
+        onChangeText={(value) => {
+          onSearchMedicine(value);
+        }}
         autoCorrect={false}
-        rightIcon={<ChatSend />}
+        rightIcon={<SearchSendIcon />}
         placeholder="Search meds, brands &amp; more"
         selectionColor="#00b38e"
         underlineColorAndroid="transparent"
         placeholderTextColor="rgba(1,48,91, 0.4)"
-        inputStyle={{
-          minHeight: 29,
-          ...theme.fonts.IBMPlexSansMedium(18),
-        }}
-        inputContainerStyle={{
-          borderBottomColor: '#00b38e',
-          borderBottomWidth: 2,
-        }}
-        rightIconContainerStyle={{
-          height: 24,
-        }}
-        style={{ paddingBottom: 18.5 }}
+        inputStyle={styles.inputStyle}
+        inputContainerStyle={styles.inputContainerStyle}
+        rightIconContainerStyle={styles.rightIconContainerStyle}
+        style={styles.style}
+        containerStyle={styles.containerStyle}
       />
+    );
+  };
+
+  const renderSearchSuggestions = () => {
+    console.log({ medicineList });
+    if (medicineList.length == 0) return null;
+    return (
+      <View style={{ width: '100%' }}>
+        <FlatList
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+          style={{ paddingTop: 10.5, height: 266 }}
+          data={medicineList}
+          keyExtractor={(_, index) => `${index}`}
+          renderItem={({ index, item }) =>
+            renderSearchSuggestionItem({
+              name: item.name,
+              price: item.price,
+              isOutOfStock: index % 2 == 0,
+              type: index % 2 == 0 ? 'injection' : 'syrup',
+              style: {
+                marginHorizontal: 20,
+              },
+              showSeparator: !(index == medicineList.length - 1),
+            })
+          }
+        />
+      </View>
     );
   };
 
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
-        {renderTopView()}
-        {renderSearchBar()}
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          <View>
-            {renderOfferBanner()}
-            {renderUploadPrescriptionSection()}
-            {renderYourOrders()}
-            {renderShopByHealthAreas()}
-            {renderDealsOfTheDay()}
-            {renderHotSellers()}
-            {renderShopByCategory()}
-            {renderShopByBrand()}
-            {renderNeedHelp()}
-          </View>
+        <View
+          style={{ backgroundColor: 'white', ...theme.viewStyles.cardViewStyle, borderRadius: 0 }}
+        >
+          {renderTopView()}
+          {renderSearchBar()}
+        </View>
+        {renderSearchSuggestions()}
+        <ScrollView onScroll={(result) => {}} style={{ flex: 1 }} bounces={false}>
+          {renderOfferBanner()}
+          {renderUploadPrescriptionSection()}
+          {renderYourOrders()}
+          {renderShopByHealthAreas()}
+          {renderDealsOfTheDay()}
+          {renderHotSellers()}
+          {renderShopByCategory()}
+          {renderShopByBrand()}
+          {renderNeedHelp()}
         </ScrollView>
       </SafeAreaView>
       {renderEPrescriptionModal()}
