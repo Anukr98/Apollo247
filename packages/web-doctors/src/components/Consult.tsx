@@ -43,8 +43,9 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+
     videoContainer: {
-      minHeight: 470,
+      height: 'calc(100vh - 214px)',
       backgroundColor: '#000',
       borderRadius: 10,
       margin: 20,
@@ -99,6 +100,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: '100%',
       height: '100%',
       zIndex: 9,
+      position: 'absolute',
     },
     timerCls: {
       position: 'absolute',

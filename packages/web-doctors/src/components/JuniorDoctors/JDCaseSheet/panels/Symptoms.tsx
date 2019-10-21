@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     color: '#01475b',
     fontWeight: 500,
     position: 'relative',
-    paddingRight: 40,
+    paddingRight: 55,
   },
   deleteSymptom: {
     backgroundColor: 'transparent',
@@ -42,8 +42,23 @@ const useStyles = makeStyles((theme: Theme) => ({
       backgroundColor: 'transparent',
     },
     '& img': {
-      maxWidth: 24,
-      maxHeight: 24,
+      maxWidth: 20,
+      maxHeight: 20,
+    },
+  },
+  editSymptom: {
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
+    minWidth: 'auto',
+    padding: 0,
+    position: 'absolute',
+    right: 30,
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
+    '& img': {
+      maxWidth: 20,
+      maxHeight: 20,
     },
   },
   symtomContent: {
@@ -297,6 +312,12 @@ export const Symptoms: React.FC = (props) => {
                   <div key={idx} className={classes.listItem}>
                     <div className={classes.symtomHeading}>
                       {item!.symptom}
+                      <AphButton classes={{ root: classes.editSymptom }}>
+                        <img
+                          src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
+                          alt=""
+                        />
+                      </AphButton>
                       <AphButton
                         classes={{ root: classes.deleteSymptom }}
                         onClick={() => deleteSymptom(idx)}
@@ -328,7 +349,7 @@ export const Symptoms: React.FC = (props) => {
       {caseSheetEdit && (
         <AphButton classes={{ root: classes.addBtn }} onClick={() => setIsDialogOpen(true)}>
           <img src={require('images/ic_dark_plus.svg')} alt="" />
-          Add Symptom
+          Add Compaint
         </AphButton>
       )}
       <AphDialog

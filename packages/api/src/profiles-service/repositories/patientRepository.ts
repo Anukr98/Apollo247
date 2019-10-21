@@ -17,6 +17,7 @@ export class PatientRepository extends Repository<Patient> {
         'patientAddress',
         'patientDeviceTokens',
         'patientNotificationSettings',
+        'patientMedicalHistory',
       ],
     });
   }
@@ -37,6 +38,7 @@ export class PatientRepository extends Repository<Patient> {
         'patientAddress',
         'patientDeviceTokens',
         'patientNotificationSettings',
+        'patientMedicalHistory',
       ],
     });
   }
