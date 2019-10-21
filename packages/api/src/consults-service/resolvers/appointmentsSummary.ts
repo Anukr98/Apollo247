@@ -139,7 +139,7 @@ const appointmentsSummary: Resolver<
     console.log('file error', err);
   }
 
-  /*const client = new AphStorageClient(
+  const client = new AphStorageClient(
     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
@@ -180,8 +180,8 @@ const appointmentsSummary: Resolver<
     });
   fs.unlinkSync(localFilePath);
   console.log(client.getBlobUrl(readmeBlob.name));
-  const azureFilePath = client.getBlobUrl(readmeBlob.name);*/
-  const azureFilePath = fileName;
+  const azureFilePath = client.getBlobUrl(readmeBlob.name);
+  //const azureFilePath = fileName;
   return { azureFilePath };
 };
 
