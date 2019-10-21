@@ -525,9 +525,7 @@ const updateCaseSheet: Resolver<
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
 
-  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, <Patient>(
-    patientData
-  ));
+  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
   const pdfDocument = generateRxPdfDocument(rxPdfData);
   const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
   if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
