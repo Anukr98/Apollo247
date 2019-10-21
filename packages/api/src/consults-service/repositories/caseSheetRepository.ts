@@ -18,6 +18,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     const juniorDoctorType = DoctorType.JUNIOR;
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
       .andWhere('case_sheet.doctorType = :juniorDoctorType', { juniorDoctorType })
       .getOne();
@@ -27,6 +28,7 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     const juniorDoctorType = DoctorType.JUNIOR;
     return this.createQueryBuilder('case_sheet')
       .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .leftJoinAndSelect('appointment.appointmentDocuments', 'appointmentDocuments')
       .where('case_sheet.appointment = :appointmentId', { appointmentId })
       .andWhere('case_sheet.doctorType != :juniorDoctorType', { juniorDoctorType })
       .getOne();
