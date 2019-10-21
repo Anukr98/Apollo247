@@ -734,6 +734,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       where: { bookingDate: Between(newStartDate, newEndDate) },
       order: { bookingDate: 'DESC' },
       take: limit,
+      relations: ['caseSheet'],
     });
   }
 }
