@@ -16,7 +16,7 @@ export const appointmentsSummaryTypeDefs = gql`
     azureFilePath: String!
   }
   extend type Query {
-    appointmentsSummary: summaryResult!
+    appointmentsSummary(fromDate: Date, toDate: Date, limit: Int): summaryResult!
   }
 `;
 type summaryResult = {
@@ -24,21 +24,27 @@ type summaryResult = {
 };
 const appointmentsSummary: Resolver<
   null,
-  { appointmentId: string; fileType: string; base64FileInput: string },
+  { fromDate: Date; toDate: Date; limit: number },
   ConsultServiceContext,
   summaryResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const fileName =
     process.env.NODE_ENV + '_appointments_' + format(new Date(), 'yyyyMMddhhmmss') + '.xls';
-  const assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-  const apptsList = await apptRepo.getAllAppointments();
+  const apptsList = await apptRepo.getAllAppointments(args.fromDate, args.toDate, args.limit);
   let serialNo = 1;
   let row1 = '';
   function getAppointments() {
     return new Promise(async (resolve, reject) => {
+      if (apptsList.length == 0) {
+        resolve(row1);
+      }
       await apptsList.map(async (appt) => {
         const patientDetails = await patientRepo.findById(appt.patientId);
         if (!patientDetails) {
@@ -178,7 +184,7 @@ const appointmentsSummary: Resolver<
   fs.unlinkSync(localFilePath);
   console.log(client.getBlobUrl(readmeBlob.name));
   const azureFilePath = client.getBlobUrl(readmeBlob.name);
-
+  //const azureFilePath = fileName;
   return { azureFilePath };
 };
 
