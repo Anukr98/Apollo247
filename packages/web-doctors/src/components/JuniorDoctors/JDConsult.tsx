@@ -95,6 +95,7 @@ const useStyles = makeStyles((theme: Theme) => {
       bottom: 0,
       width: '100%',
       zIndex: 9,
+      height: '100%',
     },
     timerCls: {
       position: 'absolute',
