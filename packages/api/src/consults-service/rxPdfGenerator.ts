@@ -15,7 +15,7 @@ import fs from 'fs';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { Connection } from 'typeorm';
 import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
-import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+import { Patient } from 'profiles-service/entities';
 
 export const convertCaseSheetToRxPdfData = async (
   caseSheet: Partial<CaseSheet> & {
@@ -24,7 +24,7 @@ export const convertCaseSheetToRxPdfData = async (
     diagnosis: CaseSheet['diagnosis'];
   },
   doctorsDb: Connection,
-  patientsDb: Connection
+  patientData: Patient
 ): Promise<RxPdfData> => {
   const caseSheetMedicinePrescription = JSON.parse(
     JSON.stringify(caseSheet.medicinePrescription)
@@ -115,8 +115,6 @@ export const convertCaseSheetToRxPdfData = async (
   };
 
   if (caseSheet.patientId) {
-    const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-    const patientData = await patientRepo.findById(caseSheet.patientId);
     if (patientData != null) {
       const patientAge =
         patientData.dateOfBirth === null
