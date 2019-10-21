@@ -30,7 +30,10 @@ const appointmentsSummary: Resolver<
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const fileName =
     process.env.NODE_ENV + '_appointments_' + format(new Date(), 'yyyyMMddhhmmss') + '.xls';
-  const assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+  if (process.env.NODE_ENV != 'local') {
+    assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+  }
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
