@@ -12,16 +12,21 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const appointmentsSummaryTypeDefs = gql`
+  type summaryResult {
+    azureFilePath: String!
+  }
   extend type Query {
-    appointmentsSummary: String!
+    appointmentsSummary: summaryResult!
   }
 `;
-
+type summaryResult = {
+  azureFilePath: string;
+};
 const appointmentsSummary: Resolver<
   null,
   { appointmentId: string; fileType: string; base64FileInput: string },
   ConsultServiceContext,
-  string
+  summaryResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const fileName =
     process.env.NODE_ENV + '_appointments_' + format(new Date(), 'yyyyMMddhhmmss') + '.xls';
@@ -172,8 +177,9 @@ const appointmentsSummary: Resolver<
     });
   fs.unlinkSync(localFilePath);
   console.log(client.getBlobUrl(readmeBlob.name));
+  const azureFilePath = client.getBlobUrl(readmeBlob.name);
 
-  return client.getBlobUrl(readmeBlob.name);
+  return { azureFilePath };
 };
 
 export const appointmentsSummaryResolvers = {
