@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
 
     videoContainer: {
-      height: 'calc(100vh - 214px)',
+      height: 'calc(100vh - 200px)',
       backgroundColor: '#000',
       borderRadius: 10,
       margin: 20,
