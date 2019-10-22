@@ -19,6 +19,7 @@ export const updatePatientTypeDefs = gql`
     emailAddress: String
     dateOfBirth: Date
     relation: Relation
+    photoUrl: String
   }
 
   input UpdatePatientAllergiesInput {
