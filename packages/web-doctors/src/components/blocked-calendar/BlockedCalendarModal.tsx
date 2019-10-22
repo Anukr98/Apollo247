@@ -10,16 +10,7 @@ import {
   RadioGroup,
   TextField,
 } from '@material-ui/core';
-import { Theme } from '@material-ui/core';
-import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { DialogProps } from '@material-ui/core/Dialog';
-import { AphSelect, AphTextField } from '@aph/web-ui-components';
-import DateFnsUtils from '@date-io/date-fns';
-import {
-  MuiPickersUtilsProvider,
-  KeyboardTimePicker,
-  KeyboardDatePicker,
-} from '@material-ui/pickers';
 import {
   ADD_BLOCKED_CALENDAR_ITEM,
   GET_BLOCKED_CALENDAR,
@@ -39,24 +30,13 @@ import {
 } from 'graphql/types/UpdateBlockedCalendarItem';
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-import { createMuiTheme } from '@material-ui/core';
 
 export interface BlockedCalendarAddModalProps {
   dialogProps: DialogProps & { onClose: () => void };
   doctorId: string;
   item?: Item | null;
 }
-const getFormattedDate = (date: any) => {
-  const year = date.getFullYear();
 
-  let month = (1 + date.getMonth()).toString();
-  month = month.length > 1 ? month : '0' + month;
-
-  let day = date.getDate().toString();
-  day = day.length > 1 ? day : '0' + day;
-
-  return year + '-' + month + '-' + day;
-}
 export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (props) => {
   enum RadioValues {
     DAY = 'DAY',
@@ -128,110 +108,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     setIsOverlapError(false);
     dialogProps.onClose();
   };
-  const useStyles = makeStyles((theme: Theme) => {
-    return {
-      blockcalHeading: {
-        minWidth: 480,
-        boxShadow: '0 5px 20px 0 #80808033',
-        marginBottom: 20,
-        '& h6': {
-          backgroundColor: '#fff',
-          fontSize: 13,
-          color: '#01475b',
-          display: 'flex',
-          fontWeight: 600,
-          padding: '2px 0',
-        },
-      },
-      BlockedCalendarModal: {},
-      radioGroup: {
-        '& label': {
-          width: '48%',
-          marginBottom: 20,
-          color: 'rgba(2, 71, 91, 0.6)',
-          fontSize: 14,
-        },
-      },
-      datepicker: {
-        width: '100%',
-        marginBottom: 20,
-      },
-      timepicker: {
-        margin: '10px 20px 10px 0',
-        width: '30%',
-        borderBottom: '2px solid #00b38e',
-        '&:hover': {
-          borderBottom: '2px solid #00b38e',
-        },
-      },
-      KeyboardDatePicker: {
-        width: '100%',
-        color: '#02475b',
-        '& svg': {
-          fill: '#02475b',
-        },
-        '& div': {
-          '&:before': {
-            borderBottom: '2px solid #00b38e',
-          },
-          '&:after': {
-            borderBottom: '2px solid #00b38e',
-          },
-        },
-        '& input': {
-          fontSize: 18,
-          color: '#01475b',
-          borderBottom: '2px solid #00b38e',
-          fontWeight: 500,
-        },
-      },
-    };
-  });
-  const defaultMaterialTheme = createMuiTheme({
-    palette: {
-      primary: {
-        main: '#00b38e',
-      },
-      text: {
-        primary: '#00b38e',
-      },
-      action: {
-        selected: '#fff',
-      },
-    },
-    typography: {
-      fontWeightMedium: 600,
-      htmlFontSize: 14,
-      fontFamily: ['IBM Plex Sans', 'sans-serif'].join(','),
-      body1: {
-        fontSize: 16,
-        color: '#02475b',
-        fontWeight: 700,
-      },
-      body2: {
-        fontWeight: 600,
-      },
-      caption: {
-        fontSize: 12,
-        color: '#80a3ad !important',
-        fontWeight: 600,
-      },
-    },
-  });
-  const classes = useStyles();
 
-
-  const [selectedDate, setSelectedDate] = React.useState(new Date('2019-10-17T21:11:54'));
   return (
-    <Dialog
-      {...dialogProps}
-      data-cypress="BlockedCalendarModal"
-      className={classes.BlockedCalendarModal}
-    >
-      <DialogTitle className={classes.blockcalHeading}>BLOCK CALENDAR</DialogTitle>
+    <Dialog {...dialogProps} data-cypress="BlockedCalendarModal">
+      <DialogTitle style={{ color: 'black' }}>BLOCK CALENDAR</DialogTitle>
       <DialogContent style={{ color: 'black' }}>
         <RadioGroup
-          className={classes.radioGroup}
           value={selectedValue}
           onChange={(e) => setSelectedValue((e.target as HTMLInputElement).value as RadioValues)}
           row
@@ -248,92 +130,49 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
           />
         </RadioGroup>
         <div>
-          <div>
-            <MuiPickersUtilsProvider utils={DateFnsUtils}>
-              <ThemeProvider theme={defaultMaterialTheme}>
-                <div>
-                  <KeyboardDatePicker
-                    className={classes.KeyboardDatePicker}
-                    disableToolbar
-                    variant="inline"
-                    format="MM/dd/yyyy"
-                    margin="normal"
-                    id="date-picker-inline"
-                    label="From"
-                    value={start}
-                    minDate={new Date()}
-                    onChange={(date) => { setStart(date ? getFormattedDate(date) : '') }}
-                    KeyboardButtonProps={{
-                      'aria-label': 'change date',
-                    }}
-                  />
-                </div>
-                {!daySelected && (
-                  <div>
-                    <KeyboardDatePicker
-                      className={classes.KeyboardDatePicker}
-                      disableToolbar
-                      variant="inline"
-                      format="MM/dd/yyyy"
-                      margin="normal"
-                      id="date-picker-inline"
-                      label="To"
-                      minDate={new Date()}
-                      value={end}
-                      onChange={(date) => { setEnd(date ? getFormattedDate(date) : '') }}
-                      KeyboardButtonProps={{
-                        'aria-label': 'change date',
-                      }}
-                    />
-                  </div>)}
-              </ThemeProvider>
-            </MuiPickersUtilsProvider>
-            {/* <TextField
-              onChange={(e) => { console.log(e.currentTarget.value); setStart(e.currentTarget.value) }}
+          <div style={{ display: 'flex' }}>
+            <TextField
+              onChange={(e) => setStart(e.currentTarget.value)}
               value={start}
-              label="From"
+              label="Start"
               type="date"
               InputLabelProps={{ shrink: true }}
-              InputProps={{ style: { color: 'black' } }}
-              className={classes.datepicker}
-            /> */}
-          </div>
-          {/* {!daySelected && (<div>
-            <div style={{ display: 'flex' }}>
-              <AphTextField
-                disabled={daySelected}
-                onChange={(e) => { console.log(e.currentTarget.value); setEnd(e.currentTarget.value) }}
-                value={end}
-                label="To"
-                type="date"
+              InputProps={{ style: { color: 'black ' } }}
+            />
+            {daySelected && (
+              <TextField
+                onChange={(e) => setStartTime(e.currentTarget.value)}
+                value={startTime}
+                label="Start time"
+                type="time"
                 InputLabelProps={{ shrink: true }}
-                InputProps={{ style: { color: 'black' } }}
-                className={classes.datepicker}
+                InputProps={{ style: { color: 'black ' } }}
               />
-            </div>
-          </div>)} */}
-          {daySelected && (
+            )}
+          </div>
+        </div>
+        <div>
+          <div style={{ display: 'flex' }}>
             <TextField
-              onChange={(e) => setStartTime(e.currentTarget.value)}
-              value={startTime}
-              label="Start time"
-              type="time"
+              disabled={daySelected}
+              onChange={(e) => setEnd(e.currentTarget.value)}
+              value={end}
+              label="End"
+              type="date"
               InputLabelProps={{ shrink: true }}
               InputProps={{ style: { color: 'black ' } }}
-              className={classes.timepicker}
             />
-          )}
-          {daySelected && (
-            <TextField
-              onChange={(e) => setEndTime(e.currentTarget.value)}
-              value={endTime}
-              label="End time"
-              type="time"
-              InputLabelProps={{ shrink: true }}
-              InputProps={{ style: { color: 'black', width: '100%' } }}
-              className={classes.timepicker}
-            />
-          )}
+            {daySelected && (
+              <TextField
+                onChange={(e) => setEndTime(e.currentTarget.value)}
+                value={endTime}
+                label="End time"
+                type="time"
+                InputLabelProps={{ shrink: true }}
+                InputProps={{ style: { color: 'black ' } }}
+              />
+            )}
+          </div>
         </div>
         {isOverlapError && (
           <div style={{ color: 'red' }}>Error! Blocked calendar items cannot overlap</div>
@@ -360,11 +199,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                     disabled={loading || invalid}
                     variant="contained"
                     onClick={() => {
-                      //2019-10-18 2019-10-18
-                      console.log(start, end);
                       const startDate = parse(start, 'yyyy-MM-dd', new Date());
                       const endDate = parse(end, 'yyyy-MM-dd', new Date());
-                      console.log(startDate, endDate);
                       if (durationSelected) {
                         startDate.setHours(0);
                         startDate.setMinutes(0);
@@ -400,7 +236,6 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                         setIsOverlapError(isOverlapError);
                       };
                       const isUpdate = item && item.id != null;
-                      console.log(addArgs);
                       if (isUpdate) {
                         const updateArgs = {
                           ...addArgs,
