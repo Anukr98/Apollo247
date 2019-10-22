@@ -1711,7 +1711,7 @@
         "description": null,
         "fields": [
           {
-            "name": "patients",
+            "name": "patient",
             "description": null,
             "args": [],
             "type": {
