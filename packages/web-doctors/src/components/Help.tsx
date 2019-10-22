@@ -44,6 +44,39 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       fontSize: 18,
     },
+    helpSection: {
+      borderBottom: '1px solid rgba(2, 71, 91, 0.15)',
+      paddingBottom: 5,
+      '&:last-child': {
+        borderBottom: 'none',
+      },
+
+      '& h4': {
+        fontSize: 16,
+        lineHeight: '24px',
+        color: '#0087ba',
+        fontWeight: 600,
+        margin: '10px 0',
+      },
+      '& h5': {
+        fontSize: 14,
+        lineHeight: '18px',
+        color: '#02475b',
+        fontWeight: 500,
+        margin: '3px 0',
+      },
+      '& h6': {
+        fontSize: 14,
+        lineHeight: '18px',
+        color: '#02475b',
+        fontWeight: 500,
+        opacity: 0.6,
+        margin: '3px 0',
+      },
+    },
+    needHelp: {
+      marginBottom: 20,
+    },
   };
 });
 
@@ -56,26 +89,45 @@ export const HelpPopup: React.FC<HelpProps> = (props) => {
 
   return isSignedIn ? (
     <div className={`${classes.afterloginFormWrap} ${classes.afterHelpWrap}`}>
-      <Typography variant="h2">need help?</Typography>
-      <p>
-        Don’t worry. We are here for you :)
-        <p>
-          Call <span className={classes.orange}>1800 - 3455 - 3455</span> to reach an expert from
-          our team who will resolve your issue.
-        </p>
-      </p>
+      <Typography variant="h2" className={classes.needHelp}>
+        need help?
+      </Typography>
+      <div className={classes.helpSection}>
+        <h4>SPOC for Apollo Hyderabad Doctors</h4>
+        <h5>Ms. Sreevani | 7702700910 </h5>
+        <h6>sreevani_u@apollohospitals.com</h6>
+      </div>
+      <div className={classes.helpSection}>
+        <h4>SPOC for Apollo Chennai Doctors</h4>
+        <h5>Mr. Sreekanth | 09941134567 </h5>
+        <h6>edocmh_cni@apollohospitals.com</h6>
+      </div>
+      <div className={classes.helpSection}>
+        <h4>SPOC for ATHS Doctors</h4>
+        <h5>Call Centre | 18001021066</h5>
+        <h6>mrc_support@healthnet-global.com</h6>
+      </div>
     </div>
   ) : (
     <div className={`${classes.loginFormWrap} ${classes.helpWrap}`}>
-      <Typography variant="h2">need help?</Typography>
-      <p>
-        Don’t worry. We are here for
-        <br /> you :)
-        <p>
-          Call <span className={classes.orange}>1800 - 3455 - 3455</span> to reach an expert from
-          our team who will resolve your issue.
-        </p>
-      </p>
+      <Typography variant="h2" className={classes.needHelp}>
+        need help?
+      </Typography>
+      <div className={classes.helpSection}>
+        <h4>SPOC for Apollo Hyderabad Doctors</h4>
+        <h5>Ms. Sreevani | 7702700910 </h5>
+        <h6>sreevani_u@apollohospitals.com</h6>
+      </div>
+      <div className={classes.helpSection}>
+        <h4>SPOC for Apollo Chennai Doctors</h4>
+        <h5>Mr. Sreekanth | 09941134567 </h5>
+        <h6>edocmh_cni@apollohospitals.com</h6>
+      </div>
+      <div className={classes.helpSection}>
+        <h4>SPOC for ATHS Doctors</h4>
+        <h5>Call Centre | 18001021066</h5>
+        <h6>mrc_support@healthnet-global.com</h6>
+      </div>
     </div>
   );
 };
