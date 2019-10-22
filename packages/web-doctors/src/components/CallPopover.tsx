@@ -1321,7 +1321,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   startAppointmentButton ||
                   disableOnTransfer ||
                   (appointmentInfo!.appointmentState !== 'NEW' &&
-                    appointmentInfo!.appointmentState !== 'TRANSFER') ||
+                    appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                    appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
                   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                     appointmentInfo!.status !== STATUS.PENDING)
                 }
@@ -1404,7 +1405,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               disabled={
                 disableOnTransfer ||
                 (appointmentInfo!.appointmentState !== 'NEW' &&
-                  appointmentInfo!.appointmentState !== 'TRANSFER') ||
+                  appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                  appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
                 (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                   appointmentInfo!.status !== STATUS.PENDING)
               }
@@ -1446,7 +1448,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   >
                     Transfer Consult
                   </li>
-                  {!props.startAppointment && appointmentInfo!.status === STATUS.PENDING && (
+                  {((!props.startAppointment && appointmentInfo!.status === STATUS.PENDING) ||
+                    props.startAppointment) && (
                     <li
                       onClick={() => {
                         handleCloseThreeDots();
