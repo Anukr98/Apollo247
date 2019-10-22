@@ -8,7 +8,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const getPatientTypeDefs = gql`
   type PatientInfo {
-    patients: Patient
+    patient: Patient
   }
   type PatientList {
     patients: [Patient]
