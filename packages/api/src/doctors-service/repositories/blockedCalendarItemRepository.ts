@@ -1,4 +1,4 @@
-import { EntityRepository, Repository, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { EntityRepository, Repository, LessThanOrEqual, MoreThan } from 'typeorm';
 import { BlockedCalendarItem } from 'doctors-service/entities';
 //import { addDays, format } from 'date-fns';
 
@@ -6,7 +6,7 @@ import { BlockedCalendarItem } from 'doctors-service/entities';
 export class BlockedCalendarItemRepository extends Repository<BlockedCalendarItem> {
   checkIfSlotBlocked(slot: Date, doctorId: string) {
     return this.count({
-      where: { doctorId, start: LessThanOrEqual(slot), end: MoreThanOrEqual(slot) },
+      where: { doctorId, start: LessThanOrEqual(slot), end: MoreThan(slot) },
     });
   }
 
