@@ -10,6 +10,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { STATUS } from 'consults-service/entities';
 
 export const appointmentsSummaryTypeDefs = gql`
   type summaryResult {
@@ -54,7 +55,25 @@ const appointmentsSummary: Resolver<
         if (!doctorDetails) {
           throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
         }
-        const istDateTime = addMilliseconds(appt.appointmentDateTime, 19800000);
+        const istDateTime = format(
+          addMilliseconds(appt.appointmentDateTime, 19800000),
+          'yyyy-MM-dd HH:mm'
+        );
+        const followupCount = await apptRepo.followUpBookedCount(appt.id);
+        let followUpBooked = false,
+          prescriptionIssued = false,
+          isCancelled = false,
+          caseSheetId = '';
+        if (followupCount > 0) {
+          followUpBooked = true;
+        }
+        if (appt.caseSheet.length > 0 && appt.caseSheet[0].medicinePrescription != '') {
+          prescriptionIssued = true;
+          caseSheetId = appt.caseSheet[0].id;
+        }
+        if (appt.status == STATUS.CANCELLED) {
+          isCancelled = true;
+        }
         row1 +=
           serialNo +
           '\t' +
@@ -83,10 +102,25 @@ const appointmentsSummary: Resolver<
           doctorDetails.specialty.name +
           '\t' +
           appt.isFollowUp +
+          '\t' +
+          followUpBooked +
+          '\t' +
+          caseSheetId +
+          '\t' +
+          caseSheetId +
+          '\t' +
+          prescriptionIssued +
+          '\t' +
+          'NA' +
+          '\t' +
+          'NA' +
+          '\t' +
+          isCancelled +
           '\n';
         if (serialNo == apptsList.length) {
           resolve(row1);
         }
+        console.log(row1, 'ro11');
         serialNo++;
       });
     });
@@ -124,7 +158,7 @@ const appointmentsSummary: Resolver<
       '\t' +
       'Case Sheet Id' +
       '\t' +
-      'Patient MobilePrescription Issued Y/N' +
+      'Prescription Issued Y/N' +
       '\t' +
       'Consult Rescheduled' +
       '\t' +
