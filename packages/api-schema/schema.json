@@ -49,7 +49,7 @@
             "deprecationReason": null
           },
           {
-            "name": "getPatientByMobile",
+            "name": "getPatientByMobileNumber",
             "description": null,
             "args": [
               {

@@ -15,7 +15,7 @@ export const getPatientTypeDefs = gql`
   }
   extend type Query {
     getPatientById(patientId: String): PatientInfo
-    getPatientByMobile(mobileNumber: String): PatientList
+    getPatientByMobileNumber(mobileNumber: String): PatientList
   }
 `;
 
@@ -40,7 +40,7 @@ const getPatientById: Resolver<
   return { patients };
 };
 
-const getPatientByMobile: Resolver<
+const getPatientByMobileNumber: Resolver<
   null,
   { mobileNumber: string },
   ProfilesServiceContext,
@@ -49,7 +49,7 @@ const getPatientByMobile: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   const patients = await patientRepo.findByMobileNumber(args.mobileNumber);
   if (!patients) {
-    throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   }
   return { patients };
 };
@@ -57,6 +57,6 @@ const getPatientByMobile: Resolver<
 export const getPatientResolvers = {
   Query: {
     getPatientById,
-    getPatientByMobile,
+    getPatientByMobileNumber,
   },
 };
