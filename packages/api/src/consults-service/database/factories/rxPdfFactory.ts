@@ -13,20 +13,9 @@ export const buildRxPdfData = (): RxPdfData => {
   //const caseSheet = buildCaseSheet();
   const prescriptions = [{ name: '', ingredients: [], frequency: '', instructions: '' }];
 
-  const generalAdvice = _times(_random(0, 5), () => ({
-    title: faker.commerce.productName(),
-    description: _compact(
-      faker.lorem
-        .sentences(_random(0, 5))
-        .split('.')
-        .map((s) => s.trim())
-    ),
-  }));
+  const generalAdvice = [{ instruction: '' }];
 
-  const diagnoses = _times(_random(0, 5), () => ({
-    title: faker.commerce.productName(),
-    description: faker.random.boolean() ? _capitalize(faker.lorem.words(_random(2, 10))) : '',
-  }));
+  const diagnoses = [{ name: '' }];
 
   const doctorInfo = {
     salutation: _capitalize(randomEnum(Salutation)),
@@ -56,7 +45,8 @@ export const buildRxPdfData = (): RxPdfData => {
 
   const vitals = { height: '', weight: '', temperature: '', bp: '' };
   const appointmentDetails = { displayId: '', consultDate: '', consultType: '' };
-  const diagnosesTests = [{ name: '' }];
+  const diagnosesTests = [{ itemname: '' }];
+  const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '' }];
 
   return {
     prescriptions,
@@ -68,5 +58,6 @@ export const buildRxPdfData = (): RxPdfData => {
     vitals,
     appointmentDetails,
     diagnosesTests,
+    caseSheetSymptoms,
   };
 };

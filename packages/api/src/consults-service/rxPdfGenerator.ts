@@ -24,8 +24,6 @@ export const convertCaseSheetToRxPdfData = async (
   doctorsDb: Connection,
   patientData: Patient
 ): Promise<RxPdfData> => {
-  console.log(caseSheet);
-
   // medicine prescription starts
   const caseSheetMedicinePrescription = JSON.parse(
     JSON.stringify(caseSheet.medicinePrescription)
@@ -55,65 +53,24 @@ export const convertCaseSheetToRxPdfData = async (
   //medicine prescription ends
 
   //other instruction starts
-  const caseSheetOtherInstructions = JSON.parse(
+  const generalAdvice = JSON.parse(
     JSON.stringify(caseSheet.otherInstructions)
   ) as CaseSheetOtherInstruction[];
 
-  type GeneralAdviceData = {
-    title: string;
-    description: string[];
-  };
-  let generalAdvice: GeneralAdviceData[] | [];
-
-  if (caseSheet.otherInstructions == null || caseSheet.otherInstructions == '') {
-    generalAdvice = [];
-  } else {
-    generalAdvice = caseSheetOtherInstructions.map((otherInst) => ({
-      title: otherInst.instruction,
-      description: [] as string[],
-    }));
-  }
   // other instruction ends
 
   //diagnoses starts
-  const caseSheetDiagnoses = JSON.parse(
-    JSON.stringify(caseSheet.diagnosis)
-  ) as CaseSheetDiagnosis[];
-  type diagnosesData = {
-    title: string;
-    description: string;
-  };
-  let diagnoses: diagnosesData[] | [];
-  if (caseSheet.diagnosis == null || caseSheet.diagnosis == '') {
-    diagnoses = [];
-  } else {
-    diagnoses = caseSheetDiagnoses.map((diag) => ({
-      title: diag.name,
-      description: '',
-    }));
-  }
+  const diagnoses = JSON.parse(JSON.stringify(caseSheet.diagnosis)) as CaseSheetDiagnosis[];
   //diagnoses ends
 
   //diagnosticTests starts
   const diagnosesTests = JSON.parse(
     JSON.stringify(caseSheet.diagnosticPrescription)
-  ) as DiagnosticPrescription[];
-  /*type diagnosesTestsData = {
-    name: string;
-  };
-  let diagnosesTests: diagnosesTestsData[] | [];
-  if (caseSheet.diagnosticPrescription == null || caseSheet.diagnosticPrescription == '') {
-    diagnosesTests = [];
-  } else {
-    diagnosesTests = casesheetDiagnosesTests.map((diag) => ({
-      name: diag.name,
-    }));
-  }  */
+  ) as CaseSheetDiagnosisPrescription[];
   //diagnosticTests ends
 
   //symptoms starts
   const caseSheetSymptoms = JSON.parse(JSON.stringify(caseSheet.symptoms)) as CaseSheetSymptom[];
-
   //symptoms ends
 
   let doctorInfo = {
@@ -233,6 +190,7 @@ export const convertCaseSheetToRxPdfData = async (
     vitals,
     appointmentDetails,
     diagnosesTests,
+    caseSheetSymptoms,
   };
 };
 
@@ -242,9 +200,6 @@ const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
 export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => {
   const margin = 35;
-  //const indentedMargin = margin + 30;
-  //const patientIndentedMargin = margin + 100;
-
   const doc = new PDFDocument({ margin });
 
   const drawHorizontalDivider = (y: number) => {
@@ -252,8 +207,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .moveTo(margin, y)
       .lineTo(doc.page.width - margin, y)
       .lineWidth(1)
-      .opacity(0.7)
-      .stroke();
+      .fillColor('#000000');
   };
 
   const setY = (y: number) => {
@@ -308,7 +262,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doctorInfo: RxPdfData['doctorInfo'],
     hospitalAddress: RxPdfData['hospitalAddress']
   ) => {
-    doc.image(loadAsset('apollo-logo.png'), margin, margin / 2, { height: 85 });
+    doc.image(loadAsset('apollo-logo.png'), margin, margin / 2, { height: 65 });
 
     //Doctor Details
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
@@ -348,30 +302,31 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderFooter = () => {
+    drawHorizontalDivider(doc.page.height - 55);
     const disclaimerText =
       'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital';
     doc
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-      .fontSize(8)
+      .fontSize(10)
+      .fillColor('#000000')
       .text(disclaimerText, margin, doc.page.height - 70, { align: 'center' });
-    drawHorizontalDivider(doc.page.height - 55);
     return doc;
   };
 
-  const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
+  const renderSymptoms = (prescriptions: RxPdfData['caseSheetSymptoms']) => {
     renderSectionHeader('Chief Complaints', headerEndY + 100);
 
     prescriptions.forEach((prescription, index) => {
       const textArray = [];
-      if (prescription.ingredients.length > 0) textArray.push(prescription.ingredients.join(', '));
-      if (prescription.frequency) textArray.push(prescription.frequency);
-      if (prescription.instructions) textArray.push(prescription.instructions);
+      if (prescription.since.length > 0) textArray.push('Since: ' + prescription.since);
+      if (prescription.howOften) textArray.push('How Often: ' + prescription.howOften);
+      if (prescription.severity) textArray.push('Severity: ' + prescription.severity);
 
       doc
         .fontSize(10)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
-        .text(`${prescription.name.toUpperCase()}`, margin + 15)
+        .text(`${prescription.symptom.toUpperCase()}`, margin + 15)
         .moveDown(0.5);
       doc
         .fontSize(10)
@@ -386,55 +341,79 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     });
   };
 
-  const renderGeneralAdvice = (generalAdvice: RxPdfData['generalAdvice']) => {
-    renderSectionHeader('Advise Given');
+  const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
+    renderSectionHeader('Medicines Prescribed', headerEndY + 100);
 
-    generalAdvice.forEach((advice, index) => {
-      if (doc.y > doc.page.height - 150) {
-        pageBreak();
-      }
-
+    prescriptions.forEach((prescription, index) => {
+      doc
+        .fontSize(10)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#02475b')
+        .text(`${index + 1}.  ${prescription.name.toUpperCase()}`, margin + 15)
+        .moveDown(0.5);
       doc
         .fontSize(10)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#000000')
-        .text(`${advice.title}`, margin + 15)
-        .moveDown(0.5);
+        .text(`${prescription.frequency} , ${prescription.instructions} `, margin + 30)
+        .moveDown(0.8);
+
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
     });
+  };
+
+  const renderGeneralAdvice = (generalAdvice: RxPdfData['generalAdvice']) => {
+    if (generalAdvice) {
+      renderSectionHeader('Advise Given');
+      generalAdvice.forEach((advice, index) => {
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
+        doc
+          .fontSize(10)
+          .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+          .fillColor('#000000')
+          .text(`${advice.instruction}`, margin + 15)
+          .moveDown(0.5);
+      });
+    }
   };
 
   const renderDiagnoses = (diagnoses: RxPdfData['diagnoses']) => {
-    renderSectionHeader('Diagnosis');
-
-    diagnoses.forEach((diag, index) => {
-      if (doc.y > doc.page.height - 150) {
-        pageBreak();
-      }
-
-      doc
-        .fontSize(10)
-        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-        .fillColor('#02475b')
-        .text(`${diag.title}`, margin + 15)
-        .moveDown(0.5);
-    });
+    if (diagnoses) {
+      renderSectionHeader('Diagnosis');
+      diagnoses.forEach((diag, index) => {
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
+        doc
+          .fontSize(10)
+          .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+          .fillColor('#02475b')
+          .text(`${diag.name}`, margin + 15)
+          .moveDown(0.5);
+      });
+    }
   };
 
   const renderDiagnosticTest = (diagnosticTests: RxPdfData['diagnosesTests']) => {
-    renderSectionHeader('Diagnostic Tests');
-    diagnosticTests.forEach((diagTest, index) => {
-      console.log('-----------', diagTest.itemname);
-      if (doc.y > doc.page.height - 150) {
-        pageBreak();
-      }
+    if (diagnosticTests) {
+      renderSectionHeader('Diagnostic Tests');
+      diagnosticTests.forEach((diagTest, index) => {
+        if (doc.y > doc.page.height - 150) {
+          pageBreak();
+        }
 
-      doc
-        .fontSize(10)
-        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-        .fillColor('#02475b')
-        // .text(`${index + 1}. ${diagTest.itemname}`, margin + 15)
-        .moveDown(0.5);
-    });
+        doc
+          .fontSize(10)
+          .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+          .fillColor('#02475b')
+          .text(`${index + 1}. ${diagTest.itemname}`, margin + 15)
+          .moveDown(0.5);
+      });
+    }
   };
 
   const renderpatients = (
@@ -499,10 +478,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
-  /*if (!_isEmpty(rxPdfData.symptoms)) {
-    renderSymptoms(rxPdfData.symptoms);
+  if (!_isEmpty(rxPdfData.caseSheetSymptoms)) {
+    renderSymptoms(rxPdfData.caseSheetSymptoms);
     doc.moveDown(1.5);
-  } */
+  }
 
   if (!_isEmpty(rxPdfData.diagnoses)) {
     renderDiagnoses(rxPdfData.diagnoses);

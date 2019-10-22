@@ -580,14 +580,8 @@ export interface RxPdfData {
     frequency: string;
     instructions?: string;
   }[];
-  generalAdvice: {
-    title: string;
-    description: string[];
-  }[];
-  diagnoses: {
-    title: string;
-    description: string;
-  }[];
+  generalAdvice: CaseSheetOtherInstruction[];
+  diagnoses: CaseSheetDiagnosis[];
   doctorInfo: {
     salutation: string;
     firstName: string;
@@ -614,5 +608,6 @@ export interface RxPdfData {
   vitals: { height: string; weight: string; temperature: string; bp: string };
   appointmentDetails: { displayId: string; consultDate: string; consultType: string };
   diagnosesTests: CaseSheetDiagnosisPrescription[];
+  caseSheetSymptoms: CaseSheetSymptom[];
 }
 ///////////////////////////////////////////////////////////

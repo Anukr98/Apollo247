@@ -331,15 +331,15 @@ export const caseSheetTypeDefs = gql`
   }
 
   input ModifyCaseSheetInput {
-    symptoms: [SymptomInput]
+    symptoms: [SymptomInput!]
     notes: String
-    diagnosis: [DiagnosisInput]
-    diagnosticPrescription: [DiagnosticPrescriptionInput]
+    diagnosis: [DiagnosisInput!]
+    diagnosticPrescription: [DiagnosticPrescriptionInput!]
     followUp: Boolean
     followUpDate: Date
     followUpAfterInDays: Int
-    otherInstructions: [OtherInstructionsInput]
-    medicinePrescription: [MedicinePrescriptionInput]
+    otherInstructions: [OtherInstructionsInput!]
+    medicinePrescription: [MedicinePrescriptionInput!]
     id: String!
     status: CASESHEET_STATUS
     lifeStyle: String
