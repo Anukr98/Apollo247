@@ -16,6 +16,8 @@ import {
   Text,
   TouchableOpacity,
   View,
+  WebView,
+  Dimensions,
 } from 'react-native';
 import SmsListener from 'react-native-android-sms-listener';
 import { NavigationScreenProps } from 'react-navigation';
@@ -24,6 +26,11 @@ import { OTPTextView } from './ui/OTPTextView';
 import firebase from 'react-native-firebase';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Header } from './ui/Header';
+import { fonts } from '../theme/fonts';
+import Hyperlink from 'react-native-hyperlink';
+
+const { height, width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
@@ -55,6 +62,22 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.INPUT_BORDER_SUCCESS,
     ...theme.fonts.IBMPlexSansMedium(18),
   },
+  viewWebStyles: {
+    position: 'absolute',
+    width: width,
+    height: height,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    elevation: 20,
+  },
+  // webView: {
+  //   marginTop: 0,
+  //   marginLeft: 0,
+  //   marginRight: 0,
+  //   marginBottom: 0,
+  // },
 });
 
 let timer = 900;
@@ -80,6 +103,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   const [isresent, setIsresent] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [onOtpClick, setOnOtpClick] = useState<boolean>(false);
+  const [onClickOpen, setonClickOpen] = useState<boolean>(false);
 
   const { verifyOtp, sendOtp, isSigningIn, isVerifyingOtp, signInError } = useAuth();
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
@@ -251,7 +275,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   });
 
   const onClickOk = () => {
-    Keyboard.dismiss();
+    try {
+      Keyboard.dismiss();
+    } catch (error) {}
     getNetStatus().then(async (status) => {
       if (status) {
         console.log('otp OTPVerification', otp, otp.length, 'length');
@@ -367,6 +393,38 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     });
   };
 
+  const openWebView = () => {
+    Keyboard.dismiss();
+    return (
+      <View style={styles.viewWebStyles}>
+        <Header
+          title={'Terms & Conditions'}
+          leftIcon="close"
+          container={{ borderBottomWidth: 0 }}
+          onPressLeftIcon={() => setonClickOpen(false)}
+        />
+        <View style={{ flex: 1, overflow: 'hidden', backgroundColor: 'white' }}>
+          <WebView
+            source={{ uri: 'https://www.apollo247.com/TnC.html' }}
+            style={{ flex: 1, backgroundColor: 'white' }}
+            onLoadStart={() => {
+              console.log('onLoadStart');
+              setshowSpinner(true);
+            }}
+            onLoadEnd={() => {
+              console.log('onLoadEnd');
+              setshowSpinner(false);
+            }}
+            onLoad={() => {
+              console.log('onLoad');
+              setshowSpinner(false);
+            }}
+          />
+        </View>
+      </View>
+    );
+  };
+
   const renderTime = () => {
     console.log(remainingTime, 'remainingTime', timer, 'timer');
 
@@ -394,7 +452,8 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
         {invalidOtpCount === 3 && !isValidOTP ? (
           <Card
             key={1}
-            cardContainer={{ marginTop: 0, height: 270 }}
+            cardContainer={{ marginTop: 0, height: 290 }}
+            headingTextStyle={{ marginTop: 10 }}
             heading={string.login.oops}
             description={string.login.incorrect_otp_message}
             disableButton={isValidOTP ? false : true}
@@ -413,11 +472,42 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
               />
             </View>
             <Text style={[styles.errorText]}>Try again after — {renderTime()}</Text>
+
+            <View
+              style={{
+                marginRight: 32,
+              }}
+            >
+              <Hyperlink
+                linkStyle={{
+                  color: '#02475b',
+                  ...fonts.IBMPlexSansBold(11),
+                  lineHeight: 16,
+                  letterSpacing: 0,
+                }}
+                linkText={(url) =>
+                  url === 'https://www.apollo247.com/TnC.html' ? 'terms & conditions' : url
+                }
+                onPress={(url, text) => setonClickOpen(true)}
+              >
+                <Text
+                  style={{
+                    color: '#02475b',
+                    ...fonts.IBMPlexSansRegular(11),
+                    lineHeight: 16,
+                    letterSpacing: 0,
+                  }}
+                >
+                  By signing up, I agree to https://www.apollo247.com/TnC.html of Apollo24x7
+                </Text>
+              </Hyperlink>
+            </View>
           </Card>
         ) : (
           <Card
             key={2}
-            cardContainer={{ marginTop: 0, height: 270 }}
+            cardContainer={{ marginTop: 0, height: 320 }}
+            headingTextStyle={{ marginTop: 10 }}
             heading={string.login.great}
             description={isresent ? string.login.resend_otp_text : string.login.type_otp_text}
             buttonIcon={isValidOTP && otp.length === 6 ? <OkText /> : <OkTextDisabled />}
@@ -451,8 +541,38 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 <Text style={styles.bottomDescription}>{string.login.resend_opt}</Text>
               </TouchableOpacity>
             }
+            <View
+              style={{
+                marginRight: 32,
+              }}
+            >
+              <Hyperlink
+                linkStyle={{
+                  color: '#02475b',
+                  ...fonts.IBMPlexSansBold(11),
+                  lineHeight: 16,
+                  letterSpacing: 0,
+                }}
+                linkText={(url) =>
+                  url === 'https://www.apollo247.com/TnC.html' ? 'terms & conditions' : url
+                }
+                onPress={(url, text) => setonClickOpen(true)}
+              >
+                <Text
+                  style={{
+                    color: '#02475b',
+                    ...fonts.IBMPlexSansRegular(11),
+                    lineHeight: 16,
+                    letterSpacing: 0,
+                  }}
+                >
+                  By signing up, I agree to https://www.apollo247.com/TnC.html of Apollo24x7
+                </Text>
+              </Hyperlink>
+            </View>
           </Card>
         )}
+        {onClickOpen && openWebView()}
       </SafeAreaView>
       {showSpinner && <Spinner />}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
