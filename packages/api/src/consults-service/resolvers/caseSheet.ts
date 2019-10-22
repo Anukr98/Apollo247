@@ -355,9 +355,17 @@ export const caseSheetTypeDefs = gql`
     bp: String
   }
 
+  type PatientPrescriptionSentResponse {
+    success: Boolean
+  }
+
   extend type Mutation {
     updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
     modifyCaseSheet(ModifyCaseSheetInput: ModifyCaseSheetInput): CaseSheet
+    updatePatientPrescriptionSentStatus(
+      caseSheetId: ID!
+      sentToPatient: Boolean!
+    ): PatientPrescriptionSentResponse
     createJuniorDoctorCaseSheet(appointmentId: String): CaseSheet
     createSeniorDoctorCaseSheet(appointmentId: String): CaseSheet
   }
@@ -479,6 +487,10 @@ type UpdateCaseSheetInput = {
 };
 
 type UpdateCaseSheetInputArgs = { UpdateCaseSheetInput: UpdateCaseSheetInput };
+
+type PatientPrescriptionSentResponse = {
+  success: boolean;
+};
 
 const updateCaseSheet: Resolver<
   null,
@@ -861,6 +873,28 @@ const createSeniorDoctorCaseSheet: Resolver<
   return caseSheetDetails;
 };
 
+const updatePatientPrescriptionSentStatus: Resolver<
+  null,
+  { caseSheetId: string; sentToPatient: boolean },
+  ConsultServiceContext,
+  PatientPrescriptionSentResponse
+> = async (parent, args, { mobileNumber, consultsDb, doctorsDb }) => {
+  //validate is active Doctor
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //validate casesheetid
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const getCaseSheetData = await caseSheetRepo.getCaseSheetById(args.caseSheetId);
+  if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+
+  const caseSheetAttrs: Partial<CaseSheet> = { sentToPatient: args.sentToPatient };
+  await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+
+  return { success: true };
+};
+
 export const caseSheetResolvers = {
   Appointment: {
     doctorInfo(appointments: Appointment) {
@@ -875,6 +909,7 @@ export const caseSheetResolvers = {
   Mutation: {
     updateCaseSheet,
     modifyCaseSheet,
+    updatePatientPrescriptionSentStatus,
     createJuniorDoctorCaseSheet,
     createSeniorDoctorCaseSheet,
   },

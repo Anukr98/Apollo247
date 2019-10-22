@@ -44,6 +44,8 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
     return this.findOne({
       where: [{ id }],
       relations: ['appointment'],
+    }).catch((error) => {
+      throw new AphError(AphErrorMessages.GET_CASESHEET_ERROR, undefined, { error });
     });
   }
 }
