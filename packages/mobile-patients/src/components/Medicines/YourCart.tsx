@@ -274,6 +274,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               medicineName={medicine.name!}
               price={medicine.price!}
               unit={medicine.quantity}
+              imageUrl={
+                medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
+                  ? `${medicine.thumbnail}`
+                  : ''
+              }
               onPressAdd={() => {}}
               onPressRemove={() => {
                 onRemoveCartItem(medicine);

@@ -6,6 +6,7 @@ import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCar
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   GET_PATIENT_PAST_MEDICINE_SEARCHES,
   SAVE_SEARCH,
@@ -21,6 +22,7 @@ import {
   pinCodeServiceabilityApi,
   searchMedicineApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { aphConsole, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios, { AxiosResponse } from 'axios';
@@ -28,7 +30,6 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
-  Alert,
   Keyboard,
   Platform,
   SafeAreaView,
@@ -41,8 +42,6 @@ import {
   ViewStyle,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { handleGraphQlError, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -125,9 +124,14 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface SearchMedicineSceneProps extends NavigationScreenProps {}
+export interface SearchMedicineSceneProps
+  extends NavigationScreenProps<{
+    searchText: string;
+  }> {}
 
 export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) => {
+  const searchTextFromProp = props.navigation.getParam('searchText');
+
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
@@ -148,6 +152,10 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    searchTextFromProp && onSearchMedicine(searchTextFromProp);
+  }, []);
 
   /*
   useEffect(() => {
@@ -235,6 +243,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     price,
     special_price,
     is_prescription_required,
+    thumbnail,
   }: MedicineProduct) => {
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
@@ -247,6 +256,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         price: special_price || price,
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
+        thumbnail,
       });
   };
 
@@ -562,6 +572,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           });
         }}
         medicineName={medicine.name}
+        imageUrl={
+          medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
+            ? `${medicine.thumbnail}`
+            : ''
+        }
         price={medicine.special_price || medicine.price}
         unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
         onPressAdd={() => {

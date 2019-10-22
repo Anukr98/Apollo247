@@ -16,6 +16,7 @@ export interface ShoppingCartItem {
   quantity: number;
   price: number;
   prescriptionRequired: boolean;
+  thumbnail: string | null;
 }
 
 export interface PhysicalPrescription {

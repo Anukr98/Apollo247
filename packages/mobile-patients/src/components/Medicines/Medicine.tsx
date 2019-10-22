@@ -10,6 +10,7 @@ import {
   FileBig,
   InjectionIcon,
   MedicineIcon,
+  MedicineRxIcon,
   NotificationIcon,
   SearchSendIcon,
   SyrupBottleIcon,
@@ -17,12 +18,20 @@ import {
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  Doseform,
+  MedicineProduct,
+  medicineSearchSuggestionsApi,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import Axios from 'axios';
 import React, { useState } from 'react';
 import {
   Dimensions,
+  ListRenderItemInfo,
   SafeAreaView,
   ScrollView,
   StyleProp,
@@ -34,7 +43,6 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { MedicineProduct, medicineSearchSuggestionsApi } from '../../helpers/apiCalls';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -160,7 +168,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <Image
         PlaceholderContent={<Spinner />}
         onLoad={(value) => {
-          console.log({ value });
           const { width: winWidth } = Dimensions.get('window');
           const { height, width } = value.nativeEvent.source;
           setImgHeight(height * (winWidth / width));
@@ -199,6 +206,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </View>
     );
   };
+
   const consultDoctorCTA = () => {
     return (
       <View>
@@ -221,6 +229,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </View>
     );
   };
+
   const renderUploadPrescriptionSection = () => {
     return (
       <View style={{ ...theme.viewStyles.card(), marginTop: 0, marginBottom: 12 }}>
@@ -230,6 +239,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </View>
     );
   };
+
   const renderYourOrders = () => {
     return (
       <ListCard
@@ -332,6 +342,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <SectionHeader leftText={'SHOP BY HEALTH AREAS'} />
         <FlatList
           bounces={false}
+          keyExtractor={(_, index) => `${index}`}
           contentContainerStyle={{
             paddingTop: 16,
             paddingBottom: 20,
@@ -359,6 +370,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <SectionHeader leftText={'DEALS OF THE DAY'} />
         <FlatList
           bounces={false}
+          keyExtractor={(_, index) => `${index}`}
           contentContainerStyle={{
             paddingTop: 16,
             paddingBottom: 20,
@@ -405,6 +417,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <SectionHeader leftText={'HOT SELLERS'} />
         <FlatList
           bounces={false}
+          keyExtractor={(_, index) => `${index}`}
           contentContainerStyle={{
             paddingTop: 16,
             paddingBottom: 20,
@@ -433,6 +446,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <SectionHeader leftText={'SHOP BY CATEGORY'} />
         <FlatList
           bounces={false}
+          keyExtractor={(_, index) => `${index}`}
           contentContainerStyle={{
             paddingTop: 16,
             paddingBottom: 20,
@@ -468,6 +482,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         />
         <FlatList
           bounces={false}
+          keyExtractor={(_, index) => `${index}`}
           contentContainerStyle={{
             paddingTop: 16,
             paddingBottom: 40,
@@ -580,15 +595,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     setIsLoading(true);
     medicineSearchSuggestionsApi(_searchText)
       .then(({ data }) => {
-        console.log({ data });
-
+        aphConsole.log({ data });
         const products = data.products || [];
         setMedicineList(products);
         setIsLoading(false);
       })
       .catch((e) => {
-        console.log({ e });
-
+        aphConsole.log({ e });
         if (!Axios.isCancel(e)) {
           setIsLoading(false);
         }
@@ -599,11 +612,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     name: string;
     price: number;
     isOutOfStock: boolean;
-    type: 'syrup' | 'injection' | 'tablet';
+    type: Doseform;
     imgUri?: string;
+    prescriptionRequired: boolean;
+    onPress: () => void;
     showSeparator?: boolean;
     style?: ViewStyle;
   }
+
   const renderSearchSuggestionItem = (data: SuggestionType) => {
     const styles = StyleSheet.create({
       containerStyle: {
@@ -648,26 +664,36 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const renderIconOrImage = () => {
       return (
         <View style={styles.iconOrImageContainerStyle}>
-          {data.type == 'tablet' ? (
-            <MedicineIcon />
-          ) : data.type == 'injection' ? (
-            <InjectionIcon />
-          ) : (
+          {data.imgUri ? (
+            <Image
+              source={{ uri: data.imgUri }}
+              style={{ height: 40, width: 40 }}
+              resizeMode="contain"
+            />
+          ) : data.type == 'SYRUP' ? (
             <SyrupBottleIcon />
+          ) : data.type == 'INJECTION' ? (
+            <InjectionIcon />
+          ) : data.prescriptionRequired ? (
+            <MedicineRxIcon />
+          ) : (
+            <MedicineIcon />
           )}
         </View>
       );
     };
 
     return (
-      <View style={styles.containerStyle} key={data.name}>
-        <View style={styles.iconAndDetailsContainerStyle}>
-          {renderIconOrImage()}
-          <View style={{ width: 16 }} />
-          {renderNamePriceAndInStockStatus()}
+      <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
+        <View style={styles.containerStyle} key={data.name}>
+          <View style={styles.iconAndDetailsContainerStyle}>
+            {renderIconOrImage()}
+            <View style={{ width: 16 }} />
+            {renderNamePriceAndInStockStatus()}
+          </View>
+          {data.showSeparator ? <Spearator /> : null}
         </View>
-        {data.showSeparator ? <Spearator /> : null}
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -693,6 +719,21 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         marginTop: 18,
       },
     });
+
+    const shouldEnableSearchSend = searchText.length > 2 && medicineList.length > 0;
+    const rigthIconView = (
+      <TouchableOpacity
+        activeOpacity={1}
+        style={{
+          opacity: shouldEnableSearchSend ? 1 : 0.4,
+        }}
+        disabled={!shouldEnableSearchSend}
+        onPress={() => props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText })}
+      >
+        <SearchSendIcon />
+      </TouchableOpacity>
+    );
+
     return (
       <Input
         value={searchText}
@@ -700,7 +741,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           onSearchMedicine(value);
         }}
         autoCorrect={false}
-        rightIcon={<SearchSendIcon />}
+        rightIcon={rigthIconView}
         placeholder="Search meds, brands &amp; more"
         selectionColor="#00b38e"
         underlineColorAndroid="transparent"
@@ -714,29 +755,40 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
+  const renderSearchSuggestionItemView = (data: ListRenderItemInfo<MedicineProduct>) => {
+    const { index, item } = data;
+    const imgUri = item.thumbnail
+      ? `${AppConfig.Configuration.IMAGES_BASE_URL}${item.thumbnail}`
+      : '';
+    return renderSearchSuggestionItem({
+      onPress: () =>
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          sku: item.sku,
+        }),
+      name: item.name,
+      price: item.price,
+      isOutOfStock: item.is_in_stock,
+      type: ((item.PharmaOverview || [])[0] || {}).Doseform,
+      style: {
+        marginHorizontal: 20,
+      },
+      showSeparator: !(index == medicineList.length - 1),
+      imgUri,
+      prescriptionRequired: item.is_prescription_required == '1',
+    });
+  };
+
   const renderSearchSuggestions = () => {
-    console.log({ medicineList });
     if (medicineList.length == 0) return null;
     return (
       <View style={{ width: '100%' }}>
         <FlatList
           bounces={false}
-          showsVerticalScrollIndicator={false}
-          style={{ paddingTop: 10.5, height: 266 }}
-          data={medicineList}
           keyExtractor={(_, index) => `${index}`}
-          renderItem={({ index, item }) =>
-            renderSearchSuggestionItem({
-              name: item.name,
-              price: item.price,
-              isOutOfStock: index % 2 == 0,
-              type: index % 2 == 0 ? 'injection' : 'syrup',
-              style: {
-                marginHorizontal: 20,
-              },
-              showSeparator: !(index == medicineList.length - 1),
-            })
-          }
+          showsVerticalScrollIndicator={false}
+          style={{ paddingTop: 10.5, maxHeight: 266 }}
+          data={medicineList}
+          renderItem={renderSearchSuggestionItemView}
         />
       </View>
     );
@@ -752,7 +804,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderSearchBar()}
         </View>
         {renderSearchSuggestions()}
-        <ScrollView onScroll={(result) => {}} style={{ flex: 1 }} bounces={false}>
+        <ScrollView style={{ flex: 1 }} bounces={false}>
           {renderOfferBanner()}
           {renderUploadPrescriptionSection()}
           {renderYourOrders()}

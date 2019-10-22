@@ -1,28 +1,30 @@
 import Axios, { AxiosResponse } from 'axios';
-import { AsyncStorage } from 'react-native';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface MedicineProduct {
   description: string;
   id: number;
-  image: string;
-  is_in_stock: boolean; // always returning true
+  image: string | null;
+  is_in_stock: boolean;
   is_prescription_required: string; //1 for required
   name: string;
   price: number;
   special_price: number;
   sku: string;
-  small_image: string;
+  small_image: string | null;
   status: number;
-  thumbnail: string;
+  thumbnail: string | null;
   type_id: string;
   mou: string;
   manufacturer: string;
+  PharmaOverview: PharmaOverview[];
 }
+
+export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
 
 interface PharmaOverview {
   generic: string;
-  Doseform: string;
+  Doseform: Doseform;
   Unit: string;
   Strength: string;
   Strengh: string;
@@ -292,13 +294,13 @@ export const getMedicineDetailsApi = (
   );
 };
 
-let cancel: any;
+let cancelSearchMedicineApi: any;
 
 export const searchMedicineApi = (
   searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
-  cancel && cancel();
+  cancelSearchMedicineApi && cancelSearchMedicineApi();
 
   return Axios.post(
     `${config.MED_SEARCH[0]}/popcsrchprd_api.php`,
@@ -310,7 +312,7 @@ export const searchMedicineApi = (
       },
       cancelToken: new CancelToken(function executor(c) {
         // An executor function receives a cancel function as a parameter
-        cancel = c;
+        cancelSearchMedicineApi = c;
       }),
     }
   );
@@ -376,9 +378,14 @@ export const getPopularProductsBasedOnCityApi = (
   return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
 };
 
+let cancelSearchSuggestionsApi: any;
+
 export const medicineSearchSuggestionsApi = (
   params: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelSearchSuggestionsApi && cancelSearchSuggestionsApi();
+
   return Axios.post(
     `${config.MED_SEARCH_SUGGESTION[0]}/popcsrchss_api.php`,
     {
@@ -388,6 +395,10 @@ export const medicineSearchSuggestionsApi = (
       headers: {
         Authorization: config.MED_SEARCH_SUGGESTION[1],
       },
+      cancelToken: new CancelToken(function executor(c) {
+        // An executor function receives a cancel function as a parameter
+        cancelSearchSuggestionsApi = c;
+      }),
     }
   );
 };

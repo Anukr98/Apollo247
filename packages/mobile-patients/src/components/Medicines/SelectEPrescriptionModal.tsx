@@ -95,6 +95,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const renderEPrescription = (item: EPrescription, i: number, arrayLength: number) => {
     return (
       <EPrescriptionCard
+        key={i}
         actionType="selection"
         isSelected={!!selectedPrescription[item.id]}
         date={item.date}
