@@ -112,4 +112,14 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
     console.log(notificationResult, 'notificationResult');
     return createReschdule;
   }
+
+  getRescheduleDetailsByAppointment(appointment: string) {
+    return this.findOne({
+      where: {
+        appointment,
+        rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+        rescheduleStatus: TRANSFER_STATUS.INITIATED,
+      },
+    });
+  }
 }
