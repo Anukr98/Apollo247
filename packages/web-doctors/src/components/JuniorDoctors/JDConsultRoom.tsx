@@ -10,9 +10,13 @@ import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
 } from 'graphql/types/CreateAppointmentSession';
-import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
-import { CREATE_APPOINTMENT_SESSION, UPDATE_CASESHEET } from 'graphql/profiles';
-import { GET_CASESHEET_JRD, CREATE_CASESHEET_FOR_JRD } from 'graphql/profiles';
+import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
+import {
+  CREATE_APPOINTMENT_SESSION,
+  GET_CASESHEET_JRD,
+  CREATE_CASESHEET_FOR_JRD,
+  MODIFY_CASESHEET,
+} from 'graphql/profiles';
 import {
   CreateJuniorDoctorCaseSheet,
   CreateJuniorDoctorCaseSheetVariables,
@@ -53,26 +57,6 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { clientRoutes } from 'helpers/clientRoutes';
-import IdleTimer from 'react-idle-timer';
-
-/* patient related queries and mutations */
-// import {
-//   SAVE_PATIENT_FAMILY_HISTORY,
-//   SAVE_PATIENT_LIFE_STYLE,
-//   UPDATE_PATIENT_ALLERGIES,
-// } from 'graphql/consults';
-// import {
-//   SavePatientFamilyHistory,
-//   SavePatientFamilyHistoryVariables,
-// } from 'graphql/types/SavePatientFamilyHistory';
-// import {
-//   SavePatientLifeStyle,
-//   SavePatientLifeStyleVariables,
-// } from 'graphql/types/SavePatientLifeStyle';
-// import {
-//   UpdatePatientAllergies,
-//   UpdatePatientAllergiesVariables,
-// } from 'graphql/types/UpdatePatientAllergies';
 import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
@@ -82,6 +66,15 @@ import { useQueryWithSkip } from 'hooks/apolloHooks';
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import ReactCountdownClock from 'react-countdown-clock';
+import IdleTimer from 'react-idle-timer';
+import _omit from 'lodash/omit';
+
+interface SymptomObject {
+  symptom: string;
+  severity: string;
+  howOften: string;
+  since: string;
+}
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -468,6 +461,7 @@ export const JDConsultRoom: React.FC = () => {
   const [pastSurgicalHistory, setPastSurgicalHistory] = useState<string>('');
   const [lifeStyle, setLifeStyle] = useState<string>('');
   const [familyHistory, setFamilyHistory] = useState<string>('');
+  const [gender, setGender] = useState<string>('');
 
   /* case sheet data*/
   let assignedDoctorFirstName = '',
@@ -522,8 +516,6 @@ export const JDConsultRoom: React.FC = () => {
         assignedDoctorDetailsData.getDoctorDetailsById.salutation) ||
       '';
   }
-
-  // console.log(assignedDoctorDetailsData, assignedDoctorDetailsLoading, assignedDoctorDetailsError);
 
   const setCasesheetNotes = (notes: string) => {
     customNotes = notes; // this will be used in saving case sheet.
@@ -586,41 +578,6 @@ export const JDConsultRoom: React.FC = () => {
 
   const patientRelationHeader =
     patientRelation === Relation.ME ? ' Self' : _startCase(_toLower(patientRelation));
-
-  // const savePatientAllergiesMutation = useMutation<
-  //   UpdatePatientAllergies,
-  //   UpdatePatientAllergiesVariables
-  // >(UPDATE_PATIENT_ALLERGIES, {
-  //   variables: {
-  //     patientId: patientId,
-  //     allergies: allergies,
-  //   },
-  // });
-
-  // const savePatientLifeStyleMutation = useMutation<
-  //   SavePatientLifeStyle,
-  //   SavePatientLifeStyleVariables
-  // >(SAVE_PATIENT_LIFE_STYLE, {
-  //   variables: {
-  //     patientLifeStyleInput: {
-  //       patientId: patientId,
-  //       description: lifeStyle,
-  //     },
-  //   },
-  // });
-
-  // const savePatientFamilyHistoryMutation = useMutation<
-  //   SavePatientFamilyHistory,
-  //   SavePatientFamilyHistoryVariables
-  // >(SAVE_PATIENT_FAMILY_HISTORY, {
-  //   variables: {
-  //     patientFamilyHistoryInput: {
-  //       patientId: patientId,
-  //       description: familyHistory,
-  //       relation: Relation.ME,
-  //     },
-  //   },
-  // });
 
   const scrollbars = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -768,6 +725,18 @@ export const JDConsultRoom: React.FC = () => {
           }
           setUserCardStrip(cardStripArr.join(', '));
 
+          // set gender
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getJuniorDoctorCaseSheet &&
+            _data.data.getJuniorDoctorCaseSheet.patientDetails &&
+            _data.data.getJuniorDoctorCaseSheet.patientDetails &&
+            _data.data.getJuniorDoctorCaseSheet.patientDetails.gender
+          ) {
+            setGender(_data.data.getJuniorDoctorCaseSheet.patientDetails.gender);
+          }
+
           // patient medical and family history
           if (
             _data &&
@@ -857,7 +826,7 @@ export const JDConsultRoom: React.FC = () => {
     // redirect back to consults.
     window.location.href = clientRoutes.juniorDoctor();
   };
-
+  /*
   const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
     // console.log(diagnosis && diagnosis.length, diagnosis!, flag);
     if (diagnosis || flag) {
@@ -881,6 +850,83 @@ export const JDConsultRoom: React.FC = () => {
                 medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
               id: caseSheetId,
               status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
+            },
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then((_data) => {
+          // savePatientAllergiesMutation();
+          // savePatientFamilyHistoryMutation();
+          // savePatientLifeStyleMutation();
+          setSaving(false);
+        })
+        .catch((e) => {
+          const error = JSON.parse(JSON.stringify(e));
+          const errorMessage = error && error.message;
+          alert(errorMessage);
+          setSaving(false);
+          console.log('Error occured while update casesheet', e);
+        });
+    }
+  };*/
+
+  const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
+    // console.log(diagnosis && diagnosis.length, diagnosis!, flag);
+
+    // this condition is written to avoid __typename from already existing data
+    let symptomsFinal = null,
+      diagnosisFinal = null,
+      diagnosticPrescriptionFinal = null,
+      medicinePrescriptionFinal = null;
+    if (symptoms && symptoms.length > 0) {
+      symptomsFinal = symptoms.map((symptom) => {
+        return _omit(symptom, '__typename');
+      });
+    }
+    if (diagnosis && diagnosis.length > 0) {
+      diagnosisFinal = diagnosis.map((diagnosis) => {
+        return _omit(diagnosis, ['__typename', 'id']);
+      });
+    }
+    if (diagnosticPrescription && diagnosticPrescription.length > 0) {
+      diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
+        return _omit(prescription, ['__typename']);
+      });
+    }
+    if (medicinePrescription && medicinePrescription.length > 0) {
+      medicinePrescriptionFinal = medicinePrescription.map((prescription) => {
+        return _omit(prescription, ['__typename']);
+      });
+    }
+
+    if (diagnosis || flag) {
+      setSaving(true);
+      client
+        .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
+          mutation: MODIFY_CASESHEET,
+          variables: {
+            ModifyCaseSheetInput: {
+              symptoms: symptomsFinal,
+              notes: notesJrd.length > 0 ? notesJrd : null,
+              diagnosis: diagnosisFinal,
+              diagnosticPrescription: diagnosticPrescriptionFinal,
+              followUp: false,
+              followUpAfterInDays: 0,
+              otherInstructions: otherInstructions!.length > 0 ? otherInstructions : null,
+              medicinePrescription: medicinePrescriptionFinal,
+              id: caseSheetId,
+              status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
+              lifeStyle: lifeStyle,
+              familyHistory: familyHistory,
+              dietAllergies: dietAllergies,
+              drugAllergies: drugAllergies,
+              height: height,
+              menstrualHistory: menstrualHistory,
+              pastMedicalHistory: pastMedicalHistory,
+              pastSurgicalHistory: pastSurgicalHistory,
+              temperature: temperature,
+              weight: weight,
+              bp: bp,
             },
           },
           fetchPolicy: 'no-cache',
@@ -1027,6 +1073,7 @@ export const JDConsultRoom: React.FC = () => {
             lifeStyle,
             familyHistory,
             menstrualHistory,
+            gender,
 
             setPastMedicalHistory,
             setPastSurgicalHistory,
@@ -1039,6 +1086,7 @@ export const JDConsultRoom: React.FC = () => {
             setWeight,
             setBp,
             setTemperature,
+            setGender,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>

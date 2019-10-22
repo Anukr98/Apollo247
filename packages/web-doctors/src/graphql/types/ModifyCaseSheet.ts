@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { ModifyCaseSheetInput, APPOINTMENT_TYPE, STATUS, DoctorType, Gender, Salutation, MEDICINE_TIMINGS } from "./globalTypes";
+import { ModifyCaseSheetInput, APPOINTMENT_TYPE, STATUS, DoctorType, Gender, Salutation, MEDICINE_TIMINGS, MEDICINE_UNIT } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: ModifyCaseSheet
@@ -68,10 +68,12 @@ export interface ModifyCaseSheet_modifyCaseSheet_diagnosticPrescription {
 
 export interface ModifyCaseSheet_modifyCaseSheet_medicinePrescription {
   __typename: "MedicinePrescription";
-  medicineName: string | null;
-  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
-  medicineInstructions: string | null;
   medicineConsumptionDurationInDays: string | null;
+  medicineName: string | null;
+  medicineDosage: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[] | null;
+  medicineUnit: MEDICINE_UNIT | null;
+  medicineInstructions: string | null;
 }
 
 export interface ModifyCaseSheet_modifyCaseSheet_otherInstructions {

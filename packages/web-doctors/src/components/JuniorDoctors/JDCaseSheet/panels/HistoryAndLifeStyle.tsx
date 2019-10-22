@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid } from '@material-ui/core';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { Gender } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -149,7 +150,9 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
     setLifeStyle,
     setFamilyHistory,
     setMenstrualHistory,
+    gender,
   } = useContext(CaseSheetContextJrd);
+
   return (
     <Grid container spacing={1}>
       <Grid item sm={12}>
@@ -262,28 +265,31 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           )}
         </div>
       </Grid>
-      <Grid item sm={12}>
-        <div className={classes.sectionTitle}>Menstrual History*</div>
-        <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
-          <AphTextField
-            fullWidth
-            value={menstrualHistory}
-            onChange={(e) => {
-              setMenstrualHistory(e.target.value);
-            }}
-          />
-          {menstrualHistory !== '' && (
-            <div className={classes.boxActions}>
-              <AphButton>
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton>
-              <AphButton>
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div>
-          )}
-        </div>
-      </Grid>
+      {gender === Gender.FEMALE && (
+        <Grid item sm={12}>
+          <div className={classes.sectionTitle}>Menstrual History*</div>
+          <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
+            <AphTextField
+              fullWidth
+              value={menstrualHistory}
+              onChange={(e) => {
+                setMenstrualHistory(e.target.value);
+              }}
+            />
+            {menstrualHistory !== '' && (
+              <div className={classes.boxActions}>
+                <AphButton>
+                  <img src={require('images/round_edit_24_px.svg')} alt="" />
+                </AphButton>
+                <AphButton>
+                  <img src={require('images/ic_cancel_green.svg')} alt="" />
+                </AphButton>
+              </div>
+            )}
+          </div>
+        </Grid>
+      )}
+
       <Grid item sm={12}>
         <div className={classes.sectionTitle}>Patient’s Family Medical History</div>
         <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>

@@ -108,6 +108,9 @@ export interface CaseSheetContextPropsJrd {
   setLifeStyle: (lifeStyle: string) => void;
   setFamilyHistory: (familyHistory: string) => void;
   setMenstrualHistory: (menstrualHistory: string) => void;
+
+  gender: string;
+  setGender: (gender: string) => void;
 }
 
 export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
@@ -166,4 +169,7 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   setLifeStyle: () => {},
   setFamilyHistory: () => {},
   setMenstrualHistory: () => {},
+
+  gender: '',
+  setGender: () => {},
 });

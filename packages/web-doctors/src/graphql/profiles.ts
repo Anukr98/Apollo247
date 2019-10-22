@@ -651,10 +651,12 @@ export const MODIFY_CASESHEET = gql`
       followUpDate
       id
       medicinePrescription {
-        medicineName
-        medicineTimings
-        medicineInstructions
         medicineConsumptionDurationInDays
+        medicineName
+        medicineDosage
+        medicineTimings
+        medicineUnit
+        medicineInstructions
       }
       notes
       otherInstructions {
