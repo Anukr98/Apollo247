@@ -337,10 +337,13 @@ const bookRescheduleAppointment: Resolver<
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
-    await rescheduleApptRepo.updateReschedule(
-      bookRescheduleAppointmentInput.rescheduledId,
-      TRANSFER_STATUS.COMPLETED
+    const rescheduleDetails = await rescheduleApptRepo.getRescheduleDetailsByAppointment(
+      bookRescheduleAppointmentInput.appointmentId
     );
+    if (rescheduleDetails) {
+      rescheduleDetails.id;
+      await rescheduleApptRepo.updateReschedule(rescheduleDetails.id, TRANSFER_STATUS.COMPLETED);
+    }
   }
 
   const appointmentDetails = await appointmentRepo.findById(finalAppointmentId);
