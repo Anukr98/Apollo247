@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid } from '@material-ui/core';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
@@ -152,6 +152,13 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
     setMenstrualHistory,
     gender,
   } = useContext(CaseSheetContextJrd);
+  const [disablePastMedicalHistoryFocus, setDisablePastMedicalHistoryFocus] = useState(true);
+  const [disablePastSurgicalHistoryFocus, setDisablePastSurgicalHistoryFocus] = useState(true);
+  const [disableDrugAllergiesFocus, setDisableDrugAllergiesFocus] = useState(true);
+  const [disableDietAllergiesFocus, setDisableDietAllergiesFocus] = useState(true);
+  const [disableLifeStyleFocus, setDisableLifeStyleFocus] = useState(true);
+  const [disableMenstrualHistoryFocus, setDisableMenstrualHistoryFocus] = useState(true);
+  const [disableFamilyHistoryFocus, setDisableFamilyHistoryFocus] = useState(true);
 
   return (
     <Grid container spacing={1}>
@@ -159,6 +166,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div className={classes.sectionTitle}>Patient’s Past Medical History</div>
         <div className={classes.inputFieldContent}>
           <AphTextField
+            disabled={disablePastMedicalHistoryFocus}
             fullWidth
             value={pastMedicalHistory}
             onChange={(e) => {
@@ -167,10 +175,15 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           />
           {pastMedicalHistory !== '' && (
             <div className={classes.boxActions}>
-              <AphButton>
+              <AphButton onClick={() => setDisablePastMedicalHistoryFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
               </AphButton>
-              <AphButton>
+              <AphButton
+                onClick={() => {
+                  setPastMedicalHistory('');
+                  setDisablePastMedicalHistoryFocus(false);
+                }}
+              >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
@@ -181,6 +194,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div className={classes.sectionTitle}>Patient's Past Surgical History</div>
         <div className={classes.inputFieldContent}>
           <AphTextField
+            disabled={disablePastSurgicalHistoryFocus}
             fullWidth
             value={pastSurgicalHistory}
             onChange={(e) => {
@@ -189,10 +203,15 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           />
           {pastSurgicalHistory !== '' && (
             <div className={classes.boxActions}>
-              <AphButton>
+              <AphButton onClick={() => setDisablePastSurgicalHistoryFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
               </AphButton>
-              <AphButton>
+              <AphButton
+                onClick={(e) => {
+                  setPastSurgicalHistory('');
+                  setDisablePastSurgicalHistoryFocus(false);
+                }}
+              >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
@@ -203,6 +222,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div className={classes.sectionTitle}>Drug Allergies</div>
         <div className={classes.inputFieldContent}>
           <AphTextField
+            disabled={disableDrugAllergiesFocus}
             fullWidth
             value={drugAllergies}
             onChange={(e) => {
@@ -211,10 +231,15 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           />
           {drugAllergies !== '' && (
             <div className={classes.boxActions}>
-              <AphButton>
+              <AphButton onClick={() => setDisableDrugAllergiesFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
               </AphButton>
-              <AphButton>
+              <AphButton
+                onClick={(e) => {
+                  setDrugAllergies('');
+                  setDisableDrugAllergiesFocus(false);
+                }}
+              >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
@@ -225,6 +250,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div className={classes.sectionTitle}>Diet Allergies/Restrictions</div>
         <div className={classes.inputFieldContent}>
           <AphTextField
+            disabled={disableDietAllergiesFocus}
             fullWidth
             value={dietAllergies}
             onChange={(e) => {
@@ -233,10 +259,15 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           />
           {dietAllergies !== '' && (
             <div className={classes.boxActions}>
-              <AphButton>
+              <AphButton onClick={() => setDisableDietAllergiesFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
               </AphButton>
-              <AphButton>
+              <AphButton
+                onClick={(e) => {
+                  setDietAllergies('');
+                  setDisableDietAllergiesFocus(false);
+                }}
+              >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
@@ -247,6 +278,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div className={classes.sectionTitle}>Lifestyle & Habits</div>
         <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
           <AphTextField
+            disabled={disableLifeStyleFocus}
             fullWidth
             value={lifeStyle}
             onChange={(e) => {
@@ -255,10 +287,15 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           />
           {lifeStyle !== '' && (
             <div className={classes.boxActions}>
-              <AphButton>
+              <AphButton onClick={(e) => setDisableLifeStyleFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
               </AphButton>
-              <AphButton>
+              <AphButton
+                onClick={(e) => {
+                  setLifeStyle('');
+                  setDisableLifeStyleFocus(false);
+                }}
+              >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
@@ -270,6 +307,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           <div className={classes.sectionTitle}>Menstrual History*</div>
           <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
             <AphTextField
+              disabled={disableMenstrualHistoryFocus}
               fullWidth
               value={menstrualHistory}
               onChange={(e) => {
@@ -278,10 +316,15 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             />
             {menstrualHistory !== '' && (
               <div className={classes.boxActions}>
-                <AphButton>
+                <AphButton onClick={() => setDisableMenstrualHistoryFocus(false)}>
                   <img src={require('images/round_edit_24_px.svg')} alt="" />
                 </AphButton>
-                <AphButton>
+                <AphButton
+                  onClick={() => {
+                    setMenstrualHistory('');
+                    setDisableMenstrualHistoryFocus(false);
+                  }}
+                >
                   <img src={require('images/ic_cancel_green.svg')} alt="" />
                 </AphButton>
               </div>
@@ -294,6 +337,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
         <div className={classes.sectionTitle}>Patient’s Family Medical History</div>
         <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
           <AphTextField
+            disabled={disableFamilyHistoryFocus}
             fullWidth
             value={familyHistory}
             onChange={(e) => {
@@ -302,10 +346,15 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           />
           {familyHistory !== '' && (
             <div className={classes.boxActions}>
-              <AphButton>
+              <AphButton onClick={() => setDisableFamilyHistoryFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
               </AphButton>
-              <AphButton>
+              <AphButton
+                onClick={() => {
+                  setFamilyHistory('');
+                  setDisableFamilyHistoryFocus(false);
+                }}
+              >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
