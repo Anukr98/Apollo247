@@ -224,7 +224,8 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .moveTo(margin, y)
       .lineTo(doc.page.width - margin, y)
       .lineWidth(1)
-      .fillColor('#000000');
+      .opacity(0.15)
+      .fill('#02475b');
   };
 
   const setY = (y: number) => {
@@ -248,9 +249,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .lineTo(margin, doc.y + 30)
       .lineTo(margin, doc.y)
       .fill('#f7f7f7')
+      .opacity(0.7)
       .fillColor('#000')
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
-      .fontSize(10)
+      .fontSize(11)
       .text(headerText, margin + 10, doc.y + 10, { fill: true })
       .moveDown(2);
   };
@@ -270,6 +272,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       )
       .fillColor('#02475b')
       .text(`${labelValue}`, 115, y)
+      .opacity(0.6)
       .moveDown(0.5);
   };
 
@@ -279,7 +282,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doctorInfo: RxPdfData['doctorInfo'],
     hospitalAddress: RxPdfData['hospitalAddress']
   ) => {
-    doc.image(loadAsset('apollo-logo.png'), margin, margin / 2, { height: 65 });
+    doc.image(loadAsset('apolloLogo.png'), margin, margin / 2, { height: 65 });
 
     //Doctor Details
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
@@ -319,13 +322,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderFooter = () => {
-    drawHorizontalDivider(doc.page.height - 55);
+    drawHorizontalDivider(doc.page.height - 80);
     const disclaimerText =
       'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital';
     doc
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fontSize(10)
       .fillColor('#000000')
+      .opacity(0.5)
       .text(disclaimerText, margin, doc.page.height - 70, { align: 'center' });
     return doc;
   };
@@ -340,16 +344,17 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       if (prescription.severity) textArray.push('Severity: ' + prescription.severity);
 
       doc
-        .fontSize(10)
+        .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
         .text(`${prescription.symptom.toUpperCase()}`, margin + 15)
         .moveDown(0.5);
       doc
-        .fontSize(10)
+        .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#000000')
         .text(`${textArray.join('  |  ')}`, margin + 15)
+        .opacity(0.6)
         .moveDown(0.8);
 
       if (doc.y > doc.page.height - 150) {
@@ -363,7 +368,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
     prescriptions.forEach((prescription, index) => {
       doc
-        .fontSize(10)
+        .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
         .text(`${index + 1}.  ${prescription.name.toUpperCase()}`, margin + 15)
@@ -372,6 +377,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fontSize(10)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#000000')
+        .opacity(0.6)
         .text(`${prescription.frequency} , ${prescription.instructions} `, margin + 30)
         .moveDown(0.8);
 
@@ -389,7 +395,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           pageBreak();
         }
         doc
-          .fontSize(10)
+          .fontSize(12)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
           .fillColor('#000000')
           .text(`${advice.instruction}`, margin + 15)
@@ -406,7 +412,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           pageBreak();
         }
         doc
-          .fontSize(10)
+          .fontSize(12)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
           .fillColor('#02475b')
           .text(`${diag.name}`, margin + 15)
@@ -424,7 +430,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         }
 
         doc
-          .fontSize(10)
+          .fontSize(12)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
           .fillColor('#02475b')
           .text(`${index + 1}. ${diagTest.itemname}`, margin + 15)
@@ -486,7 +492,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     if (followUpData) {
       renderSectionHeader('Follow Up');
       doc
-        .fontSize(10)
+        .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
         .text(`${followUpData}`, margin + 15)
