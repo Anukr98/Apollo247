@@ -162,14 +162,16 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setPastMedicalHistory(e.target.value);
             }}
           />
-          <div className={classes.boxActions}>
-            <AphButton>
-              <img src={require('images/round_edit_24_px.svg')} alt="" />
-            </AphButton>
-            <AphButton>
-              <img src={require('images/ic_cancel_green.svg')} alt="" />
-            </AphButton>
-          </div>
+          {pastMedicalHistory !== '' && (
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          )}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -182,14 +184,16 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setPastSurgicalHistory(e.target.value);
             }}
           />
-          <div className={classes.boxActions}>
-            <AphButton>
-              <img src={require('images/round_edit_24_px.svg')} alt="" />
-            </AphButton>
-            <AphButton>
-              <img src={require('images/ic_cancel_green.svg')} alt="" />
-            </AphButton>
-          </div>
+          {pastSurgicalHistory !== '' && (
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          )}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -202,14 +206,16 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setDrugAllergies(e.target.value);
             }}
           />
-          <div className={classes.boxActions}>
-            <AphButton>
-              <img src={require('images/round_edit_24_px.svg')} alt="" />
-            </AphButton>
-            <AphButton>
-              <img src={require('images/ic_cancel_green.svg')} alt="" />
-            </AphButton>
-          </div>
+          {drugAllergies !== '' && (
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          )}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -222,14 +228,16 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setDietAllergies(e.target.value);
             }}
           />
-          <div className={classes.boxActions}>
-            <AphButton>
-              <img src={require('images/round_edit_24_px.svg')} alt="" />
-            </AphButton>
-            <AphButton>
-              <img src={require('images/ic_cancel_green.svg')} alt="" />
-            </AphButton>
-          </div>
+          {dietAllergies !== '' && (
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          )}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -242,14 +250,16 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setLifeStyle(e.target.value);
             }}
           />
-          <div className={classes.boxActions}>
-            <AphButton>
-              <img src={require('images/round_edit_24_px.svg')} alt="" />
-            </AphButton>
-            <AphButton>
-              <img src={require('images/ic_cancel_green.svg')} alt="" />
-            </AphButton>
-          </div>
+          {lifeStyle !== '' && (
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          )}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -262,14 +272,16 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setMenstrualHistory(e.target.value);
             }}
           />
-          <div className={classes.boxActions}>
-            <AphButton>
-              <img src={require('images/round_edit_24_px.svg')} alt="" />
-            </AphButton>
-            <AphButton>
-              <img src={require('images/ic_cancel_green.svg')} alt="" />
-            </AphButton>
-          </div>
+          {menstrualHistory !== '' && (
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          )}
         </div>
       </Grid>
       <Grid item sm={12}>
@@ -282,14 +294,16 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setFamilyHistory(e.target.value);
             }}
           />
-          <div className={classes.boxActions}>
-            <AphButton>
-              <img src={require('images/round_edit_24_px.svg')} alt="" />
-            </AphButton>
-            <AphButton>
-              <img src={require('images/ic_cancel_green.svg')} alt="" />
-            </AphButton>
-          </div>
+          {familyHistory !== '' && (
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          )}
         </div>
       </Grid>
     </Grid>

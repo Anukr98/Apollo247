@@ -589,11 +589,96 @@ export const UPDATE_CASESHEET = gql`
     }
   }
 `;
+
+export const MODIFY_CASESHEET = gql`
+  mutation ModifyCaseSheet($ModifyCaseSheetInput: ModifyCaseSheetInput) {
+    modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
+      appointment {
+        id
+        appointmentDateTime
+        appointmentDocuments {
+          documentPath
+        }
+        appointmentState
+        appointmentType
+        displayId
+        doctorId
+        hospitalId
+        patientId
+        parentId
+        status
+        rescheduleCount
+        isFollowUp
+        followUpParentId
+        isTransfer
+        transferParentId
+      }
+      blobName
+      createdDate
+      createdDoctorId
+      createdDoctorProfile {
+        city
+        country
+        doctorType
+        delegateNumber
+        emailAddress
+        experience
+        firstName
+        gender
+        id
+        lastName
+        mobileNumber
+        photoUrl
+        qualification
+        salutation
+        state
+        streetLine1
+        streetLine2
+        streetLine3
+        zip
+      }
+      consultType
+      diagnosis {
+        name
+      }
+      diagnosticPrescription {
+        itemname
+      }
+      doctorId
+      doctorType
+      followUp
+      followUpAfterInDays
+      followUpDate
+      id
+      medicinePrescription {
+        medicineName
+        medicineTimings
+        medicineInstructions
+        medicineConsumptionDurationInDays
+      }
+      notes
+      otherInstructions {
+        instruction
+      }
+      patientId
+      symptoms {
+        symptom
+        since
+        howOften
+        severity
+      }
+      status
+      sentToPatient
+    }
+  }
+`;
+
 export const END_APPOINTMENT_SESSION = gql`
   mutation EndAppointmentSession($endAppointmentSessionInput: EndAppointmentSessionInput) {
     endAppointmentSession(endAppointmentSessionInput: $endAppointmentSessionInput)
   }
 `;
+
 export const GET_PATIENT_LOG = gql`
   query GetPatientLog($limit: Int, $offset: Int, $sortBy: patientLogSort, $type: patientLogType) {
     getPatientLog(limit: $limit, offset: $offset, sortBy: $sortBy, type: $type) {
