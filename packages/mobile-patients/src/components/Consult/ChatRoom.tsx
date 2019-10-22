@@ -1325,7 +1325,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               marginTop: 12,
             }}
           >
-            Next slot for Dr. {rowData.transferInfo.doctorInfo.firstName} is available on —
+            Next slot for Dr. {appointmentData.doctorInfo.firstName} is available on —
+            {/* Next slot for Dr. {rowData.transferInfo.doctorInfo.firstName} is available on — */}
           </Text>
           <View
             style={{
@@ -1526,17 +1527,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 borderRadius: 10,
               }}
             >
-              <Text
-                style={{
-                  color: '#ffffff',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  ...theme.fonts.IBMPlexSansMedium(15),
-                  textAlign: 'left',
-                }}
-              >
-                {rowData.automatedText}
-              </Text>
+              {rowData.automatedText ? (
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.automatedText}
+                </Text>
+              ) : null}
             </View>
           ) : rowData.message === '^^#startconsult' ? (
             <View
@@ -1546,17 +1549,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 borderRadius: 10,
               }}
             >
-              <Text
-                style={{
-                  color: '#ffffff',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  ...theme.fonts.IBMPlexSansMedium(15),
-                  textAlign: 'left',
-                }}
-              >
-                {rowData.automatedText}
-              </Text>
+              {rowData.automatedText ? (
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.automatedText}
+                </Text>
+              ) : null}
             </View>
           ) : rowData.message === '^^#stopconsult' ? (
             <View
@@ -1566,17 +1571,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 borderRadius: 10,
               }}
             >
-              <Text
-                style={{
-                  color: '#ffffff',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  ...theme.fonts.IBMPlexSansMedium(15),
-                  textAlign: 'left',
-                }}
-              >
-                {rowData.automatedText}
-              </Text>
+                    {rowData.automatedText ? (
+                      <Text
+                        style={{
+                          color: '#ffffff',
+                          paddingHorizontal: 16,
+                          paddingVertical: 12,
+                          ...theme.fonts.IBMPlexSansMedium(15),
+                          textAlign: 'left',
+                        }}
+                      >
+                        {rowData.automatedText}
+                      </Text>
+                    ) : null}
             </View>
           ) : (
             <View
@@ -3150,7 +3157,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             >
               {jrDoctorJoined
                 ? `Junior doctor has joined`
-                : `Dr. ${appointmentData.doctorInfo.firstName} has joined!`}
+                : `Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName} has joined!`}
             </Text>
           </View>
         ) : null}

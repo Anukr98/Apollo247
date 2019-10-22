@@ -29,7 +29,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     color: '#01475b',
     fontWeight: 500,
     position: 'relative',
-    paddingRight: 40,
+    paddingRight: 55,
   },
   deleteSymptom: {
     backgroundColor: 'transparent',
@@ -42,8 +42,23 @@ const useStyles = makeStyles((theme: Theme) => ({
       backgroundColor: 'transparent',
     },
     '& img': {
-      maxWidth: 24,
-      maxHeight: 24,
+      maxWidth: 20,
+      maxHeight: 20,
+    },
+  },
+  editSymptom: {
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
+    minWidth: 'auto',
+    padding: 0,
+    position: 'absolute',
+    right: 30,
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
+    '& img': {
+      maxWidth: 20,
+      maxHeight: 20,
     },
   },
   symtomContent: {
@@ -155,19 +170,13 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
   },
 }));
-interface errorObject {
+interface ErrorObject {
   symptomError: boolean;
   sinceError: boolean;
   howOfftenError: boolean;
   severityError: boolean;
 }
-interface symptomObject {
-  __typename: string;
-  symptom: string;
-  severity: string;
-  howOften: string;
-  since: string;
-}
+
 export const Symptoms: React.FC = (props) => {
   const classes = useStyles();
   const { symptoms, setSymptoms } = useContext(CaseSheetContextJrd);
@@ -178,7 +187,7 @@ export const Symptoms: React.FC = (props) => {
   const [idx, setIdx] = React.useState();
   const [severity, setSeverity] = React.useState('');
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
-  const [errorState, setErrorState] = React.useState<errorObject>({
+  const [errorState, setErrorState] = React.useState<ErrorObject>({
     symptomError: false,
     sinceError: false,
     howOfftenError: false,
@@ -266,7 +275,7 @@ export const Symptoms: React.FC = (props) => {
       });
 
       const inputParams: any = {
-        __typename: 'SymptomList',
+        // __typename: 'SymptomList',
         howOften: howOften,
         severity: severity,
         since: since,
@@ -297,6 +306,12 @@ export const Symptoms: React.FC = (props) => {
                   <div key={idx} className={classes.listItem}>
                     <div className={classes.symtomHeading}>
                       {item!.symptom}
+                      <AphButton classes={{ root: classes.editSymptom }}>
+                        <img
+                          src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
+                          alt=""
+                        />
+                      </AphButton>
                       <AphButton
                         classes={{ root: classes.deleteSymptom }}
                         onClick={() => deleteSymptom(idx)}
@@ -328,7 +343,7 @@ export const Symptoms: React.FC = (props) => {
       {caseSheetEdit && (
         <AphButton classes={{ root: classes.addBtn }} onClick={() => setIsDialogOpen(true)}>
           <img src={require('images/ic_dark_plus.svg')} alt="" />
-          Add Symptom
+          Add Compaint
         </AphButton>
       )}
       <AphDialog

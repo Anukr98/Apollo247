@@ -16,6 +16,8 @@ import {
   DiagnosticPrescription,
   OtherInstructions,
 } from 'components/JuniorDoctors/JDCaseSheet/panels';
+import { Vitals } from 'components/JuniorDoctors/JDCaseSheet/panels/Vitals';
+import { HistoryAndLifeStyle } from 'components/JuniorDoctors/JDCaseSheet/panels/HistoryAndLifeStyle';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { AphTextField } from '@aph/web-ui-components';
 
@@ -108,9 +110,45 @@ const useStyles = makeStyles((theme: Theme) => {
     marginNone: {
       margin: 0,
     },
+    inputFieldContent: {
+      borderRadius: 5,
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
+      backgroundColor: 'rgba(0, 0, 0, 0.02)',
+      padding: 12,
+      color: '#02475b',
+      position: 'relative',
+      '& textarea': {
+        border: 'none',
+        padding: 0,
+        fontSize: 15,
+        fontWeight: 500,
+        paddingRight: 60,
+      },
+    },
+    boxActions: {
+      position: 'absolute',
+      right: 12,
+      top: 12,
+      display: 'flex',
+      alignItems: 'center',
+      '& button': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        minWidth: 'auto',
+        padding: 0,
+        marginLeft: 12,
+        '&:hover': {
+          backgroundColor: 'transparent',
+        },
+        '& img': {
+          maxWidth: 20,
+          maxHeight: 20,
+        },
+      },
+    },
   };
 });
-
+/*
 interface CaseSheetProps {
   lifeStyle: string;
   allergies: string;
@@ -134,53 +172,142 @@ const HistoryAndLifeStyle: React.FC<HistoryAndLifeStyleProps> = (props) => {
   const { setFamilyHistory, setAllergies, setLifeStyle } = props;
   return (
     <>
-      <div className={classes.sectionTitle}>Family History</div>
-      <div className={classes.inputFieldGroup}>
-        <AphTextField
-          fullWidth
-          value={props.familyHistory}
-          onChange={(e) => {
-            setFamilyHistory(e.target.value);
-          }}
-          multiline
-        />
-      </div>
-      <div className={classes.sectionTitle}>Allergies</div>
-      <div className={classes.inputFieldGroup}>
-        <AphTextField
-          fullWidth
-          value={props.allergies}
-          onChange={(e) => {
-            setAllergies(e.target.value);
-          }}
-          multiline
-        />
-      </div>
-      <div className={classes.sectionTitle}>Lifestyle & Habits</div>
-      <div className={`${classes.inputFieldGroup} ${classes.marginNone}`}>
-        <AphTextField
-          fullWidth
-          value={props.lifeStyle}
-          onChange={(e) => {
-            setLifeStyle(e.target.value);
-          }}
-          multiline
-        />
-      </div>
+      <Grid container spacing={1}>
+        <Grid item sm={12}>
+          <div className={classes.sectionTitle}>Patient’s Past Medical History</div>
+          <div className={classes.inputFieldContent}>
+            <AphTextField
+              fullWidth
+              value={props.familyHistory}
+              onChange={(e) => {
+                setFamilyHistory(e.target.value);
+              }}
+              multiline
+            />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          </div>
+        </Grid>
+        <Grid item sm={12}>
+          <div className={classes.sectionTitle}>Patient’s Past Surgical History</div>
+          <div className={classes.inputFieldContent}>
+            <AphTextField
+              fullWidth
+              value="She has been on BP medication for the past 1 year"
+              multiline
+            />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          </div>
+        </Grid>
+        <Grid item sm={12}>
+          <div className={classes.sectionTitle}>Drug Allergies</div>
+          <div className={classes.inputFieldContent}>
+            <AphTextField fullWidth value="None" multiline />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          </div>
+        </Grid>
+        <Grid item sm={12}>
+          <div className={classes.sectionTitle}>Diet Allergies/Restrictions</div>
+          <div className={classes.inputFieldContent}>
+            <AphTextField fullWidth value="Dairy, Dust" multiline />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          </div>
+        </Grid>
+        <Grid item sm={12}>
+          <div className={classes.sectionTitle}>Lifestyle & Habits</div>
+          <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
+            <AphTextField
+              fullWidth
+              value="Patient doesn’t smoke, recovered from chickenpox 6 months ago + occupational history"
+              onChange={(e) => {
+                setLifeStyle(e.target.value);
+              }}
+              multiline
+            />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          </div>
+        </Grid>
+        <Grid item sm={12}>
+          <div className={classes.sectionTitle}>Menstrual History*</div>
+          <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
+            <AphTextField
+              fullWidth
+              value="Regular cycles;  Last period was on 16th Sep"
+              onChange={(e) => {
+                setLifeStyle(e.target.value);
+              }}
+              multiline
+            />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          </div>
+        </Grid>
+        <Grid item sm={12}>
+          <div className={classes.sectionTitle}>Patient’s Family Medical History</div>
+          <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
+            <AphTextField
+              fullWidth
+              value="Father: Cardiac patient Mother: Severely diabetic"
+              multiline
+            />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          </div>
+        </Grid>
+      </Grid>
     </>
   );
-};
+};*/
 
-export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
+export const CaseSheet: React.FC = () => {
   const classes = useStyles();
   const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContextJrd);
-  // const [symptoms, setSymptoms] = useState<boolean>(caseSheetEdit);
-  // const [healthVault, setHealthVault] = useState<boolean>(caseSheetEdit);
-  // const [diagnosis, setDiagnosis] = useState<boolean>(caseSheetEdit);
-  // const [medicinePrescription, setMedicinePrescription] = useState<boolean>(caseSheetEdit);
-  // const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(caseSheetEdit);
-  // const [otherInstructions, setOtherInstructions] = useState<boolean>(caseSheetEdit);
-  // const [patientHistory, setPatientHistory] = useState<boolean>(caseSheetEdit);
 
   const [symptoms, setSymptoms] = useState<boolean>(true);
   const [healthVault, setHealthVault] = useState<boolean>(true);
@@ -189,6 +316,7 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
   const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(true);
   const [otherInstructions, setOtherInstructions] = useState<boolean>(true);
   const [patientHistory, setPatientHistory] = useState<boolean>(true);
+  const [vitals, setVitals] = useState<boolean>(true);
 
   useEffect(() => {
     if (caseSheetEdit) {
@@ -199,11 +327,18 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
       setDiagnosticPrescription(true);
       setOtherInstructions(true);
       setPatientHistory(true);
+      setVitals(true);
     }
   }, [caseSheetEdit]);
 
   const items = [
-    { key: 'symptoms', value: 'Symptoms', state: symptoms, component: <Symptoms /> },
+    { key: 'symptoms', value: 'Chief Complaints', state: symptoms, component: <Symptoms /> },
+    {
+      key: 'vitals',
+      value: 'Vitals',
+      state: vitals,
+      component: <Vitals />,
+    },
     {
       key: 'healthVault',
       value: 'Patient Health Vault',
@@ -225,24 +360,15 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
     },
     {
       key: 'otherInstructions',
-      value: 'Other Instructions',
+      value: 'Advice/Instructions',
       state: otherInstructions,
       component: <OtherInstructions />,
     },
     {
       key: 'patientHistory&Lifestyle',
-      value: 'Patient History & Lifestyle',
+      value: 'Patient’s Medical and Family History',
       state: patientHistory,
-      component: (
-        <HistoryAndLifeStyle
-          lifeStyle={props.lifeStyle}
-          allergies={props.allergies}
-          familyHistory={props.familyHistory}
-          setFamilyHistory={props.setFamilyHistory}
-          setAllergies={props.setAllergies}
-          setLifeStyle={props.setLifeStyle}
-        />
-      ),
+      component: <HistoryAndLifeStyle />,
     },
   ];
 
@@ -271,6 +397,9 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
         break;
       case 'patientHistory&Lifestyle':
         setPatientHistory(isExpanded);
+        break;
+      case 'vitals':
+        setVitals(isExpanded);
         break;
     }
   };

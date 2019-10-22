@@ -6,6 +6,7 @@ import {
   TRANSFER_STATUS,
   TRANSFER_INITIATED_TYPE,
   Appointment,
+  APPOINTMENT_STATE,
 } from 'consults-service/entities';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -45,6 +46,7 @@ export class RescheduleAppointmentDetailsRepository extends Repository<
               });
             }
           );
+          await apptRepo.updateTransferState(appt.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
           // send notification
           const pushNotificationInput = {
             appointmentId: appt.id,
