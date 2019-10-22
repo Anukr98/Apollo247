@@ -11,6 +11,7 @@ import {
   CaseSheetSymptom,
   CaseSheetDiagnosisPrescription,
   CaseSheetOtherInstruction,
+  APPOINTMENT_TYPE,
 } from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
@@ -338,6 +339,7 @@ export const caseSheetTypeDefs = gql`
     followUp: Boolean
     followUpDate: Date
     followUpAfterInDays: Int
+    followUpConsultType: APPOINTMENT_TYPE
     otherInstructions: [OtherInstructionsInput!]
     medicinePrescription: [MedicinePrescriptionInput!]
     id: String!
@@ -557,6 +559,7 @@ type ModifyCaseSheetInput = {
   followUp: boolean;
   followUpDate: Date;
   followUpAfterInDays: number;
+  followUpConsultType: APPOINTMENT_TYPE;
   otherInstructions: CaseSheetOtherInstruction[];
   medicinePrescription: CaseSheetMedicinePrescription[];
   id: string;
@@ -639,6 +642,10 @@ const modifyCaseSheet: Resolver<
 
   if (!(inputArguments.followUpAfterInDays === undefined)) {
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
+  }
+
+  if (!(inputArguments.followUpConsultType === undefined)) {
+    getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
   if (!(inputArguments.status === undefined)) {

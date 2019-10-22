@@ -1,9 +1,5 @@
 import { RxPdfData } from 'consults-service/entities/index';
-//import { convertCaseSheetToRxPdfData } from 'consults-service/rxPdfGenerator';
-//import { buildCaseSheet } from 'consults-service/database/factories/caseSheetFactory';
 import _capitalize from 'lodash/capitalize';
-import _compact from 'lodash/compact';
-import _times from 'lodash/times';
 import _random from 'lodash/random';
 import faker from 'faker';
 import { randomEnum } from 'helpers/factoryHelpers';
@@ -47,6 +43,7 @@ export const buildRxPdfData = (): RxPdfData => {
   const appointmentDetails = { displayId: '', consultDate: '', consultType: '' };
   const diagnosesTests = [{ itemname: '' }];
   const caseSheetSymptoms = [{ symptom: '', since: '', howOften: '', severity: '' }];
+  const followUpDetails = '';
 
   return {
     prescriptions,
@@ -59,5 +56,6 @@ export const buildRxPdfData = (): RxPdfData => {
     appointmentDetails,
     diagnosesTests,
     caseSheetSymptoms,
+    followUpDetails,
   };
 };

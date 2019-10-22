@@ -1,4 +1,4 @@
-import { format, getTime } from 'date-fns';
+import { format, getTime, differenceInCalendarDays } from 'date-fns';
 import path from 'path';
 import PDFDocument from 'pdfkit';
 import {
@@ -166,6 +166,7 @@ export const convertCaseSheetToRxPdfData = async (
     }
   }
 
+  //appointment details starts
   let appointmentDetails = {
     displayId: '',
     consultDate: '',
@@ -179,6 +180,21 @@ export const convertCaseSheetToRxPdfData = async (
       consultType: caseSheet.appointment.appointmentType,
     };
   }
+  //appointment details ends
+
+  let followUpDetails = '';
+
+  if (caseSheet.followUp) {
+    followUpDetails = ' Follow up ';
+    if (caseSheet.followUpConsultType)
+      followUpDetails = followUpDetails + '(' + caseSheet.followUpConsultType + ') ';
+    let followUpDays;
+    if (caseSheet.followUpAfterInDays) followUpDays = caseSheet.followUpAfterInDays;
+    else if (caseSheet.followUpDate)
+      followUpDays = differenceInCalendarDays(caseSheet.createdDate!, caseSheet.followUpDate);
+
+    if (followUpDays) followUpDetails = followUpDetails + 'after ' + followUpDays + ' days';
+  }
 
   return {
     prescriptions,
@@ -191,6 +207,7 @@ export const convertCaseSheetToRxPdfData = async (
     appointmentDetails,
     diagnosesTests,
     caseSheetSymptoms,
+    followUpDetails,
   };
 };
 
@@ -465,6 +482,18 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     }
   };
 
+  const renderFollowUp = (followUpData: RxPdfData['followUpDetails']) => {
+    if (followUpData) {
+      renderSectionHeader('Follow Up');
+      doc
+        .fontSize(10)
+        .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+        .fillColor('#02475b')
+        .text(`${followUpData}`, margin + 15)
+        .moveDown(0.5);
+    }
+  };
+
   doc.on('pageAdded', () => {
     renderFooter();
     renderHeader(rxPdfData.doctorInfo, rxPdfData.hospitalAddress);
@@ -501,10 +530,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
-  /*if (!_isEmpty(rxPdfData.followUp)) {
-    renderFollowUp(rxPdfData.followUp);
+  if (!_isEmpty(rxPdfData.followUpDetails)) {
+    renderFollowUp(rxPdfData.followUpDetails);
     doc.moveDown(1.5);
-  } */
+  }
 
   doc.end();
 

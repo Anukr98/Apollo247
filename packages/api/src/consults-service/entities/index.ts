@@ -414,6 +414,9 @@ export class CaseSheet extends BaseEntity {
   @Column({ nullable: true })
   followUpDate: Date;
 
+  @Column({ nullable: true })
+  followUpConsultType: APPOINTMENT_TYPE;
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -609,5 +612,6 @@ export interface RxPdfData {
   appointmentDetails: { displayId: string; consultDate: string; consultType: string };
   diagnosesTests: CaseSheetDiagnosisPrescription[];
   caseSheetSymptoms: CaseSheetSymptom[];
+  followUpDetails: string;
 }
 ///////////////////////////////////////////////////////////
