@@ -77,6 +77,10 @@ import {
   uploadChatDocumentTypeDefs,
   uploadChatDocumentResolvers,
 } from 'consults-service/resolvers/uploadChatDocument';
+import {
+  appointmentsSummaryTypeDefs,
+  appointmentsSummaryResolvers,
+} from 'consults-service/resolvers/appointmentsSummary';
 
 (async () => {
   await connect();
@@ -182,6 +186,10 @@ import {
       {
         typeDefs: uploadChatDocumentTypeDefs,
         resolvers: uploadChatDocumentResolvers,
+      },
+      {
+        typeDefs: appointmentsSummaryTypeDefs,
+        resolvers: appointmentsSummaryResolvers,
       },
     ]),
   });
