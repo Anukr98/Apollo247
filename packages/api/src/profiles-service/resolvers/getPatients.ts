@@ -20,7 +20,7 @@ export const getPatientTypeDefs = gql`
 `;
 
 type PatientInfo = {
-  patients: Patient;
+  patient: Patient;
 };
 type PatientList = {
   patients: Patient[];
@@ -33,11 +33,11 @@ const getPatientById: Resolver<
   PatientInfo
 > = async (parent, args, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const patients = await patientRepo.findById(args.patientId);
-  if (!patients) {
+  const patient = await patientRepo.findById(args.patientId);
+  if (!patient) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  return { patients };
+  return { patient };
 };
 
 const getPatientByMobileNumber: Resolver<
