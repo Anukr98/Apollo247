@@ -57,6 +57,13 @@ export interface Store {
   state: string;
   message: string;
 }
+export interface GetDeliveryTimeResponse {
+  tat: {
+    artCode: string;
+    deliverydate: string;
+    siteId: string;
+  }[];
+}
 
 interface InventoryCheckApiResponse {
   InvChkResult: {
@@ -391,4 +398,36 @@ export const getPlaceInfoByPincode = (
   const apiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${apiKey}`;
   return Axios.get(url);
+};
+
+export const getDeliveryTime = (params: {
+  postalcode: string;
+  ordertype: string;
+  lookup: { sku: string; qty: number }[];
+}): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
+  return Axios.post(
+    config.GET_DELIVERY_TIME[0],
+    {
+      params: params,
+    },
+    {
+      headers: {
+        Authentication: config.GET_DELIVERY_TIME[1],
+      },
+    }
+  );
+};
+
+export const getSubstitutes = async (
+  sku: string
+): Promise<AxiosResponse<{ Stores: Store[]; stores_count: number }>> => {
+  return Axios.post(
+    config.GET_SUBSTITUTES[0],
+    { params: sku },
+    {
+      headers: {
+        Authorization: config.GET_SUBSTITUTES[1],
+      },
+    }
+  );
 };

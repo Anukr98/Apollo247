@@ -7,6 +7,8 @@ import {
   getMedicineDetailsApi,
   MedicineProduct,
   MedicineProductDetails,
+  getDeliveryTime,
+  getSubstitutes,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -33,6 +35,7 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import Menu, { MenuItem } from 'react-native-material-menu';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -44,7 +47,6 @@ const styles = StyleSheet.create({
   mainView: {
     backgroundColor: theme.colors.CARD_BG,
     paddingTop: 20,
-    paddingHorizontal: 20,
     ...theme.viewStyles.shadowStyle,
   },
   doctorNameStyle: {
@@ -75,12 +77,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 8,
+    backgroundColor: theme.colors.WHITE,
+    borderRadius: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
   noteText: {
-    ...theme.fonts.IBMPlexSansMedium(12),
-    color: theme.colors.LIGHT_BLUE,
-    opacity: 0.6,
-    letterSpacing: 0.04,
+    ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 0.6, 20, 0.04),
+    // ...theme.fonts.IBMPlexSansMedium(12),
+    // color: theme.colors.LIGHT_BLUE,
+    // opacity: 0.6,
+    // letterSpacing: 0.04,
   },
   separatorStyle: {
     borderBottomWidth: 0.5,
@@ -99,11 +108,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   bottomView: {
-    shadowColor: theme.colors.WHITE,
-    shadowOffset: { width: 0, height: -5 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 2,
+    flex: 1,
+    // shadowColor: theme.colors.WHITE,
+    // shadowOffset: { width: 0, height: -5 },
+    // shadowOpacity: 1,
+    // shadowRadius: 10,
+    // elevation: 2,
   },
   bottonButtonContainer: {
     flexDirection: 'row',
@@ -210,21 +220,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         setApiError(!!err);
         setLoading(false);
       });
+    fetchDeliveryTime();
+    fetchSubstitutes();
   }, []);
-
-  let _menu = null;
-
-  const setMenuRef = (ref) => {
-    _menu = ref;
-  };
-
-  const hideMenu = () => {
-    _menu.hide();
-  };
-
-  const showMenu = () => {
-    _menu.show();
-  };
 
   const onAddCartItem = ({ sku, mou, name, price, is_prescription_required }: MedicineProduct) => {
     addCartItem &&
@@ -239,88 +237,125 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     props.navigation.goBack();
   };
 
+  const fetchDeliveryTime = () => {
+    getDeliveryTime({
+      postalcode: '600007',
+      ordertype: 'pharma',
+      lookup: [
+        {
+          sku: sku,
+          qty: 1,
+        },
+      ],
+    })
+      .then((res) => {
+        console.log('resresres', res);
+      })
+      .catch((err) => console.log(err, 'err'));
+  };
+
+  const fetchSubstitutes = () => {
+    getSubstitutes(sku)
+      .then((res) => {
+        console.log('getSubstitutes', res);
+      })
+      .catch((err) => console.log(err, 'err'));
+  };
+
   const renderBottomButtons = () => {
     return (
-      <View style={styles.bottomView}>
-        <View
-          style={{
-            flexDirection: 'row',
-            height: 50,
-            alignItems: 'center',
-            ...theme.viewStyles.lightSeparatorStyle,
-            marginHorizontal: 20,
-          }}
-        >
+      <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
+        {isOutOfStock ? (
           <View
-            style={{
-              flex: 1,
-            }}
+            style={{ paddingVertical: 16, alignItems: 'center', flex: 1, marginHorizontal: 60 }}
           >
-            <MaterialMenu
-              onPressQuantity={(selectedQuantity) => setselectedQuantity(selectedQuantity)}
-              selectedQuantity={selectedQuantity}
-            />
-            {/* <Menu
-              ref={setMenuRef}
-              // button={<Text onPress={this.showMenu}>Show menu</Text>}
-              button={
-                <TouchableOpacity
-                  onPress={showMenu}
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    paddingRight: 8,
-                    borderRightWidth: 0.5,
-                    borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                  }}
-                >
-                  <Text style={theme.viewStyles.text('SB', 14, '#02475b', 1, 24, 0.35)}>
-                    QTY : 01
-                  </Text>
-                  <DropdownGreen />
-                </TouchableOpacity>
-              }
-            >
-              <MenuItem onPress={hideMenu}>1</MenuItem>
-              <MenuItem onPress={hideMenu}>2</MenuItem>
-            </Menu> */}
-          </View>
-
-          <View style={{ flex: 1, alignItems: 'flex-end' }}>
             <Text
               style={[
-                theme.viewStyles.text('SB', 14, '#02475b', 1, 24, 0.35),
-                { fontWeight: 'bold' },
+                theme.viewStyles.text('SB', 14, '#890000', 1, undefined, 0.35),
+                { alignItems: 'center', paddingBottom: 16 },
               ]}
             >
-              Rs. 14.95
+              Out Of Stock
             </Text>
+            <Button
+              title={'NOTIFY WHEN IN STOCK'}
+              style={{ backgroundColor: theme.colors.WHITE }}
+              titleTextStyle={{ color: '#fc9916' }}
+            />
           </View>
-        </View>
-        <View style={styles.bottonButtonContainer}>
-          <Button
-            onPress={() => onAddCartItem(medicineDetails)}
-            title={
-              loading
-                ? 'ADD TO CART'
-                : isMedicineAddedToCart
-                ? 'ADDED TO CART'
-                : isOutOfStock
-                ? 'OUT OF STOCK'
-                : 'ADD TO CART'
-            }
-            disabled={isMedicineAddedToCart || isOutOfStock}
-            style={styles.bottomButtonStyle}
-            titleTextStyle={{ color: '#fc9916' }}
-          />
-          <View style={{ width: 16 }} />
-          <Button
-            onPress={() => props.navigation.navigate(AppRoutes.MobileHelp)}
-            title="BUY NOW"
-            style={{ flex: 1 }}
-          />
-        </View>
-      </View>
+        ) : (
+          <View style={styles.bottomView}>
+            <View
+              style={{
+                flexDirection: 'row',
+                height: 50,
+                alignItems: 'center',
+                ...theme.viewStyles.lightSeparatorStyle,
+                marginHorizontal: 20,
+              }}
+            >
+              <View
+                style={{
+                  flex: 1,
+                }}
+              >
+                <MaterialMenu
+                  onPressQuantity={(selectedQuantity) => setselectedQuantity(selectedQuantity)}
+                  selectedQuantity={selectedQuantity}
+                >
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      paddingRight: 8,
+                      borderRightWidth: 0.5,
+                      borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                    }}
+                  >
+                    <Text style={theme.viewStyles.text('SB', 14, '#02475b', 1, 24, 0.35)}>
+                      QTY : {selectedQuantity}
+                    </Text>
+                    <DropdownGreen />
+                  </View>
+                </MaterialMenu>
+              </View>
+              <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                <Text
+                  style={[
+                    theme.viewStyles.text('SB', 14, '#02475b', 1, 24, 0.35),
+                    { fontWeight: 'bold' },
+                  ]}
+                >
+                  Rs. {medicineDetails.price}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.bottonButtonContainer}>
+              <Button
+                onPress={() => onAddCartItem(medicineDetails)}
+                title={
+                  loading
+                    ? 'ADD TO CART'
+                    : isMedicineAddedToCart
+                    ? 'ADDED TO CART'
+                    : // : isOutOfStock
+                      // ? 'OUT OF STOCK'
+                      'ADD TO CART'
+                }
+                disabled={isMedicineAddedToCart || isOutOfStock}
+                style={styles.bottomButtonStyle}
+                titleTextStyle={{ color: '#fc9916' }}
+              />
+              <View style={{ width: 16 }} />
+              <Button
+                onPress={() => props.navigation.navigate(AppRoutes.MobileHelp)}
+                title="BUY NOW"
+                style={{ flex: 1 }}
+              />
+            </View>
+          </View>
+        )}
+      </StickyBottomComponent>
     );
   };
 
@@ -332,9 +367,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <Text style={styles.noteText}>This medicine requires doctor’s prescription</Text>
             <MedicineRxIcon />
           </View>
-          <View style={styles.separator} />
+          {/* <View style={styles.separator} /> */}
         </>
       );
+    } else {
+      return <View style={[styles.separatorStyle, { marginTop: 4 }]} />;
     }
   };
 
@@ -346,6 +383,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         <View
           style={{
             flexDirection: 'row',
+            paddingHorizontal: 20,
           }}
         >
           <View style={{ flex: 1 }}>
@@ -353,17 +391,27 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {renderBasicDetails()}
           </View>
           <View>
-            <View style={styles.imageView}>
-              {!!medicineDetails.image ? (
+            {!!medicineDetails.image ? (
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.imageView}
+                onPress={() =>
+                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                    images: [AppConfig.Configuration.IMAGES_BASE_URL + medicineDetails.image],
+                    heading: medicineDetails.name,
+                  })
+                }
+              >
                 <Image
                   source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL + medicineDetails.image }}
                   style={styles.doctorImage}
                 />
-              ) : null}
-            </View>
+              </TouchableOpacity>
+            ) : null}
           </View>
         </View>
-        <View style={[styles.separatorStyle, { marginTop: 4 }]} />
+        {renderNote()}
+        {medicineOverview.length === 0 && renderInfo()}
       </View>
     );
   };
@@ -373,7 +421,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     let description = props.route.key;
     switch (props.route.key) {
       case 'Overview':
-        description = ''; //medicineDetails.PharmaOverview[0].Overview; //'Overview';
+        description =
+          medicineDetails.PharmaOverview && medicineDetails.PharmaOverview.length
+            ? medicineDetails.PharmaOverview[0].Overview
+            : ''; //'Overview';
         break;
       case 'Side Effects':
         description = 'Side Effects';
@@ -436,6 +487,45 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         onIndexChange={(index) => setselectedTab(index)}
       />
     );
+  };
+  const renderInfo = () => {
+    if (medicineDetails.description)
+      return (
+        <View>
+          <Text
+            style={{
+              ...theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE, 1),
+              paddingHorizontal: 20,
+              paddingTop: 20,
+              paddingBottom: 17,
+            }}
+          >
+            Product Information
+          </Text>
+          <View
+            style={[
+              {
+                backgroundColor: theme.colors.WHITE,
+                flex: 1,
+                padding: 20,
+                ...theme.viewStyles.shadowStyle,
+              },
+            ]}
+          >
+            <View>
+              <Text
+                style={{
+                  color: theme.colors.SKY_BLUE,
+                  ...theme.fonts.IBMPlexSansMedium(14),
+                  lineHeight: 22,
+                }}
+              >
+                {medicineDetails.description}
+              </Text>
+            </View>
+          </View>
+        </View>
+      );
   };
 
   const renderSubstitutes = () => {
@@ -600,7 +690,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       {!loading && (
         <ScrollView bounces={false}>
           {renderTopView()}
-          {renderTabs()}
+          {medicineOverview.length > 0 && renderTabs()}
           {renderSubstitutes()}
           {renderDeliveryView()}
           {/* <View style={styles.cardStyle}>
@@ -620,10 +710,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {renderBasicDetails()}
             {renderTitleAndDescriptionList()}
           </View> */}
+          <View style={{ height: 130 }} />
         </ScrollView>
       )}
-
-      {renderBottomButtons()}
+      {!loading && renderBottomButtons()}
     </SafeAreaView>
   );
 };
