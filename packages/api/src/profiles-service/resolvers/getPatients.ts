@@ -13,9 +13,13 @@ export const getPatientTypeDefs = gql`
   type PatientList {
     patients: [Patient]
   }
+  type GetPatientsResult {
+    patients: [Patient!]!
+  }
   extend type Query {
     getPatientById(patientId: String): PatientInfo
     getPatientByMobileNumber(mobileNumber: String): PatientList
+    getPatients: GetPatientsResult
   }
 `;
 
@@ -54,9 +58,14 @@ const getPatientByMobileNumber: Resolver<
   return { patients };
 };
 
+const getPatients = () => {
+  return { patients: [] };
+};
+
 export const getPatientResolvers = {
   Query: {
     getPatientById,
     getPatientByMobileNumber,
+    getPatients,
   },
 };
