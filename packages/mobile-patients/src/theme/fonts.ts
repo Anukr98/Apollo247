@@ -27,7 +27,7 @@ const Fonts = {
   },
   IBMPlexSansRegular: (s = 12) => {
     return {
-      fontFamily: 'IBMPlexSans-Regular',
+      fontFamily: 'IBMPlexSans',
       fontSize: s,
     };
   },
