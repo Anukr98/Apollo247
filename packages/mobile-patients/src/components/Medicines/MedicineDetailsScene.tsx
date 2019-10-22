@@ -578,40 +578,40 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     );
   };
 
-  const renderTitleAndDescriptionList = () => {
-    return medicineOverview
-      .filter((item) => item.CaptionDesc)
-      .map((data, index, array) => {
-        const desc = data.CaptionDesc || '';
-        let trimmedDesc = desc.charAt(0) == '.' ? desc.slice(1).trim() : desc;
+  // const renderTitleAndDescriptionList = () => {
+  //   return medicineOverview
+  //     .filter((item) => item.CaptionDesc)
+  //     .map((data, index, array) => {
+  //       const desc = data.CaptionDesc || '';
+  //       let trimmedDesc = desc.charAt(0) == '.' ? desc.slice(1).trim() : desc;
 
-        if (data.Caption == 'HOW IT WORKS' || data.Caption == 'USES') {
-          trimmedDesc = `${medicineName} ${trimmedDesc}`;
-        }
+  //       if (data.Caption == 'HOW IT WORKS' || data.Caption == 'USES') {
+  //         trimmedDesc = `${medicineName} ${trimmedDesc}`;
+  //       }
 
-        trimmedDesc = trimmedDesc
-          .replace(/&amp;deg;/g, '°')
-          .replace(/&#039;/g, "'")
-          .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
-          .replace(/&amp;lt;br \/&amp;gt;/g, '\n');
+  //       trimmedDesc = trimmedDesc
+  //         .replace(/&amp;deg;/g, '°')
+  //         .replace(/&#039;/g, "'")
+  //         .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
+  //         .replace(/&amp;lt;br \/&amp;gt;/g, '\n');
 
-        trimmedDesc = trimmedDesc
-          .split('\n')
-          .filter((item) => item)
-          .join('\n');
+  //       trimmedDesc = trimmedDesc
+  //         .split('\n')
+  //         .filter((item) => item)
+  //         .join('\n');
 
-        return (
-          <View key={index}>
-            <Text style={styles.heading}>{data.Caption}</Text>
-            <Text
-              style={[styles.description, index == array.length - 1 ? { marginBottom: 0 } : {}]}
-            >
-              {trimmedDesc}
-            </Text>
-          </View>
-        );
-      });
-  };
+  //       return (
+  //         <View key={index}>
+  //           <Text style={styles.heading}>{data.Caption}</Text>
+  //           <Text
+  //             style={[styles.description, index == array.length - 1 ? { marginBottom: 0 } : {}]}
+  //           >
+  //             {trimmedDesc}
+  //           </Text>
+  //         </View>
+  //       );
+  //     });
+  // };
 
   const formatComposition = (value: string) => {
     return value

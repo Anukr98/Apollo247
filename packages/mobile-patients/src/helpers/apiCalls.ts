@@ -416,17 +416,11 @@ export const getDeliveryTime = (params: {
   ordertype: string;
   lookup: { sku: string; qty: number }[];
 }): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
-  return Axios.post(
-    config.GET_DELIVERY_TIME[0],
-    {
-      params: params,
+  return Axios.post(config.GET_DELIVERY_TIME[0], params, {
+    headers: {
+      Authentication: config.GET_DELIVERY_TIME[1],
     },
-    {
-      headers: {
-        Authentication: config.GET_DELIVERY_TIME[1],
-      },
-    }
-  );
+  });
 };
 
 export const getSubstitutes = async (
