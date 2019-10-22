@@ -1325,7 +1325,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               marginTop: 12,
             }}
           >
-            Next slot for Dr. {rowData.transferInfo.doctorInfo.firstName} is available on —
+            Next slot for Dr. {appointmentData.doctorInfo.firstName} is available on —
+            {/* Next slot for Dr. {rowData.transferInfo.doctorInfo.firstName} is available on — */}
           </Text>
           <View
             style={{
