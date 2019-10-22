@@ -19,6 +19,7 @@ export const buildRxPdfData = (): RxPdfData => {
     lastName: faker.name.lastName(),
     qualifications: _capitalize(faker.lorem.words(_random(2, 10))),
     registrationNumber: faker.random.alphaNumeric(8).toUpperCase(),
+    specialty: '',
   };
 
   const hospitalAddress = {

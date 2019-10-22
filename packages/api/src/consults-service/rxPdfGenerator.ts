@@ -79,6 +79,7 @@ export const convertCaseSheetToRxPdfData = async (
     lastName: '',
     qualifications: '',
     registrationNumber: '',
+    specialty: '',
   };
 
   let hospitalAddress = {
@@ -162,6 +163,7 @@ export const convertCaseSheetToRxPdfData = async (
         lastName: doctordata.lastName,
         qualifications: doctordata.qualification,
         registrationNumber: doctordata.registrationNumber,
+        specialty: doctordata.specialty.name,
       };
     }
   }
@@ -286,7 +288,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
     //Doctor Details
     const nameLine = `${doctorInfo.salutation}. ${doctorInfo.firstName} ${doctorInfo.lastName}`;
-    const specialty = 'General Physician';
+    const specialty = doctorInfo.specialty;
     const registrationLine = `MCI Reg.No. ${doctorInfo.registrationNumber}`;
 
     doc
@@ -528,8 +530,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
-  //static method
-  renderDiagnosticTest(rxPdfData.diagnosesTests);
+  if (!_isEmpty(rxPdfData.diagnosesTests)) {
+    renderDiagnosticTest(rxPdfData.diagnosesTests);
+    doc.moveDown(1.5);
+  }
 
   if (!_isEmpty(rxPdfData.generalAdvice)) {
     renderGeneralAdvice(rxPdfData.generalAdvice);
@@ -554,7 +558,7 @@ export const uploadRxPdf = async (
   const name = `${caseSheetId}_${getTime(new Date())}.pdf`;
   const filePath = loadAsset(name);
   pdfDoc.pipe(fs.createWriteStream(filePath));
-  await delay(300);
+  await delay(350);
   //const blob = { name, filePath };
   const blob = await client.uploadFile({ name, filePath });
   fs.unlink(filePath, (error) => console.log(error));
