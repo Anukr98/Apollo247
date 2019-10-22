@@ -555,9 +555,9 @@ export const uploadRxPdf = async (
   const filePath = loadAsset(name);
   pdfDoc.pipe(fs.createWriteStream(filePath));
   await delay(300);
-  const blob = { name, filePath };
-  //const blob = await client.uploadFile({ name, filePath });
-  //fs.unlink(filePath, (error) => console.log(error));
+  //const blob = { name, filePath };
+  const blob = await client.uploadFile({ name, filePath });
+  fs.unlink(filePath, (error) => console.log(error));
   return blob;
 
   function delay(ms: number) {
