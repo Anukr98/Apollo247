@@ -716,7 +716,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
-            <MedicineUploadPrescriptionView />
+            <MedicineUploadPrescriptionView navigation={props.navigation} />
             {renderDelivery()}
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
