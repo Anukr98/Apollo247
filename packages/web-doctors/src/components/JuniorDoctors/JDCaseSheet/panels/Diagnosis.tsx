@@ -4,7 +4,6 @@ import { AphButton, AphTextField } from '@aph/web-ui-components';
 import Autosuggest from 'react-autosuggest';
 import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
-import deburr from 'lodash/deburr';
 import { useApolloClient } from 'react-apollo-hooks';
 import { SearchDiagnosis } from 'graphql/types/SearchDiagnosis';
 import { SEARCH_DIAGNOSIS } from 'graphql/profiles';

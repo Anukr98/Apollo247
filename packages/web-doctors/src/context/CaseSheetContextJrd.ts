@@ -84,6 +84,33 @@ export interface CaseSheetContextPropsJrd {
   pastAppointments: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments[] | null;
   setCasesheetNotes: (notes: string) => void;
   autoCloseCaseSheet: boolean;
+
+  height: string;
+  weight: string;
+  temperature: string;
+  bp: string;
+  pastMedicalHistory: string;
+  pastSurgicalHistory: string;
+  dietAllergies: string;
+  drugAllergies: string;
+  lifeStyle: string;
+  familyHistory: string;
+  menstrualHistory: string;
+
+  setHeight: (height: string) => void;
+  setWeight: (weight: string) => void;
+  setTemperature: (temperature: string) => void;
+  setBp: (bp: string) => void;
+  setPastMedicalHistory: (medicalHistory: string) => void;
+  setPastSurgicalHistory: (surgicalHistory: string) => void;
+  setDietAllergies: (dietAllergy: string) => void;
+  setDrugAllergies: (drugAllergy: string) => void;
+  setLifeStyle: (lifeStyle: string) => void;
+  setFamilyHistory: (familyHistory: string) => void;
+  setMenstrualHistory: (menstrualHistory: string) => void;
+
+  gender: string;
+  setGender: (gender: string) => void;
 }
 
 export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
@@ -118,4 +145,31 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   pastAppointments: null,
   setCasesheetNotes: () => {},
   autoCloseCaseSheet: false,
+
+  height: '',
+  weight: '',
+  bp: '',
+  temperature: '',
+  pastMedicalHistory: '',
+  pastSurgicalHistory: '',
+  dietAllergies: '',
+  drugAllergies: '',
+  lifeStyle: '',
+  familyHistory: '',
+  menstrualHistory: '',
+
+  setBp: () => {},
+  setHeight: () => {},
+  setWeight: () => {},
+  setTemperature: () => {},
+  setPastMedicalHistory: () => {},
+  setPastSurgicalHistory: () => {},
+  setDietAllergies: () => {},
+  setDrugAllergies: () => {},
+  setLifeStyle: () => {},
+  setFamilyHistory: () => {},
+  setMenstrualHistory: () => {},
+
+  gender: '',
+  setGender: () => {},
 });

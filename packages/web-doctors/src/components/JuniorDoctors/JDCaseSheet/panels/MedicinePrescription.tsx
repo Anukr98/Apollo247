@@ -635,11 +635,11 @@ export const MedicinePrescription: React.FC = () => {
   }
   useEffect(() => {
     if (selectedMedicinesArr && selectedMedicinesArr!.length) {
-      console.log(selectedMedicinesArr, selectedMedicinesArr.length);
+      // console.log(selectedMedicinesArr, selectedMedicinesArr.length);
       selectedMedicinesArr!.forEach((res: any) => {
         const inputParamsArr: any = {
           medicineConsumptionDurationInDays: res.medicineConsumptionDurationInDays,
-          medicineDosage: res.medicineDosage,
+          medicineDosage: String(res.medicineDosage),
           medicineInstructions: res.medicineInstructions,
           medicineTimings: res.medicineTimings,
           medicineToBeTaken: res.medicineToBeTaken,
@@ -702,7 +702,7 @@ export const MedicinePrescription: React.FC = () => {
     });
     setToBeTakenSlots(slots);
   };
-  console.log(selectedMedicines);
+  // console.log(selectedMedicines);
   const selectedMedicinesHtml = selectedMedicinesArr!.map(
     (_medicine: any | null, index: number) => {
       const medicine = _medicine!;
@@ -818,7 +818,7 @@ export const MedicinePrescription: React.FC = () => {
       });
       const inputParamsArr: any = {
         medicineConsumptionDurationInDays: consumptionDuration,
-        medicineDosage: tabletsCount,
+        medicineDosage: String(tabletsCount),
         medicineInstructions: medicineInstruction,
         medicineTimings: daySlotsArr,
         medicineToBeTaken: toBeTakenSlotsArr,

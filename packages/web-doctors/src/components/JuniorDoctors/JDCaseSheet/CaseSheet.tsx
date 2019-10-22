@@ -7,7 +7,6 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
-  Grid,
 } from '@material-ui/core';
 import {
   Symptoms,
@@ -17,9 +16,10 @@ import {
   DiagnosticPrescription,
   OtherInstructions,
 } from 'components/JuniorDoctors/JDCaseSheet/panels';
-import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
 import { Vitals } from 'components/JuniorDoctors/JDCaseSheet/panels/Vitals';
+import { HistoryAndLifeStyle } from 'components/JuniorDoctors/JDCaseSheet/panels/HistoryAndLifeStyle';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
+import { AphTextField } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -148,7 +148,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
-
+/*
 interface CaseSheetProps {
   lifeStyle: string;
   allergies: string;
@@ -303,18 +303,11 @@ const HistoryAndLifeStyle: React.FC<HistoryAndLifeStyleProps> = (props) => {
       </Grid>
     </>
   );
-};
+};*/
 
-export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
+export const CaseSheet: React.FC = () => {
   const classes = useStyles();
   const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContextJrd);
-  // const [symptoms, setSymptoms] = useState<boolean>(caseSheetEdit);
-  // const [healthVault, setHealthVault] = useState<boolean>(caseSheetEdit);
-  // const [diagnosis, setDiagnosis] = useState<boolean>(caseSheetEdit);
-  // const [medicinePrescription, setMedicinePrescription] = useState<boolean>(caseSheetEdit);
-  // const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(caseSheetEdit);
-  // const [otherInstructions, setOtherInstructions] = useState<boolean>(caseSheetEdit);
-  // const [patientHistory, setPatientHistory] = useState<boolean>(caseSheetEdit);
 
   const [symptoms, setSymptoms] = useState<boolean>(true);
   const [healthVault, setHealthVault] = useState<boolean>(true);
@@ -323,6 +316,7 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
   const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(true);
   const [otherInstructions, setOtherInstructions] = useState<boolean>(true);
   const [patientHistory, setPatientHistory] = useState<boolean>(true);
+  const [vitals, setVitals] = useState<boolean>(true);
 
   useEffect(() => {
     if (caseSheetEdit) {
@@ -333,6 +327,7 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
       setDiagnosticPrescription(true);
       setOtherInstructions(true);
       setPatientHistory(true);
+      setVitals(true);
     }
   }, [caseSheetEdit]);
 
@@ -341,7 +336,7 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
     {
       key: 'vitals',
       value: 'Vitals',
-      state: healthVault,
+      state: vitals,
       component: <Vitals />,
     },
     {
@@ -373,16 +368,7 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
       key: 'patientHistory&Lifestyle',
       value: 'Patient’s Medical and Family History',
       state: patientHistory,
-      component: (
-        <HistoryAndLifeStyle
-          lifeStyle={props.lifeStyle}
-          allergies={props.allergies}
-          familyHistory={props.familyHistory}
-          setFamilyHistory={props.setFamilyHistory}
-          setAllergies={props.setAllergies}
-          setLifeStyle={props.setLifeStyle}
-        />
-      ),
+      component: <HistoryAndLifeStyle />,
     },
   ];
 
@@ -411,6 +397,9 @@ export const CaseSheet: React.FC<CaseSheetProps> = (props) => {
         break;
       case 'patientHistory&Lifestyle':
         setPatientHistory(isExpanded);
+        break;
+      case 'vitals':
+        setVitals(isExpanded);
         break;
     }
   };

@@ -170,19 +170,13 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
   },
 }));
-interface errorObject {
+interface ErrorObject {
   symptomError: boolean;
   sinceError: boolean;
   howOfftenError: boolean;
   severityError: boolean;
 }
-interface symptomObject {
-  __typename: string;
-  symptom: string;
-  severity: string;
-  howOften: string;
-  since: string;
-}
+
 export const Symptoms: React.FC = (props) => {
   const classes = useStyles();
   const { symptoms, setSymptoms } = useContext(CaseSheetContextJrd);
@@ -193,7 +187,7 @@ export const Symptoms: React.FC = (props) => {
   const [idx, setIdx] = React.useState();
   const [severity, setSeverity] = React.useState('');
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
-  const [errorState, setErrorState] = React.useState<errorObject>({
+  const [errorState, setErrorState] = React.useState<ErrorObject>({
     symptomError: false,
     sinceError: false,
     howOfftenError: false,
@@ -281,7 +275,7 @@ export const Symptoms: React.FC = (props) => {
       });
 
       const inputParams: any = {
-        __typename: 'SymptomList',
+        // __typename: 'SymptomList',
         howOften: howOften,
         severity: severity,
         since: since,
