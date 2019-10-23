@@ -16672,9 +16672,13 @@
               "kind": "LIST",
               "name": null,
               "ofType": {
-                "kind": "INPUT_OBJECT",
-                "name": "SymptomInput",
-                "ofType": null
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "SymptomInput",
+                  "ofType": null
+                }
               }
             },
             "defaultValue": null
@@ -16696,9 +16700,13 @@
               "kind": "LIST",
               "name": null,
               "ofType": {
-                "kind": "INPUT_OBJECT",
-                "name": "DiagnosisInput",
-                "ofType": null
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "DiagnosisInput",
+                  "ofType": null
+                }
               }
             },
             "defaultValue": null
@@ -16710,9 +16718,13 @@
               "kind": "LIST",
               "name": null,
               "ofType": {
-                "kind": "INPUT_OBJECT",
-                "name": "DiagnosticPrescriptionInput",
-                "ofType": null
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "DiagnosticPrescriptionInput",
+                  "ofType": null
+                }
               }
             },
             "defaultValue": null
@@ -16748,15 +16760,29 @@
             "defaultValue": null
           },
           {
+            "name": "followUpConsultType",
+            "description": null,
+            "type": {
+              "kind": "ENUM",
+              "name": "APPOINTMENT_TYPE",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
             "name": "otherInstructions",
             "description": null,
             "type": {
               "kind": "LIST",
               "name": null,
               "ofType": {
-                "kind": "INPUT_OBJECT",
-                "name": "OtherInstructionsInput",
-                "ofType": null
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "OtherInstructionsInput",
+                  "ofType": null
+                }
               }
             },
             "defaultValue": null
@@ -16768,9 +16794,13 @@
               "kind": "LIST",
               "name": null,
               "ofType": {
-                "kind": "INPUT_OBJECT",
-                "name": "MedicinePrescriptionInput",
-                "ofType": null
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "MedicinePrescriptionInput",
+                  "ofType": null
+                }
               }
             },
             "defaultValue": null

@@ -11,6 +11,7 @@ import {
   CaseSheetSymptom,
   CaseSheetDiagnosisPrescription,
   CaseSheetOtherInstruction,
+  APPOINTMENT_TYPE,
 } from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
@@ -331,15 +332,16 @@ export const caseSheetTypeDefs = gql`
   }
 
   input ModifyCaseSheetInput {
-    symptoms: [SymptomInput]
+    symptoms: [SymptomInput!]
     notes: String
-    diagnosis: [DiagnosisInput]
-    diagnosticPrescription: [DiagnosticPrescriptionInput]
+    diagnosis: [DiagnosisInput!]
+    diagnosticPrescription: [DiagnosticPrescriptionInput!]
     followUp: Boolean
     followUpDate: Date
     followUpAfterInDays: Int
-    otherInstructions: [OtherInstructionsInput]
-    medicinePrescription: [MedicinePrescriptionInput]
+    followUpConsultType: APPOINTMENT_TYPE
+    otherInstructions: [OtherInstructionsInput!]
+    medicinePrescription: [MedicinePrescriptionInput!]
     id: String!
     status: CASESHEET_STATUS
     lifeStyle: String
@@ -527,13 +529,17 @@ const updateCaseSheet: Resolver<
   getCaseSheetData.followUpAfterInDays = followUpAfterInDays;
   getCaseSheetData.status = inputArguments.status;
 
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.findById(getCaseSheetData.patientId);
+  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
   //convert casesheet to prescription
   const client = new AphStorageClient(
     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
 
-  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientsDb);
+  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
   const pdfDocument = generateRxPdfDocument(rxPdfData);
   const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
   if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
@@ -553,6 +559,7 @@ type ModifyCaseSheetInput = {
   followUp: boolean;
   followUpDate: Date;
   followUpAfterInDays: number;
+  followUpConsultType: APPOINTMENT_TYPE;
   otherInstructions: CaseSheetOtherInstruction[];
   medicinePrescription: CaseSheetMedicinePrescription[];
   id: string;
@@ -635,6 +642,10 @@ const modifyCaseSheet: Resolver<
 
   if (!(inputArguments.followUpAfterInDays === undefined)) {
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
+  }
+
+  if (!(inputArguments.followUpConsultType === undefined)) {
+    getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
   if (!(inputArguments.status === undefined)) {
@@ -753,7 +764,7 @@ const modifyCaseSheet: Resolver<
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
 
-  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientsDb);
+  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
   const pdfDocument = generateRxPdfDocument(rxPdfData);
   const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
   if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
