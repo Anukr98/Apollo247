@@ -98,6 +98,9 @@ const useStyles = makeStyles(() => ({
     borderLeft: 'none',
     paddingLeft: 0,
   },
+  nodataFound: {
+    fontSize: 14,
+  },
 }));
 
 const theme = createMuiTheme({
@@ -299,7 +302,7 @@ export const HealthVault: React.FC = () => {
                 </ListItem>
               ))
             ) : (
-              <span>No data Found</span>
+              <span className={classes.nodataFound}>No data Found</span>
             )}
           </List>
         </Typography>
@@ -339,7 +342,7 @@ export const HealthVault: React.FC = () => {
                 </ListItem>
               ))
             ) : (
-              <span>No data Found</span>
+              <span className={classes.nodataFound}>No data Found</span>
             )}
           </List>
         </Typography>
