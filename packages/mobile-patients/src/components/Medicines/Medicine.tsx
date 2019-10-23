@@ -202,11 +202,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setImgHeight(height * (winWidth / width));
           }}
           style={{ width: '100%', minHeight: imgHeight }}
-          containerStyle={{ paddingBottom: 20 }}
           source={{ uri: _offerBannerImage }}
         />
       );
-    else return <View style={{ height: 20 }} />;
   };
 
   const uploadPrescriptionCTA = () => {
@@ -262,7 +260,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderUploadPrescriptionSection = () => {
     return (
-      <View style={{ ...theme.viewStyles.card(), marginTop: 0, marginBottom: 12 }}>
+      <View style={{ ...theme.viewStyles.card(), marginTop: 20, marginBottom: 12 }}>
         {uploadPrescriptionCTA()}
         <Spearator style={{ marginVertical: 11.5 }} />
         {consultDoctorCTA()}
@@ -439,6 +437,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     specialPrice?: number;
     isAddedToCart: boolean;
     onAddOrRemoveCartItem: () => void;
+    onPress: () => void;
   }) => {
     const { name, imgUrl, price, specialPrice } = data;
 
@@ -457,52 +456,54 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
           {!!specialPrice && (
             <Text style={[styles.discountedPriceText, { marginRight: 4 }]}>
-              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {specialPrice}</Text>)
+              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
             </Text>
           )}
-          <Text style={styles.priceText}>Rs. {price}</Text>
+          <Text style={styles.priceText}>Rs. {specialPrice || price}</Text>
         </View>
       );
     };
 
     return (
-      <View
-        style={{
-          ...theme.viewStyles.card(12, 0),
-          height: 232,
-          width: 152,
-          marginRight: 8,
-          alignItems: 'center',
-        }}
-      >
-        <Image
-          placeholderStyle={{ backgroundColor: '#f0f1ec', borderRadius: 5 }}
-          source={{ uri: imgUrl }}
-          style={{ height: 68, width: 68, marginBottom: 8 }}
-        />
-        <View style={{ height: 67.5 }}>
+      <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
+        <View
+          style={{
+            ...theme.viewStyles.card(12, 0),
+            height: 232,
+            width: 152,
+            marginRight: 8,
+            alignItems: 'center',
+          }}
+        >
+          <Image
+            placeholderStyle={{ backgroundColor: '#f0f1ec', borderRadius: 5 }}
+            source={{ uri: imgUrl }}
+            style={{ height: 68, width: 68, marginBottom: 8 }}
+          />
+          <View style={{ height: 67.5 }}>
+            <Text
+              style={{
+                ...theme.viewStyles.text('M', 14, '#01475b', 1, 20),
+                textAlign: 'center',
+              }}
+              numberOfLines={3}
+            >
+              {name}
+            </Text>
+          </View>
+          <Spearator style={{ marginBottom: 7.5 }} />
+          {renderDiscountedPrice()}
           <Text
             style={{
-              ...theme.viewStyles.text('M', 14, '#01475b', 1, 20),
+              ...theme.viewStyles.text('B', 13, '#fc9916', data.isAddedToCart ? 0.5 : 1, 24),
               textAlign: 'center',
             }}
-            numberOfLines={3}
+            onPress={data.onAddOrRemoveCartItem}
           >
-            {name}
+            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
           </Text>
         </View>
-        <Spearator style={{ marginBottom: 7.5 }} />
-        {renderDiscountedPrice()}
-        <Text
-          style={{
-            ...theme.viewStyles.text('B', 13, '#fc9916', data.isAddedToCart ? 0.5 : 1, 24),
-            textAlign: 'center',
-          }}
-          onPress={data.onAddOrRemoveCartItem}
-        >
-          {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
-        </Text>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -539,9 +540,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       name,
       imgUrl: `${config.IMAGES_BASE_URL}${image}`,
       price,
-      specialPrice: specialPrice == price ? undefined : price,
+      specialPrice: special_price
+        ? typeof special_price == 'string'
+          ? parseInt(special_price)
+          : special_price
+        : undefined,
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
+      onPress: () => props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku }),
     });
   };
 

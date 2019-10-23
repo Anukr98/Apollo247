@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     borderRadius: 10,
-    maxHeight: 500,
+    maxHeight: 200,
     alignItems: 'center',
     ...theme.viewStyles.shadowStyle,
   },

@@ -5,10 +5,9 @@ import {
   DropdownGreen,
   MedicineIcon,
   MedicineRxIcon,
-  Minus,
-  Plus,
   RemoveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -223,24 +222,20 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderUnitDropdownAndPrice = () => {
     return (
       <View style={styles.unitAndPriceView}>
-        <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[{ flex: 1, alignSelf: 'flex-start' }]}
-            // style={styles.unitDropdownContainer}
-            onPress={() => onChangeUnit(unit - 1)}
+        <View style={{ flex: 1 }}>
+          <MaterialMenu
+            onPressQuantity={(selectedQuantity) => onChangeUnit(selectedQuantity as number)}
+            selectedQuantity={unit}
           >
-            <Minus />
-          </TouchableOpacity>
-          <Text style={styles.unitAndRupeeText}>{`QTY : ${unit}`}</Text>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[{ flex: 1, alignItems: 'flex-end' }]}
-            // style={styles.unitDropdownContainer}
-            onPress={() => onChangeUnit(unit + 1)}
-          >
-            <Plus />
-          </TouchableOpacity>
+            <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
+              <View style={[{ flex: 1, alignItems: 'flex-start' }]}>
+                <Text style={styles.unitAndRupeeText}>{`QTY : ${unit}`}</Text>
+              </View>
+              <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                <DropdownGreen />
+              </View>
+            </View>
+          </MaterialMenu>
         </View>
         <View style={styles.verticalSeparator} />
         <View style={[styles.flexStyle, { alignItems: 'flex-end' }]}>
