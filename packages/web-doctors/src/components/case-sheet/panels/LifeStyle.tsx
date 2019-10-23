@@ -37,6 +37,16 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     width: '100%',
   },
+  drugAllergies: {
+    width: '45%',
+    display: 'inline-block',
+    paddingRight: 10,
+  },
+  dietAllergies: {
+    width: '45%',
+    display: 'inline-block',
+    float: 'right',
+  },
 }));
 
 export const LifeStyle: React.FC = () => {
@@ -108,7 +118,7 @@ export const LifeStyle: React.FC = () => {
                 </Typography>
               </Typography>
             )}
-          <Typography component="div">
+          <Typography component="div" className={classes.drugAllergies}>
             <Typography component="h5" variant="h5" className={classes.header}>
               Drug Allergies
             </Typography>
@@ -124,7 +134,7 @@ export const LifeStyle: React.FC = () => {
               </List>
             </Typography>
           </Typography>
-          <Typography component="div">
+          <Typography component="div" className={classes.dietAllergies}>
             <Typography component="h5" variant="h5" className={classes.header}>
               Diet Allergies/Restrictions
             </Typography>
@@ -151,6 +161,39 @@ export const LifeStyle: React.FC = () => {
                     <Typography component="p" className={classes.textContent}>
                       Patient doesn’t smoke, recovered from chickenpox 6 months ago + occupational
                       history
+                    </Typography>
+                  </Fragment>
+                </ListItem>
+              </List>
+            </Typography>
+          </Typography>
+          <Typography component="div">
+            <Typography component="h5" variant="h5" className={classes.header}>
+              Menstual History*
+            </Typography>
+            <Typography component="div" className={classes.content}>
+              <List>
+                <ListItem>
+                  <Fragment>
+                    <Typography component="p" className={classes.textContent}>
+                      Regular cycles; Last period was on 16th Sep
+                    </Typography>
+                  </Fragment>
+                </ListItem>
+              </List>
+            </Typography>
+          </Typography>
+          <Typography component="div">
+            <Typography component="h5" variant="h5" className={classes.header}>
+              Patient’s Family Medical History
+            </Typography>
+            <Typography component="div" className={classes.content}>
+              <List>
+                <ListItem>
+                  <Fragment>
+                    <Typography component="p" className={classes.textContent}>
+                      <p>Father: Cardiac patient </p>
+                      <p>Mother: Severely diabetic </p>
                     </Typography>
                   </Fragment>
                 </ListItem>
