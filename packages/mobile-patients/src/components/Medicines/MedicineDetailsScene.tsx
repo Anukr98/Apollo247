@@ -2,40 +2,44 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { MedicineRxIcon, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DropdownGreen, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
+  getDeliveryTime,
   getMedicineDetailsApi,
+  getSubstitutes,
   MedicineProduct,
   MedicineProductDetails,
-  getDeliveryTime,
-  getSubstitutes,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   SafeAreaView,
   StyleSheet,
   Text,
-  View,
-  Image,
   TouchableOpacity,
+  View,
+  Alert,
+  Platform,
+  WebView,
 } from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import {
-  TabView,
-  SceneMap,
-  TabBar,
-  SceneRendererProps,
   NavigationState,
+  SceneMap,
+  SceneRendererProps,
+  TabBar,
+  TabView,
 } from 'react-native-tab-view';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import Menu, { MenuItem } from 'react-native-material-menu';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import moment from 'moment';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -186,7 +190,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [loading, setLoading] = useState(true);
   const [selectedTab, setselectedTab] = useState<number>(0);
   const [deliveryTime, setdeliveryTime] = useState<string>('');
+  const [deliveryError, setdeliveryError] = useState<string>('');
   const [selectedQuantity, setselectedQuantity] = useState<string | number>(1);
+  const [pincode, setpincode] = useState<string>('');
+  const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
 
   const _medicineOverview =
     medicineDetails!.PharmaOverview &&
@@ -220,7 +227,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         setApiError(!!err);
         setLoading(false);
       });
-    fetchDeliveryTime();
     fetchSubstitutes();
   }, []);
 
@@ -238,8 +244,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const fetchDeliveryTime = () => {
+    setshowDeliverySpinner(true);
     getDeliveryTime({
-      postalcode: '600007',
+      postalcode: pincode,
       ordertype: 'pharma',
       lookup: [
         {
@@ -249,9 +256,25 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       ],
     })
       .then((res) => {
-        console.log('resresres', res);
+        try {
+          console.log('resresres', res);
+          if (res && res.data) {
+            if (typeof res.data === 'object' && Array.isArray(res.data.tat)) {
+              res.data.tat.length && setdeliveryTime(res.data.tat[0].deliverydate);
+            } else if (typeof res.data === 'string') {
+              setdeliveryError(res.data);
+            }
+          }
+        } catch (error) {
+          Alert.alert(error);
+        }
+        setshowDeliverySpinner(false);
       })
-      .catch((err) => console.log(err, 'err'));
+      .catch((err) => {
+        console.log(err, 'err');
+        Alert.alert(err);
+        setshowDeliverySpinner(false);
+      });
   };
 
   const fetchSubstitutes = () => {
@@ -522,6 +545,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               >
                 {medicineDetails.description}
               </Text>
+              {/* <WebView
+                source={{
+                  html: `<p style="color:#0087ba;font-size:12;font-family:IBMPlexSans-Medium;">${medicineDetails.description +
+                    'helllooooooo&nbps;hiiiiiiii'}</p>`,
+                }}
+                style={{
+                  backgroundColor: 'red',
+                  width: '100%',
+                  height: 100,
+                }}
+              /> */}
             </View>
           </View>
         </View>
@@ -542,37 +576,92 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderDeliveryView = () => {
+    console.log(deliveryTime, 'deliveryTime');
     return (
       <View>
         <View style={styles.labelViewStyle}>
           <Text style={styles.labelStyle}>CHECK DELIVERY TIME</Text>
         </View>
-        <View style={[styles.cardStyle, { paddingBottom: 3, paddingTop: 10 }]}>
-          <TextInputComponent placeholder={'Enter Pin Code'} />
+        <View
+          style={[
+            styles.cardStyle,
+            {
+              margin: 20,
+              padding: 0,
+            },
+          ]}
+        >
           <View
             style={{
-              position: 'absolute',
-              right: 16,
-              top: 16,
+              padding: 16,
+              paddingBottom: 3,
+              paddingTop: 10,
             }}
           >
-            <Text style={[theme.viewStyles.yellowTextStyle, { opacity: 0.21 }]}>CHECK</Text>
-          </View>
-          {(!!deliveryTime || true) && (
+            <TextInputComponent
+              placeholder={'Enter Pin Code'}
+              value={pincode}
+              onChangeText={(pincode) => {
+                if (/^\d+$/.test(pincode) || pincode == '') {
+                  setpincode(pincode);
+                  setdeliveryError('');
+                  setdeliveryTime('');
+                }
+              }}
+              maxLength={6}
+              keyboardType="numeric"
+            />
             <View
-              style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10 }}
+              style={{
+                position: 'absolute',
+                right: 16,
+                top: 16,
+              }}
             >
-              <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0)}>Delivery Time</Text>
               <Text
                 style={[
-                  theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0),
-                  { fontWeight: 'bold' },
+                  theme.viewStyles.yellowTextStyle,
+                  { opacity: pincode.length === 6 ? 1 : 0.21 },
                 ]}
+                onPress={() => (pincode.length === 6 ? fetchDeliveryTime() : {})}
+                suppressHighlighting={pincode.length !== 6}
               >
-                By time
+                CHECK
               </Text>
             </View>
-          )}
+            {!!deliveryError && (
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, theme.colors.INPUT_FAILURE_TEXT, 1, 24),
+                  // paddingVertical: 10,
+                }}
+              >
+                {deliveryError}
+              </Text>
+            )}
+            {!!deliveryTime && (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  paddingVertical: 10,
+                }}
+              >
+                <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0)}>
+                  Delivery Time
+                </Text>
+                <Text
+                  style={[
+                    theme.viewStyles.text('M', 14, '#01475b', 1, 24, 0),
+                    { fontWeight: 'bold' },
+                  ]}
+                >
+                  By {moment(deliveryTime.split(' ')[0]).format('Do MMM YYYY')}
+                </Text>
+              </View>
+            )}
+          </View>
+          {showDeliverySpinner && <Spinner style={{ borderRadius: 10 }} />}
         </View>
       </View>
     );
@@ -688,7 +777,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         />
       )}
       {!loading && (
-        <ScrollView bounces={false}>
+        <KeyboardAwareScrollView
+          bounces={false}
+          // keyboardShouldPersistTaps={''}
+          // keyboardDismissMode={'on-drag'}
+          // removeClippedSubviews={false}
+        >
           {renderTopView()}
           {medicineOverview.length > 0 && renderTabs()}
           {renderSubstitutes()}
@@ -711,7 +805,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {renderTitleAndDescriptionList()}
           </View> */}
           <View style={{ height: 130 }} />
-        </ScrollView>
+        </KeyboardAwareScrollView>
       )}
       {!loading && renderBottomButtons()}
     </SafeAreaView>
