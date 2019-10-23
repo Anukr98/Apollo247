@@ -223,13 +223,13 @@ export const Symptoms: React.FC = (props) => {
   const addUpdateSymptom = () => {
     console.log(symptoms);
     let duplicate = false;
-    if (symptoms!.length > 0 && symptom.length > 0) {
-      symptoms!.forEach(
+    if (symptoms && symptom.length > 0) {
+      symptoms.forEach(
         (
           val: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms,
           index: number
         ) => {
-          if (val!.symptom!.trim().toLowerCase() === symptom.trim().toLowerCase()) {
+          if (val.symptom && val.symptom.trim().toLowerCase() === symptom.trim().toLowerCase()) {
             duplicate = isUpdate ? idxValue !== index : true;
           }
         }
