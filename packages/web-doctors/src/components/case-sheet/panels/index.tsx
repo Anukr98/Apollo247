@@ -1,5 +1,6 @@
 import { Symptoms } from './Symptoms';
 import { LifeStyle } from './LifeStyle';
+import { Vital } from './Vital';
 import { HealthVault } from './HealthVault';
 import { DoctorsNotes } from './DoctorsNotes';
 import { Diagnosis } from './Diagnosis';
@@ -9,6 +10,7 @@ import { FollowUp } from './FollowUp';
 import { OtherInstructions } from './OtherInstructions';
 
 export { LifeStyle };
+export { Vital };
 export { Symptoms };
 export { HealthVault };
 export { DoctorsNotes };

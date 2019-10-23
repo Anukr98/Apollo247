@@ -39,7 +39,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const LifeStyle: React.FC = () => {
+export const Vital: React.FC = () => {
   const classes = useStyles();
   const { loading, patientDetails } = useContext(CaseSheetContext);
   return loading && !patientDetails ? (
@@ -60,7 +60,7 @@ export const LifeStyle: React.FC = () => {
             patientDetails!.familyHistory.length > 0 && (
               <Typography className={classes.mainContainer} component="div">
                 <Typography component="h5" variant="h5" className={classes.header}>
-                  Patient’s Past Medical History
+                  Family History
                 </Typography>
                 <Typography component="div" className={classes.content}>
                   <List>
@@ -71,7 +71,7 @@ export const LifeStyle: React.FC = () => {
                           <ListItem key={idx}>
                             <Fragment>
                               <Typography component="p" className={classes.textContent}>
-                                She has been on BP medication for the past 1 year
+                                {item!.relation}: {item!.description}
                               </Typography>
                             </Fragment>
                           </ListItem>
@@ -87,7 +87,7 @@ export const LifeStyle: React.FC = () => {
             patientDetails!.lifeStyle.length > 0 && (
               <Typography component="div">
                 <Typography component="h5" variant="h5" className={classes.header}>
-                  Patient’s Past Surgical History
+                  Lifestyle & Habits
                 </Typography>
                 <Typography component="div" className={classes.content}>
                   <List>
@@ -98,7 +98,7 @@ export const LifeStyle: React.FC = () => {
                           <ListItem key={idx}>
                             <Fragment>
                               <Typography component="p" className={classes.textContent}>
-                                She has been on BP medication for the past 1 year
+                                {item!.description}
                               </Typography>
                             </Fragment>
                           </ListItem>
@@ -108,55 +108,24 @@ export const LifeStyle: React.FC = () => {
                 </Typography>
               </Typography>
             )}
-          <Typography component="div">
-            <Typography component="h5" variant="h5" className={classes.header}>
-              Drug Allergies
+          {patientDetails && patientDetails!.allergies && patientDetails!.allergies !== null && (
+            <Typography component="div">
+              <Typography component="h5" variant="h5" className={classes.header}>
+                Allergies
+              </Typography>
+              <Typography component="div" className={classes.content}>
+                <List>
+                  <ListItem>
+                    <Fragment>
+                      <Typography component="p" className={classes.textContent}>
+                        {patientDetails!.allergies}
+                      </Typography>
+                    </Fragment>
+                  </ListItem>
+                </List>
+              </Typography>
             </Typography>
-            <Typography component="div" className={classes.content}>
-              <List>
-                <ListItem>
-                  <Fragment>
-                    <Typography component="p" className={classes.textContent}>
-                      None
-                    </Typography>
-                  </Fragment>
-                </ListItem>
-              </List>
-            </Typography>
-          </Typography>
-          <Typography component="div">
-            <Typography component="h5" variant="h5" className={classes.header}>
-              Diet Allergies/Restrictions
-            </Typography>
-            <Typography component="div" className={classes.content}>
-              <List>
-                <ListItem>
-                  <Fragment>
-                    <Typography component="p" className={classes.textContent}>
-                      None
-                    </Typography>
-                  </Fragment>
-                </ListItem>
-              </List>
-            </Typography>
-          </Typography>
-          <Typography component="div">
-            <Typography component="h5" variant="h5" className={classes.header}>
-              Lifestyle & Habits
-            </Typography>
-            <Typography component="div" className={classes.content}>
-              <List>
-                <ListItem>
-                  <Fragment>
-                    <Typography component="p" className={classes.textContent}>
-                      Patient doesn’t smoke, recovered from chickenpox 6 months ago + occupational
-                      history
-                    </Typography>
-                  </Fragment>
-                </ListItem>
-              </List>
-            </Typography>
-          </Typography>
+          )}
         </div>
       ) : (
         <span>No data Found</span>
