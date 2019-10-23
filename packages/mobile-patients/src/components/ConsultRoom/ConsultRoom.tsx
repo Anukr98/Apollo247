@@ -222,14 +222,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   });
 
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      Linking.getInitialURL().then((url) => {
-        // this.navigate(url);
-      });
-    } else {
-      console.log('linking');
-      Linking.addEventListener('url', handleOpenURL);
-    }
+    try {
+      if (Platform.OS === 'android') {
+        Linking.getInitialURL().then((url) => {
+          // this.navigate(url);
+        });
+      } else {
+        console.log('linking');
+        Linking.addEventListener('url', handleOpenURL);
+      }
+    } catch (error) {}
   }, []);
 
   const handleOpenURL = (event: any) => {

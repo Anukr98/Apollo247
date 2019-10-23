@@ -24,14 +24,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      Linking.getInitialURL().then((url) => {
-        // this.navigate(url);
-      });
-    } else {
-      console.log('linking');
-      Linking.addEventListener('url', handleOpenURL);
-    }
+    try {
+      if (Platform.OS === 'android') {
+        Linking.getInitialURL().then((url) => {
+          // this.navigate(url);
+        });
+      } else {
+        console.log('linking');
+        Linking.addEventListener('url', handleOpenURL);
+      }
+    } catch (error) {}
   }, []);
 
   const handleOpenURL = (event: any) => {
