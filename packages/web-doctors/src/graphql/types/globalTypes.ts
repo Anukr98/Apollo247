@@ -143,9 +143,57 @@ export interface CreateAppointmentSessionInput {
   requestRole: REQUEST_ROLES;
 }
 
+export interface DiagnosisInput {
+  name?: string | null;
+}
+
+export interface DiagnosticPrescriptionInput {
+  itemname?: string | null;
+}
+
 export interface EndAppointmentSessionInput {
   appointmentId: string;
   status: STATUS;
+}
+
+export interface MedicinePrescriptionInput {
+  medicineConsumptionDurationInDays?: string | null;
+  medicineDosage?: string | null;
+  medicineUnit?: MEDICINE_UNIT | null;
+  medicineInstructions?: string | null;
+  medicineTimings?: (MEDICINE_TIMINGS | null)[] | null;
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineName?: string | null;
+  id?: string | null;
+}
+
+export interface ModifyCaseSheetInput {
+  symptoms?: (SymptomInput | null)[] | null;
+  notes?: string | null;
+  diagnosis?: (DiagnosisInput | null)[] | null;
+  diagnosticPrescription?: (DiagnosticPrescriptionInput | null)[] | null;
+  followUp?: boolean | null;
+  followUpDate?: any | null;
+  followUpAfterInDays?: number | null;
+  otherInstructions?: (OtherInstructionsInput | null)[] | null;
+  medicinePrescription?: (MedicinePrescriptionInput | null)[] | null;
+  id: string;
+  status?: CASESHEET_STATUS | null;
+  lifeStyle?: string | null;
+  familyHistory?: string | null;
+  dietAllergies?: string | null;
+  drugAllergies?: string | null;
+  height?: string | null;
+  menstrualHistory?: string | null;
+  pastMedicalHistory?: string | null;
+  pastSurgicalHistory?: string | null;
+  temperature?: string | null;
+  weight?: string | null;
+  bp?: string | null;
+}
+
+export interface OtherInstructionsInput {
+  instruction?: string | null;
 }
 
 export interface PatientFamilyHistoryInput {
@@ -166,6 +214,13 @@ export interface RescheduleAppointmentInput {
   rescheduleInitiatedId: string;
   rescheduledDateTime?: any | null;
   autoSelectSlot?: number | null;
+}
+
+export interface SymptomInput {
+  symptom?: string | null;
+  since?: string | null;
+  howOften?: string | null;
+  severity?: string | null;
 }
 
 export interface TransferAppointmentInput {

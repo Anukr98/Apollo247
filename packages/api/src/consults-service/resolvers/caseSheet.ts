@@ -11,6 +11,7 @@ import {
   CaseSheetSymptom,
   CaseSheetDiagnosisPrescription,
   CaseSheetOtherInstruction,
+  APPOINTMENT_TYPE,
 } from 'consults-service/entities';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
@@ -331,15 +332,16 @@ export const caseSheetTypeDefs = gql`
   }
 
   input ModifyCaseSheetInput {
-    symptoms: [SymptomInput]
+    symptoms: [SymptomInput!]
     notes: String
-    diagnosis: [DiagnosisInput]
-    diagnosticPrescription: [DiagnosticPrescriptionInput]
+    diagnosis: [DiagnosisInput!]
+    diagnosticPrescription: [DiagnosticPrescriptionInput!]
     followUp: Boolean
     followUpDate: Date
     followUpAfterInDays: Int
-    otherInstructions: [OtherInstructionsInput]
-    medicinePrescription: [MedicinePrescriptionInput]
+    followUpConsultType: APPOINTMENT_TYPE
+    otherInstructions: [OtherInstructionsInput!]
+    medicinePrescription: [MedicinePrescriptionInput!]
     id: String!
     status: CASESHEET_STATUS
     lifeStyle: String
@@ -355,9 +357,17 @@ export const caseSheetTypeDefs = gql`
     bp: String
   }
 
+  type PatientPrescriptionSentResponse {
+    success: Boolean
+  }
+
   extend type Mutation {
     updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
     modifyCaseSheet(ModifyCaseSheetInput: ModifyCaseSheetInput): CaseSheet
+    updatePatientPrescriptionSentStatus(
+      caseSheetId: ID!
+      sentToPatient: Boolean!
+    ): PatientPrescriptionSentResponse
     createJuniorDoctorCaseSheet(appointmentId: String): CaseSheet
     createSeniorDoctorCaseSheet(appointmentId: String): CaseSheet
   }
@@ -480,6 +490,10 @@ type UpdateCaseSheetInput = {
 
 type UpdateCaseSheetInputArgs = { UpdateCaseSheetInput: UpdateCaseSheetInput };
 
+type PatientPrescriptionSentResponse = {
+  success: boolean;
+};
+
 const updateCaseSheet: Resolver<
   null,
   UpdateCaseSheetInputArgs,
@@ -515,13 +529,17 @@ const updateCaseSheet: Resolver<
   getCaseSheetData.followUpAfterInDays = followUpAfterInDays;
   getCaseSheetData.status = inputArguments.status;
 
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientData = await patientRepo.findById(getCaseSheetData.patientId);
+  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
   //convert casesheet to prescription
   const client = new AphStorageClient(
     process.env.AZURE_STORAGE_CONNECTION_STRING_API,
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
 
-  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientsDb);
+  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
   const pdfDocument = generateRxPdfDocument(rxPdfData);
   const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
   if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
@@ -541,6 +559,7 @@ type ModifyCaseSheetInput = {
   followUp: boolean;
   followUpDate: Date;
   followUpAfterInDays: number;
+  followUpConsultType: APPOINTMENT_TYPE;
   otherInstructions: CaseSheetOtherInstruction[];
   medicinePrescription: CaseSheetMedicinePrescription[];
   id: string;
@@ -623,6 +642,10 @@ const modifyCaseSheet: Resolver<
 
   if (!(inputArguments.followUpAfterInDays === undefined)) {
     getCaseSheetData.followUpAfterInDays = inputArguments.followUpAfterInDays;
+  }
+
+  if (!(inputArguments.followUpConsultType === undefined)) {
+    getCaseSheetData.followUpConsultType = inputArguments.followUpConsultType;
   }
 
   if (!(inputArguments.status === undefined)) {
@@ -741,7 +764,7 @@ const modifyCaseSheet: Resolver<
     process.env.AZURE_STORAGE_CONTAINER_NAME
   );
 
-  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientsDb);
+  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
   const pdfDocument = generateRxPdfDocument(rxPdfData);
   const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
   if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
@@ -861,6 +884,28 @@ const createSeniorDoctorCaseSheet: Resolver<
   return caseSheetDetails;
 };
 
+const updatePatientPrescriptionSentStatus: Resolver<
+  null,
+  { caseSheetId: string; sentToPatient: boolean },
+  ConsultServiceContext,
+  PatientPrescriptionSentResponse
+> = async (parent, args, { mobileNumber, consultsDb, doctorsDb }) => {
+  //validate is active Doctor
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //validate casesheetid
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const getCaseSheetData = await caseSheetRepo.getCaseSheetById(args.caseSheetId);
+  if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
+
+  const caseSheetAttrs: Partial<CaseSheet> = { sentToPatient: args.sentToPatient };
+  await caseSheetRepo.updateCaseSheet(args.caseSheetId, caseSheetAttrs);
+
+  return { success: true };
+};
+
 export const caseSheetResolvers = {
   Appointment: {
     doctorInfo(appointments: Appointment) {
@@ -875,6 +920,7 @@ export const caseSheetResolvers = {
   Mutation: {
     updateCaseSheet,
     modifyCaseSheet,
+    updatePatientPrescriptionSentStatus,
     createJuniorDoctorCaseSheet,
     createSeniorDoctorCaseSheet,
   },

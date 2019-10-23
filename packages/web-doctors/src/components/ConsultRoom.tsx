@@ -258,7 +258,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
       '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
       '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-        '(\\#[-a-z\\d_]*)?$',
+      '(\\#[-a-z\\d_]*)?$',
       'i'
     ); // fragment locator
     return pattern.test(str);
@@ -274,10 +274,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       withPresence: true,
     });
 
-    getHistory();
+    getHistory(0);
 
     pubnub.addListener({
-      status: (statusEvent) => {},
+      status: (statusEvent) => { },
       message: (message) => {
         insertText[insertText.length] = message.message;
         console.log(message.message);
@@ -301,7 +301,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         }
         srollToBottomAction();
         resetMessagesAction();
-        getHistory();
+        //getHistory(0);
       },
     });
     return function cleanup() {
@@ -309,18 +309,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     };
   }, []);
 
-  const getHistory = () => {
-    pubnub.history({ channel: channel, reverse: true, count: 1000 }, (status, res) => {
-      const newmessage: MessagesObjectProps[] = [];
-      res.messages.forEach((element, index) => {
-        newmessage[index] = element.entry;
-      });
-      insertText = newmessage;
-      if (messages.length !== newmessage.length) {
+  const getHistory = (timetoken: number) => {
+    pubnub.history(
+      {
+        channel: channel,
+        reverse: true,
+        count: 1000,
+        stringifiedTimeToken: true,
+        start: timetoken,
+      },
+      (status, res) => {
+        const newmessage: MessagesObjectProps[] = messages;
+        console.log(newmessage);
+        res.messages.forEach((element, index) => {
+          //newmessage[index] = element.entry;
+          newmessage.push(element.entry);
+        });
+        insertText = newmessage;
+        //if (messages.length !== newmessage.length) {
         setMessages(newmessage);
+        //}
+        const end: number = res.endTimeToken ? res.endTimeToken : 1;
+        if (res.messages.length == 100) {
+          getHistory(end);
+        }
+        resetMessagesAction();
+        srollToBottomAction();
       }
-      srollToBottomAction();
-    });
+    );
   };
 
   const send = () => {
@@ -393,10 +409,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              <div>
-                <span>{getAutomatedMessage(rowData)}</span>
-              </div>
-            )}
+                  <div>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                  </div>
+                )}
           </div>
         </div>
       );
@@ -442,22 +458,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              <div>
-                {rowData.message === documentUpload ? (
-                  <div style={{ width: '200px', height: 'auto' }}>
-                    <a href={rowData.url} target="_blank">
-                      <img
-                        style={{ width: '200px', height: 'auto' }}
-                        src={rowData.url}
-                        alt={rowData.url}
-                      />
-                    </a>
+                  <div>
+                    {rowData.message === documentUpload ? (
+                      <div style={{ width: '200px', height: 'auto' }}>
+                        <a href={rowData.url} target="_blank">
+                          <img
+                            style={{ width: '200px', height: 'auto' }}
+                            src={rowData.url}
+                            alt={rowData.url}
+                          />
+                        </a>
+                      </div>
+                    ) : (
+                        <span>{getAutomatedMessage(rowData)}</span>
+                      )}
                   </div>
-                ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -491,22 +507,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              <div>
-                {rowData.message === documentUpload ? (
-                  <div style={{ width: '200px', height: 'auto' }}>
-                    <a href={rowData.url} target="_blank">
-                      <img
-                        style={{ width: '200px', height: 'auto' }}
-                        src={rowData.url}
-                        alt={rowData.url}
-                      />
-                    </a>
+                  <div>
+                    {rowData.message === documentUpload ? (
+                      <div style={{ width: '200px', height: 'auto' }}>
+                        <a href={rowData.url} target="_blank">
+                          <img
+                            style={{ width: '200px', height: 'auto' }}
+                            src={rowData.url}
+                            alt={rowData.url}
+                          />
+                        </a>
+                      </div>
+                    ) : (
+                        <span>{getAutomatedMessage(rowData)}</span>
+                      )}
                   </div>
-                ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -518,8 +534,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-        })
+        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+      })
       : '';
   const toggelChatVideo = () => {
     setIsNewMsg(false);
@@ -556,7 +572,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
     };
     pubnub.publish(
@@ -613,7 +629,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           channel: channel,
           storeInHistory: false,
         },
-        (status, response) => {}
+        (status, response) => { }
       );
     }, 10);
   };

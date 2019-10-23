@@ -69,20 +69,10 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   notes: string | null;
 }
 
-export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_lifeStyle {
-  __typename: "PatientLifeStyle";
-  description: string | null;
-}
-
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_familyHistory {
   __typename: "PatientFamilyHistory";
   description: string | null;
   relation: string | null;
-}
-
-export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_patientAddress {
-  __typename: "Address";
-  city: string | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_healthVault {
@@ -91,23 +81,47 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetail
   reportUrls: string | null;
 }
 
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_lifeStyle {
+  __typename: "PatientLifeStyle";
+  description: string | null;
+}
+
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_patientAddress {
+  __typename: "Address";
+  city: string | null;
+}
+
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_patientMedicalHistory {
+  __typename: "PatientMedicalHistory";
+  bp: string | null;
+  dietAllergies: string | null;
+  drugAllergies: string | null;
+  height: string | null;
+  menstrualHistory: string | null;
+  pastMedicalHistory: string | null;
+  pastSurgicalHistory: string | null;
+  temperature: string | null;
+  weight: string | null;
+}
+
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails {
   __typename: "PatientDetails";
-  id: string;
   allergies: string | null;
-  lifeStyle: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_lifeStyle | null)[] | null;
-  familyHistory: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_familyHistory | null)[] | null;
-  patientAddress: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_patientAddress | null)[] | null;
   dateOfBirth: any | null;
   emailAddress: string | null;
   firstName: string | null;
-  lastName: string | null;
+  familyHistory: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_familyHistory | null)[] | null;
   gender: Gender | null;
-  mobileNumber: string | null;
-  uhid: string | null;
-  photoUrl: string | null;
-  relation: Relation | null;
   healthVault: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_healthVault | null)[] | null;
+  id: string;
+  lastName: string | null;
+  lifeStyle: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_lifeStyle | null)[] | null;
+  mobileNumber: string | null;
+  patientAddress: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_patientAddress | null)[] | null;
+  patientMedicalHistory: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_patientMedicalHistory | null;
+  photoUrl: string | null;
+  uhid: string | null;
+  relation: Relation | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosis {

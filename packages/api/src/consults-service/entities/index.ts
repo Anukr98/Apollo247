@@ -367,7 +367,7 @@ export type CaseSheetMedicinePrescription = {
   medicineName: string;
 };
 export type CaseSheetDiagnosis = { name: string };
-export type CaseSheetDiagnosisPrescription = { name: string };
+export type CaseSheetDiagnosisPrescription = { itemname: string };
 export type CaseSheetOtherInstruction = { instruction: string };
 export type CaseSheetSymptom = {
   symptom: string;
@@ -413,6 +413,9 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ nullable: true })
   followUpDate: Date;
+
+  @Column({ nullable: true })
+  followUpConsultType: APPOINTMENT_TYPE;
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -580,20 +583,15 @@ export interface RxPdfData {
     frequency: string;
     instructions?: string;
   }[];
-  generalAdvice: {
-    title: string;
-    description: string[];
-  }[];
-  diagnoses: {
-    title: string;
-    description: string;
-  }[];
+  generalAdvice: CaseSheetOtherInstruction[];
+  diagnoses: CaseSheetDiagnosis[];
   doctorInfo: {
     salutation: string;
     firstName: string;
     lastName: string;
     qualifications: string;
     registrationNumber: string;
+    specialty: string;
   };
   hospitalAddress: {
     name: string;
@@ -611,5 +609,10 @@ export interface RxPdfData {
     uhid: string;
     age: string;
   };
+  vitals: { height: string; weight: string; temperature: string; bp: string };
+  appointmentDetails: { displayId: string; consultDate: string; consultType: string };
+  diagnosesTests: CaseSheetDiagnosisPrescription[];
+  caseSheetSymptoms: CaseSheetSymptom[];
+  followUpDetails: string;
 }
 ///////////////////////////////////////////////////////////
