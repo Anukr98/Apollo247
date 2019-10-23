@@ -253,7 +253,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         id: sku,
         mou,
         name,
-        price: special_price || price,
+        price: special_price
+          ? typeof special_price == 'string'
+            ? parseInt(special_price)
+            : special_price
+          : price,
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
         thumbnail,
@@ -559,6 +563,12 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       index == array.length - 1 ? { marginBottom: 20 } : {},
     ];
     const foundMedicineInCart = cartItems.find((item) => item.id == medicine.sku);
+    const price = medicine.special_price
+      ? typeof medicine.special_price == 'string'
+        ? parseInt(medicine.special_price)
+        : medicine.special_price
+      : medicine.price;
+
     return (
       <MedicineCard
         containerStyle={[medicineCardContainerStyle, {}]}
@@ -577,7 +587,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             ? `${medicine.thumbnail}`
             : ''
         }
-        price={medicine.special_price || medicine.price}
+        price={price}
         unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
         onPressAdd={() => {
           onAddCartItem(medicine);

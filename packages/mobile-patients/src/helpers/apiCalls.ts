@@ -6,12 +6,12 @@ export interface MedicineProduct {
   id: number;
   image: string | null;
   is_in_stock: boolean;
-  is_prescription_required: string; //1 for required
+  is_prescription_required: '0' | '1'; //1 for required
   name: string;
   price: number;
-  special_price: number;
+  special_price: number | string;
   sku: string;
-  small_image: string | null;
+  small_image?: string | null;
   status: number;
   thumbnail: string | null;
   type_id: string;
@@ -59,6 +59,7 @@ export interface Store {
   state: string;
   message: string;
 }
+
 export interface GetDeliveryTimeResponse {
   tat: {
     artCode: string;
@@ -83,16 +84,15 @@ interface InventoryCheckApiResponse {
   };
 }
 
-type CityOptions =
-  | 'hyderabad'
-  | 'bengaluru'
-  | 'chennai'
-  | 'delhi'
-  | 'kolkata'
-  | 'mumbai'
-  | 'vijaywada'
-  | 'ahmedabad'
-  | 'all';
+interface OfferBannerResponse {
+  mainbanners: {
+    name: string;
+    status: '0' | '1';
+    image: string; // full url
+    start_time: string; // '2019-02-10 01:21:00';
+    end_time: string;
+  }[];
+}
 
 type GooglePlacesType =
   | 'postal_code'
@@ -100,6 +100,10 @@ type GooglePlacesType =
   | 'administrative_area_level_2'
   | 'administrative_area_level_1'
   | 'country';
+
+export enum ProductCategory {
+  HOT_SELLERS = '1174',
+}
 
 interface PlacesApiResponse {
   results: {
@@ -112,6 +116,17 @@ interface PlacesApiResponse {
 }
 
 /*
+type CityOptions =
+  | 'hyderabad'
+  | 'bengaluru'
+  | 'chennai'
+  | 'delhi'
+  | 'kolkata'
+  | 'mumbai'
+  | 'vijaywada'
+  | 'ahmedabad'
+  | 'all';
+
 export interface CartItem extends Partial<MedicineProduct> {
   item_id: number;
   sku: string;
@@ -372,15 +387,15 @@ export const inventoryCheckApi = (
   );
 };
 
-export const getPopularProductsBasedOnCityApi = (
-  city: CityOptions
-): Promise<AxiosResponse<InventoryCheckApiResponse>> => {
-  return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
-};
+// export const getPopularProductsBasedOnCityApi = (
+//   city: CityOptions
+// ): Promise<AxiosResponse<any>> => {
+//   return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
+// };
 
 let cancelSearchSuggestionsApi: any;
 
-export const medicineSearchSuggestionsApi = (
+export const getMedicineSearchSuggestionsApi = (
   params: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
@@ -399,6 +414,27 @@ export const medicineSearchSuggestionsApi = (
         // An executor function receives a cancel function as a parameter
         cancelSearchSuggestionsApi = c;
       }),
+    }
+  );
+};
+
+export const getProductsByCategoryApi = (
+  categoryId: ProductCategory,
+  pageId: number = 1
+): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  return Axios.get(
+    `${config.PRODUCTS_BY_CATEGORY[0]}?category_id=${categoryId}&page_id=${pageId}&type=category`
+  );
+};
+
+export const getOfferBanner = (): Promise<AxiosResponse<OfferBannerResponse>> => {
+  return Axios.post(
+    `${config.OFFER_BANNER[0]}`,
+    {},
+    {
+      headers: {
+        Authorization: config.OFFER_BANNER[1],
+      },
     }
   );
 };

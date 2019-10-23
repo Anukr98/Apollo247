@@ -20,10 +20,13 @@ import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHe
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   Doseform,
+  getMedicineSearchSuggestionsApi,
+  getProductsByCategoryApi,
   MedicineProduct,
-  medicineSearchSuggestionsApi,
+  ProductCategory,
+  getOfferBanner,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { g, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
@@ -43,6 +46,7 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { useFetch } from '../../hooks/fetchHook';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -60,6 +64,10 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansBold(9),
     color: theme.colors.WHITE,
   },
+  imagePlaceholderStyle: {
+    backgroundColor: '#f0f1ec',
+    borderRadius: 5,
+  },
 });
 
 export interface MedicineProps extends NavigationScreenProps {}
@@ -67,9 +75,28 @@ export interface MedicineProps extends NavigationScreenProps {}
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
-
-  const { cartItems } = useShoppingCart();
+  const config = AppConfig.Configuration;
+  const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
   const cartItemsCount = cartItems.length;
+
+  // Hot Sellers Api Call
+  const { data: hotSellers, loading: hsLoading, error: hsError } = useFetch(() =>
+    getProductsByCategoryApi(ProductCategory.HOT_SELLERS)
+  );
+  const _hotSellers = (!hsLoading && !hsError && g(hotSellers, 'data', 'products')) || [];
+
+  // Offer Banner Api Call
+  const { data: offerBanner, loading: obLoading, error: obError } = useFetch(() =>
+    getOfferBanner()
+  );
+  const _offerBanner = ((!obLoading && !obError && g(offerBanner, 'data', 'mainbanners')) || [])[0];
+  const _offerBannerImage = g(_offerBanner, 'image');
+
+  // Common Views
+
+  const renderSectionLoader = (height: number = 100) => {
+    return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
+  };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
     return (
@@ -163,20 +190,23 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderOfferBanner = () => {
     const [imgHeight, setImgHeight] = useState(120);
-    const uri = 'https://via.placeholder.com/360X120';
-    return (
-      <Image
-        PlaceholderContent={<Spinner />}
-        onLoad={(value) => {
-          const { width: winWidth } = Dimensions.get('window');
-          const { height, width } = value.nativeEvent.source;
-          setImgHeight(height * (winWidth / width));
-        }}
-        style={{ width: '100%', minHeight: imgHeight }}
-        containerStyle={{ paddingBottom: 20 }}
-        source={{ uri }}
-      />
-    );
+    if (obLoading) return renderSectionLoader;
+    else if (!obLoading && !obError && _offerBannerImage)
+      return (
+        <Image
+          PlaceholderContent={renderSectionLoader(imgHeight)}
+          placeholderStyle={styles.imagePlaceholderStyle}
+          onLoad={(value) => {
+            const { width: winWidth } = Dimensions.get('window');
+            const { height, width } = value.nativeEvent.source;
+            setImgHeight(height * (winWidth / width));
+          }}
+          style={{ width: '100%', minHeight: imgHeight }}
+          containerStyle={{ paddingBottom: 20 }}
+          source={{ uri: _offerBannerImage }}
+        />
+      );
+    else return <View style={{ height: 20 }} />;
   };
 
   const uploadPrescriptionCTA = () => {
@@ -402,40 +432,140 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const hotSellersData = [
-    {
-      text: 'Similac IQ+ Stage 1 400gm Tin',
-      imgUrl: 'https://via.placeholder.com/68x68',
-      discount: 30,
-      price: 650,
-    },
-  ];
+  const hotSellerCard = (data: {
+    name: string;
+    imgUrl: string;
+    price: number;
+    specialPrice?: number;
+    isAddedToCart: boolean;
+    onAddOrRemoveCartItem: () => void;
+  }) => {
+    const { name, imgUrl, price, specialPrice } = data;
+
+    const renderDiscountedPrice = () => {
+      const styles = StyleSheet.create({
+        discountedPriceText: {
+          ...theme.viewStyles.text('M', 14, '#01475b', 0.6, 24),
+          textAlign: 'center',
+        },
+        priceText: {
+          ...theme.viewStyles.text('B', 14, '#01475b', 1, 24),
+          textAlign: 'center',
+        },
+      });
+      return (
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          {!!specialPrice && (
+            <Text style={[styles.discountedPriceText, { marginRight: 4 }]}>
+              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {specialPrice}</Text>)
+            </Text>
+          )}
+          <Text style={styles.priceText}>Rs. {price}</Text>
+        </View>
+      );
+    };
+
+    return (
+      <View
+        style={{
+          ...theme.viewStyles.card(12, 0),
+          height: 232,
+          width: 152,
+          marginRight: 8,
+          alignItems: 'center',
+        }}
+      >
+        <Image
+          placeholderStyle={{ backgroundColor: '#f0f1ec', borderRadius: 5 }}
+          source={{ uri: imgUrl }}
+          style={{ height: 68, width: 68, marginBottom: 8 }}
+        />
+        <View style={{ height: 67.5 }}>
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 14, '#01475b', 1, 20),
+              textAlign: 'center',
+            }}
+            numberOfLines={3}
+          >
+            {name}
+          </Text>
+        </View>
+        <Spearator style={{ marginBottom: 7.5 }} />
+        {renderDiscountedPrice()}
+        <Text
+          style={{
+            ...theme.viewStyles.text('B', 13, '#fc9916', data.isAddedToCart ? 0.5 : 1, 24),
+            textAlign: 'center',
+          }}
+          onPress={data.onAddOrRemoveCartItem}
+        >
+          {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderHotSellerItem = (data: ListRenderItemInfo<MedicineProduct>) => {
+    const {
+      sku,
+      is_prescription_required,
+      name,
+      mou,
+      special_price,
+      price,
+      image,
+      thumbnail,
+    } = data.item;
+    const addToCart = () =>
+      addCartItem!({
+        id: sku,
+        mou: mou,
+        name: name,
+        price: specialPrice,
+        prescriptionRequired: is_prescription_required == '1',
+        quantity: 1,
+        thumbnail,
+      });
+    const removeFromCart = () => removeCartItem!(sku);
+    const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
+    const specialPrice = special_price
+      ? typeof special_price == 'string'
+        ? parseInt(special_price)
+        : special_price
+      : price;
+
+    return hotSellerCard({
+      name,
+      imgUrl: `${config.IMAGES_BASE_URL}${image}`,
+      price,
+      specialPrice: specialPrice == price ? undefined : price,
+      isAddedToCart: foundMedicineInCart,
+      onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
+    });
+  };
 
   const renderHotSellers = () => {
     return (
       <View>
         <SectionHeader leftText={'HOT SELLERS'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          contentContainerStyle={{
-            paddingTop: 16,
-            paddingBottom: 20,
-            paddingLeft: 20,
-          }}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={[...hotSellersData, ...hotSellersData, ...hotSellersData, ...hotSellersData]}
-          renderItem={({ item }) => {
-            return hotSellerCard({
-              name: item.text,
-              imgUrl: item.imgUrl,
-              price: item.price,
-              discount: item.discount,
-              onAddToCart: () => props.navigation.navigate(AppRoutes.SearchMedicineScene),
-            });
-          }}
-        />
+        {hsLoading ? (
+          renderSectionLoader()
+        ) : (
+          <FlatList
+            bounces={false}
+            keyExtractor={(_, index) => `${index}`}
+            contentContainerStyle={{
+              paddingTop: 16,
+              paddingBottom: 20,
+              paddingLeft: 20,
+            }}
+            showsHorizontalScrollIndicator={false}
+            horizontal
+            data={_hotSellers}
+            renderItem={renderHotSellerItem}
+          />
+        )}
       </View>
     );
   };
@@ -501,76 +631,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const hotSellerCard = (data: {
-    name: string;
-    imgUrl: string;
-    price: number;
-    discount?: number;
-    onAddToCart: () => void;
-  }) => {
-    const { name, imgUrl, price, discount } = data;
-
-    const renderDiscountedPrice = () => {
-      const styles = StyleSheet.create({
-        discountedPriceText: {
-          ...theme.viewStyles.text('M', 14, '#01475b', 0.6, 24),
-          textAlign: 'center',
-        },
-        priceText: {
-          ...theme.viewStyles.text('B', 14, '#01475b', 1, 24),
-          textAlign: 'center',
-        },
-      });
-      return (
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          {!!discount && (
-            <Text style={[styles.discountedPriceText, { marginRight: 4 }]}>
-              (
-              <Text style={[{ textDecorationLine: 'line-through' }]}>
-                Rs. {(discount / 100) * price}
-              </Text>
-              )
-            </Text>
-          )}
-          <Text style={styles.priceText}>Rs. {price}</Text>
-        </View>
-      );
-    };
-
-    return (
-      <View
-        style={{
-          ...theme.viewStyles.card(12, 0),
-          height: 232,
-          width: 152,
-          marginRight: 8,
-          alignItems: 'center',
-        }}
-      >
-        <Image source={{ uri: imgUrl }} style={{ height: 68, width: 68, marginBottom: 8 }} />
-        <Text
-          style={{
-            ...theme.viewStyles.text('M', 14, '#01475b', 1, 20),
-            textAlign: 'center',
-          }}
-        >
-          {name}
-        </Text>
-        <Spearator style={{ marginBottom: 7.5 }} />
-        {renderDiscountedPrice()}
-        <Text
-          style={{
-            ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
-            textAlign: 'center',
-          }}
-          onPress={() => {}}
-        >
-          {'ADD TO CART'}
-        </Text>
-      </View>
-    );
-  };
-
   const renderNeedHelp = () => {
     return (
       <NeedHelpAssistant
@@ -593,7 +653,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       return;
     }
     setIsLoading(true);
-    medicineSearchSuggestionsApi(_searchText)
+    getMedicineSearchSuggestionsApi(_searchText)
       .then(({ data }) => {
         aphConsole.log({ data });
         const products = data.products || [];
@@ -621,7 +681,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   }
 
   const renderSearchSuggestionItem = (data: SuggestionType) => {
-    const styles = StyleSheet.create({
+    const localStyles = StyleSheet.create({
       containerStyle: {
         ...data.style,
       },
@@ -641,7 +701,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderNamePriceAndInStockStatus = () => {
       return (
-        <View style={styles.nameAndPriceViewStyle}>
+        <View style={localStyles.nameAndPriceViewStyle}>
           <Text
             numberOfLines={1}
             style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}
@@ -663,9 +723,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     const renderIconOrImage = () => {
       return (
-        <View style={styles.iconOrImageContainerStyle}>
+        <View style={localStyles.iconOrImageContainerStyle}>
           {data.imgUri ? (
             <Image
+              placeholderStyle={styles.imagePlaceholderStyle}
               source={{ uri: data.imgUri }}
               style={{ height: 40, width: 40 }}
               resizeMode="contain"
@@ -685,8 +746,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
     return (
       <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
-        <View style={styles.containerStyle} key={data.name}>
-          <View style={styles.iconAndDetailsContainerStyle}>
+        <View style={localStyles.containerStyle} key={data.name}>
+          <View style={localStyles.iconAndDetailsContainerStyle}>
             {renderIconOrImage()}
             <View style={{ width: 16 }} />
             {renderNamePriceAndInStockStatus()}
@@ -757,9 +818,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderSearchSuggestionItemView = (data: ListRenderItemInfo<MedicineProduct>) => {
     const { index, item } = data;
-    const imgUri = item.thumbnail
-      ? `${AppConfig.Configuration.IMAGES_BASE_URL}${item.thumbnail}`
-      : '';
+    const imgUri = item.thumbnail ? `${config.IMAGES_BASE_URL}${item.thumbnail}` : '';
     return renderSearchSuggestionItem({
       onPress: () =>
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {

@@ -253,11 +253,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderMedicineIcon = () => {
     aphConsole.log({ imageUrl });
     return (
-      <View style={{ width: 40, marginRight: 12 }}>
+      <View style={{ width: 40, marginRight: 12, alignItems: 'center' }}>
         {imageUrl ? (
           <Image
             PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
-            placeholderStyle={{ backgroundColor: 'transparent', alignSelf: 'flex-start' }}
+            placeholderStyle={{ backgroundColor: 'transparent' }}
             source={{ uri: imageUrl }}
             style={{ height: 40, width: 40 }}
             resizeMode="contain"

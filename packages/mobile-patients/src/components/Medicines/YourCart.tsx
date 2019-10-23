@@ -2,7 +2,7 @@ import {
   uploadFile,
   uploadFileVariables,
 } from '@aph/mobile-patients/src//graphql/types/uploadFile';
-import { handleGraphQlError, aphConsole } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { aphConsole, handleGraphQlError } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -30,6 +30,7 @@ import {
   searchPickupStoresApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -258,6 +259,13 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             index == 0 ? { marginTop: 20 } : {},
             index == array.length - 1 ? { marginBottom: 20 } : {},
           ];
+          const imageUrl =
+            medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
+              ? medicine.thumbnail.startsWith('http')
+                ? medicine.thumbnail
+                : `${AppConfig.Configuration.IMAGES_BASE_URL}${medicine.thumbnail}`
+              : '';
+
           return (
             <MedicineCard
               // personName={
@@ -274,11 +282,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               medicineName={medicine.name!}
               price={medicine.price!}
               unit={medicine.quantity}
-              imageUrl={
-                medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
-                  ? `${medicine.thumbnail}`
-                  : ''
-              }
+              imageUrl={imageUrl}
               onPressAdd={() => {}}
               onPressRemove={() => {
                 onRemoveCartItem(medicine);
