@@ -245,7 +245,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fillColor('#02475b')
       .text('')
-      .moveDown(0.5);
+      .moveDown(0.01);
     return doc;
   };
 
