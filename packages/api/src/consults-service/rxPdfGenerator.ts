@@ -41,11 +41,27 @@ export const convertCaseSheetToRxPdfData = async (
     prescriptions = [];
   } else {
     prescriptions = caseSheetMedicinePrescription.map((csRx) => {
-      const name = csRx.medicineName;
+      const name = _capitalize(csRx.medicineName);
       const ingredients = [] as string[];
-      const timings = csRx.medicineTimings.map(_capitalize).join(', ');
-      const medicineUnit = csRx.medicineUnit === undefined ? '' : csRx.medicineUnit.toLowerCase();
-      const frequency = `${csRx.medicineDosage} ${medicineUnit} (${timings}) for ${csRx.medicineConsumptionDurationInDays} days`;
+      const timings =
+        csRx.medicineTimings !== undefined
+          ? '(' + csRx.medicineTimings.map(_capitalize).join(', ') + ')'
+          : '';
+
+      const medicineUnit =
+        csRx.medicineUnit === undefined || csRx.medicineUnit === 'NA'
+          ? ''
+          : csRx.medicineUnit.toLowerCase();
+      let frequency = `${csRx.medicineDosage} ${medicineUnit} ${timings} for ${csRx.medicineConsumptionDurationInDays} days`;
+      if (csRx.medicineToBeTaken !== undefined && csRx.medicineToBeTaken.length > 0)
+        frequency =
+          frequency +
+          '; ' +
+          csRx.medicineToBeTaken
+            .map(_capitalize)
+            .join(', ')
+            .split('_')
+            .join(' ');
       const instructions = csRx.medicineInstructions;
       return { name, ingredients, frequency, instructions } as PrescriptionData;
     });
@@ -178,8 +194,8 @@ export const convertCaseSheetToRxPdfData = async (
   if (caseSheet.appointment) {
     appointmentDetails = {
       displayId: caseSheet.appointment.displayId.toString(),
-      consultDate: format(caseSheet.appointment.appointmentDateTime, 'dd/MM/yy'),
-      consultType: caseSheet.appointment.appointmentType,
+      consultDate: format(caseSheet.appointment.appointmentDateTime, 'dd/MM/yyyy'),
+      consultType: _capitalize(caseSheet.appointment.appointmentType),
     };
   }
   //appointment details ends
@@ -189,7 +205,7 @@ export const convertCaseSheetToRxPdfData = async (
   if (caseSheet.followUp) {
     followUpDetails = ' Follow up ';
     if (caseSheet.followUpConsultType)
-      followUpDetails = followUpDetails + '(' + caseSheet.followUpConsultType + ') ';
+      followUpDetails = followUpDetails + '(' + _capitalize(caseSheet.followUpConsultType) + ') ';
     let followUpDays;
     if (caseSheet.followUpAfterInDays) followUpDays = caseSheet.followUpAfterInDays;
     else if (caseSheet.followUpDate)
@@ -219,7 +235,7 @@ const loadAsset = (file: string) => path.resolve(assetsDir, file);
 
 export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument => {
   const margin = 35;
-  const doc = new PDFDocument({ margin });
+  const doc = new PDFDocument({ margin, bufferPages: true });
 
   const drawHorizontalDivider = (y: number) => {
     return doc
@@ -238,7 +254,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const pageBreak = () => {
-    doc.flushPages();
+    //doc.flushPages();
     setY(doc.page.height);
     doc
       .fontSize(10)
@@ -261,7 +277,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       .fillColor('#000')
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fontSize(11)
-      .text(headerText, margin + 10, doc.y + 10, { fill: true })
+      .text(_capitalize(headerText), margin + 10, doc.y + 10, { fill: true })
       .moveDown(2);
   };
 
@@ -332,13 +348,13 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   const renderFooter = () => {
     drawHorizontalDivider(doc.page.height - 80);
     const disclaimerText =
-      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital';
+      'Disclaimer: The prescription has been issued based on your inputs during chat/call with the doctor. In case of emergency please visit a nearby hospital.';
     doc
       .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
       .fontSize(10)
       .fillColor('#000000')
       .opacity(0.5)
-      .text(disclaimerText, margin, doc.page.height - 70, { align: 'center' });
+      .text(disclaimerText, margin, doc.page.height - 70, { align: 'left' });
     return doc;
   };
 
@@ -355,7 +371,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
-        .text(`${prescription.symptom.toUpperCase()}`, margin + 15)
+        .text(`${_capitalize(prescription.symptom)}`, margin + 15)
         .moveDown(0.5);
       doc
         .fontSize(12)
@@ -372,9 +388,10 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderPrescriptions = (prescriptions: RxPdfData['prescriptions']) => {
-    renderSectionHeader('Medicines Prescribed', headerEndY + 100);
+    renderSectionHeader('Medication Prescribed', headerEndY + 100);
 
     prescriptions.forEach((prescription, index) => {
+      // const medicineTimings = prescripti
       if (doc.y > doc.page.height - 150) {
         pageBreak();
       }
@@ -382,14 +399,14 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#02475b')
-        .text(`${index + 1}.  ${prescription.name.toUpperCase()}`, margin + 15)
+        .text(`${index + 1}.  ${prescription.name}`, margin + 15)
         .moveDown(0.5);
       doc
         .fontSize(10)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#000000')
         .opacity(0.6)
-        .text(`${prescription.frequency} , ${prescription.instructions} `, margin + 30)
+        .text(`${prescription.frequency} `, margin + 30)
         .moveDown(0.8);
     });
   };
@@ -553,6 +570,17 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     doc.moveDown(1.5);
   }
 
+  let i;
+  let end;
+  const range = doc.bufferedPageRange();
+  for (i = range.start, end = range.start + range.count, range.start <= end; i < end; i++) {
+    doc.switchToPage(i);
+    doc
+      .fontSize(8)
+      .fillColor('#02475b')
+      .text(`Page ${i + 1} of ${range.count}`, margin, doc.page.height - 95, { align: 'center' });
+  }
+
   doc.end();
   return doc;
 };
@@ -566,6 +594,7 @@ export const uploadRxPdf = async (
   const filePath = loadAsset(name);
   pdfDoc.pipe(fs.createWriteStream(filePath));
   await delay(350);
+
   const blob = await client.uploadFile({ name, filePath });
   fs.unlink(filePath, (error) => console.log(error));
   return blob;
