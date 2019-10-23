@@ -193,7 +193,7 @@ export const convertCaseSheetToRxPdfData = async (
     let followUpDays;
     if (caseSheet.followUpAfterInDays) followUpDays = caseSheet.followUpAfterInDays;
     else if (caseSheet.followUpDate)
-      followUpDays = differenceInCalendarDays(caseSheet.createdDate!, caseSheet.followUpDate);
+      followUpDays = differenceInCalendarDays(caseSheet.followUpDate, caseSheet.createdDate!);
 
     if (followUpDays) followUpDetails = followUpDetails + 'after ' + followUpDays + ' days';
   }
@@ -240,6 +240,12 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   const pageBreak = () => {
     doc.flushPages();
     setY(doc.page.height);
+    doc
+      .fontSize(10)
+      .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
+      .fillColor('#02475b')
+      .text('')
+      .moveDown(0.5);
     return doc;
   };
 
@@ -369,6 +375,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
     renderSectionHeader('Medicines Prescribed', headerEndY + 100);
 
     prescriptions.forEach((prescription, index) => {
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
       doc
         .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
@@ -382,10 +391,6 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .opacity(0.6)
         .text(`${prescription.frequency} , ${prescription.instructions} `, margin + 30)
         .moveDown(0.8);
-
-      if (doc.y > doc.page.height - 150) {
-        pageBreak();
-      }
     });
   };
 
@@ -455,7 +460,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
       if (patientName.length > 0) patientName = patientName + ' ' + patientInfo.lastName;
       else patientName = patientInfo.lastName;
     }
-    if (patientInfo.firstName) textArray.push(`${patientName}`);
+    if (patientName) textArray.push(`${patientName}`);
     if (patientInfo.gender) textArray.push(patientInfo.gender);
     if (patientInfo.age) textArray.push(`${patientInfo.age} yrs`);
 
@@ -492,6 +497,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
 
   const renderFollowUp = (followUpData: RxPdfData['followUpDetails']) => {
     if (followUpData) {
+      if (doc.y > doc.page.height - 150) {
+        pageBreak();
+      }
       renderSectionHeader('Follow Up');
       doc
         .fontSize(12)
@@ -546,7 +554,6 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   }
 
   doc.end();
-
   return doc;
 };
 
@@ -559,7 +566,6 @@ export const uploadRxPdf = async (
   const filePath = loadAsset(name);
   pdfDoc.pipe(fs.createWriteStream(filePath));
   await delay(350);
-  //const blob = { name, filePath };
   const blob = await client.uploadFile({ name, filePath });
   fs.unlink(filePath, (error) => console.log(error));
   return blob;
