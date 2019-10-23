@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
@@ -80,6 +80,10 @@ export const Vitals: React.FC = () => {
     temperature,
     setTemperature,
   } = useContext(CaseSheetContextJrd);
+  const [disableheightFocus, setDisableHeightFocus] = useState(true);
+  const [disableWeightFocus, setDisableWeightFocus] = useState(true);
+  const [disableBPFocus, setDisableBPFocus] = useState(true);
+  const [disableTempFocus, setDisableTempFocus] = useState(true);
 
   return (
     <div className={classes.root}>
@@ -89,6 +93,7 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>Height</div>
             <div className={classes.contentBox}>
               <AphTextField
+                disabled={disableheightFocus}
                 fullWidth
                 value={height}
                 onChange={(e) => {
@@ -97,10 +102,15 @@ export const Vitals: React.FC = () => {
               />
               {height !== '' && (
                 <div className={classes.boxActions}>
-                  <AphButton>
+                  <AphButton onClick={() => setDisableHeightFocus(false)}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                   </AphButton>
-                  <AphButton>
+                  <AphButton
+                    onClick={() => {
+                      setHeight('');
+                      setDisableHeightFocus(false);
+                    }}
+                  >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                 </div>
@@ -113,6 +123,7 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>Weight</div>
             <div className={classes.contentBox}>
               <AphTextField
+                disabled={disableWeightFocus}
                 fullWidth
                 value={weight}
                 onChange={(e) => {
@@ -121,10 +132,15 @@ export const Vitals: React.FC = () => {
               />
               {weight !== '' && (
                 <div className={classes.boxActions}>
-                  <AphButton>
+                  <AphButton onClick={() => setDisableWeightFocus(false)}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                   </AphButton>
-                  <AphButton>
+                  <AphButton
+                    onClick={() => {
+                      setWeight('');
+                      setDisableWeightFocus(false);
+                    }}
+                  >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                 </div>
@@ -137,6 +153,7 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>BP</div>
             <div className={classes.contentBox}>
               <AphTextField
+                disabled={disableBPFocus}
                 fullWidth
                 value={bp}
                 onChange={(e) => {
@@ -145,10 +162,15 @@ export const Vitals: React.FC = () => {
               />
               {bp !== '' && (
                 <div className={classes.boxActions}>
-                  <AphButton>
+                  <AphButton onClick={() => setDisableBPFocus(false)}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                   </AphButton>
-                  <AphButton>
+                  <AphButton
+                    onClick={() => {
+                      setBp('');
+                      setDisableBPFocus(false);
+                    }}
+                  >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                 </div>
@@ -161,6 +183,7 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>Temperature</div>
             <div className={classes.contentBox}>
               <AphTextField
+                disabled={disableTempFocus}
                 fullWidth
                 value={temperature}
                 onChange={(e) => {
@@ -169,10 +192,15 @@ export const Vitals: React.FC = () => {
               />
               {temperature !== '' && (
                 <div className={classes.boxActions}>
-                  <AphButton>
+                  <AphButton onClick={() => setDisableTempFocus(false)}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                   </AphButton>
-                  <AphButton>
+                  <AphButton
+                    onClick={() => {
+                      setTemperature('');
+                      setDisableTempFocus(false);
+                    }}
+                  >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                 </div>
