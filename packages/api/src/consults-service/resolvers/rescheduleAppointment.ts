@@ -290,6 +290,14 @@ const bookRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
 
+  const patientConsults = await appointmentRepo.checkPatientConsults(
+    bookRescheduleAppointmentInput.patientId,
+    bookRescheduleAppointmentInput.newDateTimeslot
+  );
+  if (patientConsults) {
+    throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
+  }
+
   if (
     bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT &&
     apptDetails.rescheduleCount == 3
