@@ -5,6 +5,7 @@ import { AphTextField, AphButton, AphDialogTitle, AphDialog } from '@aph/web-ui-
 
 import { isEmpty, trim } from 'lodash';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -186,6 +187,7 @@ export const Symptoms: React.FC = (props) => {
   const [howOften, setHowOften] = React.useState('');
   const [idx, setIdx] = React.useState();
   const [severity, setSeverity] = React.useState('');
+  const [isUpdate, setIsUpdate] = React.useState(false);
   const { caseSheetEdit } = useContext(CaseSheetContextJrd);
   const [errorState, setErrorState] = React.useState<ErrorObject>({
     symptomError: false,
@@ -194,7 +196,7 @@ export const Symptoms: React.FC = (props) => {
     severityError: false,
   });
 
-  const deleteSymptom = (idx: any) => {
+  const deleteSymptom = (idx: number) => {
     symptoms!.splice(idx, 1);
     setSymptoms(symptoms);
     const sum = idx + Math.random();
@@ -215,15 +217,27 @@ export const Symptoms: React.FC = (props) => {
       severityError: false,
     });
   };
+
+  const [idxValue, setIdxValue] = React.useState();
+
   const addUpdateSymptom = () => {
     console.log(symptoms);
     let duplicate = false;
     if (symptoms!.length > 0 && symptom.length > 0) {
-      symptoms!.forEach((val: any, index: any) => {
-        if (val!.symptom!.trim().toLowerCase() === symptom.trim().toLowerCase()) {
-          duplicate = true;
+      symptoms!.forEach(
+        (
+          val: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms,
+          index: number
+        ) => {
+          if (val!.symptom!.trim().toLowerCase() === symptom.trim().toLowerCase()) {
+            if (isUpdate && idxValue !== index) {
+              duplicate = true;
+            } else if (!isUpdate) {
+              duplicate = true;
+            }
+          }
         }
-      });
+      );
     }
     if (isEmpty(trim(symptom))) {
       setErrorState({
@@ -274,16 +288,25 @@ export const Symptoms: React.FC = (props) => {
         severityError: false,
       });
 
-      const inputParams: any = {
-        // __typename: 'SymptomList',
-        howOften: howOften,
-        severity: severity,
-        since: since,
-        symptom: symptom,
-      };
-      const x = symptoms;
-      x!.push(inputParams);
-      setSymptoms(x);
+      if (isUpdate && symptoms) {
+        const currentSymptom = symptoms[idxValue];
+        currentSymptom.symptom = symptom;
+        currentSymptom.severity = severity;
+        currentSymptom.howOften = howOften;
+        currentSymptom.since = since;
+      } else {
+        const inputParams: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms = {
+          __typename: 'SymptomList',
+          howOften: howOften,
+          severity: severity,
+          since: since,
+          symptom: symptom,
+        };
+        const x = symptoms;
+        x!.push(inputParams);
+        setSymptoms(x);
+      }
+      setIsUpdate(false);
       setIsDialogOpen(false);
       clearField();
       clearError();
@@ -294,6 +317,21 @@ export const Symptoms: React.FC = (props) => {
       setSymptoms(symptoms);
     }
   }, [symptoms, idx]);
+
+  const showSymptom = (idx: number) => {
+    if (symptoms && symptoms.length > 0) {
+      const ReqSymptom = symptoms[idx];
+      if (ReqSymptom != null) {
+        setSymptom(ReqSymptom.symptom || '');
+        setSince(ReqSymptom.since || '');
+        setHowOften(ReqSymptom.howOften || '');
+        setSeverity(ReqSymptom.severity || '');
+      }
+      setIsDialogOpen(true);
+      setIsUpdate(true);
+      setIdxValue(idx);
+    }
+  };
 
   return (
     <div className={classes.root}>
@@ -306,7 +344,10 @@ export const Symptoms: React.FC = (props) => {
                   <div key={idx} className={classes.listItem}>
                     <div className={classes.symtomHeading}>
                       {item!.symptom}
-                      <AphButton classes={{ root: classes.editSymptom }}>
+                      <AphButton
+                        classes={{ root: classes.editSymptom }}
+                        onClick={() => showSymptom(idx)}
+                      >
                         <img
                           src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
                           alt=""
@@ -341,9 +382,15 @@ export const Symptoms: React.FC = (props) => {
         <div className={classes.noDataFound}>No data Found</div>
       )}
       {caseSheetEdit && (
-        <AphButton classes={{ root: classes.addBtn }} onClick={() => setIsDialogOpen(true)}>
+        <AphButton
+          classes={{ root: classes.addBtn }}
+          onClick={() => {
+            setIsDialogOpen(true);
+            setIsUpdate(false);
+          }}
+        >
           <img src={require('images/ic_dark_plus.svg')} alt="" />
-          Add Compaint
+          Add Complaint
         </AphButton>
       )}
       <AphDialog
@@ -354,7 +401,7 @@ export const Symptoms: React.FC = (props) => {
         className={classes.dialogWindow}
       >
         <AphDialogTitle className={classes.dialogTitle}>
-          ADD SYMPTOM
+          ADD COMPLAINT
           <AphButton
             onClick={() => {
               clearError();
@@ -369,7 +416,7 @@ export const Symptoms: React.FC = (props) => {
         <div className={classes.dialogContent}>
           <div className={classes.formSection}>
             <div className={classes.formGroup}>
-              <label>Symptom</label>
+              <label>Complaint</label>
               <AphTextField
                 placeholder=""
                 value={symptom}
@@ -387,7 +434,7 @@ export const Symptoms: React.FC = (props) => {
                   component="div"
                   error={errorState.symptomError}
                 >
-                  Please Enter Symptom(two symptom name can't be same)
+                  Please Enter Complaint(two complaints name can't be same)
                 </FormHelperText>
               )}
             </div>
@@ -479,7 +526,7 @@ export const Symptoms: React.FC = (props) => {
               addUpdateSymptom();
             }}
           >
-            Add Symptom
+            {isUpdate ? 'Update Complaint' : 'Add Complaint'}
           </AphButton>
         </div>
       </AphDialog>

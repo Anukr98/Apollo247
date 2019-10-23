@@ -79,11 +79,18 @@ export const Vitals: React.FC = () => {
     setBp,
     temperature,
     setTemperature,
+    caseSheetEdit,
   } = useContext(CaseSheetContextJrd);
+
   const [disableheightFocus, setDisableHeightFocus] = useState(true);
   const [disableWeightFocus, setDisableWeightFocus] = useState(true);
   const [disableBPFocus, setDisableBPFocus] = useState(true);
   const [disableTempFocus, setDisableTempFocus] = useState(true);
+
+  // const heightRef = useRef<HTMLElement>(null);
+  // const weightRef = useRef<HTMLElement>(null);
+  // const bpRef = useRef<HTMLElement>(null);
+  // const tempRef = useRef<HTMLElement>(null);
 
   return (
     <div className={classes.root}>
@@ -95,14 +102,21 @@ export const Vitals: React.FC = () => {
               <AphTextField
                 disabled={disableheightFocus}
                 fullWidth
+                // inputRef={heightRef}
                 value={height}
                 onChange={(e) => {
                   setHeight(e.target.value);
                 }}
               />
-              {height !== '' && (
+              {caseSheetEdit && (
                 <div className={classes.boxActions}>
-                  <AphButton onClick={() => setDisableHeightFocus(false)}>
+                  <AphButton
+                    onClick={() => {
+                      // const elem = heightRef.current as HTMLElement;
+                      // elem.focus();
+                      setDisableHeightFocus(false);
+                    }}
+                  >
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                   </AphButton>
                   <AphButton
@@ -130,7 +144,7 @@ export const Vitals: React.FC = () => {
                   setWeight(e.target.value);
                 }}
               />
-              {weight !== '' && (
+              {caseSheetEdit && (
                 <div className={classes.boxActions}>
                   <AphButton onClick={() => setDisableWeightFocus(false)}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
@@ -160,7 +174,7 @@ export const Vitals: React.FC = () => {
                   setBp(e.target.value);
                 }}
               />
-              {bp !== '' && (
+              {caseSheetEdit && (
                 <div className={classes.boxActions}>
                   <AphButton onClick={() => setDisableBPFocus(false)}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
@@ -190,7 +204,7 @@ export const Vitals: React.FC = () => {
                   setTemperature(e.target.value);
                 }}
               />
-              {temperature !== '' && (
+              {caseSheetEdit && (
                 <div className={classes.boxActions}>
                   <AphButton onClick={() => setDisableTempFocus(false)}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
