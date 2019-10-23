@@ -188,7 +188,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     { key: 'diagnosis', value: 'Diagnosis', state: diagnosis, component: <Diagnosis /> },
     {
       key: 'medicinePrescription',
-      value: 'Medicines',
+      value: 'Medication Prescribed',
       state: medicinePrescription,
       component: <MedicinePrescription />,
     },
@@ -198,13 +198,13 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       state: diagnosticPrescription,
       component: <DiagnosticPrescription />,
     },
-    { key: 'followup', value: 'Follow up', state: followUp, component: <FollowUp /> },
     {
       key: 'otherInstructions',
-      value: 'Other Instructions',
+      value: 'Advice/Instructions',
       state: otherInstructions,
       component: <OtherInstructions />,
     },
+    { key: 'followup', value: 'Follow up', state: followUp, component: <FollowUp /> },
   ];
 
   const handlePanelExpansion = (expansionKey: string) => (
