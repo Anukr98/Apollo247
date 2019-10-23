@@ -170,6 +170,22 @@ const useStyles = makeStyles((theme: Theme) => ({
       padding: '8px 20px',
     },
   },
+  editSymptom: {
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
+    minWidth: 'auto',
+    padding: 0,
+    position: 'absolute',
+    right: 50,
+    top: 15,
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
+    '& img': {
+      maxWidth: 20,
+      maxHeight: 20,
+    },
+  },
   cancelBtn: {
     fontSize: 14,
     fontWeight: 600,
@@ -359,6 +375,12 @@ export const Symptoms: React.FC = (props) => {
                   item!.symptom!.trim() !== '' && (
                     <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
                       <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
+                      <AphButton classes={{ root: classes.editSymptom }}>
+                        <img
+                          src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
+                          alt=""
+                        />
+                      </AphButton>
                       <AphButton
                         variant="contained"
                         color="primary"

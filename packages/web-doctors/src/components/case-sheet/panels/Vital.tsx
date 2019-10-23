@@ -81,7 +81,9 @@ export const Vital: React.FC = () => {
                           <ListItem key={idx}>
                             <Fragment>
                               <Typography component="p" className={classes.textContent}>
-                                160 cms
+                                {patientDetails!.patientMedicalHistory!.height
+                                  ? patientDetails!.patientMedicalHistory!.height
+                                  : '-'}
                               </Typography>
                             </Fragment>
                           </ListItem>
@@ -108,7 +110,9 @@ export const Vital: React.FC = () => {
                           <ListItem key={idx}>
                             <Fragment>
                               <Typography component="p" className={classes.textContent}>
-                                67 kgs
+                                {patientDetails!.patientMedicalHistory!.weight
+                                  ? patientDetails!.patientMedicalHistory!.weight
+                                  : '-'}
                               </Typography>
                             </Fragment>
                           </ListItem>
@@ -130,7 +134,9 @@ export const Vital: React.FC = () => {
                     <ListItem>
                       <Fragment>
                         <Typography component="p" className={classes.textContent}>
-                          120/80 mm Hg
+                          {patientDetails!.patientMedicalHistory!.bp
+                            ? patientDetails!.patientMedicalHistory!.bp
+                            : '-'}
                         </Typography>
                       </Fragment>
                     </ListItem>
@@ -146,7 +152,9 @@ export const Vital: React.FC = () => {
                     <ListItem>
                       <Fragment>
                         <Typography component="p" className={classes.textContent}>
-                          -
+                          {patientDetails!.patientMedicalHistory!.temperature
+                            ? patientDetails!.patientMedicalHistory!.temperature
+                            : '-'}
                         </Typography>
                       </Fragment>
                     </ListItem>
