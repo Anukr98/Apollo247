@@ -153,6 +153,15 @@ const bookFollowUpAppointment: Resolver<
   if (apptCount > 0) {
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
+
+  const patientConsults = await appts.checkPatientConsults(
+    followUpAppointmentInput.patientId,
+    followUpAppointmentInput.appointmentDateTime
+  );
+  if (patientConsults) {
+    throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
+  }
+
   let isFollowPaid: Boolean = false;
   const followUpCount = await appts.followUpBookedCount(followUpAppointmentInput.followUpParentId);
   isFollowPaid = followUpCount > 1 ? true : false;

@@ -218,6 +218,13 @@ const bookTransferAppointment: Resolver<
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
 
+  const patientConsults = await appointmentRepo.checkPatientConsults(
+    BookTransferAppointmentInput.patientId,
+    BookTransferAppointmentInput.appointmentDateTime
+  );
+  if (patientConsults) {
+    throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
+  }
   //update exisiting appt, state to transferred
   await appointmentRepo.updateTransferState(
     BookTransferAppointmentInput.existingAppointmentId,
