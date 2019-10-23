@@ -377,8 +377,8 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
         .fontSize(12)
         .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
         .fillColor('#000000')
-        .text(`${textArray.join('  |  ')}`, margin + 15)
         .opacity(0.6)
+        .text(`${textArray.join('  |  ')}`, margin + 15)
         .moveDown(0.8);
 
       if (doc.y > doc.page.height - 150) {
@@ -422,6 +422,7 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
           .fontSize(12)
           .font(assetsDir + '/fonts/IBMPlexSans-Medium.ttf')
           .fillColor('#000000')
+          .opacity(0.6)
           .text(`${advice.instruction}`, margin + 15)
           .moveDown(0.5);
       });
