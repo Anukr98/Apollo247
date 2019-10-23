@@ -122,7 +122,7 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'rgba(0,0,0,0.02)',
       border: '1px solid rgba(2,71,91,0.1)',
       padding: '12px 40px 12px 12px',
-      maxWidth: 320,
+      maxWidth: '100%',
       borderRadius: 5,
       position: 'relative',
       boxShadow: 'none',
@@ -320,8 +320,8 @@ const useStyles = makeStyles((theme: Theme) =>
     updateSymptom: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      top: 2,
-      right: 0,
+      top: 5,
+      right: 40,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
@@ -335,8 +335,8 @@ const useStyles = makeStyles((theme: Theme) =>
     deleteSymptom: {
       backgroundColor: 'transparent',
       boxShadow: 'none',
-      top: 2,
-      right: 30,
+      top: 5,
+      right: 0,
       color: '#666666',
       position: 'absolute',
       fontSize: 14,
@@ -675,6 +675,7 @@ export const MedicinePrescription: React.FC = () => {
     alt="chkUncheck"
     /> */}
         </Paper>
+
         <AphButton
           variant="contained"
           color="primary"
@@ -889,7 +890,7 @@ export const MedicinePrescription: React.FC = () => {
     <div className={classes.root}>
       <div className={classes.medicineHeading}>Medicines</div>
       <Grid container spacing={1}>
-        <Grid item xs={6}>
+        <Grid item md={12} xs={12}>
           {selectedMedicinesHtml}
           {caseSheetEdit && (
             <AphButton
@@ -902,7 +903,7 @@ export const MedicinePrescription: React.FC = () => {
             </AphButton>
           )}
         </Grid>
-        <Grid item xs={4}></Grid>
+        <Grid item xs={12}></Grid>
       </Grid>
       <Modal
         open={isDialogOpen}
