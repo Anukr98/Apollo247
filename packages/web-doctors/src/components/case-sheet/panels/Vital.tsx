@@ -37,6 +37,16 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     width: '100%',
   },
+  vitalLeft: {
+    width: '45%',
+    display: 'inline-block',
+    paddingRight: 10,
+  },
+  vitalRight: {
+    width: '45%',
+    display: 'inline-block',
+    float: 'right',
+  },
 }));
 
 export const Vital: React.FC = () => {
@@ -58,9 +68,9 @@ export const Vital: React.FC = () => {
             patientDetails!.familyHistory &&
             patientDetails!.familyHistory !== null &&
             patientDetails!.familyHistory.length > 0 && (
-              <Typography className={classes.mainContainer} component="div">
+              <Typography className={classes.vitalLeft} component="div">
                 <Typography component="h5" variant="h5" className={classes.header}>
-                  Family History
+                  Height
                 </Typography>
                 <Typography component="div" className={classes.content}>
                   <List>
@@ -71,7 +81,7 @@ export const Vital: React.FC = () => {
                           <ListItem key={idx}>
                             <Fragment>
                               <Typography component="p" className={classes.textContent}>
-                                {item!.relation}: {item!.description}
+                                160 cms
                               </Typography>
                             </Fragment>
                           </ListItem>
@@ -85,9 +95,9 @@ export const Vital: React.FC = () => {
             patientDetails!.lifeStyle &&
             patientDetails!.lifeStyle !== null &&
             patientDetails!.lifeStyle.length > 0 && (
-              <Typography component="div">
+              <Typography component="div" className={classes.vitalRight}>
                 <Typography component="h5" variant="h5" className={classes.header}>
-                  Lifestyle & Habits
+                  Weight
                 </Typography>
                 <Typography component="div" className={classes.content}>
                   <List>
@@ -98,7 +108,7 @@ export const Vital: React.FC = () => {
                           <ListItem key={idx}>
                             <Fragment>
                               <Typography component="p" className={classes.textContent}>
-                                {item!.description}
+                                67 kgs
                               </Typography>
                             </Fragment>
                           </ListItem>
@@ -108,23 +118,42 @@ export const Vital: React.FC = () => {
                 </Typography>
               </Typography>
             )}
+
           {patientDetails && patientDetails!.allergies && patientDetails!.allergies !== null && (
-            <Typography component="div">
-              <Typography component="h5" variant="h5" className={classes.header}>
-                Allergies
+            <div>
+              <Typography component="div" className={classes.vitalLeft}>
+                <Typography component="h5" variant="h5" className={classes.header}>
+                  BP
+                </Typography>
+                <Typography component="div" className={classes.content}>
+                  <List>
+                    <ListItem>
+                      <Fragment>
+                        <Typography component="p" className={classes.textContent}>
+                          120/80 mm Hg
+                        </Typography>
+                      </Fragment>
+                    </ListItem>
+                  </List>
+                </Typography>
               </Typography>
-              <Typography component="div" className={classes.content}>
-                <List>
-                  <ListItem>
-                    <Fragment>
-                      <Typography component="p" className={classes.textContent}>
-                        {patientDetails!.allergies}
-                      </Typography>
-                    </Fragment>
-                  </ListItem>
-                </List>
+              <Typography component="div" className={classes.vitalRight}>
+                <Typography component="h5" variant="h5" className={classes.header}>
+                  Temperature
+                </Typography>
+                <Typography component="div" className={classes.content}>
+                  <List>
+                    <ListItem>
+                      <Fragment>
+                        <Typography component="p" className={classes.textContent}>
+                          -
+                        </Typography>
+                      </Fragment>
+                    </ListItem>
+                  </List>
+                </Typography>
               </Typography>
-            </Typography>
+            </div>
           )}
         </div>
       ) : (
