@@ -168,15 +168,16 @@ export interface MedicinePrescriptionInput {
 }
 
 export interface ModifyCaseSheetInput {
-  symptoms?: (SymptomInput | null)[] | null;
+  symptoms?: SymptomInput[] | null;
   notes?: string | null;
-  diagnosis?: (DiagnosisInput | null)[] | null;
-  diagnosticPrescription?: (DiagnosticPrescriptionInput | null)[] | null;
+  diagnosis?: DiagnosisInput[] | null;
+  diagnosticPrescription?: DiagnosticPrescriptionInput[] | null;
   followUp?: boolean | null;
   followUpDate?: any | null;
   followUpAfterInDays?: number | null;
-  otherInstructions?: (OtherInstructionsInput | null)[] | null;
-  medicinePrescription?: (MedicinePrescriptionInput | null)[] | null;
+  followUpConsultType?: APPOINTMENT_TYPE | null;
+  otherInstructions?: OtherInstructionsInput[] | null;
+  medicinePrescription?: MedicinePrescriptionInput[] | null;
   id: string;
   status?: CASESHEET_STATUS | null;
   lifeStyle?: string | null;
@@ -257,6 +258,7 @@ export interface UpdatePatientInput {
   emailAddress?: string | null;
   dateOfBirth?: any | null;
   relation?: Relation | null;
+  photoUrl?: string | null;
 }
 
 //==============================================================

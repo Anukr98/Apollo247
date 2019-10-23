@@ -8,7 +8,7 @@ import {
 import { ThemeProviderProps } from '@material-ui/styles/ThemeProvider';
 
 const generator = createGenerateClassName({
-  seed: `${Math.floor(Math.random() * 1000)}`,
+  seed: `aph-${Math.floor(Math.random() * 1000)}`,
 });
 
 const AphThemeProvider: React.FC<ThemeProviderProps<any>> = (props) => {
