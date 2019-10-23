@@ -230,11 +230,7 @@ export const Symptoms: React.FC = (props) => {
           index: number
         ) => {
           if (val!.symptom!.trim().toLowerCase() === symptom.trim().toLowerCase()) {
-            if (isUpdate && idxValue !== index) {
-              duplicate = true;
-            } else if (!isUpdate) {
-              duplicate = true;
-            }
+            duplicate = isUpdate ? idxValue !== index : true;
           }
         }
       );
