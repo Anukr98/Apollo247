@@ -877,7 +877,9 @@ export const JDConsultRoom: React.FC = () => {
     let symptomsFinal = null,
       diagnosisFinal = null,
       diagnosticPrescriptionFinal = null,
-      medicinePrescriptionFinal = null;
+      medicinePrescriptionFinal = null,
+      otherInstructionsFinal = null;
+
     if (symptoms && symptoms.length > 0) {
       symptomsFinal = symptoms.map((symptom) => {
         return _omit(symptom, '__typename');
@@ -898,6 +900,11 @@ export const JDConsultRoom: React.FC = () => {
         return _omit(prescription, ['__typename']);
       });
     }
+    if (otherInstructions && otherInstructions.length > 0) {
+      otherInstructionsFinal = otherInstructions.map((instruction) => {
+        return _omit(instruction, ['__typename']);
+      });
+    }
 
     if (diagnosis || flag) {
       setSaving(true);
@@ -912,7 +919,7 @@ export const JDConsultRoom: React.FC = () => {
               diagnosticPrescription: diagnosticPrescriptionFinal,
               followUp: false,
               followUpAfterInDays: 0,
-              otherInstructions: otherInstructions!.length > 0 ? otherInstructions : null,
+              otherInstructions: otherInstructionsFinal,
               medicinePrescription: medicinePrescriptionFinal,
               id: caseSheetId,
               status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
