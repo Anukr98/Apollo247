@@ -154,7 +154,8 @@ export const LifeStyle: React.FC = () => {
                   <List>
                     {patientDetails!.lifeStyle!.map(
                       (item, idx) =>
-                        item!.description!.length > 0 &&
+                        item!.description &&
+                        item!.description.length > 0 &&
                         idx === patientDetails!.lifeStyle!.length - 1 && (
                           <ListItem key={idx}>
                             <Fragment>
@@ -188,6 +189,7 @@ export const LifeStyle: React.FC = () => {
               </List>
             </Typography>
           </Typography>
+
           {patientDetails &&
             patientDetails!.familyHistory &&
             patientDetails!.familyHistory !== null &&
@@ -200,7 +202,8 @@ export const LifeStyle: React.FC = () => {
                   <List>
                     {patientDetails!.familyHistory!.map(
                       (item, idx) =>
-                        item!.description!.length > 0 &&
+                        item!.description &&
+                        item!.description.length > 0 &&
                         idx === patientDetails!.familyHistory!.length - 1 && (
                           <ListItem key={idx}>
                             <Fragment>
