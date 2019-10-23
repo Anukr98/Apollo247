@@ -136,6 +136,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export const HistoryAndLifeStyle: React.FC = (props) => {
   const classes = useStyles();
   const {
+    caseSheetEdit,
     pastMedicalHistory,
     pastSurgicalHistory,
     dietAllergies,
@@ -173,7 +174,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setPastMedicalHistory(e.target.value);
             }}
           />
-          {pastMedicalHistory !== '' && (
+          {caseSheetEdit && (
             <div className={classes.boxActions}>
               <AphButton onClick={() => setDisablePastMedicalHistoryFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
@@ -201,7 +202,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setPastSurgicalHistory(e.target.value);
             }}
           />
-          {pastSurgicalHistory !== '' && (
+          {caseSheetEdit && (
             <div className={classes.boxActions}>
               <AphButton onClick={() => setDisablePastSurgicalHistoryFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
@@ -229,7 +230,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setDrugAllergies(e.target.value);
             }}
           />
-          {drugAllergies !== '' && (
+          {caseSheetEdit && (
             <div className={classes.boxActions}>
               <AphButton onClick={() => setDisableDrugAllergiesFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
@@ -257,7 +258,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setDietAllergies(e.target.value);
             }}
           />
-          {dietAllergies !== '' && (
+          {caseSheetEdit && (
             <div className={classes.boxActions}>
               <AphButton onClick={() => setDisableDietAllergiesFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
@@ -285,7 +286,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setLifeStyle(e.target.value);
             }}
           />
-          {lifeStyle !== '' && (
+          {caseSheetEdit && (
             <div className={classes.boxActions}>
               <AphButton onClick={(e) => setDisableLifeStyleFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
@@ -314,7 +315,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
                 setMenstrualHistory(e.target.value);
               }}
             />
-            {menstrualHistory !== '' && (
+            {caseSheetEdit && (
               <div className={classes.boxActions}>
                 <AphButton onClick={() => setDisableMenstrualHistoryFocus(false)}>
                   <img src={require('images/round_edit_24_px.svg')} alt="" />
@@ -344,7 +345,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               setFamilyHistory(e.target.value);
             }}
           />
-          {familyHistory !== '' && (
+          {caseSheetEdit && (
             <div className={classes.boxActions}>
               <AphButton onClick={() => setDisableFamilyHistoryFocus(false)}>
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
