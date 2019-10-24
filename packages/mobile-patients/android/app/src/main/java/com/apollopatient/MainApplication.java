@@ -10,7 +10,6 @@ import com.reactnative.ivpusic.imagepicker.PickerPackage;
 import com.corbt.keepawake.KCKeepAwakePackage;
 import com.RNFetchBlob.RNFetchBlobPackage;
 import com.imagepicker.ImagePickerPackage;
-import com.rnfs.RNFSPackage;
 import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 import com.learnium.RNDeviceInfo.RNDeviceInfo;
 import com.zxcpoiu.incallmanager.InCallManagerPackage;
@@ -22,7 +21,6 @@ import com.oblador.vectoricons.VectorIconsPackage;
 import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage; // <-- Add this line
 import io.invertase.firebase.auth.RNFirebaseAuthPackage; 
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
-import com.centaurwarchief.smslistener.SmsListenerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
@@ -50,7 +48,6 @@ public class MainApplication extends Application implements ReactApplication {
             new KCKeepAwakePackage(),
             new RNFetchBlobPackage(),
             new ImagePickerPackage(),
-            new RNFSPackage(),
             new AsyncStoragePackage(),
             new RNDeviceInfo(),
             new InCallManagerPackage(),
@@ -60,7 +57,6 @@ public class MainApplication extends Application implements ReactApplication {
             new RNFirebasePackage(),
             new VectorIconsPackage(),
             new RNGestureHandlerPackage(),
-            new SmsListenerPackage(),
             new RNFirebaseAnalyticsPackage(), // <-- Add this line
             new RNFirebaseAuthPackage(),
             new RNFirebaseMessagingPackage(),
