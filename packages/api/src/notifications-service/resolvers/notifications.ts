@@ -67,6 +67,7 @@ export enum NotificationType {
   INITIATE_JUNIOR_APPT_SESSION = 'INITIATE_JUNIOR_APPT_SESSION',
   INITIATE_SENIOR_APPT_SESSION = 'INITIATE_SENIOR_APPT_SESSION',
   BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
+  CALL_APPOINTMENT = 'CALL_APPOINTMENT',
 }
 
 export enum NotificationPriority {
@@ -194,6 +195,13 @@ export async function sendNotification(
     smsMessage = smsMessage.replace('at {4}', '');
     notificationTitle = ApiConstants.BOOK_APPOINTMENT_TITLE;
     notificationBody = smsMessage;
+  } else if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+    notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
+    notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+    notificationBody = notificationBody.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
   }
 
   //initialize firebaseadmin
@@ -221,6 +229,21 @@ export async function sendNotification(
       },
       data: {
         type: 'Reschedule-Appointment',
+        appointmentId: appointment.id.toString(),
+        patientName: patientDetails.firstName,
+        doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+      },
+    };
+  }
+
+  if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+    payload = {
+      notification: {
+        title: notificationTitle,
+        body: notificationBody,
+      },
+      data: {
+        type: 'call_started',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
