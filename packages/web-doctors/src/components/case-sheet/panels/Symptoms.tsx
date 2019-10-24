@@ -289,9 +289,9 @@ export const Symptoms: React.FC = (props) => {
   const addUpdateSymptom = () => {
     console.log(symptoms);
     let duplicate = false;
-    if (symptoms!.length > 0 && symptom.length > 0) {
-      symptoms!.forEach((val: any, index: any) => {
-        if (val!.symptom!.trim().toLowerCase() === symptom.trim().toLowerCase()) {
+    if (symptoms && symptom.length > 0) {
+      symptoms.forEach((val: any, index: any) => {
+        if (val.symptom && val.symptom.trim().toLowerCase() === symptom.trim().toLowerCase()) {
           duplicate = isUpdate ? idxValue !== index : true;
         }
       });
@@ -378,7 +378,7 @@ export const Symptoms: React.FC = (props) => {
   const showSymptom = (idx: number) => {
     if (symptoms && symptoms.length > 0) {
       const ReqSymptom = symptoms[idx];
-      if (ReqSymptom != null) {
+      if (ReqSymptom) {
         setSymptom(ReqSymptom.symptom || "");
         setSince(ReqSymptom.since || "");
         setHowOften(ReqSymptom.howOften || "");
