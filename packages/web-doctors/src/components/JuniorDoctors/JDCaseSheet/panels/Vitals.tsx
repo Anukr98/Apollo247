@@ -88,10 +88,18 @@ export const Vitals: React.FC = () => {
   const [disableBPFocus, setDisableBPFocus] = useState(true);
   const [disableTempFocus, setDisableTempFocus] = useState(true);
 
-  // const heightRef = useRef<HTMLElement>(null);
-  // const weightRef = useRef<HTMLElement>(null);
-  // const bpRef = useRef<HTMLElement>(null);
-  // const tempRef = useRef<HTMLElement>(null);
+  const heightRef = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
+  const weightRef = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
+  const bpRef = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
+  const tempRef = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
 
   return (
     <div className={classes.root}>
@@ -108,13 +116,12 @@ export const Vitals: React.FC = () => {
                 onChange={(e) => {
                   setHeight(e.target.value);
                 }}
+                inputRef={heightRef}
               />
               {caseSheetEdit && (
                 <div className={classes.boxActions}>
                   <AphButton
                     onClick={() => {
-                      // const elem = heightRef.current as HTMLElement;
-                      // elem.focus();
                       setDisableHeightFocus(false);
                     }}
                   >
@@ -123,7 +130,7 @@ export const Vitals: React.FC = () => {
                   <AphButton
                     onClick={() => {
                       setHeight('');
-                      setDisableHeightFocus(false);
+                      setDisableHeightFocus(true);
                     }}
                   >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -145,6 +152,7 @@ export const Vitals: React.FC = () => {
                 onChange={(e) => {
                   setWeight(e.target.value);
                 }}
+                inputRef={weightRef}
               />
               {caseSheetEdit && (
                 <div className={classes.boxActions}>
@@ -154,7 +162,7 @@ export const Vitals: React.FC = () => {
                   <AphButton
                     onClick={() => {
                       setWeight('');
-                      setDisableWeightFocus(false);
+                      setDisableWeightFocus(true);
                     }}
                   >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -176,6 +184,7 @@ export const Vitals: React.FC = () => {
                 onChange={(e) => {
                   setBp(e.target.value);
                 }}
+                inputRef={bpRef}
               />
               {caseSheetEdit && (
                 <div className={classes.boxActions}>
@@ -185,7 +194,7 @@ export const Vitals: React.FC = () => {
                   <AphButton
                     onClick={() => {
                       setBp('');
-                      setDisableBPFocus(false);
+                      setDisableBPFocus(true);
                     }}
                   >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -207,6 +216,7 @@ export const Vitals: React.FC = () => {
                 onChange={(e) => {
                   setTemperature(e.target.value);
                 }}
+                inputRef={tempRef}
               />
               {caseSheetEdit && (
                 <div className={classes.boxActions}>
@@ -216,7 +226,7 @@ export const Vitals: React.FC = () => {
                   <AphButton
                     onClick={() => {
                       setTemperature('');
-                      setDisableTempFocus(false);
+                      setDisableTempFocus(true);
                     }}
                   >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />

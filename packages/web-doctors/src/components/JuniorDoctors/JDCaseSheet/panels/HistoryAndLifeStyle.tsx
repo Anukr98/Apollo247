@@ -162,6 +162,28 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
   const [disableMenstrualHistoryFocus, setDisableMenstrualHistoryFocus] = useState(true);
   const [disableFamilyHistoryFocus, setDisableFamilyHistoryFocus] = useState(true);
 
+  const pastMedicalHistoryElement = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
+  const pastSurgicalHistoryElement = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
+  const drugAllergiesElement = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
+  const dietAllergiesElement = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
+  const lifeStyleElement = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
+  const menstrualElement = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
+  const familyHistoryElement = (input: HTMLInputElement) => {
+    input && input.focus();
+  };
+
   return (
     <Grid container spacing={1}>
       <Grid item sm={12}>
@@ -175,6 +197,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setPastMedicalHistory(e.target.value);
             }}
+            inputRef={pastMedicalHistoryElement}
           />
           {caseSheetEdit && (
             <div className={classes.boxActions}>
@@ -184,7 +207,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               <AphButton
                 onClick={() => {
                   setPastMedicalHistory('');
-                  setDisablePastMedicalHistoryFocus(false);
+                  setDisablePastMedicalHistoryFocus(true);
                 }}
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -204,6 +227,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setPastSurgicalHistory(e.target.value);
             }}
+            inputRef={pastSurgicalHistoryElement}
           />
           {caseSheetEdit && (
             <div className={classes.boxActions}>
@@ -213,7 +237,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               <AphButton
                 onClick={(e) => {
                   setPastSurgicalHistory('');
-                  setDisablePastSurgicalHistoryFocus(false);
+                  setDisablePastSurgicalHistoryFocus(true);
                 }}
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -233,6 +257,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setDrugAllergies(e.target.value);
             }}
+            inputRef={drugAllergiesElement}
           />
           {caseSheetEdit && (
             <div className={classes.boxActions}>
@@ -242,7 +267,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               <AphButton
                 onClick={(e) => {
                   setDrugAllergies('');
-                  setDisableDrugAllergiesFocus(false);
+                  setDisableDrugAllergiesFocus(true);
                 }}
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -262,6 +287,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setDietAllergies(e.target.value);
             }}
+            inputRef={dietAllergiesElement}
           />
           {caseSheetEdit && (
             <div className={classes.boxActions}>
@@ -271,7 +297,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               <AphButton
                 onClick={(e) => {
                   setDietAllergies('');
-                  setDisableDietAllergiesFocus(false);
+                  setDisableDietAllergiesFocus(true);
                 }}
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -291,6 +317,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setLifeStyle(e.target.value);
             }}
+            inputRef={lifeStyleElement}
           />
           {caseSheetEdit && (
             <div className={classes.boxActions}>
@@ -321,6 +348,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               onChange={(e) => {
                 setMenstrualHistory(e.target.value);
               }}
+              inputRef={menstrualElement}
             />
             {caseSheetEdit && (
               <div className={classes.boxActions}>
@@ -330,7 +358,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
                 <AphButton
                   onClick={() => {
                     setMenstrualHistory('');
-                    setDisableMenstrualHistoryFocus(false);
+                    setDisableMenstrualHistoryFocus(true);
                   }}
                 >
                   <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -340,7 +368,6 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           </div>
         </Grid>
       )}
-
       <Grid item sm={12}>
         <div className={classes.sectionTitle}>Patient’s Family Medical History</div>
         <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
@@ -352,6 +379,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             onChange={(e) => {
               setFamilyHistory(e.target.value);
             }}
+            inputRef={familyHistoryElement}
           />
           {caseSheetEdit && (
             <div className={classes.boxActions}>
@@ -361,7 +389,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
               <AphButton
                 onClick={() => {
                   setFamilyHistory('');
-                  setDisableFamilyHistoryFocus(false);
+                  setDisableFamilyHistoryFocus(true);
                 }}
               >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
