@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, Fragment, useEffect, useContext } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
@@ -529,6 +529,8 @@ interface CallPopoverProps {
   sessionId: string;
   token: string;
   saving: boolean;
+  appointmentStatus: String;
+  sentToPatient: boolean;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -615,6 +617,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const [isDoctorOrSpeciality, setIsDoctorOrSpeciality] = useState(false);
   const [isDoctorSelected, setIsDoctorSelected] = useState(false);
   const [isDoctorFound, setIsDoctorFound] = useState(true);
+  const [isClickedOnEdit, setIsClickedOnEdit] = useState(false);
+  const [isClickedOnPriview, setIsClickedOnPriview] = useState(false);
   const [filteredStarDoctors, setFilteredStarDoctors] = useState<any>([]);
   const [filterSpeciality, setFilterSpeciality] = useState<any>([]);
   const {
@@ -1272,74 +1276,131 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         </span>
         <div className={classes.consultButtonContainer}>
           <span>
-            {props.startAppointment ? (
+            {props.appointmentStatus === 'COMPLETED' && props.sentToPatient === true ? (
               <span>
+                <Button className={classes.backButton}>Priview</Button>
+              </span>
+            ) : (
+              props.appointmentStatus === 'COMPLETED' &&
+              props.sentToPatient === false && (
+                <span>
+                  {(isClickedOnPriview || props.sentToPatient === false) && !isClickedOnEdit && (
+                    <Fragment>
+                      <Button
+                        className={classes.backButton}
+                        onClick={() => {
+                          setIsClickedOnEdit(true);
+                          setIsClickedOnPriview(false);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        className={classes.endconsultButton}
+                        disabled={props.saving}
+                        onClick={() => {}}
+                      >
+                        Send To Patient
+                      </Button>
+                    </Fragment>
+                  )}
+                  {isClickedOnEdit && (
+                    <Fragment>
+                      <Button
+                        className={classes.backButton}
+                        onClick={() => props.saveCasesheetAction(true)}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        className={classes.endconsultButton}
+                        disabled={props.saving}
+                        onClick={() => {
+                          setIsClickedOnEdit(false);
+                          setIsClickedOnPriview(true);
+                        }}
+                      >
+                        Priview
+                      </Button>
+                    </Fragment>
+                  )}
+                </span>
+              )
+            )}
+            {props.appointmentStatus !== 'COMPLETED' &&
+              (props.startAppointment ? (
+                <span>
+                  <Button
+                    className={classes.backButton}
+                    disabled={props.saving}
+                    onClick={() => {
+                      props.saveCasesheetAction(true);
+                    }}
+                  >
+                    Save
+                  </Button>
+                  <Button
+                    className={classes.endconsultButton}
+                    disabled={props.saving}
+                    onClick={() => {
+                      //onStopConsult();
+                      //setStartAppointment(!startAppointment);
+                      stopInterval();
+                      props.endConsultAction();
+                      //setCaseSheetEdit(false);
+                      setDisableOnTransfer(true);
+                    }}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                    >
+                      <g fill="none" fillRule="evenodd">
+                        <path d="M0 0h24v24H0z" />
+                        <path
+                          fill="#ffffff"
+                          fillRule="nonzero"
+                          d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
+                        />
+                      </g>
+                    </svg>
+                    End Consult
+                  </Button>
+                  {props.saving && <CircularProgress className={classes.loading} />}
+                </span>
+              ) : (
                 <Button
-                  className={classes.backButton}
-                  disabled={props.saving}
+                  className={classes.consultButton}
+                  /* disabled={
+        startAppointmentButton ||
+        disableOnTransfer ||
+        (appointmentInfo!.appointmentState !== 'NEW' &&
+          appointmentInfo!.appointmentState !== 'TRANSFER' &&
+          appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+        (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+          appointmentInfo!.status !== STATUS.PENDING)
+      } */
                   onClick={() => {
-                    props.saveCasesheetAction(true);
-                  }}
-                >
-                  Save
-                </Button>
-                <Button
-                  className={classes.endconsultButton}
-                  disabled={props.saving}
-                  onClick={() => {
-                    //onStopConsult();
-                    //setStartAppointment(!startAppointment);
-                    stopInterval();
-                    props.endConsultAction();
-                    //setCaseSheetEdit(false);
-                    setDisableOnTransfer(true);
+                    !props.startAppointment ? onStartConsult() : onStopConsult();
+                    !props.startAppointment ? startInterval(900) : stopInterval();
+                    props.startAppointmentClick(!props.startAppointment);
+                    props.createSessionAction();
+                    setCaseSheetEdit(true);
                   }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
+                    width="24"
+                    height="24"
                     viewBox="0 0 24 24"
                   >
-                    <g fill="none" fillRule="evenodd">
-                      <path d="M0 0h24v24H0z" />
-                      <path
-                        fill="#ffffff"
-                        fillRule="nonzero"
-                        d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59 7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12 5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
-                      />
-                    </g>
+                    <path fill="#fff" d="M8 5v14l11-7z" />
                   </svg>
-                  End Consult
+                  Start Consult
                 </Button>
-                {props.saving && <CircularProgress className={classes.loading} />}
-              </span>
-            ) : (
-              <Button
-                className={classes.consultButton}
-                disabled={
-                  startAppointmentButton ||
-                  disableOnTransfer ||
-                  (appointmentInfo!.appointmentState !== 'NEW' &&
-                    appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                    appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                    appointmentInfo!.status !== STATUS.PENDING)
-                }
-                onClick={() => {
-                  !props.startAppointment ? onStartConsult() : onStopConsult();
-                  !props.startAppointment ? startInterval(900) : stopInterval();
-                  props.startAppointmentClick(!props.startAppointment);
-                  props.createSessionAction();
-                  setCaseSheetEdit(true);
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                  <path fill="#fff" d="M8 5v14l11-7z" />
-                </svg>
-                {props.startAppointment ? 'End Consult' : 'Start Consult'}
-              </Button>
-            )}
+              ))}
             <Button
               className={classes.consultIcon}
               aria-describedby={id}

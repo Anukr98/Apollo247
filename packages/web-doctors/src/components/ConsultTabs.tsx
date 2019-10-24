@@ -328,6 +328,8 @@ export const ConsultTabs: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [appointmentStatus, setAppointmentStatus] = useState<string>('');
+  const [sentToPatient, setSentToPatient] = useState<boolean>(false);
   /* case sheet data*/
 
   /* need to be worked later */
@@ -399,6 +401,17 @@ export const ConsultTabs: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
+            ? setAppointmentStatus(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status,
+              ] as unknown) as string)
+            : setAppointmentStatus('');
+          _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
+            ? setSentToPatient(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient,
+              ] as unknown) as boolean)
+            : setSentToPatient(false);
+
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -683,6 +696,8 @@ export const ConsultTabs: React.FC = () => {
                 startAppointment={startAppointment}
                 startAppointmentClick={startAppointmentClick}
                 saving={saving}
+                appointmentStatus={appointmentStatus[0]}
+                sentToPatient={sentToPatient}
               />
               <div>
                 {!isPdfPageOpen ? (
@@ -817,6 +832,8 @@ export const ConsultTabs: React.FC = () => {
               endConsultActionFinal();
               setIsConfirmDialogOpen(false);
               setIsPopoverOpen(true);
+              setAppointmentStatus('COMPLETED');
+              console.log('appointmentStatus ', appointmentStatus);
             }}
             autoFocus
           >

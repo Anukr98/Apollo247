@@ -476,6 +476,7 @@ export const GET_CASESHEET = gql`
       caseSheetDetails {
         id
         doctorId
+        sentToPatient
         appointment {
           id
           appointmentDateTime
