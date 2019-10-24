@@ -107,6 +107,7 @@ const useStyles = makeStyles((theme: Theme) => {
         fontSize: 15,
         fontWeight: 500,
         paddingRight: 60,
+        borderRadius: 0,
       },
     },
     boxActions: {
@@ -169,6 +170,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           <AphTextField
             disabled={disablePastMedicalHistoryFocus}
             fullWidth
+            multiline
             value={pastMedicalHistory}
             onChange={(e) => {
               setPastMedicalHistory(e.target.value);
@@ -197,6 +199,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           <AphTextField
             disabled={disablePastSurgicalHistoryFocus}
             fullWidth
+            multiline
             value={pastSurgicalHistory}
             onChange={(e) => {
               setPastSurgicalHistory(e.target.value);
@@ -225,6 +228,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           <AphTextField
             disabled={disableDrugAllergiesFocus}
             fullWidth
+            multiline
             value={drugAllergies}
             onChange={(e) => {
               setDrugAllergies(e.target.value);
@@ -253,6 +257,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           <AphTextField
             disabled={disableDietAllergiesFocus}
             fullWidth
+            multiline
             value={dietAllergies}
             onChange={(e) => {
               setDietAllergies(e.target.value);
@@ -281,6 +286,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           <AphTextField
             disabled={disableLifeStyleFocus}
             fullWidth
+            multiline
             value={lifeStyle}
             onChange={(e) => {
               setLifeStyle(e.target.value);
@@ -310,6 +316,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
             <AphTextField
               disabled={disableMenstrualHistoryFocus}
               fullWidth
+              multiline
               value={menstrualHistory}
               onChange={(e) => {
                 setMenstrualHistory(e.target.value);
@@ -340,6 +347,7 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
           <AphTextField
             disabled={disableFamilyHistoryFocus}
             fullWidth
+            multiline
             value={familyHistory}
             onChange={(e) => {
               setFamilyHistory(e.target.value);

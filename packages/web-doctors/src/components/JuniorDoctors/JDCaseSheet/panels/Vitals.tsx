@@ -35,6 +35,7 @@ const useStyles = makeStyles((theme: Theme) => ({
       fontSize: 15,
       fontWeight: 500,
       paddingRight: 60,
+      borderRadius: 0,
     },
   },
   noDataFound: {
@@ -102,7 +103,7 @@ export const Vitals: React.FC = () => {
               <AphTextField
                 disabled={disableheightFocus}
                 fullWidth
-                // inputRef={heightRef}
+                multiline
                 value={height}
                 onChange={(e) => {
                   setHeight(e.target.value);
@@ -139,6 +140,7 @@ export const Vitals: React.FC = () => {
               <AphTextField
                 disabled={disableWeightFocus}
                 fullWidth
+                multiline
                 value={weight}
                 onChange={(e) => {
                   setWeight(e.target.value);
@@ -169,6 +171,7 @@ export const Vitals: React.FC = () => {
               <AphTextField
                 disabled={disableBPFocus}
                 fullWidth
+                multiline
                 value={bp}
                 onChange={(e) => {
                   setBp(e.target.value);
@@ -199,6 +202,7 @@ export const Vitals: React.FC = () => {
               <AphTextField
                 disabled={disableTempFocus}
                 fullWidth
+                multiline
                 value={temperature}
                 onChange={(e) => {
                   setTemperature(e.target.value);
