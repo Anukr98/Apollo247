@@ -16,128 +16,120 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 'bold',
       color: '#02475b',
     },
-    previewBody: {
+    prescriptionPreview: {
+      backgroundColor: '#fff',
+      display: 'inline-block',
+      width: 'calc(100% - 40px)',
+      color: 'rgba(0, 0, 0, 0.6)',
+      margin: 20,
       padding: 20,
-      color: '#02475b',
     },
-    contentInnerView: {
-      padding: 40,
-      backgroundColor: theme.palette.common.white,
-    },
-    pdfViewHeader: {
+    pageHeader: {
       display: 'flex',
-      borderBottom: '1px solid rgba(0,0,0,0.3)',
-      paddingBottom: 20,
+    },
+    doctorInformation: {
+      marginLeft: 'auto',
+      width: 198,
+      '& h3': {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#02475b',
+        margin: 0,
+        '& span': {
+          fontWeight: 'normal',
+          fontSize: 10,
+        },
+      },
+    },
+    address: {
+      fontSize: 8,
     },
     logo: {
       '& img': {
-        verticalAlign: 'middle',
-        width: 160,
+        height: 65,
       },
     },
-    hospitalAddress: {
-      fontSize: 16,
+    pageContent: {
+      padding: '20px 0 0 0',
+    },
+    sectionHeader: {
+      fontSize: 11,
       fontWeight: 500,
-      color: '#02475b',
-      marginLeft: 'auto',
-      maxWidth: 320,
+      color: 'rgba(0, 0, 0, 0.7)',
+      backgroundColor: '#f7f7f7',
+      padding: '8px 12px',
     },
-    pdfViewSubHeader: {
-      display: 'flex',
-      paddingTop: 20,
-    },
-    patientDetails: {
-      display: 'flex',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
-    patientCol: {
-      paddingRight: 20,
-      '& label': {
-        color: '#0e8dbd',
-        textTransform: 'uppercase',
-      },
-    },
-    createdDate: {
-      marginLeft: 'auto',
-      fontSize: 16,
-      fontWeight: 'bold',
-      textTransform: 'uppercase',
+    accountDetails: {
+      fontSize: 10,
+      color: 'rgba(0, 0, 0, 0.6)',
+      padding: 12,
     },
     infoRow: {
       display: 'flex',
-      '& label': {
-        color: '#02475b',
-        textTransform: 'none',
-        minWidth: 90,
-      },
+      paddingBottom: 5,
     },
-    tabletImg: {
-      paddingBottom: 20,
-      paddingTop: 10,
-      '& img': {
-        width: 50,
-        verticalAlign: 'middle',
-      },
+    label: {
+      width: 80,
+      paddingRight: 10,
     },
-    contentInfo: {
-      paddingLeft: 15,
+    patientName: {
+      fontSize: 12,
+      color: '#02475b',
+      fontWeight: 500,
     },
-    sectionTitle: {
-      color: '#0e8dbd',
-      fontSize: 18,
+    chiefComplaints: {
+      fontSize: 12,
+      color: 'rgba(0, 0, 0, 0.6)',
+      padding: 12,
+    },
+    complaintsInfoRow: {
+      paddingBottom: 5,
+    },
+    complaintsLabel: {
+      fontSize: 12,
+      fontWeight: 500,
+      color: '#01475b',
+    },
+    diagnosis: {
+      fontSize: 12,
+      color: '#02475b',
+      fontWeight: 500,
+      padding: 12,
+    },
+    medicationList: {
+      fontSize: 12,
       fontWeight: 600,
-      textTransform: 'uppercase',
-      paddingBottom: 15,
-    },
-    prescriptionList: {
+      padding: 12,
       '& ol': {
         padding: 0,
-        margin: 0,
         paddingLeft: 18,
+        margin: 0,
         '& li': {
-          paddingBottom: 30,
-          fontSize: 16,
-          fontWeight: 'bold',
-          '& h4': {
-            fontSize: 16,
-            fontWeight: 'bold',
-            margin: 0,
-            textTransform: 'uppercase',
+          paddingBottom: 10,
+          '& span': {
+            color: 'rgba(0, 0, 0, 0.6)',
+            fontWeight: 'normal',
+            paddingTop: 3,
+            display: 'inline-block',
           },
         },
       },
     },
-    symptemList: {
-      paddingLeft: 30,
-      fontSize: 16,
-      paddingTop: 5,
-      fontWeight: 'normal',
+    disclaimer: {
+      fontSize: 10,
+      borderTop: 'solid 1px rgba(2, 71, 91, 0.15)',
+      color: 'rgba(0, 0, 0, 0.5)',
+      paddingTop: 10,
     },
-    since: {
-      opacity: 0.8,
-      fontStyle: 'italic',
-    },
-    howOften: {
-      fontWeight: 'bold',
-    },
-    severity: {
-      opacity: 0.8,
-      fontStyle: 'italic',
-    },
-    generalAdvice: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      paddingLeft: 50,
+    pageNumbers: {
+      textAlign: 'center',
+      color: '#02475b',
+      fontSize: 8,
+      fontWeight: 500,
       paddingBottom: 15,
     },
-    disclaimer: {
-      fontSize: 14,
-      fontWeight: 500,
-      paddingTop: 30,
-      borderBottom: '1px solid rgba(0,0,0,0.3)',
-      marginBottom: 30,
-      paddingBottom: 5,
+    lebelContent: {
+      width: '100%',
     },
   };
 });
@@ -148,125 +140,108 @@ export const CasesheetView: React.FC = (props) => {
   return (
     <div className={classes.root}>
       <div className={classes.previewHeader}>Prescription</div>
-      <div className={classes.previewBody}>
-        <div className={classes.contentInnerView}>
-          <div className={classes.pdfViewHeader}>
-            <div className={classes.logo}>
-              <img src={require('images/ic_logo.svg')} alt="" />
-            </div>
-            <div className={classes.hospitalAddress}>
-              1860 500 1066
-              <br />
-              Apollo Hospitals
-              <br />
-              No.1, Old No.28, Platform Road Near Mantri Square Mall, Hotel Swathi, Sheshadripuram
-              Bangalore, KA 560020
-            </div>
+      <div className={classes.prescriptionPreview}>
+        <div className={classes.pageHeader}>
+          <div className={classes.logo}>
+            <img src={require('images/ic_logo_insideapp.svg')} alt="" />
           </div>
-          <div className={classes.pdfViewSubHeader}>
-            <div className={classes.patientDetails}>
-              <div className={classes.patientCol}>
-                <label>Patient Details:</label>
-              </div>
-              <div className={classes.patientCol}>
-                <div className={classes.infoRow}>
-                  <label>Name</label>
-                  <span>Seema singh</span>
-                </div>
-                <div className={classes.infoRow}>
-                  <label>Age</label>
-                  <span>56</span>
-                </div>
-                <div className={classes.infoRow}>
-                  <label>Gender</label>
-                  <span>Female</span>
-                </div>
-                <div className={classes.infoRow}>
-                  <label>UHID</label>
-                  <span>APK 012345</span>
-                </div>
+          <div className={classes.doctorInformation}>
+            <h3>
+              Dr. Monica Iniyan
+              <br />
+              <span>General Physician | MCI Reg. No. AH98263</span>
+            </h3>
+            <p className={classes.address}>
+              9th Floor | Krishe Sapphire Building | MSR Block, Survey No. 88 | HiTech City Main
+              Road | Madhapur | Hyderabad – 500081 | Telangana, India
+            </p>
+          </div>
+        </div>
+        <div className={classes.pageContent}>
+          <div className={classes.sectionHeader}>Appointment Details</div>
+          <div className={classes.accountDetails}>
+            <div className={classes.infoRow}>
+              <div className={classes.label}>Patient</div>
+              <div className={classes.lebelContent}>
+                <div className={classes.patientName}>Seema Rao | Female | 49 yrs</div>
               </div>
             </div>
-            <div className={classes.createdDate}>Date - 27/09/2019</div>
-          </div>
-          <div className={classes.contentInfo}>
-            <div className={classes.tabletImg}>
-              <img src={require('images/ic_tablets_rx.svg')} alt="" />
+            <div className={classes.infoRow}>
+              <div className={classes.label}>Vitals</div>
+              <div className={classes.lebelContent}>
+                Weight: 67 kgs | Height: 160 cms | BP: 120/80 mm Hg | Temperature: 102°F
+              </div>
             </div>
-            <div className={classes.sectionTitle}>Prescription</div>
-            <div className={classes.prescriptionList}>
-              <ol>
-                <li>
-                  <h4>Momate Lotion 0.1% w/w</h4>
-                  <div className={classes.symptemList}>
-                    <div className={classes.since}>mometasone furoate .1%</div>
-                    <div className={classes.howOften}>Once-every 3 days for 3 weeks</div>
-                    <div className={classes.severity}>
-                      For dandruff Apply Over scalp, After 3 weeks apply once a week for 4 weeks
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <h4>Adapen Topical Gel 0.1%</h4>
-                  <div className={classes.symptemList}>
-                    <div className={classes.since}>adapalene .1%</div>
-                    <div className={classes.howOften}>1 time a day (night) for 5 weeks</div>
-                    <div className={classes.severity}>
-                      Apply to forehead, cheeks, chin area and avoid eyelids and mouth region.
-                      gentle single stroke application at night on a dry face. will cause
-                      irritation, so apply on alternate night for 1st week followed by every night.
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <h4>Faceclin Topical Gel</h4>
-                  <div className={classes.symptemList}>
-                    <div className={classes.since}>nicotinamide 4%, clindamycin phosphate 1%</div>
-                    <div className={classes.howOften}>1 time a day (morning) for 4 weeks</div>
-                    <div className={classes.severity}>
-                      Apply 15 min after washing with saslic face wash over cheeks, forehead, nose
-                      and chin
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <h4>Saslic-ds foam 2% w/v</h4>
-                  <div className={classes.symptemList}>
-                    <div className={classes.since}>nicotinamide 4%, clindamycin phosphate 1%</div>
-                    <div className={classes.howOften}>1 time a day (morning) for 4 weeks</div>
-                    <div className={classes.severity}>
-                      Apply 15 min after washing with saslic face wash over cheeks, forehead, nose
-                      and chin
-                    </div>
-                  </div>
-                </li>
-                <li>
-                  <h4>Melaglow Cream</h4>
-                  <div className={classes.symptemList}>
-                    <div className={classes.since}>nicotinamide 4%, clindamycin phosphate 1%</div>
-                    <div className={classes.howOften}>1 time a day (morning) for 4 weeks</div>
-                    <div className={classes.severity}>
-                      Apply 15 min after washing with saslic face wash over cheeks, forehead, nose
-                      and chin
-                    </div>
-                  </div>
-                </li>
-              </ol>
+            <div className={classes.infoRow}>
+              <div className={classes.label}>UHID</div>
+              <div className={classes.lebelContent}>APK 012345</div>
             </div>
-            <div className={classes.sectionTitle}>General Advice</div>
-            <div className={classes.generalAdvice}>
-              Avoid fast food like oily junk food
-              <br />
-              Stay out of the sun or cover your face & skin when exposet to Sunlight/dust/Pollution
-              Avoid touching your face or Propping your Cheeks with your hands
-              <br />
-              Consume 2 to 3 Litres of water, eat healthy
+            <div className={classes.infoRow}>
+              <div className={classes.label}>Consult Date</div>
+              <div className={classes.lebelContent}>24/09/2019</div>
             </div>
-            <div className={classes.disclaimer}>
-              Disclaimer: The prescription has been issued on inputs during chat/call with the
-              doctor. In case of emergency please visit a nearby hospital.
+            <div className={classes.infoRow}>
+              <div className={classes.label}>Consult Type</div>
+              <div className={classes.lebelContent}>Online</div>
             </div>
           </div>
+          <div className={classes.sectionHeader}>Chief Complaints</div>
+          <div className={classes.chiefComplaints}>
+            <div className={classes.complaintsInfoRow}>
+              <div className={classes.complaintsLabel}>Fever</div>
+              <div className={classes.lebelContent}>
+                Since: Last 2 days | How often: Nights | Severity: High, 102°F
+              </div>
+            </div>
+            <div className={classes.complaintsInfoRow}>
+              <div className={classes.complaintsLabel}>Cough and Cold</div>
+              <div className={classes.lebelContent}>
+                Since: Last 4 days | How often: Wet cough, all day; chest congestion at nights |
+                Severity: High
+              </div>
+            </div>
+          </div>
+          <div className={classes.sectionHeader}>Diagnosis</div>
+          <div className={classes.diagnosis}>
+            <div className={classes.infoRow}>
+              <div className={classes.lebelContent}>Viral Fever and Throat Infection</div>
+            </div>
+          </div>
+          <div className={classes.sectionHeader}>Medication Prescribed</div>
+          <div className={classes.medicationList}>
+            <ol>
+              <li>
+                Acetaminophen 1.5% w/w
+                <br />
+                <span>1 tablet (morning and night) for 5 days; before food</span>
+              </li>
+              <li>
+                Dextromethorphan syrup (generic)
+                <br />
+                <span>10 ml for 5 days, every 4 hours</span>
+              </li>
+            </ol>
+          </div>
+          <div className={classes.sectionHeader}>Diagnostic Tests</div>
+          <div className={classes.medicationList}>
+            <ol>
+              <li>
+                Blood Sugar test (X-165)
+                <br />
+                <span>Instructions related to this test will appear here</span>
+              </li>
+              <li>
+                Blood Sugar test (X-165)
+                <br />
+                <span>Instructions related to this test will appear here</span>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div className={classes.pageNumbers}>Page 1 of 2</div>
+        <div className={classes.disclaimer}>
+          Disclaimer: The prescription has been issued based on your inputs during chat/call with
+          the doctor. In case of emergency please visit a nearby hospital.
         </div>
       </div>
     </div>
