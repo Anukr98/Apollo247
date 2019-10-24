@@ -1571,19 +1571,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 borderRadius: 10,
               }}
             >
-                    {rowData.automatedText ? (
-                      <Text
-                        style={{
-                          color: '#ffffff',
-                          paddingHorizontal: 16,
-                          paddingVertical: 12,
-                          ...theme.fonts.IBMPlexSansMedium(15),
-                          textAlign: 'left',
-                        }}
-                      >
-                        {rowData.automatedText}
-                      </Text>
-                    ) : null}
+              {rowData.automatedText ? (
+                <Text
+                  style={{
+                    color: '#ffffff',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  {rowData.automatedText}
+                </Text>
+              ) : null}
             </View>
           ) : (
             <View

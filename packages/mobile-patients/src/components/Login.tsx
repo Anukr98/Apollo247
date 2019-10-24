@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, NavigationEventSubscription } from 'react-navigation';
 import { useAuth } from '../hooks/authHooks';
-import SmsListener from 'react-native-android-sms-listener';
+// import SmsListener from 'react-native-android-sms-listener';
 import {
   timeOutDataType,
   ReceivedSmsMessage,
@@ -124,43 +124,43 @@ export const Login: React.FC<LoginProps> = (props) => {
     }
   };
 
-  const requestReadSmsPermission = async () => {
-    try {
-      const resuts = await PermissionsAndroid.requestMultiple([
-        PermissionsAndroid.PERMISSIONS.READ_SMS,
-        PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
-      ]);
-      if (resuts[PermissionsAndroid.PERMISSIONS.READ_SMS] !== PermissionsAndroid.RESULTS.GRANTED) {
-        console.log(resuts, 'READ_SMS');
-      }
-      if (
-        resuts[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] !== PermissionsAndroid.RESULTS.GRANTED
-      ) {
-        console.log(resuts, 'RECEIVE_SMS');
-      }
-      if (resuts) {
-        console.log(resuts, 'RECEIVE_SMS');
-      }
-    } catch (error) {
-      console.log('error', error);
-    }
-  };
+  // const requestReadSmsPermission = async () => {
+  //   try {
+  //     const resuts = await PermissionsAndroid.requestMultiple([
+  //       PermissionsAndroid.PERMISSIONS.READ_SMS,
+  //       PermissionsAndroid.PERMISSIONS.RECEIVE_SMS,
+  //     ]);
+  //     if (resuts[PermissionsAndroid.PERMISSIONS.READ_SMS] !== PermissionsAndroid.RESULTS.GRANTED) {
+  //       console.log(resuts, 'READ_SMS');
+  //     }
+  //     if (
+  //       resuts[PermissionsAndroid.PERMISSIONS.RECEIVE_SMS] !== PermissionsAndroid.RESULTS.GRANTED
+  //     ) {
+  //       console.log(resuts, 'RECEIVE_SMS');
+  //     }
+  //     if (resuts) {
+  //       console.log(resuts, 'RECEIVE_SMS');
+  //     }
+  //   } catch (error) {
+  //     console.log('error', error);
+  //   }
+  // };
 
   useEffect(() => {
     console.log('didmout');
-    Platform.OS === 'android' && requestReadSmsPermission();
+    // Platform.OS === 'android' && requestReadSmsPermission();
   }, []);
 
-  useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
-      const newOtp = message.body.match(/-*[0-9]+/);
-      otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
-    });
-    setSubscriptionId(subscriptionId);
-    didBlurSubscription = props.navigation.addListener('didBlur', () => {
-      setPhoneNumber('');
-    });
-  }, [props.navigation, subscriptionId]);
+  // useEffect(() => {
+  //   const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
+  //     const newOtp = message.body.match(/-*[0-9]+/);
+  //     otpString = newOtp && newOtp.length > 0 ? newOtp[0] : '';
+  //   });
+  //   setSubscriptionId(subscriptionId);
+  //   didBlurSubscription = props.navigation.addListener('didBlur', () => {
+  //     setPhoneNumber('');
+  //   });
+  // }, [props.navigation, subscriptionId]);
 
   useEffect(() => {
     return () => {

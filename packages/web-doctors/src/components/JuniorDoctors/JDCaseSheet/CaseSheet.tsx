@@ -334,6 +334,12 @@ export const CaseSheet: React.FC = () => {
   const items = [
     { key: 'symptoms', value: 'Chief Complaints', state: symptoms, component: <Symptoms /> },
     {
+      key: 'patientHistory&Lifestyle',
+      value: 'Patient’s Medical and Family History',
+      state: patientHistory,
+      component: <HistoryAndLifeStyle />,
+    },
+    {
       key: 'vitals',
       value: 'Vitals',
       state: vitals,
@@ -347,28 +353,22 @@ export const CaseSheet: React.FC = () => {
     },
     { key: 'diagnosis', value: 'Diagnosis', state: diagnosis, component: <Diagnosis /> },
     {
-      key: 'medicinePrescription',
-      value: 'Medicines',
-      state: medicinePrescription,
-      component: <MedicinePrescription />,
-    },
-    {
       key: 'diagnosticPrescription',
       value: 'Tests',
       state: diagnosticPrescription,
       component: <DiagnosticPrescription />,
     },
     {
+      key: 'medicinePrescription',
+      value: 'Medication Prescribed',
+      state: medicinePrescription,
+      component: <MedicinePrescription />,
+    },
+    {
       key: 'otherInstructions',
       value: 'Advice/Instructions',
       state: otherInstructions,
       component: <OtherInstructions />,
-    },
-    {
-      key: 'patientHistory&Lifestyle',
-      value: 'Patient’s Medical and Family History',
-      state: patientHistory,
-      component: <HistoryAndLifeStyle />,
     },
   ];
 

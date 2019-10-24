@@ -185,6 +185,14 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.APPOINTMENT_EXIST_ERROR, undefined, {});
   }
 
+  const patientConsults = await appts.checkPatientConsults(
+    appointmentInput.patientId,
+    appointmentInput.appointmentDateTime
+  );
+  if (patientConsults) {
+    throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
+  }
+
   const checkHours = await appts.checkWithinConsultHours(
     appointmentInput.appointmentDateTime,
     appointmentInput.appointmentType,

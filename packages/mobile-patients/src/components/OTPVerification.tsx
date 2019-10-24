@@ -19,7 +19,7 @@ import {
   WebView,
   Dimensions,
 } from 'react-native';
-import SmsListener from 'react-native-android-sms-listener';
+// import SmsListener from 'react-native-android-sms-listener';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
 import { OTPTextView } from './ui/OTPTextView';
@@ -187,9 +187,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   }, [_removeFromStore, props.navigation.state.params, startInterval]);
 
   useEffect(() => {
-    const { otpString } = props.navigation.state.params!;
-    setOtp(otpString);
-    console.log('OTPVerification otpString', otpString);
+    // const { otpString } = props.navigation.state.params!;
+    // setOtp(otpString);
+    // console.log('OTPVerification otpString', otpString);
     getTimerData();
   }, [props.navigation, getTimerData]);
 
@@ -327,14 +327,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   useEffect(() => {
-    const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
-      const newOtp = message.body.match(/-*[0-9]+/);
-      const otpString = newOtp ? newOtp[0] : '';
-      console.log(otpString, otpString.length, 'otpString');
-      setOtp(otpString.trim());
-      setIsValidOTP(true);
-    });
-    setSubscriptionId(subscriptionId);
+    // const subscriptionId = SmsListener.addListener((message: ReceivedSmsMessage) => {
+    //   const newOtp = message.body.match(/-*[0-9]+/);
+    //   const otpString = newOtp ? newOtp[0] : '';
+    //   console.log(otpString, otpString.length, 'otpString');
+    //   setOtp(otpString.trim());
+    //   setIsValidOTP(true);
+    // });
+    // setSubscriptionId(subscriptionId);
     // textInputRef.current.inputs && textInputRef.current.inputs[0].focus();
     // backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
     //   console.log('hardwareBackPress');
