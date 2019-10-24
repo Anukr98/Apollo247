@@ -2,6 +2,7 @@ import React, { Fragment, useContext } from 'react';
 import { Typography, List, ListItem } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { AphTextField, AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -20,6 +21,15 @@ const useStyles = makeStyles(() => ({
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
     width: '100%',
+    position: 'relative',
+    '& textarea': {
+      border: 'none',
+      padding: 15,
+      fontSize: 15,
+      fontWeight: 500,
+      paddingRight: 60,
+      borderRadius: 0,
+    },
   },
   textContent: {
     color: '#01475b',
@@ -47,6 +57,27 @@ const useStyles = makeStyles(() => ({
     display: 'inline-block',
     float: 'right',
   },
+  boxActions: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+    display: 'flex',
+    alignItems: 'center',
+    '& button': {
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      minWidth: 'auto',
+      padding: 0,
+      marginLeft: 12,
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '& img': {
+        maxWidth: 20,
+        maxHeight: 20,
+      },
+    },
+  },
 }));
 
 export const LifeStyle: React.FC = () => {
@@ -62,7 +93,7 @@ export const LifeStyle: React.FC = () => {
             Patient’s Past Medical History
           </Typography>
           <Typography component="div" className={classes.content}>
-            <List>
+            {/* <List>
               <ListItem>
                 <Fragment>
                   <Typography component="p" className={classes.textContent}>
@@ -73,7 +104,16 @@ export const LifeStyle: React.FC = () => {
                   </Typography>
                 </Fragment>
               </ListItem>
-            </List>
+            </List> */}
+            <AphTextField fullWidth multiline />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
           </Typography>
         </Typography>
 
@@ -82,7 +122,7 @@ export const LifeStyle: React.FC = () => {
             Patient’s Past Surgical History
           </Typography>
           <Typography component="div" className={classes.content}>
-            <List>
+            {/* <List>
               <ListItem>
                 <Fragment>
                   <Typography component="p" className={classes.textContent}>
@@ -93,7 +133,16 @@ export const LifeStyle: React.FC = () => {
                   </Typography>
                 </Fragment>
               </ListItem>
-            </List>
+            </List> */}
+            <AphTextField fullWidth multiline />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
           </Typography>
         </Typography>
 
@@ -102,7 +151,7 @@ export const LifeStyle: React.FC = () => {
             Drug Allergies
           </Typography>
           <Typography component="div" className={classes.content}>
-            <List>
+            {/* <List>
               <ListItem>
                 <Fragment>
                   <Typography component="p" className={classes.textContent}>
@@ -113,7 +162,16 @@ export const LifeStyle: React.FC = () => {
                   </Typography>
                 </Fragment>
               </ListItem>
-            </List>
+            </List> */}
+            <AphTextField fullWidth multiline />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
           </Typography>
         </Typography>
         <Typography component="div" className={classes.dietAllergies}>
@@ -121,7 +179,7 @@ export const LifeStyle: React.FC = () => {
             Diet Allergies/Restrictions
           </Typography>
           <Typography component="div" className={classes.content}>
-            <List>
+            {/* <List>
               <ListItem>
                 <Fragment>
                   <Typography component="p" className={classes.textContent}>
@@ -132,7 +190,16 @@ export const LifeStyle: React.FC = () => {
                   </Typography>
                 </Fragment>
               </ListItem>
-            </List>
+            </List> */}
+            <AphTextField fullWidth multiline />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
           </Typography>
         </Typography>
         {patientDetails && patientDetails!.lifeStyle && patientDetails!.lifeStyle.length > 0 ? (
@@ -141,7 +208,7 @@ export const LifeStyle: React.FC = () => {
               Lifestyle & Habits
             </Typography>
             <Typography component="div" className={classes.content}>
-              <List>
+              {/* <List>
                 {patientDetails!.lifeStyle!.map(
                   (item, idx) =>
                     item!.description &&
@@ -155,7 +222,16 @@ export const LifeStyle: React.FC = () => {
                       </ListItem>
                     )
                 )}
-              </List>
+              </List> */}
+              <AphTextField fullWidth multiline />
+              <div className={classes.boxActions}>
+                <AphButton>
+                  <img src={require('images/round_edit_24_px.svg')} alt="" />
+                </AphButton>
+                <AphButton>
+                  <img src={require('images/ic_cancel_green.svg')} alt="" />
+                </AphButton>
+              </div>
             </Typography>
           </Typography>
         ) : (
@@ -166,7 +242,7 @@ export const LifeStyle: React.FC = () => {
             Menstual History*
           </Typography>
           <Typography component="div" className={classes.content}>
-            <List>
+            {/* <List>
               <ListItem>
                 <Fragment>
                   <Typography component="p" className={classes.textContent}>
@@ -177,7 +253,16 @@ export const LifeStyle: React.FC = () => {
                   </Typography>
                 </Fragment>
               </ListItem>
-            </List>
+            </List> */}
+            <AphTextField fullWidth multiline />
+            <div className={classes.boxActions}>
+              <AphButton>
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton>
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
           </Typography>
         </Typography>
 
@@ -190,7 +275,7 @@ export const LifeStyle: React.FC = () => {
               Patient’s Family Medical History
             </Typography>
             <Typography component="div" className={classes.content}>
-              <List>
+              {/* <List>
                 {patientDetails!.familyHistory!.map(
                   (item, idx) =>
                     item!.description &&
@@ -204,7 +289,16 @@ export const LifeStyle: React.FC = () => {
                       </ListItem>
                     )
                 )}
-              </List>
+              </List> */}
+              <AphTextField fullWidth multiline />
+              <div className={classes.boxActions}>
+                <AphButton>
+                  <img src={require('images/round_edit_24_px.svg')} alt="" />
+                </AphButton>
+                <AphButton>
+                  <img src={require('images/ic_cancel_green.svg')} alt="" />
+                </AphButton>
+              </div>
             </Typography>
           </Typography>
         ) : (
