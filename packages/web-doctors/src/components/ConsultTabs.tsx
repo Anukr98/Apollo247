@@ -11,6 +11,13 @@ import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
 import { useApolloClient } from 'react-apollo-hooks';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import { CasesheetView } from 'components/CasesheetView';
+
 //import { Document } from 'react-pdf';
 import _omit from 'lodash/omit';
 
@@ -273,6 +280,7 @@ export const ConsultTabs: React.FC = () => {
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -306,7 +314,7 @@ export const ConsultTabs: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
-  const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
+  const [isPdfPageOpen, setIsPdfPageOpen] = useState<boolean>(false);
   const [bp, setBp] = useState<string>('');
   const [height, setHeight] = useState<string>('');
   const [temperature, setTemperature] = useState<string>('');
@@ -508,7 +516,8 @@ export const ConsultTabs: React.FC = () => {
           setSaving(false);
         }
         if (!flag) {
-          setIsPopoverOpen(true);
+          // setIsPopoverOpen(true);
+          setIsConfirmDialogOpen(true);
         }
       })
       .catch((e) => {
@@ -538,7 +547,7 @@ export const ConsultTabs: React.FC = () => {
       })
       .then((_data) => {
         // setIsPopoverOpen(true);
-        setIsPdfPopoverOpen(true);
+        //setIsPdfPopoverOpen(true);
         setIsEnded(true);
         console.log('_data', _data);
       })
@@ -676,49 +685,56 @@ export const ConsultTabs: React.FC = () => {
                 saving={saving}
               />
               <div>
-                <div>
+                {!isPdfPageOpen ? (
                   <div>
-                    <Tabs
-                      value={tabValue}
-                      variant="fullWidth"
-                      classes={{
-                        root: classes.tabsRoot,
-                        indicator: classes.tabsIndicator,
-                      }}
-                      onChange={(e, newValue) => {
-                        setTabValue(newValue);
-                      }}
-                    >
-                      <Tab
-                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                        label="Case Sheet"
-                      />
-                      <Tab
-                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                        label="Chat"
-                      />
-                    </Tabs>
-                  </div>
-                  <TabContainer>
-                    <div className={tabValue !== 0 ? classes.none : classes.block}>
-                      {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
-                    </div>
-                  </TabContainer>
-                  <TabContainer>
-                    <div className={tabValue !== 1 ? classes.none : classes.block}>
-                      <div className={classes.chatContainer}>
-                        <ConsultRoom
-                          startConsult={startConsult}
-                          sessionId={sessionId}
-                          token={token}
-                          appointmentId={paramId}
-                          doctorId={doctorId}
-                          patientId={patientId}
+                    <div>
+                      <Tabs
+                        value={tabValue}
+                        variant="fullWidth"
+                        classes={{
+                          root: classes.tabsRoot,
+                          indicator: classes.tabsIndicator,
+                        }}
+                        onChange={(e, newValue) => {
+                          setTabValue(newValue);
+                        }}
+                      >
+                        <Tab
+                          classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                          label="Case Sheet"
                         />
-                      </div>
+                        <Tab
+                          classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                          label="Chat"
+                        />
+                      </Tabs>
                     </div>
-                  </TabContainer>
-                </div>
+                    <TabContainer>
+                      <div className={tabValue !== 0 ? classes.none : classes.block}>
+                        {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
+                      </div>
+                    </TabContainer>
+
+                    <TabContainer>
+                      <div className={tabValue !== 1 ? classes.none : classes.block}>
+                        <div className={classes.chatContainer}>
+                          <ConsultRoom
+                            startConsult={startConsult}
+                            sessionId={sessionId}
+                            token={token}
+                            appointmentId={paramId}
+                            doctorId={doctorId}
+                            patientId={patientId}
+                          />
+                        </div>
+                      </div>
+                    </TabContainer>
+                  </div>
+                ) : (
+                  <div>
+                    <CasesheetView />
+                  </div>
+                )}
               </div>
             </div>
           </Scrollbars>
@@ -763,6 +779,7 @@ export const ConsultTabs: React.FC = () => {
                 setIsPopoverOpen(false);
                 endConsultActionFinal();
                 setCaseSheetEdit(false);
+                setIsPdfPageOpen(true);
               }}
             >
               PREVIEW PRESCRIPTION
@@ -784,6 +801,39 @@ export const ConsultTabs: React.FC = () => {
           <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
         </div>
       )}
+
+      <Dialog open={isConfirmDialogOpen} onClose={() => setIsConfirmDialogOpen(false)}>
+        <DialogTitle>Are you sure you want to end your consult?</DialogTitle>
+        {/* <DialogContent>
+          <DialogContentText>Please enter diagnosis</DialogContentText>
+        </DialogContent> */}
+        <DialogActions>
+          <Button color="primary" onClick={() => setIsConfirmDialogOpen(false)} autoFocus>
+            No
+          </Button>
+          <Button
+            color="primary"
+            onClick={() => {
+              endConsultActionFinal();
+              setIsConfirmDialogOpen(false);
+              setIsPopoverOpen(true);
+            }}
+            autoFocus
+          >
+            Yes
+          </Button>
+          <DialogContent>
+            <DialogContentText>
+              After ending the consult you will get the option to preview/edit case sheet and send
+              prescription to the patient
+            </DialogContentText>
+          </DialogContent>
+          {/* <Typography>
+            After ending the consult you will get the option to preview/edit case sheet and send
+            prescription to the patient
+          </Typography> */}
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
