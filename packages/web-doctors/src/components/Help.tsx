@@ -28,8 +28,9 @@ const useStyles = makeStyles((theme: Theme) => {
         marginBottom: 10,
       },
       '& h2': {
-        fontSize: 36,
+        fontSize: 32,
         fontWeight: 600,
+        marginTop: 5,
       },
     },
     helpWrap: {

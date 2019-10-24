@@ -126,6 +126,11 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#00b38e',
       },
     },
+    menuItemActiveHelp: {
+      backgroundColor: '#f7f7f7',
+      position: 'relative',
+      display: 'inline-block',
+    },
     container: {
       maxWidth: 1024,
       margin: 'auto',
@@ -205,7 +210,6 @@ export const Header: React.FC = (props) => {
                       {!isJuniorDoctor ? (
                         <span title="Inbox">
                           <img
-                            className={`${selectedTab === 3 && classes.menuItemActive}`}
                             onClick={() => setSelectedTab(3)}
                             src={require('images/ic_inbox.svg')}
                           />
@@ -214,15 +218,16 @@ export const Header: React.FC = (props) => {
                       {!isJuniorDoctor ? (
                         <span title="Notification">
                           <img
-                            className={`${selectedTab === 4 && classes.menuItemActive}`}
                             onClick={() => setSelectedTab(4)}
                             src={require('images/ic_notifications.svg')}
                           />
                         </span>
                       ) : null}
-                      <span title="Help">
+                      <span
+                        title="Help"
+                        className={`${selectedTab === 5 && classes.menuItemActiveHelp}`}
+                      >
                         <img
-                          className={`${selectedTab === 5 && classes.menuItemActive}`}
                           onClick={() => {
                             isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
                             setSelectedTab(5);
