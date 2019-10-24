@@ -30,8 +30,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     borderRadius: 5,
-    minWidth: 288,
-    maxWidth: 288,
+    minWidth: '100%',
+    // maxWidth: 288,
     margin: '5px 0',
 
     '& h6': {
@@ -170,6 +170,22 @@ const useStyles = makeStyles((theme: Theme) => ({
       padding: '8px 20px',
     },
   },
+  editSymptom: {
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
+    minWidth: 'auto',
+    padding: 0,
+    position: 'absolute',
+    right: 50,
+    top: 15,
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
+    '& img': {
+      maxWidth: 20,
+      maxHeight: 20,
+    },
+  },
   cancelBtn: {
     fontSize: 14,
     fontWeight: 600,
@@ -213,6 +229,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   symptomCaption: {
     marginLeft: 20,
   },
+  fullRow: {
+    width: '100%',
+  },
 }));
 interface errorObject {
   symptomError: boolean;
@@ -237,6 +256,7 @@ export const Symptoms: React.FC = (props) => {
   const [idx, setIdx] = React.useState();
   const [severity, setSeverity] = React.useState('');
   const { caseSheetEdit } = useContext(CaseSheetContext);
+  const [isUpdate, setIsUpdate] = React.useState(false);
   const [errorState, setErrorState] = React.useState<errorObject>({
     symptomError: false,
     sinceError: false,
@@ -265,13 +285,14 @@ export const Symptoms: React.FC = (props) => {
       severityError: false,
     });
   };
+  const [idxValue, setIdxValue] = React.useState();
   const addUpdateSymptom = () => {
     console.log(symptoms);
     let duplicate = false;
-    if (symptoms!.length > 0 && symptom.length > 0) {
-      symptoms!.forEach((val: any, index: any) => {
-        if (val!.symptom!.trim().toLowerCase() === symptom.trim().toLowerCase()) {
-          duplicate = true;
+    if (symptoms && symptom.length > 0) {
+      symptoms.forEach((val: any, index: any) => {
+        if (val.symptom && val.symptom.trim().toLowerCase() === symptom.trim().toLowerCase()) {
+          duplicate = isUpdate ? idxValue !== index : true;
         }
       });
     }
@@ -324,16 +345,25 @@ export const Symptoms: React.FC = (props) => {
         severityError: false,
       });
 
-      const inputParams: any = {
-        __typename: 'SymptomList',
-        howOften: howOften,
-        severity: severity,
-        since: since,
-        symptom: symptom,
-      };
-      const x = symptoms;
-      x!.push(inputParams);
-      setSymptoms(x);
+      if (isUpdate && symptoms) {
+        const currentSymptom = symptoms[idxValue];
+        currentSymptom.symptom = symptom;
+        currentSymptom.severity = severity;
+        currentSymptom.howOften = howOften;
+        currentSymptom.since = since;
+      } else {
+        const inputParams: any = {
+          __typename: "SymptomList",
+          howOften: howOften,
+          severity: severity,
+          since: since,
+          symptom: symptom
+        };
+        const x = symptoms;
+        x!.push(inputParams);
+        setSymptoms(x);
+      }
+      setIsUpdate(false);
       setIsDialogOpen(false);
       clearField();
       clearError();
@@ -345,9 +375,24 @@ export const Symptoms: React.FC = (props) => {
     }
   }, [symptoms, idx]);
 
+  const showSymptom = (idx: number) => {
+    if (symptoms && symptoms.length > 0) {
+      const ReqSymptom = symptoms[idx];
+      if (ReqSymptom) {
+        setSymptom(ReqSymptom.symptom || "");
+        setSince(ReqSymptom.since || "");
+        setHowOften(ReqSymptom.howOften || "");
+        setSeverity(ReqSymptom.severity || "");
+      }
+      setIsDialogOpen(true);
+      setIsUpdate(true);
+      setIdxValue(idx);
+    }
+  };
+
   return (
     <Typography className={classes.container} component="div">
-      <div>
+      <div className={classes.fullRow}>
         {symptoms && symptoms.length > 0 ? (
           <List className={classes.symtomList}>
             {symptoms &&
@@ -356,6 +401,14 @@ export const Symptoms: React.FC = (props) => {
                   item!.symptom!.trim() !== '' && (
                     <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
                       <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
+                      <AphButton classes={{ root: classes.editSymptom }}
+                      onClick={() => showSymptom(idx)}
+                      >
+                        <img
+                          src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
+                          alt=""
+                        />
+                      </AphButton>
                       <AphButton
                         variant="contained"
                         color="primary"
@@ -418,10 +471,13 @@ export const Symptoms: React.FC = (props) => {
             variant="contained"
             color="primary"
             classes={{ root: classes.btnAddDoctor }}
-            onClick={() => setIsDialogOpen(true)}
+            onClick={() => {
+              setIsDialogOpen(true);
+              setIsUpdate(false);
+            }}
           >
             <img src={require('images/ic_dark_plus.svg')} alt="" />
-            Add Symptom
+            ADD COMPLAINT
           </AphButton>
         )}
 
@@ -433,7 +489,7 @@ export const Symptoms: React.FC = (props) => {
         >
           <Paper className={classes.medicinePopup}>
             <AphDialogTitle className={classes.popupHeadingCenter}>
-              ADD SYMPTOM
+              ADD COMPLAINT
               <Button className={classes.cross}>
                 <img
                   src={require('images/ic_cross.svg')}
@@ -452,7 +508,7 @@ export const Symptoms: React.FC = (props) => {
                   <div>
                     <div className={classes.dialogContent}>
                       <div>
-                        <h6>Symptom</h6>
+                        <h6>COMPLAINT</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
                             placeholder=""
@@ -567,7 +623,7 @@ export const Symptoms: React.FC = (props) => {
                         addUpdateSymptom();
                       }}
                     >
-                      Add Symptom
+                      {isUpdate ? "Update Complaint" : "Add Complaint"}
                     </AphButton>
                   </div>
                 </div>
