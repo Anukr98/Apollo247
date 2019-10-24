@@ -13,6 +13,19 @@ export interface GetCaseSheet_getCaseSheet_patientDetails_lifeStyle {
   description: string | null;
 }
 
+export interface GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory {
+  __typename: "PatientMedicalHistory";
+  bp: string | null;
+  dietAllergies: string | null;
+  drugAllergies: string | null;
+  height: string | null;
+  menstrualHistory: string | null;
+  pastMedicalHistory: string | null;
+  pastSurgicalHistory: string | null;
+  temperature: string | null;
+  weight: string | null;
+}
+
 export interface GetCaseSheet_getCaseSheet_patientDetails_familyHistory {
   __typename: "PatientFamilyHistory";
   description: string | null;
@@ -35,6 +48,7 @@ export interface GetCaseSheet_getCaseSheet_patientDetails {
   id: string;
   allergies: string | null;
   lifeStyle: (GetCaseSheet_getCaseSheet_patientDetails_lifeStyle | null)[] | null;
+  patientMedicalHistory: GetCaseSheet_getCaseSheet_patientDetails_patientMedicalHistory | null;
   familyHistory: (GetCaseSheet_getCaseSheet_patientDetails_familyHistory | null)[] | null;
   patientAddress: (GetCaseSheet_getCaseSheet_patientDetails_patientAddress | null)[] | null;
   dateOfBirth: any | null;

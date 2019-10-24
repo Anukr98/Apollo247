@@ -30,8 +30,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     backgroundColor: 'rgba(0, 0, 0, 0.02)',
     border: 'solid 1px rgba(2, 71, 91, 0.15)',
     borderRadius: 5,
-    minWidth: 288,
-    maxWidth: 288,
+    minWidth: '100%',
+    // maxWidth: 288,
     margin: '5px 0',
 
     '& h6': {
@@ -170,6 +170,22 @@ const useStyles = makeStyles((theme: Theme) => ({
       padding: '8px 20px',
     },
   },
+  editSymptom: {
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
+    minWidth: 'auto',
+    padding: 0,
+    position: 'absolute',
+    right: 50,
+    top: 15,
+    '&:hover': {
+      backgroundColor: 'transparent',
+    },
+    '& img': {
+      maxWidth: 20,
+      maxHeight: 20,
+    },
+  },
   cancelBtn: {
     fontSize: 14,
     fontWeight: 600,
@@ -212,6 +228,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   symptomCaption: {
     marginLeft: 20,
+  },
+  fullRow: {
+    width: '100%',
   },
 }));
 interface errorObject {
@@ -347,7 +366,7 @@ export const Symptoms: React.FC = (props) => {
 
   return (
     <Typography className={classes.container} component="div">
-      <div>
+      <div className={classes.fullRow}>
         {symptoms && symptoms.length > 0 ? (
           <List className={classes.symtomList}>
             {symptoms &&
@@ -356,6 +375,12 @@ export const Symptoms: React.FC = (props) => {
                   item!.symptom!.trim() !== '' && (
                     <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
                       <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
+                      <AphButton classes={{ root: classes.editSymptom }}>
+                        <img
+                          src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
+                          alt=""
+                        />
+                      </AphButton>
                       <AphButton
                         variant="contained"
                         color="primary"
@@ -421,7 +446,7 @@ export const Symptoms: React.FC = (props) => {
             onClick={() => setIsDialogOpen(true)}
           >
             <img src={require('images/ic_dark_plus.svg')} alt="" />
-            Add Symptom
+            ADD COMPLAINT
           </AphButton>
         )}
 
@@ -433,7 +458,7 @@ export const Symptoms: React.FC = (props) => {
         >
           <Paper className={classes.medicinePopup}>
             <AphDialogTitle className={classes.popupHeadingCenter}>
-              ADD SYMPTOM
+              ADD COMPLAINT
               <Button className={classes.cross}>
                 <img
                   src={require('images/ic_cross.svg')}
@@ -452,7 +477,7 @@ export const Symptoms: React.FC = (props) => {
                   <div>
                     <div className={classes.dialogContent}>
                       <div>
-                        <h6>Symptom</h6>
+                        <h6>COMPLAINT</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
                             placeholder=""
@@ -567,7 +592,7 @@ export const Symptoms: React.FC = (props) => {
                         addUpdateSymptom();
                       }}
                     >
-                      Add Symptom
+                      Add Complaint
                     </AphButton>
                   </div>
                 </div>

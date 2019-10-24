@@ -441,6 +441,17 @@ export const GET_CASESHEET = gql`
         lifeStyle {
           description
         }
+        patientMedicalHistory {
+          bp
+          dietAllergies
+          drugAllergies
+          height
+          menstrualHistory
+          pastMedicalHistory
+          pastSurgicalHistory
+          temperature
+          weight
+        }
         familyHistory {
           description
           relation

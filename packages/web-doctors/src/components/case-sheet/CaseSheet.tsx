@@ -15,6 +15,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import {
   Symptoms,
   LifeStyle,
+  Vital,
   HealthVault,
   DoctorsNotes,
   Diagnosis,
@@ -164,12 +165,18 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const [followUp, setFollowUp] = useState<boolean>(props.startAppointment);
   const [otherInstructions, setOtherInstructions] = useState<boolean>(props.startAppointment);
   const items = [
-    { key: 'symptoms', value: 'Symptoms', state: symptoms, component: <Symptoms /> },
+    { key: 'symptoms', value: 'Chief Complaints', state: symptoms, component: <Symptoms /> },
     {
       key: 'lifestyle',
-      value: 'Patient History & Lifestyle',
+      value: 'Patient’s Medical and Family History',
       state: lifestyle,
       component: <LifeStyle />,
+    },
+    {
+      key: 'Vital',
+      value: 'Vital',
+      state: lifestyle,
+      component: <Vital />,
     },
     {
       key: 'healthVault',
@@ -181,7 +188,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     { key: 'diagnosis', value: 'Diagnosis', state: diagnosis, component: <Diagnosis /> },
     {
       key: 'medicinePrescription',
-      value: 'Medicines',
+      value: 'Medication Prescribed',
       state: medicinePrescription,
       component: <MedicinePrescription />,
     },
@@ -191,13 +198,13 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       state: diagnosticPrescription,
       component: <DiagnosticPrescription />,
     },
-    { key: 'followup', value: 'Follow up', state: followUp, component: <FollowUp /> },
     {
       key: 'otherInstructions',
-      value: 'Other Instructions',
+      value: 'Advice/Instructions',
       state: otherInstructions,
       component: <OtherInstructions />,
     },
+    { key: 'followup', value: 'Follow up', state: followUp, component: <FollowUp /> },
   ];
 
   const handlePanelExpansion = (expansionKey: string) => (

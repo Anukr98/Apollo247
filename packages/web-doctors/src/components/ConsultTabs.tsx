@@ -12,6 +12,8 @@ import { ConsultRoom } from 'components/ConsultRoom';
 import { useApolloClient } from 'react-apollo-hooks';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 //import { Document } from 'react-pdf';
+import _omit from 'lodash/omit';
+
 import {
   CreateAppointmentSession,
   CreateAppointmentSessionVariables,
@@ -29,7 +31,10 @@ import {
   END_APPOINTMENT_SESSION,
   CREATE_CASESHEET_FOR_SRD,
   GET_CASESHEET_JRD,
+  MODIFY_CASESHEET,
 } from 'graphql/profiles';
+
+import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
 
 import {
   GetJuniorDoctorCaseSheet,
@@ -302,6 +307,18 @@ export const ConsultTabs: React.FC = () => {
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
+  const [bp, setBp] = useState<string>('');
+  const [height, setHeight] = useState<string>('');
+  const [temperature, setTemperature] = useState<string>('');
+  const [weight, setWeight] = useState<string>('');
+  const [drugAllergies, setDrugAllergies] = useState<string>('');
+  const [dietAllergies, setDietAllergies] = useState<string>('');
+  const [menstrualHistory, setMenstrualHistory] = useState<string>('');
+  const [pastMedicalHistory, setPastMedicalHistory] = useState<string>('');
+  const [pastSurgicalHistory, setPastSurgicalHistory] = useState<string>('');
+  const [lifeStyle, setLifeStyle] = useState<string>('');
+  const [familyHistory, setFamilyHistory] = useState<string>('');
+  const [gender, setGender] = useState<string>('');
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   /* case sheet data*/
 
@@ -420,34 +437,72 @@ export const ConsultTabs: React.FC = () => {
   }, []);
 
   const saveCasesheetAction = (flag: boolean) => {
+    // this condition is written to avoid __typename from already existing data
+    let symptomsFinal = null,
+      diagnosisFinal = null,
+      diagnosticPrescriptionFinal = null,
+      medicinePrescriptionFinal = null,
+      otherInstructionsFinal = null;
+
+    if (symptoms && symptoms.length > 0) {
+      symptomsFinal = symptoms.map((symptom) => {
+        return _omit(symptom, '__typename');
+      });
+    }
+    if (diagnosis && diagnosis.length > 0) {
+      diagnosisFinal = diagnosis.map((diagnosis) => {
+        return _omit(diagnosis, ['__typename', 'id']);
+      });
+    }
+    if (diagnosticPrescription && diagnosticPrescription.length > 0) {
+      diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
+        return _omit(prescription, ['__typename']);
+      });
+    }
+    if (medicinePrescription && medicinePrescription.length > 0) {
+      medicinePrescriptionFinal = medicinePrescription.map((prescription) => {
+        return _omit(prescription, ['__typename']);
+      });
+    }
+    if (otherInstructions && otherInstructions.length > 0) {
+      otherInstructionsFinal = otherInstructions.map((instruction) => {
+        return _omit(instruction, ['__typename']);
+      });
+    }
     setSaving(true);
     client
-      .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-        mutation: UPDATE_CASESHEET,
+      .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
+        mutation: MODIFY_CASESHEET,
         variables: {
-          UpdateCaseSheetInput: {
-            symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-            notes: customNotes,
-            diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
-            diagnosticPrescription:
-              diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
-            followUp: followUp[0],
-            followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
-            followUpAfterInDays:
-              followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
-            otherInstructions:
-              otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
-            medicinePrescription:
-              medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
+          ModifyCaseSheetInput: {
+            symptoms: symptomsFinal,
+            notes: notes && notes.length > 0 ? notes : null,
+            diagnosis: diagnosisFinal,
+            diagnosticPrescription: diagnosticPrescriptionFinal,
+            followUp: false,
+            followUpAfterInDays: 0,
+            otherInstructions: otherInstructionsFinal,
+            medicinePrescription: medicinePrescriptionFinal,
             id: caseSheetId,
+            //status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
+            lifeStyle: lifeStyle,
+            familyHistory: familyHistory,
+            dietAllergies: dietAllergies,
+            drugAllergies: drugAllergies,
+            height: height,
+            menstrualHistory: menstrualHistory,
+            pastMedicalHistory: pastMedicalHistory,
+            pastSurgicalHistory: pastSurgicalHistory,
+            temperature: temperature,
+            weight: weight,
+            bp: bp,
           },
         },
         fetchPolicy: 'no-cache',
       })
       .then((_data) => {
-        if (_data && _data!.data!.updateCaseSheet && _data!.data!.updateCaseSheet!.blobName) {
-          console.log(_data!.data!.updateCaseSheet!.blobName);
-          const url = storageClient.getBlobUrl(_data!.data!.updateCaseSheet!.blobName);
+        if (_data && _data!.data!.modifyCaseSheet && _data!.data!.modifyCaseSheet!.blobName) {
+          const url = storageClient.getBlobUrl(_data!.data!.modifyCaseSheet!.blobName);
           console.log(url);
           setPrescriptionPdf(url);
           setSaving(false);
@@ -575,6 +630,30 @@ export const ConsultTabs: React.FC = () => {
             healthVault: casesheetInfo!.getCaseSheet!.patientDetails!.healthVault,
             pastAppointments: casesheetInfo!.getCaseSheet!.pastAppointments,
             setCasesheetNotes,
+            height,
+            weight,
+            bp,
+            temperature,
+            pastMedicalHistory,
+            pastSurgicalHistory,
+            dietAllergies,
+            drugAllergies,
+            lifeStyle,
+            familyHistory,
+            menstrualHistory,
+            gender,
+            setPastMedicalHistory,
+            setPastSurgicalHistory,
+            setDietAllergies,
+            setDrugAllergies,
+            setLifeStyle,
+            setFamilyHistory,
+            setMenstrualHistory,
+            setHeight,
+            setWeight,
+            setBp,
+            setTemperature,
+            setGender,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
