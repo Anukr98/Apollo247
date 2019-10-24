@@ -1,10 +1,19 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { DropdownGreen, MedicineRxIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  DropdownGreen,
+  InjectionIcon,
+  MedicineIcon,
+  MedicineRxIcon,
+  SyrupBottleIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import {
   getDeliveryTime,
@@ -16,30 +25,21 @@ import {
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Image,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Alert,
-  Platform,
-  WebView,
 } from 'react-native';
-import {
-  NavigationState,
-  SceneMap,
-  SceneRendererProps,
-  TabBar,
-  TabView,
-} from 'react-native-tab-view';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { Image as ImageElement } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import moment from 'moment';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -151,30 +151,14 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
   },
-  tabbar: {
-    backgroundColor: theme.colors.CARD_BG,
-    ...theme.viewStyles.shadowStyle,
-    // shadowRadius: 0
-    shadowOffset: { width: 0, height: 0 },
+  imagePlaceholderStyle: {
+    backgroundColor: '#f0f1ec',
+    borderRadius: 5,
   },
-  tab: {
-    // width: 50,
-  },
-  indicator: {
-    height: 4,
-    backgroundColor: theme.colors.APP_GREEN,
-  },
-  label: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: theme.colors.LIGHT_BLUE,
-    // fontWeight: '400',
+  iconOrImageContainerStyle: {
+    width: 40,
   },
 });
-
-type State = NavigationState<{
-  key: string;
-  title: string;
-}>;
 
 export interface MedicineDetailsSceneProps
   extends NavigationScreenProps<{
@@ -188,18 +172,26 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   );
   const [apiError, setApiError] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
-  const [selectedTab, setselectedTab] = useState<number>(0);
+  const [selectedTab, setselectedTab] = useState<string>('');
   const [deliveryTime, setdeliveryTime] = useState<string>('');
   const [deliveryError, setdeliveryError] = useState<string>('');
   const [selectedQuantity, setselectedQuantity] = useState<string | number>(1);
   const [pincode, setpincode] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
+  const [Substitutes, setSubstitutes] = useState<[]>([]);
 
   const _medicineOverview =
     medicineDetails!.PharmaOverview &&
     medicineDetails!.PharmaOverview[0] &&
     medicineDetails!.PharmaOverview[0].Overview;
-  const medicineOverview = typeof _medicineOverview == 'string' ? [] : _medicineOverview || [];
+  const medicineOverview =
+    typeof _medicineOverview == 'string'
+      ? []
+      : (_medicineOverview &&
+          _medicineOverview.filter(
+            (item) => item.Caption.length > 0 && item.CaptionDesc.length > 0
+          )) ||
+        [];
 
   const sku = props.navigation.getParam('sku');
   console.log(sku, 'skusku');
@@ -209,12 +201,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const isOutOfStock = !medicineDetails!.is_in_stock;
   const medicineName = medicineDetails.name;
 
-  const routes = [
-    { key: 'Overview', title: 'Overview' },
-    { key: 'Side Effects', title: 'Side Effects' },
-    { key: 'Usage', title: 'Usage' },
-    { key: 'Drug Warnings', title: 'Drug Warnings' },
-  ];
   useEffect(() => {
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
@@ -226,9 +212,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         aphConsole.log('MedicineDetailsScene err', err);
         setApiError(!!err);
         setLoading(false);
+        // Alert.alert(err);
       });
     fetchSubstitutes();
   }, []);
+
+  useEffect(() => {
+    if (medicineOverview.length > 0) {
+      selectedTab === '' && setselectedTab(medicineOverview[0].Caption);
+    }
+  }, [medicineOverview]);
 
   const onAddCartItem = ({ sku, mou, name, price, is_prescription_required }: MedicineProduct) => {
     addCartItem &&
@@ -240,7 +233,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
       });
-    props.navigation.goBack();
   };
 
   const fetchDeliveryTime = () => {
@@ -266,7 +258,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             }
           }
         } catch (error) {
-          Alert.alert(error);
+          console.log(error);
+
+          // Alert.alert(error);
         }
         setshowDeliverySpinner(false);
       })
@@ -280,7 +274,21 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const fetchSubstitutes = () => {
     getSubstitutes(sku)
       .then((res) => {
-        console.log('getSubstitutes', res);
+        try {
+          console.log('getSubstitutes', res);
+          if (res && res.data) {
+            if (
+              res.data.products &&
+              typeof res.data.products === 'object' &&
+              Array.isArray(res.data.products)
+            ) {
+              //
+              setSubstitutes(res.data.products);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
       })
       .catch((err) => console.log(err, 'err'));
   };
@@ -355,7 +363,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             </View>
             <View style={styles.bottonButtonContainer}>
               <Button
-                onPress={() => onAddCartItem(medicineDetails)}
+                onPress={() => {
+                  onAddCartItem(medicineDetails);
+                }}
                 title={
                   loading
                     ? 'ADD TO CART'
@@ -371,7 +381,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               />
               <View style={{ width: 16 }} />
               <Button
-                onPress={() => props.navigation.navigate(AppRoutes.MobileHelp)}
+                onPress={() => {
+                  !isMedicineAddedToCart && onAddCartItem(medicineDetails);
+                  props.navigation.navigate(AppRoutes.YourCart);
+                }}
                 title="BUY NOW"
                 style={{ flex: 1 }}
               />
@@ -430,35 +443,29 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   style={styles.doctorImage}
                 />
               </TouchableOpacity>
-            ) : null}
+            ) : (
+              renderIconOrImage(medicineDetails)
+            )}
           </View>
         </View>
         {renderNote()}
-        {medicineOverview.length === 0 && renderInfo()}
+        {medicineOverview.length === 0 ? renderInfo() : null}
       </View>
     );
   };
 
-  const FirstRoute = (props: any) => {
-    console.log(props.route.key, 'props');
-    let description = props.route.key;
-    switch (props.route.key) {
-      case 'Overview':
-        description =
-          medicineDetails.PharmaOverview && medicineDetails.PharmaOverview.length
-            ? medicineDetails.PharmaOverview[0].Overview
-            : ''; //'Overview';
-        break;
-      case 'Side Effects':
-        description = 'Side Effects';
-        break;
-      case 'Usage':
-        description = 'Usage';
-        break;
-      case 'Drug Warnings':
-        description = 'Drug Warnings';
-        break;
-    }
+  const renderTabComponent = () => {
+    // let description = desc; // props.route.key; //data.CaptionDesc;
+    const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
+    const description = (selectedTabdata.length ? selectedTabdata[0].CaptionDesc : '')
+      .replace(/&amp;deg;/g, '°')
+      .replace(/&#039;/g, "'")
+      .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
+      .replace(/&amp;lt;br \/&amp;gt;/g, '\n')
+      .split('\n')
+      .filter((item) => item)
+      .join('\n');
+
     return (
       <View
         style={[
@@ -471,48 +478,46 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         ]}
       >
         <View>
-          <Text
-            style={{
-              color: theme.colors.SKY_BLUE,
-              ...theme.fonts.IBMPlexSansMedium(14),
-              lineHeight: 22,
-            }}
-          >
-            {description}
-          </Text>
+          {!!description && (
+            <Text
+              style={{
+                color: theme.colors.SKY_BLUE,
+                ...theme.fonts.IBMPlexSansMedium(14),
+                lineHeight: 22,
+              }}
+            >
+              {description}
+            </Text>
+          )}
         </View>
       </View>
     );
   };
 
-  const renderTabBar = (props: SceneRendererProps & { navigationState: State }) => (
-    <TabBar
-      {...props}
-      scrollEnabled
-      indicatorStyle={styles.indicator}
-      style={styles.tabbar}
-      tabStyle={styles.tab}
-      labelStyle={styles.label}
-    />
-  );
-
   const renderTabs = () => {
+    const data = medicineOverview.map((item) => {
+      return {
+        title: item.Caption,
+      };
+    });
+
     return (
-      <TabView
-        navigationState={{ index: selectedTab, routes }}
-        renderScene={SceneMap({
-          Overview: FirstRoute,
-          'Side Effects': FirstRoute,
-          Usage: FirstRoute,
-          'Drug Warnings': FirstRoute,
-        })}
-        renderTabBar={renderTabBar}
-        onIndexChange={(index) => setselectedTab(index)}
-      />
+      <>
+        <TabsComponent
+          data={data}
+          selectedTab={selectedTab}
+          onChange={(selectedTab) => setselectedTab(selectedTab)}
+          scrollable={true}
+          tabViewStyle={{ width: 'auto' }}
+          selectedTitleStyle={theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE)}
+          titleStyle={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE)}
+        />
+        {renderTabComponent()}
+      </>
     );
   };
   const renderInfo = () => {
-    if (medicineDetails.description)
+    if (!!medicineDetails.description)
       return (
         <View>
           <Text
@@ -547,8 +552,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               </Text>
               {/* <WebView
                 source={{
-                  html: `<p style="color:#0087ba;font-size:12;font-family:IBMPlexSans-Medium;">${medicineDetails.description +
-                    'helllooooooo&nbps;hiiiiiiii'}</p>`,
+                  html: `<p style="color:#0087ba;font-size:12;font-family:IBMPlexSans-Medium;">${medicineDetails.description}</p>`,
                 }}
                 style={{
                   backgroundColor: 'red',
@@ -562,21 +566,106 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       );
   };
 
+  const renderIconOrImage = (data) => {
+    return (
+      <View style={styles.iconOrImageContainerStyle}>
+        {data.image ? (
+          <ImageElement
+            placeholderStyle={styles.imagePlaceholderStyle}
+            source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL + data.image }}
+            style={{ height: 40, width: 40 }}
+            resizeMode="contain"
+          />
+        ) : data.overview == 'SYRUP' ? (
+          <SyrupBottleIcon />
+        ) : data.Doseform == 'INJECTION' ? (
+          <InjectionIcon />
+        ) : data.is_prescription_required ? (
+          <MedicineRxIcon />
+        ) : (
+          <MedicineIcon />
+        )}
+      </View>
+    );
+  };
+
   const renderSubstitutes = () => {
+    const localStyles = StyleSheet.create({
+      containerStyle: {
+        // ...data.style,
+      },
+      iconAndDetailsContainerStyle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 9.5,
+        marginHorizontal: 12,
+      },
+      nameAndPriceViewStyle: {
+        flex: 1,
+      },
+    });
+
+    const renderNamePriceAndInStockStatus = (data) => {
+      return (
+        <View style={localStyles.nameAndPriceViewStyle}>
+          <Text
+            numberOfLines={1}
+            style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}
+          >
+            {data.name}
+          </Text>
+          {data.isOutOfStock ? (
+            <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
+              {'Out Of Stock'}
+            </Text>
+          ) : (
+            <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
+              RS. {data.price}
+            </Text>
+          )}
+        </View>
+      );
+    };
+
     return (
       <View>
         <View style={styles.labelViewStyle}>
-          <Text style={styles.labelStyle}>SUBSTITUTE DRUGS — 09</Text>
+          <Text style={styles.labelStyle}>SUBSTITUTE DRUGS — {Substitutes.length}</Text>
         </View>
         <View style={styles.cardStyle}>
-          <Text>name</Text>
+          {Substitutes.map((data, i) => (
+            <TouchableOpacity activeOpacity={1}>
+              <View style={localStyles.containerStyle} key={data.name}>
+                <View style={localStyles.iconAndDetailsContainerStyle}>
+                  {renderIconOrImage(data)}
+                  <View style={{ width: 16 }} />
+                  {renderNamePriceAndInStockStatus(data)}
+                </View>
+              </View>
+              {Substitutes.length !== i + 1 && <Spearator />}
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
     );
   };
 
+  // const renderSubstitutes = () => {
+  //   return (
+  //     <View>
+  //       <View style={styles.labelViewStyle}>
+  //         <Text style={styles.labelStyle}>SUBSTITUTE DRUGS — 09</Text>
+  //       </View>
+  //       {Substitutes.map((item) => (
+  //         <View style={styles.cardStyle}>
+  //           <Text>{item.name}</Text>
+  //         </View>
+  //       ))}
+  //     </View>
+  //   );
+  // };
+
   const renderDeliveryView = () => {
-    console.log(deliveryTime, 'deliveryTime');
     return (
       <View>
         <View style={styles.labelViewStyle}>
@@ -725,6 +814,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         unit: formatComposition(pharmaOverview.Unit),
         strength: formatComposition(pharmaOverview.Strength || pharmaOverview.Strengh),
       };
+
       composition = [...Array.from({ length: _composition.generic.length })]
         .map(
           (_, index) =>
@@ -738,7 +828,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         // ['Dose Form', doseForm],
         // ['Description', description],
         // ['Price', price],
-        ['Pack Of', pack],
+        ['Pack Of', `${pack} ${doseForm}${Number(pack) !== 1 ? 'S' : ''}`],
       ];
 
       return (
@@ -752,7 +842,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 </View>
               )
           )}
-          {!loading && medicineOverview.length != 0 && <View style={styles.separator} />}
+          {!loading && medicineOverview.length != 0 ? <View style={styles.separator} /> : null}
         </>
       );
     }
@@ -776,7 +866,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           color="green"
         />
       )}
-      {!loading && (
+      {!loading && medicineDetails && (
         <KeyboardAwareScrollView
           bounces={false}
           // keyboardShouldPersistTaps={''}
@@ -785,7 +875,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         >
           {renderTopView()}
           {medicineOverview.length > 0 && renderTabs()}
-          {renderSubstitutes()}
+          {Substitutes.length ? renderSubstitutes() : null}
           {renderDeliveryView()}
           {/* <View style={styles.cardStyle}>
             {renderNote()}
@@ -807,7 +897,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           <View style={{ height: 130 }} />
         </KeyboardAwareScrollView>
       )}
-      {!loading && renderBottomButtons()}
+      {!loading && medicineDetails && renderBottomButtons()}
     </SafeAreaView>
   );
 };

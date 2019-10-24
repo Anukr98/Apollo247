@@ -1,33 +1,17 @@
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState, useEffect } from 'react';
-import { Platform, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import { TabView, SceneMap, TabBar } from 'react-native-tab-view';
-import { Text } from 'react-native-elements';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text } from 'react-native-elements';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
     flex: 1,
     backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-  },
-  tabbar: {
-    backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-    ...theme.viewStyles.shadowStyle,
-  },
-  tab: {
-    width: 50,
-  },
-  indicator: {
-    height: 4,
-    backgroundColor: theme.colors.APP_GREEN,
-  },
-  label: {
-    ...theme.fonts.IBMPlexSansSemiBold(14),
-    color: theme.colors.LIGHT_BLUE,
-    // fontWeight: '400',
   },
   headerSearchInputShadow: {
     zIndex: 1,
@@ -44,40 +28,42 @@ const list = ['A-Derma', 'Accucheck'];
 export interface ShopByBrandProps extends NavigationScreenProps {}
 
 export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
-  const [selectedTab, setselectedTab] = useState<number>(0);
+  const alphabets = [
+    'A',
+    'B',
+    'C',
+    'D',
+    'E',
+    'F',
+    'G',
+    'H',
+    'I',
+    'J',
+    'K',
+    'L',
+    'M',
+    'N',
+    'O',
+    'P',
+    'Q',
+    'R',
+    'S',
+    'T',
+    'U',
+    'V',
+    'W',
+    'X',
+    'Y',
+    'Z',
+  ];
+  const tabs = alphabets.map((letter) => ({ title: letter }));
+
+  const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [showTabs, setshowTabs] = useState<boolean>(false);
+
   useEffect(() => {
     setshowTabs(true);
   }, []);
-
-  const routes = [
-    { key: 'A', title: 'A' },
-    { key: 'B', title: 'B' },
-    { key: 'C', title: 'C' },
-    { key: 'D', title: 'D' },
-    { key: 'E', title: 'E' },
-    { key: 'F', title: 'F' },
-    { key: 'G', title: 'G' },
-    { key: 'H', title: 'H' },
-    { key: 'I', title: 'I' },
-    { key: 'J', title: 'J' },
-    { key: 'K', title: 'K' },
-    { key: 'L', title: 'L' },
-    { key: 'M', title: 'M' },
-    { key: 'N', title: 'N' },
-    { key: 'O', title: 'O' },
-    { key: 'P', title: 'P' },
-    { key: 'Q', title: 'Q' },
-    { key: 'R', title: 'R' },
-    { key: 'S', title: 'S' },
-    { key: 'T', title: 'T' },
-    { key: 'U', title: 'U' },
-    { key: 'V', title: 'V' },
-    { key: 'W', title: 'W' },
-    { key: 'X', title: 'X' },
-    { key: 'Y', title: 'Y' },
-    { key: 'Z', title: 'Z' },
-  ];
 
   const renderHeader = () => {
     return (
@@ -94,85 +80,69 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
       />
     );
   };
-  const FirstRoute = (props) => {
-    console.log(props.route.key, 'props');
 
+  const renderTabComponent = () => {
     return (
-      <View style={[{ backgroundColor: theme.colors.WHITE, flex: 1, paddingVertical: 13 }]}>
-        {list.map((name) => (
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              marginHorizontal: 20,
-              paddingTop: 15.5,
-              paddingBottom: 7.5,
-              borderBottomColor: 'rgba(2,71,91, 0.2)',
-              borderBottomWidth: 0.5,
-            }}
-          >
-            <Text
+      <View
+        style={[
+          { backgroundColor: theme.colors.WHITE, flex: 1, paddingVertical: 13, marginTop: 50 },
+        ]}
+      >
+        <ScrollView bounces={false}>
+          {list.map((name) => (
+            <View
               style={{
-                color: theme.colors.SHERPA_BLUE,
-                ...theme.fonts.IBMPlexSansMedium(16),
-                lineHeight: 24,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginHorizontal: 20,
+                paddingTop: 15.5,
+                paddingBottom: 7.5,
+                borderBottomColor: 'rgba(2,71,91, 0.2)',
+                borderBottomWidth: 0.5,
               }}
             >
-              {name}
-            </Text>
-            <ArrowRight />
-          </View>
-        ))}
+              <Text
+                style={{
+                  color: theme.colors.SHERPA_BLUE,
+                  ...theme.fonts.IBMPlexSansMedium(16),
+                  lineHeight: 24,
+                }}
+              >
+                {name}
+              </Text>
+              <ArrowRight />
+            </View>
+          ))}
+        </ScrollView>
       </View>
     );
   };
 
-  const renderTabBar = (props) => (
-    <TabBar
-      {...props}
-      scrollEnabled
-      indicatorStyle={styles.indicator}
-      style={styles.tabbar}
-      tabStyle={styles.tab}
-      labelStyle={styles.label}
-    />
-  );
-
   const renderTabs = () => {
     return (
-      <TabView
-        navigationState={{ index: selectedTab, routes }}
-        renderScene={SceneMap({
-          A: FirstRoute,
-          B: FirstRoute,
-          C: FirstRoute,
-          D: FirstRoute,
-          E: FirstRoute,
-          F: FirstRoute,
-          G: FirstRoute,
-          H: FirstRoute,
-          I: FirstRoute,
-          J: FirstRoute,
-          K: FirstRoute,
-          L: FirstRoute,
-          M: FirstRoute,
-          N: FirstRoute,
-          O: FirstRoute,
-          P: FirstRoute,
-          Q: FirstRoute,
-          R: FirstRoute,
-          S: FirstRoute,
-          T: FirstRoute,
-          U: FirstRoute,
-          V: FirstRoute,
-          W: FirstRoute,
-          X: FirstRoute,
-          Y: FirstRoute,
-          Z: FirstRoute,
-        })}
-        renderTabBar={renderTabBar}
-        onIndexChange={(index) => setselectedTab(index)}
-      />
+      <View style={{ flex: 1 }}>
+        <TabsComponent
+          style={{
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            // height: 54,
+            zIndex: 10,
+            elevation: 10,
+          }}
+          data={tabs}
+          selectedTab={selectedTab}
+          onChange={(selectedTab) => setselectedTab(selectedTab)}
+          scrollable={true}
+          tabViewStyle={{ width: 'auto' }}
+          selectedTitleStyle={theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE)}
+          titleStyle={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE)}
+        />
+        {renderTabComponent()}
+      </View>
     );
   };
 
