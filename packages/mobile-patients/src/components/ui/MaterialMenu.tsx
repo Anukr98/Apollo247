@@ -49,7 +49,7 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
   };
   const numbers: (string | number)[] = props.data
     ? props.data
-    : [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+    : Array.from({ length: 20 }).map((_, i) => i + 1);
   return (
     <Menu
       ref={setMenuRef}
@@ -59,6 +59,7 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
       <ScrollView bounces={false} style={{ paddingVertical: 8 }}>
         {numbers.map((number) => (
           <MenuItem
+            key={number}
             onPress={() => {
               hideMenu();
               props.onPressQuantity && props.onPressQuantity(number);

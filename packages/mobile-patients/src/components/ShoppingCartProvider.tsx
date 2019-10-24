@@ -209,7 +209,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
     if (cartItems.find((item) => item.id == itemToAdd.id)) {
       return;
     }
-    const newCartItems = [...cartItems, itemToAdd];
+    const newCartItems = [itemToAdd, ...cartItems];
     setCartItems(newCartItems);
   };
 

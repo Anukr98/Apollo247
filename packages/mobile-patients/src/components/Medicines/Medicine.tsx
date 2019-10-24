@@ -18,20 +18,28 @@ import {
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { GET_MEDICINE_ORDERS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GetMedicineOrdersList,
+  GetMedicineOrdersListVariables,
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
 import {
   Doseform,
   getMedicineSearchSuggestionsApi,
+  getOfferBanner,
   getProductsByCategoryApi,
   MedicineProduct,
   ProductCategory,
-  getOfferBanner,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useFetch } from '@aph/mobile-patients/src/hooks/fetchHook';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import Axios from 'axios';
 import React, { useState } from 'react';
+import { useQuery } from 'react-apollo-hooks';
 import {
   Dimensions,
   ListRenderItemInfo,
@@ -46,7 +54,7 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { useFetch } from '../../hooks/fetchHook';
+import { UserIntro } from '../ui/UserIntro';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -78,21 +86,33 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
   const cartItemsCount = cartItems.length;
+  const { currentPatient } = useAllCurrentPatients();
 
-  // Hot Sellers Api Call
+  // Hot Sellers Api Call
   const { data: hotSellers, loading: hsLoading, error: hsError } = useFetch(() =>
     getProductsByCategoryApi(ProductCategory.HOT_SELLERS)
   );
   const _hotSellers = (!hsLoading && !hsError && g(hotSellers, 'data', 'products')) || [];
 
-  // Offer Banner Api Call
+  // Offer Banner Api Call
   const { data: offerBanner, loading: obLoading, error: obError } = useFetch(() =>
     getOfferBanner()
   );
   const _offerBanner = ((!obLoading && !obError && g(offerBanner, 'data', 'mainbanners')) || [])[0];
   const _offerBannerImage = g(_offerBanner, 'image');
 
-  // Common Views
+  const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
+    GetMedicineOrdersList,
+    GetMedicineOrdersListVariables
+  >(GET_MEDICINE_ORDERS_LIST, {
+    variables: { patientId: currentPatient && currentPatient.id },
+    fetchPolicy: 'no-cache',
+  });
+
+  const _orders =
+    (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
+
+  // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
@@ -112,8 +132,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         style={{
           justifyContent: 'space-between',
           flexDirection: 'row',
-          marginTop: 16,
-          marginHorizontal: 20,
+          paddingTop: 16,
+          paddingHorizontal: 20,
+          backgroundColor: theme.colors.WHITE,
         }}
       >
         <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}>
@@ -160,17 +181,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         isVisible={ShowPopop}
         disabledOption="NONE"
         type="nonCartFlow"
-        heading={'Upload Prescription(s)'}
-        instructionHeading={'Instructions For Uploading Prescriptions'}
+        heading={'Upload Prescription(s)'}
+        instructionHeading={'Instructions For Uploading Prescriptions'}
         instructions={[
-          'Take clear picture of your entire prescription.',
-          'Doctor details & date of the prescription should be clearly visible.',
-          'Medicines will be dispensed as per prescription.',
+          'Take clear picture of your entire prescription.',
+          'Doctor details & date of the prescription should be clearly visible.',
+          'Medicines will be dispensed as per prescription.',
         ]}
         optionTexts={{
-          camera: 'TAKE A PHOTO',
-          gallery: 'CHOOSE\nFROM GALLERY',
-          prescription: 'SELECT FROM\nE-PRESCRIPTION',
+          camera: 'TAKE A PHOTO',
+          gallery: 'CHOOSE\nFROM GALLERY',
+          prescription: 'SELECT FROM\nE-PRESCRIPTION',
         }}
         onClickClose={() => setShowPopop(false)}
         onResponse={(selectedType, response) => {
@@ -194,7 +215,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     else if (!obLoading && !obError && _offerBannerImage)
       return (
         <Image
-          PlaceholderContent={renderSectionLoader(imgHeight)}
+          // PlaceholderContent={renderSectionLoader(imgHeight)}
           placeholderStyle={styles.imagePlaceholderStyle}
           onLoad={(value) => {
             const { width: winWidth } = Dimensions.get('window');
@@ -217,7 +238,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               paddingBottom: 12,
             }}
           >
-            Have a prescription ready?
+            Have a prescription ready?
           </Text>
           <Button
             onPress={() => {
@@ -227,7 +248,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             titleTextStyle={{
               ...theme.viewStyles.text('B', 13, '#fff', 1, 24, 0),
             }}
-            title={'UPLOAD PRESCRIPTION'}
+            title={'UPLOAD PRESCRIPTION'}
           />
         </View>
         <FileBig style={{ height: 60, width: 40 }} />
@@ -244,7 +265,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             paddingBottom: 8,
           }}
         >
-          Don’t have a prescription? Don’t worry!
+          Don’t have a prescription? Don’t worry!
         </Text>
         <Text
           onPress={() => props.navigation.navigate(AppRoutes.DoctorSearch)}
@@ -252,7 +273,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24, 0),
           }}
         >
-          CONSULT A DOCTOR
+          CONSULT A DOCTOR
         </Text>
       </View>
     );
@@ -260,7 +281,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderUploadPrescriptionSection = () => {
     return (
-      <View style={{ ...theme.viewStyles.card(), marginTop: 20, marginBottom: 12 }}>
+      <View
+        style={[
+          {
+            ...theme.viewStyles.card(),
+            marginTop: 20,
+            marginBottom: 12,
+          },
+          medicineList.length > 0 && searchText
+            ? {
+                elevation: 0,
+              }
+            : {},
+        ]}
+      >
         {uploadPrescriptionCTA()}
         <Spearator style={{ marginVertical: 11.5 }} />
         {consultDoctorCTA()}
@@ -270,12 +304,15 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const renderYourOrders = () => {
     return (
-      <ListCard
-        onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
-        container={{ marginBottom: 24 }}
-        title={'Your Orders'}
-        leftIcon={<MedicineIcon />}
-      />
+      (!ordersLoading && _orders.length > 0 && (
+        <ListCard
+          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
+          container={{ marginBottom: 24 }}
+          title={'Your Orders'}
+          leftIcon={<MedicineIcon />}
+        />
+      )) ||
+      null
     );
   };
 
@@ -285,6 +322,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         style={[
           {
             ...theme.viewStyles.card(12, 0),
+            elevation: 10,
             flexDirection: 'row',
             justifyContent: 'center',
             alignItems: 'center',
@@ -316,6 +354,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         style={[
           {
             ...theme.viewStyles.card(12, 0),
+            elevation: 10,
             flexDirection: 'row',
             width: 152,
             height: 68,
@@ -353,12 +392,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const healthAreas = [
     {
-      text: 'Diabetes Care',
+      text: 'Diabetes Care',
       imgUrl: 'https://via.placeholder.com/40',
       goToPage: AppRoutes.SearchMedicineScene,
     },
     {
-      text: 'Pain Relief',
+      text: 'Pain Relief',
       imgUrl: 'https://via.placeholder.com/40',
       goToPage: AppRoutes.SearchMedicineScene,
     },
@@ -367,24 +406,32 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderShopByHealthAreas = () => {
     return (
       <View>
-        <SectionHeader leftText={'SHOP BY HEALTH AREAS'} />
+        <SectionHeader leftText={'SHOP BY HEALTH AREAS'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
-          contentContainerStyle={{
-            paddingTop: 16,
-            paddingBottom: 20,
-            paddingLeft: 20,
-          }}
+          contentContainerStyle={
+            {
+              // paddingTop: 16,
+              // paddingBottom: 20,
+              // paddingLeft: 20,
+            }
+          }
           showsHorizontalScrollIndicator={false}
           horizontal
           data={[...healthAreas, ...healthAreas]}
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
             return renderCatalogCard(
               item.text,
               item.imgUrl,
               () => props.navigation.navigate(item.goToPage),
-              { marginRight: 8 }
+              {
+                // marginRight: 8,
+                marginHorizontal: 4,
+                marginTop: 16,
+                marginBottom: 20,
+                ...(index == 0 ? { marginLeft: 20 } : {}),
+              }
             );
           }}
         />
@@ -395,27 +442,34 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderDealsOfTheDay = () => {
     return (
       <View>
-        <SectionHeader leftText={'DEALS OF THE DAY'} />
+        <SectionHeader leftText={'DEALS OF THE DAY'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
-          contentContainerStyle={{
-            paddingTop: 16,
-            paddingBottom: 20,
-            paddingLeft: 20,
-          }}
+          contentContainerStyle={
+            {
+              // paddingTop: 16,
+              // paddingBottom: 20,
+              // paddingLeft: 20,
+            }
+          }
           showsHorizontalScrollIndicator={false}
           horizontal
           data={Array.from({ length: 10 }).map(
             () => `https://via.placeholder.com/${Dimensions.get('screen').width * 0.86}x144`
           )}
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
             return (
               <Image
                 source={{ uri: item }}
                 containerStyle={{
                   ...theme.viewStyles.card(0, 0),
-                  marginRight: 8,
+                  elevation: 10,
+                  // marginRight: 8,
+                  marginHorizontal: 4,
+                  marginTop: 16,
+                  marginBottom: 20,
+                  ...(index == 0 ? { marginLeft: 20 } : {}),
                 }}
                 style={{
                   borderRadius: 10,
@@ -438,8 +492,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     isAddedToCart: boolean;
     onAddOrRemoveCartItem: () => void;
     onPress: () => void;
+    style?: ViewStyle;
   }) => {
-    const { name, imgUrl, price, specialPrice } = data;
+    const { name, imgUrl, price, specialPrice, style } = data;
 
     const renderDiscountedPrice = () => {
       const styles = StyleSheet.create({
@@ -453,13 +508,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         },
       });
       return (
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+        <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
           {!!specialPrice && (
             <Text style={[styles.discountedPriceText, { marginRight: 4 }]}>
-              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
+              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
             </Text>
           )}
-          <Text style={styles.priceText}>Rs. {specialPrice || price}</Text>
+          <Text style={styles.priceText}>Rs. {specialPrice || price}</Text>
         </View>
       );
     };
@@ -469,10 +524,13 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <View
           style={{
             ...theme.viewStyles.card(12, 0),
+            elevation: 10,
             height: 232,
             width: 152,
-            marginRight: 8,
+            // marginRight: 8,
+            marginHorizontal: 4,
             alignItems: 'center',
+            ...style,
           }}
         >
           <Image
@@ -500,7 +558,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }}
             onPress={data.onAddOrRemoveCartItem}
           >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -548,24 +606,26 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku }),
+      style: {
+        // marginRight: 8,
+        marginHorizontal: 4,
+        marginTop: 16,
+        marginBottom: 20,
+        ...(data.index == 0 ? { marginLeft: 20 } : {}),
+      },
     });
   };
 
   const renderHotSellers = () => {
     return (
       <View>
-        <SectionHeader leftText={'HOT SELLERS'} />
+        <SectionHeader leftText={'HOT SELLERS'} />
         {hsLoading ? (
           renderSectionLoader()
         ) : (
           <FlatList
             bounces={false}
             keyExtractor={(_, index) => `${index}`}
-            contentContainerStyle={{
-              paddingTop: 16,
-              paddingBottom: 20,
-              paddingLeft: 20,
-            }}
             showsHorizontalScrollIndicator={false}
             horizontal
             data={_hotSellers}
@@ -579,24 +639,32 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderShopByCategory = () => {
     return (
       <View>
-        <SectionHeader leftText={'SHOP BY CATEGORY'} />
+        <SectionHeader leftText={'SHOP BY CATEGORY'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
-          contentContainerStyle={{
-            paddingTop: 16,
-            paddingBottom: 20,
-            paddingLeft: 20,
-          }}
+          contentContainerStyle={
+            {
+              // paddingTop: 16,
+              // paddingBottom: 20,
+              // paddingLeft: 20,
+            }
+          }
           showsHorizontalScrollIndicator={false}
           horizontal
           data={[...healthAreas, ...healthAreas]}
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
             return renderCatalogCard(
               item.text,
               item.imgUrl,
               () => props.navigation.navigate(item.goToPage),
-              { marginRight: 8 }
+              {
+                // marginRight: 8,
+                marginHorizontal: 4,
+                marginTop: 16,
+                marginBottom: 20,
+                ...(index == 0 ? { marginLeft: 20 } : {}),
+              }
             );
           }}
         />
@@ -613,23 +681,29 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           rightTextStyle={{
             ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
           }}
-          onPressRightText={() => props.navigation.navigate(AppRoutes.SearchMedicineScene)}
+          onPressRightText={() => props.navigation.navigate(AppRoutes.ShopByBrand)}
           style={{ paddingBottom: 1 }}
         />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
-          contentContainerStyle={{
-            paddingTop: 16,
-            paddingBottom: 40,
-            paddingLeft: 20,
-          }}
+          contentContainerStyle={
+            {
+              // paddingTop: 16,
+              // paddingBottom: 40,
+              // paddingLeft: 20,
+            }
+          }
           showsHorizontalScrollIndicator={false}
           horizontal
           data={[...brands, ...brands, ...brands, ...brands]}
-          renderItem={({ item }) => {
+          renderItem={({ item, index }) => {
             return renderBrandCard(item.imgUrl, () => props.navigation.navigate(item.goToPage), {
-              marginRight: 8,
+              // marginRight: 8,
+              marginHorizontal: 4,
+              marginTop: 16,
+              marginBottom: 40,
+              ...(index == 0 ? { marginLeft: 20 } : {}),
             });
           }}
         />
@@ -795,7 +869,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           opacity: shouldEnableSearchSend ? 1 : 0.4,
         }}
         disabled={!shouldEnableSearchSend}
-        onPress={() => props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText })}
+        onPress={() => {
+          props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
+          setSearchText('');
+          setMedicineList([]);
+        }}
       >
         <SearchSendIcon />
       </TouchableOpacity>
@@ -826,16 +904,20 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const { index, item } = data;
     const imgUri = item.thumbnail ? `${config.IMAGES_BASE_URL}${item.thumbnail}` : '';
     return renderSearchSuggestionItem({
-      onPress: () =>
+      onPress: () => {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: item.sku,
-        }),
+        });
+        setSearchText('');
+        setMedicineList([]);
+      },
       name: item.name,
       price: item.price,
       isOutOfStock: item.is_in_stock,
       type: ((item.PharmaOverview || [])[0] || {}).Doseform,
       style: {
         marginHorizontal: 20,
+        paddingBottom: index == medicineList.length - 1 ? 10 : 0,
       },
       showSeparator: !(index == medicineList.length - 1),
       imgUri,
@@ -847,14 +929,59 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     if (medicineList.length == 0) return null;
     return (
       <View style={{ width: '100%' }}>
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsVerticalScrollIndicator={false}
-          style={{ paddingTop: 10.5, maxHeight: 266 }}
-          data={medicineList}
-          renderItem={renderSearchSuggestionItemView}
-        />
+        {isLoading ? (
+          <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
+            {renderSectionLoader(200)}
+          </View>
+        ) : (
+          <FlatList
+            // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+            bounces={false}
+            keyExtractor={(_, index) => `${index}`}
+            showsVerticalScrollIndicator={false}
+            style={{
+              paddingTop: 10.5,
+              maxHeight: 266,
+              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+            }}
+            data={medicineList}
+            renderItem={renderSearchSuggestionItemView}
+          />
+        )}
+      </View>
+    );
+  };
+
+  const renderSearchSuggestionsAbsoluteView = () => {
+    return (
+      <View
+        style={[
+          medicineList.length > 0
+            ? {
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                zIndex: 1,
+              }
+            : {},
+        ]}
+      />
+    );
+  };
+
+  const renderSearchBarAndSuggestions = () => {
+    return (
+      <View style={{ height: '100%', width: '100%' }}>
+        <View
+          style={{
+            position: 'absolute',
+            height: '100%',
+            width: '100%',
+          }}
+        >
+          {renderSearchSuggestions()}
+        </View>
       </View>
     );
   };
@@ -862,23 +989,50 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={{ ...viewStyles.container }}>
-        <View
-          style={{ backgroundColor: 'white', ...theme.viewStyles.cardViewStyle, borderRadius: 0 }}
+        {renderTopView()}
+        <ScrollView
+          onScroll={(data) => {
+            data.nativeEvent.contentOffset.x;
+          }}
+          style={{ flex: 1 }}
+          bounces={false}
+          stickyHeaderIndices={[1]}
         >
-          {renderTopView()}
-          {renderSearchBar()}
-        </View>
-        {renderSearchSuggestions()}
-        <ScrollView style={{ flex: 1 }} bounces={false}>
-          {renderOfferBanner()}
-          {renderUploadPrescriptionSection()}
-          {renderYourOrders()}
-          {renderShopByHealthAreas()}
-          {renderDealsOfTheDay()}
-          {renderHotSellers()}
-          {renderShopByCategory()}
-          {renderShopByBrand()}
-          {renderNeedHelp()}
+          <Text
+            style={{
+              ...theme.viewStyles.text('SB', 36, '#02475b', 1),
+              paddingTop: 20,
+              backgroundColor: '#fff',
+              paddingHorizontal: 20,
+            }}
+          >
+            {(currentPatient && currentPatient.firstName && `hi ${currentPatient.firstName}!`) ||
+              ''}
+          </Text>
+          <View>
+            <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
+            {renderSearchBarAndSuggestions()}
+          </View>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              if (medicineList.length == 0 && !searchText) return;
+              setSearchText('');
+              setMedicineList([]);
+            }}
+            style={{ flex: 1 }}
+          >
+            {renderSearchSuggestionsAbsoluteView()}
+            {renderOfferBanner()}
+            {renderUploadPrescriptionSection()}
+            {renderYourOrders()}
+            {renderShopByHealthAreas()}
+            {renderDealsOfTheDay()}
+            {renderHotSellers()}
+            {renderShopByCategory()}
+            {renderShopByBrand()}
+            {renderNeedHelp()}
+          </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
       {renderEPrescriptionModal()}

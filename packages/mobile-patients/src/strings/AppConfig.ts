@@ -26,7 +26,7 @@ const PharmaApiConfig = {
   prod: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
-    MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201],
+    MED_SEARCH_SUGGESTION: [apolloUatBaseUrl, pharmaToken201],
     STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
