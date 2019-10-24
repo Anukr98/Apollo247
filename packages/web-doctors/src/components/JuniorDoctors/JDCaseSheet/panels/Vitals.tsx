@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { Theme, Grid } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
@@ -83,23 +83,23 @@ export const Vitals: React.FC = () => {
     caseSheetEdit,
   } = useContext(CaseSheetContextJrd);
 
-  const [disableheightFocus, setDisableHeightFocus] = useState(true);
-  const [disableWeightFocus, setDisableWeightFocus] = useState(true);
-  const [disableBPFocus, setDisableBPFocus] = useState(true);
-  const [disableTempFocus, setDisableTempFocus] = useState(true);
+  // const [disableheightFocus, setDisableHeightFocus] = useState(true);
+  // const [disableWeightFocus, setDisableWeightFocus] = useState(true);
+  // const [disableBPFocus, setDisableBPFocus] = useState(true);
+  // const [disableTempFocus, setDisableTempFocus] = useState(true);
 
-  const heightRef = (input: HTMLInputElement) => {
-    input && input.focus();
-  };
-  const weightRef = (input: HTMLInputElement) => {
-    input && input.focus();
-  };
-  const bpRef = (input: HTMLInputElement) => {
-    input && input.focus();
-  };
-  const tempRef = (input: HTMLInputElement) => {
-    input && input.focus();
-  };
+  // const heightRef = (input: HTMLInputElement) => {
+  //   input && input.focus();
+  // };
+  // const weightRef = (input: HTMLInputElement) => {
+  //   input && input.focus();
+  // };
+  // const bpRef = (input: HTMLInputElement) => {
+  //   input && input.focus();
+  // };
+  // const tempRef = (input: HTMLInputElement) => {
+  //   input && input.focus();
+  // };
 
   return (
     <div className={classes.root}>
@@ -109,28 +109,27 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>Height</div>
             <div className={classes.contentBox}>
               <AphTextField
-                disabled={disableheightFocus}
+                disabled={!caseSheetEdit}
                 fullWidth
                 multiline
                 value={height}
                 onChange={(e) => {
                   setHeight(e.target.value);
                 }}
-                inputRef={heightRef}
+                // inputRef={heightRef}
               />
-              {caseSheetEdit && (
+              {caseSheetEdit && height !== '' && (
                 <div className={classes.boxActions}>
-                  <AphButton
+                  {/* <AphButton
                     onClick={() => {
                       setDisableHeightFocus(false);
                     }}
                   >
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton>
+                  </AphButton> */}
                   <AphButton
                     onClick={() => {
                       setHeight('');
-                      setDisableHeightFocus(true);
                     }}
                   >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -145,24 +144,23 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>Weight</div>
             <div className={classes.contentBox}>
               <AphTextField
-                disabled={disableWeightFocus}
+                disabled={!caseSheetEdit}
                 fullWidth
                 multiline
                 value={weight}
                 onChange={(e) => {
                   setWeight(e.target.value);
                 }}
-                inputRef={weightRef}
+                // inputRef={weightRef}
               />
-              {caseSheetEdit && (
+              {caseSheetEdit && weight !== '' && (
                 <div className={classes.boxActions}>
-                  <AphButton onClick={() => setDisableWeightFocus(false)}>
+                  {/* <AphButton onClick={() => setDisableWeightFocus(false)}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton>
+                  </AphButton> */}
                   <AphButton
                     onClick={() => {
                       setWeight('');
-                      setDisableWeightFocus(true);
                     }}
                   >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -177,24 +175,23 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>BP</div>
             <div className={classes.contentBox}>
               <AphTextField
-                disabled={disableBPFocus}
+                disabled={!caseSheetEdit}
                 fullWidth
                 multiline
                 value={bp}
                 onChange={(e) => {
                   setBp(e.target.value);
                 }}
-                inputRef={bpRef}
+                // inputRef={bpRef}
               />
-              {caseSheetEdit && (
+              {caseSheetEdit && bp !== '' && (
                 <div className={classes.boxActions}>
-                  <AphButton onClick={() => setDisableBPFocus(false)}>
+                  {/* <AphButton onClick={() => setDisableBPFocus(false)}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton>
+                  </AphButton> */}
                   <AphButton
                     onClick={() => {
                       setBp('');
-                      setDisableBPFocus(true);
                     }}
                   >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -209,24 +206,23 @@ export const Vitals: React.FC = () => {
             <div className={classes.sectionTitle}>Temperature</div>
             <div className={classes.contentBox}>
               <AphTextField
-                disabled={disableTempFocus}
+                disabled={!caseSheetEdit}
                 fullWidth
                 multiline
                 value={temperature}
                 onChange={(e) => {
                   setTemperature(e.target.value);
                 }}
-                inputRef={tempRef}
+                // inputRef={tempRef}
               />
-              {caseSheetEdit && (
+              {caseSheetEdit && temperature !== '' && (
                 <div className={classes.boxActions}>
-                  <AphButton onClick={() => setDisableTempFocus(false)}>
+                  {/* <AphButton onClick={() => setDisableTempFocus(false)}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
-                  </AphButton>
+                  </AphButton> */}
                   <AphButton
                     onClick={() => {
                       setTemperature('');
-                      setDisableTempFocus(true);
                     }}
                   >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
