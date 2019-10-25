@@ -39,4 +39,7 @@ export enum ApiConstants {
   PRISM_TIMEOUT = 10000,
 
   GENERAL_PHYSICIAN = 'General Physician/ Internal Medicine',
+
+  CALL_APPOINTMENT_TITLE = 'Appointment has been started',
+  CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the Consult Room',
 }
