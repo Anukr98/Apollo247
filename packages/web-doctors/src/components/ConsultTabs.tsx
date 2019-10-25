@@ -320,6 +320,7 @@ export const ConsultTabs: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
   /* case sheet data*/
 
   /* need to be worked later */
@@ -674,6 +675,7 @@ export const ConsultTabs: React.FC = () => {
                 startAppointment={startAppointment}
                 startAppointmentClick={startAppointmentClick}
                 saving={saving}
+                isAppointmentEnded={isAppointmentEnded}
               />
               <div>
                 <div>
@@ -763,6 +765,7 @@ export const ConsultTabs: React.FC = () => {
                 setIsPopoverOpen(false);
                 endConsultActionFinal();
                 setCaseSheetEdit(false);
+                setIsAppointmentEnded(true);
               }}
             >
               PREVIEW PRESCRIPTION

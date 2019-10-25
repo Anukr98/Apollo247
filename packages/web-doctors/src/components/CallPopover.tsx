@@ -529,6 +529,7 @@ interface CallPopoverProps {
   sessionId: string;
   token: string;
   saving: boolean;
+  isAppointmentEnded: boolean;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -1403,7 +1404,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.consultIcon}
               aria-describedby={idThreeDots}
               disabled={
-                disableOnTransfer ||
+                props.isAppointmentEnded ||
                 (appointmentInfo!.appointmentState !== 'NEW' &&
                   appointmentInfo!.appointmentState !== 'TRANSFER' &&
                   appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
@@ -1448,8 +1449,16 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   >
                     Transfer Consult
                   </li>
-                  {((!props.startAppointment && appointmentInfo!.status === STATUS.PENDING) ||
-                    props.startAppointment) && (
+                  {(props.startAppointment ||
+                    !(
+                      props.isAppointmentEnded ||
+                      (appointmentInfo!.appointmentState !== 'NEW' &&
+                        appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                        appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                      (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                        appointmentInfo!.status !== STATUS.PENDING)
+                    ) ||
+                    (!props.startAppointment && appointmentInfo!.status === STATUS.PENDING)) && (
                     <li
                       onClick={() => {
                         handleCloseThreeDots();
