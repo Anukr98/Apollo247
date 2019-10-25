@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { getAllBrands } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -63,7 +64,18 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
 
   useEffect(() => {
     setshowTabs(true);
+    fetchAllBrands();
   }, []);
+
+  const fetchAllBrands = () => {
+    getAllBrands()
+      .then((res) => {
+        console.log(res, 'fetchAllBrands');
+      })
+      .catch((err) => {
+        console.log(err, 'errr');
+      });
+  };
 
   const renderHeader = () => {
     return (

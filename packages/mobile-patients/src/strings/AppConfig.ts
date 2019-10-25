@@ -22,6 +22,7 @@ const PharmaApiConfig = {
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`],
     OFFER_BANNER: [`${apolloUatBaseUrl}/bannersapi.php`, pharmaToken201],
+    ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
   },
   prod: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
@@ -39,6 +40,7 @@ const PharmaApiConfig = {
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`],
     OFFER_BANNER: [`${apolloUatBaseUrl}/bannersapi.php`, pharmaToken201],
+    ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
   },
 };
 

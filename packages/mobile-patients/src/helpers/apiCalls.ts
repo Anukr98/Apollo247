@@ -472,3 +472,11 @@ export const getSubstitutes = async (
     }
   );
 };
+
+export const getAllBrands = (): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  return Axios.get(config.ALL_BRANDS[0], {
+    headers: {
+      Authorization: config.ALL_BRANDS[1],
+    },
+  });
+};
