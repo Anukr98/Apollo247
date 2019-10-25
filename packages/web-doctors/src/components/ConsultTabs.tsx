@@ -330,6 +330,7 @@ export const ConsultTabs: React.FC = () => {
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
+  const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
   /* case sheet data*/
 
   /* need to be worked later */
@@ -698,6 +699,7 @@ export const ConsultTabs: React.FC = () => {
                 saving={saving}
                 appointmentStatus={appointmentStatus[0]}
                 sentToPatient={sentToPatient}
+                isAppointmentEnded={isAppointmentEnded}
               />
               <div>
                 {!isPdfPageOpen ? (
@@ -795,6 +797,7 @@ export const ConsultTabs: React.FC = () => {
                 endConsultActionFinal();
                 setCaseSheetEdit(false);
                 setIsPdfPageOpen(true);
+                setIsAppointmentEnded(true);
               }}
             >
               PREVIEW PRESCRIPTION
