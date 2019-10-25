@@ -34,7 +34,6 @@ const useStyles = makeStyles((theme: Theme) => ({
       padding: 0,
       fontSize: 15,
       fontWeight: 500,
-      paddingRight: 60,
       borderRadius: 0,
     },
   },
@@ -65,6 +64,19 @@ const useStyles = makeStyles((theme: Theme) => ({
         maxWidth: 20,
         maxHeight: 20,
       },
+    },
+  },
+  inputFieldEdit: {
+    border: '1px solid #00b38e',
+    borderEadius: 10,
+    backgroundColor: '#fff',
+    padding: 0,
+    '& textarea': {
+      color: '#01475b',
+      padding: 16,
+      fontSize: 16,
+      fontWeight: 500,
+      paddingRight: 40,
     },
   },
 }));
@@ -107,7 +119,7 @@ export const Vitals: React.FC = () => {
         <Grid item sm={6}>
           <div className={classes.sectionGroup}>
             <div className={classes.sectionTitle}>Height</div>
-            <div className={classes.contentBox}>
+            <div className={`${classes.contentBox} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}>
               <AphTextField
                 disabled={!caseSheetEdit}
                 fullWidth
@@ -142,7 +154,7 @@ export const Vitals: React.FC = () => {
         <Grid item sm={6}>
           <div className={classes.sectionGroup}>
             <div className={classes.sectionTitle}>Weight</div>
-            <div className={classes.contentBox}>
+            <div className={`${classes.contentBox} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}>
               <AphTextField
                 disabled={!caseSheetEdit}
                 fullWidth
@@ -173,7 +185,7 @@ export const Vitals: React.FC = () => {
         <Grid item sm={6}>
           <div className={classes.sectionGroup}>
             <div className={classes.sectionTitle}>BP</div>
-            <div className={classes.contentBox}>
+            <div className={`${classes.contentBox} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}>
               <AphTextField
                 disabled={!caseSheetEdit}
                 fullWidth
@@ -204,7 +216,7 @@ export const Vitals: React.FC = () => {
         <Grid item sm={6}>
           <div className={classes.sectionGroup}>
             <div className={classes.sectionTitle}>Temperature</div>
-            <div className={classes.contentBox}>
+            <div className={`${classes.contentBox} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}>
               <AphTextField
                 disabled={!caseSheetEdit}
                 fullWidth

@@ -81,6 +81,10 @@ import {
   appointmentsSummaryTypeDefs,
   appointmentsSummaryResolvers,
 } from 'consults-service/resolvers/appointmentsSummary';
+import {
+  doctorCallNotificationTypeDefs,
+  doctorCallNotificationResolvers,
+} from 'consults-service/resolvers/doctorCallNotification';
 
 (async () => {
   await connect();
@@ -190,6 +194,10 @@ import {
       {
         typeDefs: appointmentsSummaryTypeDefs,
         resolvers: appointmentsSummaryResolvers,
+      },
+      {
+        typeDefs: doctorCallNotificationTypeDefs,
+        resolvers: doctorCallNotificationResolvers,
       },
     ]),
   });
