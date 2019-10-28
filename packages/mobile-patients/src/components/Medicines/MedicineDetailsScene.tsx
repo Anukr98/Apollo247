@@ -196,7 +196,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const sku = props.navigation.getParam('sku');
   console.log(sku, 'skusku');
 
-  const { addCartItem, cartItems } = useShoppingCart();
+  const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
   const isOutOfStock = !medicineDetails!.is_in_stock;
   const medicineName = medicineDetails.name;
@@ -223,16 +223,30 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   }, [medicineOverview]);
 
-  const onAddCartItem = ({ sku, mou, name, price, is_prescription_required }: MedicineProduct) => {
-    addCartItem &&
-      addCartItem({
-        id: sku,
-        mou,
-        name,
-        price,
-        prescriptionRequired: is_prescription_required == '1',
-        quantity: 1,
-      });
+  const onAddCartItem = ({
+    sku,
+    mou,
+    name,
+    price,
+    is_prescription_required,
+    thumbnail,
+  }: MedicineProduct) => {
+    addCartItem!({
+      id: sku,
+      mou,
+      name,
+      price,
+      prescriptionRequired: is_prescription_required == '1',
+      quantity: 1,
+      thumbnail: thumbnail,
+    });
+  };
+
+  const updateQuantityCartItem = ({ sku }: MedicineProduct) => {
+    updateCartItem!({
+      id: sku,
+      quantity: Number(selectedQuantity),
+    });
   };
 
   const fetchDeliveryTime = () => {
@@ -265,8 +279,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         setshowDeliverySpinner(false);
       })
       .catch((err) => {
-        console.log(err, 'err');
-        Alert.alert(err);
+        console.log(JSON.stringify(err), 'err');
+        Alert.alert('Something went wrong');
         setshowDeliverySpinner(false);
       });
   };
@@ -376,12 +390,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                       'ADD TO CART'
                 }
                 disabled={isMedicineAddedToCart || isOutOfStock}
+                disabledStyle={styles.bottomButtonStyle}
                 style={styles.bottomButtonStyle}
                 titleTextStyle={{ color: '#fc9916' }}
               />
               <View style={{ width: 16 }} />
               <Button
                 onPress={() => {
+                  updateQuantityCartItem(medicineDetails);
                   !isMedicineAddedToCart && onAddCartItem(medicineDetails);
                   props.navigation.navigate(AppRoutes.YourCart);
                 }}
@@ -454,17 +470,27 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     );
   };
 
-  const renderTabComponent = () => {
-    // let description = desc; // props.route.key; //data.CaptionDesc;
-    const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
-    const description = (selectedTabdata.length ? selectedTabdata[0].CaptionDesc : '')
+  const filterHtmlContent = (content: string = '') => {
+    return content
+      .replace(/&amp;nbsp;/g, ' ')
       .replace(/&amp;deg;/g, '°')
       .replace(/&#039;/g, "'")
       .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
       .replace(/&amp;lt;br \/&amp;gt;/g, '\n')
       .split('\n')
       .filter((item) => item)
-      .join('\n');
+      .join('\n')
+      .trim();
+  };
+
+  const renderTabComponent = () => {
+    // let description = desc; // props.route.key; //data.CaptionDesc;
+    const selectedTabdata = medicineOverview.filter((item) => item.Caption === selectedTab);
+    const description = filterHtmlContent(
+      selectedTabdata.length && !!selectedTabdata[0].CaptionDesc
+        ? selectedTabdata[0].CaptionDesc
+        : ''
+    );
 
     return (
       <View
@@ -517,7 +543,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     );
   };
   const renderInfo = () => {
-    if (!!medicineDetails.description)
+    const description = filterHtmlContent(medicineDetails.description);
+    if (!!description)
       return (
         <View>
           <Text
@@ -548,7 +575,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   lineHeight: 22,
                 }}
               >
-                {medicineDetails.description}
+                {description}
               </Text>
               {/* <WebView
                 source={{

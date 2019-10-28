@@ -41,13 +41,18 @@ export interface ButtonProps {
   title?: string;
   onPress?: TouchableOpacityProps['onPress'];
   disabled?: boolean;
+  disabledStyle?: StyleProp<ViewStyle>;
 }
 
 export const Button: React.FC<ButtonProps> = (props) => {
   return (
     <TouchableOpacity
       activeOpacity={1}
-      style={[styles.containerStyles, props.style, props.disabled ? styles.disabledStyle : null]}
+      style={[
+        styles.containerStyles,
+        props.style,
+        props.disabled ? [styles.disabledStyle, props.disabledStyle] : null,
+      ]}
       onPress={props.disabled ? () => {} : props.onPress}
     >
       <Text style={[styles.titleTextStyle, props.titleTextStyle]}>{props.title}</Text>

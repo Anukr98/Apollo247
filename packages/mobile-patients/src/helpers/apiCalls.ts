@@ -49,6 +49,17 @@ export interface MedicineProductsResponse {
   products: MedicineProduct[];
 }
 
+export interface Brand {
+  category_id: string;
+  image_url: number;
+  title: string;
+}
+
+export interface BrandsResponse {
+  count: number;
+  brands: Brand[];
+}
+
 export interface Store {
   storeid: string;
   storename: string;
@@ -419,7 +430,7 @@ export const getMedicineSearchSuggestionsApi = (
 };
 
 export const getProductsByCategoryApi = (
-  categoryId: ProductCategory,
+  categoryId: String,
   pageId: number = 1
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   return Axios.get(
@@ -473,7 +484,7 @@ export const getSubstitutes = async (
   );
 };
 
-export const getAllBrands = (): Promise<AxiosResponse<MedicineProductsResponse>> => {
+export const getAllBrands = (): Promise<AxiosResponse<BrandsResponse>> => {
   return Axios.get(config.ALL_BRANDS[0], {
     headers: {
       Authorization: config.ALL_BRANDS[1],

@@ -1,13 +1,15 @@
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { Brand, getAllBrands } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { getAllBrands } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -60,10 +62,10 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
   const tabs = alphabets.map((letter) => ({ title: letter }));
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
-  const [showTabs, setshowTabs] = useState<boolean>(false);
+  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+  const [allBrands, setallBrands] = useState<Brand[]>([]);
 
   useEffect(() => {
-    setshowTabs(true);
     fetchAllBrands();
   }, []);
 
@@ -71,9 +73,15 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
     getAllBrands()
       .then((res) => {
         console.log(res, 'fetchAllBrands');
+        if (res && res.data && res.data.brands) {
+          setallBrands(res.data.brands);
+        }
       })
       .catch((err) => {
         console.log(err, 'errr');
+      })
+      .finally(() => {
+        setshowSpinner(false);
       });
   };
 
@@ -93,39 +101,66 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
     );
   };
 
-  const renderTabComponent = () => {
+  const renderEmptyData = () => {
     return (
-      <View
-        style={[
-          { backgroundColor: theme.colors.WHITE, flex: 1, paddingVertical: 13, marginTop: 50 },
-        ]}
-      >
-        <ScrollView bounces={false}>
-          {list.map((name) => (
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginHorizontal: 20,
-                paddingTop: 15.5,
-                paddingBottom: 7.5,
-                borderBottomColor: 'rgba(2,71,91, 0.2)',
-                borderBottomWidth: 0.5,
-              }}
-            >
-              <Text
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <Card
+          cardContainer={{ marginTop: 0 }}
+          heading={'Uh oh! :('}
+          description={'No data Found!'}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      </View>
+    );
+  };
+
+  const renderData = () => {
+    const filteredBrands = allBrands.filter((brand) => brand.title.startsWith(selectedTab));
+    return (
+      <View style={[{ backgroundColor: theme.colors.WHITE, flex: 1, marginTop: 50 }]}>
+        {filteredBrands.length ? (
+          <ScrollView
+            bounces={false}
+            contentContainerStyle={{
+              paddingVertical: 13,
+            }}
+          >
+            {filteredBrands.map((item) => (
+              <TouchableOpacity
                 style={{
-                  color: theme.colors.SHERPA_BLUE,
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                  lineHeight: 24,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  marginHorizontal: 20,
+                  paddingTop: 15.5,
+                  paddingBottom: 7.5,
+                  borderBottomColor: 'rgba(2,71,91, 0.2)',
+                  borderBottomWidth: 0.5,
+                }}
+                activeOpacity={1}
+                onPress={() => {
+                  props.navigation.navigate(AppRoutes.SearchByBrand, {
+                    title: item.title,
+                    category_id: item.category_id,
+                  });
                 }}
               >
-                {name}
-              </Text>
-              <ArrowRight />
-            </View>
-          ))}
-        </ScrollView>
+                <Text
+                  style={{
+                    color: theme.colors.SHERPA_BLUE,
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    lineHeight: 24,
+                  }}
+                >
+                  {item.title}
+                </Text>
+                <ArrowRight />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        ) : (
+          renderEmptyData()
+        )}
       </View>
     );
   };
@@ -153,15 +188,18 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
           selectedTitleStyle={theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE)}
           titleStyle={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE)}
         />
-        {renderTabComponent()}
+        {renderData()}
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={styles.safeAreaViewStyle}>
-      <View style={styles.headerSearchInputShadow}>{renderHeader()}</View>
-      {showTabs ? renderTabs() : <Spinner />}
-    </SafeAreaView>
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeAreaViewStyle}>
+        <View style={styles.headerSearchInputShadow}>{renderHeader()}</View>
+        {!showSpinner && renderTabs()}
+      </SafeAreaView>
+      {showSpinner && <Spinner />}
+    </View>
   );
 };
