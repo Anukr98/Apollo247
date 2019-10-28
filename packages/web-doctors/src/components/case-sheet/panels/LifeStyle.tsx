@@ -1,8 +1,9 @@
-import React, { Fragment, useContext } from 'react';
-import { Typography, List, ListItem } from '@material-ui/core';
+import React, { useContext, useState, useRef } from 'react';
+import { Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { Gender } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -82,7 +83,131 @@ const useStyles = makeStyles(() => ({
 
 export const LifeStyle: React.FC = () => {
   const classes = useStyles();
-  const { loading, patientDetails } = useContext(CaseSheetContext);
+  const {
+    loading,
+    patientDetails,
+    setPastMedicalHistory,
+    setPastSurgicalHistory,
+    setDrugAllergies,
+    setDietAllergies,
+    setLifeStyle,
+    setMenstrualHistory,
+    setFamilyHistory,
+
+    pastMedicalHistory,
+    pastSurgicalHistory,
+    drugAllergies,
+    dietAllergies,
+    lifeStyle,
+    menstrualHistory,
+    familyHistory,
+  } = useContext(CaseSheetContext);
+
+  const [disablePastMedicalHistory, setDisablePastMedicalHistory] = useState<boolean>(true);
+  const [disablePastSurgicalHistory, setDisablePastSurgicalHistory] = useState<boolean>(true);
+  const [disableDrugAllergies, setDisableDrugAllergies] = useState<boolean>(true);
+  const [disableDietAllergies, setDisableDietAllergies] = useState<boolean>(true);
+  const [disableLifeStyle, setDisableLifeStyle] = useState<boolean>(true);
+  const [disableFamilyHistory, setDisableFamilyHistory] = useState<boolean>(true);
+  const [disableMenstrualHistory, setDisableMenstrualHistory] = useState<boolean>(true);
+
+  // const pastMedicalHistory =
+  //   patientDetails &&
+  //   patientDetails.patientMedicalHistory &&
+  //   patientDetails.patientMedicalHistory.pastMedicalHistory
+  //     ? patientDetails &&
+  //       patientDetails.patientMedicalHistory &&
+  //       patientDetails.patientMedicalHistory.pastMedicalHistory
+  //     : '';
+  // const pastSurgicalHistory =
+  //   patientDetails &&
+  //   patientDetails.patientMedicalHistory &&
+  //   patientDetails.patientMedicalHistory.pastSurgicalHistory
+  //     ? patientDetails &&
+  //       patientDetails.patientMedicalHistory &&
+  //       patientDetails.patientMedicalHistory.pastSurgicalHistory
+  //     : '';
+  // const drugAllergies =
+  //   patientDetails &&
+  //   patientDetails.patientMedicalHistory &&
+  //   patientDetails.patientMedicalHistory.drugAllergies
+  //     ? patientDetails &&
+  //       patientDetails.patientMedicalHistory &&
+  //       patientDetails.patientMedicalHistory.drugAllergies
+  //     : '';
+  // const dietAllergies =
+  //   patientDetails &&
+  //   patientDetails.patientMedicalHistory &&
+  //   patientDetails.patientMedicalHistory.dietAllergies
+  //     ? patientDetails &&
+  //       patientDetails.patientMedicalHistory &&
+  //       patientDetails.patientMedicalHistory.dietAllergies
+  //     : '';
+  // const menstrualHistory =
+  //   patientDetails &&
+  //   patientDetails.patientMedicalHistory &&
+  //   patientDetails.patientMedicalHistory.menstrualHistory
+  //     ? patientDetails &&
+  //       patientDetails.patientMedicalHistory &&
+  //       patientDetails.patientMedicalHistory.menstrualHistory
+  //     : '';
+
+  const gender = patientDetails && patientDetails.gender ? patientDetails.gender : null;
+
+  // let familyHistoryObj = null,
+  //   lifeStyleObj = null;
+
+  // if (patientDetails && patientDetails.familyHistory && patientDetails.familyHistory[0]) {
+  //   familyHistoryObj = patientDetails.familyHistory[0];
+  // }
+
+  // if (patientDetails && patientDetails.lifeStyle && patientDetails.lifeStyle[0]) {
+  //   lifeStyleObj = patientDetails.lifeStyle[0];
+  // }
+
+  const pastMedicalRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+  const pastSurgicalRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+  const drugAllergiesRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+  const dietAllergiesRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+  const lifeStyleRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+  const familyHistoryRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+  const menstrualRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+
   return loading && !patientDetails ? (
     <div></div>
   ) : (
@@ -90,27 +215,34 @@ export const LifeStyle: React.FC = () => {
       <div>
         <Typography className={classes.mainContainer} component="div">
           <Typography component="h5" variant="h5" className={classes.header}>
-            Patient’s Past Medical History
+            Patient's Past Medical History
           </Typography>
           <Typography component="div" className={classes.content}>
-            {/* <List>
-              <ListItem>
-                <Fragment>
-                  <Typography component="p" className={classes.textContent}>
-                    {patientDetails!.patientMedicalHistory!.pastMedicalHistory &&
-                    patientDetails!.patientMedicalHistory!.pastMedicalHistory.trim()
-                      ? patientDetails!.patientMedicalHistory!.pastMedicalHistory
-                      : 'None'}
-                  </Typography>
-                </Fragment>
-              </ListItem>
-            </List> */}
-            <AphTextField fullWidth multiline />
+            <AphTextField
+              disabled={disablePastMedicalHistory}
+              fullWidth
+              multiline
+              defaultValue={pastMedicalHistory}
+              onBlur={(e) => {
+                setPastMedicalHistory(e.target.value);
+                setDisablePastMedicalHistory(true);
+              }}
+              inputRef={pastMedicalRef}
+            />
             <div className={classes.boxActions}>
-              <AphButton>
+              <AphButton
+                onClick={() => {
+                  setDisablePastMedicalHistory(false);
+                }}
+              >
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
               </AphButton>
-              <AphButton>
+              <AphButton
+                onClick={() => {
+                  setPastMedicalHistory('');
+                  setDisablePastMedicalHistory(true);
+                }}
+              >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
@@ -119,27 +251,33 @@ export const LifeStyle: React.FC = () => {
 
         <Typography component="div">
           <Typography component="h5" variant="h5" className={classes.header}>
-            Patient’s Past Surgical History
+            Patient's Past Surgical History
           </Typography>
           <Typography component="div" className={classes.content}>
-            {/* <List>
-              <ListItem>
-                <Fragment>
-                  <Typography component="p" className={classes.textContent}>
-                    {patientDetails!.patientMedicalHistory!.pastSurgicalHistory &&
-                    patientDetails!.patientMedicalHistory!.pastSurgicalHistory.trim()
-                      ? patientDetails!.patientMedicalHistory!.pastSurgicalHistory
-                      : 'None'}
-                  </Typography>
-                </Fragment>
-              </ListItem>
-            </List> */}
-            <AphTextField fullWidth multiline />
+            <AphTextField
+              disabled={disablePastSurgicalHistory}
+              fullWidth
+              multiline
+              defaultValue={pastSurgicalHistory}
+              onBlur={(e) => {
+                setPastSurgicalHistory(e.target.value);
+              }}
+              inputRef={pastSurgicalRef}
+            />
             <div className={classes.boxActions}>
-              <AphButton>
+              <AphButton
+                onClick={() => {
+                  setDisablePastSurgicalHistory(false);
+                }}
+              >
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
               </AphButton>
-              <AphButton>
+              <AphButton
+                onClick={() => {
+                  setPastSurgicalHistory('');
+                  setDisablePastSurgicalHistory(true);
+                }}
+              >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
@@ -151,182 +289,178 @@ export const LifeStyle: React.FC = () => {
             Drug Allergies
           </Typography>
           <Typography component="div" className={classes.content}>
-            {/* <List>
-              <ListItem>
-                <Fragment>
-                  <Typography component="p" className={classes.textContent}>
-                    {patientDetails!.patientMedicalHistory!.drugAllergies &&
-                    patientDetails!.patientMedicalHistory!.drugAllergies.trim()
-                      ? patientDetails!.patientMedicalHistory!.drugAllergies
-                      : 'None'}
-                  </Typography>
-                </Fragment>
-              </ListItem>
-            </List> */}
-            <AphTextField fullWidth multiline />
+            <AphTextField
+              disabled={disableDrugAllergies}
+              fullWidth
+              multiline
+              defaultValue={drugAllergies}
+              onBlur={(e) => {
+                setDrugAllergies(e.target.value);
+              }}
+              inputRef={drugAllergiesRef}
+            />
             <div className={classes.boxActions}>
-              <AphButton>
+              <AphButton
+                onClick={(e) => {
+                  setDisableDrugAllergies(false);
+                }}
+              >
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
               </AphButton>
-              <AphButton>
+              <AphButton
+                onClick={() => {
+                  setDrugAllergies('');
+                  setDisableDrugAllergies(true);
+                }}
+              >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
           </Typography>
         </Typography>
+
         <Typography component="div" className={classes.dietAllergies}>
           <Typography component="h5" variant="h5" className={classes.header}>
             Diet Allergies/Restrictions
           </Typography>
           <Typography component="div" className={classes.content}>
-            {/* <List>
-              <ListItem>
-                <Fragment>
-                  <Typography component="p" className={classes.textContent}>
-                    {patientDetails!.patientMedicalHistory!.dietAllergies &&
-                    patientDetails!.patientMedicalHistory!.dietAllergies.trim()
-                      ? patientDetails!.patientMedicalHistory!.dietAllergies
-                      : 'None'}
-                  </Typography>
-                </Fragment>
-              </ListItem>
-            </List> */}
-            <AphTextField fullWidth multiline />
+            <AphTextField
+              disabled={disableDietAllergies}
+              fullWidth
+              multiline
+              defaultValue={dietAllergies}
+              onBlur={(e) => {
+                setDietAllergies(e.target.value);
+              }}
+              inputRef={dietAllergiesRef}
+            />
             <div className={classes.boxActions}>
-              <AphButton>
+              <AphButton
+                onClick={() => {
+                  setDisableDietAllergies(false);
+                }}
+              >
                 <img src={require('images/round_edit_24_px.svg')} alt="" />
               </AphButton>
-              <AphButton>
-                <img src={require('images/ic_cancel_green.svg')} alt="" />
-              </AphButton>
-            </div>
-          </Typography>
-        </Typography>
-        {patientDetails && patientDetails!.lifeStyle && patientDetails!.lifeStyle.length > 0 ? (
-          <Typography className={classes.mainContainer} component="div">
-            <Typography component="h5" variant="h5" className={classes.header}>
-              Lifestyle & Habits
-            </Typography>
-            <Typography component="div" className={classes.content}>
-              {/* <List>
-                {patientDetails!.lifeStyle!.map(
-                  (item, idx) =>
-                    item!.description &&
-                    item!.description.length > 0 && (
-                      <ListItem key={idx}>
-                        <Fragment>
-                          <Typography component="p" className={classes.textContent}>
-                            {item!.description}
-                          </Typography>
-                        </Fragment>
-                      </ListItem>
-                    )
-                )}
-              </List> */}
-              <AphTextField fullWidth multiline />
-              <div className={classes.boxActions}>
-                <AphButton>
-                  <img src={require('images/round_edit_24_px.svg')} alt="" />
-                </AphButton>
-                <AphButton>
-                  <img src={require('images/ic_cancel_green.svg')} alt="" />
-                </AphButton>
-              </div>
-            </Typography>
-          </Typography>
-        ) : (
-          <span>No data Found</span>
-        )}
-        <Typography component="div">
-          <Typography component="h5" variant="h5" className={classes.header}>
-            Menstual History*
-          </Typography>
-          <Typography component="div" className={classes.content}>
-            {/* <List>
-              <ListItem>
-                <Fragment>
-                  <Typography component="p" className={classes.textContent}>
-                    {patientDetails!.patientMedicalHistory!.menstrualHistory &&
-                    patientDetails!.patientMedicalHistory!.menstrualHistory.trim()
-                      ? patientDetails!.patientMedicalHistory!.menstrualHistory
-                      : 'None'}
-                  </Typography>
-                </Fragment>
-              </ListItem>
-            </List> */}
-            <AphTextField fullWidth multiline />
-            <div className={classes.boxActions}>
-              <AphButton>
-                <img src={require('images/round_edit_24_px.svg')} alt="" />
-              </AphButton>
-              <AphButton>
+              <AphButton
+                onClick={() => {
+                  setDietAllergies('');
+                  setDisableDietAllergies(true);
+                }}
+              >
                 <img src={require('images/ic_cancel_green.svg')} alt="" />
               </AphButton>
             </div>
           </Typography>
         </Typography>
 
-        {patientDetails &&
-        patientDetails!.familyHistory &&
-        patientDetails!.familyHistory !== null &&
-        patientDetails!.familyHistory.length > 0 ? (
-          <Typography className={classes.mainContainer} component="div">
+        <Typography className={classes.mainContainer} component="div">
+          <Typography component="h5" variant="h5" className={classes.header}>
+            Lifestyle & Habits
+          </Typography>
+          <Typography component="div" className={classes.content}>
+            <AphTextField
+              disabled={disableLifeStyle}
+              fullWidth
+              multiline
+              defaultValue={lifeStyle}
+              onBlur={(e) => {
+                setLifeStyle(e.target.value);
+              }}
+              inputRef={lifeStyleRef}
+            />
+            <div className={classes.boxActions}>
+              <AphButton
+                onClick={() => {
+                  setDisableLifeStyle(false);
+                }}
+              >
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton
+                onClick={() => {
+                  setLifeStyle('');
+                  setDisableLifeStyle(true);
+                }}
+              >
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          </Typography>
+        </Typography>
+
+        {gender === Gender.FEMALE && (
+          <Typography component="div">
             <Typography component="h5" variant="h5" className={classes.header}>
-              Patient’s Family Medical History
+              Menstual History*
             </Typography>
             <Typography component="div" className={classes.content}>
-              {/* <List>
-                {patientDetails!.familyHistory!.map(
-                  (item, idx) =>
-                    item!.description &&
-                    item!.description.length > 0 && (
-                      <ListItem key={idx}>
-                        <Fragment>
-                          <Typography component="p" className={classes.textContent}>
-                            {`${item!.relation}:${item!.description}`}
-                          </Typography>
-                        </Fragment>
-                      </ListItem>
-                    )
-                )}
-              </List> */}
-              <AphTextField fullWidth multiline />
+              <AphTextField
+                disabled={disableMenstrualHistory}
+                fullWidth
+                multiline
+                defaultValue={menstrualHistory}
+                onBlur={(e) => {
+                  setMenstrualHistory(e.target.value);
+                }}
+                inputRef={menstrualRef}
+              />
               <div className={classes.boxActions}>
-                <AphButton>
+                <AphButton
+                  onClick={() => {
+                    setDisableMenstrualHistory(false);
+                  }}
+                >
                   <img src={require('images/round_edit_24_px.svg')} alt="" />
                 </AphButton>
-                <AphButton>
+                <AphButton
+                  onClick={() => {
+                    setMenstrualHistory('');
+                    setDisableMenstrualHistory(true);
+                  }}
+                >
                   <img src={require('images/ic_cancel_green.svg')} alt="" />
                 </AphButton>
               </div>
             </Typography>
           </Typography>
-        ) : (
-          <span>No data Found</span>
         )}
+
+        <Typography className={classes.mainContainer} component="div">
+          <Typography component="h5" variant="h5" className={classes.header}>
+            Patient's Family Medical History
+          </Typography>
+          <Typography component="div" className={classes.content}>
+            <AphTextField
+              disabled={disableFamilyHistory}
+              fullWidth
+              multiline
+              defaultValue={familyHistory}
+              onBlur={(e) => {
+                setFamilyHistory(e.target.value);
+              }}
+              inputRef={familyHistoryRef}
+            />
+            <div className={classes.boxActions}>
+              <AphButton
+                onClick={() => {
+                  setDisableFamilyHistory(false);
+                }}
+              >
+                <img src={require('images/round_edit_24_px.svg')} alt="" />
+              </AphButton>
+              <AphButton
+                onClick={() => {
+                  setFamilyHistory('');
+                  setDisableFamilyHistory(true);
+                }}
+              >
+                <img src={require('images/ic_cancel_green.svg')} alt="" />
+              </AphButton>
+            </div>
+          </Typography>
+        </Typography>
       </div>
-
-      {/* {data.map((item, idx) => (
-        <Typography key={idx} className={classes.column} component="div">
-          <Typography component="h5" variant="h5" className={classes.header}>
-            {Object.keys(item)[0]}
-          </Typography>
-          <Typography component="div" className={classes.content}>
-            <List>
-              {!!Object.values(item).length &&
-                Object.values(item).map((text, i) => (
-                  <ListItem key={i}>
-                    <Fragment>
-                      <Typography component="p" className={classes.textContent}>
-                        {text}
-                      </Typography>
-                    </Fragment>
-                  </ListItem>
-                ))}
-            </List>
-          </Typography>
-        </Typography>
-      ))} */}
     </Typography>
   );
 };
