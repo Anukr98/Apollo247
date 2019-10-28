@@ -28,8 +28,7 @@ export type Option = {
 };
 
 export interface MaterialMenuProps {
-  selectedQuantity: string | number;
-  onPressQuantity?: (arg0: string | number) => void;
+  onPress?: (arg0: string | number) => void;
   data?: (string | number)[];
 }
 
@@ -62,7 +61,7 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
             key={number}
             onPress={() => {
               hideMenu();
-              props.onPressQuantity && props.onPressQuantity(number);
+              props.onPress && props.onPress(number);
             }}
             style={styles.itemContainer}
             textStyle={styles.itemTextStyle}

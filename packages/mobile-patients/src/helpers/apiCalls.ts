@@ -472,7 +472,7 @@ export const getDeliveryTime = (params: {
 
 export const getSubstitutes = async (
   sku: string
-): Promise<AxiosResponse<{ Stores: Store[]; stores_count: number }>> => {
+): Promise<AxiosResponse<{ products: MedicineProductDetails[]; product_count: number }>> => {
   return Axios.post(
     config.GET_SUBSTITUTES[0],
     { params: sku },

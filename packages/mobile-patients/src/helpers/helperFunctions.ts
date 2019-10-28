@@ -302,3 +302,7 @@ export const nextAvailability = (nextSlot: string) => {
     return `available in ${days} day${days > 1 ? 's' : ''}`;
   }
 };
+
+export const isEmptyObject = (object: Object) => {
+  return Object.keys(object).length === 0;
+};

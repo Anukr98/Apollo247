@@ -223,10 +223,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     return (
       <View style={styles.unitAndPriceView}>
         <View style={{ flex: 1 }}>
-          <MaterialMenu
-            onPressQuantity={(selectedQuantity) => onChangeUnit(selectedQuantity as number)}
-            selectedQuantity={unit}
-          >
+          <MaterialMenu onPress={(selectedQuantity) => onChangeUnit(selectedQuantity as number)}>
             <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
               <View style={[{ flex: 1, alignItems: 'flex-start' }]}>
                 <Text style={styles.unitAndRupeeText}>{`QTY : ${unit}`}</Text>

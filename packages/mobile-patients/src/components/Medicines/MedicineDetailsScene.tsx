@@ -22,7 +22,7 @@ import {
   MedicineProduct,
   MedicineProductDetails,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { aphConsole, isEmptyObject } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
@@ -178,7 +178,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [selectedQuantity, setselectedQuantity] = useState<string | number>(1);
   const [pincode, setpincode] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
-  const [Substitutes, setSubstitutes] = useState<[]>([]);
+  const [Substitutes, setSubstitutes] = useState<MedicineProductDetails[]>([]);
 
   const _medicineOverview =
     medicineDetails!.PharmaOverview &&
@@ -287,17 +287,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   const fetchSubstitutes = () => {
     getSubstitutes(sku)
-      .then((res) => {
+      .then(({ data }) => {
         try {
-          console.log('getSubstitutes', res);
-          if (res && res.data) {
+          console.log('getSubstitutes', data);
+          if (data) {
             if (
-              res.data.products &&
-              typeof res.data.products === 'object' &&
-              Array.isArray(res.data.products)
+              data.products &&
+              typeof data.products === 'object' &&
+              Array.isArray(data.products)
             ) {
               //
-              setSubstitutes(res.data.products);
+              setSubstitutes(data.products);
             }
           }
         } catch (error) {
@@ -344,10 +344,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   flex: 1,
                 }}
               >
-                <MaterialMenu
-                  onPressQuantity={(selectedQuantity) => setselectedQuantity(selectedQuantity)}
-                  selectedQuantity={selectedQuantity}
-                >
+                <MaterialMenu onPress={(selectedQuantity) => setselectedQuantity(selectedQuantity)}>
                   <View
                     style={{
                       flexDirection: 'row',
@@ -593,7 +590,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       );
   };
 
-  const renderIconOrImage = (data) => {
+  const renderIconOrImage = (data: MedicineProductDetails) => {
     return (
       <View style={styles.iconOrImageContainerStyle}>
         {data.image ? (
@@ -632,7 +629,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       },
     });
 
-    const renderNamePriceAndInStockStatus = (data) => {
+    const renderNamePriceAndInStockStatus = (data: MedicineProductDetails) => {
       return (
         <View style={localStyles.nameAndPriceViewStyle}>
           <Text
@@ -641,7 +638,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           >
             {data.name}
           </Text>
-          {data.isOutOfStock ? (
+          {isOutOfStock ? (
             <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
               {'Out Of Stock'}
             </Text>
@@ -834,7 +831,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       const price = medicineDetails.price;
       const pharmaOverview =
         (medicineDetails!.PharmaOverview && medicineDetails!.PharmaOverview[0]) || {};
-      const doseForm = pharmaOverview.Doseform;
+      const doseForm = pharmaOverview.Doseform || '';
       const manufacturer = medicineDetails.manufacturer || '';
       const _composition = {
         generic: formatComposition(pharmaOverview.generic),
@@ -893,7 +890,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           color="green"
         />
       )}
-      {!loading && medicineDetails && (
+      {!loading && !isEmptyObject(medicineDetails) && (
         <KeyboardAwareScrollView
           bounces={false}
           // keyboardShouldPersistTaps={''}
@@ -924,7 +921,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           <View style={{ height: 130 }} />
         </KeyboardAwareScrollView>
       )}
-      {!loading && medicineDetails && renderBottomButtons()}
+      {!loading && !isEmptyObject(medicineDetails) && renderBottomButtons()}
     </SafeAreaView>
   );
 };
