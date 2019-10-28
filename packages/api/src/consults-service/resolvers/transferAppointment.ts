@@ -7,7 +7,6 @@ import {
   APPOINTMENT_TYPE,
   APPOINTMENT_STATE,
   TRANSFER_INITIATED_TYPE,
-  CaseSheet,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -22,7 +21,6 @@ import { addDays } from 'date-fns';
 import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
-import { ConsultType } from 'doctors-service/entities';
 
 export const transferAppointmentTypeDefs = gql`
   enum TRANSFER_STATUS {
@@ -251,7 +249,9 @@ const bookTransferAppointment: Resolver<
 
   //copy parent case-sheet details
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const caseSheetDetails = await caseSheetRepo.getCaseSheetByAppointmentId(apptDetails.id);
+  const caseSheetDetails = await caseSheetRepo.getCaseSheetByAppointmentId(
+    BookTransferAppointmentInput.existingAppointmentId
+  );
   if (caseSheetDetails != null) {
     caseSheetDetails.forEach(async (caseSheetRecord) => {
       const caseSheetRow = {
