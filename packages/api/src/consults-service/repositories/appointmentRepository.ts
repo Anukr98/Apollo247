@@ -748,4 +748,14 @@ export class AppointmentRepository extends Repository<Appointment> {
       return false;
     }
   }
+
+  getNextMinuteAppointments() {
+    const apptDateTime = addMinutes(new Date(), 2);
+    const formatDateTime =
+      format(apptDateTime, 'yyyy-MM-dd') + 'T' + format(apptDateTime, 'HH:mm') + ':00.000Z';
+    return this.find({
+      where: { appointmentDateTime: formatDateTime, status: Not(STATUS.CANCELLED) },
+      order: { bookingDate: 'ASC' },
+    });
+  }
 }
