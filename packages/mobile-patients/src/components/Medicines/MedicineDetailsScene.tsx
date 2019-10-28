@@ -9,6 +9,7 @@ import {
   MedicineIcon,
   MedicineRxIcon,
   SyrupBottleIcon,
+  ArrowRight,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -36,10 +37,13 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Dimensions,
 } from 'react-native';
 import { Image as ImageElement } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -158,6 +162,22 @@ const styles = StyleSheet.create({
   iconOrImageContainerStyle: {
     width: 40,
   },
+  textStyle: {
+    color: '#01475b',
+    ...theme.fonts.IBMPlexSansMedium(16),
+    // paddingVertical: 8,
+    // borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+    textTransform: 'capitalize',
+  },
+  textViewStyle: {
+    borderBottomWidth: 1,
+    borderColor: '#dddddd',
+    marginHorizontal: 16,
+    flexDirection: 'row',
+    marginBottom: 7.5,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
 });
 
 export interface MedicineDetailsSceneProps
@@ -179,6 +199,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [pincode, setpincode] = useState<string>('');
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
   const [Substitutes, setSubstitutes] = useState<MedicineProductDetails[]>([]);
+  const [showPopup, setShowPopup] = useState<boolean>(false);
 
   const _medicineOverview =
     medicineDetails!.PharmaOverview &&
@@ -657,7 +678,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           <Text style={styles.labelStyle}>SUBSTITUTE DRUGS — {Substitutes.length}</Text>
         </View>
         <View style={styles.cardStyle}>
-          {Substitutes.map((data, i) => (
+          {/* {Substitutes.map((data, i) => (
             <TouchableOpacity activeOpacity={1}>
               <View style={localStyles.containerStyle} key={data.name}>
                 <View style={localStyles.iconAndDetailsContainerStyle}>
@@ -668,7 +689,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               </View>
               {Substitutes.length !== i + 1 && <Spearator />}
             </TouchableOpacity>
-          ))}
+          ))} */}
+
+          <TouchableOpacity activeOpacity={1} onPress={() => setShowPopup(true)}>
+            <View style={localStyles.containerStyle}>
+              <View style={localStyles.iconAndDetailsContainerStyle}>
+                <Text style={{ ...theme.viewStyles.text('M', 17, '#01475b', 1, 24, 0) }}>
+                  Pick from 9 available substitutes
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -872,36 +903,91 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }
   };
 
-  return (
-    <SafeAreaView style={theme.viewStyles.container}>
-      <Header
-        leftIcon="backArrow"
-        onPressLeftIcon={() => props.navigation.goBack()}
-        title={'PRODUCT DETAIL'}
-        titleStyle={{ marginHorizontal: 10 }}
-        container={{ borderBottomWidth: 0, ...theme.viewStyles.shadowStyle }}
-      />
+  const Popup = () => (
+    <TouchableOpacity
+      activeOpacity={1}
+      style={{
+        paddingVertical: 9,
+        position: 'absolute',
+        width: width,
+        height: height,
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 3,
+        backgroundColor: 'transparent',
+      }}
+      onPress={() => setShowPopup(false)}
+    >
+      <View
+        style={{
+          // width: 160,
+          borderRadius: 10,
+          backgroundColor: 'white',
+          marginRight: 20,
+          shadowColor: '#808080',
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 0.8,
+          shadowRadius: 10,
+          elevation: 5,
+          paddingTop: 8,
+          paddingBottom: 16,
+          marginLeft: 72,
+          maxHeight: height - 100,
+        }}
+      >
+        <ScrollView>
+          {Substitutes.map(({ name, price }) => (
+            <View style={styles.textViewStyle}>
+              <View style={{ marginBottom: 7.5 }}>
+                <Text style={styles.textStyle} onPress={() => {}}>
+                  {name}
+                </Text>
+                {!!price && (
+                  <Text style={theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0.004)}>
+                    RS. {price}
+                  </Text>
+                )}
+              </View>
+              <ArrowRight />
+            </View>
+          ))}
+        </ScrollView>
+      </View>
+    </TouchableOpacity>
+  );
 
-      {loading && (
-        <ActivityIndicator
-          style={{ flex: 1, alignItems: 'center' }}
-          animating={loading}
-          size="large"
-          color="green"
+  return (
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={theme.viewStyles.container}>
+        <Header
+          leftIcon="backArrow"
+          onPressLeftIcon={() => props.navigation.goBack()}
+          title={'PRODUCT DETAIL'}
+          titleStyle={{ marginHorizontal: 10 }}
+          container={{ borderBottomWidth: 0, ...theme.viewStyles.shadowStyle }}
         />
-      )}
-      {!loading && !isEmptyObject(medicineDetails) && (
-        <KeyboardAwareScrollView
-          bounces={false}
-          // keyboardShouldPersistTaps={''}
-          // keyboardDismissMode={'on-drag'}
-          // removeClippedSubviews={false}
-        >
-          {renderTopView()}
-          {medicineOverview.length > 0 && renderTabs()}
-          {Substitutes.length ? renderSubstitutes() : null}
-          {renderDeliveryView()}
-          {/* <View style={styles.cardStyle}>
+
+        {loading && (
+          <ActivityIndicator
+            style={{ flex: 1, alignItems: 'center' }}
+            animating={loading}
+            size="large"
+            color="green"
+          />
+        )}
+        {!loading && !isEmptyObject(medicineDetails) && (
+          <KeyboardAwareScrollView
+            bounces={false}
+            // keyboardShouldPersistTaps={''}
+            // keyboardDismissMode={'on-drag'}
+            // removeClippedSubviews={false}
+          >
+            {renderTopView()}
+            {medicineOverview.length > 0 && renderTabs()}
+            {Substitutes.length ? renderSubstitutes() : null}
+            {renderDeliveryView()}
+            {/* <View style={styles.cardStyle}>
             {renderNote()}
             {Object.keys(medicineDetails).length == 0 && (
               <Card
@@ -918,10 +1004,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {renderBasicDetails()}
             {renderTitleAndDescriptionList()}
           </View> */}
-          <View style={{ height: 130 }} />
-        </KeyboardAwareScrollView>
-      )}
-      {!loading && !isEmptyObject(medicineDetails) && renderBottomButtons()}
-    </SafeAreaView>
+            <View style={{ height: 130 }} />
+          </KeyboardAwareScrollView>
+        )}
+        {!loading && !isEmptyObject(medicineDetails) && renderBottomButtons()}
+      </SafeAreaView>
+      {showPopup && Popup()}
+    </View>
   );
 };

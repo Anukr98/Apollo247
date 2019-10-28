@@ -9,7 +9,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-elements';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -126,37 +126,44 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
               paddingVertical: 13,
             }}
           >
-            {filteredBrands.map((item) => (
-              <TouchableOpacity
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  marginHorizontal: 20,
-                  paddingTop: 15.5,
-                  paddingBottom: 7.5,
-                  borderBottomColor: 'rgba(2,71,91, 0.2)',
-                  borderBottomWidth: 0.5,
-                }}
-                activeOpacity={1}
-                onPress={() => {
-                  props.navigation.navigate(AppRoutes.SearchByBrand, {
-                    title: item.title,
-                    category_id: item.category_id,
-                  });
-                }}
-              >
-                <Text
+            <FlatList
+              bounces={false}
+              data={filteredBrands}
+              renderItem={({ item, index }) => (
+                <TouchableOpacity
+                  key={1}
                   style={{
-                    color: theme.colors.SHERPA_BLUE,
-                    ...theme.fonts.IBMPlexSansMedium(16),
-                    lineHeight: 24,
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    marginHorizontal: 20,
+                    paddingTop: 15.5,
+                    paddingBottom: 7.5,
+                    borderBottomColor: 'rgba(2,71,91, 0.2)',
+                    borderBottomWidth: 0.5,
+                  }}
+                  activeOpacity={1}
+                  onPress={() => {
+                    props.navigation.navigate(AppRoutes.SearchByBrand, {
+                      title: item.title,
+                      category_id: item.category_id,
+                    });
                   }}
                 >
-                  {item.title}
-                </Text>
-                <ArrowRight />
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={{
+                      color: theme.colors.SHERPA_BLUE,
+                      ...theme.fonts.IBMPlexSansMedium(16),
+                      lineHeight: 24,
+                    }}
+                  >
+                    {item.title}
+                  </Text>
+                  <ArrowRight />
+                </TouchableOpacity>
+              )}
+              keyExtractor={(_, index) => index.toString()}
+              numColumns={1}
+            />
           </ScrollView>
         ) : (
           renderEmptyData()
