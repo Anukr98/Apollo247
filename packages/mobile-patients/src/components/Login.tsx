@@ -99,7 +99,8 @@ export const Login: React.FC<LoginProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   useEffect(() => {
-    analytics.setCurrentScreen(AppRoutes.Login);
+    firebase.analytics().setAnalyticsCollectionEnabled(true);
+    analytics.setCurrentScreen(AppRoutes.Login, AppRoutes.Login);
     fireBaseFCM();
     signOut();
   }, [, analytics, signOut]);
