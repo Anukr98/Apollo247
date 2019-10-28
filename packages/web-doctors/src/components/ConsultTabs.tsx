@@ -320,6 +320,7 @@ export const ConsultTabs: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
   /* case sheet data*/
 
   /* need to be worked later */
@@ -403,6 +404,37 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails.appointment.appointmentDateTime
             );
           }
+          // patient medical and family history
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.patientDetails &&
+            _data.data.getCaseSheet.patientDetails.patientMedicalHistory
+          ) {
+            console.log(_data.data.getCaseSheet.patientDetails.patientMedicalHistory);
+            setBp(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.bp || '');
+            setDietAllergies(
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.dietAllergies || ''
+            );
+            setDrugAllergies(
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.drugAllergies || ''
+            );
+            setHeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.height || '');
+            setMenstrualHistory(
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.menstrualHistory || ''
+            );
+            setPastMedicalHistory(
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastMedicalHistory || ''
+            );
+            setPastSurgicalHistory(
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.pastSurgicalHistory || ''
+            );
+            setTemperature(
+              _data.data.getCaseSheet.patientDetails.patientMedicalHistory.temperature || ''
+            );
+            setWeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.weight || '');
+          }
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -437,13 +469,22 @@ export const ConsultTabs: React.FC = () => {
   }, []);
 
   const saveCasesheetAction = (flag: boolean) => {
+    // console.log(
+    //   pastMedicalHistory,
+    //   pastSurgicalHistory,
+    //   familyHistory,
+    //   lifeStyle,
+    //   menstrualHistory,
+    //   drugAllergies,
+    //   dietAllergies
+    // );
+
     // this condition is written to avoid __typename from already existing data
     let symptomsFinal = null,
       diagnosisFinal = null,
       diagnosticPrescriptionFinal = null,
       medicinePrescriptionFinal = null,
       otherInstructionsFinal = null;
-
     if (symptoms && symptoms.length > 0) {
       symptomsFinal = symptoms.map((symptom) => {
         return _omit(symptom, '__typename');
@@ -484,7 +525,6 @@ export const ConsultTabs: React.FC = () => {
             otherInstructions: otherInstructionsFinal,
             medicinePrescription: medicinePrescriptionFinal,
             id: caseSheetId,
-            //status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
             lifeStyle: lifeStyle,
             familyHistory: familyHistory,
             dietAllergies: dietAllergies,
@@ -674,6 +714,7 @@ export const ConsultTabs: React.FC = () => {
                 startAppointment={startAppointment}
                 startAppointmentClick={startAppointmentClick}
                 saving={saving}
+                isAppointmentEnded={isAppointmentEnded}
               />
               <div>
                 <div>
@@ -763,6 +804,7 @@ export const ConsultTabs: React.FC = () => {
                 setIsPopoverOpen(false);
                 endConsultActionFinal();
                 setCaseSheetEdit(false);
+                setIsAppointmentEnded(true);
               }}
             >
               PREVIEW PRESCRIPTION

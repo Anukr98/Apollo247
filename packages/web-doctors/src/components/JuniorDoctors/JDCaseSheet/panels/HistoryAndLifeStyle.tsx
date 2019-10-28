@@ -106,7 +106,6 @@ const useStyles = makeStyles((theme: Theme) => {
         padding: 0,
         fontSize: 15,
         fontWeight: 500,
-        paddingRight: 60,
         borderRadius: 0,
       },
     },
@@ -129,6 +128,19 @@ const useStyles = makeStyles((theme: Theme) => {
           maxWidth: 20,
           maxHeight: 20,
         },
+      },
+    },
+    inputFieldEdit: {
+      border: '1px solid #00b38e',
+      borderEadius: 10,
+      backgroundColor: '#fff',
+      padding: 0,
+      '& textarea': {
+        color: '#01475b',
+        padding: 16,
+        fontSize: 16,
+        fontWeight: 500,
+        paddingRight: 40,
       },
     },
   };
@@ -183,13 +195,13 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
   //   familyHistoryElement,
   // ]);
 
-  console.log(caseSheetEdit, 'case sheet edit....');
-
   return (
     <Grid container spacing={1}>
       <Grid item sm={12}>
         <div className={classes.sectionTitle}>Patient’s Past Medical History</div>
-        <div className={classes.inputFieldContent}>
+        <div
+          className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
+        >
           <AphTextField
             disabled={!caseSheetEdit}
             fullWidth
@@ -223,7 +235,9 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
       </Grid>
       <Grid item sm={12}>
         <div className={classes.sectionTitle}>Patient's Past Surgical History</div>
-        <div className={classes.inputFieldContent}>
+        <div
+          className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
+        >
           <AphTextField
             disabled={!caseSheetEdit}
             fullWidth
@@ -252,7 +266,9 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
       </Grid>
       <Grid item sm={12}>
         <div className={classes.sectionTitle}>Drug Allergies</div>
-        <div className={classes.inputFieldContent}>
+        <div
+          className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
+        >
           <AphTextField
             disabled={!caseSheetEdit}
             fullWidth
@@ -281,7 +297,9 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
       </Grid>
       <Grid item sm={12}>
         <div className={classes.sectionTitle}>Diet Allergies/Restrictions</div>
-        <div className={classes.inputFieldContent}>
+        <div
+          className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''}`}
+        >
           <AphTextField
             disabled={!caseSheetEdit}
             fullWidth
@@ -310,7 +328,11 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
       </Grid>
       <Grid item sm={12}>
         <div className={classes.sectionTitle}>Lifestyle & Habits</div>
-        <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
+        <div
+          className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
+            classes.marginNone
+          }`}
+        >
           <AphTextField
             disabled={!caseSheetEdit}
             fullWidth
@@ -340,7 +362,11 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
       {gender === Gender.FEMALE && (
         <Grid item sm={12}>
           <div className={classes.sectionTitle}>Menstrual History*</div>
-          <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
+          <div
+            className={`${classes.inputFieldContent} ${
+              caseSheetEdit ? classes.inputFieldEdit : ''
+            } ${classes.marginNone}`}
+          >
             <AphTextField
               disabled={!caseSheetEdit}
               fullWidth
@@ -370,7 +396,11 @@ export const HistoryAndLifeStyle: React.FC = (props) => {
       )}
       <Grid item sm={12}>
         <div className={classes.sectionTitle}>Patient’s Family Medical History</div>
-        <div className={`${classes.inputFieldContent} ${classes.marginNone}`}>
+        <div
+          className={`${classes.inputFieldContent} ${caseSheetEdit ? classes.inputFieldEdit : ''} ${
+            classes.marginNone
+          }`}
+        >
           <AphTextField
             disabled={!caseSheetEdit}
             fullWidth
