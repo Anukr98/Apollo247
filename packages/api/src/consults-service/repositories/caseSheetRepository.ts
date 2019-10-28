@@ -14,6 +14,13 @@ export class CaseSheetRepository extends Repository<CaseSheet> {
       });
   }
 
+  getCaseSheetByAppointmentId(appointmentId: string) {
+    return this.createQueryBuilder('case_sheet')
+      .leftJoinAndSelect('case_sheet.appointment', 'appointment')
+      .where('case_sheet.appointment = :appointmentId', { appointmentId })
+      .getMany();
+  }
+
   getJuniorDoctorCaseSheet(appointmentId: string) {
     const juniorDoctorType = DoctorType.JUNIOR;
     return this.createQueryBuilder('case_sheet')
