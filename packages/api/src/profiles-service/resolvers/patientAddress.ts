@@ -51,6 +51,10 @@ export const addPatientAddressTypeDefs = gql`
     addressList: [PatientAddress!]
   }
 
+  type DeletePatientAddressResult {
+    status: Boolean
+  }
+
   extend type Query {
     getPatientAddressList(patientId: String): patientAddressListResult!
   }
@@ -60,7 +64,7 @@ export const addPatientAddressTypeDefs = gql`
     updatePatientAddress(
       UpdatePatientAddressInput: UpdatePatientAddressInput
     ): AddPatientAddressResult
-    deletePatientAddress(id: String): Boolean!
+    deletePatientAddress(id: String): DeletePatientAddressResult!
   }
 `;
 type PatientAddressInput = {
@@ -94,6 +98,10 @@ type AddPatientAddressResult = {
 
 type patientAddressListResult = {
   addressList: PatientAddress[];
+};
+
+type DeletePatientAddressResult = {
+  status: Boolean;
 };
 
 const getPatientAddressList: Resolver<
@@ -133,14 +141,14 @@ const deletePatientAddress: Resolver<
   null,
   { id: string },
   ProfilesServiceContext,
-  boolean
+  DeletePatientAddressResult
 > = async (parent, args, { profilesDb }) => {
   const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
   const deleteResp = await patientAddressRepo.deletePatientAddress(args.id);
   if (!deleteResp) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-  return true;
+  return { status: true };
 };
 
 const savePatientAddress: Resolver<
