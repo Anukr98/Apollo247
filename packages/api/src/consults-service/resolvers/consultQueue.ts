@@ -11,6 +11,7 @@ import { PatientRepository } from 'profiles-service/repositories/patientReposito
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import _sample from 'lodash/sample';
 import { DOCTOR_ONLINE_STATUS, DoctorType } from 'doctors-service/entities';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const consultQueueTypeDefs = gql`
   type ConsultQueueItem {
@@ -56,6 +57,7 @@ const getRepos = ({ consultsDb, doctorsDb, patientsDb }: ConsultServiceContext) 
   docRepo: doctorsDb.getCustomRepository(DoctorRepository),
   patRepo: patientsDb.getCustomRepository(PatientRepository),
   cqRepo: consultsDb.getCustomRepository(ConsultQueueRepository),
+  caseSheetRepo: consultsDb.getCustomRepository(CaseSheetRepository),
 });
 
 const checkAuth = async (docRepo: DoctorRepository, firebaseUid: string, doctorId: string) => {
@@ -105,8 +107,18 @@ const addToConsultQueue: Resolver<
   ConsultServiceContext,
   AddToConsultQueueResult
 > = async (parent, { appointmentId }, context) => {
-  const { cqRepo, docRepo, apptRepo } = getRepos(context);
+  const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
   await apptRepo.findOneOrFail(appointmentId);
+
+  const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
+  if (juniorDoctorCaseSheet != null) {
+    const queueResult: AddToConsultQueueResult = {
+      id: 0,
+      doctorId: '',
+    };
+    return queueResult;
+  }
+
   const existingQueueItem = await cqRepo.findOne({ appointmentId });
   if (existingQueueItem) throw new AphError(AphErrorMessages.APPOINTMENT_ALREADY_IN_CONSULT_QUEUE);
   const onlineJrDocs = await docRepo.find({
