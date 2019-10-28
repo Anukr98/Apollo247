@@ -12,6 +12,7 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 //import { addMinutes, format } from 'date-fns';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
 export const bookFollowUpAppointmentTypeDefs = gql`
   type FollowUpAppointmentBooking {
@@ -175,6 +176,24 @@ const bookFollowUpAppointment: Resolver<
     appointmentDateTime: new Date(followUpAppointmentInput.appointmentDateTime.toISOString()),
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
+
+  //copy parent case-sheet details
+  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
+  const caseSheetDetails = await caseSheetRepo.getCaseSheetByAppointmentId(
+    followUpAppointmentInput.followUpParentId
+  );
+
+  if (caseSheetDetails != null) {
+    caseSheetDetails.forEach(async (caseSheetRecord) => {
+      const caseSheetRow = {
+        ...caseSheetRecord,
+        appointment,
+      };
+      delete caseSheetRow.id;
+      await caseSheetRepo.savecaseSheet(caseSheetRow);
+    });
+  }
+  //case-sheet copy ends
 
   return { appointment };
 };
