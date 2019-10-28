@@ -1,5 +1,5 @@
-import React, { Fragment, useContext } from 'react';
-import { Typography, List, ListItem } from '@material-ui/core';
+import React, { useContext, useState, useRef, useEffect } from 'react';
+import { Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
@@ -97,7 +97,49 @@ const useStyles = makeStyles(() => ({
 
 export const Vital: React.FC = () => {
   const classes = useStyles();
-  const { loading, patientDetails } = useContext(CaseSheetContext);
+  const {
+    loading,
+    patientDetails,
+    weight,
+    height,
+    temperature,
+    bp,
+    setWeight,
+    setBp,
+    setTemperature,
+    setHeight,
+  } = useContext(CaseSheetContext);
+
+  const [disableWeight, setDisableWeight] = useState<boolean>(true);
+  const [disableHeight, setDisableHeight] = useState<boolean>(true);
+  const [disableBp, setDisableBp] = useState<boolean>(true);
+  const [disableTemperature, setDisableTemperature] = useState<boolean>(true);
+
+  const heightRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+  const weightRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+  const bpRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+  const tempRef = (input: HTMLInputElement) => {
+    if (input)
+      setTimeout(() => {
+        input.focus();
+      }, 100);
+  };
+
   return loading && !patientDetails ? (
     <div></div>
   ) : (
@@ -109,17 +151,31 @@ export const Vital: React.FC = () => {
               Height
             </Typography>
             <Typography component="div" className={classes.content}>
-              {/* <AphTextField className={classes.casesheetInput}>
-                {patientDetails!.patientMedicalHistory!.height
-                  ? patientDetails!.patientMedicalHistory!.height
-                  : '-'}
-              </AphTextField> */}
-              <AphTextField fullWidth multiline />
+              <AphTextField
+                fullWidth
+                multiline
+                defaultValue={height}
+                onBlur={(e) => {
+                  setHeight(e.target.value);
+                  setDisableHeight(true);
+                }}
+                disabled={disableHeight}
+                inputRef={heightRef}
+              />
               <div className={classes.boxActions}>
-                <AphButton>
+                <AphButton
+                  onClick={() => {
+                    setDisableHeight(false);
+                  }}
+                >
                   <img src={require('images/round_edit_24_px.svg')} alt="" />
                 </AphButton>
-                <AphButton>
+                <AphButton
+                  onClick={() => {
+                    setDisableHeight(true);
+                    setHeight('');
+                  }}
+                >
                   <img src={require('images/ic_cancel_green.svg')} alt="" />
                 </AphButton>
               </div>
@@ -130,52 +186,67 @@ export const Vital: React.FC = () => {
               Weight
             </Typography>
             <Typography component="div" className={classes.content}>
-              {/* <List>
-                <ListItem>
-                  <Fragment>
-                    <Typography component="p" className={classes.textContent}>
-                      {patientDetails!.patientMedicalHistory!.weight
-                        ? patientDetails!.patientMedicalHistory!.weight
-                        : '-'}
-                    </Typography>
-                  </Fragment>
-                </ListItem>
-              </List> */}
-              <AphTextField fullWidth multiline />
+              <AphTextField
+                fullWidth
+                multiline
+                defaultValue={weight}
+                onBlur={(e) => {
+                  setWeight(e.target.value);
+                  setDisableWeight(true);
+                }}
+                disabled={disableWeight}
+                inputRef={weightRef}
+              />
               <div className={classes.boxActions}>
-                <AphButton>
+                <AphButton
+                  onClick={() => {
+                    setDisableWeight(false);
+                  }}
+                >
                   <img src={require('images/round_edit_24_px.svg')} alt="" />
                 </AphButton>
-                <AphButton>
+                <AphButton
+                  onClick={() => {
+                    setWeight('');
+                    setDisableWeight(true);
+                  }}
+                >
                   <img src={require('images/ic_cancel_green.svg')} alt="" />
                 </AphButton>
               </div>
             </Typography>
           </Typography>
-
           <div>
             <Typography component="div" className={classes.vitalLeft}>
               <Typography component="h5" variant="h5" className={classes.header}>
                 BP
               </Typography>
               <Typography component="div" className={classes.content}>
-                {/* <List>
-                  <ListItem>
-                    <Fragment>
-                      <Typography component="p" className={classes.textContent}>
-                        {patientDetails!.patientMedicalHistory!.bp
-                          ? patientDetails!.patientMedicalHistory!.bp
-                          : '-'}
-                      </Typography>
-                    </Fragment>
-                  </ListItem>
-                </List> */}
-                <AphTextField fullWidth multiline />
+                <AphTextField
+                  fullWidth
+                  multiline
+                  defaultValue={bp}
+                  onBlur={(e) => {
+                    setBp(e.target.value);
+                    setDisableBp(true);
+                  }}
+                  disabled={disableBp}
+                  inputRef={bpRef}
+                />
                 <div className={classes.boxActions}>
-                  <AphButton>
+                  <AphButton
+                    onClick={() => {
+                      setDisableBp(false);
+                    }}
+                  >
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                   </AphButton>
-                  <AphButton>
+                  <AphButton
+                    onClick={() => {
+                      setBp('');
+                      setDisableBp(true);
+                    }}
+                  >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                 </div>
@@ -186,23 +257,31 @@ export const Vital: React.FC = () => {
                 Temperature
               </Typography>
               <Typography component="div" className={classes.content}>
-                {/* <List>
-                  <ListItem>
-                    <Fragment>
-                      <Typography component="p" className={classes.textContent}>
-                        {patientDetails!.patientMedicalHistory!.temperature
-                          ? patientDetails!.patientMedicalHistory!.temperature
-                          : '-'}
-                      </Typography>
-                    </Fragment>
-                  </ListItem>
-                </List> */}
-                <AphTextField fullWidth multiline />
+                <AphTextField
+                  fullWidth
+                  multiline
+                  defaultValue={temperature}
+                  onBlur={(e) => {
+                    setTemperature(e.target.value);
+                    setDisableTemperature(true);
+                  }}
+                  disabled={disableTemperature}
+                  inputRef={tempRef}
+                />
                 <div className={classes.boxActions}>
-                  <AphButton>
+                  <AphButton
+                    onClick={() => {
+                      setDisableTemperature(false);
+                    }}
+                  >
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                   </AphButton>
-                  <AphButton>
+                  <AphButton
+                    onClick={() => {
+                      setDisableTemperature(false);
+                      setTemperature('');
+                    }}
+                  >
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
                   </AphButton>
                 </div>
@@ -213,27 +292,6 @@ export const Vital: React.FC = () => {
       ) : (
         <span>No data Found</span>
       )}
-      {/* {data.map((item, idx) => (
-        <Typography key={idx} className={classes.column} component="div">
-          <Typography component="h5" variant="h5" className={classes.header}>
-            {Object.keys(item)[0]}
-          </Typography>
-          <Typography component="div" className={classes.content}>
-            <List>
-              {!!Object.values(item).length &&
-                Object.values(item).map((text, i) => (
-                  <ListItem key={i}>
-                    <Fragment>
-                      <Typography component="p" className={classes.textContent}>
-                        {text}
-                      </Typography>
-                    </Fragment>
-                  </ListItem>
-                ))}
-            </List>
-          </Typography>
-        </Typography>
-      ))} */}
     </Typography>
   );
 };

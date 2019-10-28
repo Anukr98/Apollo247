@@ -39,7 +39,6 @@ import {
 } from 'graphql/profiles';
 import { TRANSFER_INITIATED_TYPE, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import { relative } from 'path';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
