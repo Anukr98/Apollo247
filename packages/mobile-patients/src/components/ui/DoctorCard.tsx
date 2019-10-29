@@ -336,10 +336,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             <View style={styles.imageView}>
               {/* {rowData.image} */}
               {rowData.photoUrl &&
-              rowData.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
+              rowData.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
                 <Image
                   style={{ height: 80, borderRadius: 40, width: 80 }}
-                  source={{ uri: rowData.photoUrl }}
+                  source={{
+                    uri: rowData.photoUrl,
+                  }}
                   resizeMode={'contain'}
                 />
               ) : (

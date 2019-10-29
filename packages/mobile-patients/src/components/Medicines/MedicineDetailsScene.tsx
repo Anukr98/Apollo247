@@ -10,6 +10,7 @@ import {
   MedicineRxIcon,
   SyrupBottleIcon,
   ArrowRight,
+  CartIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -174,9 +175,23 @@ const styles = StyleSheet.create({
     borderColor: '#dddddd',
     marginHorizontal: 16,
     flexDirection: 'row',
-    marginBottom: 7.5,
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  badgelabelView: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#ff748e',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgelabelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
   },
 });
 
@@ -214,15 +229,20 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           )) ||
         [];
 
-  const sku = props.navigation.getParam('sku');
+  let sku = props.navigation.getParam('sku'); // 'MED0017';
   console.log(sku, 'skusku');
 
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
   const isOutOfStock = !medicineDetails!.is_in_stock;
   const medicineName = medicineDetails.name;
+  const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
+  const cartItemsCount = cartItems.length;
 
   useEffect(() => {
+    sku = props.navigation.getParam('sku');
+    scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0);
+
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
         console.log(data, 'getMedicineDetailsApi');
@@ -236,13 +256,25 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         // Alert.alert(err);
       });
     fetchSubstitutes();
-  }, []);
+  }, [props.navigation.getParam('sku')]);
 
   useEffect(() => {
     if (medicineOverview.length > 0) {
       selectedTab === '' && setselectedTab(medicineOverview[0].Caption);
     }
   }, [medicineOverview]);
+
+  useEffect(() => {
+    console.log(deliveryTime, 'deliveryTimedeliveryTime', deliveryError, 'deliveryError');
+    if (!!deliveryTime || !!deliveryError) {
+      console.log(deliveryTime, 'useEffect deliveryTime');
+      // scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
+
+      setTimeout(() => {
+        scrollViewRef.current && scrollViewRef.current.scrollToEnd();
+      }, 10);
+    }
+  }, [deliveryTime, deliveryError]);
 
   const onAddCartItem = ({
     sku,
@@ -258,7 +290,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       name,
       price,
       prescriptionRequired: is_prescription_required == '1',
-      quantity: 1,
+      quantity: Number(selectedQuantity),
       thumbnail: thumbnail,
     });
   };
@@ -286,10 +318,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         try {
           console.log('resresres', res);
           if (res && res.data) {
-            if (typeof res.data === 'object' && Array.isArray(res.data.tat)) {
-              res.data.tat.length && setdeliveryTime(res.data.tat[0].deliverydate);
+            if (
+              typeof res.data === 'object' &&
+              Array.isArray(res.data.tat) &&
+              res.data.tat.length
+            ) {
+              setdeliveryTime(res.data.tat[0].deliverydate);
             } else if (typeof res.data === 'string') {
               setdeliveryError(res.data);
+            } else if (typeof res.data.errorMSG === 'string') {
+              setdeliveryError(res.data.errorMSG);
             }
           }
         } catch (error) {
@@ -333,7 +371,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
         {isOutOfStock ? (
           <View
-            style={{ paddingVertical: 16, alignItems: 'center', flex: 1, marginHorizontal: 60 }}
+            style={{
+              paddingTop: 8,
+              paddingBottom: 16,
+              alignItems: 'center',
+              flex: 1,
+              marginHorizontal: 60,
+            }}
           >
             <Text
               style={[
@@ -480,6 +524,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             ) : (
               renderIconOrImage(medicineDetails)
             )}
+            <View style={{ alignItems: 'center' }}>
+              <Text
+                style={[
+                  theme.viewStyles.text('SB', 8, '#0087ba', 1, undefined, 0.2),
+                  { paddingTop: 8, marginLeft: 20 },
+                ]}
+              >
+                1 PHOTO
+              </Text>
+            </View>
           </View>
         </View>
         {renderNote()}
@@ -541,7 +595,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const renderTabs = () => {
     const data = medicineOverview.map((item) => {
       return {
-        title: item.Caption,
+        title: item.Caption.charAt(0).toUpperCase() + item.Caption.slice(1).toLowerCase(),
       };
     });
 
@@ -642,8 +696,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       iconAndDetailsContainerStyle: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginVertical: 9.5,
-        marginHorizontal: 12,
+        // marginVertical: 9.5,
+        // marginHorizontal: 12,
+        justifyContent: 'space-between',
       },
       nameAndPriceViewStyle: {
         flex: 1,
@@ -675,7 +730,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     return (
       <View>
         <View style={styles.labelViewStyle}>
-          <Text style={styles.labelStyle}>SUBSTITUTE DRUGS — {Substitutes.length}</Text>
+          <Text style={styles.labelStyle}>SUBSTITUTE DRUGS</Text>
         </View>
         <View style={styles.cardStyle}>
           {/* {Substitutes.map((data, i) => (
@@ -695,8 +750,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <View style={localStyles.containerStyle}>
               <View style={localStyles.iconAndDetailsContainerStyle}>
                 <Text style={{ ...theme.viewStyles.text('M', 17, '#01475b', 1, 24, 0) }}>
-                  Pick from 9 available substitutes
+                  {`Pick from 9 available substitute${Substitutes.length > 1 ? 's' : ''}`}
                 </Text>
+                <DropdownGreen />
               </View>
             </View>
           </TouchableOpacity>
@@ -759,13 +815,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               style={{
                 position: 'absolute',
                 right: 16,
-                top: 16,
+                top: 10,
               }}
             >
               <Text
                 style={[
                   theme.viewStyles.yellowTextStyle,
-                  { opacity: pincode.length === 6 ? 1 : 0.21 },
+                  { opacity: pincode.length === 6 ? 1 : 0.21, padding: 5 },
                 ]}
                 onPress={() => (pincode.length === 6 ? fetchDeliveryTime() : {})}
                 suppressHighlighting={pincode.length !== 6}
@@ -773,17 +829,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 CHECK
               </Text>
             </View>
-            {!!deliveryError && (
-              <Text
-                style={{
-                  ...theme.viewStyles.text('M', 12, theme.colors.INPUT_FAILURE_TEXT, 1, 24),
-                  // paddingVertical: 10,
-                }}
-              >
-                {deliveryError}
-              </Text>
-            )}
-            {!!deliveryTime && (
+
+            {!!deliveryTime ? (
               <View
                 style={{
                   flexDirection: 'row',
@@ -803,9 +850,18 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   By {moment(deliveryTime.split(' ')[0]).format('Do MMM YYYY')}
                 </Text>
               </View>
-            )}
+            ) : !!deliveryError ? (
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, theme.colors.INPUT_FAILURE_TEXT, 1, 24),
+                  // paddingVertical: 10,
+                }}
+              >
+                {deliveryError}
+              </Text>
+            ) : null}
           </View>
-          {showDeliverySpinner && <Spinner style={{ borderRadius: 10 }} />}
+          {showDeliverySpinner && <Spinner style={{ backgroundColor: 'transparent' }} />}
         </View>
       </View>
     );
@@ -921,7 +977,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     >
       <View
         style={{
-          // width: 160,
           borderRadius: 10,
           backgroundColor: 'white',
           marginRight: 20,
@@ -930,29 +985,44 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           shadowOpacity: 0.8,
           shadowRadius: 10,
           elevation: 5,
-          paddingTop: 8,
-          paddingBottom: 16,
           marginLeft: 72,
-          maxHeight: height - 100,
+          maxHeight: height - 200,
+          overflow: 'scroll',
         }}
       >
-        <ScrollView>
-          {Substitutes.map(({ name, price }) => (
-            <View style={styles.textViewStyle}>
-              <View style={{ marginBottom: 7.5 }}>
-                <Text style={styles.textStyle} onPress={() => {}}>
-                  {name}
-                </Text>
-                {!!price && (
-                  <Text style={theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0.004)}>
-                    RS. {price}
-                  </Text>
-                )}
-              </View>
-              <ArrowRight />
-            </View>
-          ))}
-        </ScrollView>
+        <View>
+          <ScrollView
+            keyboardShouldPersistTaps="always"
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              paddingBottom: 16,
+              paddingTop: 8,
+            }}
+          >
+            {Substitutes.map(({ name, price, sku }) => (
+              <TouchableOpacity
+                style={styles.textViewStyle}
+                onPress={() => {
+                  props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+                    sku: sku,
+                    title: name,
+                  });
+                  setShowPopup(false);
+                }}
+              >
+                <View style={{ marginVertical: 7.5 }}>
+                  <Text style={styles.textStyle}>{name}</Text>
+                  {!!price && (
+                    <Text style={theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0.004)}>
+                      RS. {price}
+                    </Text>
+                  )}
+                </View>
+                <ArrowRight />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -966,6 +1036,22 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           title={'PRODUCT DETAIL'}
           titleStyle={{ marginHorizontal: 10 }}
           container={{ borderBottomWidth: 0, ...theme.viewStyles.shadowStyle }}
+          rightComponent={
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() =>
+                props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true })
+              }
+              style={{ right: 20 }}
+            >
+              <CartIcon style={{}} />
+              {cartItemsCount > 0 && (
+                <View style={[styles.badgelabelView]}>
+                  <Text style={styles.badgelabelText}>{cartItemsCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          }
         />
 
         {loading && (
@@ -978,6 +1064,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         )}
         {!loading && !isEmptyObject(medicineDetails) && (
           <KeyboardAwareScrollView
+            ref={scrollViewRef}
             bounces={false}
             // keyboardShouldPersistTaps={''}
             // keyboardDismissMode={'on-drag'}
@@ -986,7 +1073,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {renderTopView()}
             {medicineOverview.length > 0 && renderTabs()}
             {Substitutes.length ? renderSubstitutes() : null}
-            {renderDeliveryView()}
+            {!isOutOfStock && renderDeliveryView()}
             {/* <View style={styles.cardStyle}>
             {renderNote()}
             {Object.keys(medicineDetails).length == 0 && (

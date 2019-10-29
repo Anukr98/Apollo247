@@ -69,6 +69,7 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(12),
     color: '#890000',
     paddingVertical: 8,
+    marginHorizontal: 10,
   },
 });
 
@@ -216,7 +217,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   };
 
   const filteredMedicineList = !!searchText
-    ? medicineList.filter((item) => item.name.includes(searchText))
+    ? medicineList.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()))
     : medicineList;
 
   const isNoMedicinesFound =
@@ -262,17 +263,17 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       inputContainerStyle: {
         borderBottomColor: '#00b38e',
         borderBottomWidth: 2,
-        marginHorizontal: 10,
+        // marginHorizontal: 10,
       },
       rightIconContainerStyle: {
         height: 24,
       },
       style: {
-        paddingBottom: 18.5,
+        // paddingBottom: 18.5,
       },
       containerStyle: {
-        marginBottom: 19,
-        marginTop: 18,
+        // marginBottom: 19,
+        // marginTop: 18,
       },
     });
 
@@ -291,23 +292,26 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     );
 
     return (
-      <Input
-        value={searchText}
-        onChangeText={(value) => {
-          onSearch(value);
-        }}
-        autoCorrect={false}
-        rightIcon={rigthIconView}
-        placeholder="Search medicine and more"
-        selectionColor="#00b38e"
-        underlineColorAndroid="transparent"
-        placeholderTextColor="rgba(1,48,91, 0.4)"
-        inputStyle={styles.inputStyle}
-        inputContainerStyle={styles.inputContainerStyle}
-        rightIconContainerStyle={styles.rightIconContainerStyle}
-        style={styles.style}
-        containerStyle={styles.containerStyle}
-      />
+      <View style={{ paddingHorizontal: 10, backgroundColor: theme.colors.WHITE }}>
+        <Input
+          value={searchText}
+          onChangeText={(value) => {
+            onSearch(value);
+          }}
+          autoCorrect={false}
+          rightIcon={rigthIconView}
+          placeholder="Search medicine and more"
+          selectionColor="#00b38e"
+          underlineColorAndroid="transparent"
+          placeholderTextColor="rgba(1,48,91, 0.4)"
+          inputStyle={styles.inputStyle}
+          inputContainerStyle={styles.inputContainerStyle}
+          rightIconContainerStyle={styles.rightIconContainerStyle}
+          style={styles.style}
+          containerStyle={styles.containerStyle}
+        />
+        {renderSorryMessage}
+      </View>
     );
   };
 

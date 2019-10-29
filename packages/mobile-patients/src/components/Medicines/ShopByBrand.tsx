@@ -116,7 +116,9 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
   };
 
   const renderData = () => {
-    const filteredBrands = allBrands.filter((brand) => brand.title.startsWith(selectedTab));
+    const filteredBrands = allBrands.filter((brand) =>
+      brand.title.toLowerCase().startsWith(selectedTab.toLowerCase())
+    );
     return (
       <View style={[{ backgroundColor: theme.colors.WHITE, flex: 1, marginTop: 50 }]}>
         {filteredBrands.length ? (
