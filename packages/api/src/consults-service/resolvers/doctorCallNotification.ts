@@ -1,6 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import {
+  sendNotification,
+  NotificationType,
+  sendCallsNotification,
+  DOCTOR_CALL_TYPE,
+  DOCTOR_TYPE,
+} from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -15,8 +21,23 @@ export const doctorCallNotificationTypeDefs = gql`
     status: Boolean!
     currentTime: String!
   }
+
+  enum DOCTOR_CALL_TYPE {
+    AUDIO
+    VIDEO
+  }
+
+  enum DOCTOR_TYPE {
+    JUNIOR
+    SENIOR
+  }
+
   extend type Query {
-    sendCallNotification(appointmentId: String): NotificationResult!
+    sendCallNotification(
+      appointmentId: String
+      callType: DOCTOR_CALL_TYPE
+      doctorType: DOCTOR_TYPE
+    ): NotificationResult!
     sendApptNotification: ApptNotificationResult!
   }
 `;
@@ -29,7 +50,7 @@ type ApptNotificationResult = {
 };
 const sendCallNotification: Resolver<
   null,
-  { appointmentId: string },
+  { appointmentId: string; callType: DOCTOR_CALL_TYPE; doctorType: DOCTOR_TYPE },
   ConsultServiceContext,
   NotificationResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
@@ -40,11 +61,13 @@ const sendCallNotification: Resolver<
     appointmentId: args.appointmentId,
     notificationType: NotificationType.CALL_APPOINTMENT,
   };
-  const notificationResult = sendNotification(
+  const notificationResult = sendCallsNotification(
     pushNotificationInput,
     patientsDb,
     consultsDb,
-    doctorsDb
+    doctorsDb,
+    args.callType,
+    args.doctorType
   );
   console.log(notificationResult, 'doctor call appt notification');
 

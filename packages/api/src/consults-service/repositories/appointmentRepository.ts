@@ -739,14 +739,15 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   async checkPatientConsults(patientId: string, appointmentDateTime: Date) {
-    const consultCount = await this.count({
+    /*const consultCount = await this.count({
       where: { patientId, appointmentDateTime, status: Not(STATUS.CANCELLED) },
     });
     if (consultCount > 0) {
       return true;
     } else {
       return false;
-    }
+    }*/
+    return false;
   }
 
   getNextMinuteAppointments() {
