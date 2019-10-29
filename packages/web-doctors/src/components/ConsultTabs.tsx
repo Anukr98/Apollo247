@@ -751,6 +751,8 @@ export const ConsultTabs: React.FC = () => {
             caseSheetId: appointmentId,
             patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
             appointmentInfo: casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment,
+            createdDoctorProfile: casesheetInfo!.getCaseSheet!.caseSheetDetails!
+              .createdDoctorProfile,
             symptoms,
             setSymptoms,
             notes,
