@@ -11,7 +11,11 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DeviceHelper,
+  CommonLogEvent,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
@@ -202,7 +206,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
 
     analytics.setAnalyticsCollectionEnabled(true);
-    analytics.setCurrentScreen(AppRoutes.ConsultRoom, AppRoutes.ConsultRoom);
+    CommonScreenLog(AppRoutes.ConsultRoom, AppRoutes.ConsultRoom);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {
@@ -605,9 +609,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
               onPress={() => {
-                firebase.analytics().logEvent('Symptom_Checker_Clicked', {
-                  'button click': 'symptom checker clicked',
-                });
+                CommonLogEvent(AppRoutes.Login, 'Login clicked');
                 props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
               }}
             />

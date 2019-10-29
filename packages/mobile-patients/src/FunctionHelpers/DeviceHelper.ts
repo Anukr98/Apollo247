@@ -4,7 +4,8 @@
 //
 'use strict';
 
-import { Dimensions, Platform } from 'react-native';
+import { Dimensions, Platform, AsyncStorage } from 'react-native';
+import firebase from 'react-native-firebase';
 
 export const DeviceHelper = () => {
   const isIphoneX = () => {
@@ -15,4 +16,16 @@ export const DeviceHelper = () => {
   return {
     isIphoneX,
   };
+};
+
+export const CommonLogEvent = (stringName: string, parameterName: string) => {
+  firebase.analytics().logEvent(stringName, {
+    Button_Action: parameterName,
+  });
+};
+
+export const CommonScreenLog = (stringName: string, parameterName: string) => {
+  AsyncStorage.setItem('setCurrentName', stringName);
+
+  firebase.analytics().setCurrentScreen(stringName, parameterName);
 };
