@@ -11,6 +11,13 @@ import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
 import { useApolloClient } from 'react-apollo-hooks';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import { CasesheetView } from 'components/CasesheetView';
+
 //import { Document } from 'react-pdf';
 import _omit from 'lodash/omit';
 
@@ -23,6 +30,11 @@ import {
   EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
 // import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
+import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
+import {
+  UpdatePatientPrescriptionSentStatus,
+  UpdatePatientPrescriptionSentStatusVariables,
+} from 'graphql/types/UpdatePatientPrescriptionSentStatus';
 
 import {
   CREATE_APPOINTMENT_SESSION,
@@ -32,6 +44,7 @@ import {
   CREATE_CASESHEET_FOR_SRD,
   // GET_CASESHEET_JRD,
   MODIFY_CASESHEET,
+  UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from 'graphql/profiles';
 
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
@@ -267,10 +280,11 @@ export const ConsultTabs: React.FC = () => {
       ? parseInt(params!.tabValue, 10)
       : 0
   );
-  const [isEnded, setIsEnded] = useState<boolean>(false);
+  const [urlToPatient, setUrlToPatient] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
+  const [isPdfPageOpen, setIsPdfPageOpen] = useState<boolean>(false);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
@@ -279,6 +293,7 @@ export const ConsultTabs: React.FC = () => {
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -327,6 +342,8 @@ export const ConsultTabs: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [appointmentStatus, setAppointmentStatus] = useState<string>('');
+  const [sentToPatient, setSentToPatient] = useState<boolean>(false);
   const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
   const [jrdName, setJrdName] = useState<string>('');
   const [jrdSubmitDate, setJrdSubmitDate] = useState<string>('');
@@ -401,6 +418,33 @@ export const ConsultTabs: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
+            ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
+            : setAppointmentStatus('');
+          _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
+            ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
+            : setSentToPatient(false);
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED'
+          ) {
+            setIsPdfPageOpen(true);
+          }
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails!.blobName &&
+            _data.data.getCaseSheet.caseSheetDetails!.blobName !== undefined &&
+            _data.data.getCaseSheet.caseSheetDetails!.blobName !== ''
+          ) {
+            const url = storageClient.getBlobUrl(_data.data.getCaseSheet.caseSheetDetails.blobName);
+            setPrescriptionPdf(url);
+          }
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -563,6 +607,26 @@ export const ConsultTabs: React.FC = () => {
       });
   };
 
+  const sendToPatientAction = (flag: boolean) => {
+    client
+      .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
+        mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
+        variables: {
+          caseSheetId: caseSheetId,
+          sentToPatient: true,
+        },
+      })
+      .then((_data) => {
+        setSentToPatient(true);
+        setIsPdfPageOpen(true);
+        setUrlToPatient(true);
+      })
+      .catch((e) => {
+        setError('Error occured while sending prescription to patient');
+        console.log('Error occured while sending prescription to patient', e);
+        setSaving(false);
+      });
+  };
   const saveCasesheetAction = (flag: boolean) => {
     // followUp: followUp[0],
     // followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
@@ -663,7 +727,8 @@ export const ConsultTabs: React.FC = () => {
           setSaving(false);
         }
         if (!flag) {
-          setIsPopoverOpen(true);
+          // setIsPopoverOpen(true);
+          setIsConfirmDialogOpen(true);
         }
       })
       .catch((e) => {
@@ -693,9 +758,11 @@ export const ConsultTabs: React.FC = () => {
       })
       .then((_data) => {
         // setIsPopoverOpen(true);
-        setIsPdfPopoverOpen(true);
-        setIsEnded(true);
+        //setIsPdfPopoverOpen(true);
+        //setIsEnded(true);
+        setAppointmentStatus('COMPLETED');
         console.log('_data', _data);
+        setIsPdfPageOpen(true);
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -825,7 +892,7 @@ export const ConsultTabs: React.FC = () => {
                 appointmentId={appointmentId}
                 appointmentDateTime={appointmentDateTime}
                 doctorId={doctorId}
-                isEnded={isEnded}
+                urlToPatient={urlToPatient}
                 caseSheetId={caseSheetId}
                 prescriptionPdf={prescriptionPdf}
                 sessionId={sessionId}
@@ -833,52 +900,63 @@ export const ConsultTabs: React.FC = () => {
                 startAppointment={startAppointment}
                 startAppointmentClick={startAppointmentClick}
                 saving={saving}
+                appointmentStatus={appointmentStatus}
+                sentToPatient={sentToPatient}
                 isAppointmentEnded={isAppointmentEnded}
+                sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
+                setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
               />
               <div>
-                <div>
+                {!isPdfPageOpen ? (
                   <div>
-                    <Tabs
-                      value={tabValue}
-                      variant="fullWidth"
-                      classes={{
-                        root: classes.tabsRoot,
-                        indicator: classes.tabsIndicator,
-                      }}
-                      onChange={(e, newValue) => {
-                        setTabValue(newValue);
-                      }}
-                    >
-                      <Tab
-                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                        label="Case Sheet"
-                      />
-                      <Tab
-                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                        label="Chat"
-                      />
-                    </Tabs>
-                  </div>
-                  <TabContainer>
-                    <div className={tabValue !== 0 ? classes.none : classes.block}>
-                      {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
-                    </div>
-                  </TabContainer>
-                  <TabContainer>
-                    <div className={tabValue !== 1 ? classes.none : classes.block}>
-                      <div className={classes.chatContainer}>
-                        <ConsultRoom
-                          startConsult={startConsult}
-                          sessionId={sessionId}
-                          token={token}
-                          appointmentId={paramId}
-                          doctorId={doctorId}
-                          patientId={patientId}
+                    <div>
+                      <Tabs
+                        value={tabValue}
+                        variant="fullWidth"
+                        classes={{
+                          root: classes.tabsRoot,
+                          indicator: classes.tabsIndicator,
+                        }}
+                        onChange={(e, newValue) => {
+                          setTabValue(newValue);
+                        }}
+                      >
+                        <Tab
+                          classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                          label="Case Sheet"
                         />
-                      </div>
+                        <Tab
+                          classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                          label="Chat"
+                        />
+                      </Tabs>
                     </div>
-                  </TabContainer>
-                </div>
+                    <TabContainer>
+                      <div className={tabValue !== 0 ? classes.none : classes.block}>
+                        {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
+                      </div>
+                    </TabContainer>
+
+                    <TabContainer>
+                      <div className={tabValue !== 1 ? classes.none : classes.block}>
+                        <div className={classes.chatContainer}>
+                          <ConsultRoom
+                            startConsult={startConsult}
+                            sessionId={sessionId}
+                            token={token}
+                            appointmentId={paramId}
+                            doctorId={doctorId}
+                            patientId={patientId}
+                          />
+                        </div>
+                      </div>
+                    </TabContainer>
+                  </div>
+                ) : (
+                  <div>
+                    <CasesheetView />
+                  </div>
+                )}
               </div>
             </div>
           </Scrollbars>
@@ -923,6 +1001,7 @@ export const ConsultTabs: React.FC = () => {
                 setIsPopoverOpen(false);
                 endConsultActionFinal();
                 setCaseSheetEdit(false);
+                setIsPdfPageOpen(true);
                 setIsAppointmentEnded(true);
               }}
             >
@@ -940,11 +1019,46 @@ export const ConsultTabs: React.FC = () => {
         </Paper>
       </Modal>
 
-      {isEnded && (
+      {/* {isEnded && (
         <div className={classes.tabPdfBody}>
           <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
         </div>
-      )}
+      )} */}
+
+      <Dialog open={isConfirmDialogOpen} onClose={() => setIsConfirmDialogOpen(false)}>
+        <DialogTitle>Are you sure you want to end your consult?</DialogTitle>
+        {/* <DialogContent>
+          <DialogContentText>Please enter diagnosis</DialogContentText>
+        </DialogContent> */}
+        <DialogActions>
+          <Button color="primary" onClick={() => setIsConfirmDialogOpen(false)} autoFocus>
+            No
+          </Button>
+          <Button
+            color="primary"
+            onClick={() => {
+              endConsultActionFinal();
+              setIsConfirmDialogOpen(false);
+              //setIsPopoverOpen(true);
+              //setAppointmentStatus('COMPLETED');
+              //console.log('appointmentStatus ', appointmentStatus);
+            }}
+            autoFocus
+          >
+            Yes
+          </Button>
+          <DialogContent>
+            <DialogContentText>
+              After ending the consult you will get the option to preview/edit case sheet and send
+              prescription to the patient
+            </DialogContentText>
+          </DialogContent>
+          {/* <Typography>
+            After ending the consult you will get the option to preview/edit case sheet and send
+            prescription to the patient
+          </Typography> */}
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
