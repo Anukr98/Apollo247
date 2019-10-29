@@ -913,10 +913,11 @@ export const caseSheetResolvers = {
     },
   },
   CaseSheet: {
-    doctorInfo(caseSheet: CaseSheet) {
+    createdDoctorProfile(caseSheet: CaseSheet) {
       return { __typename: 'Profile', id: caseSheet.createdDoctorId };
     },
   },
+
   Mutation: {
     updateCaseSheet,
     modifyCaseSheet,
