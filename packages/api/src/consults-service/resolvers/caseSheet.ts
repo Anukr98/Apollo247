@@ -164,7 +164,7 @@ export const caseSheetTypeDefs = gql`
   type CaseSheet {
     appointment: Appointment
     blobName: String
-    createdDate: Date
+    createdDate: DateTime
     createdDoctorId: String
     createdDoctorProfile: Profile @provides(fields: "id")
     consultType: String
