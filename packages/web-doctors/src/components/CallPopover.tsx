@@ -989,6 +989,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     pubnub.addListener({
       status: (statusEvent) => { },
       message: (message) => {
+        console.log(message.message);
         if (
           !showVideoChat &&
           message.message.message !== videoCallMsg &&
@@ -1078,6 +1079,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       doctorInfo: currentPatient,
       pdfUrl: props.prescriptionPdf,
     };
+    console.log(followupObj);
     if (folloupDateTime !== '') {
       setTimeout(() => {
         pubnub.publish(
@@ -1380,7 +1382,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <Button
                     className={classes.consultButton}
                     disabled={
-                      //startAppointmentButton ||
+                      startAppointmentButton ||
                       disableOnTransfer ||
                       (appointmentInfo!.appointmentState !== 'NEW' &&
                         appointmentInfo!.appointmentState !== 'TRANSFER' &&
