@@ -104,6 +104,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
   streetLine2: string | null;
   streetLine3: string | null;
   zip: string | null;
+  registrationNumber: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {

@@ -498,6 +498,7 @@ export const GET_CASESHEET = gql`
           mobileNumber
           qualification
           salutation
+          registrationNumber
           specialty {
             createdDate
             id

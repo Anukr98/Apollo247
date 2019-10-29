@@ -162,7 +162,6 @@ export const CasesheetView: React.FC = (props) => {
     otherInstructions,
     followUpAfterInDays,
   } = useContext(CaseSheetContext);
-  console.log('createdDoctorProfile' + createdDoctorProfile);
 
   const getAge = (date: string) => {
     if (date) {
@@ -198,10 +197,22 @@ export const CasesheetView: React.FC = (props) => {
               <h3>
                 {`${createdDoctorProfile.salutation}. ${createdDoctorProfile.firstName} ${createdDoctorProfile.lastName}`}
                 <br />
-                <span>{`${createdDoctorProfile.speciality} | MCI Reg. No. ${createdDoctorProfile.id}`}</span>
+                <span>{`${
+                  createdDoctorProfile.specialty.specialistSingularTerm
+                    ? createdDoctorProfile.specialty.specialistSingularTerm
+                    : ''
+                } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
               </h3>
               <p className={classes.address}>
-                {`${createdDoctorProfile.streetLine1} | ${createdDoctorProfile.streetLine2} | ${createdDoctorProfile.streetLine3} | ${createdDoctorProfile.city} – ${createdDoctorProfile.zip} | ${createdDoctorProfile.state}, ${createdDoctorProfile.country}}`}
+                {`${createdDoctorProfile.streetLine1 || ''} ${
+                  createdDoctorProfile.streetLine2 ? `| ${createdDoctorProfile.streetLine2}` : ''
+                } ${
+                  createdDoctorProfile.streetLine3 ? ` | ${createdDoctorProfile.streetLine3}` : ''
+                }  ${createdDoctorProfile.city ? `| ${createdDoctorProfile.city}` : ''}  ${
+                  createdDoctorProfile.zip ? ` - ${createdDoctorProfile.zip}` : ''
+                }  ${createdDoctorProfile.state ? ` | ${createdDoctorProfile.state}` : ''} ${
+                  createdDoctorProfile.country ? `,${createdDoctorProfile.country}` : ''
+                }`}
               </p>
             </div>
           ) : null}
@@ -224,12 +235,10 @@ export const CasesheetView: React.FC = (props) => {
               <div className={classes.infoRow}>
                 <div className={classes.label}>Vitals</div>
                 <div className={classes.lebelContent}>
-                  {`${weight ? `Weight : ${weight} Kgs` : null} ${
-                    height ? `| Height: ${height} cms` : null
-                  } ${bp ? `| BP: ${bp} mm Hg` : null}  ${
-                    temperature && parseInt(temperature) > 0
-                      ? `| Temperature: ${temperature}°F`
-                      : ''
+                  {`${weight ? `Weight : ${weight}` : null} ${
+                    height ? `| Height: ${height}` : null
+                  } ${bp ? `| BP: ${bp}` : null}  ${
+                    temperature && parseInt(temperature) > 0 ? `| Temperature: ${temperature}` : ''
                   }`}
                 </div>
               </div>

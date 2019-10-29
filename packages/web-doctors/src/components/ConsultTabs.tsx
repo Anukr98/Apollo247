@@ -831,7 +831,6 @@ export const ConsultTabs: React.FC = () => {
               <div>
                 {!isPdfPageOpen ? (
                   <div>
-                    <CasesheetView />
                     <div>
                       <Tabs
                         value={tabValue}
