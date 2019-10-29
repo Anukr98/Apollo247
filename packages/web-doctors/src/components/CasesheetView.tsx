@@ -170,8 +170,9 @@ export const CasesheetView: React.FC = (props) => {
     }
   };
 
-  const getPageContentCount = () => {
-    return diagnosticPrescription &&
+  const isPageContentFull = () => {
+    return (
+      diagnosticPrescription &&
       diagnosticPrescription.length > 0 &&
       medicinePrescription &&
       medicinePrescription.length > 0 &&
@@ -179,8 +180,7 @@ export const CasesheetView: React.FC = (props) => {
       diagnosis.length > 0 &&
       symptoms &&
       symptoms.length > 0
-      ? 4
-      : 0;
+    );
   };
 
   return (
@@ -334,7 +334,7 @@ export const CasesheetView: React.FC = (props) => {
               </div>
             </>
           ) : null}
-          {getPageContentCount() === 4 ? null : (
+          {isPageContentFull() ? null : (
             <>
               {' '}
               {otherInstructions && otherInstructions.length > 0 ? (
@@ -358,7 +358,7 @@ export const CasesheetView: React.FC = (props) => {
             </>
           )}
         </div>
-        {getPageContentCount() === 4 &&
+        {isPageContentFull() &&
         ((followUp && followUp.length > 0) ||
           (otherInstructions && otherInstructions.length > 0)) ? (
           <div className={classes.pageNumbers}>Page 1 of 2</div>
@@ -368,7 +368,7 @@ export const CasesheetView: React.FC = (props) => {
           the doctor. In case of emergency please visit a nearby hospital.
         </div>
       </div>
-      {getPageContentCount() === 4 &&
+      {isPageContentFull() &&
       ((followUp && followUp.length > 0) || (otherInstructions && otherInstructions.length > 0)) ? (
         <CaseSheetLastView />
       ) : null}
