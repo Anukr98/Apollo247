@@ -5,18 +5,27 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { format } from 'date-fns';
 
 export const doctorCallNotificationTypeDefs = gql`
   type NotificationResult {
     status: Boolean!
   }
+  type ApptNotificationResult {
+    status: Boolean!
+    currentTime: String!
+  }
   extend type Query {
     sendCallNotification(appointmentId: String): NotificationResult!
-    sendApptNotification: Boolean!
+    sendApptNotification: ApptNotificationResult!
   }
 `;
 type NotificationResult = {
   status: Boolean;
+};
+type ApptNotificationResult = {
+  status: Boolean;
+  currentTime: string;
 };
 const sendCallNotification: Resolver<
   null,
@@ -42,11 +51,12 @@ const sendCallNotification: Resolver<
   return { status: true };
 };
 
-const sendApptNotification: Resolver<null, {}, ConsultServiceContext, boolean> = async (
-  parent,
-  args,
-  { consultsDb, doctorsDb, patientsDb }
-) => {
+const sendApptNotification: Resolver<
+  null,
+  {},
+  ConsultServiceContext,
+  ApptNotificationResult
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptsList = await apptRepo.getNextMinuteAppointments();
   console.log(apptsList);
@@ -66,7 +76,7 @@ const sendApptNotification: Resolver<null, {}, ConsultServiceContext, boolean> =
     });
   }
 
-  return true;
+  return { status: true, currentTime: format(new Date(), 'yyyy-MM-dd hh:mm') };
 };
 
 export const doctorCallNotificationResolvers = {

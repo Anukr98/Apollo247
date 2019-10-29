@@ -232,7 +232,7 @@ export async function sendNotification(
         body: notificationBody,
       },
       data: {
-        type: 'Reschedule-Appointment',
+        type: 'Reschedule_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
@@ -339,7 +339,7 @@ export async function sendCartNotification(
       body: notificationBody,
     },
     data: {
-      type: 'Cart-Ready',
+      type: 'Cart_Ready',
       orderId: pushNotificationInput.appointmentId,
       firstName: patientDetails.firstName,
     },
