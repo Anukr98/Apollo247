@@ -1,10 +1,11 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
+import { Theme } from '@material-ui/core';
 import { Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme: Theme) => ({
   container: {
     display: 'flex',
     flexFlow: 'row',
@@ -51,11 +52,19 @@ const useStyles = makeStyles(() => ({
     width: '45%',
     display: 'inline-block',
     paddingRight: 10,
+    [theme.breakpoints.down('xs')]: {
+      width: '100%',
+      paddingRight: 0,
+    },
   },
   vitalRight: {
     width: '45%',
     display: 'inline-block',
     float: 'right',
+    [theme.breakpoints.down('xs')]: {
+      width: '100%',
+      paddingRight: 0,
+    },
   },
   casesheetInput: {
     '& input': {
