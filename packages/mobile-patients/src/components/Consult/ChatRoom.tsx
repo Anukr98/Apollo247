@@ -300,7 +300,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     console.log('callType', callType);
-    if (callType === "VIDEO") {
+    if (callType === 'VIDEO') {
       setOnSubscribe(true);
       setIsAudio(false);
       InCallManager.startRingtone('_BUNDLE_');

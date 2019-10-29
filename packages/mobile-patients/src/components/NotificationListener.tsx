@@ -80,6 +80,15 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
     aphConsole.log('processNotification after return statement');
 
+    const setCurrentName = await AsyncStorage.getItem('setCurrentName');
+
+    if (
+      setCurrentName === AppRoutes.ChatRoom ||
+      setCurrentName === AppRoutes.AppointmentDetails ||
+      setCurrentName === AppRoutes.AppointmentOnlineDetails
+    )
+      return;
+
     switch (notificationType) {
       case 'Reschedule_Appointment':
         {
@@ -240,54 +249,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   style={styles.claimStyles}
                   onPress={() => {
                     hideAphAlert && hideAphAlert();
-                  }}
-                >
-                  <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.rescheduletyles}
-                  onPress={() => {
-                    console.log('data.appointmentId', data.appointmentId);
-                    getAppointmentData(data.appointmentId, notificationType, '');
-                  }}
-                >
-                  <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
-                    {'CONSULT ROOM'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            ),
-          });
-        }
-        break;
-
-      case 'call_started':
-        {
-          InCallManager.startRingtone('_BUNDLE_');
-          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
-          aphConsole.log('call_started');
-
-          let doctorName = data.doctorName;
-          let userName = data.patientName;
-
-          showAphAlert!({
-            title: `Hi ${userName} :)`,
-            description: `Dr. ${doctorName} is waiting for your call response. Please proceed to the Consult Room`,
-            unDismissable: true,
-            children: (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  marginHorizontal: 20,
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-end',
-                  marginVertical: 18,
-                }}
-              >
-                <TouchableOpacity
-                  style={styles.claimStyles}
-                  onPress={() => {
-                    hideAphAlert && hideAphAlert();
                     InCallManager.stopRingtone();
                     InCallManager.stop();
                   }}
@@ -297,8 +258,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 <TouchableOpacity
                   style={styles.rescheduletyles}
                   onPress={() => {
-                    aphConsole.log('data.appointmentId', data.appointmentId);
-                    aphConsole.log('data.callType', data.callType);
+                    console.log('data.appointmentId', data.appointmentId);
+                    console.log('data.callType', data.callType);
                     getAppointmentData(data.appointmentId, notificationType, data.callType);
                   }}
                 >
@@ -319,6 +280,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
   useEffect(() => {
     console.log('createNotificationListeners');
+    console.log('route name notification', props.navigation.state);
     /*
      * Triggered when a particular notification has been received in foreground
      * */
@@ -381,7 +343,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     notificationType: string,
     callType: string
   ) => {
-    aphConsole.log('getAppointmentData', appointmentId, notificationType, callType);
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
