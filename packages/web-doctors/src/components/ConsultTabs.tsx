@@ -29,6 +29,7 @@ import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
+// import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 import {
   UpdatePatientPrescriptionSentStatus,
@@ -38,20 +39,20 @@ import {
 import {
   CREATE_APPOINTMENT_SESSION,
   GET_CASESHEET,
-  UPDATE_CASESHEET,
+  // UPDATE_CASESHEET,
   END_APPOINTMENT_SESSION,
   CREATE_CASESHEET_FOR_SRD,
-  GET_CASESHEET_JRD,
+  // GET_CASESHEET_JRD,
   MODIFY_CASESHEET,
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from 'graphql/profiles';
 
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
 
-import {
-  GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheetVariables,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
+// import {
+//   GetJuniorDoctorCaseSheet,
+//   GetJuniorDoctorCaseSheetVariables,
+// } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 import { CircularProgress } from '@material-ui/core';
 
@@ -78,6 +79,12 @@ import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { SEND_CALL_NOTIFICATION } from 'graphql/consults';
+import {
+  SendCallNotification,
+  SendCallNotificationVariables,
+} from 'graphql/types/SendCallNotification';
+// import { useLazyQuery } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -338,6 +345,8 @@ export const ConsultTabs: React.FC = () => {
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
   const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
+  const [jrdName, setJrdName] = useState<string>('');
+  const [jrdSubmitDate, setJrdSubmitDate] = useState<string>('');
 
   /* case sheet data*/
 
@@ -500,6 +509,58 @@ export const ConsultTabs: React.FC = () => {
           setLifeStyle(
             patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
           );
+
+          // set Jrd name and Jrd Casesheet submit date.
+          let jrdSalutation = '',
+            jrdFirstName = '',
+            jrdLastName = '';
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate
+          ) {
+            setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate);
+          }
+
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName
+          ) {
+            jrdFirstName =
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName;
+          }
+
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName
+          ) {
+            jrdLastName =
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
+          }
+
+          // if (
+          //   _data &&
+          //   _data.data &&
+          //   _data.data.getCaseSheet &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation
+          // ) {
+          //   jrdSalutation =
+          //     _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation;
+          // }
+
+          setJrdName(`${jrdFirstName} ${jrdLastName}`);
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -532,6 +593,20 @@ export const ConsultTabs: React.FC = () => {
       };
     }
   }, []);
+
+  const sendCallNotificationFn = () => {
+    client
+      .query<SendCallNotification, SendCallNotificationVariables>({
+        query: SEND_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: appointmentId },
+      })
+      .catch((error: ApolloError) => {
+        console.log('Error in Call Notification', error.message);
+        alert('An error occurred while sending notification to Client.');
+      });
+  };
+
   const sendToPatientAction = (flag: boolean) => {
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
@@ -721,6 +796,9 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error occured creating session', e);
         setSaving(false);
       });
+
+    // call this function to send notification.
+    sendCallNotificationFn();
   };
 
   const setStartConsultAction = (flag: boolean) => {
@@ -802,6 +880,8 @@ export const ConsultTabs: React.FC = () => {
             setBp,
             setTemperature,
             setGender,
+            jrdName,
+            jrdSubmitDate,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>

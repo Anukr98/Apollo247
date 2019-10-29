@@ -585,6 +585,14 @@ export const GET_CASESHEET = gql`
         }
       }
       juniorDoctorNotes
+      juniorDoctorCaseSheet {
+        createdDate
+        createdDoctorProfile {
+          firstName
+          lastName
+          salutation
+        }
+      }
     }
   }
 `;
