@@ -73,7 +73,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
   }
 
   type Medicine {
-    medicineSku: String
+    medicineSKU: String
     medicineName: String
     price: Float
     quantity: Int
