@@ -93,6 +93,7 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 170,
       height: 170,
       position: 'absolute',
+      backgroundColor: '#000',
     },
     minimizeImg: {
       left: 0,
