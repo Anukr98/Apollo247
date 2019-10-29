@@ -49,6 +49,7 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  Keyboard,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
@@ -149,7 +150,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           backgroundColor: theme.colors.WHITE,
         }}
       >
-        <TouchableOpacity onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}>
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+        >
           <ApolloLogo />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
@@ -346,7 +350,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           ]}
         >
           <Image
-            placeholderStyle={styles.imagePlaceholderStyle}
+            // placeholderStyle={styles.imagePlaceholderStyle}
             source={{ uri: imgUrl }}
             style={{
               height: 45,
@@ -380,7 +384,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           ]}
         >
           <Image
-            placeholderStyle={styles.imagePlaceholderStyle}
+            // placeholderStyle={styles.imagePlaceholderStyle}
             source={{ uri: imgUrl }}
             style={{
               height: 40,
@@ -724,6 +728,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
+  const [isSearchFocused, setSearchFocused] = useState(false);
 
   const onSearchMedicine = (_searchText: string) => {
     setSearchText(_searchText);
@@ -885,6 +890,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <>
         <Input
           value={searchText}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => {
+            setSearchFocused(false);
+            setMedicineList([]);
+            setSearchText('');
+          }}
           onChangeText={(value) => {
             onSearchMedicine(value);
           }}
@@ -940,15 +951,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderSearchSuggestions = () => {
     // if (medicineList.length == 0) return null;
     return (
-      <View style={{ width: '100%' }}>
+      <View style={{ width: '100%', position: 'absolute' }}>
         {searchSate == 'load' ? (
           <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
-            {renderSectionLoader(200)}
+            {renderSectionLoader(266)}
           </View>
         ) : (
           !!searchText &&
           searchText.length > 2 && (
             <FlatList
+              keyboardShouldPersistTaps="always"
               // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
               bounces={false}
               keyExtractor={(_, index) => `${index}`}
@@ -967,36 +979,24 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     );
   };
 
-  const renderSearchSuggestionsAbsoluteView = () => {
+  const renderSearchBarAndSuggestions = () => {
     return (
-      <View
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          Keyboard.dismiss();
+        }}
         style={[
-          medicineList.length > 0 && !!searchText && searchText.length > 2
+          isSearchFocused
             ? {
-                width: '100%',
                 height: '100%',
-                position: 'absolute',
+                width: '100%',
                 backgroundColor: 'rgba(0,0,0,0.8)',
-                zIndex: 1,
               }
             : {},
         ]}
-      />
-    );
-  };
-
-  const renderSearchBarAndSuggestions = () => {
-    return (
-      <TouchableOpacity style={{ height: '100%', width: '100%' }}>
-        <View
-          style={{
-            position: 'absolute',
-            height: '100%',
-            width: '100%',
-          }}
-        >
-          {renderSearchSuggestions()}
-        </View>
+      >
+        {renderSearchSuggestions()}
       </TouchableOpacity>
     );
   };
@@ -1012,7 +1012,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
-        {renderSearchSuggestionsAbsoluteView()}
         {renderOfferBanner()}
         {renderUploadPrescriptionSection()}
         {renderYourOrders()}
@@ -1042,9 +1041,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           style={{ flex: 1 }}
           bounces={false}
           stickyHeaderIndices={[1]}
+          contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
         >
           <Text
             style={{
+              height: isSearchFocused ? 0 : 'auto',
               ...theme.viewStyles.text('SB', 36, '#02475b', 1),
               paddingTop: 20,
               backgroundColor: '#fff',
@@ -1056,11 +1057,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               `hi ${currentPatient.firstName.toLowerCase()}!`) ||
               ''}
           </Text>
-          <View>
+
+          <View style={[isSearchFocused ? { flex: 1 } : {}]}>
             <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
             {renderSearchBarAndSuggestions()}
           </View>
-          {renderSections()}
+          <View style={[isSearchFocused ? { height: 0 } : {}]}>{renderSections()}</View>
         </ScrollView>
       </SafeAreaView>
       {renderEPrescriptionModal()}
