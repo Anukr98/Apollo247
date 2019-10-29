@@ -498,7 +498,7 @@ export const GET_CASESHEET = gql`
           mobileNumber
           qualification
           salutation
-          speciality {
+          specialty {
             createdDate
             id
             image
