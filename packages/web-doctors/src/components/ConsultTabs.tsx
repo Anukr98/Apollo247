@@ -160,12 +160,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 50,
       backgroundColor: '#fff',
       borderRadius: 10,
-      padding: '0 40px 20px 40px',
+      padding: '0 20px 20px 20px',
       position: 'relative',
       '& h3': {
         fontSize: 20,
         fontWeight: 600,
-        marginBottom: 50,
+        marginBottom: 30,
         marginTop: 0,
         color: '#02475b',
       },
@@ -225,9 +225,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff',
       padding: '8px 16px',
       backgroundColor: '#fc9916',
-      marginTop: 15,
-      marginBottom: 25,
-      width: '100%',
+      width: 110,
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
       '&:hover': {
@@ -235,9 +233,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     cancelConsult: {
-      width: '100%',
+      width: 120,
       fontSize: 14,
       padding: '8px 16px',
+      marginRight: 15,
       fontWeight: 600,
       color: '#fc9916',
       backgroundColor: '#fff',
@@ -245,6 +244,19 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fff',
       },
+    },
+    popupDialog: {
+      maxWidth: 320,
+    },
+    headingTxt: {
+      fontSize: 20,
+      color: '#02475b',
+      fontWeight: 600,
+    },
+    contentTxt: {
+      marginTop: 30,
+      color: '#02475b',
+      fontSize: 14,
     },
   };
 });
@@ -966,8 +978,8 @@ export const ConsultTabs: React.FC = () => {
         </CaseSheetContext.Provider>
       )}
       <Modal
-        open={isPopoverOpen}
-        onClose={() => setIsPopoverOpen(false)}
+        open={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
         disableBackdropClick
         disableEscapeKeyDown
       >
@@ -977,14 +989,14 @@ export const ConsultTabs: React.FC = () => {
               <img
                 src={require('images/ic_cross.svg')}
                 alt=""
-                onClick={() => setIsPopoverOpen(false)}
+                onClick={() => setIsConfirmDialogOpen(false)}
               />
             </Button>
           </div>
           <div className={classes.tabBody}>
             <h3>
-              You're ending your consult with{' '}
-              {casesheetInfo &&
+              Are you sure you want to end your consult?
+              {/* {casesheetInfo &&
                 casesheetInfo !== null &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName !== '' &&
@@ -995,29 +1007,34 @@ export const ConsultTabs: React.FC = () => {
                       casesheetInfo!.getCaseSheet!.patientDetails!.lastName
                     }.`}
                   </span>
-                )}
+                )} */}
             </h3>
-            <Button
-              className={classes.consultButton}
-              //disabled={startAppointmentButton}
-              onClick={() => {
-                setIsPopoverOpen(false);
-                endConsultActionFinal();
-                setCaseSheetEdit(false);
-                setIsPdfPageOpen(true);
-                setIsAppointmentEnded(true);
-              }}
-            >
-              PREVIEW PRESCRIPTION
-            </Button>
+
             <Button
               className={classes.cancelConsult}
+              //disabled={startAppointmentButton}
+              onClick={() => setIsConfirmDialogOpen(false)}
+            >
+              No
+            </Button>
+            <Button
+              className={classes.consultButton}
               onClick={() => {
-                setIsPopoverOpen(false);
+                endConsultActionFinal();
+                setIsConfirmDialogOpen(false);
+                //setIsPopoverOpen(true);
+                //setAppointmentStatus('COMPLETED');
+                //console.log('appointmentStatus ', appointmentStatus);
               }}
             >
-              EDIT CASE SHEET
+              Yes
             </Button>
+          </div>
+          <div className={classes.contentTxt}>
+            <span>
+              After ending the consult you will get the option to preview/edit case sheet and send
+              prescription to the patient
+            </span>
           </div>
         </Paper>
       </Modal>
@@ -1028,11 +1045,14 @@ export const ConsultTabs: React.FC = () => {
         </div>
       )} */}
 
-      <Dialog open={isConfirmDialogOpen} onClose={() => setIsConfirmDialogOpen(false)}>
-        <DialogTitle>Are you sure you want to end your consult?</DialogTitle>
-        {/* <DialogContent>
-          <DialogContentText>Please enter diagnosis</DialogContentText>
-        </DialogContent> */}
+      {/* <Dialog
+        open={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        className={classes.popupDialog}
+      >
+        <DialogTitle className={classes.headingTxt}>
+          Are you sure you want to end your consult?
+        </DialogTitle>
         <DialogActions>
           <Button color="primary" onClick={() => setIsConfirmDialogOpen(false)} autoFocus>
             No
@@ -1056,12 +1076,8 @@ export const ConsultTabs: React.FC = () => {
               prescription to the patient
             </DialogContentText>
           </DialogContent>
-          {/* <Typography>
-            After ending the consult you will get the option to preview/edit case sheet and send
-            prescription to the patient
-          </Typography> */}
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };

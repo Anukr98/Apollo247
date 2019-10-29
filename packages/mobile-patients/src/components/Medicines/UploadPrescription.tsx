@@ -147,7 +147,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
         prescriptionImageUrl: ePresAndPhysicalPresUrls.join(', '),
         shopId: '0',
         appointmentId: '',
-        patinetAddressId: '0',
+        patinetAddressId: '',
+        // patinetAddressId: '0',
         // patinetAddressId: '402e9de2-7301-4350-917b-66f9890ff5a4',
       };
 

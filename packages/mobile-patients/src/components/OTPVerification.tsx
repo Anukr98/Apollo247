@@ -18,6 +18,7 @@ import {
   View,
   WebView,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationScreenProps } from 'react-navigation';
@@ -110,6 +111,14 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
+
+  useEffect(() => {
+    BackHandler.addEventListener('hardwareBackPress', () => {
+      console.log('hihi');
+      setonClickOpen(false);
+      return true;
+    });
+  });
 
   const startInterval = useCallback(
     (timer: number) => {

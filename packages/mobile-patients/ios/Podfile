@@ -13,5 +13,6 @@ target 'ApolloPatient' do
  pod 'GoogleAppMeasurement'
  pod 'OpenTok', '~> 2.15.3'
  pod 'Firebase/Messaging', '~> 6.2.0'
-
+ pod 'GoogleIDFASupport', '~> 3.14.0'
+  
 end

@@ -4,6 +4,7 @@ import React, { useContext } from 'react';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { CaseSheetLastView } from './CasesheetLastView';
 import moment from 'moment';
+import { MEDICINE_TO_BE_TAKEN } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -118,6 +119,10 @@ const useStyles = makeStyles((theme: Theme) => {
         },
       },
     },
+    advice: {
+      fontSize: 12,
+      padding: 12,
+    },
     disclaimer: {
       fontSize: 10,
       borderTop: 'solid 1px rgba(2, 71, 91, 0.15)',
@@ -131,13 +136,17 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       paddingBottom: 15,
     },
-    lebelContent: {
+    labelContent: {
       width: '100%',
     },
-    followUp: {
-      fontSize: 12,
-      color: 'rgba(0, 0, 0, 0.6)',
+    followUpContent: {
       padding: 12,
+      fontSize: 12,
+      color: '#02475b',
+      fontWeight: 500,
+    },
+    labelBlue: {
+      color: '#02475b',
     },
   };
 });
@@ -168,6 +177,17 @@ export const CasesheetView: React.FC = (props) => {
         new Date(Date.now()).getUTCFullYear() - new Date(date).getUTCFullYear()
       ).toString();
     }
+  };
+
+  const convertToCase = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
+    if (medicineTiming) {
+      let timing = medicineTiming.toLocaleLowerCase();
+      if (timing.includes('_')) {
+        timing = timing.replace('_', ' ');
+      }
+      return timing;
+    }
+    return '';
   };
 
   const isPageContentFull = () => {
@@ -221,7 +241,7 @@ export const CasesheetView: React.FC = (props) => {
           <div className={classes.accountDetails}>
             <div className={classes.infoRow}>
               <div className={classes.label}>Patient</div>
-              <div className={classes.lebelContent}>
+              <div className={classes.labelContent}>
                 {patientDetails ? (
                   <div className={classes.patientName}>
                     {`${patientDetails.firstName}  ${patientDetails.lastName}`} |{' '}
@@ -233,33 +253,41 @@ export const CasesheetView: React.FC = (props) => {
             {weight || height || bp || temperature ? (
               <div className={classes.infoRow}>
                 <div className={classes.label}>Vitals</div>
-                <div className={classes.lebelContent}>
-                  {`${weight ? `Weight : ${weight}` : null} ${
-                    height ? `| Height: ${height}` : null
-                  } ${bp ? `| BP: ${bp}` : null}  ${
-                    temperature && parseInt(temperature) > 0 ? `| Temperature: ${temperature}` : ''
-                  }`}
+                <div className={classes.labelContent}>
+                  <div className={classes.labelBlue}>
+                    {`${weight ? `Weight : ${weight}` : ''} ${
+                      height ? `| Height: ${height}` : ''
+                    } ${bp ? `| BP: ${bp}` : ''}  ${
+                      temperature ? `| Temperature: ${temperature}` : ''
+                    }`}
+                  </div>
                 </div>
               </div>
             ) : null}
             {patientDetails && patientDetails.uhid ? (
               <div className={classes.infoRow}>
                 <div className={classes.label}>UHID</div>
-                <div className={classes.lebelContent}>{patientDetails.uhid}</div>
+                <div className={classes.labelContent}>
+                  <div className={classes.labelBlue}>{patientDetails.uhid}</div>
+                </div>
               </div>
             ) : null}
             {appointmentInfo && appointmentInfo.appointmentDateTime ? (
               <div className={classes.infoRow}>
                 <div className={classes.label}>Consult Date</div>
-                <div className={classes.lebelContent}>
-                  {moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}
+                <div className={classes.labelContent}>
+                  <div className={classes.labelBlue}>
+                    {moment(appointmentInfo.appointmentDateTime).format('DD/MM/YYYY')}
+                  </div>
                 </div>
               </div>
             ) : null}
             {consultType ? (
               <div className={classes.infoRow}>
                 <div className={classes.label}>Consult Type</div>
-                <div className={classes.lebelContent}>{consultType}</div>
+                <div className={classes.labelContent}>
+                  <div className={classes.labelBlue}>{consultType}</div>
+                </div>
               </div>
             ) : null}
           </div>
@@ -270,7 +298,7 @@ export const CasesheetView: React.FC = (props) => {
                 {symptoms.map((symptom) => (
                   <div className={classes.complaintsInfoRow}>
                     <div className={classes.complaintsLabel}>{symptom.symptom}</div>
-                    <div className={classes.lebelContent}>
+                    <div className={classes.labelContent}>
                       {`Since: Last ${symptom.since} | How often: ${symptom.howOften} | Severity: ${symptom.severity}`}
                     </div>
                   </div>
@@ -284,7 +312,7 @@ export const CasesheetView: React.FC = (props) => {
               <div className={classes.diagnosis}>
                 {diagnosis.map((diagnos) => (
                   <div className={classes.infoRow}>
-                    <div className={classes.lebelContent}>{diagnos.name}</div>
+                    <div className={classes.labelContent}>{diagnos.name}</div>
                   </div>
                 ))}
               </div>
@@ -312,7 +340,9 @@ export const CasesheetView: React.FC = (props) => {
                          for ${prescription.medicineConsumptionDurationInDays} days${
                           prescription.medicineToBeTaken &&
                           prescription.medicineToBeTaken.length > 0
-                            ? `; ${prescription.medicineToBeTaken.map((timing) => timing)}`
+                            ? `; ${prescription.medicineToBeTaken.map((timing) =>
+                                convertToCase(timing)
+                              )}`
                             : ''
                         }`}
                       </span>
@@ -340,18 +370,18 @@ export const CasesheetView: React.FC = (props) => {
               {otherInstructions && otherInstructions.length > 0 ? (
                 <>
                   <div className={classes.sectionHeader}>Advice Given</div>
-                  <div className={classes.medicationList}>
+                  <div className={classes.advice}>
                     {otherInstructions.map((instruction) => (
                       <span>{instruction.instruction}</span>
                     ))}
                   </div>
                 </>
               ) : null}
-              {followUp && followUpAfterInDays ? (
+              {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
                 <>
                   <div className={classes.sectionHeader}>Follow Up</div>
-                  <div className={classes.followUp}>
-                    Follow up {consultType} after {followUpAfterInDays} days
+                  <div className={classes.followUpContent}>
+                    Follow up ({consultType[0]}) after {followUpAfterInDays[0]} days
                   </div>
                 </>
               ) : null}
@@ -359,7 +389,7 @@ export const CasesheetView: React.FC = (props) => {
           )}
         </div>
         {isPageContentFull() &&
-        ((followUp && followUp.length > 0) ||
+        ((followUp.length > 0 && followUp[0]) ||
           (otherInstructions && otherInstructions.length > 0)) ? (
           <div className={classes.pageNumbers}>Page 1 of 2</div>
         ) : null}
@@ -369,7 +399,8 @@ export const CasesheetView: React.FC = (props) => {
         </div>
       </div>
       {isPageContentFull() &&
-      ((followUp && followUp.length > 0) || (otherInstructions && otherInstructions.length > 0)) ? (
+      ((followUp.length > 0 && followUp[0]) ||
+        (otherInstructions && otherInstructions.length > 0)) ? (
         <CaseSheetLastView />
       ) : null}
     </div>
