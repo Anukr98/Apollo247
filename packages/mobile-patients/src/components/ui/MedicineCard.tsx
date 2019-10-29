@@ -243,7 +243,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderMedicineIcon = () => {
-    aphConsole.log({ imageUrl });
     return (
       <View style={{ width: 40, marginRight: 12, alignItems: 'center' }}>
         {imageUrl ? (

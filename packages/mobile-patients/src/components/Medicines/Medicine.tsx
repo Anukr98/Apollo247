@@ -94,7 +94,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .catch((e) => {
         setError(e);
         setLoading(false);
-        console.log({ e });
       });
   }, []);
 
@@ -879,6 +878,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       </TouchableOpacity>
     );
 
+    const itemsNotFound =
+      searchSate == 'success' && searchText.length > 2 && medicineList.length == 0;
+
     return (
       <>
         <Input
@@ -889,13 +891,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           autoCorrect={false}
           rightIcon={rigthIconView}
           placeholder="Search meds, brands &amp; more"
-          selectionColor={
-            searchSate == 'success' && medicineList.length == 0 ? '#890000' : '#00b38e'
-          }
+          selectionColor={itemsNotFound ? '#890000' : '#00b38e'}
           underlineColorAndroid="transparent"
           placeholderTextColor="rgba(1,48,91, 0.4)"
           inputStyle={styles.inputStyle}
-          inputContainerStyle={styles.inputContainerStyle}
+          inputContainerStyle={[
+            styles.inputContainerStyle,
+            itemsNotFound ? { borderBottomColor: '#890000' } : {},
+          ]}
           rightIconContainerStyle={styles.rightIconContainerStyle}
           style={styles.style}
           containerStyle={styles.containerStyle}
@@ -904,9 +907,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             marginHorizontal: 10,
           }}
           errorMessage={
-            searchSate == 'success' && searchText.length > 2 && medicineList.length == 0
-              ? 'Sorry, we couldn’t find what you are looking for :('
-              : undefined
+            itemsNotFound ? 'Sorry, we couldn’t find what you are looking for :(' : undefined
           }
         />
       </>
