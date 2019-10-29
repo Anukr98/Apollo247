@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { Typography } from '@material-ui/core';
+import { Typography, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
