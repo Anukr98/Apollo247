@@ -30,6 +30,7 @@ import {
   EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
+import { UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables } from 'graphql/types/UpdatePatientPrescriptionSentStatus';
 
 import {
   CREATE_APPOINTMENT_SESSION,
@@ -39,6 +40,7 @@ import {
   CREATE_CASESHEET_FOR_SRD,
   GET_CASESHEET_JRD,
   MODIFY_CASESHEET,
+  UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS
 } from 'graphql/profiles';
 
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
@@ -272,6 +274,7 @@ export const ConsultTabs: React.FC = () => {
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
+  const [isPdfPageOpen, setIsPdfPageOpen] = useState<boolean>(false);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
@@ -408,12 +411,21 @@ export const ConsultTabs: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status,
               ] as unknown) as string)
             : setAppointmentStatus('');
-          _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
-            ? setSentToPatient(([
+            _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
+            ? setSentToPatient(
                 _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient,
-              ] as unknown) as boolean)
+              )
             : setSentToPatient(false);
-
+            if (
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.caseSheetDetails &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment && 
+              _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
+              _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED'
+            ) {
+              setIsPdfPageOpen(true);
+            }
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -510,7 +522,26 @@ export const ConsultTabs: React.FC = () => {
       };
     }
   }, []);
-
+  const sendToPatientAction = (flag: boolean) => {
+    console.log(flag);
+    client
+      .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
+        mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
+        variables: {
+            caseSheetId: caseSheetId,
+            sentToPatient: true
+        }
+      })
+      .then((_data) => {
+        setSentToPatient(true);
+        setIsPdfPageOpen(true);
+      })
+      .catch((e) => {
+        setError('Error occured while sending prescription to patient');
+        console.log('Error occured while sending prescription to patient', e);
+        setSaving(false);
+      });
+  }
   const saveCasesheetAction = (flag: boolean) => {
     // followUp: followUp[0],
     // followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
@@ -643,7 +674,7 @@ export const ConsultTabs: React.FC = () => {
       .then((_data) => {
         // setIsPopoverOpen(true);
         //setIsPdfPopoverOpen(true);
-        setIsEnded(true);
+        //setIsEnded(true);
         console.log('_data', _data);
       })
       .catch((e) => {
@@ -780,6 +811,8 @@ export const ConsultTabs: React.FC = () => {
                 appointmentStatus={appointmentStatus[0]}
                 sentToPatient={sentToPatient}
                 isAppointmentEnded={isAppointmentEnded}
+                sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
+                setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
               />
               <div>
                 {!isPdfPageOpen ? (
@@ -914,7 +947,7 @@ export const ConsultTabs: React.FC = () => {
             onClick={() => {
               endConsultActionFinal();
               setIsConfirmDialogOpen(false);
-              setIsPopoverOpen(true);
+              //setIsPopoverOpen(true);
               setAppointmentStatus('COMPLETED');
               console.log('appointmentStatus ', appointmentStatus);
             }}
