@@ -798,7 +798,7 @@ export const ConsultTabs: React.FC = () => {
       });
 
     // call this function to send notification.
-    sendCallNotificationFn();
+    //sendCallNotificationFn();
   };
 
   const setStartConsultAction = (flag: boolean) => {
@@ -807,6 +807,7 @@ export const ConsultTabs: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
+      sendCallNotificationFn();
     }, 10);
   };
 
