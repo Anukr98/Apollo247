@@ -117,13 +117,13 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightBold,
       color: '#fff',
       padding: '8px 16px',
-      backgroundColor: '#890000',
+      backgroundColor: '#fc9916',
       marginLeft: 20,
       minWidth: 168,
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
       '&:hover': {
-        backgroundColor: '#890000',
+        backgroundColor: '#e28913',
       },
       '& svg': {
         marginRight: 5,
