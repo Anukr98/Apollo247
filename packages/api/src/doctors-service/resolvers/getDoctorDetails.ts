@@ -175,6 +175,7 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine2: String
     streetLine3: String
     zip: String
+    registrationNumber: String
     onlineConsultationFees: String!
     physicalConsultationFees: String!
     doctorHospital: [DoctorHospital!]!
