@@ -235,7 +235,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
-    analytics.setCurrentScreen(AppRoutes.Consult);
+    analytics.setAnalyticsCollectionEnabled(true);
+    analytics.setCurrentScreen(AppRoutes.Consult, AppRoutes.Consult);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {

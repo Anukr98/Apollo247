@@ -136,7 +136,8 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
 
   useEffect(() => {
-    firebase.analytics().setCurrentScreen('Onboarding');
+    firebase.analytics().setAnalyticsCollectionEnabled(true);
+    firebase.analytics().setCurrentScreen('Onboarding', 'Onboarding');
   });
 
   return (
