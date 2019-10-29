@@ -603,7 +603,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   style={styles.gotItStyles}
                   onPress={() => {
                     setShowCancelPopup(false);
-                    setResheduleoverlay(true);
+                    NextAvailableSlotAPI();
                   }}
                 >
                   <Text style={styles.gotItTextStyles}>{'RESCHEDULE INSTEAD'}</Text>

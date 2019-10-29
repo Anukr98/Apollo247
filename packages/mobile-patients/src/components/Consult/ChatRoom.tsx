@@ -269,7 +269,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
     requestToJrDoctor();
-    analytics.setCurrentScreen(AppRoutes.ChatRoom);
+    analytics.setAnalyticsCollectionEnabled(true);
+    analytics.setCurrentScreen(AppRoutes.ChatRoom, AppRoutes.ChatRoom);
     // updateSessionAPI();
   }, []);
 

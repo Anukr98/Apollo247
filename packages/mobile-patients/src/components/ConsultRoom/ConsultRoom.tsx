@@ -201,7 +201,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       getPatientApiCall();
     }
 
-    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+    analytics.setAnalyticsCollectionEnabled(true);
+    analytics.setCurrentScreen(AppRoutes.ConsultRoom, AppRoutes.ConsultRoom);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {
@@ -533,12 +534,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               key={i}
               onPress={() => {
                 if (i === 0) {
+                  firebase.analytics().logEvent('CONSULT_ROOM', {
+                    'button click': 'CONSULT_ROOM',
+                  });
                   props.navigation.navigate('CONSULT ROOM');
                 } else if (i == 1) {
+                  firebase.analytics().logEvent('HEALTH_RECORDS', {
+                    'button click': 'HEALTH_RECORDS',
+                  });
                   props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
+                  firebase.analytics().logEvent('MEDICINES', {
+                    'button click': 'MEDICINES',
+                  });
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
+                  firebase.analytics().logEvent('MY_ACCOUNT', {
+                    'button click': 'MY_ACCOUNT',
+                  });
                   props.navigation.navigate('MY ACCOUNT');
                 }
               }}
@@ -592,6 +605,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
               onPress={() => {
+                firebase.analytics().logEvent('Symptom_Checker_Clicked', {
+                  'button click': 'symptom checker clicked',
+                });
                 props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
               }}
             />

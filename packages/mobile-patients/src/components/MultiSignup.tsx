@@ -146,7 +146,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   }, [allCurrentPatients]);
 
   useEffect(() => {
-    analytics.setCurrentScreen(AppRoutes.MultiSignup);
+    analytics.setAnalyticsCollectionEnabled(true);
+    analytics.setCurrentScreen(AppRoutes.MultiSignup, AppRoutes.MultiSignup);
     setProfiles(allCurrentPatients ? allCurrentPatients : []);
     const length =
       profiles &&
