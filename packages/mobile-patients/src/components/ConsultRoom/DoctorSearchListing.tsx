@@ -42,6 +42,7 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   topView: {
@@ -156,6 +157,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
+    CommonScreenLog('DoctorSearchListing', 'DoctorSearchListing');
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -493,6 +495,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              CommonLogEvent(
+                'Doctor SearchListing RightHeader',
+                'Doctor SearchListing RightHeader clicked'
+              );
               getNetStatus().then((status) => {
                 if (status) {
                   setshowLocationpopup(true);
@@ -790,6 +796,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                       ...theme.fonts.IBMPlexSansMedium(18),
                     }}
                     onPress={() => {
+                      CommonLogEvent('Search List', 'Search List clicked');
                       setcurrentLocation(item.name);
                       saveLatlong(item);
                       setshowLocationpopup(false);
