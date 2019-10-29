@@ -145,7 +145,6 @@ const useStyles = makeStyles((theme: Theme) => {
 export const CasesheetView: React.FC = (props) => {
   const classes = useStyles();
   const {
-    loading,
     patientDetails,
     height,
     weight,
