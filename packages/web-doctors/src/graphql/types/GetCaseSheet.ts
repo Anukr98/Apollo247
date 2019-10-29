@@ -110,6 +110,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescripti
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   __typename: "CaseSheet";
   id: string | null;
+  blobName: string | null;
   doctorId: string | null;
   sentToPatient: boolean | null;
   appointment: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;

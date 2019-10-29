@@ -521,7 +521,7 @@ interface CallPopoverProps {
   appointmentId: string;
   appointmentDateTime: string;
   doctorId: string;
-  isEnded: boolean;
+  urlToPatient: boolean;
   caseSheetId: string;
   prescriptionPdf: string;
   startAppointment: boolean;
@@ -956,12 +956,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
   const { setCaseSheetEdit } = useContext(CaseSheetContext);
   useEffect(() => {
-    if (props.isEnded) {
+    if (props.urlToPatient) {
       onStopConsult();
-      props.startAppointmentClick(!props.startAppointment);
-      setStartAppointmentButton(true);
+      // props.startAppointmentClick(!props.startAppointment);
+      // setStartAppointmentButton(true);
     }
-  }, [props.isEnded]);
+  }, [props.urlToPatient]);
   useEffect(() => {
     setTextOtherTransfer;
     if (reason === 'Other') {
@@ -1380,7 +1380,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   <Button
                     className={classes.consultButton}
                     disabled={
-                      startAppointmentButton ||
+                      //startAppointmentButton ||
                       disableOnTransfer ||
                       (appointmentInfo!.appointmentState !== 'NEW' &&
                         appointmentInfo!.appointmentState !== 'TRANSFER' &&

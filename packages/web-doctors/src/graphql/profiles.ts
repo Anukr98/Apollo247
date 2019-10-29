@@ -475,6 +475,7 @@ export const GET_CASESHEET = gql`
       }
       caseSheetDetails {
         id
+        blobName
         doctorId
         sentToPatient
         appointment {
