@@ -1,20 +1,27 @@
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React, { useEffect } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import { AsyncStorage, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { aphConsole } from '../helpers/helperFunctions';
+import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from './NavigatorContainer';
-import { useApolloClient } from 'react-apollo-hooks';
-import { GET_APPOINTMENT_DATA } from '../graphql/profiles';
+import { GET_APPOINTMENT_DATA, GET_MEDICINE_ORDER_DETAILS } from '../graphql/profiles';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
 } from '../graphql/types/getAppointmentData';
+import {
+  GetMedicineOrderDetails,
+  GetMedicineOrderDetailsVariables,
+} from '../graphql/types/GetMedicineOrderDetails';
+import { getMedicineDetailsApi } from '../helpers/apiCalls';
+import { aphConsole } from '../helpers/helperFunctions';
 import { useAllCurrentPatients } from '../hooks/authHooks';
-import { View, TouchableOpacity, StyleSheet, Text, AsyncStorage } from 'react-native';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import InCallManager from 'react-native-incall-manager';
+import { AppRoutes } from './NavigatorContainer';
+import { EPrescription, ShoppingCartItem, useShoppingCart } from './ShoppingCartProvider';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -42,7 +49,7 @@ const styles = StyleSheet.create({
 
 type CustomNotificationType =
   | 'Reschedule_Appointment'
-  | 'Upload-Prescription-Order'
+  | 'Cart_Ready'
   | 'call_started'
   | 'chat_room';
 
@@ -52,6 +59,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   const { currentPatient } = useAllCurrentPatients();
 
   const { showAphAlert, hideAphAlert } = useUIElements();
+  const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
 
   const processNotification = async (notification: Notification) => {
@@ -61,6 +69,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     aphConsole.log('processNotification', notification);
 
     const setCurrentName = await AsyncStorage.getItem('setCurrentName');
+    aphConsole.log('setCurrentName', setCurrentName);
 
     if (
       setCurrentName === AppRoutes.ChatRoom ||
@@ -81,6 +90,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showAphAlert!({
             title: `Hi ${userName},`,
             description: `Unfortunately ${doctorName} will not be able to make it for your appointment due to an emergency`,
+            unDismissable: true,
             children: (
               <View
                 style={{
@@ -116,11 +126,93 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           });
         }
         break;
-
-      case 'Upload-Prescription-Order':
+      case 'Cart_Ready':
         {
-          aphConsole.log('Upload-Prescription-Order called');
-          props.navigation.navigate(AppRoutes.YourCart);
+          const orderId = data.orderId;
+          console.log('Cart_Ready called');
+          client
+            .query<GetMedicineOrderDetails, GetMedicineOrderDetailsVariables>({
+              query: GET_MEDICINE_ORDER_DETAILS,
+              variables: {
+                orderAutoId: orderId,
+                patientId: currentPatient && currentPatient.id,
+              },
+              fetchPolicy: 'no-cache',
+            })
+            .then((data) => {
+              const orderDetails = data.data.getMedicineOrderDetails.MedicineOrderDetails;
+              const items = (orderDetails!.medicineOrderLineItems || [])
+                .map((item) => ({
+                  sku: item!.medicineSKU!,
+                  qty: item!.quantity!,
+                }))
+                .filter((item) => item.sku);
+
+              Promise.all(items.map((item) => getMedicineDetailsApi(item!.sku!)))
+                .then((result) => {
+                  const itemsToAdd = result
+                    .map(({ data: { productdp } }, index) => {
+                      const medicineDetails = (productdp && productdp[0]) || {};
+                      if (!medicineDetails.is_in_stock) return null;
+                      return {
+                        id: medicineDetails!.sku!,
+                        mou: medicineDetails.mou,
+                        name: medicineDetails!.name,
+                        price: medicineDetails!.price,
+                        quantity: items[index].qty || 1,
+                        prescriptionRequired: medicineDetails.is_prescription_required == '1',
+                        thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+                      } as ShoppingCartItem;
+                    })
+                    .filter((item) => item) as ShoppingCartItem[];
+                  const itemsToAddSkus = itemsToAdd.map((i) => i.id);
+                  // :: CONFIRM HERE :: // Whether to replace cart or add to existing?
+                  const itemsToAddInCart = [
+                    ...itemsToAdd,
+                    ...cartItems.filter((item) => !itemsToAddSkus.includes(item.id!)),
+                  ];
+                  setCartItems!(itemsToAddInCart);
+
+                  // Adding prescriptions
+                  if (orderDetails!.prescriptionImageUrl) {
+                    const imageUrls = orderDetails!.prescriptionImageUrl
+                      .split(',')
+                      .map((item) => item.trim());
+
+                    const ePresToAdd = imageUrls.map(
+                      (item) =>
+                        ({
+                          id: item,
+                          date: moment(orderDetails!.medicineOrdersStatus![0]!.statusDate).format(
+                            'DD MMM YYYY'
+                          ),
+                          doctorName: '',
+                          forPatient: (currentPatient && currentPatient.firstName) || '',
+                          medicines: (orderDetails!.medicineOrderLineItems || [])
+                            .map((item) => item!.medicineName)
+                            .join(', '),
+                          uploadedUrl: item,
+                        } as EPrescription)
+                    );
+                    const ePresIds = ePresToAdd.map((i) => i!.uploadedUrl);
+                    setEPrescriptions!([
+                      ...ePrescriptions.filter((item) => !ePresIds.includes(item.uploadedUrl!)),
+                      ...ePresToAdd,
+                    ]);
+                  }
+
+                  showAphAlert!({
+                    title: 'Hey there! :)',
+                    description: 'Your medicines have been added to your cart.',
+                  });
+                })
+                .catch((e) => {
+                  showAphAlert!({
+                    title: 'Uh oh.. :(',
+                    description: 'Something went wrong.',
+                  });
+                });
+            });
         }
         break;
 
@@ -133,6 +225,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showAphAlert!({
             title: `Hi ${userName} :)`,
             description: `Dr. ${doctorName} is waiting to start your consultation. Please proceed to the Consult Room`,
+            unDismissable: true,
             children: (
               <View
                 style={{
@@ -180,6 +273,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showAphAlert!({
             title: `Hi ${userName} :)`,
             description: `Dr. ${doctorName} is waiting for your call response. Please proceed to the Consult Room`,
+            unDismissable: true,
             children: (
               <View
                 style={{

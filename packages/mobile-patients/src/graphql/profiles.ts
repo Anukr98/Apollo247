@@ -711,6 +711,7 @@ export const GET_MEDICINE_ORDER_DETAILS = gql`
         orderAutoId
         devliveryCharges
         estimatedAmount
+        prescriptionImageUrl
         medicineOrdersStatus {
           id
           orderStatus

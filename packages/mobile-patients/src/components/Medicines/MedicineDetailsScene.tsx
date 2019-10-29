@@ -224,9 +224,13 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     typeof _medicineOverview == 'string'
       ? []
       : (_medicineOverview &&
-          _medicineOverview.filter(
-            (item) => item.Caption.length > 0 && item.CaptionDesc.length > 0
-          )) ||
+          _medicineOverview
+            .filter((item) => item.Caption.length > 0 && item.CaptionDesc.length > 0)
+            .map((item) => {
+              const Caption =
+                item.Caption.charAt(0).toUpperCase() + item.Caption.slice(1).toLowerCase();
+              return { ...item, Caption: Caption };
+            })) ||
         [];
 
   let sku = props.navigation.getParam('sku'); // 'MED0017';
@@ -595,7 +599,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const renderTabs = () => {
     const data = medicineOverview.map((item) => {
       return {
-        title: item.Caption.charAt(0).toUpperCase() + item.Caption.slice(1).toLowerCase(),
+        title: item.Caption,
       };
     });
 

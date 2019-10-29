@@ -81,6 +81,7 @@ export interface SearchByBrandProps
 
 export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const category_id = props.navigation.getParam('category_id');
+  const pageTitle = props.navigation.getParam('title');
 
   const [searchText, setSearchText] = useState<string>('');
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
@@ -193,7 +194,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       <Header
         container={{ borderBottomWidth: 0 }}
         leftIcon={'backArrow'}
-        title={props.navigation.getParam('title') || 'SEARCH MEDICINE'}
+        title={pageTitle || 'SEARCH PRODUCTS'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
@@ -300,7 +301,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           }}
           autoCorrect={false}
           rightIcon={rigthIconView}
-          placeholder="Search medicine and more"
+          placeholder={(pageTitle && `Search ${pageTitle}`) || 'Search medicine and more'}
           selectionColor="#00b38e"
           underlineColorAndroid="transparent"
           placeholderTextColor="rgba(1,48,91, 0.4)"
