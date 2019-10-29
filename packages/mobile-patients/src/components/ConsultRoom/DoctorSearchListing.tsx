@@ -47,6 +47,7 @@ import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import Geocoder from 'react-native-geocoding';
+import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   topView: {
