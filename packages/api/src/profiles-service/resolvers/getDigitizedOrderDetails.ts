@@ -7,6 +7,10 @@ import {
   MEDICINE_ORDER_STATUS,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
+import {
+  sendCartNotification,
+  NotificationType,
+} from 'notifications-service/resolvers/notifications';
 
 export const getDigitizedOrderTypeDefs = gql`
   input MedicineOrderInput {
@@ -67,7 +71,7 @@ const getDigitizedPrescription: Resolver<
   MedicineOrderInputArgs,
   ProfilesServiceContext,
   MedicineOrderResult
-> = async (parent, { MedicineOrderInput }, { profilesDb }) => {
+> = async (parent, { MedicineOrderInput }, { profilesDb, doctorsDb, consultsDb }) => {
   console.log(MedicineOrderInput, 'input');
   let errorCode = 0,
     errorMessage = '',
@@ -99,6 +103,12 @@ const getDigitizedPrescription: Resolver<
       medicineOrderStatusAttrs,
       orderDetails.orderAutoId
     );
+    const pushNotificationInput = {
+      appointmentId: orderDetails.orderAutoId.toString(),
+      notificationType: NotificationType.MEDICINE_CART_READY,
+    };
+    const notificationResult = sendCartNotification(pushNotificationInput, profilesDb);
+    console.log(notificationResult, 'user cart ready notification');
   } else {
     errorCode = -1;
     errorMessage = 'Invalid order id';
