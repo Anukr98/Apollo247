@@ -14,14 +14,14 @@ const PharmaApiConfig = {
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
     SHOP_BY_CITY: [apolloUatBaseUrl],
-    IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media/catalog/product`],
+    IMAGES_BASE_URL: [`${apolloUatBaseUrl}/pub/media/catalog/product`],
     GET_DELIVERY_TIME: [
-      'https://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`],
-    OFFER_BANNER: [`${apolloUatBaseUrl}/bannersapi.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
   },
   prod: {
@@ -34,12 +34,12 @@ const PharmaApiConfig = {
     SHOP_BY_CITY: [apolloProdBaseUrl],
     IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media/catalog/product`],
     GET_DELIVERY_TIME: [
-      'https://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`],
-    OFFER_BANNER: [`${apolloUatBaseUrl}/bannersapi.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
   },
 };

@@ -95,16 +95,6 @@ interface InventoryCheckApiResponse {
   };
 }
 
-interface OfferBannerResponse {
-  mainbanners: {
-    name: string;
-    status: '0' | '1';
-    image: string; // full url
-    start_time: string; // '2019-02-10 01:21:00';
-    end_time: string;
-  }[];
-}
-
 type GooglePlacesType =
   | 'postal_code'
   | 'locality'
@@ -124,6 +114,34 @@ interface PlacesApiResponse {
       types: GooglePlacesType[];
     }[];
   }[];
+}
+
+// MedicineLandingPageAPi
+interface MedicinePageSection {
+  category_id: string;
+  title: string;
+  image_url: string;
+}
+interface DealsOfTheDaySection {
+  category_id: string;
+  image_url: string;
+  position: number;
+}
+interface OfferBannerSection {
+  name: string;
+  status: '0' | '1';
+  image: string; // full url
+  start_time: string; // '2019-02-10 01:21:00';
+  end_time: string;
+}
+
+export interface MedicinePageAPiResponse {
+  mainbanners: OfferBannerSection[];
+  healthareas: MedicinePageSection[];
+  deals_of_the_day: DealsOfTheDaySection[];
+  shop_by_category: MedicinePageSection[];
+  shop_by_brand: MedicinePageSection[];
+  hot_sellers?: { products: MedicineProduct[] };
 }
 
 /*
@@ -430,7 +448,7 @@ export const getMedicineSearchSuggestionsApi = (
 };
 
 export const getProductsByCategoryApi = (
-  categoryId: String,
+  categoryId: string,
   pageId: number = 1
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   return Axios.get(
@@ -438,13 +456,13 @@ export const getProductsByCategoryApi = (
   );
 };
 
-export const getOfferBanner = (): Promise<AxiosResponse<OfferBannerResponse>> => {
+export const getMedicinePageProducts = (): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
   return Axios.post(
-    `${config.OFFER_BANNER[0]}`,
+    `${config.MEDICINE_PAGE[0]}`,
     {},
     {
       headers: {
-        Authorization: config.OFFER_BANNER[1],
+        Authorization: config.MEDICINE_PAGE[1],
       },
     }
   );

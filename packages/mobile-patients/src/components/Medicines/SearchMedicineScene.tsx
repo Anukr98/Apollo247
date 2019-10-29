@@ -1,7 +1,7 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CartIcon, Filter } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
@@ -42,6 +42,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import stripHtml from 'string-strip-html';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -252,7 +253,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       addCartItem({
         id: sku,
         mou,
-        name,
+        name: stripHtml(name),
         price: special_price
           ? typeof special_price == 'string'
             ? parseInt(special_price)
@@ -378,6 +379,8 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     );
   };
 
+  const [filterVisible, setFilterVisible] = useState(false);
+
   const renderHeader = () => {
     const cartItemsCount = cartItems.length;
     return (
@@ -397,7 +400,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            {/* <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            {/* <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
               <Filter />
             </TouchableOpacity> */}
           </View>
@@ -581,7 +584,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             title: medicine.name,
           });
         }}
-        medicineName={medicine.name}
+        medicineName={stripHtml(medicine.name)}
         imageUrl={
           medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
             ? `${medicine.thumbnail}`

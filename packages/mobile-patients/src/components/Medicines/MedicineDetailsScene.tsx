@@ -31,7 +31,6 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Image,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -39,11 +38,12 @@ import {
   View,
   Dimensions,
 } from 'react-native';
-import { Image as ImageElement } from 'react-native-elements';
+import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 
 const { width, height } = Dimensions.get('window');
+import stripHtml from 'string-strip-html';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -489,16 +489,16 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const filterHtmlContent = (content: string = '') => {
-    return content
-      .replace(/&amp;nbsp;/g, ' ')
-      .replace(/&amp;deg;/g, '°')
-      .replace(/&#039;/g, "'")
-      .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
-      .replace(/&amp;lt;br \/&amp;gt;/g, '\n')
-      .split('\n')
-      .filter((item) => item)
-      .join('\n')
-      .trim();
+    return stripHtml(content);
+    // .replace(/&amp;nbsp;/g, ' ')
+    // .replace(/&amp;deg;/g, '°')
+    // .replace(/&#039;/g, "'")
+    // .replace(/&amp;lt;br \/&amp;gt;. /g, '\n')
+    // .replace(/&amp;lt;br \/&amp;gt;/g, '\n')
+    // .split('\n')
+    // .filter((item) => item)
+    // .join('\n')
+    // .trim();
   };
 
   const renderTabComponent = () => {
@@ -615,7 +615,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     return (
       <View style={styles.iconOrImageContainerStyle}>
         {data.image ? (
-          <ImageElement
+          <Image
             placeholderStyle={styles.imagePlaceholderStyle}
             source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL + data.image }}
             style={{ height: 40, width: 40 }}
