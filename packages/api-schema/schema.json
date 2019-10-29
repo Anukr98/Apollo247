@@ -1196,7 +1196,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "notificationResult",
+                "name": "NotificationResult",
                 "ofType": null
               }
             },
@@ -10425,7 +10425,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "notificationResult",
+        "name": "NotificationResult",
         "description": null,
         "fields": [
           {
