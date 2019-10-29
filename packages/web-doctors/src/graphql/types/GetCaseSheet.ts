@@ -72,6 +72,40 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   displayId: string;
 }
 
+export interface DoctorSpecialities {
+  __typename: "Doctor Specialities";
+  createdDate: string | null;
+  id: string;
+  image: string;
+  name: string;
+  specialistSingularTerm: string | null;
+  specialistPluralTerm: string | null;
+  userFriendlyNomenclature: string | null;
+  displayOrder: number | null;
+}
+
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile {
+  __typename: "Created Doctor Profile";
+  city: string | null;
+  country: string | null;
+  doctorType: DoctorType;
+  delegateNumber: string | null;
+  emailAddress: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  gender: Gender;
+  id: string;
+  mobileNumber: string | null;
+  qualification: string | null;
+  salutation: string | null;
+  speciality: DoctorSpecialities;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zip: string | null;
+}
+
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {
   __typename: "MedicinePrescription";
   id: string | null;

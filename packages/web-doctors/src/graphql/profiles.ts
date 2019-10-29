@@ -297,6 +297,38 @@ export const GET_CASESHEET_JRD = gql`
           appointmentState
           displayId
         }
+        caseSheetDetails {
+          id
+          doctorId
+          sentToPatient
+          appointment {
+            id
+            appointmentDateTime
+            status
+            appointmentState
+            displayId
+          }
+          createdDoctorProfile {
+            city
+            country
+            doctorType
+            delegateNumber
+            emailAddress
+            firstName
+            lastName
+            gender
+            id
+            mobileNumber
+            qualification
+            salutation
+            speciality
+            state
+            streetLine1
+            streetLine2
+            streetLine3
+            zip
+          }
+        }
         medicinePrescription {
           id
           medicineName
