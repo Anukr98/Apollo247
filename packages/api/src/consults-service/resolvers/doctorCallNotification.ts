@@ -7,17 +7,22 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 
 export const doctorCallNotificationTypeDefs = gql`
+  type notificationResult {
+    status: Boolean!
+  }
   extend type Query {
-    sendCallNotification(appointmentId: String): Boolean!
+    sendCallNotification(appointmentId: String): notificationResult!
     sendApptNotification: Boolean!
   }
 `;
-
+type notificationResult = {
+  status: Boolean;
+};
 const sendCallNotification: Resolver<
   null,
   { appointmentId: string },
   ConsultServiceContext,
-  boolean
+  notificationResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.findById(args.appointmentId);
@@ -34,7 +39,7 @@ const sendCallNotification: Resolver<
   );
   console.log(notificationResult, 'doctor call appt notification');
 
-  return true;
+  return { status: true };
 };
 
 const sendApptNotification: Resolver<null, {}, ConsultServiceContext, boolean> = async (
