@@ -270,7 +270,7 @@ export const ConsultTabs: React.FC = () => {
       ? parseInt(params!.tabValue, 10)
       : 0
   );
-  const [isEnded, setIsEnded] = useState<boolean>(false);
+  const [urlToPatient, setUrlToPatient] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
@@ -407,9 +407,9 @@ export const ConsultTabs: React.FC = () => {
               ] as unknown) as string[])
             : setFollowUpDate([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
-            ? setAppointmentStatus(([
+            ? setAppointmentStatus(
                 _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status,
-              ] as unknown) as string)
+              )
             : setAppointmentStatus('');
             _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
             ? setSentToPatient(
@@ -425,6 +425,17 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED'
             ) {
               setIsPdfPageOpen(true);
+            }
+            if (
+              _data.data &&
+              _data.data.getCaseSheet &&
+              _data.data.getCaseSheet.caseSheetDetails &&
+              _data.data.getCaseSheet.caseSheetDetails!.blobName &&
+              _data.data.getCaseSheet.caseSheetDetails!.blobName !== undefined &&
+              _data.data.getCaseSheet.caseSheetDetails!.blobName !== ''
+            ) {
+              const url = storageClient.getBlobUrl(_data.data.getCaseSheet.caseSheetDetails.blobName);
+              setPrescriptionPdf(url);
             }
           if (
             _data.data &&
@@ -523,7 +534,6 @@ export const ConsultTabs: React.FC = () => {
     }
   }, []);
   const sendToPatientAction = (flag: boolean) => {
-    console.log(flag);
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
@@ -535,6 +545,7 @@ export const ConsultTabs: React.FC = () => {
       .then((_data) => {
         setSentToPatient(true);
         setIsPdfPageOpen(true);
+        setUrlToPatient(true);
       })
       .catch((e) => {
         setError('Error occured while sending prescription to patient');
@@ -675,7 +686,9 @@ export const ConsultTabs: React.FC = () => {
         // setIsPopoverOpen(true);
         //setIsPdfPopoverOpen(true);
         //setIsEnded(true);
+        setAppointmentStatus('COMPLETED');
         console.log('_data', _data);
+        setIsPdfPageOpen(true);
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -800,7 +813,7 @@ export const ConsultTabs: React.FC = () => {
                 appointmentId={appointmentId}
                 appointmentDateTime={appointmentDateTime}
                 doctorId={doctorId}
-                isEnded={isEnded}
+                urlToPatient={urlToPatient}
                 caseSheetId={caseSheetId}
                 prescriptionPdf={prescriptionPdf}
                 sessionId={sessionId}
@@ -808,7 +821,7 @@ export const ConsultTabs: React.FC = () => {
                 startAppointment={startAppointment}
                 startAppointmentClick={startAppointmentClick}
                 saving={saving}
-                appointmentStatus={appointmentStatus[0]}
+                appointmentStatus={appointmentStatus}
                 sentToPatient={sentToPatient}
                 isAppointmentEnded={isAppointmentEnded}
                 sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
@@ -927,11 +940,11 @@ export const ConsultTabs: React.FC = () => {
         </Paper>
       </Modal>
 
-      {isEnded && (
+      {/* {isEnded && (
         <div className={classes.tabPdfBody}>
           <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
         </div>
-      )}
+      )} */}
 
       <Dialog open={isConfirmDialogOpen} onClose={() => setIsConfirmDialogOpen(false)}>
         <DialogTitle>Are you sure you want to end your consult?</DialogTitle>
@@ -948,8 +961,8 @@ export const ConsultTabs: React.FC = () => {
               endConsultActionFinal();
               setIsConfirmDialogOpen(false);
               //setIsPopoverOpen(true);
-              setAppointmentStatus('COMPLETED');
-              console.log('appointmentStatus ', appointmentStatus);
+              //setAppointmentStatus('COMPLETED');
+              //console.log('appointmentStatus ', appointmentStatus);
             }}
             autoFocus
           >
