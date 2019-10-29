@@ -337,7 +337,7 @@ export const FollowUp: React.FC = () => {
   }, [consultType, shouldFollowUp, followUpDays, selectedDate]);
   // console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
   // console.log(followUpDays);
-  console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
+  // console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Typography component="div" className={classes.followUpContainer}>

@@ -1,5 +1,4 @@
-import React, { useContext, useState, useRef } from 'react';
-import { Theme } from '@material-ui/core';
+import React, { useContext, useState } from 'react';
 import { Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
