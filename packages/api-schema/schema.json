@@ -9934,7 +9934,7 @@
         "description": null,
         "fields": [
           {
-            "name": "medicineSku",
+            "name": "medicineSKU",
             "description": null,
             "args": [],
             "type": {

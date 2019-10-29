@@ -485,6 +485,36 @@ export const GET_CASESHEET = gql`
           appointmentState
           displayId
         }
+        createdDoctorProfile {
+          city
+          country
+          doctorType
+          delegateNumber
+          emailAddress
+          firstName
+          lastName
+          gender
+          id
+          mobileNumber
+          qualification
+          salutation
+          registrationNumber
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          zip
+        }
         medicinePrescription {
           id
           medicineName
@@ -555,6 +585,14 @@ export const GET_CASESHEET = gql`
         }
       }
       juniorDoctorNotes
+      juniorDoctorCaseSheet {
+        createdDate
+        createdDoctorProfile {
+          firstName
+          lastName
+          salutation
+        }
+      }
     }
   }
 `;
