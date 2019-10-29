@@ -110,14 +110,14 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightBold,
       color: '#fff',
       padding: '8px 16px',
-      backgroundColor: '#890000',
+      backgroundColor: '#fc9916',
       marginLeft: 20,
       minWidth: 168,
       marginRight: 10,
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
       '&:hover': {
-        backgroundColor: '#890000',
+        backgroundColor: '#e28913',
       },
       '& svg': {
         marginRight: 5,
@@ -500,6 +500,11 @@ const useStyles = makeStyles((theme: Theme) => {
       zIndex: 1,
       backgroundColor: '#f7f7f7',
       boxShadow: 'inset 0px 0px 10px 0 rgba(128,128,128,0.2)',
+    },
+    prescriptionSent: {
+      position: 'relative',
+      top: 4,
+      right: 15,
     },
   };
 });
@@ -1258,7 +1263,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     return '';
   };
-  console.log(props.appointmentStatus, props.sentToPatient);
+  const showCallMoreBtns =
+    props.appointmentStatus === 'COMPLETED' &&
+    props.sentToPatient === false &&
+    (isClickedOnPriview || props.sentToPatient === false) &&
+    !isClickedOnEdit
+      ? true
+      : false;
+  console.log(props.appointmentStatus, props.sentToPatient, showCallMoreBtns);
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
@@ -1282,7 +1294,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         <div className={classes.consultButtonContainer}>
           <span>
             {props.appointmentStatus === 'COMPLETED' && props.sentToPatient === true ? (
-              <span>
+              <span className={classes.prescriptionSent}>
                 PRESCRIPTION SENT
                 {/* <Button className={classes.backButton}>PRESCRIPTION SENT</Button> */}
               </span>
@@ -1412,14 +1424,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   Start Consult
                 </Button>
               ))}
-            <Button
-              className={classes.consultIcon}
-              aria-describedby={id}
-              variant="contained"
-              onClick={(e) => handleClick(e)}
-            >
-              <img src={require('images/ic_call.svg')} />
-            </Button>
+            {!showCallMoreBtns && (
+              <Button
+                className={classes.consultIcon}
+                aria-describedby={id}
+                variant="contained"
+                onClick={(e) => handleClick(e)}
+              >
+                <img src={require('images/ic_call.svg')} />
+              </Button>
+            )}
+
             <Popover
               id={id}
               open={open}
@@ -1471,21 +1486,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 </div>
               </Paper>
             </Popover>
-            <Button
-              className={classes.consultIcon}
-              aria-describedby={idThreeDots}
-              disabled={
-                props.isAppointmentEnded ||
-                (appointmentInfo!.appointmentState !== 'NEW' &&
-                  appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                  appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                  appointmentInfo!.status !== STATUS.PENDING)
-              }
-              onClick={(e) => handleClickThreeDots(e)}
-            >
-              <img src={require('images/ic_more.svg')} />
-            </Button>
+            {!showCallMoreBtns && (
+              <Button
+                className={classes.consultIcon}
+                aria-describedby={idThreeDots}
+                disabled={
+                  props.isAppointmentEnded ||
+                  (appointmentInfo!.appointmentState !== 'NEW' &&
+                    appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                    appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                    appointmentInfo!.status !== STATUS.PENDING)
+                }
+                onClick={(e) => handleClickThreeDots(e)}
+              >
+                <img src={require('images/ic_more.svg')} />
+              </Button>
+            )}
 
             <Popover
               id={idThreeDots}

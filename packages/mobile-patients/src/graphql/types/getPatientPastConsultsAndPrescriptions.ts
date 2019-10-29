@@ -96,7 +96,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems {
   __typename: "Medicine";
-  medicineSku: string | null;
+  medicineSKU: string | null;
   medicineName: string | null;
   price: number | null;
   quantity: number | null;

@@ -29,6 +29,7 @@ import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
+// import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 import {
   UpdatePatientPrescriptionSentStatus,
@@ -38,20 +39,20 @@ import {
 import {
   CREATE_APPOINTMENT_SESSION,
   GET_CASESHEET,
-  UPDATE_CASESHEET,
+  // UPDATE_CASESHEET,
   END_APPOINTMENT_SESSION,
   CREATE_CASESHEET_FOR_SRD,
-  GET_CASESHEET_JRD,
+  // GET_CASESHEET_JRD,
   MODIFY_CASESHEET,
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from 'graphql/profiles';
 
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
 
-import {
-  GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheetVariables,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
+// import {
+//   GetJuniorDoctorCaseSheet,
+//   GetJuniorDoctorCaseSheetVariables,
+// } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 import { CircularProgress } from '@material-ui/core';
 
@@ -78,6 +79,12 @@ import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { SEND_CALL_NOTIFICATION } from 'graphql/consults';
+import {
+  SendCallNotification,
+  SendCallNotificationVariables,
+} from 'graphql/types/SendCallNotification';
+// import { useLazyQuery } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -153,12 +160,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 50,
       backgroundColor: '#fff',
       borderRadius: 10,
-      padding: '0 40px 20px 40px',
+      padding: '0 20px 20px 20px',
       position: 'relative',
       '& h3': {
         fontSize: 20,
         fontWeight: 600,
-        marginBottom: 50,
+        marginBottom: 30,
         marginTop: 0,
         color: '#02475b',
       },
@@ -218,9 +225,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff',
       padding: '8px 16px',
       backgroundColor: '#fc9916',
-      marginTop: 15,
-      marginBottom: 25,
-      width: '100%',
+      width: 110,
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
       '&:hover': {
@@ -228,9 +233,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     cancelConsult: {
-      width: '100%',
+      width: 120,
       fontSize: 14,
       padding: '8px 16px',
+      marginRight: 15,
       fontWeight: 600,
       color: '#fc9916',
       backgroundColor: '#fff',
@@ -238,6 +244,19 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fff',
       },
+    },
+    popupDialog: {
+      maxWidth: 320,
+    },
+    headingTxt: {
+      fontSize: 20,
+      color: '#02475b',
+      fontWeight: 600,
+    },
+    contentTxt: {
+      marginTop: 30,
+      color: '#02475b',
+      fontSize: 14,
     },
   };
 });
@@ -338,6 +357,8 @@ export const ConsultTabs: React.FC = () => {
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
   const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
+  const [jrdName, setJrdName] = useState<string>('');
+  const [jrdSubmitDate, setJrdSubmitDate] = useState<string>('');
 
   /* case sheet data*/
 
@@ -500,6 +521,58 @@ export const ConsultTabs: React.FC = () => {
           setLifeStyle(
             patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
           );
+
+          // set Jrd name and Jrd Casesheet submit date.
+          let jrdSalutation = '',
+            jrdFirstName = '',
+            jrdLastName = '';
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate
+          ) {
+            setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate);
+          }
+
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName
+          ) {
+            jrdFirstName =
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName;
+          }
+
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName
+          ) {
+            jrdLastName =
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
+          }
+
+          // if (
+          //   _data &&
+          //   _data.data &&
+          //   _data.data.getCaseSheet &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation
+          // ) {
+          //   jrdSalutation =
+          //     _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation;
+          // }
+
+          setJrdName(`${jrdFirstName} ${jrdLastName}`);
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -532,6 +605,20 @@ export const ConsultTabs: React.FC = () => {
       };
     }
   }, []);
+
+  const sendCallNotificationFn = () => {
+    client
+      .query<SendCallNotification, SendCallNotificationVariables>({
+        query: SEND_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: appointmentId },
+      })
+      .catch((error: ApolloError) => {
+        console.log('Error in Call Notification', error.message);
+        alert('An error occurred while sending notification to Client.');
+      });
+  };
+
   const sendToPatientAction = (flag: boolean) => {
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
@@ -721,6 +808,9 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error occured creating session', e);
         setSaving(false);
       });
+
+    // call this function to send notification.
+    //sendCallNotificationFn();
   };
 
   const setStartConsultAction = (flag: boolean) => {
@@ -729,6 +819,7 @@ export const ConsultTabs: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
+      sendCallNotificationFn();
     }, 10);
   };
 
@@ -751,6 +842,8 @@ export const ConsultTabs: React.FC = () => {
             caseSheetId: appointmentId,
             patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
             appointmentInfo: casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment,
+            createdDoctorProfile: casesheetInfo!.getCaseSheet!.caseSheetDetails!
+              .createdDoctorProfile,
             symptoms,
             setSymptoms,
             notes,
@@ -800,6 +893,8 @@ export const ConsultTabs: React.FC = () => {
             setBp,
             setTemperature,
             setGender,
+            jrdName,
+            jrdSubmitDate,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
@@ -883,8 +978,8 @@ export const ConsultTabs: React.FC = () => {
         </CaseSheetContext.Provider>
       )}
       <Modal
-        open={isPopoverOpen}
-        onClose={() => setIsPopoverOpen(false)}
+        open={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
         disableBackdropClick
         disableEscapeKeyDown
       >
@@ -894,14 +989,14 @@ export const ConsultTabs: React.FC = () => {
               <img
                 src={require('images/ic_cross.svg')}
                 alt=""
-                onClick={() => setIsPopoverOpen(false)}
+                onClick={() => setIsConfirmDialogOpen(false)}
               />
             </Button>
           </div>
           <div className={classes.tabBody}>
             <h3>
-              You're ending your consult with{' '}
-              {casesheetInfo &&
+              Are you sure you want to end your consult?
+              {/* {casesheetInfo &&
                 casesheetInfo !== null &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName !== '' &&
@@ -912,29 +1007,34 @@ export const ConsultTabs: React.FC = () => {
                       casesheetInfo!.getCaseSheet!.patientDetails!.lastName
                     }.`}
                   </span>
-                )}
+                )} */}
             </h3>
-            <Button
-              className={classes.consultButton}
-              //disabled={startAppointmentButton}
-              onClick={() => {
-                setIsPopoverOpen(false);
-                endConsultActionFinal();
-                setCaseSheetEdit(false);
-                setIsPdfPageOpen(true);
-                setIsAppointmentEnded(true);
-              }}
-            >
-              PREVIEW PRESCRIPTION
-            </Button>
+
             <Button
               className={classes.cancelConsult}
+              //disabled={startAppointmentButton}
+              onClick={() => setIsConfirmDialogOpen(false)}
+            >
+              No
+            </Button>
+            <Button
+              className={classes.consultButton}
               onClick={() => {
-                setIsPopoverOpen(false);
+                endConsultActionFinal();
+                setIsConfirmDialogOpen(false);
+                //setIsPopoverOpen(true);
+                //setAppointmentStatus('COMPLETED');
+                //console.log('appointmentStatus ', appointmentStatus);
               }}
             >
-              EDIT CASE SHEET
+              Yes
             </Button>
+          </div>
+          <div className={classes.contentTxt}>
+            <span>
+              After ending the consult you will get the option to preview/edit case sheet and send
+              prescription to the patient
+            </span>
           </div>
         </Paper>
       </Modal>
@@ -945,11 +1045,14 @@ export const ConsultTabs: React.FC = () => {
         </div>
       )} */}
 
-      <Dialog open={isConfirmDialogOpen} onClose={() => setIsConfirmDialogOpen(false)}>
-        <DialogTitle>Are you sure you want to end your consult?</DialogTitle>
-        {/* <DialogContent>
-          <DialogContentText>Please enter diagnosis</DialogContentText>
-        </DialogContent> */}
+      {/* <Dialog
+        open={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        className={classes.popupDialog}
+      >
+        <DialogTitle className={classes.headingTxt}>
+          Are you sure you want to end your consult?
+        </DialogTitle>
         <DialogActions>
           <Button color="primary" onClick={() => setIsConfirmDialogOpen(false)} autoFocus>
             No
@@ -973,12 +1076,8 @@ export const ConsultTabs: React.FC = () => {
               prescription to the patient
             </DialogContentText>
           </DialogContent>
-          {/* <Typography>
-            After ending the consult you will get the option to preview/edit case sheet and send
-            prescription to the patient
-          </Typography> */}
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };

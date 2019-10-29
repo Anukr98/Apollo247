@@ -27,7 +27,7 @@ import { Button } from '../ui/Button';
 import RNFetchBlob from 'react-native-fetch-blob';
 import { Spinner } from '../ui/Spinner';
 import { useShoppingCart, ShoppingCartItem } from '../ShoppingCartProvider';
-import { CartItem, getMedicineDetailsApi } from '../../helpers/apiCalls';
+import { getMedicineDetailsApi } from '../../helpers/apiCalls';
 import { AppRoutes } from '../NavigatorContainer';
 import moment from 'moment';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
@@ -103,6 +103,8 @@ export interface RecordDetailsProps extends NavigationScreenProps {}
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const [loading, setLoading] = useState<boolean>(false);
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
+  console.log('a', data);
+
   const me = props.navigation.state.params ? props.navigation.state.params.medicineDate : {};
   const url = props.navigation.state.params ? props.navigation.state.params.PrescriptionUrl : {};
   var arr = url.split(',');
@@ -110,15 +112,14 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
   const addToCart = () => {
-    if (!data.medicineSku) {
+    if (!data.medicineSKU) {
       Alert.alert('Alert', 'Item not available.');
       return;
     }
     setLoading(true);
-    getMedicineDetailsApi(data.medicineSku)
+    getMedicineDetailsApi(data.medicineSKU)
       .then(({ data: { productdp } }) => {
         setLoading(false);
-
         const medicineDetails = (productdp && productdp[0]) || {};
         const isInStock = medicineDetails.is_in_stock;
         if (!isInStock) {
@@ -301,7 +302,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
         >
           <Button
             title="RE-ORDER MEDICINES"
-            disabled={data.medicineSku == null ? true : false}
+            disabled={data.medicineSKU == null ? true : false}
             onPress={() => {
               addToCart();
             }}

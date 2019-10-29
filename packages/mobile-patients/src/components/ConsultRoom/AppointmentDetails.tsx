@@ -651,7 +651,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   style={styles.gotItStyles}
                   onPress={() => {
                     setShowCancelPopup(false);
-                    setdisplayoverlay(true);
+                    NextAvailableSlotAPI();
                   }}
                 >
                   <Text style={styles.gotItTextStyles}>{'RESCHEDULE INSTEAD'}</Text>
