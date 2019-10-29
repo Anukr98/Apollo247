@@ -39,6 +39,7 @@ import {
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { STATUS, APPOINTMENT_STATE } from '../../graphql/types/globalTypes';
+import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -186,6 +187,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   useEffect(() => {
+    CommonScreenLog('Consult', 'Consult');
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -512,6 +514,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 activeOpacity={1}
                 style={[styles.doctorView]}
                 onPress={() => {
+                  CommonLogEvent('Consult Online', 'Consult Online clicked');
                   item.appointmentType === 'ONLINE'
                     ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
                         data: item,
@@ -692,6 +695,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
+                            CommonLogEvent('Consult Online', 'Consult Online clicked');
                             item.appointmentType === 'ONLINE'
                               ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
                                   data: item,
@@ -709,6 +713,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
+                            CommonLogEvent('Chat Room', 'Chat Room Move clicked');
                             props.navigation.navigate(AppRoutes.ChatRoom, {
                               data: item,
                             });
@@ -725,6 +730,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
+                          CommonLogEvent('Chat Room', 'Chat Room Move clicked');
                           props.navigation.navigate(AppRoutes.ChatRoom, {
                             data: item,
                           });
@@ -852,6 +858,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 title={string.home.consult_doctor}
                 style={styles.buttonStyles}
                 onPress={() => {
+                  CommonLogEvent(AppRoutes.SymptomChecker, ' SymptomChecker clicked');
                   props.navigation.navigate(AppRoutes.SymptomChecker, { Consult: 'Consult' });
                 }}
               />
@@ -901,6 +908,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             <TouchableOpacity
               style={styles.gotItStyles}
               onPress={() => {
+                CommonLogEvent('Consult Bootom PopUp', 'Consult Bootom PopUp clicked');
                 AsyncStorage.setItem('showSchduledPopup', 'false');
                 setShowSchdulesView(false);
               }}

@@ -51,6 +51,7 @@ import {
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { ArrowRight } from '../ui/Icons';
+import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const { width } = Dimensions.get('window');
 
@@ -157,6 +158,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
+    CommonScreenLog('Doctor Search', 'Doctor Search');
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -451,9 +453,14 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           titleTextStyle={styles.rowTextStyles}
           onPress={() => {
             if (rowData.searchType === 'DOCTOR') {
+              CommonLogEvent('Doctor Search Move', 'Doctor Search Move clicked');
               props.navigation.navigate(AppRoutes.DoctorDetails, { doctorId: rowData.typeId });
             }
             if (rowData.searchType === 'SPECIALTY') {
+              CommonLogEvent(
+                'Doctor Search Move SPECIALTY',
+                'Doctor Search Move  SPECIALTY clicked'
+              );
               if (rowData.typeId && rowData.name) onClickSearch(rowData.typeId, rowData.name);
               // props.navigation.navigate('DoctorSearchListing', { speciality: rowData.name });
             }
@@ -519,6 +526,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
+                CommonLogEvent('Doctor Search Speciality', 'Doctor Search Speciality clicked');
                 onClickSearch(rowData.id, rowData.name);
                 const searchInput = {
                   type: SEARCH_TYPE.SPECIALTY,
@@ -638,6 +646,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
+                CommonLogEvent(
+                  'renderSearchDoctorResultsRow',
+                  'renderSearchDoctorResultsRow clicked'
+                );
                 const searchInput = {
                   type: SEARCH_TYPE.DOCTOR,
                   typeId: rowData.id,
@@ -682,6 +694,10 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
               rowData={rowData}
               navigation={props.navigation}
               onPress={() => {
+                CommonLogEvent(
+                  'renderPossibleDoctorResultsRow',
+                  'renderPossibleDoctorResultsRow clicked'
+                );
                 const searchInput = {
                   type: SEARCH_TYPE.DOCTOR,
                   typeId: rowData.id,

@@ -41,6 +41,7 @@ import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
+import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -163,6 +164,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
+    CommonScreenLog('Doctor Details', 'Doctor Details');
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -617,6 +619,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     <View style={{ width: width - 50 }} key={item.associatedDoctor.id}>
                       <DoctorCard
                         onPress={(doctorId) => {
+                          CommonLogEvent('AssociateDoctorDetails Move', 'Login clicked');
                           props.navigation.navigate(AppRoutes.AssociateDoctorDetails, {
                             doctorId: doctorId,
                           });

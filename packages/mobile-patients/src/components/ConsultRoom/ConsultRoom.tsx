@@ -538,24 +538,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               key={i}
               onPress={() => {
                 if (i === 0) {
-                  firebase.analytics().logEvent('CONSULT_ROOM', {
-                    'button click': 'CONSULT_ROOM',
-                  });
+                  CommonLogEvent('CONSULT_ROOM', 'CONSULT_ROOM clicked');
                   props.navigation.navigate('CONSULT ROOM');
                 } else if (i == 1) {
-                  firebase.analytics().logEvent('HEALTH_RECORDS', {
-                    'button click': 'HEALTH_RECORDS',
-                  });
+                  CommonLogEvent('HEALTH_RECORDS', 'HEALTH_RECORDS clicked');
                   props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
-                  firebase.analytics().logEvent('MEDICINES', {
-                    'button click': 'MEDICINES',
-                  });
+                  CommonLogEvent('MEDICINES', 'MEDICINES clicked');
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
-                  firebase.analytics().logEvent('MY_ACCOUNT', {
-                    'button click': 'MY_ACCOUNT',
-                  });
+                  CommonLogEvent('MY_ACCOUNT', 'MY_ACCOUNT clicked');
                   props.navigation.navigate('MY ACCOUNT');
                 }
               }}
@@ -609,7 +601,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
               onPress={() => {
-                CommonLogEvent(AppRoutes.Login, 'Login clicked');
+                CommonLogEvent(AppRoutes.SymptomChecker, 'symptom checker  clicked');
                 props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
               }}
             />
@@ -662,8 +654,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   key={i}
                   onPress={() => {
                     if (i === 0) {
+                      CommonLogEvent(AppRoutes.DoctorSearch, 'DoctorSearch_clicked');
                       props.navigation.navigate(AppRoutes.DoctorSearch);
                     } else if (i == 1) {
+                      CommonLogEvent(AppRoutes.DoctorSearch, 'DoctorSearch_clicked');
                       props.navigation.navigate(AppRoutes.SearchMedicineScene);
                     }
                   }}
@@ -737,6 +731,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               activeOpacity={1}
               style={styles.gotItStyles}
               onPress={() => {
+                CommonLogEvent('ConsultRoom_BottomPopUp', 'ConsultRoom_BottomPopUp clicked');
                 AsyncStorage.setItem('gotIt', 'true');
                 setshowPopUp(false);
               }}
