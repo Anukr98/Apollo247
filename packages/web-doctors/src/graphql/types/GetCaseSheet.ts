@@ -107,13 +107,13 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
   mobileNumber: string;
   qualification: string | null;
   salutation: Salutation | null;
+  registrationNumber: string | null;
   specialty: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_specialty;
   state: string | null;
   streetLine1: string | null;
   streetLine2: string | null;
   streetLine3: string | null;
   zip: string | null;
-  registrationNumber: string | null;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {
