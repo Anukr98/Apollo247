@@ -19,7 +19,7 @@ export class FacilityRepository extends Repository<Facility> {
   getFacilityUniqueTerm(facility: Partial<Facility>) {
     let facilityName = '';
     if (facility.name) facilityName = facility.name.trim().toLowerCase();
-    if (facility.streetLine1) facilityName += '_' + facility.streetLine1.trim().toLowerCase();
+    //if (facility.streetLine1) facilityName += '_' + facility.streetLine1.trim().toLowerCase();
     return facilityName;
   }
 
@@ -54,7 +54,10 @@ export class FacilityRepository extends Repository<Facility> {
 
     uniqueFacilities.forEach((facility) => {
       allExistingFacilities.forEach((existingFacility) => {
-        if (this.getFacilityUniqueTerm(facility) == this.getFacilityUniqueTerm(existingFacility)) {
+        if (
+          this.getFacilityUniqueTerm(facility).toLowerCase() ==
+          this.getFacilityUniqueTerm(existingFacility).toLowerCase()
+        ) {
           facility.id = existingFacility.id;
           facility.updatedDate = new Date();
           return;
