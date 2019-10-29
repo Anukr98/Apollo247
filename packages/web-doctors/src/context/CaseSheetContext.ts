@@ -25,7 +25,7 @@ export interface CaseSheetContextProps {
       >
     | (() => void);
   notes: string | null;
-  setNotes: React.Dispatch<React.SetStateAction<string | null>> | (() => void);
+  setSRDNotes: React.Dispatch<React.SetStateAction<string | null>> | (() => void);
   juniorDoctorNotes: string | null;
   diagnosis: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null;
   setDiagnosis:
@@ -67,7 +67,6 @@ export interface CaseSheetContextProps {
   setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   healthVault: GetCaseSheet_getCaseSheet_patientDetails_healthVault[] | null;
   pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
-  setCasesheetNotes: (notes: string) => void;
 
   height: string;
   weight: string;
@@ -107,7 +106,7 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   symptoms: null,
   setSymptoms: () => {},
   notes: null,
-  setNotes: () => {},
+  setSRDNotes: () => {},
   juniorDoctorNotes: null,
   diagnosis: null,
   setDiagnosis: () => {},
@@ -127,7 +126,6 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setFollowUpDate: () => {},
   healthVault: null,
   pastAppointments: null,
-  setCasesheetNotes: (notes: string) => {},
 
   height: '',
   weight: '',

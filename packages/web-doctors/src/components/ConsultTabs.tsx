@@ -299,7 +299,7 @@ export const ConsultTabs: React.FC = () => {
     GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
 
-  const [notes, setNotes] = useState<string | null>(null);
+  const [notes, setSRDNotes] = useState<string | null>(null);
   const [juniorDoctorNotes, setJuniorDoctorNotes] = useState<string | null>(null);
   const [consultType, setConsultType] = useState<string[]>([]);
   const [followUp, setFollowUp] = useState<boolean[]>([]);
@@ -307,6 +307,7 @@ export const ConsultTabs: React.FC = () => {
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
   const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
+
   const [bp, setBp] = useState<string>('');
   const [height, setHeight] = useState<string>('');
   const [temperature, setTemperature] = useState<string>('');
@@ -321,13 +322,14 @@ export const ConsultTabs: React.FC = () => {
   const [gender, setGender] = useState<string>('');
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
+
   /* case sheet data*/
 
   /* need to be worked later */
-  let customNotes = '';
-  const setCasesheetNotes = (notes: string) => {
-    customNotes = notes; // this will be used in saving case sheet.
-  };
+  // let customNotes = '';
+  // const setCasesheetNotes = (notes: string) => {
+  //   customNotes = notes; // this will be used in saving case sheet.
+  // };
 
   useEffect(() => {
     if (isSignedIn) {
@@ -365,8 +367,8 @@ export const ConsultTabs: React.FC = () => {
                 .medicinePrescription as unknown) as GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[])
             : setMedicinePrescription([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.notes
-            ? setNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
-            : setNotes('');
+            ? setSRDNotes((_data!.data!.getCaseSheet!.caseSheetDetails!.notes as unknown) as string)
+            : setSRDNotes('');
           _data!.data!.getCaseSheet!.juniorDoctorNotes
             ? setJuniorDoctorNotes((_data!.data!.getCaseSheet!
                 .juniorDoctorNotes as unknown) as string)
@@ -376,7 +378,6 @@ export const ConsultTabs: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.consultType,
               ] as unknown) as string[])
             : setConsultType([]);
-          console.log(_data!.data!.getCaseSheet!.caseSheetDetails!.followUp);
           _data!.data!.getCaseSheet!.caseSheetDetails!.followUp
             ? setFollowUp(([
                 _data!.data!.getCaseSheet!.caseSheetDetails!.followUp,
@@ -412,7 +413,6 @@ export const ConsultTabs: React.FC = () => {
             _data.data.getCaseSheet.patientDetails &&
             _data.data.getCaseSheet.patientDetails.patientMedicalHistory
           ) {
-            console.log(_data.data.getCaseSheet.patientDetails.patientMedicalHistory);
             setBp(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.bp || '');
             setDietAllergies(
               _data.data.getCaseSheet.patientDetails.patientMedicalHistory.dietAllergies || ''
@@ -435,6 +435,28 @@ export const ConsultTabs: React.FC = () => {
             );
             setWeight(_data.data.getCaseSheet.patientDetails.patientMedicalHistory.weight || '');
           }
+
+          const patientFamilyHistory =
+            _data!.data!.getCaseSheet!.patientDetails &&
+            _data!.data!.getCaseSheet!.patientDetails!.familyHistory
+              ? _data!.data!.getCaseSheet!.patientDetails!.familyHistory[0]
+              : null;
+
+          const patientLifeStyle =
+            _data!.data!.getCaseSheet!.patientDetails &&
+            _data!.data!.getCaseSheet!.patientDetails!.lifeStyle
+              ? _data!.data!.getCaseSheet!.patientDetails!.lifeStyle[0]
+              : null;
+
+          setFamilyHistory(
+            patientFamilyHistory && patientFamilyHistory!.description
+              ? patientFamilyHistory!.description
+              : ''
+          );
+
+          setLifeStyle(
+            patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
+          );
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -469,6 +491,13 @@ export const ConsultTabs: React.FC = () => {
   }, []);
 
   const saveCasesheetAction = (flag: boolean) => {
+    // followUp: followUp[0],
+    // followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
+    // followUpAfterInDays:
+    //   followUp[0] && followUpAfterInDays[0] !== 'Custom' ? followUpAfterInDays[0] : null,
+
+    // console.log(followUp, followUpAfterInDays, 'follow up......');
+
     // console.log(
     //   pastMedicalHistory,
     //   pastSurgicalHistory,
@@ -478,6 +507,8 @@ export const ConsultTabs: React.FC = () => {
     //   drugAllergies,
     //   dietAllergies
     // );
+
+    // console.log('notes...', customNotes);
 
     // this condition is written to avoid __typename from already existing data
     let symptomsFinal = null,
@@ -511,17 +542,28 @@ export const ConsultTabs: React.FC = () => {
       });
     }
     setSaving(true);
+
+    // this needs to be fixed.
+    const followupISODate = new Date(followUpDate[0]).toISOString();
+    const followupDateArray = followupISODate.split('T');
+
+    console.log(followupISODate, 'iso date......');
+
     client
       .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
         mutation: MODIFY_CASESHEET,
         variables: {
           ModifyCaseSheetInput: {
             symptoms: symptomsFinal,
-            notes: notes && notes.length > 0 ? notes : null,
+            notes: notes,
             diagnosis: diagnosisFinal,
             diagnosticPrescription: diagnosticPrescriptionFinal,
-            followUp: false,
-            followUpAfterInDays: 0,
+            followUp: followUp[0],
+            followUpDate: followupDateArray[0],
+            followUpAfterInDays:
+              followUp[0] && followUpAfterInDays[0] !== 'Custom'
+                ? parseInt(followUpAfterInDays[0], 10)
+                : 0,
             otherInstructions: otherInstructionsFinal,
             medicinePrescription: medicinePrescriptionFinal,
             id: caseSheetId,
@@ -647,7 +689,7 @@ export const ConsultTabs: React.FC = () => {
             symptoms,
             setSymptoms,
             notes,
-            setNotes,
+            setSRDNotes,
             juniorDoctorNotes,
             diagnosis,
             setDiagnosis,
@@ -669,7 +711,6 @@ export const ConsultTabs: React.FC = () => {
             setFollowUpDate,
             healthVault: casesheetInfo!.getCaseSheet!.patientDetails!.healthVault,
             pastAppointments: casesheetInfo!.getCaseSheet!.pastAppointments,
-            setCasesheetNotes,
             height,
             weight,
             bp,

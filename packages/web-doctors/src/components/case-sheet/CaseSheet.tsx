@@ -8,10 +8,9 @@ import {
   ExpansionPanelDetails,
   Divider,
   Box,
-  TextField,
-  InputBase,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { AphTextField } from '@aph/web-ui-components';
 import {
   Symptoms,
   LifeStyle,
@@ -242,7 +241,10 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     }
   };
 
-  const { setCasesheetNotes, notes, caseSheetEdit } = useContext(CaseSheetContext);
+  const { notes, setSRDNotes } = useContext(CaseSheetContext);
+
+  console.log('notes in casesheet', notes);
+
   return (
     <div className={classes.container}>
       <div className={classes.caseSheet}>
@@ -270,13 +272,13 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           Personal Notes
         </Typography>
         <Typography component="div" className={classes.textFieldWrapper}>
-          <InputBase
+          <AphTextField
             fullWidth
             className={classes.textFieldColor}
             placeholder="What you enter here won't be shown to the patient.."
             defaultValue={notes}
-            onChange={(e) => {
-              setCasesheetNotes(e.target.value);
+            onBlur={(e) => {
+              setSRDNotes(e.target.value);
             }}
           />
         </Typography>
