@@ -30,7 +30,10 @@ import {
   EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
 import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
-import { UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables } from 'graphql/types/UpdatePatientPrescriptionSentStatus';
+import {
+  UpdatePatientPrescriptionSentStatus,
+  UpdatePatientPrescriptionSentStatusVariables,
+} from 'graphql/types/UpdatePatientPrescriptionSentStatus';
 
 import {
   CREATE_APPOINTMENT_SESSION,
@@ -40,7 +43,7 @@ import {
   CREATE_CASESHEET_FOR_SRD,
   GET_CASESHEET_JRD,
   MODIFY_CASESHEET,
-  UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS
+  UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from 'graphql/profiles';
 
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
@@ -407,36 +410,32 @@ export const ConsultTabs: React.FC = () => {
               ] as unknown) as string[])
             : setFollowUpDate([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
-            ? setAppointmentStatus(
-                _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status,
-              )
+            ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
             : setAppointmentStatus('');
-            _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
-            ? setSentToPatient(
-                _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient,
-              )
+          _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
+            ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
             : setSentToPatient(false);
-            if (
-              _data.data &&
-              _data.data.getCaseSheet &&
-              _data.data.getCaseSheet.caseSheetDetails &&
-              _data.data.getCaseSheet.caseSheetDetails.appointment && 
-              _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
-              _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED'
-            ) {
-              setIsPdfPageOpen(true);
-            }
-            if (
-              _data.data &&
-              _data.data.getCaseSheet &&
-              _data.data.getCaseSheet.caseSheetDetails &&
-              _data.data.getCaseSheet.caseSheetDetails!.blobName &&
-              _data.data.getCaseSheet.caseSheetDetails!.blobName !== undefined &&
-              _data.data.getCaseSheet.caseSheetDetails!.blobName !== ''
-            ) {
-              const url = storageClient.getBlobUrl(_data.data.getCaseSheet.caseSheetDetails.blobName);
-              setPrescriptionPdf(url);
-            }
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED'
+          ) {
+            setIsPdfPageOpen(true);
+          }
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails!.blobName &&
+            _data.data.getCaseSheet.caseSheetDetails!.blobName !== undefined &&
+            _data.data.getCaseSheet.caseSheetDetails!.blobName !== ''
+          ) {
+            const url = storageClient.getBlobUrl(_data.data.getCaseSheet.caseSheetDetails.blobName);
+            setPrescriptionPdf(url);
+          }
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -538,9 +537,9 @@ export const ConsultTabs: React.FC = () => {
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
         variables: {
-            caseSheetId: caseSheetId,
-            sentToPatient: true
-        }
+          caseSheetId: caseSheetId,
+          sentToPatient: true,
+        },
       })
       .then((_data) => {
         setSentToPatient(true);
@@ -552,7 +551,7 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error occured while sending prescription to patient', e);
         setSaving(false);
       });
-  }
+  };
   const saveCasesheetAction = (flag: boolean) => {
     // followUp: followUp[0],
     // followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
