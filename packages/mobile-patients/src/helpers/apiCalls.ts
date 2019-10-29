@@ -389,6 +389,6 @@ export const getPlaceInfoByPincode = (
   pincode: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
   const apiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&sensor=true&key=${apiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${apiKey}`;
   return Axios.get(url);
 };

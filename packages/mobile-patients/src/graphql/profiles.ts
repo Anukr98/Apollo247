@@ -533,6 +533,23 @@ export const SAVE_PATIENT_ADDRESS = gql`
     }
   }
 `;
+export const UPDATE_PATIENT_ADDRESS = gql`
+  mutation updatePatientAddress($UpdatePatientAddressInput: UpdatePatientAddressInput!) {
+    updatePatientAddress(UpdatePatientAddressInput: $UpdatePatientAddressInput) {
+      patientAddress {
+        id
+        addressLine1
+        addressLine2
+        city
+        state
+        zipcode
+        landmark
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
 
 export const GET_PATIENT_ADDRESS_LIST = gql`
   query getPatientAddressList($patientId: String) {
@@ -1007,7 +1024,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
         prescriptionImageUrl
         shopId
         medicineOrderLineItems {
-          medicineSku
+          medicineSKU
           medicineName
           price
           quantity
