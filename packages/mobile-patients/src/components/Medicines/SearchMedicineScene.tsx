@@ -624,22 +624,25 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             color="green"
           />
         ) : (
-          <FlatList
-            onScroll={() => Keyboard.dismiss()}
-            data={medicineList}
-            renderItem={({ item, index }) => renderMedicineCard(item, index, medicineList)}
-            keyExtractor={(_, index) => `${index}`}
-            bounces={false}
-            ListHeaderComponent={
-              (medicineList.length > 0 && (
-                <SectionHeaderComponent
-                  sectionTitle={`Matching Medicines — ${medicineList.length}`}
-                  style={{ marginBottom: 0 }}
-                />
-              )) ||
-              null
-            }
-          />
+          !!searchText &&
+          searchText.length > 2 && (
+            <FlatList
+              onScroll={() => Keyboard.dismiss()}
+              data={medicineList}
+              renderItem={({ item, index }) => renderMedicineCard(item, index, medicineList)}
+              keyExtractor={(_, index) => `${index}`}
+              bounces={false}
+              ListHeaderComponent={
+                (medicineList.length > 0 && (
+                  <SectionHeaderComponent
+                    sectionTitle={`Matching Medicines — ${medicineList.length}`}
+                    style={{ marginBottom: 0 }}
+                  />
+                )) ||
+                null
+              }
+            />
+          )
         )}
       </>
     );

@@ -353,6 +353,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               height: 45,
               width: 80,
             }}
+            resizeMode="contain"
           />
         </View>
       </TouchableOpacity>
@@ -419,7 +420,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               () =>
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
-                  title: `Search ${item.title || 'Products'}`.toUpperCase(),
+                  title: `${item.title || 'Products'}`.toUpperCase(),
                 }),
               {
                 // marginRight: 8,
@@ -452,7 +453,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 onPress={() => {
                   props.navigation.navigate(AppRoutes.SearchByBrand, {
                     category_id: item.category_id,
-                    title: 'SEARCH DEALS OF THE DAY',
+                    title: 'DEALS OF THE DAY',
                   });
                 }}
               >
@@ -555,7 +556,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           {renderDiscountedPrice()}
           <Text
             style={{
-              ...theme.viewStyles.text('B', 13, '#fc9916', data.isAddedToCart ? 0.5 : 1, 24),
+              ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
               textAlign: 'center',
             }}
             onPress={data.onAddOrRemoveCartItem}
@@ -643,7 +644,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           keyExtractor={(_, index) => `${index}`}
           showsHorizontalScrollIndicator={false}
           horizontal
-          data={shopByBrand}
+          data={shopByCategory}
           renderItem={({ item, index }) => {
             return renderCatalogCard(
               item.title,
@@ -651,7 +652,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               () =>
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
-                  title: `Search ${item.title || 'Products'}`.toUpperCase(),
+                  title: `${item.title || 'Products'}`.toUpperCase(),
                 }),
               {
                 // marginRight: 8,
@@ -684,7 +685,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           keyExtractor={(_, index) => `${index}`}
           showsHorizontalScrollIndicator={false}
           horizontal
-          data={shopByCategory}
+          data={shopByBrand}
           renderItem={({ item, index }) => {
             const imgUrl = `${config.IMAGES_BASE_URL[0].replace('/catalog/product', '')}${
               item.image_url.startsWith('/') ? item.image_url : `/${item.image_url}`
@@ -694,7 +695,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               () =>
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
-                  title: `Search ${item.title || 'Products'}`.toUpperCase(),
+                  title: `${item.title || 'Products'}`.toUpperCase(),
                 }),
               {
                 // marginRight: 8,
@@ -920,8 +921,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: item.sku,
         });
-        setSearchText('');
-        setMedicineList([]);
       },
       name: item.name,
       price: item.price,
@@ -938,7 +937,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderSearchSuggestions = () => {
-    if (medicineList.length == 0) return null;
+    // if (medicineList.length == 0) return null;
     return (
       <View style={{ width: '100%' }}>
         {searchSate == 'load' ? (
@@ -946,19 +945,22 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             {renderSectionLoader(200)}
           </View>
         ) : (
-          <FlatList
-            // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
-            bounces={false}
-            keyExtractor={(_, index) => `${index}`}
-            showsVerticalScrollIndicator={false}
-            style={{
-              paddingTop: 10.5,
-              maxHeight: 266,
-              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-            }}
-            data={medicineList}
-            renderItem={renderSearchSuggestionItemView}
-          />
+          !!searchText &&
+          searchText.length > 2 && (
+            <FlatList
+              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+              bounces={false}
+              keyExtractor={(_, index) => `${index}`}
+              showsVerticalScrollIndicator={false}
+              style={{
+                paddingTop: 10.5,
+                maxHeight: 266,
+                backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+              }}
+              data={medicineList}
+              renderItem={renderSearchSuggestionItemView}
+            />
+          )
         )}
       </View>
     );
@@ -968,7 +970,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <View
         style={[
-          medicineList.length > 0
+          medicineList.length > 0 && !!searchText && searchText.length > 2
             ? {
                 width: '100%',
                 height: '100%',
@@ -1034,6 +1036,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       <SafeAreaView style={{ ...viewStyles.container }}>
         {renderTopView()}
         <ScrollView
+          keyboardShouldPersistTaps="always"
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
           bounces={false}

@@ -60,7 +60,7 @@ const Configuration = {
   // PRO_PUBNUB_PUBLISH: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
   // PRO_PUBNUB_SUBSCRIBER: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
-  ...PharmaApiConfig.dev,
+  ...PharmaApiConfig.prod,
 };
 
 // QA
