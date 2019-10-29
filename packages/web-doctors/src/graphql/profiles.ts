@@ -297,38 +297,6 @@ export const GET_CASESHEET_JRD = gql`
           appointmentState
           displayId
         }
-        caseSheetDetails {
-          id
-          doctorId
-          sentToPatient
-          appointment {
-            id
-            appointmentDateTime
-            status
-            appointmentState
-            displayId
-          }
-          createdDoctorProfile {
-            city
-            country
-            doctorType
-            delegateNumber
-            emailAddress
-            firstName
-            lastName
-            gender
-            id
-            mobileNumber
-            qualification
-            salutation
-            speciality
-            state
-            streetLine1
-            streetLine2
-            streetLine3
-            zip
-          }
-        }
         medicinePrescription {
           id
           medicineName
@@ -516,6 +484,35 @@ export const GET_CASESHEET = gql`
           status
           appointmentState
           displayId
+        }
+        createdDoctorProfile {
+          city
+          country
+          doctorType
+          delegateNumber
+          emailAddress
+          firstName
+          lastName
+          gender
+          id
+          mobileNumber
+          qualification
+          salutation
+          speciality {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          zip
         }
         medicinePrescription {
           id
