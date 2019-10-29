@@ -53,29 +53,9 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: '#f7f7f7',
       padding: '8px 12px',
     },
-    followUp: {
+    advice: {
       fontSize: 12,
-      color: 'rgba(0, 0, 0, 0.6)',
       padding: 12,
-    },
-    medicationList: {
-      fontSize: 12,
-      fontWeight: 600,
-      padding: 12,
-      '& ol': {
-        padding: 0,
-        paddingLeft: 18,
-        margin: 0,
-        '& li': {
-          paddingBottom: 10,
-          '& span': {
-            color: 'rgba(0, 0, 0, 0.6)',
-            fontWeight: 'normal',
-            paddingTop: 3,
-            display: 'inline-block',
-          },
-        },
-      },
     },
     disclaimer: {
       fontSize: 10,
@@ -90,8 +70,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       paddingBottom: 15,
     },
-    lebelContent: {
-      width: '100%',
+    followUpContent: {
+      padding: 12,
+      fontSize: 12,
+      color: '#02475b',
+      fontWeight: 500,
     },
   };
 });
@@ -140,18 +123,18 @@ export const CaseSheetLastView: React.FC = (props) => {
           {otherInstructions && otherInstructions.length > 0 ? (
             <>
               <div className={classes.sectionHeader}>Advice Given</div>
-              <div className={classes.medicationList}>
+              <div className={classes.advice}>
                 {otherInstructions.map((instruction) => (
-                  <span>{instruction.instruction}</span>
+                  <p>{instruction.instruction}</p>
                 ))}
               </div>
             </>
           ) : null}
-          {followUp && followUpAfterInDays ? (
+          {followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
             <>
               <div className={classes.sectionHeader}>Follow Up</div>
-              <div className={classes.followUp}>
-                Follow up {consultType} after {followUpAfterInDays} days
+              <div className={classes.followUpContent}>
+                Follow up ({consultType}) after {followUpAfterInDays[0]} days
               </div>
             </>
           ) : null}
