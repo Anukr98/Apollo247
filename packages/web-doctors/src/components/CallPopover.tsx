@@ -1258,7 +1258,14 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     return '';
   };
-  console.log(props.appointmentStatus, props.sentToPatient);
+  const showCallMoreBtns =
+    props.appointmentStatus === 'COMPLETED' &&
+    props.sentToPatient === false &&
+    (isClickedOnPriview || props.sentToPatient === false) &&
+    !isClickedOnEdit
+      ? true
+      : false;
+  console.log(props.appointmentStatus, props.sentToPatient, showCallMoreBtns);
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
@@ -1412,14 +1419,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   Start Consult
                 </Button>
               ))}
-            <Button
-              className={classes.consultIcon}
-              aria-describedby={id}
-              variant="contained"
-              onClick={(e) => handleClick(e)}
-            >
-              <img src={require('images/ic_call.svg')} />
-            </Button>
+            {!showCallMoreBtns && (
+              <Button
+                className={classes.consultIcon}
+                aria-describedby={id}
+                variant="contained"
+                onClick={(e) => handleClick(e)}
+              >
+                <img src={require('images/ic_call.svg')} />
+              </Button>
+            )}
+
             <Popover
               id={id}
               open={open}
@@ -1471,21 +1481,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 </div>
               </Paper>
             </Popover>
-            <Button
-              className={classes.consultIcon}
-              aria-describedby={idThreeDots}
-              disabled={
-                props.isAppointmentEnded ||
-                (appointmentInfo!.appointmentState !== 'NEW' &&
-                  appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                  appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                  appointmentInfo!.status !== STATUS.PENDING)
-              }
-              onClick={(e) => handleClickThreeDots(e)}
-            >
-              <img src={require('images/ic_more.svg')} />
-            </Button>
+            {!showCallMoreBtns && (
+              <Button
+                className={classes.consultIcon}
+                aria-describedby={idThreeDots}
+                disabled={
+                  props.isAppointmentEnded ||
+                  (appointmentInfo!.appointmentState !== 'NEW' &&
+                    appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                    appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                  (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                    appointmentInfo!.status !== STATUS.PENDING)
+                }
+                onClick={(e) => handleClickThreeDots(e)}
+              >
+                <img src={require('images/ic_more.svg')} />
+              </Button>
+            )}
 
             <Popover
               id={idThreeDots}
