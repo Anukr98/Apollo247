@@ -475,7 +475,9 @@ export const GET_CASESHEET = gql`
       }
       caseSheetDetails {
         id
+        blobName
         doctorId
+        sentToPatient
         appointment {
           id
           appointmentDateTime
@@ -783,6 +785,13 @@ export const SEARCH_DIAGNOSTIC = gql`
   query SearchDiagnostic($searchString: String!) {
     searchDiagnostic(searchString: $searchString) {
       itemname
+    }
+  }
+`;
+export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
+  mutation UpdatePatientPrescriptionSentStatus($caseSheetId: ID!, $sentToPatient: Boolean!) {
+    updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
+      success
     }
   }
 `;
