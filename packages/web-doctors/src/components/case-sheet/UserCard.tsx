@@ -9,9 +9,15 @@ import {
 } from '@material-ui/core';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { Gender } from 'graphql/types/globalTypes';
+import { format } from 'date-fns';
 
 export const UserCard: React.FC = () => {
-  const { loading, patientDetails, caseSheetId, appointmentInfo } = useContext(CaseSheetContext);
+  const { loading, patientDetails, appointmentInfo, jrdName, jrdSubmitDate } = useContext(
+    CaseSheetContext
+  );
+
+  console.log(jrdName, jrdSubmitDate, 'jrd details.....');
+
   const userCardStrip = [];
   const displayId =
     appointmentInfo && appointmentInfo !== null && appointmentInfo.displayId !== null
@@ -80,9 +86,11 @@ export const UserCard: React.FC = () => {
             UHID: {patientDetails!.uhid}
           </Typography>
         )}
-
         <Typography variant="h6" color="textSecondary" component="h6">
           Appt ID: {displayId}
+        </Typography>
+        <Typography variant="h6" color="textSecondary" component="h6">
+          Submitted by Dr. {jrdName} on {format(new Date(jrdSubmitDate), 'dd/MM/yyyy hh:mm:ss')}
         </Typography>
       </CardContent>
     </Card>

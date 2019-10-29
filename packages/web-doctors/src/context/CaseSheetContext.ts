@@ -94,6 +94,9 @@ export interface CaseSheetContextProps {
 
   gender: string;
   setGender: (gender: string) => void;
+
+  jrdName: string;
+  jrdSubmitDate: string;
 }
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
@@ -153,4 +156,7 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
 
   gender: '',
   setGender: () => {},
+
+  jrdName: '',
+  jrdSubmitDate: '',
 });

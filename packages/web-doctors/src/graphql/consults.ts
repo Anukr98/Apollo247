@@ -121,3 +121,11 @@ export const UPLOAD_CHAT_DOCUMENT = gql`
     }
   }
 `;
+
+export const SEND_CALL_NOTIFICATION = gql`
+  query SendCallNotification($appointmentId: String) {
+    sendCallNotification(appointmentId: $appointmentId) {
+      status
+    }
+  }
+`;

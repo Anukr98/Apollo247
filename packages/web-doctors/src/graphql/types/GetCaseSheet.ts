@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, DoctorType } from "./globalTypes";
+import { Gender, Relation, STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, DoctorType, Salutation } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -182,12 +182,26 @@ export interface GetCaseSheet_getCaseSheet_pastAppointments {
   caseSheet: GetCaseSheet_getCaseSheet_pastAppointments_caseSheet[] | null;
 }
 
+export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile {
+  __typename: "Profile";
+  firstName: string | null;
+  lastName: string | null;
+  salutation: Salutation | null;
+}
+
+export interface GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet {
+  __typename: "CaseSheet";
+  createdDate: any | null;
+  createdDoctorProfile: GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile | null;
+}
+
 export interface GetCaseSheet_getCaseSheet {
   __typename: "CaseSheetFullDetails";
   patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null;
   caseSheetDetails: GetCaseSheet_getCaseSheet_caseSheetDetails | null;
   pastAppointments: (GetCaseSheet_getCaseSheet_pastAppointments | null)[] | null;
   juniorDoctorNotes: string | null;
+  juniorDoctorCaseSheet: GetCaseSheet_getCaseSheet_juniorDoctorCaseSheet | null;
 }
 
 export interface GetCaseSheet {
