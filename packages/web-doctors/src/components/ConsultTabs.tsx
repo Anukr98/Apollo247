@@ -632,6 +632,7 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .then((_data) => {
+        setAppointmentStatus('COMPLETED');
         setSentToPatient(true);
         setIsPdfPageOpen(true);
         setUrlToPatient(true);
