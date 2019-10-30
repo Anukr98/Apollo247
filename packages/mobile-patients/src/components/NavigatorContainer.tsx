@@ -46,6 +46,8 @@ import { CheckoutScene } from '@aph/mobile-patients/src/components/CheckoutScene
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
 import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
+import { AsyncStorage } from 'react-native';
+import { CommonScreenLog } from '../FunctionHelpers/DeviceHelper';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -248,6 +250,12 @@ const stackConfig: StackNavigatorConfig = {
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: (sceneProps) => {
+    try {
+      AsyncStorage.setItem('setCurrentName', sceneProps.scene.route.routeName);
+      CommonScreenLog(sceneProps.scene.route.routeName, sceneProps.scene.route.routeName);
+    } catch (error) {
+      console.log('sceneProps error', error);
+    }
     return {
       transitionSpec: {
         duration: sceneProps.scene.route.routeName === 'TabBar' ? 0 : 100,

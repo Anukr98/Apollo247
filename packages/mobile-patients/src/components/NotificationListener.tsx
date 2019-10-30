@@ -61,6 +61,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     aphConsole.log('processNotification', notification);
 
     const setCurrentName = await AsyncStorage.getItem('setCurrentName');
+    aphConsole.log('setCurrentName', setCurrentName);
 
     if (
       setCurrentName === AppRoutes.ChatRoom ||
@@ -81,6 +82,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showAphAlert!({
             title: `Hi ${userName},`,
             description: `Unfortunately ${doctorName} will not be able to make it for your appointment due to an emergency`,
+            unDismissable: true,
             children: (
               <View
                 style={{
@@ -133,6 +135,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showAphAlert!({
             title: `Hi ${userName} :)`,
             description: `Dr. ${doctorName} is waiting to start your consultation. Please proceed to the Consult Room`,
+            unDismissable: true,
             children: (
               <View
                 style={{
@@ -180,6 +183,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           showAphAlert!({
             title: `Hi ${userName} :)`,
             description: `Dr. ${doctorName} is waiting for your call response. Please proceed to the Consult Room`,
+            unDismissable: true,
             children: (
               <View
                 style={{
