@@ -31,6 +31,7 @@ import { getMedicineDetailsApi } from '../../helpers/apiCalls';
 import { AppRoutes } from '../NavigatorContainer';
 import moment from 'moment';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -206,6 +207,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                           try {
                             CameraRoll.saveToCameraRoll(arr[i]);
                             Alert.alert('Download Completed');
+                            CommonLogEvent(
+                              'MEDICINE_CONSULT_DETAILS',
+                              'Download compelete for Prescription'
+                            );
                           } catch {}
                         }
                         let dirs = RNFetchBlob.fs.dirs;
@@ -305,6 +310,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             disabled={data.medicineSKU == null ? true : false}
             onPress={() => {
               addToCart();
+              CommonLogEvent('MEDICINE_CONSULT_DETAILS', 'Add to cart');
             }}
           />
         </View>

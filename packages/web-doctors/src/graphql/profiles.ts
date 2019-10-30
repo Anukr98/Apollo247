@@ -486,17 +486,10 @@ export const GET_CASESHEET = gql`
           displayId
         }
         createdDoctorProfile {
-          city
-          country
           doctorType
-          delegateNumber
           emailAddress
           firstName
           lastName
-          gender
-          id
-          mobileNumber
-          qualification
           salutation
           registrationNumber
           specialty {
@@ -509,11 +502,17 @@ export const GET_CASESHEET = gql`
             userFriendlyNomenclature
             displayOrder
           }
-          state
-          streetLine1
-          streetLine2
-          streetLine3
-          zip
+          doctorHospital {
+            facility {
+              city
+              country
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
         }
         medicinePrescription {
           id

@@ -9,6 +9,8 @@ import {
 } from 'doctors-service/entities/';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
+import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
+
 import { format, addMinutes, addDays } from 'date-fns';
 
 import { AphError } from 'AphError';
@@ -82,7 +84,7 @@ export type Range = {
   maximum: number;
 };
 
-type Geolocation = {
+export type Geolocation = {
   latitude: number;
   longitude: number;
 };
@@ -124,6 +126,8 @@ export type DoctorSlotAvailability = {
 
 export type DoctorSlotAvailabilityObject = { [index: string]: DoctorSlotAvailability };
 
+export type FacilityDistanceMap = { [index: string]: string };
+
 const getDoctorsBySpecialtyAndFilters: Resolver<
   null,
   { filterInput: FilterDoctorInput },
@@ -137,6 +141,13 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
   let finalSpecialtyDetails;
 
   const specialtiesRepo = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
+
+  //get facility distances from user geolocation
+  let facilityDistances: FacilityDistanceMap = {};
+  if (args.filterInput.geolocation) {
+    const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+    facilityDistances = await facilityRepo.getAllFacilityDistances(args.filterInput.geolocation);
+  }
 
   if (
     args.filterInput.specialtySearchType &&
@@ -168,7 +179,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         bookNowDoctors,
         doctorNextAvailSlots,
         doctorsConsultModeAvailability,
-      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb, facilityDistances);
 
       finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
       finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
@@ -187,7 +198,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         bookNowDoctors,
         doctorNextAvailSlots,
         doctorsConsultModeAvailability,
-      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb, facilityDistances);
 
       finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
       finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
@@ -206,7 +217,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
         bookNowDoctors,
         doctorNextAvailSlots,
         doctorsConsultModeAvailability,
-      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+      } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb, facilityDistances);
 
       finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
       finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
@@ -232,7 +243,7 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
       bookNowDoctors,
       doctorNextAvailSlots,
       doctorsConsultModeAvailability,
-    } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb);
+    } = await applyFilterLogic(args.filterInput, doctorsDb, consultsDb, facilityDistances);
 
     finalConsultNowDoctors = finalConsultNowDoctors.concat(consultNowDoctors);
     finalBookNowDoctors = finalBookNowDoctors.concat(bookNowDoctors);
@@ -257,7 +268,8 @@ const getDoctorsBySpecialtyAndFilters: Resolver<
 const applyFilterLogic = async (
   filterInput: FilterDoctorInput,
   doctorsDb: Connection,
-  consultsDb: Connection
+  consultsDb: Connection,
+  facilityDistances?: FacilityDistanceMap
 ) => {
   let filteredDoctors;
   const doctorsConsultModeAvailability: DoctorConsultModeAvailability[] = [];
@@ -278,24 +290,24 @@ const applyFilterLogic = async (
     // console.log('basic filtered doctors: ',filteredDoctors)
 
     //apply sort algorithm
-    if (filteredDoctors.length > 1) {
-      //get patient and matched doctors previous appointments starts here
-      const filteredDoctorIds = filteredDoctors.map((doctor) => {
-        return doctor.id;
-      });
-      const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
-        filterInput.patientId,
-        filteredDoctorIds
-      );
-      const consultedDoctorIds = previousAppointments.map((appt) => {
-        return appt.doctorId;
-      });
-      //get patient and matched doctors previous appointments ends here
+    // if (filteredDoctors.length > 1) {
+    //   //get patient and matched doctors previous appointments starts here
+    //   const filteredDoctorIds = filteredDoctors.map((doctor) => {
+    //     return doctor.id;
+    //   });
+    //   const previousAppointments = await consultsRepo.getPatientAndDoctorsAppointments(
+    //     filterInput.patientId,
+    //     filteredDoctorIds
+    //   );
+    //   const consultedDoctorIds = previousAppointments.map((appt) => {
+    //     return appt.doctorId;
+    //   });
+    //   //get patient and matched doctors previous appointments ends here
 
-      filteredDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-        return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
-      });
-    }
+    //   filteredDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
+    //     return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
+    //   });
+    // }
 
     //get filtered doctor ids
     const doctorIds = filteredDoctors.map((doctor) => {
@@ -461,7 +473,12 @@ const applyFilterLogic = async (
     //get patient and matched doctors previous appointments ends here
 
     consultNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-      return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
+      return doctorRepository.sortByRankingAlgorithm(
+        doctorA,
+        doctorB,
+        consultedDoctorIds,
+        facilityDistances
+      );
     });
   }
 
@@ -481,7 +498,12 @@ const applyFilterLogic = async (
     //get patient and matched doctors previous appointments ends here
 
     bookNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-      return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
+      return doctorRepository.sortByRankingAlgorithm(
+        doctorA,
+        doctorB,
+        consultedDoctorIds,
+        facilityDistances
+      );
     });
   }
 

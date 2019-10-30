@@ -41,6 +41,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -309,6 +310,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               imageCOPY.splice(i, 1);
 
               setImages(imageCOPY);
+              CommonLogEvent('ADD_RECORD', 'Set Images');
             }}
           >
             <CrossYellow />
@@ -324,7 +326,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         <CollapseCard
           heading="IMAGES UPLOADED"
           collapse={showImages}
-          onPress={() => setshowImages(!showImages)}
+          onPress={() => (CommonLogEvent('ADD_RECORD', 'Show Images'), setshowImages(!showImages))}
         >
           <View style={[styles.cardViewStyle, { paddingHorizontal: 8 }]}>
             <FlatList
@@ -336,7 +338,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             />
             <Text
               style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
-              onPress={() => setdisplayOrderPopup(true)}
+              onPress={() => (
+                CommonLogEvent('ADD_RECORD', 'Display order popup'), setdisplayOrderPopup(true)
+              )}
             >
               ADD DOCUMENT
             </Text>
@@ -352,7 +356,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         <CollapseCard
           heading="RECORD DETAILS"
           collapse={showRecordDetails}
-          onPress={() => setshowRecordDetails(!showRecordDetails)}
+          onPress={() => (
+            CommonLogEvent('ADD_RECORD', 'RECORD DETAILS'), setshowRecordDetails(!showRecordDetails)
+          )}
         >
           <View style={[styles.cardViewStyle, { paddingTop: 6, paddingBottom: 5 }]}>
             {/* <TextInputComponent
@@ -394,6 +400,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 onPress={() => {
                   Keyboard.dismiss();
                   setIsDateTimePickerVisible(true);
+                  CommonLogEvent('ADD_RECORD', 'Date picker visible');
                 }}
               >
                 <Text

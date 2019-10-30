@@ -52,6 +52,7 @@ import {
 } from '../../graphql/types/deletePatientMedicalRecord';
 import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
 import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -275,7 +276,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 activeOpacity={1}
                 style={{ marginTop: 20 }}
                 onPress={() => {
-                  props.navigation.replace(AppRoutes.ConsultRoom);
+                  CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate back to consult room'),
+                    props.navigation.replace(AppRoutes.ConsultRoom);
                 }}
               >
                 <ApolloLogo />
@@ -305,7 +307,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       <View style={styles.filterViewStyle}>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
+          onPress={() => (
+            CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record'),
+            props.navigation.navigate(AppRoutes.AddRecord)
+          )}
         >
           <AddFileIcon />
         </TouchableOpacity>
@@ -370,7 +375,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                   <HealthConsultView
                     key={i}
                     onPressOrder={() => {
-                      setdisplayOrderPopup(true);
+                      CommonLogEvent('HEALTH_RECORD_HOME', 'Display order popup'),
+                        setdisplayOrderPopup(true);
                     }}
                     onClickCard={() => {
                       props.navigation.navigate(AppRoutes.ConsultDetails, {

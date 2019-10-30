@@ -23,7 +23,7 @@ export class DoctorRepository extends Repository<Doctor> {
   getDoctorProfileData(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],
-      relations: ['specialty', 'doctorHospital'],
+      relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
     });
   }
 
@@ -52,11 +52,11 @@ export class DoctorRepository extends Repository<Doctor> {
       relations: [
         'specialty',
         'doctorHospital',
+        'doctorHospital.facility',
         'consultHours',
         'starTeam',
         'bankAccount',
         'packages',
-        'doctorHospital.facility',
         'starTeam.associatedDoctor',
         'starTeam.associatedDoctor.specialty',
         'starTeam.associatedDoctor.doctorHospital',
@@ -79,12 +79,12 @@ export class DoctorRepository extends Repository<Doctor> {
       relations: [
         'specialty',
         'doctorHospital',
+        'doctorHospital.facility',
         'consultHours',
         'consultHours.facility',
         'starTeam',
         'bankAccount',
         'packages',
-        'doctorHospital.facility',
         'starTeam.associatedDoctor',
         'starTeam.associatedDoctor.specialty',
         'starTeam.associatedDoctor.doctorHospital',
@@ -159,8 +159,13 @@ export class DoctorRepository extends Repository<Doctor> {
       .getMany();
   }
 
-  sortByRankingAlgorithm(a: Doctor, b: Doctor, docIds: string[]) {
-    //STAR_APOLLO doctor on top
+  sortByRankingAlgorithm(
+    a: Doctor,
+    b: Doctor,
+    docIds: string[],
+    facilityDistances?: { [index: string]: string }
+  ) {
+    //STAR_APOLLO doctor on top(ignoring star appollo sorting)
     if (a.doctorType == DoctorType.STAR_APOLLO && b.doctorType != DoctorType.STAR_APOLLO) return -1;
     if (a.doctorType != DoctorType.STAR_APOLLO && b.doctorType == DoctorType.STAR_APOLLO) return 1;
 
@@ -170,14 +175,21 @@ export class DoctorRepository extends Repository<Doctor> {
     if (!docIds.includes(a.id) && docIds.includes(b.id) && b.doctorType != DoctorType.PAYROLL)
       return 1;
 
-    //same city apollo doctors on next, prior to other city apollo doctors
-    // if (userCity != '') {
-    //   console.log(a.doctorHospital[0].facility.city);
-    //   const aDoctorCity = a.doctorHospital[0].facility.city.toLowerCase();
-    //   const bDoctorCity = b.doctorHospital[0].facility.city.toLowerCase();
-    //   if (aDoctorCity == userCity.toLowerCase() && bDoctorCity != userCity.toLowerCase()) return -1;
-    //   if (aDoctorCity != userCity.toLowerCase() && bDoctorCity == userCity.toLowerCase()) return 1;
-    // }
+    //close/same city apollo doctors on next, prior to far/other city apollo doctors
+    if (facilityDistances && Object.keys(facilityDistances).length > 0) {
+      const aFcltyId = a.doctorHospital[0].facility.id;
+      const bFcltyId = b.doctorHospital[0].facility.id;
+      if (facilityDistances[aFcltyId] === undefined || facilityDistances[aFcltyId] == '') {
+        facilityDistances[aFcltyId] = Number.MAX_SAFE_INTEGER.toString();
+      }
+      if (facilityDistances[bFcltyId] === undefined || facilityDistances[bFcltyId] == '') {
+        facilityDistances[bFcltyId] = Number.MAX_SAFE_INTEGER.toString();
+      }
+      if (parseInt(facilityDistances[aFcltyId], 10) < parseInt(facilityDistances[bFcltyId], 10))
+        return -1;
+      if (parseInt(facilityDistances[aFcltyId], 10) > parseInt(facilityDistances[bFcltyId], 10))
+        return 1;
+    }
 
     //payroll doctors at last
     if (a.doctorType != DoctorType.PAYROLL && b.doctorType == DoctorType.PAYROLL) return -1;
@@ -394,6 +406,7 @@ export class DoctorRepository extends Repository<Doctor> {
     }
 
     let doctorsResult = await queryBuilder.orderBy('doctor.experience', 'DESC').getMany();
+    //console.log(JSON.stringify(doctorsResult));
 
     if (city && city.length > 0) {
       doctorsResult = doctorsResult.filter((doctor) => {

@@ -366,7 +366,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               selectedCTA === onlineCTA[0] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
-              CommonLogEvent('Consult Now', 'Consult Now clicked');
+              CommonLogEvent('CONSULT_ONLINE', 'Consult Now clicked');
               setselectedCTA(onlineCTA[0]);
               props.setisConsultOnline(true);
               // props.setselectedTimeSlot('');
@@ -388,7 +388,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               selectedCTA === onlineCTA[1] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
-              CommonLogEvent('Schedule For Later', 'Schedule For Later clicked');
+              CommonLogEvent('CONSULT_ONLINE', 'Schedule For Later clicked');
               fetchSlots();
               setselectedCTA(onlineCTA[1]);
               props.setisConsultOnline(false);

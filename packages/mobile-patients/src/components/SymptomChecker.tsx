@@ -11,6 +11,7 @@ import Moment from 'moment';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { StackActions } from 'react-navigation';
 import { AppConfig } from '../strings/AppConfig';
+import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
 
 export interface CustomComponentProps extends NavigationScreenProps {}
 
@@ -18,6 +19,8 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   const Consult = props.navigation.state.params ? props.navigation.state.params.Consult : '';
   console.log(Consult, 'Consultval');
   const onSubmitClick = async () => {
+    CommonLogEvent(AppRoutes.SymptomChecker, 'onSubmitClick clicked');
+
     const ss = await $Generator({ type: 'showSpeciality' });
 
     let specialities = [];
@@ -97,6 +100,8 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
     if (currentPatient && currentPatient.firstName) {
       setuserName(currentPatient.firstName);
     }
+
+    CommonScreenLog(AppRoutes.SymptomChecker, AppRoutes.SymptomChecker);
   }, [currentPatient, userName, props.navigation.state.params]);
 
   const patientAge =
@@ -118,15 +123,16 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
         <Header
           title={`${userName.toUpperCase()}’S SYMPTOMS`}
           leftIcon="backArrow"
-          onPressLeftIcon={() =>
+          onPressLeftIcon={() => (
             props.navigation.dispatch(
               StackActions.reset({
                 index: 0,
                 key: null,
                 actions: [NavigationActions.navigate({ routeName: AppRoutes.ConsultRoom })],
               })
-            )
-          }
+            ),
+            CommonLogEvent(AppRoutes.SymptomChecker, 'Go back clicked')
+          )}
         />
         <NavigatorSDK
           clientId={AppConfig.Configuration.PRAKTISE_API_KEY}

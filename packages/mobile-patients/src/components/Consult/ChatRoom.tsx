@@ -31,6 +31,7 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import {
   DeviceHelper,
   CommonScreenLog,
+  CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
@@ -299,12 +300,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   useEffect(() => {
     console.log('callType', callType);
-    if (callType === videoCallMsg) {
+    if (callType === "VIDEO") {
       setOnSubscribe(true);
       setIsAudio(false);
       InCallManager.startRingtone('_BUNDLE_');
       InCallManager.start({ media: 'audio' }); // audio/video, default: audio
-    } else if (callType === audioCallMsg) {
+    } else if (callType === 'AUDIO') {
       setIsAudio(true);
       setOnSubscribe(true);
       InCallManager.startRingtone('_BUNDLE_');
@@ -944,6 +945,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   </Text>
                   <TouchableOpacity
                     onPress={() => {
+                      CommonLogEvent(AppRoutes.ChatRoom, 'navigate to choose doctor');
                       props.navigation.navigate(AppRoutes.ChooseDoctor, {
                         data: rowData.transferInfo,
                         patientId: patientId,
@@ -1010,6 +1012,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule clicked');
+
                     try {
                       checkIfReschduleApi(rowData, 'Transfer');
                       NextAvailableSlot(rowData, 'Transfer');
@@ -1027,6 +1031,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   title={'ACCEPT'}
                   style={{ flex: 0.4, marginRight: 16, marginLeft: 5 }}
                   onPress={() => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat accept transfer clicked');
+
                     try {
                       let datettimeval = rowData.transferInfo.transferDateTime;
                       let transferdataid = rowData.transferInfo.transferId;
@@ -1121,6 +1127,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
                     try {
+                      CommonLogEvent(AppRoutes.ChatRoom, 'PDF Url');
+
                       console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
 
                       let dirs = RNFetchBlob.fs.dirs;
@@ -1178,6 +1186,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
                   onPress={() => {
                     try {
+                      CommonLogEvent(AppRoutes.ChatRoom, 'Navigate to consult details');
+
                       console.log('Followupdata', rowData.transferInfo.caseSheetId);
                       console.log('rowdata', rowData);
                       props.navigation.navigate(AppRoutes.ConsultDetails, {
@@ -1295,6 +1305,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
+
                     console.log('Button Clicked');
                     checkIfReschduleApi(rowData, 'Followup');
                     NextAvailableSlot(rowData, 'Followup');
@@ -1423,6 +1435,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               titleTextStyle={{ color: 'white' }}
               onPress={() => {
                 if (type === 'Followup') {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Display Overlay');
+
                   setdisplayoverlay(true);
                 } else {
                   // props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -1444,6 +1458,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               onPress={() => {
                 try {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Accept button clicked');
+
                   if (type === 'Followup') {
                     const bookRescheduleInput = {
                       appointmentId: rowData.transferInfo.appointmentId,
@@ -1527,35 +1543,77 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         )}
         <View>
           {rowData.message === imageconsult ? (
-            <TouchableOpacity
-              activeOpacity={0.5}
-              onPress={() => {
-                console.log('On Image Clicked');
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: 'transparent',
-                  width: 180,
-                  height: 180,
-                  borderRadius: 10,
-                  marginVertical: 2,
-                  marginBottom: 4,
-                  flex: 1,
-                  marginLeft: 38,
-                }}
-              >
-                <Image
-                  source={{ uri: rowData.url }}
-                  style={{
-                    resizeMode: 'stretch',
-                    width: 180,
-                    height: 180,
-                    borderRadius: 10,
+            <View>
+              {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log('IMAGE', rowData.url);
+                    setPatientImageshow(true);
+                    setUrl(rowData.url);
                   }}
-                />
-              </View>
-            </TouchableOpacity>
+                >
+                  <View
+                    style={{
+                      backgroundColor: 'transparent',
+                      width: 180,
+                      height: 180,
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      marginBottom: 4,
+                      flex: 1,
+                      marginLeft: 38,
+                    }}
+                  >
+                    <Image
+                      source={{ uri: rowData.url }}
+                      style={{
+                        resizeMode: 'stretch',
+                        width: 180,
+                        height: 180,
+                        borderRadius: 10,
+                      }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log('pdf', rowData.url);
+
+                    if ((Platform.OS = 'android')) {
+                      Linking.openURL(rowData.url).catch((err) =>
+                        console.error('An error occurred', err)
+                      );
+                    } else {
+                      setShowWeb(true);
+                      setUrl(rowData.url);
+                    }
+                  }}
+                >
+                  <View
+                    style={{
+                      backgroundColor: 'transparent',
+                      width: 180,
+                      height: 180,
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      marginBottom: 4,
+                      flex: 1,
+                      marginLeft: 38,
+                    }}
+                  >
+                    <FileBig
+                      style={{
+                        resizeMode: 'stretch',
+                        width: 200,
+                        height: 200,
+                        borderRadius: 10,
+                      }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
           ) : rowData.message === '^^#startconsultJr' ? (
             <View
               style={{
@@ -3048,6 +3106,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('upload base66', base66);
     console.log('upload fileType', type);
     console.log('chanel', channel);
+    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
+
     setLoading(true);
     const textin = {
       fileType: type,
@@ -3464,8 +3524,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
                   if (textMessage.length == 0) {
                     Alert.alert('Apollo', 'Please write something to send message.');
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
                     return;
                   }
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
 
                   send(textMessage);
                 }}

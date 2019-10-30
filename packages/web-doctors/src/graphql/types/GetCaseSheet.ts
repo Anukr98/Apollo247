@@ -84,27 +84,35 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
   displayOrder: number | null;
 }
 
-export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile {
-  __typename: "Profile";
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_doctorHospital_facility {
+  __typename: "Facility";
   city: string | null;
   country: string | null;
-  doctorType: DoctorType;
-  delegateNumber: string | null;
-  emailAddress: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  gender: Gender | null;
+  facilityType: string;
   id: string;
-  mobileNumber: string;
-  qualification: string | null;
-  salutation: Salutation | null;
-  registrationNumber: string | null;
-  specialty: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_specialty;
+  name: string;
   state: string | null;
   streetLine1: string | null;
   streetLine2: string | null;
   streetLine3: string | null;
-  zip: string | null;
+  zipcode: string | null;
+}
+
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_doctorHospital_facility;
+}
+
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile {
+  __typename: "Profile";
+  doctorType: DoctorType;
+  emailAddress: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  salutation: Salutation | null;
+  registrationNumber: string | null;
+  specialty: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_specialty;
+  doctorHospital: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_doctorHospital[];
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription {

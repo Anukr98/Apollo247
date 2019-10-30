@@ -325,11 +325,14 @@ export const FollowUp: React.FC = () => {
   useEffect(() => {
     consultTypeData[0] = consultType;
     setConsultTypeData(consultTypeData);
+    if (shouldFollowUp && consultType === '') {
+      setConsultType('ONLINE');
+    }
 
     followUp[0] = shouldFollowUp;
     setFollowUp(followUp);
 
-    followUpAfterInDays[0] = `${followUpDays === 9 ? 'Custom' : followUpDays}`;
+    followUpAfterInDays[0] = `${followUpDays}`;
     setFollowUpAfterInDays(followUpAfterInDays);
 
     followUpDate[0] = `${followUpDays === 9 ? selectedDate : addDays(new Date(), followUpDays)}`;

@@ -421,7 +421,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
-                  CommonLogEvent('UPCOMING CLINIC VISIT', 'UPCOMING CLINIC VISIT Clicked');
+                  CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
                   setCancelAppointment(true);
                 }}
               >
@@ -524,7 +524,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
                 CommonLogEvent(
-                  'RESCHEDULE APPOINTMENT DETAILS',
+                  AppRoutes.AppointmentDetails,
                   'RESCHEDULE APPOINTMENT DETAILS CLICKED'
                 );
                 try {
@@ -542,11 +542,12 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 }}
                 onPress={() => {
                   CommonLogEvent(
-                    'START CONSULTATION APPOINTMENT DETAILS',
+                    AppRoutes.AppointmentDetails,
                     'START CONSULTATION APPOINTMENT DETAILS CLICKED'
                   );
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
+                    callType: '',
                   });
                 }}
               />
@@ -596,7 +597,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           >
             <TouchableOpacity
               onPress={() => {
-                CommonLogEvent('AppointmentDetails Cancel', 'AppointmentDetails Cancel Clicked');
+                CommonLogEvent(AppRoutes.AppointmentDetails, 'AppointmentDetails Cancel Clicked');
                 setCancelAppointment(false);
               }}
             >
@@ -674,7 +675,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   style={styles.gotItStyles}
                   onPress={() => {
                     CommonLogEvent(
-                      'AppointmentDetails  Cancel Concsult',
+                      AppRoutes.AppointmentDetails,
                       'AppointmentDetails  Cancel Concsult Clicked'
                     );
                     setShowCancelPopup(false);

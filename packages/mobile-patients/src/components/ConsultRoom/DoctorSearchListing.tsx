@@ -496,7 +496,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             activeOpacity={1}
             onPress={() => {
               CommonLogEvent(
-                'Doctor SearchListing RightHeader',
+                AppRoutes.DoctorSearchListing,
                 'Doctor SearchListing RightHeader clicked'
               );
               getNetStatus().then((status) => {
@@ -796,7 +796,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                       ...theme.fonts.IBMPlexSansMedium(18),
                     }}
                     onPress={() => {
-                      CommonLogEvent('Search List', 'Search List clicked');
+                      CommonLogEvent(AppRoutes.DoctorSearchListing, 'Search List clicked');
                       setcurrentLocation(item.name);
                       saveLatlong(item);
                       setshowLocationpopup(false);

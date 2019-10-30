@@ -79,15 +79,20 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CaseSheetLastView: React.FC = (props) => {
+export interface CaseSheetViewProps {
+  getFollowUpData: () => string;
+}
+
+export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
   const classes = useStyles();
-  const {
-    followUp,
-    otherInstructions,
-    consultType,
-    followUpAfterInDays,
-    createdDoctorProfile,
-  } = useContext(CaseSheetContext);
+  const { followUp, otherInstructions, followUpAfterInDays, createdDoctorProfile } = useContext(
+    CaseSheetContext
+  );
+
+  let doctorFacilityDetails = null;
+  if (createdDoctorProfile && createdDoctorProfile.doctorHospital[0]) {
+    doctorFacilityDetails = createdDoctorProfile.doctorHospital[0].facility;
+  }
 
   return (
     <div className={classes.root}>
@@ -105,17 +110,25 @@ export const CaseSheetLastView: React.FC = (props) => {
                   createdDoctorProfile.specialty.specialistSingularTerm
                 } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
               </h3>
-              <p className={classes.address}>
-                {`${createdDoctorProfile.streetLine1 || ''} ${
-                  createdDoctorProfile.streetLine2 ? `| ${createdDoctorProfile.streetLine2}` : ''
-                } ${
-                  createdDoctorProfile.streetLine3 ? ` | ${createdDoctorProfile.streetLine3}` : ''
-                }  ${createdDoctorProfile.city ? `| ${createdDoctorProfile.city}` : ''}  ${
-                  createdDoctorProfile.zip ? ` - ${createdDoctorProfile.zip}` : ''
-                }  ${createdDoctorProfile.state ? ` | ${createdDoctorProfile.state}` : ''} ${
-                  createdDoctorProfile.country ? `,${createdDoctorProfile.country}` : ''
-                }`}
-              </p>
+              {doctorFacilityDetails ? (
+                <>
+                  <p className={classes.address}>
+                    {`${doctorFacilityDetails.streetLine1 || ''} ${
+                      doctorFacilityDetails.streetLine2
+                        ? `| ${doctorFacilityDetails.streetLine2}`
+                        : ''
+                    } ${
+                      doctorFacilityDetails.streetLine3
+                        ? `| ${doctorFacilityDetails.streetLine3}`
+                        : ''
+                    } ${doctorFacilityDetails.city ? ` | ${doctorFacilityDetails.city}` : ''}  ${
+                      doctorFacilityDetails.zipcode ? ` - ${doctorFacilityDetails.zipcode}` : ''
+                    }  ${doctorFacilityDetails.state ? ` | ${doctorFacilityDetails.state}` : ''} ${
+                      doctorFacilityDetails.country ? `,${doctorFacilityDetails.country}` : ''
+                    }`}
+                  </p>
+                </>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -133,9 +146,7 @@ export const CaseSheetLastView: React.FC = (props) => {
           {followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
             <>
               <div className={classes.sectionHeader}>Follow Up</div>
-              <div className={classes.followUpContent}>
-                Follow up ({consultType}) after {followUpAfterInDays[0]} days
-              </div>
+              <div className={classes.followUpContent}>{props.getFollowUpData()}</div>
             </>
           ) : null}
         </div>
