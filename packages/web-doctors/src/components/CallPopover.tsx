@@ -252,6 +252,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       '&:disabled': {
         opacity: 0.7,
+        backgroundColor: 'transparent',
       },
     },
     backButton: {
