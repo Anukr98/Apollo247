@@ -322,6 +322,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
               // quantity: parseInt(medPrescription[index]!.medicineDosage!),
               quantity: qty,
               prescriptionRequired: medicineDetails.is_prescription_required == '1',
+              thumbnail: medicineDetails.thumbnail || medicineDetails.image,
             } as ShoppingCartItem;
           })
           .filter((item) => (item ? true : false));

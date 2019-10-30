@@ -4,7 +4,7 @@ import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
 import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRecords/HealthConsultView';
 import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
-import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
+// import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   AddFileIcon,
@@ -80,6 +80,7 @@ type rescheduleType = {
   isFollowUp: number;
   isPaid: number;
 };
+type PickerImage = any;
 
 export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 

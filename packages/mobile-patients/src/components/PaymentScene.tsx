@@ -212,7 +212,7 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
             /> */}
             <View style={styles.popupButtonStyle}>
               <TouchableOpacity style={{ flex: 1 }} onPress={() => navigateOnSuccess(true)}>
-                <Text style={styles.popupButtonTextStyle}>VIEW ORDER SUMMARY</Text>
+                <Text style={styles.popupButtonTextStyle}>VIEW INVOICE</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ flex: 1, alignItems: 'flex-end' }}

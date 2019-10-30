@@ -1,39 +1,46 @@
+const pharmaToken201 = 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d';
+const pharmaTokenYXV = 'YXV0aF91c2VyOnN1cGVyc2VjcmV0X3Rhd';
+const pharmaTokencTf = 'cTfznn4yhybBR7WSrNJn1g==';
+const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
+const apolloProdBaseUrl = 'https://www.apollopharmacy.in';
+const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
+
 const PharmaApiConfig = {
   dev: {
-    MED_SEARCH: ['https://www.apollopharmacy.in', 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d'],
-    MED_DETAIL: ['https://uat.apollopharmacy.in', 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d'],
-    MED_SEARCH_SUGGESTION: [
-      'https://uat.apollopharmacy.in',
-      'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
+    MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
+    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
+    MED_SEARCH_SUGGESTION: [apolloUatBaseUrl, pharmaToken201],
+    STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
+    PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
+    INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
+    SHOP_BY_CITY: [apolloUatBaseUrl],
+    IMAGES_BASE_URL: [`${apolloUatBaseUrl}/pub/media`],
+    GET_DELIVERY_TIME: [
+      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      pharmaTokenYXV,
     ],
-    STORES_LIST: ['https://www.apollopharmacy.in', 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d'],
-    PIN_SERVICEABILITY: [
-      'https://www.apollopharmacy.in',
-      'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
-    ],
-    INVENTORY_CHECK: [
-      'https://online.apollopharmacy.org/APOLLO247/Orderplace.svc',
-      'cTfznn4yhybBR7WSrNJn1g==',
-    ],
-    SHOP_BY_CITY: ['https://uat.apollopharmacy.in'],
+    GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`],
+    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
+    ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
   },
   prod: {
-    MED_SEARCH: ['https://www.apollopharmacy.in', 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d'],
-    MED_DETAIL: ['https://www.apollopharmacy.in', 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d'],
-    MED_SEARCH_SUGGESTION: [
-      'https://www.apollopharmacy.in',
-      'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
+    MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
+    MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
+    MED_SEARCH_SUGGESTION: [apolloUatBaseUrl, pharmaToken201],
+    STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
+    PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
+    INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
+    SHOP_BY_CITY: [apolloProdBaseUrl],
+    IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media`],
+    GET_DELIVERY_TIME: [
+      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      pharmaTokenYXV,
     ],
-    STORES_LIST: ['https://www.apollopharmacy.in', 'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d'],
-    PIN_SERVICEABILITY: [
-      'https://www.apollopharmacy.in',
-      'Bearer 2o1kd4bjapqifpb27fy7tnbivu8bqo1d',
-    ],
-    INVENTORY_CHECK: [
-      'https://online.apollopharmacy.org/APOLLO247/Orderplace.svc',
-      'cTfznn4yhybBR7WSrNJn1g==',
-    ],
-    SHOP_BY_CITY: ['https://www.apollopharmacy.in'],
+    GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`],
+    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
+    ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
   },
 };
 

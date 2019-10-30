@@ -1,6 +1,6 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
-import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
+// import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -85,6 +85,7 @@ type RecordTypeType = {
   name: string;
   value: string;
 };
+type PickerImage = any;
 
 const RecordType: RecordTypeType[] = [
   { name: MedicalRecordType.EHR.toLowerCase().replace('_', ' '), value: MedicalRecordType.EHR },

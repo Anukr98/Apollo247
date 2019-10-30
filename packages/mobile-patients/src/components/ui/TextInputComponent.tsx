@@ -56,6 +56,7 @@ export interface TextInputComponentProps {
   width?: number;
   textInputprops?: TextInputProps;
   maxLength?: TextInputProps['maxLength'];
+  keyboardType?: TextInputProps['keyboardType'];
 }
 
 export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => {
@@ -81,6 +82,7 @@ export const TextInputComponent: React.FC<TextInputComponentProps> = (props) => 
           autoCorrect={props.autoCorrect}
           selectionColor={theme.colors.INPUT_CURSOR_COLOR}
           maxLength={props.maxLength}
+          keyboardType={props.keyboardType}
           {...props.textInputprops}
         />
       )}

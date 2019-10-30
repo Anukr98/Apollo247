@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ScrollView } from 'react-navigation';
+import { ScrollView, NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { theme } from '../../theme/theme';
 import { EPrescription, PhysicalPrescription, useShoppingCart } from '../ShoppingCartProvider';
@@ -9,6 +9,8 @@ import { CrossYellow, FileBig } from '../ui/Icons';
 import { TextInputComponent } from '../ui/TextInputComponent';
 import { SelectEPrescriptionModal } from './SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from './UploadPrescriprionPopup';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -29,7 +31,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface MedicineUploadPrescriptionViewProps {}
+export interface MedicineUploadPrescriptionViewProps extends NavigationScreenProps {}
 
 export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescriptionViewProps> = (
   props
@@ -259,42 +261,67 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     );
   };
 
+  const consultDoctorCTA = () => {
+    return (
+      <View style={{ marginHorizontal: 16, paddingBottom: 16 }}>
+        <Spearator style={{ marginBottom: 11.5 }} />
+        <Text
+          style={{
+            ...theme.viewStyles.text('M', 14, '#02475b', 1, 20, 0.04),
+            paddingBottom: 8,
+          }}
+        >
+          Don’t have a prescription? Don’t worry!
+        </Text>
+        <Text
+          onPress={() => props.navigation.navigate(AppRoutes.DoctorSearch)}
+          style={{
+            ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24, 0),
+          }}
+        >
+          CONSULT A DOCTOR
+        </Text>
+      </View>
+    );
+  };
+
   const renderUploadPrescription = () => {
     if (uploadPrescriptionRequired) {
       return (
         <View>
           {renderLabel('UPLOAD PRESCRIPTION')}
           {physicalPrescriptions.length == 0 && ePrescriptions.length == 0 ? (
-            <TouchableOpacity
-              activeOpacity={1}
+            <View
               style={{
                 ...theme.viewStyles.cardViewStyle,
                 marginHorizontal: 20,
                 marginTop: 15,
                 marginBottom: 24,
               }}
-              onPress={() => setShowPopup(true)}
             >
-              <Text
-                style={{
-                  ...theme.fonts.IBMPlexSansMedium(16),
-                  lineHeight: 24,
-                  color: theme.colors.SKY_BLUE,
-                  padding: 16,
-                }}
-              >
-                {`Some of your medicines require prescription to make a purchase.\nPlease upload the necessary prescriptions.`}
-              </Text>
-              <Text
-                style={{
-                  ...styles.yellowTextStyle,
-                  paddingTop: 0,
-                  textAlign: 'right',
-                }}
-              >
-                UPLOAD
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity activeOpacity={1} style={{}} onPress={() => setShowPopup(true)}>
+                <Text
+                  style={{
+                    ...theme.fonts.IBMPlexSansMedium(16),
+                    lineHeight: 24,
+                    color: theme.colors.SKY_BLUE,
+                    padding: 16,
+                  }}
+                >
+                  {`Items in your cart marked with ‘Rx’ need prescriptions to complete your purchase. Please upload the necessary prescriptions`}
+                </Text>
+                <Text
+                  style={{
+                    ...styles.yellowTextStyle,
+                    paddingTop: 0,
+                    // textAlign: 'right',
+                  }}
+                >
+                  UPLOAD PRESCRIPTION
+                </Text>
+              </TouchableOpacity>
+              {consultDoctorCTA()}
+            </View>
           ) : (
             rendePrescriptions()
           )}

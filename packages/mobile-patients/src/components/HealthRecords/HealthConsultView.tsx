@@ -412,6 +412,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                       quantity: qty,
                                       prescriptionRequired:
                                         medicineDetails.is_prescription_required == '1',
+                                      thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                                     } as ShoppingCartItem;
                                   })
                                   .filter((item: any) => (item ? true : false));

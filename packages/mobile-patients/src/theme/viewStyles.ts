@@ -1,15 +1,17 @@
 import { colors } from './colors';
-import { fonts } from './fonts';
+import { fonts, getTextStyle } from './fonts';
+import { ViewStyle } from 'react-native';
+
 export const viewStyles = {
   container: {
     flex: 1,
     backgroundColor: colors.DEFAULT_BACKGROUND_COLOR,
   },
   separator: {
-    flex: 0,
     height: 1,
-    marginHorizontal: 8,
-    // backgroundColor: colors.LIGHT_SEPARATOR_COLOR,
+    backgroundColor: colors.LIGHT_BLUE,
+    width: '100%',
+    opacity: 0.1,
   },
   shadow: {
     // shadowColor: colors.SHADOW_COLOR,
@@ -27,6 +29,24 @@ export const viewStyles = {
   footerButtonStyle: {
     margin: 16,
   },
+  card: (
+    padding: number = 16,
+    margin: number = 20,
+    borderRadius: number = 10,
+    backgroundColor: string = '#fff'
+  ): ViewStyle => ({
+    padding,
+    margin,
+    borderRadius,
+    backgroundColor,
+    shadowColor: colors.SHADOW_GRAY,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
+    elevation: 16,
+  }),
+  // F, S, C, O, LH, LS
+  text: getTextStyle,
   cardViewStyle: {
     borderRadius: 10,
     backgroundColor: colors.WHITE,
