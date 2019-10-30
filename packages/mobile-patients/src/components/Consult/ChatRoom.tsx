@@ -28,7 +28,10 @@ import {
   CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DeviceHelper,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
   BOOK_APPOINTMENT_TRANSFER,
@@ -141,6 +144,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   // }, []);
   const appointmentData = props.navigation.state.params!.data;
   console.log('appointmentData', appointmentData);
+  const callType = props.navigation.state.params!.callType
+    ? props.navigation.state.params!.callType
+    : '';
+
+  // console.log('appointmentData', appointmentData);
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
   const otSessionRef = React.createRef();
@@ -277,7 +285,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     setuserName(userName);
     requestToJrDoctor();
     analytics.setAnalyticsCollectionEnabled(true);
-    analytics.setCurrentScreen(AppRoutes.ChatRoom, AppRoutes.ChatRoom);
+    CommonScreenLog(AppRoutes.ChatRoom, AppRoutes.ChatRoom);
+
     // updateSessionAPI();
   }, []);
 
@@ -286,6 +295,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     Platform.OS === 'android' && requestReadSmsPermission();
     Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_RESIZE);
     KeepAwake.activate();
+  }, []);
+
+  useEffect(() => {
+    console.log('callType', callType);
+    if (callType === videoCallMsg) {
+      setOnSubscribe(true);
+      setIsAudio(false);
+      InCallManager.startRingtone('_BUNDLE_');
+      InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+    } else if (callType === audioCallMsg) {
+      setIsAudio(true);
+      setOnSubscribe(true);
+      InCallManager.startRingtone('_BUNDLE_');
+      InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+    }
   }, []);
 
   const client = useApolloClient();
@@ -477,15 +501,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
+      KeepAwake.activate();
     },
     sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
     },
     sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
+      KeepAwake.activate();
     },
     sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
+      KeepAwake.activate();
     },
     signal: (event: string) => {
       console.log('session stream signal!', event);

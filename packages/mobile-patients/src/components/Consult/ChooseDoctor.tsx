@@ -42,6 +42,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Spinner } from '../ui/Spinner';
 import { getNetStatus } from '../../helpers/helperFunctions';
 import { BottomPopUp } from '../ui/BottomPopUp';
+import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   headerText: {
@@ -102,6 +103,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
   // console.log(appointmentData, 'appointmentData');
   // console.log(props.navigation.state.params!.patientId, 'pppp');
   useEffect(() => {
+    CommonScreenLog(AppRoutes.ChooseDoctor, AppRoutes.ChooseDoctor);
     getNetStatus().then((status) => {
       if (status) {
         console.log('Network status', status);
@@ -260,7 +262,10 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
           title={'CHOOSE DOCTOR'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => {
+            CommonLogEvent('CHOOSE DOCTOR BACK', 'CHOOSE DOCTOR CLICKED');
+            props.navigation.goBack();
+          }}
         />
         <Text style={styles.headerText}>{string.LocalStrings.chooseDoctorHeaderText}</Text>
         {renderList()}
@@ -269,6 +274,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
             title={'CONFIRM'}
             style={{ flex: 1, marginHorizontal: 60 }}
             onPress={() => {
+              CommonLogEvent('CONFIRM_CHOOSE_DOCTOR', 'CONFIRM_CHOOSE_DOCTOR CLICKED');
               transferAppointmentAPI();
             }}
           />

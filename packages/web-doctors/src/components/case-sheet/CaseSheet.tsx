@@ -163,6 +163,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   );
   const [followUp, setFollowUp] = useState<boolean>(props.startAppointment);
   const [otherInstructions, setOtherInstructions] = useState<boolean>(props.startAppointment);
+  const [vitals, setVitals] = useState<boolean>(props.startAppointment);
   const items = [
     { key: 'symptoms', value: 'Chief Complaints', state: symptoms, component: <Symptoms /> },
     {
@@ -172,9 +173,9 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       component: <LifeStyle />,
     },
     {
-      key: 'Vital',
+      key: 'vital',
       value: 'Vitals',
-      state: lifestyle,
+      state: vitals,
       component: <Vital />,
     },
     {
@@ -216,6 +217,9 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         break;
       case 'lifestyle':
         setLifestyle(isExpanded);
+        break;
+      case 'vital':
+        setVitals(isExpanded);
         break;
       case 'healthVault':
         setHealthVault(isExpanded);

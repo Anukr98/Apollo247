@@ -11,11 +11,11 @@ import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
 import { useApolloClient } from 'react-apollo-hooks';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
+// import Dialog from '@material-ui/core/Dialog';
+// import DialogActions from '@material-ui/core/DialogActions';
+// import DialogContent from '@material-ui/core/DialogContent';
+// import DialogContentText from '@material-ui/core/DialogContentText';
+// import DialogTitle from '@material-ui/core/DialogTitle';
 import { CasesheetView } from 'components/CasesheetView';
 
 //import { Document } from 'react-pdf';
@@ -30,7 +30,7 @@ import {
   EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
 // import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
-import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
+// import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
 import {
   UpdatePatientPrescriptionSentStatus,
   UpdatePatientPrescriptionSentStatusVariables,
@@ -70,7 +70,7 @@ import {
   CreateSeniorDoctorCaseSheetVariables,
 } from 'graphql/types/CreateSeniorDoctorCaseSheet';
 
-import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, STATUS, DOCTOR_CALL_TYPE, DOCTOR_TYPE } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -84,7 +84,6 @@ import {
   SendCallNotification,
   SendCallNotificationVariables,
 } from 'graphql/types/SendCallNotification';
-// import { useLazyQuery } from 'react-apollo-hooks';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -339,7 +338,7 @@ export const ConsultTabs: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
-  const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
+  // const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
 
   const [bp, setBp] = useState<string>('');
   const [height, setHeight] = useState<string>('');
@@ -353,7 +352,7 @@ export const ConsultTabs: React.FC = () => {
   const [lifeStyle, setLifeStyle] = useState<string>('');
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  // const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
   const [appointmentStatus, setAppointmentStatus] = useState<string>('');
   const [sentToPatient, setSentToPatient] = useState<boolean>(false);
   const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
@@ -606,12 +605,16 @@ export const ConsultTabs: React.FC = () => {
     }
   }, []);
 
-  const sendCallNotificationFn = () => {
+  const sendCallNotificationFn = (callType: DOCTOR_CALL_TYPE) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
         fetchPolicy: 'no-cache',
-        variables: { appointmentId: appointmentId },
+        variables: {
+          appointmentId: appointmentId,
+          callType: callType,
+          doctorType: DOCTOR_TYPE.SENIOR,
+        },
       })
       .catch((error: ApolloError) => {
         console.log('Error in Call Notification', error.message);
@@ -639,6 +642,7 @@ export const ConsultTabs: React.FC = () => {
         setSaving(false);
       });
   };
+
   const saveCasesheetAction = (flag: boolean) => {
     // followUp: followUp[0],
     // followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
@@ -696,7 +700,7 @@ export const ConsultTabs: React.FC = () => {
     const followupISODate = new Date(followUpDate[0]).toISOString();
     const followupDateArray = followupISODate.split('T');
 
-    console.log(followupISODate, 'iso date......');
+    // console.log(followupISODate, 'iso date......');
 
     client
       .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
@@ -819,7 +823,7 @@ export const ConsultTabs: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
-      sendCallNotificationFn();
+      sendCallNotificationFn(flag ? DOCTOR_CALL_TYPE.VIDEO : DOCTOR_CALL_TYPE.AUDIO);
     }, 10);
   };
 

@@ -125,7 +125,7 @@ export const CaseSheetLastView: React.FC = (props) => {
               <div className={classes.sectionHeader}>Advice Given</div>
               <div className={classes.advice}>
                 {otherInstructions.map((instruction) => (
-                  <p>{instruction.instruction}</p>
+                  <div>{instruction.instruction}</div>
                 ))}
               </div>
             </>

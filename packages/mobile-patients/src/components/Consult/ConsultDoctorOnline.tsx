@@ -33,6 +33,8 @@ import {
 import { BottomPopUp } from '../ui/BottomPopUp';
 import { getDoctorAvailableSlots } from '../../graphql/types/getDoctorAvailableSlots';
 import { getNextAvailableSlots } from '../../helpers/clientCalls';
+import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -127,6 +129,7 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
   ]);
 
   useEffect(() => {
+    CommonScreenLog('ConsultDoctorOnline', 'ConsultDoctorOnline');
     if (date !== props.date) {
       setDate(props.date);
     }
@@ -328,6 +331,7 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
       <CalendarView
         date={date}
         onPressDate={(selectedDate) => {
+          CommonLogEvent('ConsultDoctorOnline_Calender', 'ConsultDoctorOnline_Clicked');
           console.log('selectedDate', selectedDate !== date, selectedDate, date);
           props.setDate(selectedDate);
           props.setselectedTimeSlot('');

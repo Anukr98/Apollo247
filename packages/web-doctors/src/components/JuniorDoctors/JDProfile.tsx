@@ -62,6 +62,7 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'center',
       '& img': {
         verticalAlign: 'middle',
+        maxWidth: '100%',
       },
     },
     doctorInfo: {

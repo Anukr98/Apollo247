@@ -12,6 +12,7 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 import { getNetStatus } from '../../helpers/helperFunctions';
 import { AppRoutes } from '../NavigatorContainer';
 import { NoInterNetPopup } from '../ui/NoInterNetPopup';
+import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,6 +42,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   // console.log('isbelowthree', props.isbelowthree);
 
   useEffect(() => {
+    CommonScreenLog('ReschedulePopUp', 'ReschedulePopUp');
     try {
       let count = 4 - props.rescheduleCount;
 
@@ -283,6 +285,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                   title={'ACCEPT'}
                   style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
                   onPress={() => {
+                    CommonLogEvent('RESCHDULE_POPUP', 'RESCHDULE_POPUP_CLICKED');
                     try {
                       props.reschduleDateTime &&
                       props.reschduleDateTime.getDoctorNextAvailableSlot &&

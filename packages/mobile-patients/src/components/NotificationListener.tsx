@@ -12,8 +12,9 @@ import {
   getAppointmentDataVariables,
 } from '../graphql/types/getAppointmentData';
 import { useAllCurrentPatients } from '../hooks/authHooks';
-import { View, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Text, AsyncStorage } from 'react-native';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import InCallManager from 'react-native-incall-manager';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -39,7 +40,11 @@ const styles = StyleSheet.create({
   },
 });
 
-type CustomNotificationType = 'Reschedule-Appointment' | 'Upload-Prescription-Order' | 'Chat-Room';
+type CustomNotificationType =
+  | 'Reschedule_Appointment'
+  | 'Upload-Prescription-Order'
+  | 'call_started'
+  | 'chat_room';
 
 export interface NotificationListenerProps extends NavigationScreenProps {}
 
@@ -49,14 +54,23 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
   const { showAphAlert, hideAphAlert } = useUIElements();
   const client = useApolloClient();
 
-  const processNotification = (notification: Notification) => {
+  const processNotification = async (notification: Notification) => {
     const { title, body, data } = notification;
     const notificationType = data.type as CustomNotificationType;
     aphConsole.log({ notificationType, title, body, data });
     aphConsole.log('notification', notification);
 
+    const setCurrentName = await AsyncStorage.getItem('setCurrentName');
+
+    if (
+      setCurrentName === AppRoutes.ChatRoom ||
+      setCurrentName === AppRoutes.AppointmentDetails ||
+      setCurrentName === AppRoutes.AppointmentOnlineDetails
+    )
+      return;
+
     switch (notificationType) {
-      case 'Reschedule-Appointment':
+      case 'Reschedule_Appointment':
         {
           console.log('Reschedule-Appointment called');
           let userName = data.patientName;
@@ -87,7 +101,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   style={styles.rescheduletyles}
                   onPress={() => {
                     console.log('data.appointmentId', data.appointmentId);
-                    getAppointmentData(data.appointmentId, notificationType);
+                    console.log('data.callType', data.callType);
+                    getAppointmentData(data.appointmentId, notificationType, '');
                   }}
                 >
                   <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
@@ -107,14 +122,15 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         }
         break;
 
-      case 'Chat-Room':
+      case 'chat_room':
         {
           let doctorName = data.doctorName;
+          let userName = data.patientName;
 
-          console.log('Chat-Room');
+          console.log('chat_room');
           showAphAlert!({
-            title: 'Hi :)',
-            description: `Dr. ${doctorName} is waiting for you in chat room. Please join.`,
+            title: `Hi ${userName} :)`,
+            description: `Dr. ${doctorName} is waiting to start your consultation. Please proceed to the Consult Room`,
             children: (
               <View
                 style={{
@@ -129,6 +145,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   style={styles.claimStyles}
                   onPress={() => {
                     hideAphAlert && hideAphAlert();
+                    InCallManager.stopRingtone();
+                    InCallManager.stop();
                   }}
                 >
                   <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
@@ -137,7 +155,57 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   style={styles.rescheduletyles}
                   onPress={() => {
                     console.log('data.appointmentId', data.appointmentId);
-                    getAppointmentData(data.appointmentId, notificationType);
+                    getAppointmentData(data.appointmentId, notificationType, '');
+                  }}
+                >
+                  <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
+                    {'CONSULT ROOM'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ),
+          });
+        }
+        break;
+
+      case 'call_started':
+        {
+          InCallManager.startRingtone('_BUNDLE_');
+          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+
+          let doctorName = data.doctorName;
+          let userName = data.patientName;
+
+          console.log('Chat-Room');
+          showAphAlert!({
+            title: `Hi ${userName} :)`,
+            description: `Dr. ${doctorName} is waiting for your call response. Please proceed to the Consult Room`,
+            children: (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginHorizontal: 20,
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-end',
+                  marginVertical: 18,
+                }}
+              >
+                <TouchableOpacity
+                  style={styles.claimStyles}
+                  onPress={() => {
+                    hideAphAlert && hideAphAlert();
+                    InCallManager.stopRingtone();
+                    InCallManager.stop();
+                  }}
+                >
+                  <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.rescheduletyles}
+                  onPress={() => {
+                    console.log('data.appointmentId', data.appointmentId);
+                    console.log('data.callType', data.callType);
+                    getAppointmentData(data.appointmentId, notificationType, data.callType);
                   }}
                 >
                   <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
@@ -157,7 +225,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
   useEffect(() => {
     console.log('createNotificationListeners');
-
+    console.log('route name notification', props.navigation.state);
     /*
      * Triggered when a particular notification has been received in foreground
      * */
@@ -205,7 +273,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     };
   }, []);
 
-  const getAppointmentData = (appointmentId: string, notificationType: string) => {
+  const getAppointmentData = (
+    appointmentId: string,
+    notificationType: string,
+    callType: string
+  ) => {
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
@@ -239,10 +311,24 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 }
                 break;
 
-              case 'Chat-Room':
+              case 'call_started':
                 {
+                  // InCallManager.stopRingtone();
+                  // InCallManager.stop();
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: appointmentData[0],
+                    callType: callType,
+                  });
+                }
+                break;
+
+              case 'chat_room':
+                {
+                  // InCallManager.stopRingtone();
+                  // InCallManager.stop();
+                  props.navigation.navigate(AppRoutes.ChatRoom, {
+                    data: appointmentData[0],
+                    callType: callType,
                   });
                 }
                 break;
