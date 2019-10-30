@@ -619,7 +619,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     <View style={{ width: width - 50 }} key={item.associatedDoctor.id}>
                       <DoctorCard
                         onPress={(doctorId) => {
-                          CommonLogEvent('AssociateDoctorDetails Move', 'Login clicked');
+                          CommonLogEvent(AppRoutes.DoctorDetails, 'Login clicked');
                           props.navigation.navigate(AppRoutes.AssociateDoctorDetails, {
                             doctorId: doctorId,
                           });

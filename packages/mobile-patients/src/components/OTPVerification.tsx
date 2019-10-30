@@ -384,7 +384,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   const onClickResend = () => {
-    CommonLogEvent('Resend Otp', 'Resend Otp clicked');
+    CommonLogEvent(AppRoutes.OTPVerification, 'Resend Otp clicked');
     getNetStatus().then((status) => {
       if (status) {
         setIsresent(true);
@@ -407,7 +407,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   const openWebView = () => {
-    CommonLogEvent('Terms  Conditions', 'Terms  Conditions clicked');
+    CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
     Keyboard.dismiss();
     return (
       <View style={styles.viewWebStyles}>

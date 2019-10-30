@@ -1527,35 +1527,77 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         )}
         <View>
           {rowData.message === imageconsult ? (
-            <TouchableOpacity
-              activeOpacity={0.5}
-              onPress={() => {
-                console.log('On Image Clicked');
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: 'transparent',
-                  width: 180,
-                  height: 180,
-                  borderRadius: 10,
-                  marginVertical: 2,
-                  marginBottom: 4,
-                  flex: 1,
-                  marginLeft: 38,
-                }}
-              >
-                <Image
-                  source={{ uri: rowData.url }}
-                  style={{
-                    resizeMode: 'stretch',
-                    width: 180,
-                    height: 180,
-                    borderRadius: 10,
+            <View>
+              {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log('IMAGE', rowData.url);
+                    setPatientImageshow(true);
+                    setUrl(rowData.url);
                   }}
-                />
-              </View>
-            </TouchableOpacity>
+                >
+                  <View
+                    style={{
+                      backgroundColor: 'transparent',
+                      width: 180,
+                      height: 180,
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      marginBottom: 4,
+                      flex: 1,
+                      marginLeft: 38,
+                    }}
+                  >
+                    <Image
+                      source={{ uri: rowData.url }}
+                      style={{
+                        resizeMode: 'stretch',
+                        width: 180,
+                        height: 180,
+                        borderRadius: 10,
+                      }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log('pdf', rowData.url);
+
+                    if ((Platform.OS = 'android')) {
+                      Linking.openURL(rowData.url).catch((err) =>
+                        console.error('An error occurred', err)
+                      );
+                    } else {
+                      setShowWeb(true);
+                      setUrl(rowData.url);
+                    }
+                  }}
+                >
+                  <View
+                    style={{
+                      backgroundColor: 'transparent',
+                      width: 180,
+                      height: 180,
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      marginBottom: 4,
+                      flex: 1,
+                      marginLeft: 38,
+                    }}
+                  >
+                    <FileBig
+                      style={{
+                        resizeMode: 'stretch',
+                        width: 200,
+                        height: 200,
+                        borderRadius: 10,
+                      }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
           ) : rowData.message === '^^#startconsultJr' ? (
             <View
               style={{

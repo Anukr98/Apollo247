@@ -192,7 +192,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   : false
               }
               onPress={() => {
-                CommonLogEvent('OverlayReschduleView', 'OverlayReschduleView_Clicked');
+                CommonLogEvent('OVERLAY_RESCHEDULE', 'OverlayReschduleView_Clicked');
                 if (props.KeyFollow !== 'RESCHEDULE') {
                   const timeSlot =
                     tabs[0].title === selectedTab &&

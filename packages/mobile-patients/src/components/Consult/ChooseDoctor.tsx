@@ -263,7 +263,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => {
-            CommonLogEvent('CHOOSE DOCTOR BACK', 'CHOOSE DOCTOR CLICKED');
+            CommonLogEvent(AppRoutes.ChooseDoctor, 'CHOOSE DOCTOR CLICKED');
             props.navigation.goBack();
           }}
         />
@@ -274,7 +274,7 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
             title={'CONFIRM'}
             style={{ flex: 1, marginHorizontal: 60 }}
             onPress={() => {
-              CommonLogEvent('CONFIRM_CHOOSE_DOCTOR', 'CONFIRM_CHOOSE_DOCTOR CLICKED');
+              CommonLogEvent(AppRoutes.ChooseDoctor, 'CONFIRM_CHOOSE_DOCTOR CLICKED');
               transferAppointmentAPI();
             }}
           />

@@ -457,7 +457,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             rightComponent={
               <TouchableOpacity
                 onPress={() => {
-                  CommonLogEvent('UPCOMING ONLINE VISIT', 'UPCOMING ONLINE VISIT Clicked');
+                  CommonLogEvent(
+                    AppRoutes.AppointmentOnlineDetails,
+                    'UPCOMING ONLINE VISIT Clicked'
+                  );
                   setCancelAppointment(true);
                 }}
               >
@@ -508,7 +511,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
                 CommonLogEvent(
-                  'Reschdule_Appointment_Online_Details',
+                  AppRoutes.AppointmentOnlineDetails,
                   'Reschdule_Appointment_Online_Details_Clicked'
                 );
                 try {
@@ -521,7 +524,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 title={'START CONSULTATION'}
                 style={styles.startConsultText}
                 onPress={() => {
-                  CommonLogEvent('START_CONSULTATION', 'START_CONSULTATION_Clicked');
+                  CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'START_CONSULTATION_Clicked');
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
                   });
@@ -543,7 +546,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   backgroundColor: 'transparent',
                 }}
                 onPress={() => {
-                  CommonLogEvent('SELECTED_SLOT_ISSUE', 'SELECTED_SLOT_ISSUE_Clicked');
+                  CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'SELECTED_SLOT_ISSUE_Clicked');
                   setBottompopup(false);
                 }}
               >
@@ -574,14 +577,14 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           >
             <TouchableOpacity
               onPress={() => {
-                CommonLogEvent('CANCEL_APPOINTMENT', 'CancelAppointment Clicked');
+                CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
                 setCancelAppointment(false);
               }}
             >
               <View style={styles.cancelMainView}>
                 <TouchableOpacity
                   onPress={() => {
-                    CommonLogEvent('CANCEL_APPOINTMENT', 'CancelAppointment Clicked');
+                    CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
                     setShowCancelPopup(true);
                     setCancelAppointment(false);
                   }}
@@ -613,7 +616,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 <TouchableOpacity
                   style={styles.gotItStyles}
                   onPress={() => {
-                    CommonLogEvent('RESCHEDULE INSTEAD', 'RESCHEDULE_INSTEAD_Clicked');
+                    CommonLogEvent(
+                      AppRoutes.AppointmentOnlineDetails,
+                      'RESCHEDULE_INSTEAD_Clicked'
+                    );
                     setShowCancelPopup(false);
                     NextAvailableSlotAPI();
                   }}
@@ -625,7 +631,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 <TouchableOpacity
                   style={styles.gotItStyles}
                   onPress={() => {
-                    CommonLogEvent('CANCEL CONSULT', 'CANCEL CONSULT_CLICKED');
+                    CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
                     setShowCancelPopup(false);
                     setshowSpinner(true);
                     cancelAppointmentApi();
