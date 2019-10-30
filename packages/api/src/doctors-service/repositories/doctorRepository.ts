@@ -23,7 +23,7 @@ export class DoctorRepository extends Repository<Doctor> {
   getDoctorProfileData(id: string) {
     return this.findOne({
       where: [{ id, isActive: true }],
-      relations: ['specialty', 'doctorHospital'],
+      relations: ['specialty', 'doctorHospital', 'doctorHospital.facility'],
     });
   }
 
@@ -52,11 +52,11 @@ export class DoctorRepository extends Repository<Doctor> {
       relations: [
         'specialty',
         'doctorHospital',
+        'doctorHospital.facility',
         'consultHours',
         'starTeam',
         'bankAccount',
         'packages',
-        'doctorHospital.facility',
         'starTeam.associatedDoctor',
         'starTeam.associatedDoctor.specialty',
         'starTeam.associatedDoctor.doctorHospital',
@@ -79,12 +79,12 @@ export class DoctorRepository extends Repository<Doctor> {
       relations: [
         'specialty',
         'doctorHospital',
+        'doctorHospital.facility',
         'consultHours',
         'consultHours.facility',
         'starTeam',
         'bankAccount',
         'packages',
-        'doctorHospital.facility',
         'starTeam.associatedDoctor',
         'starTeam.associatedDoctor.specialty',
         'starTeam.associatedDoctor.doctorHospital',
