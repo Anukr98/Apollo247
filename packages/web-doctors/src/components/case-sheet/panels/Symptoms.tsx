@@ -527,7 +527,7 @@ export const Symptoms: React.FC = (props) => {
                               component="div"
                               error={errorState.symptomError}
                             >
-                              Please Enter Symptom(two symptom name can't be same)
+                              Please Enter Complaint(two complaint names can't be same)
                             </FormHelperText>
                           )}
                         </div>
