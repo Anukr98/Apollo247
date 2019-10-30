@@ -32,9 +32,19 @@ export enum ConsultType {
   PREFERRED = "PREFERRED",
 }
 
+export enum DOCTOR_CALL_TYPE {
+  AUDIO = "AUDIO",
+  VIDEO = "VIDEO",
+}
+
 export enum DOCTOR_ONLINE_STATUS {
   AWAY = "AWAY",
   ONLINE = "ONLINE",
+}
+
+export enum DOCTOR_TYPE {
+  JUNIOR = "JUNIOR",
+  SENIOR = "SENIOR",
 }
 
 export enum DoctorType {

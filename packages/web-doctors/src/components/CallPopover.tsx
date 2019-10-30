@@ -1270,7 +1270,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     !isClickedOnEdit
       ? true
       : false;
-  console.log(props.appointmentStatus, props.sentToPatient, showCallMoreBtns);
+  // console.log(props.appointmentStatus, props.sentToPatient, showCallMoreBtns);
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>

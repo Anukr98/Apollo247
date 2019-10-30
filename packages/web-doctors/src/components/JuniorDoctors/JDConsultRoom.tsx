@@ -32,14 +32,20 @@ import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
-import { REQUEST_ROLES, Gender, CASESHEET_STATUS } from 'graphql/types/globalTypes';
+import {
+  REQUEST_ROLES,
+  Gender,
+  CASESHEET_STATUS,
+  DOCTOR_CALL_TYPE,
+  DOCTOR_TYPE,
+  Relation,
+} from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { ChatWindow } from 'components/JuniorDoctors/ChatWindow';
 import Scrollbars from 'react-custom-scrollbars';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { Relation } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import isNull from 'lodash/isNull';
@@ -68,13 +74,18 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import ReactCountdownClock from 'react-countdown-clock';
 import IdleTimer from 'react-idle-timer';
 import _omit from 'lodash/omit';
+import { SEND_CALL_NOTIFICATION } from 'graphql/consults';
+import {
+  SendCallNotification,
+  SendCallNotificationVariables,
+} from 'graphql/types/SendCallNotification';
 
-interface SymptomObject {
-  symptom: string;
-  severity: string;
-  howOften: string;
-  since: string;
-}
+// interface SymptomObject {
+//   symptom: string;
+//   severity: string;
+//   howOften: string;
+//   since: string;
+// }
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -873,6 +884,23 @@ export const JDConsultRoom: React.FC = () => {
     }
   };*/
 
+  const sendCallNotificationFn = (callType: DOCTOR_CALL_TYPE) => {
+    client
+      .query<SendCallNotification, SendCallNotificationVariables>({
+        query: SEND_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentId: appointmentId,
+          callType: callType,
+          doctorType: DOCTOR_TYPE.JUNIOR,
+        },
+      })
+      .catch((error: ApolloError) => {
+        console.log('Error in Call Notification', error.message);
+        alert('An error occurred while sending notification to Client.');
+      });
+  };
+
   const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
     // console.log(diagnosis && diagnosis.length, diagnosis!, flag);
 
@@ -1012,6 +1040,7 @@ export const JDConsultRoom: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
+      sendCallNotificationFn(flag ? DOCTOR_CALL_TYPE.VIDEO : DOCTOR_CALL_TYPE.AUDIO);
     }, 10);
   };
 
