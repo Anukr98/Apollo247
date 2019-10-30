@@ -213,7 +213,8 @@ export const convertCaseSheetToRxPdfData = async (
     if (caseSheet.followUpConsultType)
       followUpDetails = followUpDetails + '(' + _capitalize(caseSheet.followUpConsultType) + ') ';
     let followUpDays;
-    if (caseSheet.followUpAfterInDays) followUpDays = caseSheet.followUpAfterInDays;
+    if (caseSheet.followUpAfterInDays && caseSheet.followUpAfterInDays < 7)
+      followUpDays = caseSheet.followUpAfterInDays;
     else if (caseSheet.followUpDate)
       followUpDays = differenceInCalendarDays(caseSheet.followUpDate, caseSheet.createdDate!);
 
