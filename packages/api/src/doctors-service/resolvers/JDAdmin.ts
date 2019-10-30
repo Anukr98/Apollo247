@@ -6,6 +6,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
 export const JDTypeDefs = gql`
   extend type Query {
@@ -26,14 +27,34 @@ const getJuniorDoctorDashboard: Resolver<null, {}, DoctorsServiceContext, string
   const toDate = new Date('2019-10-31');
 
   //get appointments
-  const consultRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentData = await consultRepo.getAllAppointmentsWithOutLimit(fromDate, toDate);
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentData = await appointmentRepo.getAllAppointmentsWithOutLimit(fromDate, toDate);
+  const queueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
   if (appointmentData != null) {
-    const appointmentIds = appointmentData.filter((appointment) => {
+    const appointmentIds = appointmentData.map((appointment) => {
       return appointment.id;
     });
 
     console.log(appointmentIds);
+
+    const queueItems = await queueRepo.getQueueItemsByAppointmentId(appointmentIds);
+    console.log(queueItems);
+
+    console.log('not in Queue', appointmentIds.length - queueItems.length);
+  }
+
+  //get junior doctor details
+  const juniorDoctorDetails = await doctorRepository.getJuniorDoctorsList();
+  if (juniorDoctorDetails != null) {
+    const juniorDoctorIds = juniorDoctorDetails.map((doctor) => {
+      return doctor.id;
+    });
+
+    console.log(juniorDoctorIds);
+
+    //get Queue Items of junior doctors
+    const juniorDoctorQueueItems = await queueRepo.getJuniorDoctorQueueCount(juniorDoctorIds);
+    console.log('juniorDoctorQueueItems', juniorDoctorQueueItems);
   }
 
   const dashboardData = { appointmnetsNotInQueue: 0 };
