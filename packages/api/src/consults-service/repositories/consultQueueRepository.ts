@@ -6,7 +6,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
   getQueueItemsByAppointmentId(idArray: string[]) {
     return this.createQueryBuilder('consultQueueItem')
       .where('consultQueueItem.appointmentId IN (:...idArray)', { idArray })
-      .getMany();
+      .getRawMany();
   }
 
   getJuniorDoctorQueueCount(idArray: string[]) {
@@ -15,6 +15,6 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .addSelect('COUNT(*) AS queuedConsultsCount')
       .where('consultQueueItem.doctorId IN (:...idArray)', { idArray })
       .groupBy('consultQueueItem.doctorId')
-      .getMany();
+      .getRawMany();
   }
 }

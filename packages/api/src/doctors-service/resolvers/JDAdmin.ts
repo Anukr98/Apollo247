@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { DoctorType } from 'doctors-service/entities';
+import { DoctorType, Doctor } from 'doctors-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -9,38 +9,62 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
 export const JDTypeDefs = gql`
+  type QueuedConsults {
+    doctorid: String
+    queuedconsultscount: Int
+  }
+
+  type DashoardData {
+    consultsBookedButNotInQueue: Int
+    juniorDoctorDetails: [Profile]
+    juniorDoctorQueueItems: [QueuedConsults]
+  }
+
   extend type Query {
-    getJuniorDoctorDashboard: String
+    getJuniorDoctorDashboard(fromDate: Date, toDate: Date): DashoardData
   }
 `;
 
-const getJuniorDoctorDashboard: Resolver<null, {}, DoctorsServiceContext, string> = async (
-  parent,
-  args,
-  { mobileNumber, doctorsDb, consultsDb }
-) => {
+type QueuedConsults = {
+  doctorid: string;
+  queuedconsultscount: number;
+};
+
+type DashoardData = {
+  consultsBookedButNotInQueue: number;
+  juniorDoctorDetails: Doctor[];
+  juniorDoctorQueueItems: QueuedConsults[];
+};
+const getJuniorDoctorDashboard: Resolver<
+  null,
+  { fromDate: Date; toDate: Date },
+  DoctorsServiceContext,
+  DashoardData
+> = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
+  if (args.fromDate > args.toDate) throw new AphError(AphErrorMessages.INVALID_DATES);
+
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.searchDoctorByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   if (doctordata.doctorType !== DoctorType.ADMIN) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-  const fromDate = new Date('2019-10-01');
-  const toDate = new Date('2019-10-31');
+
+  let consultsBookedButNotInQueue = 0;
+  let juniorDoctorQueueItems: QueuedConsults[] = [];
 
   //get appointments
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
-  const appointmentData = await appointmentRepo.getAllAppointmentsWithOutLimit(fromDate, toDate);
+  const appointmentData = await appointmentRepo.getAllAppointmentsWithOutLimit(
+    args.fromDate,
+    args.toDate
+  );
   const queueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
   if (appointmentData != null) {
     const appointmentIds = appointmentData.map((appointment) => {
       return appointment.id;
     });
 
-    console.log(appointmentIds);
-
     const queueItems = await queueRepo.getQueueItemsByAppointmentId(appointmentIds);
-    console.log(queueItems);
-
-    console.log('not in Queue', appointmentIds.length - queueItems.length);
+    consultsBookedButNotInQueue = appointmentIds.length - queueItems.length;
   }
 
   //get junior doctor details
@@ -50,16 +74,17 @@ const getJuniorDoctorDashboard: Resolver<null, {}, DoctorsServiceContext, string
       return doctor.id;
     });
 
-    console.log(juniorDoctorIds);
-
     //get Queue Items of junior doctors
-    const juniorDoctorQueueItems = await queueRepo.getJuniorDoctorQueueCount(juniorDoctorIds);
-    console.log('juniorDoctorQueueItems', juniorDoctorQueueItems);
+    juniorDoctorQueueItems = await queueRepo.getJuniorDoctorQueueCount(juniorDoctorIds);
   }
 
-  const dashboardData = { appointmnetsNotInQueue: 0 };
+  const DashoardData: DashoardData = {
+    consultsBookedButNotInQueue: consultsBookedButNotInQueue,
+    juniorDoctorDetails: juniorDoctorDetails,
+    juniorDoctorQueueItems: juniorDoctorQueueItems,
+  };
 
-  return '';
+  return DashoardData;
 };
 
 export const JDResolvers = {
