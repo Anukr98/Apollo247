@@ -32,7 +32,7 @@ interface OptionType {
 let suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
+  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
     <AphTextField
@@ -710,8 +710,8 @@ export const MedicinePrescription: React.FC = () => {
       const whenString =
         medicine.medicineToBeTaken.length > 0
           ? toBeTaken(medicine.medicineToBeTaken)
-            .join(', ')
-            .toLowerCase()
+              .join(', ')
+              .toLowerCase()
           : '';
       const unitHtml =
         medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
@@ -721,15 +721,18 @@ export const MedicinePrescription: React.FC = () => {
         medicine.medicineTimings.length > 0
           ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
           : '';
-      const dosageCount = medicine.medicineTimings.length > 0 ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length : medicine.medicineDosage;
+      const dosageCount =
+        medicine.medicineTimings.length > 0
+          ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
+          : medicine.medicineDosage;
       return (
         <div key={index} className={classes.medicineBox}>
           <div key={_uniqueId('med_id_')}>
             <div className={classes.medicineName}>{medicine.medicineName}</div>
             <div className={classes.medicineInfo}>
               {/*medicine.medicineTimings.length*/}
-              {dosageCount} {unitHtml} a day {timesString.length > 0 && timesString} for{' '}
-              {duration} {whenString.length > 0 && whenString}
+              {dosageCount} {unitHtml} a day {timesString.length > 0 && timesString} for {duration}{' '}
+              {whenString.length > 0 && whenString}
             </div>
           </div>
           <div className={classes.actionGroup}>
@@ -964,8 +967,8 @@ export const MedicinePrescription: React.FC = () => {
             {showDosage ? (
               <div className={classes.selectedMedicine}>{selectedValue.toUpperCase()}</div>
             ) : (
-                'ADD MEDICINE'
-              )}
+              'ADD MEDICINE'
+            )}
             <AphButton className={classes.dialogClose}>
               <img
                 src={require('images/ic_cross.svg')}
@@ -1038,79 +1041,79 @@ export const MedicinePrescription: React.FC = () => {
                 )}
               </div>
             ) : (
-                <div>
-                  <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
-                    <div className={classes.dialogContent}>
-                      <div className={classes.sectionGroup}>
-                        <div className={classes.colGroup}>
-                          <div className={classes.divCol}>
-                            <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                              Dosage*
+              <div>
+                <Scrollbars autoHide={true} style={{ height: 'calc(45vh' }}>
+                  <div className={classes.dialogContent}>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.colGroup}>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                            Dosage*
                           </div>
-                            <AphTextField
-                              inputProps={{ maxLength: 6 }}
-                              value={tabletsCount}
-                              onChange={(event: any) => {
-                                setTabletsCount(event.target.value);
-                              }}
-                            />
-                            {errorState.dosageErr && (
-                              <FormHelperText
-                                className={classes.helpText}
-                                component="div"
-                                error={errorState.durationErr}
-                              >
-                                Please Enter Dosage(Number only)
+                          <AphTextField
+                            inputProps={{ maxLength: 6 }}
+                            value={tabletsCount}
+                            onChange={(event: any) => {
+                              setTabletsCount(event.target.value);
+                            }}
+                          />
+                          {errorState.dosageErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please Enter Dosage(Number only)
                             </FormHelperText>
-                            )}
+                          )}
+                        </div>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                            Units*
                           </div>
-                          <div className={classes.divCol}>
-                            <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                              Units*
-                          </div>
-                            <div className={classes.unitsSelect}>
-                              <AphSelect
-                                value={medicineUnit}
-                                MenuProps={{
-                                  classes: {
-                                    paper: classes.menuPaper,
-                                  },
-                                  anchorOrigin: {
-                                    vertical: 'bottom',
-                                    horizontal: 'right',
-                                  },
-                                  transformOrigin: {
-                                    vertical: 'top',
-                                    horizontal: 'right',
-                                  },
-                                }}
-                                onChange={(e: any) => {
-                                  setMedicineUnit(e.target.value as string);
-                                }}
+                          <div className={classes.unitsSelect}>
+                            <AphSelect
+                              value={medicineUnit}
+                              MenuProps={{
+                                classes: {
+                                  paper: classes.menuPaper,
+                                },
+                                anchorOrigin: {
+                                  vertical: 'bottom',
+                                  horizontal: 'right',
+                                },
+                                transformOrigin: {
+                                  vertical: 'top',
+                                  horizontal: 'right',
+                                },
+                              }}
+                              onChange={(e: any) => {
+                                setMedicineUnit(e.target.value as string);
+                              }}
+                            >
+                              <MenuItem value="TABLET" classes={{ selected: classes.menuSelected }}>
+                                tablet
+                              </MenuItem>
+                              <MenuItem
+                                value="CAPSULE"
+                                classes={{ selected: classes.menuSelected }}
                               >
-                                <MenuItem value="TABLET" classes={{ selected: classes.menuSelected }}>
-                                  tablet
+                                capsule
                               </MenuItem>
-                                <MenuItem
-                                  value="CAPSULE"
-                                  classes={{ selected: classes.menuSelected }}
-                                >
-                                  capsule
+                              <MenuItem value="ML" classes={{ selected: classes.menuSelected }}>
+                                ml
                               </MenuItem>
-                                <MenuItem value="ML" classes={{ selected: classes.menuSelected }}>
-                                  ml
+                              <MenuItem value="DROPS" classes={{ selected: classes.menuSelected }}>
+                                drops
                               </MenuItem>
-                                <MenuItem value="DROPS" classes={{ selected: classes.menuSelected }}>
-                                  drops
+                              <MenuItem value="NA" classes={{ selected: classes.menuSelected }}>
+                                NA
                               </MenuItem>
-                                <MenuItem value="NA" classes={{ selected: classes.menuSelected }}>
-                                  NA
-                              </MenuItem>
-                              </AphSelect>
-                            </div>
+                            </AphSelect>
                           </div>
                         </div>
-                        {/**
+                      </div>
+                      {/**
                       <div className={classes.numberTablets}>
                         <img
                           src={require('images/ic_minus.svg')}
@@ -1133,111 +1136,111 @@ export const MedicinePrescription: React.FC = () => {
                         />
                       </div>
                       **/}
-                      </div>
-                      <div className={classes.sectionGroup}>
-                        <div className={classes.colGroup}>
-                          <div className={classes.divCol}>
-                            <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                              Duration of Consumption*
+                    </div>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.colGroup}>
+                        <div className={classes.divCol}>
+                          <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                            Duration of Consumption*
                           </div>
-                            <AphTextField
-                              placeholder=""
-                              inputProps={{ maxLength: 6 }}
-                              value={consumptionDuration}
-                              onChange={(event: any) => {
-                                setConsumptionDuration(event.target.value);
-                              }}
-                              error={errorState.durationErr}
-                            />
-                            {errorState.durationErr && (
-                              <FormHelperText
-                                className={classes.helpText}
-                                component="div"
-                                error={errorState.durationErr}
-                              >
-                                Please Enter Duration in days(Number only)
-                            </FormHelperText>
-                            )}
-                          </div>
-                          <div className={classes.divCol}>
-                            <div className={classes.sectionTitle}>To be taken</div>
-                            <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
-                              {tobeTakenHtml}
-                            </div>
-                            {errorState.tobeTakenErr && (
-                              <FormHelperText
-                                className={classes.helpText}
-                                component="div"
-                                error={errorState.tobeTakenErr}
-                              >
-                                Please select to be taken.
-                            </FormHelperText>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className={classes.sectionGroup}>
-                        <div className={classes.sectionTitle}>Time of the Day*</div>
-                        <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                        {errorState.daySlotErr && (
-                          <FormHelperText
-                            className={classes.helpText}
-                            component="div"
-                            error={errorState.daySlotErr}
-                          >
-                            Please select time of the Day.
-                        </FormHelperText>
-                        )}
-                      </div>
-                      <div className={classes.sectionGroup}>
-                        <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
-                          Instructions (if any)
-                      </div>
-                        <div className={classes.numberTablets}>
                           <AphTextField
-                            value={medicineInstruction}
+                            placeholder=""
+                            inputProps={{ maxLength: 6 }}
+                            value={consumptionDuration}
                             onChange={(event: any) => {
-                              setMedicineInstruction(event.target.value);
+                              setConsumptionDuration(event.target.value);
                             }}
+                            error={errorState.durationErr}
                           />
+                          {errorState.durationErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please Enter Duration in days(Number only)
+                            </FormHelperText>
+                          )}
+                        </div>
+                        <div className={classes.divCol}>
+                          <div className={classes.sectionTitle}>To be taken</div>
+                          <div className={`${classes.numberTablets} ${classes.tobeTakenGroup}`}>
+                            {tobeTakenHtml}
+                          </div>
+                          {errorState.tobeTakenErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.tobeTakenErr}
+                            >
+                              Please select to be taken.
+                            </FormHelperText>
+                          )}
                         </div>
                       </div>
                     </div>
-                  </Scrollbars>
-                  <div className={classes.dialogActions}>
+                    <div className={classes.sectionGroup}>
+                      <div className={classes.sectionTitle}>Time of the Day*</div>
+                      <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                      {errorState.daySlotErr && (
+                        <FormHelperText
+                          className={classes.helpText}
+                          component="div"
+                          error={errorState.daySlotErr}
+                        >
+                          Please select time of the Day.
+                        </FormHelperText>
+                      )}
+                    </div>
+                    <div className={classes.sectionGroup}>
+                      <div className={`${classes.sectionTitle} ${classes.noPadding}`}>
+                        Instructions (if any)
+                      </div>
+                      <div className={classes.numberTablets}>
+                        <AphTextField
+                          value={medicineInstruction}
+                          onChange={(event: any) => {
+                            setMedicineInstruction(event.target.value);
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Scrollbars>
+                <div className={classes.dialogActions}>
+                  <AphButton
+                    className={classes.cancelBtn}
+                    color="primary"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      setShowDosage(false);
+                    }}
+                  >
+                    Cancel
+                  </AphButton>
+                  {isUpdate ? (
                     <AphButton
-                      className={classes.cancelBtn}
                       color="primary"
                       onClick={() => {
-                        setIsDialogOpen(false);
-                        setShowDosage(false);
+                        addUpdateMedicines();
                       }}
                     >
-                      Cancel
-                  </AphButton>
-                    {isUpdate ? (
-                      <AphButton
-                        color="primary"
-                        onClick={() => {
-                          addUpdateMedicines();
-                        }}
-                      >
-                        Update Medicine
+                      Update Medicine
                     </AphButton>
-                    ) : (
-                        <AphButton
-                          color="primary"
-                          className={classes.updateBtn}
-                          onClick={() => {
-                            addUpdateMedicines();
-                          }}
-                        >
-                          Add Medicine
+                  ) : (
+                    <AphButton
+                      color="primary"
+                      className={classes.updateBtn}
+                      onClick={() => {
+                        addUpdateMedicines();
+                      }}
+                    >
+                      Add Medicine
                     </AphButton>
-                      )}
-                  </div>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
           </div>
         </Paper>
       </Modal>
