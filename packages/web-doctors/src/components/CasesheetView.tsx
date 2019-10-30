@@ -5,6 +5,8 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 import { CaseSheetLastView } from './CasesheetLastView';
 import moment from 'moment';
 import { MEDICINE_TO_BE_TAKEN } from 'graphql/types/globalTypes';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from 'graphql/types/GetCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -182,9 +184,9 @@ export const CasesheetView: React.FC = (props) => {
     }
   };
 
-  const convertToCase = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
+  const convertMedicineTobeTaken = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
     if (medicineTiming) {
-      let timing = medicineTiming.toLocaleLowerCase();
+      let timing = _toLower(medicineTiming);
       if (timing.includes('_')) {
         timing = timing.replace('_', ' ');
       }
@@ -206,13 +208,8 @@ export const CasesheetView: React.FC = (props) => {
     );
   };
 
-  const toCamelCase = (consultType: string) => {
-    const consult = consultType.toLocaleLowerCase();
-    return consult.replace(consult[0], consult[0].toUpperCase());
-  };
-
   const getFollowUpData = () => {
-    return `Follow up (${toCamelCase(consultType[0])}) ${
+    return `Follow up (${_startCase(_toLower(consultType[0]))}) ${
       followUpAfterInDays[0] === '9'
         ? `on ${moment(followUpDate[0]).format('DD/MM/YYYY')}`
         : `after ${followUpAfterInDays[0]} days`
@@ -243,9 +240,11 @@ export const CasesheetView: React.FC = (props) => {
               prescription.medicineTimings && prescription.medicineTimings.length > 0
                 ? `(${prescription.medicineTimings.map((timing: any) => timing)})`
                 : ''
-            } ${duration} ${
+            } ${duration}${
               prescription.medicineToBeTaken && prescription.medicineToBeTaken.length > 0
-                ? `; ${prescription.medicineToBeTaken.map((timing: any) => convertToCase(timing))}`
+                ? `; ${prescription.medicineToBeTaken.map((timing: any) =>
+                    convertMedicineTobeTaken(timing)
+                  )}`
                 : ''
             }`}
           </span>
