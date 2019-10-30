@@ -45,7 +45,6 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import Geocoder from 'react-native-geocoding';
 import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
@@ -196,7 +195,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       if (status) {
         // fetchCurrentLocation();
         getUserCurrentPosition()
-          .then((res) => {
+          .then((res: any) => {
             res.name && setcurrentLocation(res.name.toUpperCase());
             fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
             setlatlng(res.latlong);
@@ -335,7 +334,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       ? { specialtyName: params, specialtySearchType: SpecialtySearchType.NAME }
       : [];
 
-    let geolocation = {};
+    let geolocation = {} as any;
     if (location) {
       geolocation['geolocation'] = {
         latitude: parseFloat(location.lat),
@@ -480,7 +479,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     // Geocoder.init(key);
     // console.log(getUserCurrentPosition(), 'getUserCurrentPosition');
     getUserCurrentPosition()
-      .then((res) => {
+      .then((res: any) => {
         res.name && setcurrentLocation(res.name.toUpperCase());
 
         console.log(res, 'getUserCurrentPosition');

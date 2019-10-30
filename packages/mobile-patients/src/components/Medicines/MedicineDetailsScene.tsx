@@ -693,10 +693,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             style={{ height: 40, width: 40 }}
             resizeMode="contain"
           />
-        ) : data.overview == 'SYRUP' ? (
-          <SyrupBottleIcon />
-        ) : data.Doseform == 'INJECTION' ? (
-          <InjectionIcon />
         ) : data.is_prescription_required ? (
           <MedicineRxIcon />
         ) : (

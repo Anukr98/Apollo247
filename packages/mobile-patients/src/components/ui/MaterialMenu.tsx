@@ -33,25 +33,21 @@ export interface MaterialMenuProps {
 }
 
 export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
-  let _menu = null;
-
-  const setMenuRef = (ref) => {
-    _menu = ref;
-  };
+  const menuRef = React.useRef<any>(null);
 
   const hideMenu = () => {
-    _menu.hide();
+    menuRef.current.hide();
   };
 
   const showMenu = () => {
-    _menu.show();
+    menuRef.current.show();
   };
   const numbers: (string | number)[] = props.data
     ? props.data
     : Array.from({ length: 20 }).map((_, i) => i + 1);
   return (
     <Menu
-      ref={setMenuRef}
+      ref={menuRef}
       button={<TouchableOpacity onPress={showMenu}>{props.children}</TouchableOpacity>}
       style={styles.menuContainer}
     >

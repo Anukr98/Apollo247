@@ -329,8 +329,11 @@ export const getUserCurrentPosition = async () => {
       navigator.geolocation.getCurrentPosition(async (position) => {
         console.log(position, 'position');
 
-        Geocoder.init(googleApiKey);
-        const jsonData = await Geocoder.from(position.coords.latitude, position.coords.longitude);
+        (Geocoder as any).init(googleApiKey);
+        const jsonData = await (Geocoder as any).from(
+          position.coords.latitude,
+          position.coords.longitude
+        );
         // .then((json) => {
         if (jsonData) {
           const result = jsonData.results[0];

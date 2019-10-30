@@ -301,7 +301,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
   };
 
   if (rowData) {
-    const doctorClinics = rowData.doctorHospital.filter((item) => {
+    const doctorClinics = rowData.doctorHospital.filter((item: any) => {
       if (item && item.facility && item.facility.facilityType)
         return item.facility.facilityType === 'HOSPITAL';
     });

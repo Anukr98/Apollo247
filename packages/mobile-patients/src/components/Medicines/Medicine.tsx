@@ -1000,7 +1000,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           Keyboard.dismiss();
         }}
         style={[
-          searchSate == 'success' && medicineList.length == 0
+          (searchSate == 'success' || searchSate == 'fail') && medicineList.length == 0
             ? {
                 height: '100%',
                 width: '100%',

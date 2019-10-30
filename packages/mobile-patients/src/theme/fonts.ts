@@ -1,7 +1,7 @@
 import { Platform, TextStyle } from 'react-native';
 
 type AphOpacity = 0.1 | 0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 | 1;
-type AphTextColors = '#01475b' | '#02475b' | '#0087ba' | '#fc9916' | '#890000' | '#fff';
+type AphTextColors = '#01475b' | '#02475b' | '#0087ba' | '#fc9916' | '#890000' | '#fff' | string;
 type AphFont =
   | 'TI'
   | 'T'

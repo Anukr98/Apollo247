@@ -277,8 +277,13 @@ export interface FilterDoctorInput {
   fees?: (Range | null)[] | null;
   gender?: (Gender | null)[] | null;
   language?: (string | null)[] | null;
-  location?: string | null;
+  geolocation?: Geolocation | null;
   consultMode?: ConsultMode | null;
+}
+
+export interface Geolocation {
+  latitude: number;
+  longitude: number;
 }
 
 export interface HelpEmailInput {

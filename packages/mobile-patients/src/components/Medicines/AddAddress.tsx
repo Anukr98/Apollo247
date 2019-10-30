@@ -1,23 +1,31 @@
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DropDown, DropDownProps } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   SAVE_PATIENT_ADDRESS,
   UPDATE_PATIENT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { PatientAddressInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   savePatientAddress,
   savePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
+  getPlaceInfoByPincode,
+  pinCodeServiceabilityApi,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  aphConsole,
   g,
   handleGraphQlError,
-  aphConsole,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -27,29 +35,15 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
-  View,
   TextInput,
+  View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import {
-  PatientAddressInput,
-  UpdatePatientAddressInput,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  pinCodeServiceabilityApi,
-  getPlaceInfoByPincode,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
-import { DropDown, DropDownProps } from '@aph/mobile-patients/src/components/ui/DropDown';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { fonts } from '../../theme/fonts';
-import { string } from '../../strings/string';
-import Axios from 'axios';
 import {
   updatePatientAddress,
   updatePatientAddressVariables,
 } from '../../graphql/types/updatePatientAddress';
-import { apiRoutes } from '../../helpers/apiRoutes';
+import { fonts } from '../../theme/fonts';
 import { AppRoutes } from '../NavigatorContainer';
 const { height } = Dimensions.get('window');
 const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
@@ -341,74 +335,76 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const updateCityStateByPincode = (pincode: string) => {
     aphConsole.log('updateCityStateByPincode');
     getPlaceInfoByPincode(pincode)
-      .then(({ data }) => {
-        aphConsole.log({ data });
+      .then(({ data }: any) => {
+        try {
+          aphConsole.log({ data });
 
-        const results = g(data, 'results') || [];
-        console.log(results, 'results');
-        if (results.length == 0) return;
-        console.log(results[0].geometry.location.lat);
-        console.log(results[0].geometry.location.lng);
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${results[0].geometry.location.lat},${results[0].geometry.location.lng}&key=${key}`;
-        //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-        Axios.get(url)
-          .then((obj) => {
-            console.log(obj, 'geocode obj');
-            try {
-              if (
-                obj.data.results.length > 0 &&
-                obj.data.results[0].address_components.length > 0
-              ) {
-                const address = obj.data.results[0].address_components[0].short_name;
-                console.log(address, 'address obj');
-                const addrComponents = obj.data.results[0].address_components || [];
-                const city = (
-                  addrComponents.find(
-                    (item) =>
-                      item.types.indexOf('locality') > -1 ||
-                      item.types.indexOf('administrative_area_level_2') > -1
-                  ) || {}
-                ).long_name;
-                const state = (
-                  addrComponents.find(
-                    (item) => item.types.indexOf('administrative_area_level_1') > -1
-                  ) || {}
-                ).long_name;
-                let val = city.concat(', ').concat(state);
-                // setcity(obj.data.results[0].formatted_address || '');
-                setcity(val);
-                setstate(state || '');
-                console.log(obj.data.results[0].formatted_address, 'val obj');
-                //setcurrentLocation(address.toUpperCase());
-                // AsyncStorage.setItem(
-                //   'location',
-                //   JSON.stringify({
-                //     latlong: obj.data.results[0].geometry.location,
-                //     name: address.toUpperCase(),
-                //   })
-                // );
-              }
-            } catch {}
-          })
-          .catch((error) => {
-            console.log(error, 'geocode error');
-          });
-        //if (results.length == 0) return;
-        // const addrComponents = results[0].address_components || [];
-        // const city = (
-        //   addrComponents.find(
-        //     (item) =>
-        //       item.types.indexOf('locality') > -1 ||
-        //       item.types.indexOf('administrative_area_level_2') > -1
-        //   ) || {}
-        // ).long_name;
-        // const state = (
-        //   addrComponents.find((item) => item.types.indexOf('administrative_area_level_1') > -1) ||
-        //   {}
-        // ).long_name;
-        // let val = city.concat(', ').concat(state);
-        // setcity(val || '');
-        // setstate(state || '');
+          const results = g(data, 'results') || [];
+          console.log(results, 'results');
+          if (results.length == 0) return;
+          console.log(results[0].geometry.location.lat);
+          console.log(results[0].geometry.location.lng);
+          const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${results[0].geometry.location.lat},${results[0].geometry.location.lng}&key=${key}`;
+          //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+          Axios.get(url)
+            .then((obj) => {
+              console.log(obj, 'geocode obj');
+              try {
+                if (
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
+                ) {
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(address, 'address obj');
+                  const addrComponents = obj.data.results[0].address_components || [];
+                  const city = (
+                    addrComponents.find(
+                      (item: any) =>
+                        item.types.indexOf('locality') > -1 ||
+                        item.types.indexOf('administrative_area_level_2') > -1
+                    ) || {}
+                  ).long_name;
+                  const state = (
+                    addrComponents.find(
+                      (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+                    ) || {}
+                  ).long_name;
+                  let val = city.concat(', ').concat(state);
+                  // setcity(obj.data.results[0].formatted_address || '');
+                  setcity(val);
+                  setstate(state || '');
+                  console.log(obj.data.results[0].formatted_address, 'val obj');
+                  //setcurrentLocation(address.toUpperCase());
+                  // AsyncStorage.setItem(
+                  //   'location',
+                  //   JSON.stringify({
+                  //     latlong: obj.data.results[0].geometry.location,
+                  //     name: address.toUpperCase(),
+                  //   })
+                  // );
+                }
+              } catch {}
+            })
+            .catch((error) => {
+              console.log(error, 'geocode error');
+            });
+          //if (results.length == 0) return;
+          // const addrComponents = results[0].address_components || [];
+          // const city = (
+          //   addrComponents.find(
+          //     (item) =>
+          //       item.types.indexOf('locality') > -1 ||
+          //       item.types.indexOf('administrative_area_level_2') > -1
+          //   ) || {}
+          // ).long_name;
+          // const state = (
+          //   addrComponents.find((item) => item.types.indexOf('administrative_area_level_1') > -1) ||
+          //   {}
+          // ).long_name;
+          // let val = city.concat(', ').concat(state);
+          // setcity(val || '');
+          // setstate(state || '');
+        } catch (error) {}
       })
       .catch((e) => {
         aphConsole.error({ e });

@@ -42,6 +42,7 @@ export interface MedicineProductDetails extends MedicineProduct {
 
 export interface MedicineProductDetailsResponse {
   productdp: MedicineProductDetails[];
+  message?: string;
 }
 
 export interface MedicineProductsResponse {
@@ -77,8 +78,8 @@ export interface GetDeliveryTimeResponse {
     deliverydate: string;
     siteId: string;
   }[];
+  errorMSG?: string;
 }
-
 interface InventoryCheckApiResponse {
   InvChkResult: {
     Message: string; //"Data Founds" | "Authentication Failure-Invalid Token" | "No Items to Check Inventory"
