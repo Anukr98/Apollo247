@@ -157,7 +157,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
-    CommonScreenLog('DoctorSearchListing', 'DoctorSearchListing');
+    CommonScreenLog(AppRoutes.DoctorSearchListing, AppRoutes.DoctorSearchListing);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
