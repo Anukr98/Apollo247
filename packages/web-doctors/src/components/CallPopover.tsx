@@ -1270,7 +1270,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     !isClickedOnEdit
       ? true
       : false;
-  // console.log(props.appointmentStatus, props.sentToPatient, showCallMoreBtns);
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
@@ -1430,6 +1429,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 aria-describedby={id}
                 variant="contained"
                 onClick={(e) => handleClick(e)}
+                disabled={props.appointmentStatus === 'COMPLETED'}
               >
                 <img src={require('images/ic_call.svg')} />
               </Button>
@@ -1491,6 +1491,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 className={classes.consultIcon}
                 aria-describedby={idThreeDots}
                 disabled={
+                  props.appointmentStatus === 'COMPLETED' ||
                   props.isAppointmentEnded ||
                   (appointmentInfo!.appointmentState !== 'NEW' &&
                     appointmentInfo!.appointmentState !== 'TRANSFER' &&
