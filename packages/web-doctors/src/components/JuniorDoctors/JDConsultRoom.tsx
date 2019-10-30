@@ -150,6 +150,9 @@ const useStyles = makeStyles((theme: Theme) => {
       width: 60,
       height: 60,
       backgroundColor: '#f7f8f5',
+      '& img': {
+        maxWidth: '100%',
+      },
     },
     doctorInfo: {
       paddingRight: 55,
