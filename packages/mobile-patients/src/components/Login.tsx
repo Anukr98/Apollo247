@@ -30,6 +30,7 @@ import firebase from 'react-native-firebase';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   container: {
@@ -208,6 +209,11 @@ export const Login: React.FC<LoginProps> = (props) => {
   };
 
   const onClickOkay = () => {
+    // firebase.analytics().logEvent(AppRoutes.Login, {
+    //   Button_Action: 'Login clicked',
+    // });
+    CommonLogEvent(AppRoutes.Login, 'Login clicked');
+
     Keyboard.dismiss();
     getNetStatus().then(async (status) => {
       if (status) {
