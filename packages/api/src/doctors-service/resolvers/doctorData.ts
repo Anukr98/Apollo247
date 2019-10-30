@@ -69,6 +69,9 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
           Z: 'EMAIL',
           AA: 'SECRETARYNAME',
           AB: 'SECRETARYNUMBER',
+          AC: 'IMAGEURL',
+          AD: 'THUMBNAILURL',
+          AE: 'DISPLAYNAME',
         },
       },
       {
@@ -143,6 +146,16 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   });
 
   const formatedDoctorData = doctorData.map((element: any) => {
+    const doctorProfilePhoto =
+      typeof element.IMAGEURL == 'undefined'
+        ? 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png'
+        : element.IMAGEURL;
+
+    const thumbnail =
+      typeof element.THUMBNAILURL == 'undefined'
+        ? 'https://prodaphstorage.blob.core.windows.net/doctors/no_photo.png'
+        : element.THUMBNAILURL;
+
     const DoctorDetails: Partial<Doctor> = {};
     DoctorDetails.salutation = Salutation.DR;
     DoctorDetails.fullName = element.FULLNAME;
@@ -155,7 +168,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     DoctorDetails.experience = element.EXPERIRNCE;
     DoctorDetails.languages = element.LANGUAGES;
     DoctorDetails.isActive = true;
-    DoctorDetails.photoUrl = 'https://apollouatstg.blob.core.windows.net/doctors/no_photo.png';
+    DoctorDetails.photoUrl = doctorProfilePhoto;
     DoctorDetails.onlineConsultationFees = element.ONLINECONSULTATIONFEES || 0;
     DoctorDetails.physicalConsultationFees = element.PHYSICALCONSULTATIONFEES || 0;
     DoctorDetails.registrationNumber =
@@ -170,6 +183,8 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     DoctorDetails.delegateName = element.SECRETARYNAME == 'undefined' ? '' : element.SECRETARYNAME;
     DoctorDetails.delegateNumber =
       element.SECRETARYNUMBER == 'undefined' ? '' : element.SECRETARYNUMBER;
+    DoctorDetails.thumbnailUrl = thumbnail;
+    DoctorDetails.displayName = element.DISPLAYNAME;
     return DoctorDetails;
   });
   console.log('DoctorsData >>>>>>>', formatedDoctorData);
