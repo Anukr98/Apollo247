@@ -176,6 +176,11 @@ export const CasesheetView: React.FC = (props) => {
     followUpDate,
   } = useContext(CaseSheetContext);
 
+  let doctorFacilityDetails = null;
+  if (createdDoctorProfile && createdDoctorProfile.doctorHospital[0]) {
+    doctorFacilityDetails = createdDoctorProfile.doctorHospital[0].facility;
+  }
+
   const getAge = (date: string) => {
     if (date) {
       return Math.abs(
@@ -271,17 +276,25 @@ export const CasesheetView: React.FC = (props) => {
                     : ''
                 } | MCI Reg. No. ${createdDoctorProfile.registrationNumber || ''}`}</span>
               </h3>
-              <p className={classes.address}>
-                {`${createdDoctorProfile.streetLine1 || ''} ${
-                  createdDoctorProfile.streetLine2 ? `| ${createdDoctorProfile.streetLine2}` : ''
-                } ${
-                  createdDoctorProfile.streetLine3 ? ` | ${createdDoctorProfile.streetLine3}` : ''
-                }  ${createdDoctorProfile.city ? `| ${createdDoctorProfile.city}` : ''}  ${
-                  createdDoctorProfile.zip ? ` - ${createdDoctorProfile.zip}` : ''
-                }  ${createdDoctorProfile.state ? ` | ${createdDoctorProfile.state}` : ''} ${
-                  createdDoctorProfile.country ? `,${createdDoctorProfile.country}` : ''
-                }`}
-              </p>
+              {doctorFacilityDetails ? (
+                <>
+                  <p className={classes.address}>
+                    {`${doctorFacilityDetails.streetLine1 || ''} ${
+                      doctorFacilityDetails.streetLine2
+                        ? `| ${doctorFacilityDetails.streetLine2}`
+                        : ''
+                    } ${
+                      doctorFacilityDetails.streetLine3
+                        ? `| ${doctorFacilityDetails.streetLine3}`
+                        : ''
+                    } ${doctorFacilityDetails.city ? ` | ${doctorFacilityDetails.city}` : ''}  ${
+                      doctorFacilityDetails.zipcode ? ` - ${doctorFacilityDetails.zipcode}` : ''
+                    }  ${doctorFacilityDetails.state ? ` | ${doctorFacilityDetails.state}` : ''} ${
+                      doctorFacilityDetails.country ? `,${doctorFacilityDetails.country}` : ''
+                    }`}
+                  </p>
+                </>
+              ) : null}
             </div>
           ) : null}
         </div>
