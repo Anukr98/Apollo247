@@ -721,14 +721,18 @@ export const MedicinePrescription: React.FC = () => {
         medicine.medicineTimings.length > 0
           ? '(' + medicine.medicineTimings.join(' , ').toLowerCase() + ')'
           : '';
+      const dosageCount =
+        medicine.medicineTimings.length > 0
+          ? parseInt(medicine.medicineDosage) * medicine.medicineTimings.length
+          : medicine.medicineDosage;
       return (
         <div key={index} className={classes.medicineBox}>
           <div key={_uniqueId('med_id_')}>
             <div className={classes.medicineName}>{medicine.medicineName}</div>
             <div className={classes.medicineInfo}>
               {/*medicine.medicineTimings.length*/}
-              {medicine.medicineDosage} {unitHtml} a day {timesString.length > 0 && timesString} for{' '}
-              {duration} {whenString.length > 0 && whenString}
+              {dosageCount} {unitHtml} a day {timesString.length > 0 && timesString} for {duration}{' '}
+              {whenString.length > 0 && whenString}
             </div>
           </div>
           <div className={classes.actionGroup}>
@@ -788,14 +792,6 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         dosageErr: false,
       });
-    } else if (isTobeTakenSelected.length === 0) {
-      setErrorState({
-        ...errorState,
-        tobeTakenErr: true,
-        daySlotErr: false,
-        durationErr: false,
-        dosageErr: false,
-      });
     }*/ else if (
       isEmpty(trim(consumptionDuration)) ||
       isNaN(Number(consumptionDuration)) ||
@@ -806,6 +802,14 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: true,
         daySlotErr: false,
         tobeTakenErr: false,
+        dosageErr: false,
+      });
+    } else if (isTobeTakenSelected.length === 0) {
+      setErrorState({
+        ...errorState,
+        tobeTakenErr: true,
+        daySlotErr: false,
+        durationErr: false,
         dosageErr: false,
       });
     } else {
@@ -1176,7 +1180,7 @@ export const MedicinePrescription: React.FC = () => {
                       </div>
                     </div>
                     <div className={classes.sectionGroup}>
-                      <div className={classes.sectionTitle}>Time of the Day</div>
+                      <div className={classes.sectionTitle}>Time of the Day*</div>
                       <div className={classes.numberTablets}>{daySlotsHtml}</div>
                       {errorState.daySlotErr && (
                         <FormHelperText
@@ -1184,7 +1188,7 @@ export const MedicinePrescription: React.FC = () => {
                           component="div"
                           error={errorState.daySlotErr}
                         >
-                          Please select to be day slot.
+                          Please select time of the Day.
                         </FormHelperText>
                       )}
                     </div>
