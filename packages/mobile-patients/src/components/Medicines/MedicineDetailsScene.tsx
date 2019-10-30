@@ -41,10 +41,11 @@ import {
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
 
 const { width, height } = Dimensions.get('window');
 import stripHtml from 'string-strip-html';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -161,7 +162,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   iconOrImageContainerStyle: {
-    width: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   textStyle: {
     color: '#01475b',
@@ -215,6 +217,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [showDeliverySpinner, setshowDeliverySpinner] = useState<boolean>(false);
   const [Substitutes, setSubstitutes] = useState<MedicineProductDetails[]>([]);
   const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [medicineError, setMedicineError] = useState<string>('Product Details Not Available!');
+  const [popupHeight, setpopupHeight] = useState<number>(60);
 
   const _medicineOverview =
     medicineDetails!.PharmaOverview &&
@@ -244,13 +248,19 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const cartItemsCount = cartItems.length;
 
   useEffect(() => {
+    setLoading(true);
     sku = props.navigation.getParam('sku');
     scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0);
+    console.log(sku, 'useEffect sku');
 
     getMedicineDetailsApi(sku)
       .then(({ data }) => {
         console.log(data, 'getMedicineDetailsApi');
-        setmedicineDetails((data && data.productdp && data.productdp[0]) || {});
+        if (data && data.productdp) {
+          setmedicineDetails((data && data.productdp[0]) || {});
+        } else if (data && data.message) {
+          setMedicineError(data.message);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -509,35 +519,39 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             {renderBasicDetails()}
           </View>
           <View>
-            {!!medicineDetails.image ? (
-              <TouchableOpacity
-                activeOpacity={1}
-                style={styles.imageView}
-                onPress={() =>
-                  props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                    images: [AppConfig.Configuration.IMAGES_BASE_URL + medicineDetails.image],
-                    heading: medicineDetails.name,
-                  })
-                }
-              >
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.imageView}
+              onPress={() =>
+                !!medicineDetails.image
+                  ? props.navigation.navigate(AppRoutes.ImageSliderScreen, {
+                      images: [AppConfig.Configuration.IMAGES_BASE_URL + medicineDetails.image],
+                      heading: medicineDetails.name,
+                    })
+                  : {}
+              }
+            >
+              {!!medicineDetails.image ? (
                 <Image
                   source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL + medicineDetails.image }}
                   style={styles.doctorImage}
                 />
-              </TouchableOpacity>
-            ) : (
-              renderIconOrImage(medicineDetails)
+              ) : (
+                renderIconOrImage(medicineDetails)
+              )}
+            </TouchableOpacity>
+            {!!medicineDetails.image && (
+              <View style={{ alignItems: 'center' }}>
+                <Text
+                  style={[
+                    theme.viewStyles.text('SB', 8, '#0087ba', 1, undefined, 0.2),
+                    { paddingTop: 8, marginLeft: 20 },
+                  ]}
+                >
+                  1 PHOTO
+                </Text>
+              </View>
             )}
-            <View style={{ alignItems: 'center' }}>
-              <Text
-                style={[
-                  theme.viewStyles.text('SB', 8, '#0087ba', 1, undefined, 0.2),
-                  { paddingTop: 8, marginLeft: 20 },
-                ]}
-              >
-                1 PHOTO
-              </Text>
-            </View>
           </View>
         </View>
         {renderNote()}
@@ -754,7 +768,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <View style={localStyles.containerStyle}>
               <View style={localStyles.iconAndDetailsContainerStyle}>
                 <Text style={{ ...theme.viewStyles.text('M', 17, '#01475b', 1, 24, 0) }}>
-                  {`Pick from 9 available substitute${Substitutes.length > 1 ? 's' : ''}`}
+                  {`Pick from ${Substitutes.length} available substitute${
+                    Substitutes.length > 1 ? 's' : ''
+                  }`}
                 </Text>
                 <DropdownGreen />
               </View>
@@ -991,45 +1007,79 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           elevation: 5,
           marginLeft: 72,
           maxHeight: height - 200,
-          overflow: 'scroll',
+          // overflow: 'scroll',
+          height: popupHeight + 24,
+          ...theme.viewStyles.shadowStyle,
         }}
       >
         <View>
           <ScrollView
-            keyboardShouldPersistTaps="always"
-            style={{ flex: 1 }}
+            bounces={false}
+            // style={{ flex: 1 }}
+            // style={{ height: 'auto' }}
             contentContainerStyle={{
               paddingBottom: 16,
               paddingTop: 8,
             }}
           >
-            {Substitutes.map(({ name, price, sku }) => (
-              <TouchableOpacity
-                style={styles.textViewStyle}
-                onPress={() => {
-                  props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-                    sku: sku,
-                    title: name,
-                  });
-                  setShowPopup(false);
-                }}
-              >
-                <View style={{ marginVertical: 7.5 }}>
-                  <Text style={styles.textStyle}>{name}</Text>
-                  {!!price && (
-                    <Text style={theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0.004)}>
-                      RS. {price}
-                    </Text>
-                  )}
+            <FlatList
+              // contentContainerStyle={{
+              //   marginTop: 20,
+              //   marginBottom: 8,
+              // }}
+              bounces={false}
+              data={Substitutes}
+              onEndReachedThreshold={0.5}
+              renderItem={({ item, index }) => (
+                <View
+                  // style={{ backgroundColor: 'red' }}
+                  onLayout={(event) => {
+                    const { height } = event.nativeEvent.layout;
+                    setpopupHeight(height * Substitutes.length);
+                  }}
+                >
+                  <TouchableOpacity
+                    style={styles.textViewStyle}
+                    onPress={() => {
+                      props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+                        sku: item.sku,
+                        title: item.name,
+                      });
+                      setShowPopup(false);
+                    }}
+                  >
+                    <View style={{ marginVertical: 7.5 }}>
+                      <Text style={styles.textStyle}>{item.name}</Text>
+                      {!!item.price && (
+                        <Text style={theme.viewStyles.text('M', 12, '#02475b', 1, 20, 0.004)}>
+                          RS. {item.price}
+                        </Text>
+                      )}
+                    </View>
+                    <ArrowRight />
+                  </TouchableOpacity>
                 </View>
-                <ArrowRight />
-              </TouchableOpacity>
-            ))}
+              )}
+            />
           </ScrollView>
         </View>
       </View>
     </TouchableOpacity>
   );
+
+  const renderEmptyData = () => {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <Card
+          cardContainer={{ marginTop: 0 }}
+          heading={'Uh oh! :('}
+          description={medicineError || 'Product Details Not Available!'}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      </View>
+    );
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -1058,18 +1108,18 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           }
         />
 
-        {loading && (
+        {loading ? (
           <ActivityIndicator
             style={{ flex: 1, alignItems: 'center' }}
             animating={loading}
             size="large"
             color="green"
           />
-        )}
-        {!loading && !isEmptyObject(medicineDetails) && (
+        ) : !isEmptyObject(medicineDetails) ? (
           <KeyboardAwareScrollView
             ref={scrollViewRef}
             bounces={false}
+            keyboardShouldPersistTaps="always"
             // keyboardShouldPersistTaps={''}
             // keyboardDismissMode={'on-drag'}
             // removeClippedSubviews={false}
@@ -1097,6 +1147,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           </View> */}
             <View style={{ height: 130 }} />
           </KeyboardAwareScrollView>
+        ) : (
+          renderEmptyData()
         )}
         {!loading && !isEmptyObject(medicineDetails) && renderBottomButtons()}
       </SafeAreaView>

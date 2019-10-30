@@ -33,6 +33,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('linking');
         Linking.addEventListener('url', handleOpenURL);
       }
+      AsyncStorage.removeItem('location');
     } catch (error) {}
   }, []);
 

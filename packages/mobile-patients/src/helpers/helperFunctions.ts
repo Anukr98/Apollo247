@@ -2,7 +2,10 @@ import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/gl
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { GraphQLError } from 'graphql';
 import moment from 'moment';
-import { Alert, NetInfo } from 'react-native';
+import { Alert, NetInfo, AsyncStorage } from 'react-native';
+import Geocoder from 'react-native-geocoding';
+
+const googleApiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
 interface AphConsole {
   error(message?: any, ...optionalParams: any[]): void;
@@ -305,4 +308,44 @@ export const nextAvailability = (nextSlot: string) => {
 
 export const isEmptyObject = (object: Object) => {
   return Object.keys(object).length === 0;
+};
+
+export const getUserCurrentPosition = async () => {
+  console.log('getUserCurrentPosition');
+
+  const item = await AsyncStorage.getItem('location');
+
+  // .then((item) => {
+  const location = item ? JSON.parse(item) : null;
+  if (location) {
+    console.log(location, 'location');
+
+    return {
+      latlong: location.latlong,
+      name: location.name.toUpperCase(),
+    };
+  } else {
+    return new Promise(async (resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        console.log(position, 'position');
+
+        Geocoder.init(googleApiKey);
+        const jsonData = await Geocoder.from(position.coords.latitude, position.coords.longitude);
+        // .then((json) => {
+        if (jsonData) {
+          const result = jsonData.results[0];
+          const addressComponent = result.address_components[1].long_name || '';
+          console.log(jsonData, addressComponent, 'addressComponent');
+          resolve({
+            latlong: result.geometry.location,
+            name: addressComponent,
+          });
+        }
+        reject(null);
+        // })
+        // .catch((error) => console.warn(error));
+      });
+    });
+  }
+  // });
 };
