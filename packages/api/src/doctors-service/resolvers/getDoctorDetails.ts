@@ -149,6 +149,7 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine1: String
     streetLine2: String
     streetLine3: String
+    zip: String
   }
 
   type Packages {

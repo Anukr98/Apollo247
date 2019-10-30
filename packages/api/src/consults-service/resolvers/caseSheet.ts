@@ -637,7 +637,7 @@ const modifyCaseSheet: Resolver<
   }
 
   if (!(inputArguments.followUpDate === undefined)) {
-    if (getCaseSheetData.followUpDate) getCaseSheetData.followUpDate = inputArguments.followUpDate;
+    getCaseSheetData.followUpDate = inputArguments.followUpDate;
   }
 
   if (!(inputArguments.followUpAfterInDays === undefined)) {
