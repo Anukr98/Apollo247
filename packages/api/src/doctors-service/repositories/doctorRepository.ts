@@ -166,8 +166,8 @@ export class DoctorRepository extends Repository<Doctor> {
     facilityDistances?: { [index: string]: string }
   ) {
     //STAR_APOLLO doctor on top(ignoring star appollo sorting)
-    //if (a.doctorType == DoctorType.STAR_APOLLO && b.doctorType != DoctorType.STAR_APOLLO) return -1;
-    //if (a.doctorType != DoctorType.STAR_APOLLO && b.doctorType == DoctorType.STAR_APOLLO) return 1;
+    if (a.doctorType == DoctorType.STAR_APOLLO && b.doctorType != DoctorType.STAR_APOLLO) return -1;
+    if (a.doctorType != DoctorType.STAR_APOLLO && b.doctorType == DoctorType.STAR_APOLLO) return 1;
 
     //Previously consulted non-payroll doctors on next
     if (docIds.includes(a.id) && a.doctorType != DoctorType.PAYROLL && !docIds.includes(b.id))
