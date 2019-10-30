@@ -171,6 +171,7 @@ export const CasesheetView: React.FC = (props) => {
     followUp,
     otherInstructions,
     followUpAfterInDays,
+    followUpDate,
   } = useContext(CaseSheetContext);
 
   const getAge = (date: string) => {
@@ -204,6 +205,21 @@ export const CasesheetView: React.FC = (props) => {
       symptoms.length > 0
     );
   };
+
+  const toCamelCase = (consultType: string) => {
+    const consult = consultType.toLocaleLowerCase();
+    return consult.replace(consult[0], consult[0].toUpperCase());
+  };
+
+  const getFollowUpData = () => {
+    return `Follow up (${toCamelCase(consultType[0])}) ${
+      followUpAfterInDays[0] === '9'
+        ? `on ${moment(followUpDate[0]).format('DD/MM/YYYY')}`
+        : `after ${followUpAfterInDays[0]} days`
+    }
+    `;
+  };
+
   const medicineHtml = medicinePrescription!.map(
     (
       prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
@@ -374,7 +390,6 @@ export const CasesheetView: React.FC = (props) => {
           ) : null}
           {isPageContentFull() ? null : (
             <>
-              {' '}
               {otherInstructions && otherInstructions.length > 0 ? (
                 <>
                   <div className={classes.sectionHeader}>Advice Given</div>
@@ -388,9 +403,7 @@ export const CasesheetView: React.FC = (props) => {
               {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
                 <>
                   <div className={classes.sectionHeader}>Follow Up</div>
-                  <div className={classes.followUpContent}>
-                    Follow up ({consultType[0]}) after {followUpAfterInDays[0]} days
-                  </div>
+                  <div className={classes.followUpContent}>{getFollowUpData()}</div>
                 </>
               ) : null}
             </>
@@ -409,7 +422,7 @@ export const CasesheetView: React.FC = (props) => {
       {isPageContentFull() &&
       ((followUp.length > 0 && followUp[0]) ||
         (otherInstructions && otherInstructions.length > 0)) ? (
-        <CaseSheetLastView />
+        <CaseSheetLastView getFollowUpData={getFollowUpData} />
       ) : null}
     </div>
   );

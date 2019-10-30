@@ -79,7 +79,11 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const CaseSheetLastView: React.FC = (props) => {
+export interface CaseSheetViewProps {
+  getFollowUpData: () => string;
+}
+
+export const CaseSheetLastView: React.FC<CaseSheetViewProps> = (props) => {
   const classes = useStyles();
   const {
     followUp,
@@ -133,9 +137,7 @@ export const CaseSheetLastView: React.FC = (props) => {
           {followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
             <>
               <div className={classes.sectionHeader}>Follow Up</div>
-              <div className={classes.followUpContent}>
-                Follow up ({consultType}) after {followUpAfterInDays[0]} days
-              </div>
+              <div className={classes.followUpContent}>{props.getFollowUpData()}</div>
             </>
           ) : null}
         </div>
