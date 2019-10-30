@@ -547,6 +547,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   );
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
+                    callType: '',
                   });
                 }}
               />

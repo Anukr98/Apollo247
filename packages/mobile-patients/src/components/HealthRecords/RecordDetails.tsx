@@ -27,6 +27,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
 import RNFetchBlob from 'react-native-fetch-blob';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -294,12 +295,14 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                     const urls = data.documentURLs.split(',');
                     if (!data.documentURLs || data.documentURLs === '[object Object]') {
                       Alert.alert('No Image');
+                      CommonLogEvent('RECORD_DETAILS', 'No Image');
                     } else {
                       for (var i = 0; i < urls.length; i++) {
                         if (Platform.OS === 'ios') {
                           try {
                             CameraRoll.saveToCameraRoll(urls[i]);
                             Alert.alert('Download Completed');
+                            CommonLogEvent('RECORD_DETAILS', 'Download complete for prescription');
                           } catch {}
                         }
                         let dirs = RNFetchBlob.fs.dirs;

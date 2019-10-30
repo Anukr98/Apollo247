@@ -13,6 +13,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import ImagePicker from 'react-native-image-crop-picker';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Image as PickerImage } from 'react-native-image-crop-picker';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -62,6 +63,7 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   const onClickTakePhoto = () => {
+    CommonLogEvent('ADD_FILE_POP', 'On Click Take Photo');
     ImagePicker.openCamera({
       width: 400,
       height: 400,
@@ -75,6 +77,7 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
   };
 
   const onClickGallery = () => {
+    CommonLogEvent('ADD_FILE_POP', 'On Click Gallery');
     ImagePicker.openPicker({
       width: 400,
       height: 400,
@@ -110,7 +113,7 @@ export const AddFilePopup: React.FC<AddFilePopupProps> = (props) => {
       >
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.onClickClose()}
+          onPress={() => (CommonLogEvent('ADD_FILE_POP', 'Close the popup'), props.onClickClose())}
           style={{
             marginTop: Platform.OS === 'ios' ? 38 : 14,
             backgroundColor: 'white',

@@ -42,6 +42,7 @@ import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCar
 import { Download } from '../ui/Icons';
 import { Spinner } from '../ui/Spinner';
 import { MEDICINE_UNIT } from '../../graphql/types/globalTypes';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -231,13 +232,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             <Text
               style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
               onPress={() => {
-                props.navigation.dispatch(
-                  StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-                  })
-                );
+                CommonLogEvent('CONSULT_DETAILS', 'Go back to tab bar'),
+                  props.navigation.dispatch(
+                    StackActions.reset({
+                      index: 0,
+                      key: null,
+                      actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                    })
+                  );
               }}
             >
               {strings.health_records_home.view_consult}
@@ -418,6 +420,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 })}
                 <TouchableOpacity
                   onPress={() => {
+                    CommonLogEvent('CONSULT_DETAILS', 'Add to crat');
                     onAddToCart();
                   }}
                 >
@@ -538,6 +541,8 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 </View>
                 <TouchableOpacity
                   onPress={() => {
+                    CommonLogEvent('CONSULT_DETAILS', 'Check if follow book api called');
+
                     client
                       .query<checkIfFollowUpBooked>({
                         query: CHECK_IF_FOLLOWUP_BOOKED,
@@ -614,14 +619,24 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                   onPress={() => {
                     if (props.navigation.state.params!.BlobName == null) {
                       Alert.alert('No Image');
+                      CommonLogEvent('CONSULT_DETAILS', 'No image');
                     } else {
                       if (Platform.OS === 'ios') {
                         try {
+                          CommonLogEvent('CONSULT_DETAILS', 'Link to open URL');
                           Linking.openURL(
                             AppConfig.Configuration.DOCUMENT_BASE_URL.concat(
                               props.navigation.state.params!.BlobName
                             )
-                          ).catch((err) => console.error('An error occurred', err));
+                          ).catch(
+                            (err) => (
+                              CommonLogEvent(
+                                'CONSULT_DETAILS',
+                                'Error occured while opening the URL link'
+                              ),
+                              console.error('An error occurred', err)
+                            )
+                          );
                         } catch {}
                       }
                       let dirs = RNFetchBlob.fs.dirs;

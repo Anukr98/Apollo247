@@ -200,6 +200,7 @@ export const AuthProvider: React.FC = (props) => {
         });
 
         console.log('authprovider jwt', jwt);
+        setAuthToken(jwt);
 
         apolloClient = buildApolloClient(jwt, () => getFirebaseToken());
         authStateRegistered = false;

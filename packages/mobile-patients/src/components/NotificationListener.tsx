@@ -58,7 +58,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     const { title, body, data } = notification;
     const notificationType = data.type as CustomNotificationType;
     aphConsole.log({ notificationType, title, body, data });
-    aphConsole.log('notification', notification);
+    aphConsole.log('processNotification', notification);
 
     const setCurrentName = await AsyncStorage.getItem('setCurrentName');
 
@@ -69,10 +69,12 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     )
       return;
 
+    aphConsole.log('processNotification after return statement');
+
     switch (notificationType) {
       case 'Reschedule_Appointment':
         {
-          console.log('Reschedule-Appointment called');
+          aphConsole.log('Reschedule_Appointment');
           let userName = data.patientName;
           let doctorName = data.doctorName;
 
@@ -117,7 +119,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
       case 'Upload-Prescription-Order':
         {
-          console.log('Upload-Prescription-Order called');
+          aphConsole.log('Upload-Prescription-Order called');
           props.navigation.navigate(AppRoutes.YourCart);
         }
         break;
@@ -127,7 +129,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           let doctorName = data.doctorName;
           let userName = data.patientName;
 
-          console.log('chat_room');
+          aphConsole.log('chat_room');
           showAphAlert!({
             title: `Hi ${userName} :)`,
             description: `Dr. ${doctorName} is waiting to start your consultation. Please proceed to the Consult Room`,
@@ -145,8 +147,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   style={styles.claimStyles}
                   onPress={() => {
                     hideAphAlert && hideAphAlert();
-                    InCallManager.stopRingtone();
-                    InCallManager.stop();
                   }}
                 >
                   <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
@@ -172,11 +172,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         {
           InCallManager.startRingtone('_BUNDLE_');
           InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+          aphConsole.log('call_started');
 
           let doctorName = data.doctorName;
           let userName = data.patientName;
 
-          console.log('Chat-Room');
           showAphAlert!({
             title: `Hi ${userName} :)`,
             description: `Dr. ${doctorName} is waiting for your call response. Please proceed to the Consult Room`,
@@ -203,8 +203,8 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                 <TouchableOpacity
                   style={styles.rescheduletyles}
                   onPress={() => {
-                    console.log('data.appointmentId', data.appointmentId);
-                    console.log('data.callType', data.callType);
+                    aphConsole.log('data.appointmentId', data.appointmentId);
+                    aphConsole.log('data.callType', data.callType);
                     getAppointmentData(data.appointmentId, notificationType, data.callType);
                   }}
                 >
@@ -225,12 +225,11 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
   useEffect(() => {
     console.log('createNotificationListeners');
-    console.log('route name notification', props.navigation.state);
     /*
      * Triggered when a particular notification has been received in foreground
      * */
     const notificationListener = firebase.notifications().onNotification((notification) => {
-      console.log('notificationListener');
+      aphConsole.log('notificationListener');
       processNotification(notification);
     });
 
@@ -242,12 +241,22 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       .getInitialNotification()
       .then((_notificationOpen: NotificationOpen) => {
         if (_notificationOpen) {
-          console.log('_notificationOpen');
+          aphConsole.log('_notificationOpen');
 
           // App was opened by a notification
           // Get the action triggered by the notification being opened
           // const action = _notificationOpen.action;
           processNotification(_notificationOpen.notification);
+
+          try {
+            aphConsole.log('notificationOpen', _notificationOpen.notification.notificationId);
+
+            firebase
+              .notifications()
+              .removeDeliveredNotification(_notificationOpen.notification.notificationId);
+          } catch (error) {
+            aphConsole.log('notificationOpen error', error);
+          }
         }
       })
       .catch(() => {});
@@ -259,7 +268,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       .notifications()
       .onNotificationOpened((notificationOpen: NotificationOpen) => {
         if (notificationOpen) {
-          console.log('notificationOpen');
+          aphConsole.log('notificationOpen');
 
           const notification: Notification = notificationOpen.notification;
           processNotification(notification);
@@ -267,7 +276,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       });
 
     return function cleanup() {
-      console.log('didmount clean up');
+      aphConsole.log('didmount clean up');
       notificationListener();
       onNotificationListener();
     };
@@ -278,6 +287,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     notificationType: string,
     callType: string
   ) => {
+    aphConsole.log('getAppointmentData', appointmentId, notificationType, callType);
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,

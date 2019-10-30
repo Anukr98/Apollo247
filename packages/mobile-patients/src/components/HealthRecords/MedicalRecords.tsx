@@ -8,6 +8,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { Button } from '../ui/Button';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -104,19 +105,26 @@ export const MedicalRecords: React.FC<MedicalRecordsProps> = (props) => {
                         });
                       }}
                       onPressDelete={() => {
-                        Alert.alert(
-                          'Delete Record',
-                          '',
-                          [
-                            {
-                              text: 'Cancel',
-                              onPress: () => console.log('Cancel Pressed'),
-                              style: 'cancel',
-                            },
-                            { text: 'OK', onPress: () => props.renderDeleteMedicalOrder(item.id) },
-                          ],
-                          { cancelable: false }
-                        );
+                        CommonLogEvent('MEDICAL_RECORDS', 'Delete record'),
+                          Alert.alert(
+                            'Delete Record',
+                            '',
+                            [
+                              {
+                                text: 'Cancel',
+                                onPress: () => console.log('Cancel Pressed'),
+                                style: 'cancel',
+                              },
+                              {
+                                text: 'OK',
+                                onPress: () => (
+                                  CommonLogEvent('MEDICAL_RECORDS', 'Delete Medical Order'),
+                                  props.renderDeleteMedicalOrder(item.id)
+                                ),
+                              },
+                            ],
+                            { cancelable: false }
+                          );
                       }}
                     />
                   );
