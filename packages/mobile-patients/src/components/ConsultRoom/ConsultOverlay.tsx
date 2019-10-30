@@ -41,6 +41,7 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -109,6 +110,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const onSubmitBookAppointment = () => {
+    CommonLogEvent('CONSULT_OVERLAY', 'ConsultOverlay onSubmitBookAppointment clicked');
     setshowSpinner(true);
     const timeSlot =
       tabs[0].title === selectedTab &&
@@ -155,6 +157,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const onPressPay = () => {
+    CommonLogEvent('CONSULT_OVERLAY', 'ConsultOverlay onPressPay clicked');
     getNetStatus().then((status) => {
       setdisablePay(true);
       if (status) {
@@ -373,6 +376,10 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               activeOpacity={1}
               style={styles.gotItStyles}
               onPress={() => {
+                CommonLogEvent(
+                  'CONSULT_OVERLAY',
+                  'ConsultOverlay Appointment Confirmation clicked'
+                );
                 setshowSuccessPopUp(false);
                 props.navigation.dispatch(
                   StackActions.reset({

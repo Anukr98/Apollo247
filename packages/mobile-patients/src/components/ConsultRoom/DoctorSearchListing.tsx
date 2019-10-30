@@ -20,7 +20,10 @@ import {
   Range,
   SpecialtySearchType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  getNetStatus,
+  getUserCurrentPosition,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -42,6 +45,8 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import Geocoder from 'react-native-geocoding';
+import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   topView: {
@@ -77,6 +82,7 @@ export type filterDataType = {
   selectedOptions: string[];
 };
 
+export type locationType = { lat: string; lng: string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const filterData: filterDataType[] = [
     {
@@ -119,6 +125,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
+  const [latlng, setlatlng] = useState<locationType | null>(null);
+
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
   >([]);
@@ -156,6 +164,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
+    CommonScreenLog(AppRoutes.DoctorSearchListing, AppRoutes.DoctorSearchListing);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -184,8 +193,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     Platform.OS === 'android' && requestLocationPermission();
     getNetStatus().then((status) => {
       if (status) {
-        fetchCurrentLocation();
-        fetchSpecialityFilterData(filterMode, FilterData);
+        // fetchCurrentLocation();
+        getUserCurrentPosition()
+          .then((res: any) => {
+            res.name && setcurrentLocation(res.name.toUpperCase());
+            fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
+            setlatlng(res.latlong);
+            console.log(res, 'getUserCurrentPosition');
+          })
+          .catch((error) => console.log(error, 'getUserCurrentPosition err'));
+
+        // fetchSpecialityFilterData(filterMode, FilterData);
       } else {
         setshowSpinner(false);
         setshowOfflinePopup(true);
@@ -236,7 +254,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
 
   const fetchSpecialityFilterData = (
     filterMode: ConsultMode = ConsultMode.BOTH,
-    SearchData: filterDataType[] = FilterData
+    SearchData: filterDataType[] = FilterData,
+    location: locationType | null = latlng
   ) => {
     const experienceArray: Range[] = [];
     if (SearchData[1].selectedOptions && SearchData[1].selectedOptions.length > 0)
@@ -314,6 +333,17 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     const specialtyName = params
       ? { specialtyName: params, specialtySearchType: SpecialtySearchType.NAME }
       : [];
+
+    let geolocation = {} as any;
+    if (location) {
+      geolocation['geolocation'] = {
+        latitude: parseFloat(location.lat),
+        longitude: parseFloat(location.lng),
+      };
+    }
+
+    console.log(geolocation, 'geolocation');
+
     const FilterInput = {
       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
       specialty: props.navigation.getParam('specialityId') || '',
@@ -326,6 +356,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       ...availableNow,
       consultMode: filterMode,
       ...specialtyName,
+      ...geolocation,
     };
     console.log(FilterInput, 'FilterInput');
 
@@ -431,6 +462,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   'location',
                   JSON.stringify({ latlong: obj.data.result.geometry.location, name: item.name })
                 );
+                setlatlng(obj.data.result.geometry.location);
               }
             } catch (error) {
               console.log(error);
@@ -444,46 +476,64 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   const fetchCurrentLocation = () => {
-    AsyncStorage.getItem('location').then((item) => {
-      const location = item ? JSON.parse(item) : null;
-      if (location) {
-        location.name && setcurrentLocation(location.name.toUpperCase());
-      } else {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const searchstring = position.coords.latitude + ',' + position.coords.longitude;
-            const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
-            axios
-              .get(url)
-              .then((obj) => {
-                try {
-                  if (
-                    obj.data.results.length > 0 &&
-                    obj.data.results[0].address_components.length > 0
-                  ) {
-                    const address = obj.data.results[0].address_components[0].short_name;
-                    setcurrentLocation(address.toUpperCase());
-                    AsyncStorage.setItem(
-                      'location',
-                      JSON.stringify({
-                        latlong: obj.data.results[0].geometry.location,
-                        name: address.toUpperCase(),
-                      })
-                    );
-                  }
-                } catch {}
-              })
-              .catch((error) => {
-                console.log(error, 'geocode error');
-              });
-          },
-          (error) => {
-            console.log(error.code, error.message, 'getCurrentPosition error');
-          },
-          { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-        );
-      }
-    });
+    // Geocoder.init(key);
+    // console.log(getUserCurrentPosition(), 'getUserCurrentPosition');
+    getUserCurrentPosition()
+      .then((res: any) => {
+        res.name && setcurrentLocation(res.name.toUpperCase());
+
+        console.log(res, 'getUserCurrentPosition');
+      })
+      .catch((error) => console.log(error, 'getUserCurrentPosition err'));
+    // AsyncStorage.getItem('location').then((item) => {
+    //   const location = item ? JSON.parse(item) : null;
+    //   if (location) {
+    //     location.name && setcurrentLocation(location.name.toUpperCase());
+    //   } else {
+    //     navigator.geolocation.getCurrentPosition(
+    //       (position) => {
+    //         const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+    //         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+    //         console.log(searchstring, 'searchstring');
+
+    //         // Geocoder.from(position.coords.latitude, position.coords.longitude)
+    //         //   .then((json) => {
+    //         //     const addressComponent = json.results[0].address_components[1].long_name || '';
+    //         //     console.log(json, addressComponent, 'addressComponent');
+    //         //     setcurrentLocation(addressComponent.toUpperCase());
+    //         //   })
+    //         //   .catch((error) => console.warn(error));
+    //         // axios
+    //         //   .get(url)
+    //         //   .then((obj) => {
+    //         //     try {
+    //         //       if (
+    //         //         obj.data.results.length > 0 &&
+    //         //         obj.data.results[0].address_components.length > 0
+    //         //       ) {
+    //         //         const address = obj.data.results[0].address_components[0].short_name;
+    //         //         setcurrentLocation(address.toUpperCase());
+    //         //         AsyncStorage.setItem(
+    //         //           'location',
+    //         //           JSON.stringify({
+    //         //             latlong: obj.data.results[0].geometry.location,
+    //         //             name: address.toUpperCase(),
+    //         //           })
+    //         //         );
+    //         //       }
+    //         //     } catch {}
+    //         //   })
+    //         //   .catch((error) => {
+    //         //     console.log(error, 'geocode error');
+    //         //   });
+    //       },
+    //       (error) => {
+    //         console.log(error.code, error.message, 'getCurrentPosition error');
+    //       },
+    //       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    //     );
+    //   }
+    // });
   };
 
   const RightHeader = () => {
@@ -493,10 +543,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              CommonLogEvent(
+                AppRoutes.DoctorSearchListing,
+                'Doctor SearchListing RightHeader clicked'
+              );
               getNetStatus().then((status) => {
                 if (status) {
                   setshowLocationpopup(true);
-                  fetchCurrentLocation();
+                  // fetchCurrentLocation();
                 } else {
                   setshowOfflinePopup(true);
                 }
@@ -790,6 +844,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                       ...theme.fonts.IBMPlexSansMedium(18),
                     }}
                     onPress={() => {
+                      CommonLogEvent(AppRoutes.DoctorSearchListing, 'Search List clicked');
                       setcurrentLocation(item.name);
                       saveLatlong(item);
                       setshowLocationpopup(false);

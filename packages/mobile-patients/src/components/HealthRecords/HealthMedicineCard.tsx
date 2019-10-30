@@ -5,6 +5,7 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -107,7 +108,8 @@ export const HealthMedicineCard: React.FC<HealthMedicineCardProps> = (props) => 
           activeOpacity={1}
           style={[styles.cardContainerStyle]}
           onPress={() => {
-            props.onClickCard ? props.onClickCard() : null;
+            CommonLogEvent('HEALTH_MEDICINE_CARD', 'On follow up click'),
+              props.onClickCard ? props.onClickCard() : null;
           }}
         >
           <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>

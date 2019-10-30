@@ -16,6 +16,7 @@ import {
 import {
   GetMedicineOrderDetails,
   GetMedicineOrderDetailsVariables,
+  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
 import {
   saveOrderCancelStatus,
@@ -50,6 +51,9 @@ import {
   StackActions,
 } from 'react-navigation';
 import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
+import { useShoppingCart, ShoppingCartItem, EPrescription } from './ShoppingCartProvider';
+import { useUIElements } from './UIElementsProvider';
+import { getMedicineDetailsApi } from '../helpers/apiCalls';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -107,6 +111,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
+  const { showAphAlert, setLoading } = useUIElements();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -121,7 +127,10 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     variables: { patientId: currentPatient && currentPatient.id, orderAutoId: orderAutoId },
   });
   const order = g(data, 'getMedicineOrderDetails', 'MedicineOrderDetails');
-  const orderDetails = (!loading && order) || {};
+  console.log({ order });
+
+  const orderDetails = ((!loading && order) ||
+    {}) as GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails;
   const orderStatusList = (!loading && order && order.medicineOrdersStatus) || [];
 
   const handleBack = async () => {
@@ -163,7 +172,88 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     return moment(time).format('hh:mm a');
   };
 
+  const reOrder = () => {
+    setLoading!(true);
+    const items = (orderDetails!.medicineOrderLineItems || [])
+      .map((item) => ({
+        sku: item!.medicineSKU!,
+        qty: item!.quantity!,
+      }))
+      .filter((item) => item.sku);
+    Promise.all(items.map((item) => getMedicineDetailsApi(item!.sku!)))
+      .then((result) => {
+        const itemsToAdd = result
+          .map(({ data: { productdp } }, index) => {
+            const medicineDetails = (productdp && productdp[0]) || {};
+            if (!medicineDetails.is_in_stock) return null;
+            return {
+              id: medicineDetails!.sku!,
+              mou: medicineDetails.mou,
+              name: medicineDetails!.name,
+              price: medicineDetails!.price,
+              quantity: items[index].qty || 1,
+              prescriptionRequired: medicineDetails.is_prescription_required == '1',
+              thumbnail: medicineDetails.thumbnail || medicineDetails.image,
+            } as ShoppingCartItem;
+          })
+          .filter((item) => item) as ShoppingCartItem[];
+
+        const itemsToAddSkus = itemsToAdd.map((i) => i.id);
+        const itemsToAddInCart = [
+          ...itemsToAdd,
+          ...cartItems.filter((item) => !itemsToAddSkus.includes(item.id!)),
+        ];
+        setCartItems!(itemsToAddInCart);
+
+        // Adding prescriptions
+        if (orderDetails!.prescriptionImageUrl) {
+          const imageUrls = orderDetails!.prescriptionImageUrl
+            .split(',')
+            .map((item) => item.trim());
+
+          const ePresToAdd = imageUrls.map(
+            (item) =>
+              ({
+                id: item,
+                date: moment(order!.medicineOrdersStatus![0]!.statusDate).format('DD MMM YYYY'),
+                doctorName: '',
+                forPatient: (currentPatient && currentPatient.firstName) || '',
+                medicines: (order!.medicineOrderLineItems || [])
+                  .map((item) => item!.medicineName)
+                  .join(', '),
+                uploadedUrl: item,
+              } as EPrescription)
+          );
+          const ePresIds = ePresToAdd.map((i) => i!.uploadedUrl);
+          setEPrescriptions!([
+            ...ePrescriptions.filter((item) => !ePresIds.includes(item.uploadedUrl!)),
+            ...ePresToAdd,
+          ]);
+        }
+
+        setLoading!(false);
+        if (items.length > itemsToAdd.length) {
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description: 'Few items are out of stock.',
+          });
+        }
+        props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
+      })
+      .catch((e) => {
+        setLoading!(false);
+        showAphAlert!({
+          title: 'Uh oh.. :(',
+          description: 'Something went wrong.',
+        });
+      });
+  };
+
   const renderOrderHistory = () => {
+    const isDelivered = orderStatusList.find(
+      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+    );
+
     return (
       <View>
         <View style={{ margin: 20 }}>
@@ -182,6 +272,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             );
           })}
         </View>
+        {isDelivered ? (
+          <Button
+            style={{ flex: 1, width: '80%', alignSelf: 'center' }}
+            onPress={() => reOrder()}
+            title={'RE-ORDER'}
+          />
+        ) : null}
         <NeedHelpAssistant
           containerStyle={{ marginTop: 20, marginBottom: 30 }}
           navigation={props.navigation}

@@ -6,12 +6,14 @@ import {
   MedicineIcon,
   MedicineRxIcon,
   RemoveIcon,
-  Minus,
-  Plus,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
-import { StyleProp, StyleSheet, Text, View, ViewStyle, TouchableOpacity } from 'react-native';
+import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { Image } from 'react-native-elements';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -24,13 +26,14 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    // alignItems: 'center',
   },
   flexStyle: {
     flex: 1,
   },
   medicineTitle: {
     flex: 1,
+    marginRight: 10,
     color: theme.colors.SHERPA_BLUE,
     ...theme.fonts.IBMPlexSansMedium(16),
     lineHeight: 24,
@@ -67,12 +70,8 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   packOfTextStyle: {
-    marginTop: 4,
-    ...theme.fonts.IBMPlexSansMedium(12),
-    lineHeight: 20,
-    letterSpacing: 0.04,
-    color: theme.colors.LIGHT_BLUE,
-    opacity: 0.6,
+    ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+    marginBottom: 3,
   },
   unitDropdownContainer: {
     flex: 1,
@@ -115,12 +114,18 @@ const styles = StyleSheet.create({
     color: theme.colors.INPUT_FAILURE_TEXT,
     marginTop: 4,
   },
+  priceTextCollapseStyle: {
+    ...theme.viewStyles.text('M', 12, '#02475b', 0.5, 20, 0.04),
+    marginTop: 4,
+  },
 });
 
 export interface MedicineCardProps {
   medicineName: string;
   personName?: string;
   price: number;
+  imageUrl?: string;
+  type?: Doseform;
   subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
   packOfCount?: number;
   unit: number;
@@ -145,6 +150,8 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     medicineName,
     personName,
     price,
+    imageUrl,
+    type,
     unit,
     isInStock,
     containerStyle,
@@ -162,9 +169,8 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderTitleAndIcon = () => {
     return (
       <View style={styles.rowSpaceBetweenView}>
-        <Text numberOfLines={1} style={styles.medicineTitle}>
-          {medicineName}
-        </Text>
+        <Text style={styles.medicineTitle}>{medicineName}</Text>
+
         {isInStock
           ? isCardExpanded
             ? renderTouchable(<RemoveIcon />, () => onPressRemove())
@@ -216,24 +222,17 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderUnitDropdownAndPrice = () => {
     return (
       <View style={styles.unitAndPriceView}>
-        <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[{ flex: 1, alignSelf: 'flex-start' }]}
-            // style={styles.unitDropdownContainer}
-            onPress={() => onChangeUnit(unit - 1)}
-          >
-            <Minus />
-          </TouchableOpacity>
-          <Text style={styles.unitAndRupeeText}>{`${unit} UNIT`}</Text>
-          <TouchableOpacity
-            activeOpacity={1}
-            style={[{ flex: 1, alignItems: 'flex-end' }]}
-            // style={styles.unitDropdownContainer}
-            onPress={() => onChangeUnit(unit + 1)}
-          >
-            <Plus />
-          </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <MaterialMenu onPress={(selectedQuantity) => onChangeUnit(selectedQuantity as number)}>
+            <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
+              <View style={[{ flex: 1, alignItems: 'flex-start' }]}>
+                <Text style={styles.unitAndRupeeText}>{`QTY : ${unit}`}</Text>
+              </View>
+              <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                <DropdownGreen />
+              </View>
+            </View>
+          </MaterialMenu>
         </View>
         <View style={styles.verticalSeparator} />
         <View style={[styles.flexStyle, { alignItems: 'flex-end' }]}>
@@ -244,10 +243,22 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderMedicineIcon = () => {
-    return isPrescriptionRequired ? (
-      <MedicineRxIcon style={{ marginRight: 12 }} />
-    ) : (
-      <MedicineIcon style={{ marginRight: 12 }} />
+    return (
+      <View style={{ width: 40, marginRight: 12, alignItems: 'center' }}>
+        {imageUrl ? (
+          <Image
+            PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+            placeholderStyle={{ backgroundColor: 'transparent' }}
+            source={{ uri: imageUrl }}
+            style={{ height: 40, width: 40 }}
+            resizeMode="contain"
+          />
+        ) : isPrescriptionRequired ? (
+          <MedicineRxIcon />
+        ) : (
+          <MedicineIcon />
+        )}
+      </View>
     );
   };
 
@@ -263,13 +274,22 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderOutOfStock = () => {
-    return !isInStock && <Text style={styles.outOfStockStyle}>Out Of Stock</Text>;
+    return !isInStock ? (
+      <Text style={styles.outOfStockStyle}>Out Of Stock</Text>
+    ) : !isCardExpanded ? (
+      <Text style={styles.priceTextCollapseStyle}>Rs. {price}</Text>
+    ) : null;
   };
 
+  const outOfStockContainerStyle: ViewStyle = !isInStock
+    ? {
+        backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+      }
+    : {};
   return (
     <TouchableOpacity
       activeOpacity={1}
-      style={[styles.containerStyle, containerStyle, { zIndex: -1 }]}
+      style={[styles.containerStyle, containerStyle, outOfStockContainerStyle, { zIndex: -1 }]}
       onPress={() => onPress()}
     >
       {renderPersonSelectionView()}

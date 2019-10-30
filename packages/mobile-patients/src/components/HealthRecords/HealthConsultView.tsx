@@ -29,6 +29,7 @@ import { AppConfig } from '../../strings/AppConfig';
 import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
 import RNFetchBlob from 'react-native-fetch-blob';
 import { MEDICINE_UNIT } from '../../graphql/types/globalTypes';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -251,7 +252,8 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
               activeOpacity={1}
               style={[styles.cardContainerStyle]}
               onPress={() => {
-                props.onClickCard ? props.onClickCard() : null;
+                CommonLogEvent('HEALTH_CONSULT_VIEW', 'On click card'),
+                  props.onClickCard ? props.onClickCard() : null;
               }}
             >
               <View style={{ overflow: 'hidden', borderRadius: 10, flex: 1 }}>
@@ -311,7 +313,12 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
 
                       <View>
                         {g(item, 'blobName') ? (
-                          <TouchableOpacity onPress={() => downloadPrescription()}>
+                          <TouchableOpacity
+                            onPress={() => (
+                              CommonLogEvent('HEALTH_CONSULT_VIEW', 'Download Prescription'),
+                              downloadPrescription()
+                            )}
+                          >
                             <PrescriptionSkyBlue />
                           </TouchableOpacity>
                         ) : null}
@@ -332,7 +339,8 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
-                        props.onFollowUpClick ? props.onFollowUpClick(props.PastData) : null;
+                        CommonLogEvent('HEALTH_CONSULT_VIEW', 'On follow up click'),
+                          props.onFollowUpClick ? props.onFollowUpClick(props.PastData) : null;
                       }}
                     >
                       <Text style={styles.yellowTextStyle}> BOOK FOLLOW-UP</Text>
@@ -356,6 +364,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
 
                         if (item == undefined) {
                           Alert.alert('No Medicines');
+                          CommonLogEvent('HEALTH_CONSULT_VIEW', 'No medicines prescribed');
                         } else {
                           if (item.medicinePrescription != null) {
                             //write here stock condition
@@ -403,6 +412,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                                       quantity: qty,
                                       prescriptionRequired:
                                         medicineDetails.is_prescription_required == '1',
+                                      thumbnail: medicineDetails.thumbnail || medicineDetails.image,
                                     } as ShoppingCartItem;
                                   })
                                   .filter((item: any) => (item ? true : false));
@@ -514,13 +524,17 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                         activeOpacity={1}
                         style={[styles.cardContainerStyle]}
                         onPress={() => {
-                          props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
-                            data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
-                            medicineDate: moment(props.PastData!.quoteDateTime).format(
-                              'DD MMM YYYY'
-                            ),
-                            PrescriptionUrl: props.PastData!.prescriptionImageUrl,
-                          });
+                          CommonLogEvent(
+                            'HEALTH_CONSULT_VIEW',
+                            'Navigate to Medicine consult details'
+                          ),
+                            props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
+                              data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
+                              medicineDate: moment(props.PastData!.quoteDateTime).format(
+                                'DD MMM YYYY'
+                              ),
+                              PrescriptionUrl: props.PastData!.prescriptionImageUrl,
+                            });
                         }}
                       >
                         <View style={{ flexDirection: 'row' }}>

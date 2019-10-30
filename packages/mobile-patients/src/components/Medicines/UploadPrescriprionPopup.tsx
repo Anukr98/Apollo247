@@ -106,10 +106,12 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     if (response.length == 0) return [];
 
     return response.map((item) => {
+      console.log('item', item);
       const isPdf = item.mime == 'application/pdf';
       const fileUri = item!.path || `folder/file.jpg`;
       const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
       const fileType = isPdf ? 'pdf' : fileUri.substring(fileUri.lastIndexOf('.') + 1);
+
       return {
         base64: item.data,
         fileType: fileType,
@@ -143,55 +145,54 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   const onClickGallery = async () => {
     setshowSpinner(true);
 
-    try {
-      const docs = await DocumentPicker.pickMultiple({
-        type: [DocumentPicker.types.images, DocumentPicker.types.pdf],
-      });
-      console.log({ docs });
-      const base64Array = await Promise.all(
-        docs.map((item) =>
-          RNFetchBlob.fs.readFile(
-            Platform.OS === 'ios' ? item.uri.replace('file:', '') : item.uri,
-            'base64'
-          )
-        )
-      );
-      console.log({ base64Array });
-
-      props.onResponse(
-        'CAMERA_AND_GALLERY',
-        formatResponse(
-          docs.map(
-            (item, i) =>
-              ({
-                mime: item.type,
-                data: base64Array[i],
-              } as ImageCropPickerResponse)
-          )
-        )
-      );
-      setshowSpinner(false);
-    } catch (error) {
-      setshowSpinner(false);
-    }
-
-    // ImagePicker.openPicker({
-    //   cropping: false,
-    //   includeBase64: true,
-    //   multiple: true,
-    //   compressImageQuality: 0.1,
-    // })
-    //   .then((response) => {
-    //     setshowSpinner(false);
+    //   try {
+    //     const docs = await DocumentPicker.pickMultiple({
+    //       type: [DocumentPicker.types.images, DocumentPicker.types.pdf],
+    //     });
+    //     console.log({ docs });
+    //     const base64Array = await Promise.all(
+    //       docs.map((item) =>
+    //         RNFetchBlob.fs.readFile(
+    //           Platform.OS === 'ios' ? item.uri.replace('file:', '') : item.uri,
+    //           'base64'
+    //         )
+    //       )
+    //     );
+    //     console.log({ base64Array });
     //     props.onResponse(
     //       'CAMERA_AND_GALLERY',
-    //       formatResponse(response as ImageCropPickerResponse[])
+    //       formatResponse(
+    //         docs.map(
+    //           (item, i) =>
+    //             ({
+    //               mime: item.type,
+    //               data: base64Array[i],
+    //             } as ImageCropPickerResponse)
+    //         )
+    //       )
     //     );
-    //   })
-    //   .catch((e) => {
-    //     aphConsole.log({ e });
     //     setshowSpinner(false);
-    //   });
+    //   } catch (error) {
+    //     setshowSpinner(false);
+    //   }
+
+    ImagePicker.openPicker({
+      cropping: false,
+      includeBase64: true,
+      multiple: true,
+      compressImageQuality: 0.1,
+    })
+      .then((response) => {
+        setshowSpinner(false);
+        props.onResponse(
+          'CAMERA_AND_GALLERY',
+          formatResponse(response as ImageCropPickerResponse[])
+        );
+      })
+      .catch((e) => {
+        aphConsole.log({ e });
+        setshowSpinner(false);
+      });
   };
 
   const isOptionDisabled = (type: EPrescriptionDisableOption) => props.disabledOption == type;

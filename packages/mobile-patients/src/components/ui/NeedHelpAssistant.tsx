@@ -6,6 +6,8 @@ import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { NavigationScreenProp } from 'react-navigation';
 import { NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
+import firebase from 'react-native-firebase';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   helpView: {
@@ -38,11 +40,15 @@ export interface NeedHelpAssistantProps {
 }
 
 export const NeedHelpAssistant: React.FC<NeedHelpAssistantProps> = (props) => {
+  const showNeed = () => {
+    CommonLogEvent(AppRoutes.MobileHelp, 'MobileHelp_clicked');
+    props.navigation && props.navigation.navigate(AppRoutes.MobileHelp);
+  };
   return (
     <View style={[styles.helpView, props.containerStyle]}>
       <Mascot style={styles.mascotImageStyle} />
       <Button
-        onPress={() => props.navigation && props.navigation.navigate(AppRoutes.MobileHelp)}
+        onPress={() => showNeed()}
         title="Need Help?"
         style={styles.needhelpbuttonStyles}
         titleTextStyle={styles.titleBtnStyles}

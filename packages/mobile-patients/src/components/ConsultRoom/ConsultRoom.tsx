@@ -11,7 +11,11 @@ import {
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DeviceHelper,
+  CommonLogEvent,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SAVE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import { DEVICE_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { PatientSignIn_patientSignIn_patients } from '@aph/mobile-patients/src/graphql/types/PatientSignIn';
@@ -201,7 +205,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       getPatientApiCall();
     }
 
-    analytics.setCurrentScreen(AppRoutes.ConsultRoom);
+    analytics.setAnalyticsCollectionEnabled(true);
+    CommonScreenLog(AppRoutes.ConsultRoom, AppRoutes.ConsultRoom);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {
@@ -533,12 +538,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               key={i}
               onPress={() => {
                 if (i === 0) {
+                  CommonLogEvent(AppRoutes.ConsultRoom, 'CONSULT_ROOM clicked');
                   props.navigation.navigate('CONSULT ROOM');
                 } else if (i == 1) {
+                  CommonLogEvent(AppRoutes.ConsultRoom, 'HEALTH_RECORDS clicked');
                   props.navigation.navigate('HEALTH RECORDS');
                 } else if (i == 2) {
+                  CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
+                  CommonLogEvent(AppRoutes.ConsultRoom, 'MY_ACCOUNT clicked');
                   props.navigation.navigate('MY ACCOUNT');
                 }
               }}
@@ -592,6 +601,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               title={string.home.consult_doctor}
               style={styles.buttonStyles}
               onPress={() => {
+                CommonLogEvent(AppRoutes.ConsultRoom, 'symptom checker  clicked');
                 props.navigation.navigate(AppRoutes.SymptomChecker, { MoveDoctor: 'MoveDoctor' });
               }}
             />
@@ -644,8 +654,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   key={i}
                   onPress={() => {
                     if (i === 0) {
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
                       props.navigation.navigate(AppRoutes.DoctorSearch);
                     } else if (i == 1) {
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
                       props.navigation.navigate(AppRoutes.SearchMedicineScene);
                     }
                   }}
@@ -719,6 +731,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               activeOpacity={1}
               style={styles.gotItStyles}
               onPress={() => {
+                CommonLogEvent(AppRoutes.ConsultRoom, 'ConsultRoom_BottomPopUp clicked');
                 AsyncStorage.setItem('gotIt', 'true');
                 setshowPopUp(false);
               }}

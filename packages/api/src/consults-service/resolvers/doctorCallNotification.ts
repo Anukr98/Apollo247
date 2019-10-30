@@ -1,23 +1,58 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import {
+  sendNotification,
+  NotificationType,
+  sendCallsNotification,
+  DOCTOR_CALL_TYPE,
+  DOCTOR_TYPE,
+} from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { format } from 'date-fns';
 
 export const doctorCallNotificationTypeDefs = gql`
+  type NotificationResult {
+    status: Boolean!
+  }
+  type ApptNotificationResult {
+    status: Boolean!
+    currentTime: String!
+  }
+
+  enum DOCTOR_CALL_TYPE {
+    AUDIO
+    VIDEO
+  }
+
+  enum DOCTOR_TYPE {
+    JUNIOR
+    SENIOR
+  }
+
   extend type Query {
-    sendCallNotification(appointmentId: String): Boolean!
-    sendApptNotification: Boolean!
+    sendCallNotification(
+      appointmentId: String
+      callType: DOCTOR_CALL_TYPE
+      doctorType: DOCTOR_TYPE
+    ): NotificationResult!
+    sendApptNotification: ApptNotificationResult!
   }
 `;
-
+type NotificationResult = {
+  status: Boolean;
+};
+type ApptNotificationResult = {
+  status: Boolean;
+  currentTime: string;
+};
 const sendCallNotification: Resolver<
   null,
-  { appointmentId: string },
+  { appointmentId: string; callType: DOCTOR_CALL_TYPE; doctorType: DOCTOR_TYPE },
   ConsultServiceContext,
-  boolean
+  NotificationResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.findById(args.appointmentId);
@@ -26,22 +61,25 @@ const sendCallNotification: Resolver<
     appointmentId: args.appointmentId,
     notificationType: NotificationType.CALL_APPOINTMENT,
   };
-  const notificationResult = sendNotification(
+  const notificationResult = sendCallsNotification(
     pushNotificationInput,
     patientsDb,
     consultsDb,
-    doctorsDb
+    doctorsDb,
+    args.callType,
+    args.doctorType
   );
   console.log(notificationResult, 'doctor call appt notification');
 
-  return true;
+  return { status: true };
 };
 
-const sendApptNotification: Resolver<null, {}, ConsultServiceContext, boolean> = async (
-  parent,
-  args,
-  { consultsDb, doctorsDb, patientsDb }
-) => {
+const sendApptNotification: Resolver<
+  null,
+  {},
+  ConsultServiceContext,
+  ApptNotificationResult
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptsList = await apptRepo.getNextMinuteAppointments();
   console.log(apptsList);
@@ -61,7 +99,7 @@ const sendApptNotification: Resolver<null, {}, ConsultServiceContext, boolean> =
     });
   }
 
-  return true;
+  return { status: true, currentTime: format(new Date(), 'yyyy-MM-dd hh:mm') };
 };
 
 export const doctorCallNotificationResolvers = {

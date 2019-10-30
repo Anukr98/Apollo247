@@ -55,6 +55,7 @@ import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
 import { getNetStatus } from '../../helpers/helperFunctions';
 import { NoInterNetPopup } from '../ui/NoInterNetPopup';
+import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -194,6 +195,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
+    CommonScreenLog(AppRoutes.AppointmentOnlineDetails, AppRoutes.AppointmentOnlineDetails);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -455,6 +457,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             rightComponent={
               <TouchableOpacity
                 onPress={() => {
+                  CommonLogEvent(
+                    AppRoutes.AppointmentOnlineDetails,
+                    'UPCOMING ONLINE VISIT Clicked'
+                  );
                   setCancelAppointment(true);
                 }}
               >
@@ -504,6 +510,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
               ]}
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
+                CommonLogEvent(
+                  AppRoutes.AppointmentOnlineDetails,
+                  'Reschdule_Appointment_Online_Details_Clicked'
+                );
                 try {
                   dateIsAfter ? NextAvailableSlotAPI() : null;
                 } catch (error) {}
@@ -514,8 +524,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 title={'START CONSULTATION'}
                 style={styles.startConsultText}
                 onPress={() => {
+                  CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'START_CONSULTATION_Clicked');
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
+                    callType: '',
                   });
                 }}
               />
@@ -535,6 +547,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   backgroundColor: 'transparent',
                 }}
                 onPress={() => {
+                  CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'SELECTED_SLOT_ISSUE_Clicked');
                   setBottompopup(false);
                 }}
               >
@@ -565,12 +578,14 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           >
             <TouchableOpacity
               onPress={() => {
+                CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
                 setCancelAppointment(false);
               }}
             >
               <View style={styles.cancelMainView}>
                 <TouchableOpacity
                   onPress={() => {
+                    CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CancelAppointment Clicked');
                     setShowCancelPopup(true);
                     setCancelAppointment(false);
                   }}
@@ -602,8 +617,12 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 <TouchableOpacity
                   style={styles.gotItStyles}
                   onPress={() => {
+                    CommonLogEvent(
+                      AppRoutes.AppointmentOnlineDetails,
+                      'RESCHEDULE_INSTEAD_Clicked'
+                    );
                     setShowCancelPopup(false);
-                    setResheduleoverlay(true);
+                    NextAvailableSlotAPI();
                   }}
                 >
                   <Text style={styles.gotItTextStyles}>{'RESCHEDULE INSTEAD'}</Text>
@@ -613,6 +632,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 <TouchableOpacity
                   style={styles.gotItStyles}
                   onPress={() => {
+                    CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
                     setShowCancelPopup(false);
                     setshowSpinner(true);
                     cancelAppointmentApi();

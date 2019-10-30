@@ -1,6 +1,6 @@
 import { CollapseCard } from '@aph/mobile-patients/src/components/CollapseCard';
 import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
-import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
+// import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -41,6 +41,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -84,6 +85,7 @@ type RecordTypeType = {
   name: string;
   value: string;
 };
+type PickerImage = any;
 
 const RecordType: RecordTypeType[] = [
   { name: MedicalRecordType.EHR.toLowerCase().replace('_', ' '), value: MedicalRecordType.EHR },
@@ -309,6 +311,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               imageCOPY.splice(i, 1);
 
               setImages(imageCOPY);
+              CommonLogEvent('ADD_RECORD', 'Set Images');
             }}
           >
             <CrossYellow />
@@ -324,7 +327,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         <CollapseCard
           heading="IMAGES UPLOADED"
           collapse={showImages}
-          onPress={() => setshowImages(!showImages)}
+          onPress={() => (CommonLogEvent('ADD_RECORD', 'Show Images'), setshowImages(!showImages))}
         >
           <View style={[styles.cardViewStyle, { paddingHorizontal: 8 }]}>
             <FlatList
@@ -336,7 +339,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             />
             <Text
               style={[theme.viewStyles.yellowTextStyle, { textAlign: 'right', paddingBottom: 16 }]}
-              onPress={() => setdisplayOrderPopup(true)}
+              onPress={() => (
+                CommonLogEvent('ADD_RECORD', 'Display order popup'), setdisplayOrderPopup(true)
+              )}
             >
               ADD DOCUMENT
             </Text>
@@ -352,7 +357,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         <CollapseCard
           heading="RECORD DETAILS"
           collapse={showRecordDetails}
-          onPress={() => setshowRecordDetails(!showRecordDetails)}
+          onPress={() => (
+            CommonLogEvent('ADD_RECORD', 'RECORD DETAILS'), setshowRecordDetails(!showRecordDetails)
+          )}
         >
           <View style={[styles.cardViewStyle, { paddingTop: 6, paddingBottom: 5 }]}>
             {/* <TextInputComponent
@@ -394,6 +401,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 onPress={() => {
                   Keyboard.dismiss();
                   setIsDateTimePickerVisible(true);
+                  CommonLogEvent('ADD_RECORD', 'Date picker visible');
                 }}
               >
                 <Text

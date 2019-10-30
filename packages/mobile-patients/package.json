@@ -91,16 +91,22 @@
     "react-native-incall-manager": "^3.2.4",
     "react-native-keep-awake": "^4.0.0",
     "react-native-keyboard-aware-scroll-view": "^0.8.0",
+    "react-native-material-menu": "^0.4.0",
     "react-native-modal-datetime-picker": "^7.4.2",
     "react-native-otp-textinput": "0.0.6",
     "react-native-permissions": "^1.2.0",
     "react-native-popup-menu": "^0.15.6",
+    "react-native-reanimated": "^1.0.1",
     "react-native-set-soft-input-mode": "^1.1.0",
     "react-native-splash-screen": "^3.2.0",
     "react-native-swipe-gestures": "^1.0.3",
+    "react-native-swiper": "^1.5.14",
+    "react-native-tab-view": "^2.9.0",
     "react-native-vector-icons": "^6.5.0",
     "react-navigation": "^3.11.0",
-    "resize-base64": "^1.0.12"
+    "resize-base64": "^1.0.12",
+    "string-strip-html": "^4.3.5",
+    "react-native-geocoding": "^0.4.0"
   },
   "jest": {
     "preset": "react-native"

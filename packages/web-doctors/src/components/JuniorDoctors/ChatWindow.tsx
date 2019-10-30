@@ -24,7 +24,7 @@ const client = new AphStorageClient(
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      padding: '10px 25px 0 25px',
+      padding: '10px 15px 20px 15px',
     },
     container: {
       position: 'relative',
@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
     },
     customScroll: {
-      padding: '0 20px',
+      padding: '0 10px',
       paddingBottom: 20,
     },
     petient: {
@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
     sendMsgBtn: {
       backgroundColor: '#F9F9F9',
       color: '#000',
-      width: '30 %',
+      width: '30%',
       align: 'right',
     },
     inputWidth: {
@@ -176,7 +176,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     chatImgBubble: {
       padding: 0,
-      overflow: 'hidden',
       '& img': {
         maxWidth: '100%',
         verticalAlign: 'middle',
@@ -226,8 +225,8 @@ const useStyles = makeStyles((theme: Theme) => {
     customScrollWrap: {
       marginBottom: -37,
       '& >div': {
-        top: '10px !important',
-        bottom: '10px !important',
+        top: '20px !important',
+        bottom: '0 !important',
       },
     },
     chatSendBtn: {
@@ -244,6 +243,12 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:focus': {
         backgroundColor: 'transparent',
       },
+    },
+    imageUpload: {
+      overflow: 'hidden',
+      borderRadius: 10,
+      width: 100,
+      height: 100,
     },
   };
 });
@@ -387,7 +392,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     getHistory(0);
 
     pubnub.addListener({
-      status: (statusEvent) => { },
+      status: (statusEvent) => {},
       message: (message) => {
         console.log(message.message);
         insertText[insertText.length] = message.message;
@@ -419,26 +424,32 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   }, []);
 
   const getHistory = (timetoken: number) => {
-    pubnub.history({
-      channel: channel, reverse: true, count: 1000, stringifiedTimeToken: true,
-      start: timetoken,
-    }, (status, res) => {
-      const newmessage: MessagesObjectProps[] = messages;
-      console.log(newmessage);
-      res.messages.forEach((element, index) => {
-        //newmessage[index] = element.entry;
-        newmessage.push(element.entry);
-      });
-      insertText = newmessage;
-      //if (messages.length !== newmessage.length) {
-      setMessages(newmessage);
-      //}
-      const end: number = res.endTimeToken ? res.endTimeToken : 1;
-      if (res.messages.length == 100) {
-        getHistory(end);
+    pubnub.history(
+      {
+        channel: channel,
+        reverse: true,
+        count: 1000,
+        stringifiedTimeToken: true,
+        start: timetoken,
+      },
+      (status, res) => {
+        const newmessage: MessagesObjectProps[] = messages;
+        console.log(newmessage);
+        res.messages.forEach((element, index) => {
+          //newmessage[index] = element.entry;
+          newmessage.push(element.entry);
+        });
+        insertText = newmessage;
+        //if (messages.length !== newmessage.length) {
+        setMessages(newmessage);
+        //}
+        const end: number = res.endTimeToken ? res.endTimeToken : 1;
+        if (res.messages.length == 100) {
+          getHistory(end);
+        }
+        resetMessagesAction();
       }
-      resetMessagesAction();
-    });
+    );
   };
 
   const send = () => {
@@ -511,33 +522,33 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
-                <div
-                  className={`${classes.chatBubble} ${
-                    rowData.message === documentUpload ? classes.chatImgBubble : ''
-                    }`}
-                >
-                  {leftComponent == 1 && !rowData.duration && (
-                    <div className={classes.patientAvatar}>
-                      <Avatar
-                        className={classes.avatar}
-                        src={
-                          patientDetails && patientDetails.photoUrl
-                            ? patientDetails!.photoUrl
-                            : require('images/no_photo_icon_round.svg')
-                        }
-                        alt=""
-                      />
-                    </div>
-                  )}
-                  {rowData.message === documentUpload ? (
-                    <a href={rowData.url} target="_blank">
-                      <img src={rowData.url} alt={rowData.url} />
-                    </a>
-                  ) : (
-                      <span>{getAutomatedMessage(rowData)}</span>
-                    )}
+            <div
+              className={`${classes.chatBubble} ${
+                rowData.message === documentUpload ? classes.chatImgBubble : ''
+              }`}
+            >
+              {leftComponent == 1 && !rowData.duration && (
+                <div className={classes.patientAvatar}>
+                  <Avatar
+                    className={classes.avatar}
+                    src={
+                      patientDetails && patientDetails.photoUrl
+                        ? patientDetails!.photoUrl
+                        : require('images/no_photo_icon_round.svg')
+                    }
+                    alt=""
+                  />
                 </div>
               )}
+              {rowData.message === documentUpload ? (
+                <a href={rowData.url} target="_blank">
+                  <img src={rowData.url} alt={rowData.url} />
+                </a>
+              ) : (
+                <span>{getAutomatedMessage(rowData)}</span>
+              )}
+            </div>
+          )}
         </div>
       );
     }
@@ -579,39 +590,35 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
-                <div
-                  className={`${classes.chatBubble} ${classes.patientBubble} ${
-                    rowData.message === documentUpload ? classes.chatImgBubble : ''
-                    }`}
-                >
-                  {rightComponent == 1 && !rowData.duration && (
-                    <div className={classes.patientAvatar}>
-                      <Avatar
-                        className={classes.avatar}
-                        src={
-                          patientDetails && patientDetails.photoUrl
-                            ? patientDetails!.photoUrl
-                            : require('images/no_photo_icon_round.svg')
-                        }
-                        alt=""
-                      />
-                    </div>
-                  )}
-                  {rowData.message === documentUpload ? (
-                    <div style={{ width: '50px', height: '50px' }}>
-                      <a href={rowData.url} target="_blank">
-                        <img
-                          style={{ width: '50px', height: '50px' }}
-                          src={rowData.url}
-                          alt={rowData.url}
-                        />
-                      </a>
-                    </div>
-                  ) : (
-                      <span>{getAutomatedMessage(rowData)}</span>
-                    )}
+            <div
+              className={`${classes.chatBubble} ${classes.patientBubble} ${
+                rowData.message === documentUpload ? classes.chatImgBubble : ''
+              }`}
+            >
+              {rightComponent == 1 && !rowData.duration && (
+                <div className={classes.patientAvatar}>
+                  <Avatar
+                    className={classes.avatar}
+                    src={
+                      patientDetails && patientDetails.photoUrl
+                        ? patientDetails!.photoUrl
+                        : require('images/no_photo_icon_round.svg')
+                    }
+                    alt=""
+                  />
                 </div>
               )}
+              {rowData.message === documentUpload ? (
+                <div className={classes.imageUpload}>
+                  <a href={rowData.url} target="_blank">
+                    <img src={rowData.url} alt={rowData.url} />
+                  </a>
+                </div>
+              ) : (
+                <span>{getAutomatedMessage(rowData)}</span>
+              )}
+            </div>
+          )}
         </div>
       );
     }
@@ -623,8 +630,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-      })
+          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+        })
       : '';
 
   const toggelChatVideo = () => {
@@ -668,7 +675,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
     };
     sendMsg(stoptext, true);
@@ -723,7 +730,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             <Scrollbars
               className={classes.customScrollWrap}
               autoHide={true}
-              style={{ height: 'calc(100vh - 344px' }}
+              style={{ height: 'calc(100vh - 324px' }}
             >
               <div className={classes.customScroll}>
                 {messagessHtml}

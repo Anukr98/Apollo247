@@ -17,4 +17,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .groupBy('consultQueueItem.doctorId')
       .getRawMany();
   }
+  findByAppointmentId(appointmentId: string) {
+    return this.findOne({ where: { appointmentId } });
+  }
 }

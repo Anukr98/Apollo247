@@ -2,7 +2,6 @@ import React, { useEffect, useState, useContext } from 'react';
 import { Theme, Button } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput, AphButton } from '@aph/web-ui-components';
-import { Consult } from 'components/Consult';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -159,6 +158,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
   };
 });
+
 interface MessagesObjectProps {
   id: string;
   message: string;
@@ -167,6 +167,7 @@ interface MessagesObjectProps {
   duration: string;
   url: string;
 }
+
 interface ConsultRoomProps {
   startConsult: string;
   sessionId: string;
@@ -175,8 +176,10 @@ interface ConsultRoomProps {
   doctorId: string;
   patientId: string;
 }
+
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
+
 export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
   const [showVideo, setShowVideo] = useState<boolean>(false);
@@ -184,13 +187,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
   const [messageText, setMessageText] = useState<string>('');
   const [msg, setMsg] = useState<string>('');
-  const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
+  // const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
-  const [convertVideo, setConvertVideo] = useState<boolean>(false);
+  // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
-  const covertVideoMsg = '^^convert`video^^';
-  const covertAudioMsg = '^^convert`audio^^';
+  // const covertVideoMsg = '^^convert`video^^';
+  // const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
@@ -221,10 +224,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
 
-  const timerMinuts = Math.floor(startingTime / 60);
-  const timerSeconds = startingTime - timerMinuts * 60;
-  const timerLastMinuts = Math.floor(startingTime / 60);
-  const timerLastSeconds = startingTime - timerMinuts * 60;
+  // const timerMinuts = Math.floor(startingTime / 60);
+  // const timerSeconds = startingTime - timerMinuts * 60;
+  // const timerLastMinuts = Math.floor(startingTime / 60);
+  // const timerLastSeconds = startingTime - timerMinuts * 60;
   const startIntervalTimer = (timer: number) => {
     setstartTimerAppoinmentt(true);
     timerIntervalId = setInterval(() => {
@@ -233,10 +236,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setStartingTime(timer);
     }, 1000);
   };
-  const stopIntervalTimer = () => {
-    setStartingTime(0);
-    timerIntervalId && clearInterval(timerIntervalId);
-  };
+  // const stopIntervalTimer = () => {
+  //   setStartingTime(0);
+  //   timerIntervalId && clearInterval(timerIntervalId);
+  // };
   const srollToBottomAction = () => {
     setTimeout(() => {
       const scrollDiv = document.getElementById('scrollDiv');
@@ -251,18 +254,18 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       setMsg('');
     }
   };
-  const isURL = (str: string) => {
-    const pattern = new RegExp(
-      '^(https?:\\/\\/)?' + // protocol
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
-      '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-      '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-      '(\\#[-a-z\\d_]*)?$',
-      'i'
-    ); // fragment locator
-    return pattern.test(str);
-  };
+  // const isURL = (str: string) => {
+  //   const pattern = new RegExp(
+  //     '^(https?:\\/\\/)?' + // protocol
+  //     '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + // domain name
+  //     '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+  //     '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+  //     '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+  //       '(\\#[-a-z\\d_]*)?$',
+  //     'i'
+  //   ); // fragment locator
+  //   return pattern.test(str);
+  // };
   useEffect(() => {
     if (isCallAccepted) {
       startIntervalTimer(0);
@@ -277,7 +280,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getHistory(0);
 
     pubnub.addListener({
-      status: (statusEvent) => { },
+      status: (statusEvent) => {},
       message: (message) => {
         insertText[insertText.length] = message.message;
         console.log(message.message);
@@ -409,10 +412,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-                  <div>
-                    <span>{getAutomatedMessage(rowData)}</span>
-                  </div>
-                )}
+              <div>
+                <span>{getAutomatedMessage(rowData)}</span>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -458,22 +461,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-                  <div>
-                    {rowData.message === documentUpload ? (
-                      <div style={{ width: '200px', height: 'auto' }}>
-                        <a href={rowData.url} target="_blank">
-                          <img
-                            style={{ width: '200px', height: 'auto' }}
-                            src={rowData.url}
-                            alt={rowData.url}
-                          />
-                        </a>
-                      </div>
-                    ) : (
-                        <span>{getAutomatedMessage(rowData)}</span>
-                      )}
+              <div>
+                {rowData.message === documentUpload ? (
+                  <div style={{ width: '200px', height: 'auto' }}>
+                    <a href={rowData.url} target="_blank">
+                      <img
+                        style={{ width: '200px', height: 'auto' }}
+                        src={rowData.url}
+                        alt={rowData.url}
+                      />
+                    </a>
                   </div>
+                ) : (
+                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
+              </div>
+            )}
           </div>
         </div>
       );
@@ -507,22 +510,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-                  <div>
-                    {rowData.message === documentUpload ? (
-                      <div style={{ width: '200px', height: 'auto' }}>
-                        <a href={rowData.url} target="_blank">
-                          <img
-                            style={{ width: '200px', height: 'auto' }}
-                            src={rowData.url}
-                            alt={rowData.url}
-                          />
-                        </a>
-                      </div>
-                    ) : (
-                        <span>{getAutomatedMessage(rowData)}</span>
-                      )}
+              <div>
+                {rowData.message === documentUpload ? (
+                  <div style={{ width: '200px', height: 'auto' }}>
+                    <a href={rowData.url} target="_blank">
+                      <img
+                        style={{ width: '200px', height: 'auto' }}
+                        src={rowData.url}
+                        alt={rowData.url}
+                      />
+                    </a>
                   </div>
+                ) : (
+                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
+              </div>
+            )}
           </div>
         </div>
       );
@@ -534,105 +537,105 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-      })
+          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+        })
       : '';
-  const toggelChatVideo = () => {
-    setIsNewMsg(false);
-    setShowVideoChat(!showVideoChat);
-    srollToBottomAction();
-  };
-  const actionBtn = () => {
-    setShowVideo(true);
-  };
-  const stopAudioVideoCall = () => {
-    setIsCallAccepted(false);
-    setShowVideo(false);
-    setShowVideoChat(false);
-    const cookieStr = `action=`;
-    document.cookie = cookieStr + ';path=/;';
-    const text = {
-      id: doctorId,
-      message: stopcallMsg,
-      isTyping: true,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
-    const stoptext = {
-      id: doctorId,
-      message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
-      duration: `${
-        timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
-      isTyping: true,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: stoptext,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
-    stopIntervalTimer();
-    //setIsVideoCall(false);
-  };
-  const stopAudioVideoCallpatient = () => {
-    setIsCallAccepted(false);
-    setShowVideo(false);
-    setShowVideoChat(false);
-    const cookieStr = `action=`;
-    document.cookie = cookieStr + ';path=/;';
-    const text = {
-      id: doctorId,
-      message: stopcallMsg,
-      isTyping: true,
-    };
-    pubnub.publish(
-      {
-        channel: channel,
-        message: text,
-        storeInHistory: true,
-        sendByPost: true,
-      },
-      (status, response) => {
-        setMessageText('');
-      }
-    );
-    stopIntervalTimer();
-  };
+  // const toggelChatVideo = () => {
+  //   setIsNewMsg(false);
+  //   setShowVideoChat(!showVideoChat);
+  //   srollToBottomAction();
+  // };
+  // const actionBtn = () => {
+  //   setShowVideo(true);
+  // };
+  // const stopAudioVideoCall = () => {
+  //   setIsCallAccepted(false);
+  //   setShowVideo(false);
+  //   setShowVideoChat(false);
+  //   const cookieStr = `action=`;
+  //   document.cookie = cookieStr + ';path=/;';
+  //   const text = {
+  //     id: doctorId,
+  //     message: stopcallMsg,
+  //     isTyping: true,
+  //   };
+  //   pubnub.publish(
+  //     {
+  //       channel: channel,
+  //       message: text,
+  //       storeInHistory: true,
+  //       sendByPost: true,
+  //     },
+  //     (status, response) => {
+  //       setMessageText('');
+  //     }
+  //   );
+  //   const stoptext = {
+  //     id: doctorId,
+  //     message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
+  //     duration: `${
+  //       timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
+  //     } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+  //     isTyping: true,
+  //   };
+  //   pubnub.publish(
+  //     {
+  //       channel: channel,
+  //       message: stoptext,
+  //       storeInHistory: true,
+  //       sendByPost: true,
+  //     },
+  //     (status, response) => {
+  //       setMessageText('');
+  //     }
+  //   );
+  //   stopIntervalTimer();
+  //   //setIsVideoCall(false);
+  // };
+  // const stopAudioVideoCallpatient = () => {
+  //   setIsCallAccepted(false);
+  //   setShowVideo(false);
+  //   setShowVideoChat(false);
+  //   const cookieStr = `action=`;
+  //   document.cookie = cookieStr + ';path=/;';
+  //   const text = {
+  //     id: doctorId,
+  //     message: stopcallMsg,
+  //     isTyping: true,
+  //   };
+  //   pubnub.publish(
+  //     {
+  //       channel: channel,
+  //       message: text,
+  //       storeInHistory: true,
+  //       sendByPost: true,
+  //     },
+  //     (status, response) => {
+  //       setMessageText('');
+  //     }
+  //   );
+  //   stopIntervalTimer();
+  // };
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
   // const covertVideoMsg = '^^convert`video^^';
   // const covertAudioMsg = '^^convert`audio^^';
-  const convertCall = () => {
-    setConvertVideo(!convertVideo);
-    setTimeout(() => {
-      pubnub.publish(
-        {
-          message: {
-            isTyping: true,
-            message: convertVideo ? covertVideoMsg : covertAudioMsg,
-          },
-          channel: channel,
-          storeInHistory: false,
-        },
-        (status, response) => { }
-      );
-    }, 10);
-  };
+  // const convertCall = () => {
+  //   setConvertVideo(!convertVideo);
+  //   setTimeout(() => {
+  //     pubnub.publish(
+  //       {
+  //         message: {
+  //           isTyping: true,
+  //           message: convertVideo ? covertVideoMsg : covertAudioMsg,
+  //         },
+  //         channel: channel,
+  //         storeInHistory: false,
+  //       },
+  //       (status, response) => {}
+  //     );
+  //   }, 10);
+  // };
   return (
     <div className={classes.consultRoom}>
       <div className={!showVideo ? classes.container : classes.audioVideoContainer}>

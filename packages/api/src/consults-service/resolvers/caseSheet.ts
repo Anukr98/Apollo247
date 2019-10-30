@@ -164,7 +164,7 @@ export const caseSheetTypeDefs = gql`
   type CaseSheet {
     appointment: Appointment
     blobName: String
-    createdDate: Date
+    createdDate: DateTime
     createdDoctorId: String
     createdDoctorProfile: Profile @provides(fields: "id")
     consultType: String
@@ -637,7 +637,7 @@ const modifyCaseSheet: Resolver<
   }
 
   if (!(inputArguments.followUpDate === undefined)) {
-    if (getCaseSheetData.followUpDate) getCaseSheetData.followUpDate = inputArguments.followUpDate;
+    getCaseSheetData.followUpDate = inputArguments.followUpDate;
   }
 
   if (!(inputArguments.followUpAfterInDays === undefined)) {
@@ -913,10 +913,11 @@ export const caseSheetResolvers = {
     },
   },
   CaseSheet: {
-    doctorInfo(caseSheet: CaseSheet) {
+    createdDoctorProfile(caseSheet: CaseSheet) {
       return { __typename: 'Profile', id: caseSheet.createdDoctorId };
     },
   },
+
   Mutation: {
     updateCaseSheet,
     modifyCaseSheet,

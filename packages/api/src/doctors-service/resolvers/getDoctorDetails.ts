@@ -87,6 +87,7 @@ export const getDoctorDetailsTypeDefs = gql`
     city: String
     country: String
     dateOfBirth: String
+    displayName: String
     doctorType: DoctorType!
     delegateNumber: String
     emailAddress: String
@@ -111,6 +112,7 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine1: String
     streetLine2: String
     streetLine3: String
+    thumbnailUrl: String
     zip: String
     bankAccount: [BankAccount]
     consultHours: [ConsultHours]
@@ -147,6 +149,7 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine1: String
     streetLine2: String
     streetLine3: String
+    zipcode: String
   }
 
   type Packages {
@@ -175,7 +178,10 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine1: String
     streetLine2: String
     streetLine3: String
+    thumbnailUrl: String
+    displayName: String
     zip: String
+    registrationNumber: String
     onlineConsultationFees: String!
     physicalConsultationFees: String!
     doctorHospital: [DoctorHospital!]!

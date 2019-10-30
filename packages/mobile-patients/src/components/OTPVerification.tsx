@@ -18,6 +18,7 @@ import {
   View,
   WebView,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationScreenProps } from 'react-navigation';
@@ -29,6 +30,7 @@ import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Header } from './ui/Header';
 import { fonts } from '../theme/fonts';
 import Hyperlink from 'react-native-hyperlink';
+import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -110,6 +112,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
+
+  useEffect(() => {
+    firebase.analytics().setCurrentScreen(AppRoutes.OTPVerification, AppRoutes.OTPVerification);
+    BackHandler.addEventListener('hardwareBackPress', () => {
+      console.log('hihi');
+      setonClickOpen(false);
+      return true;
+    });
+  });
 
   const startInterval = useCallback(
     (timer: number) => {
@@ -275,6 +286,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   });
 
   const onClickOk = () => {
+    CommonLogEvent(AppRoutes.OTPVerification, 'OTPVerification clicked');
     try {
       Keyboard.dismiss();
     } catch (error) {}
@@ -372,6 +384,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   const onClickResend = () => {
+    CommonLogEvent(AppRoutes.OTPVerification, 'Resend Otp clicked');
     getNetStatus().then((status) => {
       if (status) {
         setIsresent(true);
@@ -394,6 +407,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
   };
 
   const openWebView = () => {
+    CommonLogEvent(AppRoutes.OTPVerification, 'Terms  Conditions clicked');
     Keyboard.dismiss();
     return (
       <View style={styles.viewWebStyles}>

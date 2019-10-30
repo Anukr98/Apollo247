@@ -52,6 +52,7 @@ import {
 } from '../../graphql/types/checkIfReschedule';
 import { getNetStatus } from '../../helpers/helperFunctions';
 import { NoInterNetPopup } from '../ui/NoInterNetPopup';
+import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -153,6 +154,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
+    CommonScreenLog(AppRoutes.AppointmentDetails, AppRoutes.AppointmentDetails);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -419,6 +421,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               <TouchableOpacity
                 activeOpacity={1}
                 onPress={() => {
+                  CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
                   setCancelAppointment(true);
                 }}
               >
@@ -520,6 +523,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
               ]}
               titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
               onPress={() => {
+                CommonLogEvent(
+                  AppRoutes.AppointmentDetails,
+                  'RESCHEDULE APPOINTMENT DETAILS CLICKED'
+                );
                 try {
                   dateIsAfter ? NextAvailableSlotAPI() : null;
                 } catch (error) {}
@@ -534,8 +541,13 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   marginLeft: 8,
                 }}
                 onPress={() => {
+                  CommonLogEvent(
+                    AppRoutes.AppointmentDetails,
+                    'START CONSULTATION APPOINTMENT DETAILS CLICKED'
+                  );
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
+                    callType: '',
                   });
                 }}
               />
@@ -585,6 +597,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
           >
             <TouchableOpacity
               onPress={() => {
+                CommonLogEvent(AppRoutes.AppointmentDetails, 'AppointmentDetails Cancel Clicked');
                 setCancelAppointment(false);
               }}
             >
@@ -651,7 +664,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   style={styles.gotItStyles}
                   onPress={() => {
                     setShowCancelPopup(false);
-                    setdisplayoverlay(true);
+                    NextAvailableSlotAPI();
                   }}
                 >
                   <Text style={styles.gotItTextStyles}>{'RESCHEDULE INSTEAD'}</Text>
@@ -661,6 +674,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 <TouchableOpacity
                   style={styles.gotItStyles}
                   onPress={() => {
+                    CommonLogEvent(
+                      AppRoutes.AppointmentDetails,
+                      'AppointmentDetails  Cancel Concsult Clicked'
+                    );
                     setShowCancelPopup(false);
                     setshowSpinner(true);
                     cancelAppointmentApi();

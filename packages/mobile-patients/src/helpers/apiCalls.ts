@@ -1,28 +1,30 @@
 import Axios, { AxiosResponse } from 'axios';
-import { AsyncStorage } from 'react-native';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 export interface MedicineProduct {
   description: string;
   id: number;
-  image: string;
-  is_in_stock: boolean; // always returning true
-  is_prescription_required: string; //1 for required
+  image: string | null;
+  is_in_stock: boolean;
+  is_prescription_required: '0' | '1'; //1 for required
   name: string;
   price: number;
-  special_price: number;
+  special_price: number | string;
   sku: string;
-  small_image: string;
-  status: number; // 1, 2 (1 = in-stock, 2= out-of-stock)
-  thumbnail: string;
+  small_image?: string | null;
+  status: number;
+  thumbnail: string | null;
   type_id: string;
   mou: string;
   manufacturer: string;
+  PharmaOverview: PharmaOverview[];
 }
+
+export type Doseform = 'TABLET' | 'INJECTION' | 'SYRUP' | '';
 
 interface PharmaOverview {
   generic: string;
-  Doseform: string;
+  Doseform: Doseform;
   Unit: string;
   Strength: string;
   Strengh: string;
@@ -40,11 +42,23 @@ export interface MedicineProductDetails extends MedicineProduct {
 
 export interface MedicineProductDetailsResponse {
   productdp: MedicineProductDetails[];
+  message?: string;
 }
 
 export interface MedicineProductsResponse {
   product_count: number;
   products: MedicineProduct[];
+}
+
+export interface Brand {
+  category_id: string;
+  image_url: number;
+  title: string;
+}
+
+export interface BrandsResponse {
+  count: number;
+  brands: Brand[];
 }
 
 export interface Store {
@@ -58,6 +72,14 @@ export interface Store {
   message: string;
 }
 
+export interface GetDeliveryTimeResponse {
+  tat: {
+    artCode: string;
+    deliverydate: string;
+    siteId: string;
+  }[];
+  errorMSG?: string;
+}
 interface InventoryCheckApiResponse {
   InvChkResult: {
     Message: string; //"Data Founds" | "Authentication Failure-Invalid Token" | "No Items to Check Inventory"
@@ -74,23 +96,16 @@ interface InventoryCheckApiResponse {
   };
 }
 
-type CityOptions =
-  | 'hyderabad'
-  | 'bengaluru'
-  | 'chennai'
-  | 'delhi'
-  | 'kolkata'
-  | 'mumbai'
-  | 'vijaywada'
-  | 'ahmedabad'
-  | 'all';
-
 type GooglePlacesType =
   | 'postal_code'
   | 'locality'
   | 'administrative_area_level_2'
   | 'administrative_area_level_1'
   | 'country';
+
+export enum ProductCategory {
+  HOT_SELLERS = '1174',
+}
 
 interface PlacesApiResponse {
   results: {
@@ -102,7 +117,46 @@ interface PlacesApiResponse {
   }[];
 }
 
+// MedicineLandingPageAPi
+interface MedicinePageSection {
+  category_id: string;
+  title: string;
+  image_url: string;
+}
+interface DealsOfTheDaySection {
+  category_id: string;
+  image_url: string;
+  position: number;
+}
+interface OfferBannerSection {
+  name: string;
+  status: '0' | '1';
+  image: string; // full url
+  start_time: string; // '2019-02-10 01:21:00';
+  end_time: string;
+}
+
+export interface MedicinePageAPiResponse {
+  mainbanners: OfferBannerSection[];
+  healthareas: MedicinePageSection[];
+  deals_of_the_day: DealsOfTheDaySection[];
+  shop_by_category: MedicinePageSection[];
+  shop_by_brand: MedicinePageSection[];
+  hot_sellers?: { products: MedicineProduct[] };
+}
+
 /*
+type CityOptions =
+  | 'hyderabad'
+  | 'bengaluru'
+  | 'chennai'
+  | 'delhi'
+  | 'kolkata'
+  | 'mumbai'
+  | 'vijaywada'
+  | 'ahmedabad'
+  | 'all';
+
 export interface CartItem extends Partial<MedicineProduct> {
   item_id: number;
   sku: string;
@@ -285,13 +339,13 @@ export const getMedicineDetailsApi = (
   );
 };
 
-let cancel: any;
+let cancelSearchMedicineApi: any;
 
 export const searchMedicineApi = (
   searchText: string
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
   const CancelToken = Axios.CancelToken;
-  cancel && cancel();
+  cancelSearchMedicineApi && cancelSearchMedicineApi();
 
   return Axios.post(
     `${config.MED_SEARCH[0]}/popcsrchprd_api.php`,
@@ -303,7 +357,7 @@ export const searchMedicineApi = (
       },
       cancelToken: new CancelToken(function executor(c) {
         // An executor function receives a cancel function as a parameter
-        cancel = c;
+        cancelSearchMedicineApi = c;
       }),
     }
   );
@@ -363,15 +417,20 @@ export const inventoryCheckApi = (
   );
 };
 
-export const getPopularProductsBasedOnCityApi = (
-  city: CityOptions
-): Promise<AxiosResponse<InventoryCheckApiResponse>> => {
-  return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
-};
+// export const getPopularProductsBasedOnCityApi = (
+//   city: CityOptions
+// ): Promise<AxiosResponse<any>> => {
+//   return Axios.get(`${config.SHOP_BY_CITY[0]}/popularinyourcityapi.php?plc=${city}`);
+// };
+
+let cancelSearchSuggestionsApi: any;
 
 export const getMedicineSearchSuggestionsApi = (
   params: string
-): Promise<AxiosResponse<InventoryCheckApiResponse>> => {
+): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  const CancelToken = Axios.CancelToken;
+  cancelSearchSuggestionsApi && cancelSearchSuggestionsApi();
+
   return Axios.post(
     `${config.MED_SEARCH_SUGGESTION[0]}/popcsrchss_api.php`,
     {
@@ -381,6 +440,31 @@ export const getMedicineSearchSuggestionsApi = (
       headers: {
         Authorization: config.MED_SEARCH_SUGGESTION[1],
       },
+      cancelToken: new CancelToken(function executor(c) {
+        // An executor function receives a cancel function as a parameter
+        cancelSearchSuggestionsApi = c;
+      }),
+    }
+  );
+};
+
+export const getProductsByCategoryApi = (
+  categoryId: string,
+  pageId: number = 1
+): Promise<AxiosResponse<MedicineProductsResponse>> => {
+  return Axios.get(
+    `${config.PRODUCTS_BY_CATEGORY[0]}?category_id=${categoryId}&page_id=${pageId}&type=category`
+  );
+};
+
+export const getMedicinePageProducts = (): Promise<AxiosResponse<MedicinePageAPiResponse>> => {
+  return Axios.post(
+    `${config.MEDICINE_PAGE[0]}`,
+    {},
+    {
+      headers: {
+        Authorization: config.MEDICINE_PAGE[1],
+      },
     }
   );
 };
@@ -389,6 +473,40 @@ export const getPlaceInfoByPincode = (
   pincode: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
   const apiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&sensor=true&key=${apiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${apiKey}`;
   return Axios.get(url);
+};
+
+export const getDeliveryTime = (params: {
+  postalcode: string;
+  ordertype: string;
+  lookup: { sku: string; qty: number }[];
+}): Promise<AxiosResponse<GetDeliveryTimeResponse>> => {
+  return Axios.post(config.GET_DELIVERY_TIME[0], params, {
+    headers: {
+      Authentication: config.GET_DELIVERY_TIME[1],
+    },
+  });
+};
+
+export const getSubstitutes = async (
+  sku: string
+): Promise<AxiosResponse<{ products: MedicineProductDetails[]; product_count: number }>> => {
+  return Axios.post(
+    config.GET_SUBSTITUTES[0],
+    { params: sku },
+    {
+      headers: {
+        Authorization: config.GET_SUBSTITUTES[1],
+      },
+    }
+  );
+};
+
+export const getAllBrands = (): Promise<AxiosResponse<BrandsResponse>> => {
+  return Axios.get(config.ALL_BRANDS[0], {
+    headers: {
+      Authorization: config.ALL_BRANDS[1],
+    },
+  });
 };

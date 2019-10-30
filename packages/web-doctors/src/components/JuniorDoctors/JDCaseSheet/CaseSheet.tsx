@@ -353,16 +353,16 @@ export const CaseSheet: React.FC = () => {
     },
     { key: 'diagnosis', value: 'Diagnosis', state: diagnosis, component: <Diagnosis /> },
     {
-      key: 'diagnosticPrescription',
-      value: 'Tests',
-      state: diagnosticPrescription,
-      component: <DiagnosticPrescription />,
-    },
-    {
       key: 'medicinePrescription',
       value: 'Medication Prescribed',
       state: medicinePrescription,
       component: <MedicinePrescription />,
+    },
+    {
+      key: 'diagnosticPrescription',
+      value: 'Tests',
+      state: diagnosticPrescription,
+      component: <DiagnosticPrescription />,
     },
     {
       key: 'otherInstructions',

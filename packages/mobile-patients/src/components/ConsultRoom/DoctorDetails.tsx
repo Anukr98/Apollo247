@@ -41,6 +41,7 @@ import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
+import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -163,6 +164,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
+    CommonScreenLog(AppRoutes.DoctorDetails, AppRoutes.DoctorDetails);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -617,6 +619,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                     <View style={{ width: width - 50 }} key={item.associatedDoctor.id}>
                       <DoctorCard
                         onPress={(doctorId) => {
+                          CommonLogEvent(AppRoutes.DoctorDetails, 'Login clicked');
                           props.navigation.navigate(AppRoutes.AssociateDoctorDetails, {
                             doctorId: doctorId,
                           });
@@ -825,7 +828,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
           {doctorDetails &&
           doctorDetails &&
           doctorDetails.photoUrl &&
-          doctorDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) ? (
+          doctorDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
             <Animated.Image
               source={{ uri: doctorDetails.photoUrl }}
               style={{ top: 10, height: 140, width: 140, opacity: imgOp }}

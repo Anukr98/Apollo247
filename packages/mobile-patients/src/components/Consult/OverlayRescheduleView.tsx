@@ -52,6 +52,7 @@ import {
 } from '../../graphql/types/BookFollowUpAppointment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -191,6 +192,7 @@ export const OverlayRescheduleView: React.FC<OverlayRescheduleViewProps> = (prop
                   : false
               }
               onPress={() => {
+                CommonLogEvent('OVERLAY_RESCHEDULE', 'OverlayReschduleView_Clicked');
                 if (props.KeyFollow !== 'RESCHEDULE') {
                   const timeSlot =
                     tabs[0].title === selectedTab &&

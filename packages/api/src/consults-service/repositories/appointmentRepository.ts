@@ -334,7 +334,7 @@ export class AppointmentRepository extends Repository<Appointment> {
               return this.getAddAlignedSlot(appts[0].appointmentDateTime, 15);
             }
           } else {
-            console.log('came here1111', this.getAddAlignedSlot(appts[0].appointmentDateTime, 15));
+            //console.log('came here1111', this.getAddAlignedSlot(appts[0].appointmentDateTime, 15));
             return this.getAddAlignedSlot(appts[0].appointmentDateTime, 15);
           }
         } else {
@@ -343,7 +343,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           let firstAppt: Date = appts[0].appointmentDateTime;
           let flag: number = 0;
           let finalSlot = '';
-          console.log(appts, 'appts');
+          //console.log(appts, 'appts');
           appts.map((appt) => {
             if (appt.appointmentDateTime != firstAppt && flag === 0) {
               console.log(
@@ -368,13 +368,13 @@ export class AppointmentRepository extends Repository<Appointment> {
               }
             }
             firstAppt = appt.appointmentDateTime;
-            console.log(firstAppt, 'in loop');
+            //console.log(firstAppt, 'in loop');
           });
           //if there is no gap between any appointments
           //then add 15 mins to last appointment and return
-          console.log(flag, 'flag');
+          //console.log(flag, 'flag');
           if (flag === 0) {
-            console.log(appts[appts.length - 1].appointmentDateTime, 'last apt');
+            //console.log(appts[appts.length - 1].appointmentDateTime, 'last apt');
             if (
               new Date() > appts[0].appointmentDateTime &&
               new Date() < appts[appts.length - 1].appointmentDateTime
@@ -413,7 +413,7 @@ export class AppointmentRepository extends Repository<Appointment> {
       nextDate = addDays(appointmentDate, 1);
       weekDay = format(nextDate, 'EEEE').toUpperCase();
     }
-    console.log(weekDay, 'weekday');
+    //console.log(weekDay, 'weekday');
     //console.log('entered here', selDate, weekDay);
     let consultFlag = false;
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
@@ -432,15 +432,15 @@ export class AppointmentRepository extends Repository<Appointment> {
           const ed = `${nextDate.toDateString()} ${docConsultHr.endTime.toString()}`;
           let consultStartTime = new Date(st);
           const consultEndTime = new Date(ed);
-          console.log(consultStartTime, consultEndTime);
+          //console.log(consultStartTime, consultEndTime);
           let previousDate: Date = appointmentDate;
           if (consultEndTime < consultStartTime) {
             previousDate = addDays(previousDate, -1);
             st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
             consultStartTime = new Date(st);
           }
-          console.log(consultStartTime, 'start time');
-          console.log(consultEndTime, 'end time');
+          //console.log(consultStartTime, 'start time');
+          //console.log(consultEndTime, 'end time');
           if (appointmentDate >= consultStartTime && appointmentDate < consultEndTime) {
             consultFlag = true;
           } else {
@@ -490,7 +490,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         const ed = `${selectedDate.toDateString()} ${docConsultHr.endTime.toString()}`;
         let consultStartTime = new Date(st);
         const consultEndTime = new Date(ed);
-        console.log(consultStartTime, consultEndTime);
+        //console.log(consultStartTime, consultEndTime);
         let previousDate: Date = selectedDate;
         if (consultEndTime < consultStartTime) {
           previousDate = addDays(selectedDate, -1);
@@ -522,7 +522,7 @@ export class AppointmentRepository extends Repository<Appointment> {
             availableSlots.push(generatedSlot);
             return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
           });
-        console.log(availableSlotsReturn);
+        //console.log(availableSlotsReturn);
       });
       if (doctorAppointments && doctorAppointments.length > 0) {
         doctorAppointments.map((doctorAppointment) => {
@@ -748,14 +748,15 @@ export class AppointmentRepository extends Repository<Appointment> {
   }
 
   async checkPatientConsults(patientId: string, appointmentDateTime: Date) {
-    const consultCount = await this.count({
+    /*const consultCount = await this.count({
       where: { patientId, appointmentDateTime, status: Not(STATUS.CANCELLED) },
     });
     if (consultCount > 0) {
       return true;
     } else {
       return false;
-    }
+    }*/
+    return false;
   }
 
   getNextMinuteAppointments() {

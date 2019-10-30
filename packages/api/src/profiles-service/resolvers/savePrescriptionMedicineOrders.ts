@@ -121,27 +121,31 @@ const SavePrescriptionMedicineOrder: Resolver<
       statusDate: new Date(),
     };
     await medicineOrdersRepo.saveMedicineOrderStatus(orderStatusAttrs, saveOrder.orderAutoId);
-    const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
-    const patientAddressDetails = await patientAddressRepo.findById(saveOrder.patientAddressId);
-    if (!patientAddressDetails) {
-      throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
-    }
     let deliveryCity = 'Kakinada',
       deliveryZipcode = '500034',
       deliveryAddress = 'Kakinada';
+    if (saveOrder.patientAddressId != null && saveOrder.patientAddressId != '') {
+      const patientAddressRepo = profilesDb.getCustomRepository(PatientAddressRepository);
+      const patientAddressDetails = await patientAddressRepo.findById(saveOrder.patientAddressId);
+      if (!patientAddressDetails) {
+        throw new AphError(AphErrorMessages.INVALID_PATIENT_ADDRESS_ID, undefined, {});
+      }
 
-    deliveryAddress = patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
-    if (patientAddressDetails.city == '' || patientAddressDetails.city == null) {
-      deliveryCity = 'Kakinada';
-    } else {
-      deliveryCity = patientAddressDetails.city;
+      deliveryAddress =
+        patientAddressDetails.addressLine1 + ' ' + patientAddressDetails.addressLine2;
+      if (patientAddressDetails.city == '' || patientAddressDetails.city == null) {
+        deliveryCity = 'Kakinada';
+      } else {
+        deliveryCity = patientAddressDetails.city;
+      }
+
+      if (patientAddressDetails.zipcode == '' || patientAddressDetails.zipcode == null) {
+        deliveryZipcode = '500045';
+      } else {
+        deliveryZipcode = patientAddressDetails.zipcode;
+      }
     }
 
-    if (patientAddressDetails.zipcode == '' || patientAddressDetails.zipcode == null) {
-      deliveryZipcode = '500045';
-    } else {
-      deliveryZipcode = patientAddressDetails.zipcode;
-    }
     const orderPrescriptionUrl: PrescriptionUrl[] = [];
     const prescriptionImages = saveOrder.prescriptionImageUrl.split(',');
     if (prescriptionImages.length > 0) {

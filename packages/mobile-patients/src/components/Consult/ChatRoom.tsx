@@ -23,9 +23,16 @@ import {
   UnMuteIcon,
   VideoOffIcon,
   VideoOnIcon,
+  FileBig,
+  Remove,
+  CrossPopup,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  DeviceHelper,
+  CommonScreenLog,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   BOOK_APPOINTMENT_RESCHEDULE,
   BOOK_APPOINTMENT_TRANSFER,
@@ -70,6 +77,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  WebView,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
 import ImagePicker from 'react-native-image-picker';
@@ -136,6 +144,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   //     });
   // }, []);
   const appointmentData = props.navigation.state.params!.data;
+  console.log('appointmentData', appointmentData);
+  const callType = props.navigation.state.params!.callType
+    ? props.navigation.state.params!.callType
+    : '';
+
   // console.log('appointmentData', appointmentData);
 
   const flatListRef = useRef<FlatList<never> | undefined | null>();
@@ -257,6 +270,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
 
+  const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
+  const [showweb, setShowWeb] = useState<boolean>(false);
+  const [url, setUrl] = useState('');
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -269,7 +285,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     setuserName(userName);
     requestToJrDoctor();
-    analytics.setCurrentScreen(AppRoutes.ChatRoom);
+    analytics.setAnalyticsCollectionEnabled(true);
+    CommonScreenLog(AppRoutes.ChatRoom, AppRoutes.ChatRoom);
+
     // updateSessionAPI();
   }, []);
 
@@ -278,6 +296,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     Platform.OS === 'android' && requestReadSmsPermission();
     Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_RESIZE);
     KeepAwake.activate();
+  }, []);
+
+  useEffect(() => {
+    console.log('callType', callType);
+    if (callType === 'VIDEO') {
+      setOnSubscribe(true);
+      setIsAudio(false);
+      InCallManager.startRingtone('_BUNDLE_');
+      InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+    } else if (callType === 'AUDIO') {
+      setIsAudio(true);
+      setOnSubscribe(true);
+      InCallManager.startRingtone('_BUNDLE_');
+      InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+    }
   }, []);
 
   const client = useApolloClient();
@@ -469,15 +502,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
+      KeepAwake.activate();
     },
     sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
     },
     sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
+      KeepAwake.activate();
     },
     sessionReconnecting: (event: string) => {
       console.log('session stream sessionReconnecting!', event);
+      KeepAwake.activate();
     },
     signal: (event: string) => {
       console.log('session stream signal!', event);
@@ -681,6 +717,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         InCallManager.startRingtone('_BUNDLE_');
         InCallManager.start({ media: 'audio' }); // audio/video, default: audio
       } else if (message.message.message === startConsultMsg) {
+        setjrDoctorJoined(false);
         stopInterval();
         startInterval(timer);
         setjrDoctorJoined(false);
@@ -908,6 +945,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   </Text>
                   <TouchableOpacity
                     onPress={() => {
+                      CommonLogEvent(AppRoutes.ChatRoom, 'navigate to choose doctor');
                       props.navigation.navigate(AppRoutes.ChooseDoctor, {
                         data: rowData.transferInfo,
                         patientId: patientId,
@@ -974,6 +1012,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule clicked');
+
                     try {
                       checkIfReschduleApi(rowData, 'Transfer');
                       NextAvailableSlot(rowData, 'Transfer');
@@ -991,6 +1031,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   title={'ACCEPT'}
                   style={{ flex: 0.4, marginRight: 16, marginLeft: 5 }}
                   onPress={() => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat accept transfer clicked');
+
                     try {
                       let datettimeval = rowData.transferInfo.transferDateTime;
                       let transferdataid = rowData.transferInfo.transferId;
@@ -1050,7 +1092,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 backgroundColor: '#0087ba',
                 marginLeft: 38,
                 borderRadius: 10,
-                marginTop: 16,
+                // marginTop: 16,
                 marginBottom: 4,
               }}
             >
@@ -1085,6 +1127,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
                     try {
+                      CommonLogEvent(AppRoutes.ChatRoom, 'PDF Url');
+
                       console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
 
                       let dirs = RNFetchBlob.fs.dirs;
@@ -1142,6 +1186,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
                   onPress={() => {
                     try {
+                      CommonLogEvent(AppRoutes.ChatRoom, 'Navigate to consult details');
+
                       console.log('Followupdata', rowData.transferInfo.caseSheetId);
                       console.log('rowdata', rowData);
                       props.navigation.navigate(AppRoutes.ConsultDetails, {
@@ -1259,6 +1305,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   }}
                   titleTextStyle={{ color: 'white' }}
                   onPress={() => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
+
                     console.log('Button Clicked');
                     checkIfReschduleApi(rowData, 'Followup');
                     NextAvailableSlot(rowData, 'Followup');
@@ -1279,6 +1327,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const reschduleLoadView = (rowData: any, index: number, type: string) => {
+    console.log('reschduleLoadView', appointmentData.doctorInfo.firstName);
     return (
       <>
         <View
@@ -1386,6 +1435,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               titleTextStyle={{ color: 'white' }}
               onPress={() => {
                 if (type === 'Followup') {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Display Overlay');
+
                   setdisplayoverlay(true);
                 } else {
                   // props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -1407,6 +1458,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               onPress={() => {
                 try {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Accept button clicked');
+
                   if (type === 'Followup') {
                     const bookRescheduleInput = {
                       appointmentId: rowData.transferInfo.appointmentId,
@@ -1419,7 +1472,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       patientId: patientId,
                       rescheduledId: '',
                     };
-
+                    console.log('bookRescheduleInput', bookRescheduleInput);
                     rescheduleAPI(rowData, bookRescheduleInput);
                   } else {
                     let datettimeval = nextSlotAvailable;
@@ -1446,7 +1499,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const messageView = (rowData: any, index: number) => {
-    //console.log('messageView', rowData);
+    console.log('messageView', rowData.message);
     return (
       <View
         style={{
@@ -1490,35 +1543,77 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         )}
         <View>
           {rowData.message === imageconsult ? (
-            <TouchableOpacity
-              activeOpacity={0.5}
-              onPress={() => {
-                console.log('On Image Clicked');
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: 'transparent',
-                  width: 180,
-                  height: 180,
-                  borderRadius: 10,
-                  marginVertical: 2,
-                  marginBottom: 4,
-                  flex: 1,
-                  marginLeft: 38,
-                }}
-              >
-                <Image
-                  source={{ uri: rowData.url }}
-                  style={{
-                    resizeMode: 'stretch',
-                    width: 180,
-                    height: 180,
-                    borderRadius: 10,
+            <View>
+              {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log('IMAGE', rowData.url);
+                    setPatientImageshow(true);
+                    setUrl(rowData.url);
                   }}
-                />
-              </View>
-            </TouchableOpacity>
+                >
+                  <View
+                    style={{
+                      backgroundColor: 'transparent',
+                      width: 180,
+                      height: 180,
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      marginBottom: 4,
+                      flex: 1,
+                      marginLeft: 38,
+                    }}
+                  >
+                    <Image
+                      source={{ uri: rowData.url }}
+                      style={{
+                        resizeMode: 'stretch',
+                        width: 180,
+                        height: 180,
+                        borderRadius: 10,
+                      }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => {
+                    console.log('pdf', rowData.url);
+
+                    if ((Platform.OS = 'android')) {
+                      Linking.openURL(rowData.url).catch((err) =>
+                        console.error('An error occurred', err)
+                      );
+                    } else {
+                      setShowWeb(true);
+                      setUrl(rowData.url);
+                    }
+                  }}
+                >
+                  <View
+                    style={{
+                      backgroundColor: 'transparent',
+                      width: 180,
+                      height: 180,
+                      borderRadius: 10,
+                      marginVertical: 2,
+                      marginBottom: 4,
+                      flex: 1,
+                      marginLeft: 38,
+                    }}
+                  >
+                    <FileBig
+                      style={{
+                        resizeMode: 'stretch',
+                        width: 200,
+                        height: 200,
+                        borderRadius: 10,
+                      }}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
           ) : rowData.message === '^^#startconsultJr' ? (
             <View
               style={{
@@ -1895,27 +1990,76 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           ) : (
             <View>
               {rowData.message === imageconsult ? (
-                <View
-                  style={{
-                    backgroundColor: 'transparent',
-                    width: 180,
-                    height: 180,
-                    borderRadius: 10,
-                    marginVertical: 2,
-                    alignSelf: 'flex-end',
-                    marginBottom: 4,
-                    flex: 1,
-                  }}
-                >
-                  <Image
-                    source={{ uri: rowData.url }}
-                    style={{
-                      resizeMode: 'stretch',
-                      width: 180,
-                      height: 180,
-                      borderRadius: 10,
-                    }}
-                  />
+                <View>
+                  {rowData.url.match(/\.(jpeg|jpg|gif|png)$/) ? (
+                    <TouchableOpacity
+                      onPress={() => {
+                        console.log('IMAGE', rowData.url);
+                        setPatientImageshow(true);
+                        setUrl(rowData.url);
+                      }}
+                    >
+                      <View
+                        style={{
+                          backgroundColor: 'transparent',
+                          width: 180,
+                          height: 180,
+                          borderRadius: 10,
+                          marginVertical: 2,
+                          alignSelf: 'flex-end',
+                          marginBottom: 4,
+                          flex: 1,
+                        }}
+                      >
+                        <Image
+                          source={{ uri: rowData.url }}
+                          style={{
+                            resizeMode: 'stretch',
+                            width: 180,
+                            height: 180,
+                            borderRadius: 10,
+                          }}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      onPress={() => {
+                        console.log('pdf', rowData.url);
+
+                        if ((Platform.OS = 'android')) {
+                          Linking.openURL(rowData.url).catch((err) =>
+                            console.error('An error occurred', err)
+                          );
+                        } else {
+                          setShowWeb(true);
+                          setUrl(rowData.url);
+                        }
+                      }}
+                    >
+                      <View
+                        style={{
+                          backgroundColor: 'transparent',
+                          width: 180,
+                          height: 180,
+                          borderRadius: 10,
+                          marginVertical: 2,
+                          alignSelf: 'flex-end',
+                          marginBottom: 4,
+                          flex: 1,
+                        }}
+                      >
+                        <FileBig
+                          style={{
+                            resizeMode: 'stretch',
+                            width: 200,
+                            height: 200,
+                            borderRadius: 10,
+                          }}
+                        />
+                      </View>
+                    </TouchableOpacity>
+                  )}
                 </View>
               ) : (
                 <View
@@ -2959,11 +3103,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const uploadDocument = (resource: any, base66: any, type: any) => {
-    console.log('upload fileType', base66);
-    console.log('upload fileType', base66);
+    console.log('upload base66', base66);
     console.log('upload fileType', type);
-    console.log('upload fileType', channel);
+    console.log('chanel', channel);
+    CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
+
     setLoading(true);
+    const textin = {
+      fileType: type,
+      base64FileInput: base66, //resource.data,
+      appointmentId: channel,
+    };
+    console.log('textin', textin);
     client
       .mutate<uploadChatDocument, uploadChatDocumentVariables>({
         mutation: UPLOAD_CHAT_FILE,
@@ -3088,10 +3239,49 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       <SelectEPrescriptionModal
         onSubmit={(selectedEPres) => {
           console.log('selectedEPres', selectedEPres);
-
           setSelectPrescriptionVisible(false);
           if (selectedEPres.length == 0) {
             return;
+          } else {
+            console.log('sussess', 'ssss');
+            setLoading(true);
+            client
+              .mutate<uploadChatDocument, uploadChatDocumentVariables>({
+                mutation: UPLOAD_CHAT_FILE,
+                fetchPolicy: 'no-cache',
+                variables: {
+                  fileType: 'pdf',
+                  base64FileInput: selectedEPres[0].uploadedUrl, //resource.data,
+                  appointmentId: channel,
+                },
+              })
+              .then((data) => {
+                setLoading(false);
+                console.log('upload selectedEPres data', data);
+
+                const text = {
+                  id: patientId,
+                  message: imageconsult,
+                  fileType: 'image',
+                  url: data.data && data.data.uploadChatDocument.filePath,
+                };
+
+                pubnub.publish(
+                  {
+                    channel: channel,
+                    message: text,
+                    storeInHistory: true,
+                    sendByPost: true,
+                  },
+                  (status, response) => {}
+                );
+                KeepAwake.activate();
+              })
+              .catch((e) => {
+                setLoading(false);
+                KeepAwake.activate();
+                console.log('upload data error', e);
+              });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
@@ -3102,7 +3292,104 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
   const minutes = Math.floor(remainingTime / 60);
   const seconds = remainingTime - minutes * 60;
-
+  const closeviews = () => {
+    setPatientImageshow(false);
+    setShowWeb(false);
+  };
+  const renderCloseIcon = () => {
+    return (
+      <View
+        style={{
+          alignSelf: 'flex-end',
+          backgroundColor: 'transparent',
+          marginRight: 16,
+          marginTop: 30,
+        }}
+      >
+        <TouchableOpacity onPress={() => closeviews()}>
+          <CrossPopup style={{ marginRight: 1, width: 28, height: 28 }} />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+  const imageOpen = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'black',
+            opacity: 0.6,
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        />
+        {renderCloseIcon()}
+        <Image
+          style={{
+            flex: 1,
+            resizeMode: 'stretch',
+            marginTop: 20,
+            marginHorizontal: 20,
+            marginBottom: 20,
+            borderRadius: 10,
+          }}
+          source={{ uri: url }}
+        />
+      </View>
+    );
+  };
+  const showWeimageOpen = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+        }}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'black',
+            opacity: 0.6,
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        />
+        {renderCloseIcon()}
+        <WebView
+          style={{
+            // flex: 1,
+            //resizeMode: 'stretch',
+            marginTop: 20,
+            marginHorizontal: 20,
+            marginBottom: 20,
+            borderRadius: 10,
+          }}
+          source={{ uri: url }}
+        />
+      </View>
+    );
+  };
   return (
     <View style={{ flex: 1, backgroundColor: '#f0f1ec' }}>
       <StatusBar hidden={hideStatusBar} />
@@ -3237,8 +3524,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
                   if (textMessage.length == 0) {
                     Alert.alert('Apollo', 'Please write something to send message.');
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Please write something to send message.');
                     return;
                   }
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Message sent clicked');
 
                   send(textMessage);
                 }}
@@ -3381,6 +3670,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
       {uploadPrescriptionPopup()}
       {renderPrescriptionModal()}
+      {patientImageshow && imageOpen()}
+      {showweb && showWeimageOpen()}
 
       {loading && <Spinner />}
     </View>

@@ -475,13 +475,44 @@ export const GET_CASESHEET = gql`
       }
       caseSheetDetails {
         id
+        blobName
         doctorId
+        sentToPatient
         appointment {
           id
           appointmentDateTime
           status
           appointmentState
           displayId
+        }
+        createdDoctorProfile {
+          doctorType
+          emailAddress
+          firstName
+          lastName
+          salutation
+          registrationNumber
+          specialty {
+            createdDate
+            id
+            image
+            name
+            specialistSingularTerm
+            specialistPluralTerm
+            userFriendlyNomenclature
+            displayOrder
+          }
+          doctorHospital {
+            facility {
+              city
+              country
+              state
+              streetLine1
+              streetLine2
+              streetLine3
+              zipcode
+            }
+          }
         }
         medicinePrescription {
           id
@@ -553,6 +584,14 @@ export const GET_CASESHEET = gql`
         }
       }
       juniorDoctorNotes
+      juniorDoctorCaseSheet {
+        createdDate
+        createdDoctorProfile {
+          firstName
+          lastName
+          salutation
+        }
+      }
     }
   }
 `;
@@ -783,6 +822,13 @@ export const SEARCH_DIAGNOSTIC = gql`
   query SearchDiagnostic($searchString: String!) {
     searchDiagnostic(searchString: $searchString) {
       itemname
+    }
+  }
+`;
+export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
+  mutation UpdatePatientPrescriptionSentStatus($caseSheetId: ID!, $sentToPatient: Boolean!) {
+    updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
+      success
     }
   }
 `;

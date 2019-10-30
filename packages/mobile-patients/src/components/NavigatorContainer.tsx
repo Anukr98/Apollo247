@@ -46,6 +46,9 @@ import { CheckoutScene } from '@aph/mobile-patients/src/components/CheckoutScene
 import { PaymentScene } from '@aph/mobile-patients/src/components/PaymentScene';
 import { MedicineConsultDetails } from '@aph/mobile-patients/src/components/HealthRecords/MedicineConsultDetails';
 import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
+import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
+import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
+import { SearchByBrand } from '@aph/mobile-patients/src/components/Medicines/SearchByBrand';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -91,6 +94,9 @@ export enum AppRoutes {
   AppointmentOnlineDetails = 'AppointmentOnlineDetails',
   ChooseDoctor = 'ChooseDoctor',
   MedicineConsultDetails = 'MedicineConsultDetails',
+  ShopByBrand = 'ShopByBrand',
+  ImageSliderScreen = 'ImageSliderScreen',
+  SearchByBrand = 'SearchByBrand',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -240,6 +246,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedicineConsultDetails]: {
     screen: MedicineConsultDetails,
+  },
+  [AppRoutes.ShopByBrand]: {
+    screen: ShopByBrand,
+  },
+  [AppRoutes.ImageSliderScreen]: {
+    screen: ImageSliderScreen,
+  },
+  [AppRoutes.SearchByBrand]: {
+    screen: SearchByBrand,
   },
 };
 

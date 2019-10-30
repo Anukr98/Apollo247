@@ -632,3 +632,15 @@ export const PatientDefaultImage: React.FC<IconProps> = (props) => (
     source={require('./icons/no-photo-icon-round.png')}
   />
 );
+
+export const SyrupBottleIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_bottle.png')} />
+);
+
+export const InjectionIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_injection.png')} />
+);
+
+export const SearchSendIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_send.png')} />
+);

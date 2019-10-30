@@ -174,6 +174,9 @@ export class Doctor extends BaseEntity {
   @IsDate()
   dateOfBirth: Date;
 
+  @Column({ nullable: true })
+  displayName: string;
+
   @OneToMany((type) => DoctorAndHospital, (doctorHospital) => doctorHospital.doctor)
   doctorHospital: DoctorAndHospital[];
 
@@ -270,6 +273,9 @@ export class Doctor extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   streetLine3: string;
+
+  @Column({ nullable: true, type: 'text' })
+  thumbnailUrl: string;
 
   @Column({ nullable: true })
   updatedDate: Date;

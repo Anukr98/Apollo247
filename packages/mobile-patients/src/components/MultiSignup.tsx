@@ -35,6 +35,7 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import moment from 'moment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
+import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -146,7 +147,8 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
   }, [allCurrentPatients]);
 
   useEffect(() => {
-    analytics.setCurrentScreen(AppRoutes.MultiSignup);
+    analytics.setAnalyticsCollectionEnabled(true);
+    analytics.setCurrentScreen(AppRoutes.MultiSignup, AppRoutes.MultiSignup);
     setProfiles(allCurrentPatients ? allCurrentPatients : []);
     const length =
       profiles &&
@@ -215,6 +217,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   activeOpacity={1}
                   // style={styles.placeholderViewStyle}
                   onPress={() => {
+                    CommonLogEvent(AppRoutes.MultiSignup, 'show popup for relation checking');
                     setShowPopup(true);
                     setRelationIndex(i);
                   }}
@@ -305,7 +308,9 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
         zIndex: 3,
         backgroundColor: 'transparent',
       }}
-      onPress={() => setShowPopup(false)}
+      onPress={() => (
+        CommonLogEvent(AppRoutes.MultiSignup, 'Hide popup clicked'), setShowPopup(false)
+      )}
     >
       <View
         style={{
@@ -336,12 +341,17 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   if (result.length > 1) {
                     profiles[relationIndex].relation = null;
                     Alert.alert('Apollo', 'Me is already choosen for another profile.');
+                    CommonLogEvent(
+                      AppRoutes.MultiSignup,
+                      'Me is already choosen for another profile.'
+                    );
                   }
                   console.log('result', result);
                   console.log('result length', result.length);
 
                   setProfiles(profiles);
                   setShowPopup(false);
+                  CommonLogEvent(AppRoutes.MultiSignup, 'Select the relations for the profile');
                 }
               }}
             >
@@ -369,6 +379,10 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   });
                   if (result.length === 0) {
                     Alert.alert('Apollo', 'There should be 1 profile with relation set as Me');
+                    CommonLogEvent(
+                      AppRoutes.MultiSignup,
+                      'There should be 1 profile with relation set as Me'
+                    );
                   } else {
                     setVerifyingPhoneNumber(true);
 
@@ -378,6 +392,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                         relation: Relation[profile.relation!], // profile ? profile.relation!.toUpperCase() : '',
                       };
                       console.log('patientsDetails', patientsDetails);
+                      CommonLogEvent(AppRoutes.MultiSignup, 'Update API clicked');
                       mutate({
                         variables: {
                           patientInput: patientsDetails,
@@ -395,6 +410,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'true'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('gotIt', 'false'),
+                  CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
                   setTimeout(() => {
                     props.navigation.dispatch(
                       StackActions.reset({
@@ -417,6 +433,7 @@ export const MultiSignup: React.FC<MultiSignupProps> = (props) => {
                   AsyncStorage.setItem('userLoggedIn', 'false'),
                   AsyncStorage.setItem('multiSignUp', 'false'),
                   AsyncStorage.setItem('signUp', 'false'),
+                  CommonLogEvent(AppRoutes.MultiSignup, 'Navigating to Consult Room'),
                   setTimeout(() => {
                     props.navigation.dispatch(
                       StackActions.reset({

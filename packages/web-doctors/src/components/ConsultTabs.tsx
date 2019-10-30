@@ -11,6 +11,13 @@ import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
 import { useApolloClient } from 'react-apollo-hooks';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+// import Dialog from '@material-ui/core/Dialog';
+// import DialogActions from '@material-ui/core/DialogActions';
+// import DialogContent from '@material-ui/core/DialogContent';
+// import DialogContentText from '@material-ui/core/DialogContentText';
+// import DialogTitle from '@material-ui/core/DialogTitle';
+import { CasesheetView } from 'components/CasesheetView';
+
 //import { Document } from 'react-pdf';
 import _omit from 'lodash/omit';
 
@@ -22,24 +29,30 @@ import {
   EndAppointmentSession,
   EndAppointmentSessionVariables,
 } from 'graphql/types/EndAppointmentSession';
-import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
+// import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
+// import { UpdateCaseSheet, UpdateCaseSheetVariables } from 'graphql/types/UpdateCaseSheet';
+import {
+  UpdatePatientPrescriptionSentStatus,
+  UpdatePatientPrescriptionSentStatusVariables,
+} from 'graphql/types/UpdatePatientPrescriptionSentStatus';
 
 import {
   CREATE_APPOINTMENT_SESSION,
   GET_CASESHEET,
-  UPDATE_CASESHEET,
+  // UPDATE_CASESHEET,
   END_APPOINTMENT_SESSION,
   CREATE_CASESHEET_FOR_SRD,
-  GET_CASESHEET_JRD,
+  // GET_CASESHEET_JRD,
   MODIFY_CASESHEET,
+  UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
 } from 'graphql/profiles';
 
 import { ModifyCaseSheet, ModifyCaseSheetVariables } from 'graphql/types/ModifyCaseSheet';
 
-import {
-  GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheetVariables,
-} from 'graphql/types/GetJuniorDoctorCaseSheet';
+// import {
+//   GetJuniorDoctorCaseSheet,
+//   GetJuniorDoctorCaseSheetVariables,
+// } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 import { CircularProgress } from '@material-ui/core';
 
@@ -57,7 +70,7 @@ import {
   CreateSeniorDoctorCaseSheetVariables,
 } from 'graphql/types/CreateSeniorDoctorCaseSheet';
 
-import { REQUEST_ROLES, STATUS } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, STATUS, DOCTOR_CALL_TYPE, DOCTOR_TYPE } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -66,6 +79,11 @@ import { useMutation } from 'react-apollo-hooks';
 import { ApolloError } from 'apollo-client';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { SEND_CALL_NOTIFICATION } from 'graphql/consults';
+import {
+  SendCallNotification,
+  SendCallNotificationVariables,
+} from 'graphql/types/SendCallNotification';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -141,12 +159,12 @@ const useStyles = makeStyles((theme: Theme) => {
       marginTop: 50,
       backgroundColor: '#fff',
       borderRadius: 10,
-      padding: '0 40px 20px 40px',
+      padding: '0 20px 20px 20px',
       position: 'relative',
       '& h3': {
         fontSize: 20,
         fontWeight: 600,
-        marginBottom: 50,
+        marginBottom: 30,
         marginTop: 0,
         color: '#02475b',
       },
@@ -206,9 +224,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fff',
       padding: '8px 16px',
       backgroundColor: '#fc9916',
-      marginTop: 15,
-      marginBottom: 25,
-      width: '100%',
+      width: 110,
       borderRadius: 10,
       boxShadow: '0 2px 4px 0 rgba(0,0,0,0.2)',
       '&:hover': {
@@ -216,9 +232,10 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     cancelConsult: {
-      width: '100%',
+      width: 120,
       fontSize: 14,
       padding: '8px 16px',
+      marginRight: 15,
       fontWeight: 600,
       color: '#fc9916',
       backgroundColor: '#fff',
@@ -226,6 +243,19 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:hover': {
         backgroundColor: '#fff',
       },
+    },
+    popupDialog: {
+      maxWidth: 320,
+    },
+    headingTxt: {
+      fontSize: 20,
+      color: '#02475b',
+      fontWeight: 600,
+    },
+    contentTxt: {
+      marginTop: 30,
+      color: '#02475b',
+      fontSize: 14,
     },
   };
 });
@@ -261,10 +291,11 @@ export const ConsultTabs: React.FC = () => {
       ? parseInt(params!.tabValue, 10)
       : 0
   );
-  const [isEnded, setIsEnded] = useState<boolean>(false);
+  const [urlToPatient, setUrlToPatient] = useState<boolean>(false);
   const [prescriptionPdf, setPrescriptionPdf] = useState<string>('');
   const [startConsult, setStartConsult] = useState<string>('');
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
+  const [isPdfPageOpen, setIsPdfPageOpen] = useState<boolean>(false);
   const [sessionId, setsessionId] = useState<string>('');
   const [token, settoken] = useState<string>('');
   const [appointmentDateTime, setappointmentDateTime] = useState<string>('');
@@ -273,6 +304,7 @@ export const ConsultTabs: React.FC = () => {
   const [caseSheetId, setCaseSheetId] = useState<string>('');
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -306,7 +338,7 @@ export const ConsultTabs: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
-  const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
+  // const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
 
   const [bp, setBp] = useState<string>('');
   const [height, setHeight] = useState<string>('');
@@ -320,8 +352,12 @@ export const ConsultTabs: React.FC = () => {
   const [lifeStyle, setLifeStyle] = useState<string>('');
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
-  const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  // const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
+  const [appointmentStatus, setAppointmentStatus] = useState<string>('');
+  const [sentToPatient, setSentToPatient] = useState<boolean>(false);
   const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
+  const [jrdName, setJrdName] = useState<string>('');
+  const [jrdSubmitDate, setJrdSubmitDate] = useState<string>('');
 
   /* case sheet data*/
 
@@ -393,6 +429,33 @@ export const ConsultTabs: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
+            ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
+            : setAppointmentStatus('');
+          _data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient
+            ? setSentToPatient(_data!.data!.getCaseSheet!.caseSheetDetails!.sentToPatient)
+            : setSentToPatient(false);
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status &&
+            _data.data.getCaseSheet.caseSheetDetails.appointment.status === 'COMPLETED'
+          ) {
+            setIsPdfPageOpen(true);
+          }
+          if (
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.caseSheetDetails &&
+            _data.data.getCaseSheet.caseSheetDetails!.blobName &&
+            _data.data.getCaseSheet.caseSheetDetails!.blobName !== undefined &&
+            _data.data.getCaseSheet.caseSheetDetails!.blobName !== ''
+          ) {
+            const url = storageClient.getBlobUrl(_data.data.getCaseSheet.caseSheetDetails.blobName);
+            setPrescriptionPdf(url);
+          }
           if (
             _data.data &&
             _data.data.getCaseSheet &&
@@ -457,6 +520,58 @@ export const ConsultTabs: React.FC = () => {
           setLifeStyle(
             patientLifeStyle && patientLifeStyle!.description ? patientLifeStyle!.description : ''
           );
+
+          // set Jrd name and Jrd Casesheet submit date.
+          let jrdSalutation = '',
+            jrdFirstName = '',
+            jrdLastName = '';
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate
+          ) {
+            setJrdSubmitDate(_data.data.getCaseSheet.juniorDoctorCaseSheet.createdDate);
+          }
+
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName
+          ) {
+            jrdFirstName =
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.firstName;
+          }
+
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName
+          ) {
+            jrdLastName =
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
+          }
+
+          // if (
+          //   _data &&
+          //   _data.data &&
+          //   _data.data.getCaseSheet &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation
+          // ) {
+          //   jrdSalutation =
+          //     _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation;
+          // }
+
+          setJrdName(`${jrdFirstName} ${jrdLastName}`);
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;
@@ -489,6 +604,45 @@ export const ConsultTabs: React.FC = () => {
       };
     }
   }, []);
+
+  const sendCallNotificationFn = (callType: DOCTOR_CALL_TYPE) => {
+    client
+      .query<SendCallNotification, SendCallNotificationVariables>({
+        query: SEND_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentId: appointmentId,
+          callType: callType,
+          doctorType: DOCTOR_TYPE.SENIOR,
+        },
+      })
+      .catch((error: ApolloError) => {
+        console.log('Error in Call Notification', error.message);
+        alert('An error occurred while sending notification to Client.');
+      });
+  };
+
+  const sendToPatientAction = (flag: boolean) => {
+    client
+      .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
+        mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
+        variables: {
+          caseSheetId: caseSheetId,
+          sentToPatient: true,
+        },
+      })
+      .then((_data) => {
+        setAppointmentStatus('COMPLETED');
+        setSentToPatient(true);
+        setIsPdfPageOpen(true);
+        setUrlToPatient(true);
+      })
+      .catch((e) => {
+        setError('Error occured while sending prescription to patient');
+        console.log('Error occured while sending prescription to patient', e);
+        setSaving(false);
+      });
+  };
 
   const saveCasesheetAction = (flag: boolean) => {
     // followUp: followUp[0],
@@ -547,7 +701,7 @@ export const ConsultTabs: React.FC = () => {
     const followupISODate = new Date(followUpDate[0]).toISOString();
     const followupDateArray = followupISODate.split('T');
 
-    console.log(followupISODate, 'iso date......');
+    // console.log(followupISODate, 'iso date......');
 
     client
       .mutate<ModifyCaseSheet, ModifyCaseSheetVariables>({
@@ -590,7 +744,8 @@ export const ConsultTabs: React.FC = () => {
           setSaving(false);
         }
         if (!flag) {
-          setIsPopoverOpen(true);
+          // setIsPopoverOpen(true);
+          setIsConfirmDialogOpen(true);
         }
       })
       .catch((e) => {
@@ -620,9 +775,11 @@ export const ConsultTabs: React.FC = () => {
       })
       .then((_data) => {
         // setIsPopoverOpen(true);
-        setIsPdfPopoverOpen(true);
-        setIsEnded(true);
+        //setIsPdfPopoverOpen(true);
+        //setIsEnded(true);
+        setAppointmentStatus('COMPLETED');
         console.log('_data', _data);
+        setIsPdfPageOpen(true);
       })
       .catch((e) => {
         const error = JSON.parse(JSON.stringify(e));
@@ -656,6 +813,9 @@ export const ConsultTabs: React.FC = () => {
         console.log('Error occured creating session', e);
         setSaving(false);
       });
+
+    // call this function to send notification.
+    //sendCallNotificationFn();
   };
 
   const setStartConsultAction = (flag: boolean) => {
@@ -664,6 +824,7 @@ export const ConsultTabs: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
+      sendCallNotificationFn(flag ? DOCTOR_CALL_TYPE.VIDEO : DOCTOR_CALL_TYPE.AUDIO);
     }, 10);
   };
 
@@ -686,6 +847,8 @@ export const ConsultTabs: React.FC = () => {
             caseSheetId: appointmentId,
             patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
             appointmentInfo: casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment,
+            createdDoctorProfile: casesheetInfo!.getCaseSheet!.caseSheetDetails!
+              .createdDoctorProfile,
             symptoms,
             setSymptoms,
             notes,
@@ -735,6 +898,8 @@ export const ConsultTabs: React.FC = () => {
             setBp,
             setTemperature,
             setGender,
+            jrdName,
+            jrdSubmitDate,
           }}
         >
           <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
@@ -747,7 +912,7 @@ export const ConsultTabs: React.FC = () => {
                 appointmentId={appointmentId}
                 appointmentDateTime={appointmentDateTime}
                 doctorId={doctorId}
-                isEnded={isEnded}
+                urlToPatient={urlToPatient}
                 caseSheetId={caseSheetId}
                 prescriptionPdf={prescriptionPdf}
                 sessionId={sessionId}
@@ -755,60 +920,71 @@ export const ConsultTabs: React.FC = () => {
                 startAppointment={startAppointment}
                 startAppointmentClick={startAppointmentClick}
                 saving={saving}
+                appointmentStatus={appointmentStatus}
+                sentToPatient={sentToPatient}
                 isAppointmentEnded={isAppointmentEnded}
+                sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
+                setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
               />
               <div>
-                <div>
+                {!isPdfPageOpen ? (
                   <div>
-                    <Tabs
-                      value={tabValue}
-                      variant="fullWidth"
-                      classes={{
-                        root: classes.tabsRoot,
-                        indicator: classes.tabsIndicator,
-                      }}
-                      onChange={(e, newValue) => {
-                        setTabValue(newValue);
-                      }}
-                    >
-                      <Tab
-                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                        label="Case Sheet"
-                      />
-                      <Tab
-                        classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-                        label="Chat"
-                      />
-                    </Tabs>
-                  </div>
-                  <TabContainer>
-                    <div className={tabValue !== 0 ? classes.none : classes.block}>
-                      {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
-                    </div>
-                  </TabContainer>
-                  <TabContainer>
-                    <div className={tabValue !== 1 ? classes.none : classes.block}>
-                      <div className={classes.chatContainer}>
-                        <ConsultRoom
-                          startConsult={startConsult}
-                          sessionId={sessionId}
-                          token={token}
-                          appointmentId={paramId}
-                          doctorId={doctorId}
-                          patientId={patientId}
+                    <div>
+                      <Tabs
+                        value={tabValue}
+                        variant="fullWidth"
+                        classes={{
+                          root: classes.tabsRoot,
+                          indicator: classes.tabsIndicator,
+                        }}
+                        onChange={(e, newValue) => {
+                          setTabValue(newValue);
+                        }}
+                      >
+                        <Tab
+                          classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                          label="Case Sheet"
                         />
-                      </div>
+                        <Tab
+                          classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                          label="Chat"
+                        />
+                      </Tabs>
                     </div>
-                  </TabContainer>
-                </div>
+                    <TabContainer>
+                      <div className={tabValue !== 0 ? classes.none : classes.block}>
+                        {casesheetInfo ? <CaseSheet startAppointment={startAppointment} /> : ''}
+                      </div>
+                    </TabContainer>
+
+                    <TabContainer>
+                      <div className={tabValue !== 1 ? classes.none : classes.block}>
+                        <div className={classes.chatContainer}>
+                          <ConsultRoom
+                            startConsult={startConsult}
+                            sessionId={sessionId}
+                            token={token}
+                            appointmentId={paramId}
+                            doctorId={doctorId}
+                            patientId={patientId}
+                          />
+                        </div>
+                      </div>
+                    </TabContainer>
+                  </div>
+                ) : (
+                  <div>
+                    <CasesheetView />
+                  </div>
+                )}
               </div>
             </div>
           </Scrollbars>
         </CaseSheetContext.Provider>
       )}
       <Modal
-        open={isPopoverOpen}
-        onClose={() => setIsPopoverOpen(false)}
+        open={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
         disableBackdropClick
         disableEscapeKeyDown
       >
@@ -818,14 +994,14 @@ export const ConsultTabs: React.FC = () => {
               <img
                 src={require('images/ic_cross.svg')}
                 alt=""
-                onClick={() => setIsPopoverOpen(false)}
+                onClick={() => setIsConfirmDialogOpen(false)}
               />
             </Button>
           </div>
           <div className={classes.tabBody}>
             <h3>
-              You're ending your consult with{' '}
-              {casesheetInfo &&
+              Are you sure you want to end your consult?
+              {/* {casesheetInfo &&
                 casesheetInfo !== null &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName &&
                 casesheetInfo!.getCaseSheet!.patientDetails!.firstName !== '' &&
@@ -836,37 +1012,77 @@ export const ConsultTabs: React.FC = () => {
                       casesheetInfo!.getCaseSheet!.patientDetails!.lastName
                     }.`}
                   </span>
-                )}
+                )} */}
             </h3>
-            <Button
-              className={classes.consultButton}
-              //disabled={startAppointmentButton}
-              onClick={() => {
-                setIsPopoverOpen(false);
-                endConsultActionFinal();
-                setCaseSheetEdit(false);
-                setIsAppointmentEnded(true);
-              }}
-            >
-              PREVIEW PRESCRIPTION
-            </Button>
+
             <Button
               className={classes.cancelConsult}
+              //disabled={startAppointmentButton}
+              onClick={() => setIsConfirmDialogOpen(false)}
+            >
+              No
+            </Button>
+            <Button
+              className={classes.consultButton}
               onClick={() => {
-                setIsPopoverOpen(false);
+                endConsultActionFinal();
+                setIsConfirmDialogOpen(false);
+                //setIsPopoverOpen(true);
+                //setAppointmentStatus('COMPLETED');
+                //console.log('appointmentStatus ', appointmentStatus);
               }}
             >
-              EDIT CASE SHEET
+              Yes
             </Button>
+          </div>
+          <div className={classes.contentTxt}>
+            <span>
+              After ending the consult you will get the option to preview/edit case sheet and send
+              prescription to the patient
+            </span>
           </div>
         </Paper>
       </Modal>
 
-      {isEnded && (
+      {/* {isEnded && (
         <div className={classes.tabPdfBody}>
           <iframe src={prescriptionPdf} width="80%" height="450"></iframe>
         </div>
-      )}
+      )} */}
+
+      {/* <Dialog
+        open={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        className={classes.popupDialog}
+      >
+        <DialogTitle className={classes.headingTxt}>
+          Are you sure you want to end your consult?
+        </DialogTitle>
+        <DialogActions>
+          <Button color="primary" onClick={() => setIsConfirmDialogOpen(false)} autoFocus>
+            No
+          </Button>
+          <Button
+            color="primary"
+            onClick={() => {
+              endConsultActionFinal();
+              setIsConfirmDialogOpen(false);
+              //setIsPopoverOpen(true);
+              //setAppointmentStatus('COMPLETED');
+              //console.log('appointmentStatus ', appointmentStatus);
+            }}
+            autoFocus
+          >
+            Yes
+          </Button>
+          <DialogContent>
+            <DialogContentText>
+              After ending the consult you will get the option to preview/edit case sheet and send
+              prescription to the patient
+            </DialogContentText>
+          </DialogContent>
+        </DialogActions>
+      </Dialog> */}
     </div>
   );
 };

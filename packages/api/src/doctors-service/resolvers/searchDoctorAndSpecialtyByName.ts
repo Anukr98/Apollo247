@@ -2,11 +2,17 @@ import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Doctor, DoctorSpecialty, ConsultMode } from 'doctors-service/entities/';
-import { DoctorSlotAvailability } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
+import {
+  DoctorSlotAvailability,
+  Geolocation,
+  FacilityDistanceMap,
+} from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSpecialtyRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { FacilityRepository } from 'doctors-service/repositories/facilityRepository';
+import { ApiConstants } from 'ApiConstants';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -28,10 +34,16 @@ export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
     otherDoctorsNextAvailability: [DoctorSlotAvailability]
   }
 
+  input Geolocation {
+    latitude: Float!
+    longitude: Float!
+  }
+
   extend type Query {
     SearchDoctorAndSpecialtyByName(
       searchText: String!
       patientId: ID
+      geolocation: Geolocation
     ): SearchDoctorAndSpecialtyByNameResult
   }
 `;
@@ -53,7 +65,7 @@ type SearchDoctorAndSpecialtyByNameResult = {
 
 const SearchDoctorAndSpecialtyByName: Resolver<
   null,
-  { searchText: string; patientId: string },
+  { searchText: string; patientId: string; geolocation: Geolocation },
   DoctorsServiceContext,
   SearchDoctorAndSpecialtyByNameResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {
@@ -71,6 +83,13 @@ const SearchDoctorAndSpecialtyByName: Resolver<
     const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
     const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
 
+    //get facility distances from user geolocation
+    let facilityDistances: FacilityDistanceMap = {};
+    if (args.geolocation) {
+      const facilityRepo = doctorsDb.getCustomRepository(FacilityRepository);
+      facilityDistances = await facilityRepo.getAllFacilityDistances(args.geolocation);
+    }
+
     matchedDoctors = await doctorRepository.searchByName(searchTextLowerCase);
     matchedSpecialties = await specialtyRepository.searchByName(searchTextLowerCase);
 
@@ -79,7 +98,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
       matchedDoctors,
       args.patientId,
       doctorsDb,
-      consultsDb
+      consultsDb,
+      facilityDistances
     );
     matchedDoctors = sortedDoctors;
     matchedDoctorsNextAvailability = sortedDoctorsNextAvailability;
@@ -96,7 +116,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         otherDoctors,
         args.patientId,
         doctorsDb,
-        consultsDb
+        consultsDb,
+        facilityDistances
       );
 
       otherDoctors = sortedDoctors;
@@ -109,7 +130,12 @@ const SearchDoctorAndSpecialtyByName: Resolver<
         sortedPossibleDoctors,
         allPossibleSpecialties,
         sortedPossibleDoctorsNextAvailability,
-      } = await getPossibleDoctorsAndSpecialties(args.patientId, doctorsDb, consultsDb);
+      } = await getPossibleDoctorsAndSpecialties(
+        args.patientId,
+        doctorsDb,
+        consultsDb,
+        facilityDistances
+      );
       possibleDoctors = sortedPossibleDoctors;
       possibleSpecialties = allPossibleSpecialties;
       possibleDoctorsNextAvailability = sortedPossibleDoctorsNextAvailability;
@@ -135,7 +161,8 @@ const SearchDoctorAndSpecialtyByName: Resolver<
 const getPossibleDoctorsAndSpecialties = async (
   patientId: string,
   doctorsDb: Connection,
-  consultsDb: Connection
+  consultsDb: Connection,
+  facilityDistances?: FacilityDistanceMap
 ) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const specialtyRepository = doctorsDb.getCustomRepository(DoctorSpecialtyRepository);
@@ -144,7 +171,14 @@ const getPossibleDoctorsAndSpecialties = async (
   let allPossibleSpecialties: DoctorSpecialty[] = [];
   let sortedPossibleDoctors: Doctor[] = [];
   let sortedPossibleDoctorsNextAvailability: DoctorSlotAvailability[] = [];
-  allPossibleDoctors = await doctorRepository.searchByName('');
+  const generalPhysicianName = ApiConstants.GENERAL_PHYSICIAN.toString();
+  const specialtyId = await specialtyRepository.findSpecialtyIdsByNames([generalPhysicianName]);
+
+  if (specialtyId.length === 1) {
+    allPossibleDoctors = await doctorRepository.searchBySpecialty(specialtyId[0].id);
+  } else {
+    allPossibleDoctors = await doctorRepository.searchByName('');
+  }
   allPossibleSpecialties = await specialtyRepository.searchByName('');
 
   //get Sorted Doctors List
@@ -152,7 +186,8 @@ const getPossibleDoctorsAndSpecialties = async (
     allPossibleDoctors,
     patientId,
     doctorsDb,
-    consultsDb
+    consultsDb,
+    facilityDistances
   );
 
   sortedPossibleDoctors = sortedDoctors;
@@ -165,7 +200,8 @@ const getSortedDoctors = async (
   doctors: Doctor[],
   patientId: string,
   doctorsDb: Connection,
-  consultsDb: Connection
+  consultsDb: Connection,
+  facilityDistances?: FacilityDistanceMap
 ) => {
   let sortedDoctors: Doctor[] = doctors;
   let sortedDoctorsNextAvailability: DoctorSlotAvailability[] = [];
@@ -215,7 +251,12 @@ const getSortedDoctors = async (
       //get patient and matched doctors previous appointments ends here
 
       consultNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-        return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
+        return doctorRepository.sortByRankingAlgorithm(
+          doctorA,
+          doctorB,
+          consultedDoctorIds,
+          facilityDistances
+        );
       });
     }
 
@@ -235,7 +276,12 @@ const getSortedDoctors = async (
       //get patient and matched doctors previous appointments ends here
 
       bookNowDoctors.sort((doctorA: Doctor, doctorB: Doctor) => {
-        return doctorRepository.sortByRankingAlgorithm(doctorA, doctorB, consultedDoctorIds);
+        return doctorRepository.sortByRankingAlgorithm(
+          doctorA,
+          doctorB,
+          consultedDoctorIds,
+          facilityDistances
+        );
       });
     }
 

@@ -33,6 +33,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
         console.log('linking');
         Linking.addEventListener('url', handleOpenURL);
       }
+      AsyncStorage.removeItem('location');
     } catch (error) {}
   }, []);
 
@@ -49,7 +50,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
 
   useEffect(() => {
     async function fetchData() {
-      firebase.analytics().setCurrentScreen('SplashScreen');
+      firebase.analytics().setAnalyticsCollectionEnabled(true);
+      firebase.analytics().setCurrentScreen('SplashScreen', 'SplashScreen');
       const onboarding = await AsyncStorage.getItem('onboarding');
       const userLoggedIn = await AsyncStorage.getItem('userLoggedIn');
       const signUp = await AsyncStorage.getItem('signUp');

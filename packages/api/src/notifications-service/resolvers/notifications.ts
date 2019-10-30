@@ -10,6 +10,8 @@ import { ApiConstants } from 'ApiConstants';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { TransferAppointmentRepository } from 'consults-service/repositories/tranferAppointmentRepository';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 import { addMilliseconds, format } from 'date-fns';
 import path from 'path';
 import fs from 'fs';
@@ -35,6 +37,16 @@ export const getNotificationsTypeDefs = gql`
   enum NotificationType {
     INITIATE_RESCHEDULE
     INITIATE_TRANSFER
+  }
+
+  enum DOCTOR_CALL_TYPE {
+    AUDIO
+    VIDEO
+  }
+
+  enum DOCTOR_TYPE {
+    SENIOR
+    JUNIOR
   }
 
   input PushNotificationInput {
@@ -70,6 +82,17 @@ export enum NotificationType {
   INITIATE_SENIOR_APPT_SESSION = 'INITIATE_SENIOR_APPT_SESSION',
   BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
   CALL_APPOINTMENT = 'CALL_APPOINTMENT',
+  MEDICINE_CART_READY = 'MEDICINE_CART_READY',
+}
+
+export enum DOCTOR_CALL_TYPE {
+  AUDIO = 'AUDIO',
+  VIDEO = 'VIDEO',
+}
+
+export enum DOCTOR_TYPE {
+  SENIOR = 'SENIOR',
+  JUNIOR = 'JUNIOR',
 }
 
 export enum NotificationPriority {
@@ -91,6 +114,133 @@ export async function sendSMS(message: string) {
   }
   const smsResp = fetch(smsUrl + '&To=9657585411&Text=' + message);
   console.log(smsResp, 'sms resp');
+}
+
+export async function sendCallsNotification(
+  pushNotificationInput: PushNotificationInput,
+  patientsDb: Connection,
+  consultsDb: Connection,
+  doctorsDb: Connection,
+  callType: DOCTOR_CALL_TYPE,
+  doctorType: DOCTOR_TYPE
+) {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
+  if (appointment == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  let doctorDetails;
+  //get doctor details
+  const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
+
+  if (doctorType == DOCTOR_TYPE.JUNIOR) {
+    const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+    const queueDetails = await consultQueueRepo.findByAppointmentId(
+      pushNotificationInput.appointmentId
+    );
+    if (queueDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+    doctorDetails = await doctorRepo.findById(queueDetails.doctorId);
+  } else {
+    doctorDetails = await doctorRepo.findById(appointment.doctorId);
+  }
+  if (doctorDetails == null) throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID);
+  //check patient existence and get his details
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const patientDetails = await patientRepo.getPatientDetails(appointment.patientId);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+
+  //check for registered device tokens
+  if (patientDetails.patientDeviceTokens.length == 0) return;
+
+  //if notiifcation of type reschedule & check for reschedule notification setting
+  if (
+    patientDetails.patientNotificationSettings &&
+    pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE &&
+    !patientDetails.patientNotificationSettings.reScheduleAndCancellationNotification
+  ) {
+    return;
+  }
+
+  let notificationTitle: string = '';
+  let notificationBody: string = '';
+  notificationTitle = ApiConstants.CALL_APPOINTMENT_TITLE;
+  notificationBody = ApiConstants.CALL_APPOINTMENT_BODY.replace('{0}', patientDetails.firstName);
+  notificationBody = notificationBody.replace(
+    '{1}',
+    doctorDetails.firstName + ' ' + doctorDetails.lastName
+  );
+
+  //initialize firebaseadmin
+  const config = {
+    credential: firebaseAdmin.credential.applicationDefault(),
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+  };
+  let admin = require('firebase-admin');
+  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+
+  //building payload
+  const payload = {
+    notification: {
+      title: notificationTitle,
+      body: notificationBody,
+    },
+    data: {
+      type: 'call_started',
+      appointmentId: appointment.id.toString(),
+      patientName: patientDetails.firstName,
+      doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+      sound: 'default',
+      callType,
+    },
+  };
+
+  console.log(payload, 'notification payload', pushNotificationInput.notificationType);
+  //options
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+  let notificationResponse;
+  const registrationToken: string[] = [];
+
+  patientDetails.patientDeviceTokens.forEach((values) => {
+    registrationToken.push(values.deviceToken);
+  });
+
+  admin
+    .messaging()
+    .sendToDevice(registrationToken, payload, options)
+    .then((response: PushNotificationSuccessMessage) => {
+      notificationResponse = response;
+      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+        const fileName =
+          process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+        if (process.env.NODE_ENV != 'local') {
+          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+        }
+        let content =
+          format(new Date(), 'yyyy-MM-dd hh:mm') +
+          '\n apptid: ' +
+          pushNotificationInput.appointmentId +
+          '\n multicastId: ';
+        content +=
+          response.multicastId.toString() +
+          '\n------------------------------------------------------------------------------------\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+          if (err) {
+            console.log('file saving error', err);
+          }
+          console.log('notification results saved');
+        });
+      }
+    })
+    .catch((error: JSON) => {
+      console.log('PushNotification Failed::' + error);
+      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+    });
+
+  console.log(notificationResponse, 'notificationResponse');
+
+  return notificationResponse;
 }
 
 export async function sendNotification(
@@ -230,7 +380,7 @@ export async function sendNotification(
         body: notificationBody,
       },
       data: {
-        type: 'Reschedule-Appointment',
+        type: 'Reschedule_Appointment',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
@@ -245,10 +395,11 @@ export async function sendNotification(
         body: notificationBody,
       },
       data: {
-        type: 'call_started',
+        type: 'chat_room',
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        sound: 'default',
       },
     };
   }
@@ -273,6 +424,96 @@ export async function sendNotification(
       if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
         const fileName =
           process.env.NODE_ENV + '_callnotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
+        let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
+        if (process.env.NODE_ENV != 'local') {
+          assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
+        }
+        let content =
+          format(new Date(), 'yyyy-MM-dd hh:mm') +
+          '\n apptid: ' +
+          pushNotificationInput.appointmentId +
+          '\n multicastId: ';
+        content +=
+          response.multicastId.toString() +
+          '\n------------------------------------------------------------------------------------\n';
+        fs.appendFile(assetsDir + '/' + fileName, content, (err) => {
+          if (err) {
+            console.log('file saving error', err);
+          }
+          console.log('notification results saved');
+        });
+      }
+    })
+    .catch((error: JSON) => {
+      console.log('PushNotification Failed::' + error);
+      throw new AphError(AphErrorMessages.PUSH_NOTIFICATION_FAILED);
+    });
+
+  console.log(notificationResponse, 'notificationResponse');
+
+  return notificationResponse;
+}
+
+export async function sendCartNotification(
+  pushNotificationInput: PushNotificationInput,
+  patientsDb: Connection
+) {
+  let notificationTitle: string = '';
+  let notificationBody: string = '';
+
+  //check patient existence and get his details
+  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
+  const medicineRepo = patientsDb.getCustomRepository(MedicineOrdersRepository);
+  const medicineOrderDetails = await medicineRepo.getMedicineOrderWithId(
+    parseInt(pushNotificationInput.appointmentId, 2)
+  );
+  if (medicineOrderDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+  const patientDetails = await patientRepo.getPatientDetails(medicineOrderDetails.patient.id);
+  if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
+  notificationBody = ApiConstants.CART_READY_BODY.replace('{0}', patientDetails.firstName);
+  notificationTitle = ApiConstants.CART_READY_TITLE;
+  //initialize firebaseadmin
+  const config = {
+    credential: firebaseAdmin.credential.applicationDefault(),
+    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+  };
+  let admin = require('firebase-admin');
+  admin = !firebaseAdmin.apps.length ? firebaseAdmin.initializeApp(config) : firebaseAdmin.app();
+
+  //building payload
+  const payload = {
+    notification: {
+      title: notificationTitle,
+      body: notificationBody,
+    },
+    data: {
+      type: 'Cart_Ready',
+      orderId: pushNotificationInput.appointmentId,
+      firstName: patientDetails.firstName,
+    },
+  };
+
+  console.log(payload, 'notification payload', pushNotificationInput.notificationType);
+  //options
+  const options = {
+    priority: NotificationPriority.high,
+    timeToLive: 60 * 60 * 24, //wait for one day.. if device is offline
+  };
+  let notificationResponse;
+  const registrationToken: string[] = [];
+
+  patientDetails.patientDeviceTokens.forEach((values) => {
+    registrationToken.push(values.deviceToken);
+  });
+
+  admin
+    .messaging()
+    .sendToDevice(registrationToken, payload, options)
+    .then((response: PushNotificationSuccessMessage) => {
+      notificationResponse = response;
+      if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+        const fileName =
+          process.env.NODE_ENV + '_ordernotification_' + format(new Date(), 'yyyyMMdd') + '.txt';
         let assetsDir = path.resolve('/apollo-hospitals/packages/api/src/assets');
         if (process.env.NODE_ENV != 'local') {
           assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);

@@ -1,20 +1,31 @@
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DropDown, DropDownProps } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { SAVE_PATIENT_ADDRESS } from '@aph/mobile-patients/src/graphql/profiles';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import {
+  SAVE_PATIENT_ADDRESS,
+  UPDATE_PATIENT_ADDRESS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { PatientAddressInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   savePatientAddress,
   savePatientAddressVariables,
 } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
+  getPlaceInfoByPincode,
+  pinCodeServiceabilityApi,
+} from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  aphConsole,
   g,
   handleGraphQlError,
-  aphConsole,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
@@ -24,19 +35,18 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
+  TextInput,
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { PatientAddressInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
-  pinCodeServiceabilityApi,
-  getPlaceInfoByPincode,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
-import { DropDown, DropDownProps } from '@aph/mobile-patients/src/components/ui/DropDown';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+  updatePatientAddress,
+  updatePatientAddressVariables,
+} from '../../graphql/types/updatePatientAddress';
+import { fonts } from '../../theme/fonts';
+import { AppRoutes } from '../NavigatorContainer';
 const { height } = Dimensions.get('window');
-
+const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 const styles = StyleSheet.create({
   placeholderTextStyle: {
     color: '#01475b',
@@ -63,11 +73,46 @@ const styles = StyleSheet.create({
     borderColor: '#dddddd',
     marginHorizontal: 16,
   },
+  inputStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    width: '80%',
+    color: theme.colors.INPUT_TEXT,
+    paddingBottom: 4,
+  },
+  inputTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(18),
+    color: theme.colors.INPUT_TEXT,
+    paddingRight: 6,
+    lineHeight: 28,
+    paddingTop: Platform.OS === 'ios' ? 0 : 6,
+    paddingBottom: Platform.OS === 'ios' ? 5 : 0,
+  },
+  inputValidView: {
+    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+    borderBottomWidth: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    paddingBottom: 0,
+  },
+  inputView: {
+    borderBottomColor: theme.colors.INPUT_BORDER_SUCCESS,
+    borderBottomWidth: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    paddingBottom: 0,
+  },
 });
 
-export interface AddAddressProps extends NavigationScreenProps {}
+export interface AddAddressProps extends NavigationScreenProps {
+  KeyName?: any;
+  DataAddress?: any;
+}
 
 export const AddAddress: React.FC<AddAddressProps> = (props) => {
+  console.log('KeyName', props.navigation.getParam('KeyName'));
+
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [userName, setuserName] = useState<string>('');
   const [userId, setuserId] = useState<string>('');
@@ -92,6 +137,70 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     }
   }, [currentPatient]);
 
+  useEffect(() => {
+    if (props.navigation.getParam('KeyName') == 'Update') {
+      console.log('DataAddress', props.navigation.getParam('DataAddress'));
+      setcity(props.navigation.getParam('DataAddress').city);
+      setstate(props.navigation.getParam('DataAddress').state);
+      setpincode(props.navigation.getParam('DataAddress').zipcode);
+      setaddressLine1(props.navigation.getParam('DataAddress').addressLine1);
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log(position, 'position');
+          const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+          const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
+          //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+          Axios.get(url)
+            .then((obj) => {
+              console.log(obj, 'geocode obj');
+              try {
+                if (
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
+                ) {
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(address, 'address obj');
+                  const addrComponents = obj.data.results[0].address_components || [];
+                  const city = (
+                    addrComponents.find(
+                      (item: any) =>
+                        item.types.indexOf('locality') > -1 ||
+                        item.types.indexOf('administrative_area_level_2') > -1
+                    ) || {}
+                  ).long_name;
+                  const state = (
+                    addrComponents.find(
+                      (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+                    ) || {}
+                  ).long_name;
+                  let val = city.concat(', ').concat(state);
+                  setstate(state || '');
+                  //setcity(obj.data.results[0].formatted_address || '');
+                  setcity(val);
+                  console.log(obj.data.results[0].formatted_address, 'val obj');
+                  //setcurrentLocation(address.toUpperCase());
+                  // AsyncStorage.setItem(
+                  //   'location',
+                  //   JSON.stringify({
+                  //     latlong: obj.data.results[0].geometry.location,
+                  //     name: address.toUpperCase(),
+                  //   })
+                  // );
+                }
+              } catch {}
+            })
+            .catch((error) => {
+              console.log(error, 'geocode error');
+            });
+        },
+        (error) => {
+          console.log(error.code, error.message, 'getCurrentPosition error');
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      );
+    }
+  }, []);
   const client = useApolloClient();
   const isAddressValid =
     userName &&
@@ -115,46 +224,80 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
   const onSavePress = async () => {
     setshowSpinner(true);
-    const addressInput = {
-      patientId: userId,
-      addressLine1: addressLine1,
-      addressLine2: '',
-      city: city,
-      state: state,
-      zipcode: pincode,
-      landmark: landMark,
-      mobileNumber: phoneNumber,
-    };
 
-    try {
-      const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
-        saveAddress(addressInput),
-        pinCodeServiceabilityApi(pincode),
-      ]);
-
-      setshowSpinner(false);
-      // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
-      const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
-      addAddress && addAddress(address);
-
-      if (pinAvailabilityResult.data.Availability || addOnly) {
-        setDeliveryAddressId && setDeliveryAddressId(address.id || '');
-        props.navigation.goBack();
-      } else {
-        setDeliveryAddressId && setDeliveryAddressId('');
-        showAphAlert!({
-          title: 'Uh oh.. :(',
-          description:
-            'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
-          onPressOk: () => {
-            props.navigation.goBack();
-            hideAphAlert!();
-          },
+    if (props.navigation.getParam('KeyName') == 'Update') {
+      const updateaddressInput = {
+        id: props.navigation.getParam('DataAddress').id,
+        addressLine1: addressLine1,
+        addressLine2: '',
+        city: city,
+        state: state,
+        zipcode: pincode,
+        landmark: landMark,
+        mobileNumber: phoneNumber,
+      };
+      console.log(updateaddressInput, 'updateaddressInput');
+      setshowSpinner(true);
+      client
+        .mutate<updatePatientAddress, updatePatientAddressVariables>({
+          mutation: UPDATE_PATIENT_ADDRESS,
+          variables: { UpdatePatientAddressInput: updateaddressInput },
+        })
+        .then((_data: any) => {
+          try {
+            setshowSpinner(false);
+            console.log('updateapicalled', _data);
+            props.navigation.push(AppRoutes.AddressBook);
+          } catch (error) {}
+        })
+        .catch((e: any) => {
+          setshowSpinner(false);
+          const error = JSON.parse(JSON.stringify(e));
+          console.log('Error occured while updateapicalled', error);
         });
+      //props.navigation.goBack();
+    } else {
+      const addressInput = {
+        patientId: userId,
+        addressLine1: addressLine1,
+        addressLine2: '',
+        city: city,
+        state: state,
+        zipcode: pincode,
+        landmark: landMark,
+        mobileNumber: phoneNumber,
+      };
+      console.log(addressInput, 'addressInput');
+      try {
+        const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
+          saveAddress(addressInput),
+          pinCodeServiceabilityApi(pincode),
+        ]);
+
+        setshowSpinner(false);
+        // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
+        const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
+        addAddress && addAddress(address);
+
+        if (pinAvailabilityResult.data.Availability || addOnly) {
+          setDeliveryAddressId && setDeliveryAddressId(address.id || '');
+          props.navigation.goBack();
+        } else {
+          setDeliveryAddressId && setDeliveryAddressId('');
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+            onPressOk: () => {
+              props.navigation.goBack();
+              hideAphAlert!();
+            },
+          });
+        }
+      } catch (error) {
+        setshowSpinner(false);
+        handleGraphQlError(error);
       }
-    } catch (error) {
-      setshowSpinner(false);
-      handleGraphQlError(error);
     }
   };
 
@@ -174,7 +317,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'ADD NEW ADDRESS'}
+        title={
+          props.navigation.getParam('KeyName') == 'Update' ? 'EDIT ADDRESS' : 'ADD NEW ADDRESS'
+        }
         onPressLeftIcon={() => props.navigation.goBack()}
       />
     );
@@ -190,24 +335,76 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const updateCityStateByPincode = (pincode: string) => {
     aphConsole.log('updateCityStateByPincode');
     getPlaceInfoByPincode(pincode)
-      .then(({ data }) => {
-        aphConsole.log({ data });
-        const results = g(data, 'results') || [];
-        if (results.length == 0) return;
-        const addrComponents = results[0].address_components || [];
-        const city = (
-          addrComponents.find(
-            (item) =>
-              item.types.indexOf('locality') > -1 ||
-              item.types.indexOf('administrative_area_level_2') > -1
-          ) || {}
-        ).long_name;
-        const state = (
-          addrComponents.find((item) => item.types.indexOf('administrative_area_level_1') > -1) ||
-          {}
-        ).long_name;
-        setcity(city || '');
-        setstate(state || '');
+      .then(({ data }: any) => {
+        try {
+          aphConsole.log({ data });
+
+          const results = g(data, 'results') || [];
+          console.log(results, 'results');
+          if (results.length == 0) return;
+          console.log(results[0].geometry.location.lat);
+          console.log(results[0].geometry.location.lng);
+          const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${results[0].geometry.location.lat},${results[0].geometry.location.lng}&key=${key}`;
+          //   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+          Axios.get(url)
+            .then((obj) => {
+              console.log(obj, 'geocode obj');
+              try {
+                if (
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
+                ) {
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(address, 'address obj');
+                  const addrComponents = obj.data.results[0].address_components || [];
+                  const city = (
+                    addrComponents.find(
+                      (item: any) =>
+                        item.types.indexOf('locality') > -1 ||
+                        item.types.indexOf('administrative_area_level_2') > -1
+                    ) || {}
+                  ).long_name;
+                  const state = (
+                    addrComponents.find(
+                      (item: any) => item.types.indexOf('administrative_area_level_1') > -1
+                    ) || {}
+                  ).long_name;
+                  let val = city.concat(', ').concat(state);
+                  // setcity(obj.data.results[0].formatted_address || '');
+                  setcity(val);
+                  setstate(state || '');
+                  console.log(obj.data.results[0].formatted_address, 'val obj');
+                  //setcurrentLocation(address.toUpperCase());
+                  // AsyncStorage.setItem(
+                  //   'location',
+                  //   JSON.stringify({
+                  //     latlong: obj.data.results[0].geometry.location,
+                  //     name: address.toUpperCase(),
+                  //   })
+                  // );
+                }
+              } catch {}
+            })
+            .catch((error) => {
+              console.log(error, 'geocode error');
+            });
+          //if (results.length == 0) return;
+          // const addrComponents = results[0].address_components || [];
+          // const city = (
+          //   addrComponents.find(
+          //     (item) =>
+          //       item.types.indexOf('locality') > -1 ||
+          //       item.types.indexOf('administrative_area_level_2') > -1
+          //   ) || {}
+          // ).long_name;
+          // const state = (
+          //   addrComponents.find((item) => item.types.indexOf('administrative_area_level_1') > -1) ||
+          //   {}
+          // ).long_name;
+          // let val = city.concat(', ').concat(state);
+          // setcity(val || '');
+          // setstate(state || '');
+        } catch (error) {}
       })
       .catch((e) => {
         aphConsole.error({ e });
@@ -251,6 +448,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             )}
           />
         )}
+        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Full Name</Text>
         <TextInputComponent
           value={userName}
           onChangeText={(text) =>
@@ -258,17 +456,66 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               ? null
               : (text == '' || /^([a-zA-Z.\s])+$/.test(text)) && setuserName(text)
           }
-          placeholder={'Name'}
+          placeholder={'Enter full name'}
+          inputStyle={{ marginBottom: 10 }}
         />
-        <TextInputComponent
-          value={phoneNumber}
-          onChangeText={(phoneNumber) =>
-            (phoneNumber == '' || /^[6-9]{1}\d{0,9}$/.test(phoneNumber)) &&
-            setphoneNumber(phoneNumber)
-          }
-          placeholder={'Phone Number'}
-          maxLength={10}
-        />
+        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Mobile Number</Text>
+        <View
+          style={[
+            { paddingTop: Platform.OS === 'ios' ? 8 : 8 },
+            phoneNumber == '' ? styles.inputValidView : styles.inputView,
+          ]}
+        >
+          <Text style={styles.inputTextStyle}>+91</Text>
+          <TextInput
+            autoFocus
+            style={styles.inputStyle}
+            keyboardType="numeric"
+            maxLength={10}
+            value={phoneNumber}
+            placeholder={'Enter mobile number'}
+            onChangeText={(phoneNumber) =>
+              (phoneNumber == '' || /^[6-9]{1}\d{0,9}$/.test(phoneNumber)) &&
+              setphoneNumber(phoneNumber)
+            }
+          />
+          {/* <TextInputComponent
+            value={phoneNumber}
+            onChangeText={(phoneNumber) =>
+              (phoneNumber == '' || /^[6-9]{1}\d{0,9}$/.test(phoneNumber)) &&
+              setphoneNumber(phoneNumber)
+            }
+            placeholder={'Phone Number'}
+            maxLength={10}
+            inputStyle={styles.inputStyle}
+          /> */}
+        </View>
+        {/* <View style={{ flexDirection: 'row' }}>
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(18),
+              color: theme.colors.INPUT_TEXT,
+              paddingRight: 6,
+              lineHeight: 28,
+              paddingTop: Platform.OS === 'ios' ? 0 : 6,
+              paddingBottom: Platform.OS === 'ios' ? 5 : 0,
+            }}
+          >
+            +91
+          </Text>
+          <TextInputComponent
+            value={phoneNumber}
+            onChangeText={(phoneNumber) =>
+              (phoneNumber == '' || /^[6-9]{1}\d{0,9}$/.test(phoneNumber)) &&
+              setphoneNumber(phoneNumber)
+            }
+            placeholder={'Phone Number'}
+            maxLength={10}
+          />
+        </View> */}
+        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginTop: 20 }}>
+          Address
+        </Text>
         <TextInputComponent
           value={addressLine1}
           onChangeText={(addressLine1) => {
@@ -287,22 +534,33 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               setaddressLine1(addressLine1);
             }
           }}
-          placeholder={'Address Line 1'}
+          placeholder={'Flat / Door / Plot Number, Building'}
+          inputStyle={{ marginTop: 5, marginBottom: 10 }}
         />
+        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Pin Code</Text>
         <TextInputComponent
           value={pincode}
           onChangeText={
             (pincode) => validateAndSetPincode(pincode)
             // (pincode == '' || /^[1-9]{1}\d{0,9}$/.test(pincode)) && setpincode(pincode)
           }
-          placeholder={'Pincode'}
+          placeholder={'Enter pin code'}
           maxLength={6}
+          textInputprops={{
+            onSubmitEditing: () => {
+              if (isAddressValid) {
+                onSavePress();
+              }
+            },
+            returnKeyType: 'done',
+          }}
         />
-        <TextInputComponent
+        {/* <TextInputComponent
           value={landMark}
           onChangeText={(landMark) => (landMark.startsWith(' ') ? null : setlandMark(landMark))}
           placeholder={'Land Mark (optional)'}
-        />
+        /> */}
+        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Area / Locality</Text>
         <TextInputComponent
           value={city}
           onChangeText={(city) =>
@@ -310,9 +568,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               ? null
               : (city == '' || /^([a-zA-Z0-9.\s])+$/.test(city)) && setcity(city)
           }
-          placeholder={'City'}
+          placeholder={'Enter area / locality name'}
+          multiline={true}
         />
-        <TextInputComponent
+        {/* <TextInputComponent
           value={state}
           onChangeText={(state) =>
             state.startsWith(' ') || state.startsWith('.')
@@ -328,7 +587,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             },
             returnKeyType: 'done',
           }}
-        />
+        /> */}
       </View>
     );
   };

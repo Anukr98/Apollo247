@@ -353,11 +353,11 @@ export const Symptoms: React.FC = (props) => {
         currentSymptom.since = since;
       } else {
         const inputParams: any = {
-          __typename: "SymptomList",
+          __typename: 'SymptomList',
           howOften: howOften,
           severity: severity,
           since: since,
-          symptom: symptom
+          symptom: symptom,
         };
         const x = symptoms;
         x!.push(inputParams);
@@ -379,10 +379,10 @@ export const Symptoms: React.FC = (props) => {
     if (symptoms && symptoms.length > 0) {
       const ReqSymptom = symptoms[idx];
       if (ReqSymptom) {
-        setSymptom(ReqSymptom.symptom || "");
-        setSince(ReqSymptom.since || "");
-        setHowOften(ReqSymptom.howOften || "");
-        setSeverity(ReqSymptom.severity || "");
+        setSymptom(ReqSymptom.symptom || '');
+        setSince(ReqSymptom.since || '');
+        setHowOften(ReqSymptom.howOften || '');
+        setSeverity(ReqSymptom.severity || '');
       }
       setIsDialogOpen(true);
       setIsUpdate(true);
@@ -401,8 +401,9 @@ export const Symptoms: React.FC = (props) => {
                   item!.symptom!.trim() !== '' && (
                     <ListItem key={idx} alignItems="flex-start" className={classes.listItem}>
                       <ListItemText className={classes.symtomHeading} primary={item!.symptom} />
-                      <AphButton classes={{ root: classes.editSymptom }}
-                      onClick={() => showSymptom(idx)}
+                      <AphButton
+                        classes={{ root: classes.editSymptom }}
+                        onClick={() => showSymptom(idx)}
                       >
                         <img
                           src={caseSheetEdit ? require('images/round_edit_24_px.svg') : ''}
@@ -526,7 +527,7 @@ export const Symptoms: React.FC = (props) => {
                               component="div"
                               error={errorState.symptomError}
                             >
-                              Please Enter Symptom(two symptom name can't be same)
+                              Please Enter Complaint(two complaint names can't be same)
                             </FormHelperText>
                           )}
                         </div>
@@ -623,7 +624,7 @@ export const Symptoms: React.FC = (props) => {
                         addUpdateSymptom();
                       }}
                     >
-                      {isUpdate ? "Update Complaint" : "Add Complaint"}
+                      {isUpdate ? 'Update Complaint' : 'Add Complaint'}
                     </AphButton>
                   </div>
                 </div>

@@ -4,7 +4,7 @@ import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
 import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/AddFilePopup';
 import { HealthConsultView } from '@aph/mobile-patients/src/components/HealthRecords/HealthConsultView';
 import { MedicalRecords } from '@aph/mobile-patients/src/components/HealthRecords/MedicalRecords';
-import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
+// import { PickerImage } from '@aph/mobile-patients/src/components/Medicines/Medicine';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import {
   AddFileIcon,
@@ -52,6 +52,7 @@ import {
 } from '../../graphql/types/deletePatientMedicalRecord';
 import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
 import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -79,6 +80,7 @@ type rescheduleType = {
   isFollowUp: number;
   isPaid: number;
 };
+type PickerImage = any;
 
 export interface HealthRecordsHomeProps extends NavigationScreenProps {}
 
@@ -275,7 +277,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 activeOpacity={1}
                 style={{ marginTop: 20 }}
                 onPress={() => {
-                  props.navigation.replace(AppRoutes.ConsultRoom);
+                  CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate back to consult room'),
+                    props.navigation.replace(AppRoutes.ConsultRoom);
                 }}
               >
                 <ApolloLogo />
@@ -305,7 +308,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       <View style={styles.filterViewStyle}>
         <TouchableOpacity
           activeOpacity={1}
-          onPress={() => props.navigation.navigate(AppRoutes.AddRecord)}
+          onPress={() => (
+            CommonLogEvent('HEALTH_RECORD_HOME', 'Navigate to add record'),
+            props.navigation.navigate(AppRoutes.AddRecord)
+          )}
         >
           <AddFileIcon />
         </TouchableOpacity>
@@ -370,7 +376,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                   <HealthConsultView
                     key={i}
                     onPressOrder={() => {
-                      setdisplayOrderPopup(true);
+                      CommonLogEvent('HEALTH_RECORD_HOME', 'Display order popup'),
+                        setdisplayOrderPopup(true);
                     }}
                     onClickCard={() => {
                       props.navigation.navigate(AppRoutes.ConsultDetails, {

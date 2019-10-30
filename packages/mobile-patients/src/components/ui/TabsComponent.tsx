@@ -1,6 +1,15 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+  ScrollView,
+  TextStyle,
+} from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
@@ -41,6 +50,10 @@ export interface TabsComponentProps {
   showIcons?: boolean;
   textStyle?: StyleProp<ViewStyle>;
   height?: number;
+  scrollable?: boolean;
+  tabViewStyle?: StyleProp<ViewStyle>;
+  selectedTitleStyle?: StyleProp<TextStyle>;
+  titleStyle?: StyleProp<TextStyle>;
 }
 
 export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
@@ -65,6 +78,7 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
             styles.tabView,
             isSelected ? { borderBottomColor: theme.colors.APP_GREEN } : {},
             props.height ? { height: props.height } : {},
+            props.tabViewStyle,
           ]}
           onPress={() => props.onChange(item.title)}
         >
@@ -84,6 +98,13 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
                 styles.textStyle,
                 isSelected ? { color: theme.colors.LIGHT_BLUE } : {},
                 props.textStyle,
+                props.scrollable
+                  ? {
+                      paddingLeft: index === 0 ? 20 : 15,
+                      paddingRight: index + 1 === props.data.length ? 20 : 15,
+                    }
+                  : {},
+                isSelected ? props.selectedTitleStyle : props.titleStyle,
               ]}
             >
               {item.title}
@@ -93,9 +114,29 @@ export const TabsComponent: React.FC<TabsComponentProps> = (props) => {
       );
     });
   };
+
   return (
     <View style={[styles.container, props.style]}>
-      <View style={styles.tabContainerView}>{renderTabs()}</View>
+      {props.scrollable ? (
+        <ScrollView
+          bounces={false}
+          horizontal
+          style={{ flexDirection: 'row', width: '100%' }}
+          contentContainerStyle={{ alignItems: 'center' }}
+          showsHorizontalScrollIndicator={false}
+        >
+          {renderTabs()}
+        </ScrollView>
+      ) : (
+        <View style={styles.tabContainerView}>{renderTabs()}</View>
+      )}
     </View>
   );
+};
+
+TabsComponent.defaultProps = {
+  tabViewStyle: {},
+  scrollable: false,
+  selectedTitleStyle: {},
+  titleStyle: {},
 };

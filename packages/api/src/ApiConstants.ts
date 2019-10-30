@@ -42,4 +42,9 @@ export enum ApiConstants {
 
   CALL_APPOINTMENT_TITLE = 'Appointment has been started',
   CALL_APPOINTMENT_BODY = 'Hi {0}! :) Dr. {1} is waiting to start your consultation. Please proceed to the Consult Room',
+
+  CART_READY_TITLE = 'Medicine order cart ready',
+  CART_READY_BODY = 'Hi {0}, your prescription cart is ready',
+
+  GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
 }

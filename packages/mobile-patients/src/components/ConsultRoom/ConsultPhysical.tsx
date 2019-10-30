@@ -41,6 +41,7 @@ import Permissions from 'react-native-permissions';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
 import moment from 'moment';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -155,6 +156,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
   ]);
 
   useEffect(() => {
+    CommonScreenLog('Consult Physical', 'Consult Physical');
     if (NextAvailableSlot && timeArray) {
       for (const i in timeArray) {
         if (timeArray[i].time.length > 0) {
@@ -375,6 +377,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
+              CommonLogEvent('CONSULT_PHYSICAL', 'Login clicked');
               setShowPopup(!showPopup);
             }}
           >

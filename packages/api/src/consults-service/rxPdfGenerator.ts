@@ -43,6 +43,12 @@ export const convertCaseSheetToRxPdfData = async (
     prescriptions = caseSheetMedicinePrescription.map((csRx) => {
       const name = _capitalize(csRx.medicineName);
       const ingredients = [] as string[];
+      const dosageTimingCount =
+        csRx.medicineTimings !== undefined ? csRx.medicineTimings.length : 0;
+      const medicineDosage =
+        dosageTimingCount == 0
+          ? csRx.medicineDosage
+          : Number(csRx.medicineDosage) * dosageTimingCount;
       const timings =
         csRx.medicineTimings !== undefined
           ? '(' + csRx.medicineTimings.map(_capitalize).join(', ') + ')'
@@ -52,7 +58,7 @@ export const convertCaseSheetToRxPdfData = async (
         csRx.medicineUnit === undefined || csRx.medicineUnit === 'NA'
           ? ''
           : csRx.medicineUnit.toLowerCase();
-      let frequency = `${csRx.medicineDosage} ${medicineUnit} ${timings} for ${csRx.medicineConsumptionDurationInDays} days`;
+      let frequency = `${medicineDosage} ${medicineUnit} ${timings} for ${csRx.medicineConsumptionDurationInDays} days`;
       if (csRx.medicineToBeTaken !== undefined && csRx.medicineToBeTaken.length > 0)
         frequency =
           frequency +
@@ -207,7 +213,8 @@ export const convertCaseSheetToRxPdfData = async (
     if (caseSheet.followUpConsultType)
       followUpDetails = followUpDetails + '(' + _capitalize(caseSheet.followUpConsultType) + ') ';
     let followUpDays;
-    if (caseSheet.followUpAfterInDays) followUpDays = caseSheet.followUpAfterInDays;
+    if (caseSheet.followUpAfterInDays && caseSheet.followUpAfterInDays < 7)
+      followUpDays = caseSheet.followUpAfterInDays;
     else if (caseSheet.followUpDate)
       followUpDays = differenceInCalendarDays(caseSheet.followUpDate, caseSheet.createdDate!);
 
