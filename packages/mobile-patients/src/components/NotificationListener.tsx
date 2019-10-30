@@ -80,15 +80,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
     aphConsole.log('processNotification after return statement');
 
-    const setCurrentName = await AsyncStorage.getItem('setCurrentName');
-
-    if (
-      setCurrentName === AppRoutes.ChatRoom ||
-      setCurrentName === AppRoutes.AppointmentDetails ||
-      setCurrentName === AppRoutes.AppointmentOnlineDetails
-    )
-      return;
-
     switch (notificationType) {
       case 'Reschedule_Appointment':
         {

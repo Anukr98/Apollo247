@@ -1000,7 +1000,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           Keyboard.dismiss();
         }}
         style={[
-          searchText.length > 2
+          searchSate == 'success' && medicineList.length == 0
+            ? {
+                height: '100%',
+                width: '100%',
+              }
+            : searchText.length > 2
             ? {
                 height: '100%',
                 width: '100%',
