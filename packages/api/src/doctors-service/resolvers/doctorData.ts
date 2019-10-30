@@ -138,7 +138,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   await doctorData.map((element: any) => {
     //mapping specialties
     finalSpecialtiesList.forEach((specialty) => {
-      if (element.SPECIALITY.toLowerCase() == specialty.name.toLowerCase()) {
+      if (element.SPECIALITY == specialty.name) {
         element.SPECIALITY = specialty.id;
         return;
       }
