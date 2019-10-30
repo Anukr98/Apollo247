@@ -377,7 +377,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              CommonLogEvent('renderLocation', 'Login clicked');
+              CommonLogEvent('CONSULT_PHYSICAL', 'Login clicked');
               setShowPopup(!showPopup);
             }}
           >

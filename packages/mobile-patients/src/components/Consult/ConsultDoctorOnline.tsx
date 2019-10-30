@@ -331,7 +331,7 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
       <CalendarView
         date={date}
         onPressDate={(selectedDate) => {
-          CommonLogEvent('ConsultDoctorOnline_Calender', 'ConsultDoctorOnline_Clicked');
+          CommonLogEvent('CONSULT_DOCTOR_ONLINE', 'ConsultDoctorOnline_Clicked');
           console.log('selectedDate', selectedDate !== date, selectedDate, date);
           props.setDate(selectedDate);
           props.setselectedTimeSlot('');

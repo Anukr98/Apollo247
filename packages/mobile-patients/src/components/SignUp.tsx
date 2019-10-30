@@ -41,6 +41,7 @@ import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalT
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonLogEvent, CommonScreenLog } from '../FunctionHelpers/DeviceHelper';
 
 const { height } = Dimensions.get('window');
 
@@ -154,6 +155,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       console.log('No current patients available');
       getPatientApiCall();
     }
+    CommonScreenLog(AppRoutes.SignUp, AppRoutes.SignUp);
   }, [currentPatient]);
 
   useEffect(() => {
@@ -221,6 +223,8 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 activeOpacity={1}
                 style={styles.placeholderViewStyle}
                 onPress={() => {
+                  CommonLogEvent(AppRoutes.SignUp, 'Date picker display');
+
                   Keyboard.dismiss();
                   setIsDateTimePickerVisible(true);
                 }}
@@ -263,7 +267,9 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                 titleTextStyle={
                   gender === option.name ? styles.selectedButtonTitleStyle : styles.buttonTitleStyle
                 }
-                onPress={() => setGender(option.name)}
+                onPress={() => (
+                  CommonLogEvent(AppRoutes.SignUp, 'set gender clicked'), setGender(option.name)
+                )}
               />
             ))}
           </View>
@@ -308,6 +314,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                   // style={{ width: '100%', flex: 1, marginHorizontal: 40 }}
                   disabled={!firstName || !lastName || !date || !gender}
                   onPress={async () => {
+                    CommonLogEvent(AppRoutes.SignUp, 'Sign button clicked');
                     let validationMessage = '';
                     if (!firstName) {
                       validationMessage = 'Enter valid first name';
@@ -362,6 +369,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('userLoggedIn', 'true'),
                       AsyncStorage.setItem('signUp', 'false'),
                       AsyncStorage.setItem('gotIt', 'false'),
+                      CommonLogEvent(AppRoutes.SignUp, 'Navigating to Consult Room'),
                       setTimeout(() => {
                         props.navigation.dispatch(
                           StackActions.reset({
@@ -385,6 +393,7 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
                       AsyncStorage.setItem('userLoggedIn', 'false'),
                       AsyncStorage.setItem('multiSignUp', 'false'),
                       AsyncStorage.setItem('signUp', 'false'),
+                      CommonLogEvent(AppRoutes.SignUp, 'Error going back to login'),
                       setTimeout(() => {
                         props.navigation.dispatch(
                           StackActions.reset({

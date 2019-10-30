@@ -6,6 +6,7 @@
 
 import { Dimensions, Platform, AsyncStorage } from 'react-native';
 import firebase from 'react-native-firebase';
+import { aphConsole } from '../helpers/helperFunctions';
 
 export const DeviceHelper = () => {
   const isIphoneX = () => {
@@ -19,13 +20,21 @@ export const DeviceHelper = () => {
 };
 
 export const CommonLogEvent = (stringName: string, parameterName: string) => {
-  firebase.analytics().logEvent(stringName, {
-    Button_Action: parameterName,
-  });
+  try {
+    firebase.analytics().logEvent(stringName, {
+      Button_Action: parameterName,
+    });
+  } catch (error) {
+    aphConsole.log('CommonLogEvent error', error);
+  }
 };
 
 export const CommonScreenLog = (stringName: string, parameterName: string) => {
   AsyncStorage.setItem('setCurrentName', stringName);
 
-  firebase.analytics().setCurrentScreen(stringName, parameterName);
+  try {
+    firebase.analytics().setCurrentScreen(stringName, parameterName);
+  } catch (error) {
+    aphConsole.log('CommonScreenLog error', error);
+  }
 };
