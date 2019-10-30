@@ -1,5 +1,8 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, Repository, Not } from 'typeorm';
 import { Facility, FacilityType } from 'doctors-service/entities';
+import fetch from 'node-fetch';
+import { Geolocation } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
+import { ApiConstants } from 'ApiConstants';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -14,6 +17,45 @@ export class FacilityRepository extends Repository<Facility> {
           getFacilitiesError,
         });
       });
+  }
+
+  async getAllFacilityDistances(userGeoLocation: Geolocation) {
+    const facilities = await this.find({ where: { name: Not('') } });
+
+    //get facility lat longs here
+    const facilityAndDistancesMap: { [index: string]: string } = {};
+    const facilityIds: string[] = [];
+    const facilityLatLongs: string[] = [];
+    facilities.forEach((facility) => {
+      facilityIds.push(facility.id);
+      facilityLatLongs.push(`${facility.latitude},${facility.longitude}`);
+      facilityAndDistancesMap[facility.id] = '';
+    });
+    const pipedFacilityLatLongs = facilityLatLongs.join('|');
+    const userLatLong = `${userGeoLocation.latitude},${userGeoLocation.longitude}`;
+
+    //get distances of facilities from user geolocation using google maps distance matrix api
+    const distancesPromise = await fetch(
+      `${ApiConstants.GOOGLE_MAPS_DISTANCE_MATRIX_URL}?origins=${userLatLong}&destinations=${pipedFacilityLatLongs}&mode=driving&language=pl-PL&sensor=true&key=AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps`
+    );
+
+    type GoogleMapsValue = { text: string; value: string };
+    type GoogleMapsElement = {
+      distance: GoogleMapsValue;
+      duration: GoogleMapsValue;
+      status: string;
+    };
+
+    const distancesResult = await distancesPromise.json();
+    if (distancesResult.status == 'OK' && distancesResult.rows.length > 0) {
+      if (distancesResult.rows[0].elements.length > 0) {
+        distancesResult.rows[0].elements.forEach((element: GoogleMapsElement, index: number) => {
+          facilityAndDistancesMap[facilityIds[index]] =
+            element.status == 'OK' ? element.distance.value : '';
+        });
+      }
+    }
+    return facilityAndDistancesMap;
   }
 
   getFacilityUniqueTerm(facility: Partial<Facility>) {
