@@ -14,7 +14,7 @@ const PharmaApiConfig = {
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
     SHOP_BY_CITY: [apolloUatBaseUrl],
-    IMAGES_BASE_URL: [`${apolloUatBaseUrl}/pub/media/catalog/product`],
+    IMAGES_BASE_URL: [`${apolloUatBaseUrl}/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
@@ -32,7 +32,7 @@ const PharmaApiConfig = {
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
     SHOP_BY_CITY: [apolloProdBaseUrl],
-    IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media/catalog/product`],
+    IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media`],
     GET_DELIVERY_TIME: [
       'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,

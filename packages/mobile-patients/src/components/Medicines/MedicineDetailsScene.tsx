@@ -475,7 +475,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 onPress={() => {
                   updateQuantityCartItem(medicineDetails);
                   !isMedicineAddedToCart && onAddCartItem(medicineDetails);
-                  props.navigation.navigate(AppRoutes.YourCart);
+                  props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
                 }}
                 title="BUY NOW"
                 style={{ flex: 1 }}

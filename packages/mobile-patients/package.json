@@ -105,7 +105,8 @@
     "react-native-vector-icons": "^6.5.0",
     "react-navigation": "^3.11.0",
     "resize-base64": "^1.0.12",
-    "string-strip-html": "^4.3.5"
+    "string-strip-html": "^4.3.5",
+    "react-native-geocoding": "^0.4.0"
   },
   "jest": {
     "preset": "react-native"

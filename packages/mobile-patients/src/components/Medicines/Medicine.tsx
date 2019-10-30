@@ -53,6 +53,7 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -71,7 +72,8 @@ const styles = StyleSheet.create({
     color: theme.colors.WHITE,
   },
   imagePlaceholderStyle: {
-    backgroundColor: '#f0f1ec',
+    backgroundColor: '#f7f8f5',
+    opacity: 0.5,
     borderRadius: 5,
   },
 });
@@ -85,6 +87,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
   const cartItemsCount = cartItems.length;
   const { currentPatient } = useAllCurrentPatients();
+  const { showAphAlert } = useUIElements();
 
   useEffect(() => {
     getMedicinePageProducts()
@@ -95,6 +98,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       .catch((e) => {
         setError(e);
         setLoading(false);
+        showAphAlert!({
+          title: 'Uh oh! :(',
+          description: "We're unable to fetch products, try later.",
+        });
       });
   }, []);
 
@@ -239,7 +246,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             setImgHeight(height * (winWidth / width));
           }}
           style={{ width: '100%', minHeight: imgHeight }}
-          source={{ uri: offerBannerImage }}
+          source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
         />
       );
   };
@@ -462,7 +469,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               >
                 <Image
                   // placeholderStyle={styles.imagePlaceholderStyle}
-                  source={{ uri: `${item.image_url}` }}
+                  source={{ uri: `${config.IMAGES_BASE_URL[0]}${item.image_url}` }}
                   containerStyle={{
                     ...theme.viewStyles.card(0, 0),
                     elevation: 10,
@@ -651,7 +658,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           renderItem={({ item, index }) => {
             return renderCatalogCard(
               item.title,
-              `${item.image_url}`,
+              `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
               () =>
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
@@ -889,12 +896,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       <>
         <Input
+          onSubmitEditing={() => {
+            if (searchText.length > 2) {
+              props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
+            }
+          }}
           value={searchText}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => {
             setSearchFocused(false);
             setMedicineList([]);
             setSearchText('');
+            setsearchSate('success');
           }}
           onChangeText={(value) => {
             onSearchMedicine(value);
@@ -987,7 +1000,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           Keyboard.dismiss();
         }}
         style={[
-          isSearchFocused
+          searchText.length > 2
             ? {
                 height: '100%',
                 width: '100%',
@@ -1015,17 +1028,17 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         {renderOfferBanner()}
         {renderUploadPrescriptionSection()}
         {renderYourOrders()}
-        {!loading ? (
-          <>
-            {renderShopByHealthAreas()}
-            {renderDealsOfTheDay()}
-            {renderHotSellers()}
-            {renderShopByCategory()}
-            {renderShopByBrand()}
-          </>
-        ) : (
-          renderSectionLoader()
-        )}
+        {loading
+          ? renderSectionLoader()
+          : !error && (
+              <>
+                {renderShopByHealthAreas()}
+                {renderDealsOfTheDay()}
+                {renderHotSellers()}
+                {renderShopByCategory()}
+                {renderShopByBrand()}
+              </>
+            )}
         {renderNeedHelp()}
       </TouchableOpacity>
     );
@@ -1041,7 +1054,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           style={{ flex: 1 }}
           bounces={false}
           stickyHeaderIndices={[1]}
-          contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
+          // contentContainerStyle={[isSearchFocused ? { flex: 1 } : {}]}
+          contentContainerStyle={[
+            isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
+          ]}
         >
           <Text
             style={{
@@ -1062,7 +1078,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
             {renderSearchBarAndSuggestions()}
           </View>
-          <View style={[isSearchFocused ? { height: 0 } : {}]}>{renderSections()}</View>
+          <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>
+            {renderSections()}
+          </View>
         </ScrollView>
       </SafeAreaView>
       {renderEPrescriptionModal()}
