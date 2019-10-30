@@ -264,6 +264,57 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
         }
         break;
 
+      case 'call_started':
+        {
+          InCallManager.startRingtone('_BUNDLE_');
+          InCallManager.start({ media: 'audio' }); // audio/video, default: audio
+          aphConsole.log('call_started');
+
+          let doctorName = data.doctorName;
+          let userName = data.patientName;
+
+          showAphAlert!({
+            title: `Hi ${userName} :)`,
+            description: `Dr. ${doctorName} is waiting for your call response. Please proceed to the Consult Room`,
+            unDismissable: true,
+            children: (
+              <View
+                style={{
+                  flexDirection: 'row',
+                  marginHorizontal: 20,
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-end',
+                  marginVertical: 18,
+                }}
+              >
+                <TouchableOpacity
+                  style={styles.claimStyles}
+                  onPress={() => {
+                    hideAphAlert && hideAphAlert();
+                    InCallManager.stopRingtone();
+                    InCallManager.stop();
+                  }}
+                >
+                  <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.rescheduletyles}
+                  onPress={() => {
+                    aphConsole.log('data.appointmentId', data.appointmentId);
+                    aphConsole.log('data.callType', data.callType);
+                    getAppointmentData(data.appointmentId, notificationType, data.callType);
+                  }}
+                >
+                  <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
+                    {'CONSULT ROOM'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ),
+          });
+        }
+        break;
+
       default:
         break;
     }
