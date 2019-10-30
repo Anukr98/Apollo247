@@ -104,6 +104,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 12,
       fontWeight: 600,
       padding: 12,
+      color: '#02475b',
       '& ol': {
         padding: 0,
         paddingLeft: 18,
