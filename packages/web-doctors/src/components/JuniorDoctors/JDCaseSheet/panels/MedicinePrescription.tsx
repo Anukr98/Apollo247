@@ -784,11 +784,11 @@ export const MedicinePrescription: React.FC = () => {
         durationErr: false,
         dosageErr: true,
       });
-    } /* else if (daySlotsSelected.length === 0) {
+    } /* else if (isTobeTakenSelected.length === 0) {
       setErrorState({
         ...errorState,
-        daySlotErr: true,
-        tobeTakenErr: false,
+        tobeTakenErr: true,
+        daySlotErr: false,
         durationErr: false,
         dosageErr: false,
       });
@@ -804,11 +804,11 @@ export const MedicinePrescription: React.FC = () => {
         tobeTakenErr: false,
         dosageErr: false,
       });
-    } else if (isTobeTakenSelected.length === 0) {
+    } else if (daySlotsSelected.length === 0) {
       setErrorState({
         ...errorState,
-        tobeTakenErr: true,
-        daySlotErr: false,
+        daySlotErr: true,
+        tobeTakenErr: false,
         durationErr: false,
         dosageErr: false,
       });
