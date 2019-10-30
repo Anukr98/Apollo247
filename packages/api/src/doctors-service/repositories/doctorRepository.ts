@@ -170,7 +170,14 @@ export class DoctorRepository extends Repository<Doctor> {
     if (!docIds.includes(a.id) && docIds.includes(b.id) && b.doctorType != DoctorType.PAYROLL)
       return 1;
 
-    //same city doctors on next (location logic is not yet finalized)
+    //same city apollo doctors on next, prior to other city apollo doctors
+    // if (userCity != '') {
+    //   console.log(a.doctorHospital[0].facility.city);
+    //   const aDoctorCity = a.doctorHospital[0].facility.city.toLowerCase();
+    //   const bDoctorCity = b.doctorHospital[0].facility.city.toLowerCase();
+    //   if (aDoctorCity == userCity.toLowerCase() && bDoctorCity != userCity.toLowerCase()) return -1;
+    //   if (aDoctorCity != userCity.toLowerCase() && bDoctorCity == userCity.toLowerCase()) return 1;
+    // }
 
     //payroll doctors at last
     if (a.doctorType != DoctorType.PAYROLL && b.doctorType == DoctorType.PAYROLL) return -1;
