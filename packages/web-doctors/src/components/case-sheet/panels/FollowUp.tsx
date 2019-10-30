@@ -325,6 +325,9 @@ export const FollowUp: React.FC = () => {
   useEffect(() => {
     consultTypeData[0] = consultType;
     setConsultTypeData(consultTypeData);
+    if (shouldFollowUp && consultType === '') {
+      setConsultType('ONLINE');
+    }
 
     followUp[0] = shouldFollowUp;
     setFollowUp(followUp);
