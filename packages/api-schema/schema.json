@@ -497,6 +497,16 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "geolocation",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "Geolocation",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -1189,6 +1199,26 @@
                   "ofType": null
                 },
                 "defaultValue": null
+              },
+              {
+                "name": "callType",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "DOCTOR_CALL_TYPE",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "doctorType",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "DOCTOR_TYPE",
+                  "ofType": null
+                },
+                "defaultValue": null
               }
             ],
             "type": {
@@ -1211,8 +1241,8 @@
               "kind": "NON_NULL",
               "name": null,
               "ofType": {
-                "kind": "SCALAR",
-                "name": "Boolean",
+                "kind": "OBJECT",
+                "name": "ApptNotificationResult",
                 "ofType": null
               }
             },
@@ -3852,11 +3882,11 @@
             "defaultValue": null
           },
           {
-            "name": "location",
+            "name": "geolocation",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
+              "kind": "INPUT_OBJECT",
+              "name": "Geolocation",
               "ofType": null
             },
             "defaultValue": null
@@ -3922,6 +3952,45 @@
               "kind": "SCALAR",
               "name": "Int",
               "ofType": null
+            },
+            "defaultValue": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "INPUT_OBJECT",
+        "name": "Geolocation",
+        "description": null,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "latitude",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "longitude",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              }
             },
             "defaultValue": null
           }
@@ -10484,6 +10553,52 @@
         "possibleTypes": null
       },
       {
+        "kind": "ENUM",
+        "name": "DOCTOR_CALL_TYPE",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "AUDIO",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "VIDEO",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "DOCTOR_TYPE",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "SENIOR",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "JUNIOR",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
         "kind": "OBJECT",
         "name": "NotificationResult",
         "description": null,
@@ -10498,6 +10613,49 @@
               "ofType": {
                 "kind": "SCALAR",
                 "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "ApptNotificationResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "status",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "currentTime",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
                 "ofType": null
               }
             },
