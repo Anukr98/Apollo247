@@ -5,6 +5,8 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 import { CaseSheetLastView } from './CasesheetLastView';
 import moment from 'moment';
 import { MEDICINE_TO_BE_TAKEN } from 'graphql/types/globalTypes';
+import _startCase from 'lodash/startCase';
+import _toLower from 'lodash/toLower';
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from 'graphql/types/GetCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -171,6 +173,7 @@ export const CasesheetView: React.FC = (props) => {
     followUp,
     otherInstructions,
     followUpAfterInDays,
+    followUpDate,
   } = useContext(CaseSheetContext);
 
   const getAge = (date: string) => {
@@ -181,9 +184,9 @@ export const CasesheetView: React.FC = (props) => {
     }
   };
 
-  const convertToCase = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
+  const convertMedicineTobeTaken = (medicineTiming: MEDICINE_TO_BE_TAKEN | null) => {
     if (medicineTiming) {
-      let timing = medicineTiming.toLocaleLowerCase();
+      let timing = _toLower(medicineTiming);
       if (timing.includes('_')) {
         timing = timing.replace('_', ' ');
       }
@@ -204,6 +207,16 @@ export const CasesheetView: React.FC = (props) => {
       symptoms.length > 0
     );
   };
+
+  const getFollowUpData = () => {
+    return `Follow up (${_startCase(_toLower(consultType[0]))}) ${
+      followUpAfterInDays[0] === '9'
+        ? `on ${moment(followUpDate[0]).format('DD/MM/YYYY')}`
+        : `after ${followUpAfterInDays[0]} days`
+    }
+    `;
+  };
+
   const medicineHtml = medicinePrescription!.map(
     (
       prescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription,
@@ -227,9 +240,11 @@ export const CasesheetView: React.FC = (props) => {
               prescription.medicineTimings && prescription.medicineTimings.length > 0
                 ? `(${prescription.medicineTimings.map((timing: any) => timing)})`
                 : ''
-            } ${duration} ${
+            } ${duration}${
               prescription.medicineToBeTaken && prescription.medicineToBeTaken.length > 0
-                ? `; ${prescription.medicineToBeTaken.map((timing: any) => convertToCase(timing))}`
+                ? `; ${prescription.medicineToBeTaken.map((timing: any) =>
+                    convertMedicineTobeTaken(timing)
+                  )}`
                 : ''
             }`}
           </span>
@@ -374,7 +389,6 @@ export const CasesheetView: React.FC = (props) => {
           ) : null}
           {isPageContentFull() ? null : (
             <>
-              {' '}
               {otherInstructions && otherInstructions.length > 0 ? (
                 <>
                   <div className={classes.sectionHeader}>Advice Given</div>
@@ -388,9 +402,7 @@ export const CasesheetView: React.FC = (props) => {
               {followUp.length > 0 && followUp[0] && parseInt(followUpAfterInDays[0]) > 0 ? (
                 <>
                   <div className={classes.sectionHeader}>Follow Up</div>
-                  <div className={classes.followUpContent}>
-                    Follow up ({consultType[0]}) after {followUpAfterInDays[0]} days
-                  </div>
+                  <div className={classes.followUpContent}>{getFollowUpData()}</div>
                 </>
               ) : null}
             </>
@@ -409,7 +421,7 @@ export const CasesheetView: React.FC = (props) => {
       {isPageContentFull() &&
       ((followUp.length > 0 && followUp[0]) ||
         (otherInstructions && otherInstructions.length > 0)) ? (
-        <CaseSheetLastView />
+        <CaseSheetLastView getFollowUpData={getFollowUpData} />
       ) : null}
     </div>
   );

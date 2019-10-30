@@ -329,7 +329,7 @@ export const FollowUp: React.FC = () => {
     followUp[0] = shouldFollowUp;
     setFollowUp(followUp);
 
-    followUpAfterInDays[0] = `${followUpDays === 9 ? 'Custom' : followUpDays}`;
+    followUpAfterInDays[0] = `${followUpDays}`;
     setFollowUpAfterInDays(followUpAfterInDays);
 
     followUpDate[0] = `${followUpDays === 9 ? selectedDate : addDays(new Date(), followUpDays)}`;
