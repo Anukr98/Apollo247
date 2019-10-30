@@ -30,9 +30,9 @@ export const CommonLogEvent = (stringName: string, parameterName: string) => {
 };
 
 export const CommonScreenLog = (stringName: string, parameterName: string) => {
-  AsyncStorage.setItem('setCurrentName', stringName);
-
   try {
+    AsyncStorage.setItem('setCurrentName', stringName);
+
     firebase.analytics().setCurrentScreen(stringName, parameterName);
   } catch (error) {
     aphConsole.log('CommonScreenLog error', error);
