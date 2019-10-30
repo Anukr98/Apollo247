@@ -16,8 +16,6 @@ export const UserCard: React.FC = () => {
     CaseSheetContext
   );
 
-  console.log(jrdName, jrdSubmitDate, 'jrd details.....');
-
   const userCardStrip = [];
   const displayId =
     appointmentInfo && appointmentInfo !== null && appointmentInfo.displayId !== null
@@ -89,6 +87,7 @@ export const UserCard: React.FC = () => {
         <Typography variant="h6" color="textSecondary" component="h6">
           Appt ID: {displayId}
         </Typography>
+        <Divider />
         <Typography variant="h6" color="textSecondary" component="h6">
           Submitted by Dr. {jrdName} on {format(new Date(jrdSubmitDate), 'dd/MM/yyyy hh:mm:ss')}
         </Typography>
