@@ -28,13 +28,24 @@ export const searchDoctorAndSpecialtyByNameTypeDefs = gql`
     otherDoctorsNextAvailability: [DoctorSlotAvailability]
   }
 
+  input Geolocation {
+    latitude: Float!
+    longitude: Float!
+  }
+
   extend type Query {
     SearchDoctorAndSpecialtyByName(
       searchText: String!
       patientId: ID
+      geolocation: Geolocation
     ): SearchDoctorAndSpecialtyByNameResult
   }
 `;
+
+type Geolocation = {
+  latitude: number;
+  longitude: number;
+};
 
 type PossibleSearchMatches = {
   doctors?: Doctor[];
@@ -53,7 +64,7 @@ type SearchDoctorAndSpecialtyByNameResult = {
 
 const SearchDoctorAndSpecialtyByName: Resolver<
   null,
-  { searchText: string; patientId: string },
+  { searchText: string; patientId: string; geolocation: Geolocation },
   DoctorsServiceContext,
   SearchDoctorAndSpecialtyByNameResult
 > = async (parent, args, { doctorsDb, consultsDb }) => {

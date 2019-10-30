@@ -45,6 +45,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     minimum: Int
     maximum: Int
   }
+
   input FilterDoctorInput {
     patientId: ID
     specialty: ID
@@ -57,7 +58,7 @@ export const getDoctorsBySpecialtyAndFiltersTypeDefs = gql`
     fees: [Range]
     gender: [Gender]
     language: [String]
-    location: String
+    geolocation: Geolocation
     consultMode: ConsultMode
   }
   extend type Query {
@@ -81,6 +82,11 @@ export type Range = {
   maximum: number;
 };
 
+type Geolocation = {
+  latitude: number;
+  longitude: number;
+};
+
 export type FilterDoctorInput = {
   patientId: string;
   specialty: string;
@@ -93,7 +99,7 @@ export type FilterDoctorInput = {
   fees: Range[];
   gender: string[];
   language: string[];
-  location: string;
+  geolocation: Geolocation;
   consultMode: ConsultMode;
 };
 
