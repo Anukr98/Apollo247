@@ -36,7 +36,7 @@ export class FacilityRepository extends Repository<Facility> {
 
     //get distances of facilities from user geolocation using google maps distance matrix api
     const distancesPromise = await fetch(
-      `${ApiConstants.GOOGLE_MAPS_DISTANCE_MATRIX_URL}?origins=${userLatLong}&destinations=${pipedFacilityLatLongs}&mode=driving&language=pl-PL&sensor=true&key=AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps`
+      `${ApiConstants.GOOGLE_MAPS_DISTANCE_MATRIX_URL}?origins=${userLatLong}&destinations=${pipedFacilityLatLongs}&mode=driving&language=pl-PL&sensor=true&key=${process.env.GOOGLE_MAPS_KEY}`
     );
 
     type GoogleMapsValue = { text: string; value: string };
