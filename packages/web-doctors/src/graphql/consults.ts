@@ -123,8 +123,16 @@ export const UPLOAD_CHAT_DOCUMENT = gql`
 `;
 
 export const SEND_CALL_NOTIFICATION = gql`
-  query SendCallNotification($appointmentId: String) {
-    sendCallNotification(appointmentId: $appointmentId) {
+  query SendCallNotification(
+    $appointmentId: String
+    $callType: DOCTOR_CALL_TYPE
+    $doctorType: DOCTOR_TYPE
+  ) {
+    sendCallNotification(
+      appointmentId: $appointmentId
+      callType: $callType
+      doctorType: $doctorType
+    ) {
       status
     }
   }

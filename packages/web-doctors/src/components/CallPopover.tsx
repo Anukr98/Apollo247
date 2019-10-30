@@ -1270,7 +1270,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     !isClickedOnEdit
       ? true
       : false;
-  console.log(props.appointmentStatus, props.sentToPatient, showCallMoreBtns);
+  // console.log(props.appointmentStatus, props.sentToPatient, showCallMoreBtns);
   return (
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
@@ -1396,15 +1396,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               ) : (
                 <Button
                   className={classes.consultButton}
-                  disabled={
-                    startAppointmentButton ||
-                    disableOnTransfer ||
-                    (appointmentInfo!.appointmentState !== 'NEW' &&
-                      appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                      appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                      appointmentInfo!.status !== STATUS.PENDING)
-                  }
+                  // disabled={
+                  //   startAppointmentButton ||
+                  //   disableOnTransfer ||
+                  //   (appointmentInfo!.appointmentState !== 'NEW' &&
+                  //     appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                  //     appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                  //   (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                  //     appointmentInfo!.status !== STATUS.PENDING)
+                  // }
                   onClick={() => {
                     !props.startAppointment ? onStartConsult() : onStopConsult();
                     !props.startAppointment ? startInterval(900) : stopInterval();
