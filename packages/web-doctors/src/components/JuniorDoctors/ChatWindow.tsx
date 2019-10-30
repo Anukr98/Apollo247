@@ -24,7 +24,7 @@ const client = new AphStorageClient(
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      padding: '10px 25px 0 25px',
+      padding: '10px 15px 20px 15px',
     },
     container: {
       position: 'relative',
@@ -39,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
     },
     customScroll: {
-      padding: '0 20px',
+      padding: '0 10px',
       paddingBottom: 20,
     },
     petient: {
@@ -73,7 +73,7 @@ const useStyles = makeStyles((theme: Theme) => {
     sendMsgBtn: {
       backgroundColor: '#F9F9F9',
       color: '#000',
-      width: '30 %',
+      width: '30%',
       align: 'right',
     },
     inputWidth: {
@@ -176,7 +176,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     chatImgBubble: {
       padding: 0,
-      overflow: 'hidden',
       '& img': {
         maxWidth: '100%',
         verticalAlign: 'middle',
@@ -226,8 +225,8 @@ const useStyles = makeStyles((theme: Theme) => {
     customScrollWrap: {
       marginBottom: -37,
       '& >div': {
-        top: '10px !important',
-        bottom: '10px !important',
+        top: '20px !important',
+        bottom: '0 !important',
       },
     },
     chatSendBtn: {
@@ -244,6 +243,12 @@ const useStyles = makeStyles((theme: Theme) => {
       '&:focus': {
         backgroundColor: 'transparent',
       },
+    },
+    imageUpload: {
+      overflow: 'hidden',
+      borderRadius: 10,
+      width: 100,
+      height: 100,
     },
   };
 });
@@ -604,13 +609,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <div style={{ width: '50px', height: '50px' }}>
+                <div className={classes.imageUpload}>
                   <a href={rowData.url} target="_blank">
-                    <img
-                      style={{ width: '50px', height: '50px' }}
-                      src={rowData.url}
-                      alt={rowData.url}
-                    />
+                    <img src={rowData.url} alt={rowData.url} />
                   </a>
                 </div>
               ) : (
@@ -729,7 +730,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
             <Scrollbars
               className={classes.customScrollWrap}
               autoHide={true}
-              style={{ height: 'calc(100vh - 344px' }}
+              style={{ height: 'calc(100vh - 324px' }}
             >
               <div className={classes.customScroll}>
                 {messagessHtml}

@@ -189,7 +189,6 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     contentGroup: {
       display: 'flex',
-      paddingBottom: 30,
       position: 'relative',
     },
     leftSection: {
@@ -212,10 +211,11 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#02475b',
     },
     blockBody: {
-      padding: '20px 5px 0 5px',
+      padding: '10px 5px 0 5px',
     },
     customScroll: {
-      padding: '10px 25px',
+      padding: '10px 15px',
+      paddingBottom: 20,
     },
     boxGroup: {
       boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.3)',
@@ -1208,7 +1208,7 @@ export const JDConsultRoom: React.FC = () => {
                     <div className={classes.blockGroup}>
                       <div className={classes.blockHeader}>Case Sheet</div>
                       <div className={`${classes.blockBody} ${classes.caseSheetBody}`}>
-                        <Scrollbars autoHide={false} style={{ height: 'calc(100vh - 270px' }}>
+                        <Scrollbars autoHide={false} style={{ height: 'calc(100vh - 230px' }}>
                           <div className={classes.customScroll}>
                             {casesheetInfo ? <CaseSheet /> : null}
                           </div>
