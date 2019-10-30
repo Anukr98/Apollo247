@@ -54,10 +54,7 @@ export class FacilityRepository extends Repository<Facility> {
 
     uniqueFacilities.forEach((facility) => {
       allExistingFacilities.forEach((existingFacility) => {
-        if (
-          this.getFacilityUniqueTerm(facility).toLowerCase() ==
-          this.getFacilityUniqueTerm(existingFacility).toLowerCase()
-        ) {
+        if (this.getFacilityUniqueTerm(facility) == this.getFacilityUniqueTerm(existingFacility)) {
           facility.id = existingFacility.id;
           facility.updatedDate = new Date();
           return;
