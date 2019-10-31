@@ -10,7 +10,7 @@ import {
 import { useApolloClient } from 'react-apollo-hooks';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import { useParams } from 'hooks/routerHooks';
-import { GET_CASESHEET } from 'graphql/profiles';
+import { GET_CASESHEET, CREATE_CASESHEET_FOR_SRD } from 'graphql/profiles';
 import {
   GetCaseSheet_getCaseSheet_patientDetails,
   GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis,
@@ -24,6 +24,14 @@ import { PastConsultation } from 'components/PatientLog/PatientDetailPanels/Past
 import { PatientDetailsUserCard } from 'components/PatientLog/PatientDetailsUserCard';
 //import { GetJuniorDoctorCaseSheet } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { GetCaseSheet } from 'graphql/types/GetCaseSheet';
+import { useMutation } from 'react-apollo-hooks';
+import { ApolloError } from 'apollo-client';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import {
+  CreateSeniorDoctorCaseSheet,
+  CreateSeniorDoctorCaseSheetVariables,
+} from 'graphql/types/CreateSeniorDoctorCaseSheet';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -228,7 +236,14 @@ export const PatientLogDetailsPage: React.FC = () => {
     isExpanded: boolean
   ) => setExpanded(isExpanded ? panelName : false);
   const client = useApolloClient();
-
+  const mutationCreateSrdCaseSheet = useMutation<
+    CreateSeniorDoctorCaseSheet,
+    CreateSeniorDoctorCaseSheetVariables
+  >(CREATE_CASESHEET_FOR_SRD, {
+    variables: {
+      appointmentId: params.appointmentId,
+    },
+  });
   useEffect(() => {
     client
       .query<GetCaseSheet>({
@@ -246,6 +261,26 @@ export const PatientLogDetailsPage: React.FC = () => {
           ? setPastAppointments((_data!.data!.getCaseSheet!
               .pastAppointments as unknown) as GetCaseSheet_getCaseSheet_pastAppointments[])
           : setPastAppointments([]);
+      }).catch((error: ApolloError) => {
+        const networkErrorMessage = error.networkError ? error.networkError.message : null;
+        const allMessages = error.graphQLErrors
+          .map((e) => e.message)
+          .concat(networkErrorMessage ? networkErrorMessage : []);
+        const isCasesheetNotExists = allMessages.includes(AphErrorMessages.NO_CASESHEET_EXIST);
+        if (isCasesheetNotExists) {
+          console.log(error);
+          //setError('Creating Casesheet. Please wait....');
+          mutationCreateSrdCaseSheet()
+            .then((response) => {
+              window.location.href = clientRoutes.PatientLogDetailsPage(
+                appointmentId,
+                params.consultscount
+              );
+            })
+            .catch((e: ApolloError) => {
+              alert('Unable to load Consult.');
+            });
+        }
       });
   }, [appointmentId]);
 
