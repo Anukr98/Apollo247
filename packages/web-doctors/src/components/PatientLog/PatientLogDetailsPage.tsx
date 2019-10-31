@@ -261,7 +261,8 @@ export const PatientLogDetailsPage: React.FC = () => {
           ? setPastAppointments((_data!.data!.getCaseSheet!
               .pastAppointments as unknown) as GetCaseSheet_getCaseSheet_pastAppointments[])
           : setPastAppointments([]);
-      }).catch((error: ApolloError) => {
+      })
+      .catch((error: ApolloError) => {
         const networkErrorMessage = error.networkError ? error.networkError.message : null;
         const allMessages = error.graphQLErrors
           .map((e) => e.message)

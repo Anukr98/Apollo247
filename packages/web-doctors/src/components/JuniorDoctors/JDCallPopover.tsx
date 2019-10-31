@@ -30,7 +30,12 @@ import {
   INITIATE_TRANSFER_APPONITMENT,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
 } from 'graphql/profiles';
-import { TRANSFER_INITIATED_TYPE, STATUS, DOCTOR_CALL_TYPE, DOCTOR_TYPE } from 'graphql/types/globalTypes';
+import {
+  TRANSFER_INITIATED_TYPE,
+  STATUS,
+  DOCTOR_CALL_TYPE,
+  DOCTOR_TYPE,
+} from 'graphql/types/globalTypes';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { CircularProgress } from '@material-ui/core';
@@ -655,6 +660,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
+  const patientConsultStarted = '^^#PatientConsultStarted';
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
@@ -759,7 +765,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       //duration: `10:00`,
       isTyping: true,
     };
@@ -775,7 +781,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     );
     stopIntervalTimer();
-    sendStopCallNotificationFn(getCookieValue() === 'videocall' ? DOCTOR_CALL_TYPE.VIDEO : DOCTOR_CALL_TYPE.AUDIO);
+    sendStopCallNotificationFn(
+      getCookieValue() === 'videocall' ? DOCTOR_CALL_TYPE.VIDEO : DOCTOR_CALL_TYPE.AUDIO
+    );
 
     //setIsVideoCall(false);
   };
@@ -856,7 +864,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           channel: channel,
           storeInHistory: false,
         },
-        (status, response) => { }
+        (status, response) => {}
       );
     }, 10);
   };
@@ -1068,7 +1076,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           channel: channel,
           storeInHistory: true,
         },
-        (status, response) => { }
+        (status, response) => {}
       );
       unSubscribeBrowserButtonsListener();
     }
@@ -1115,7 +1123,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       withPresence: true,
     });
     pubnub.addListener({
-      status: (statusEvent) => { },
+      status: (statusEvent) => {},
       message: (message) => {
         if (
           !showVideoChat &&
@@ -1125,7 +1133,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== acceptcallMsg &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
-          message.message.message !== followupconsult
+          message.message.message !== followupconsult &&
+          message.message.message !== patientConsultStarted
         ) {
           setIsNewMsg(true);
         } else {
@@ -1169,7 +1178,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
   };
   const onStopConsult = () => {
@@ -1195,7 +1204,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => { }
+      (status, response) => {}
     );
 
     // let folloupDateTime = '';
@@ -1295,7 +1304,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               channel: channel,
               storeInHistory: true,
             },
-            (status, response) => { }
+            (status, response) => {}
           );
           clearTransferField();
           setIsTransferPopoverOpen(false);
@@ -1329,7 +1338,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       if (diff.hours() <= 0) {
         return `| Time to consult ${
           diff.minutes().toString().length < 2 ? '0' + diff.minutes() : diff.minutes()
-          } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
+        } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
       }
     return '';
   };
@@ -1342,8 +1351,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           <div className={classes.consultDur}>
             {startAppointment
               ? `Consultation Duration ${
-              minutes.toString().length < 2 ? '0' + minutes : minutes
-              } : ${seconds.toString().length < 2 ? '0' + seconds : seconds}`
+                  minutes.toString().length < 2 ? '0' + minutes : minutes
+                } : ${seconds.toString().length < 2 ? '0' + seconds : seconds}`
               : getTimerText()}
           </div>
         </div>
@@ -1376,23 +1385,23 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               {props.saving && <CircularProgress className={classes.loading} />} }
             </span>
           ) : (
-              <AphButton
-                className={classes.consultButton}
-                //disabled={disableStartConsult}
-                onClick={() => {
-                  !startAppointment ? onStartConsult() : onStopConsult();
-                  !startAppointment ? startInterval(900) : stopInterval();
-                  setStartAppointment(!startAppointment);
-                  props.createSessionAction();
-                  setCaseSheetEdit(true);
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                  <path fill="#fff" d="M8 5v14l11-7z" />
-                </svg>
-                {startAppointment ? 'End Consult' : 'Start Consult'}
-              </AphButton>
-            )}
+            <AphButton
+              className={classes.consultButton}
+              //disabled={disableStartConsult}
+              onClick={() => {
+                !startAppointment ? onStartConsult() : onStopConsult();
+                !startAppointment ? startInterval(900) : stopInterval();
+                setStartAppointment(!startAppointment);
+                props.createSessionAction();
+                setCaseSheetEdit(true);
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path fill="#fff" d="M8 5v14l11-7z" />
+              </svg>
+              {startAppointment ? 'End Consult' : 'Start Consult'}
+            </AphButton>
+          )}
           <AphButton
             className={classes.iconButton}
             aria-describedby={id}
@@ -1757,8 +1766,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     ))}
                   </ul>
                 ) : (
-                    'No Doctors found'
-                  )}
+                  'No Doctors found'
+                )}
                 <h6> Speciality(s)</h6>
                 {filterSpeciality!.length > 0 ? (
                   <ul>
@@ -1775,8 +1784,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     ))}
                   </ul>
                 ) : (
-                    'No Speciality found'
-                  )}
+                  'No Speciality found'
+                )}
               </span>
             )}
           </div>

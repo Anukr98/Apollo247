@@ -588,6 +588,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
+  const patientConsultStarted = '^^#PatientConsultStarted';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
@@ -1005,7 +1006,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult &&
-          message.message.message !== startConsult
+          message.message.message !== startConsult &&
+          message.message.message !== patientConsultStarted
         ) {
           setIsNewMsg(true);
         } else {
