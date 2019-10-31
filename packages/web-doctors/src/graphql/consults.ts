@@ -134,7 +134,7 @@ export const SEND_CALL_NOTIFICATION = gql`
       doctorType: $doctorType
     ) {
       status
-      callDetails{
+      callDetails {
         id
       }
     }
@@ -142,14 +142,9 @@ export const SEND_CALL_NOTIFICATION = gql`
 `;
 
 export const END_CALL_NOTIFICATION = gql`
-  query EndCallNotification (
-    $appointmentCallId: String
-  ) {
-    endCallNotification(
-      appointmentCallId: $appointmentCallId
-    ) {
+  query EndCallNotification($appointmentCallId: String) {
+    endCallNotification(appointmentCallId: $appointmentCallId) {
       status
     }
   }
 `;
-

@@ -616,8 +616,14 @@ export const ConsultTabs: React.FC = () => {
           callType: callType,
           doctorType: DOCTOR_CALL_TYPE.SENIOR,
         },
-      }).then((_data) => {
-        if(_data && _data.data && _data.data.sendCallNotification && _data.data.sendCallNotification.status){
+      })
+      .then((_data) => {
+        if (
+          _data &&
+          _data.data &&
+          _data.data.sendCallNotification &&
+          _data.data.sendCallNotification.status
+        ) {
           setcallId(_data.data.sendCallNotification.callDetails.id);
         }
       })
