@@ -39,12 +39,12 @@ export const getNotificationsTypeDefs = gql`
     INITIATE_TRANSFER
   }
 
-  enum DOCTOR_CALL_TYPE {
+  enum APPT_CALL_TYPE {
     AUDIO
     VIDEO
   }
 
-  enum DOCTOR_TYPE {
+  enum DOCTOR_CALL_TYPE {
     SENIOR
     JUNIOR
   }
@@ -85,12 +85,12 @@ export enum NotificationType {
   MEDICINE_CART_READY = 'MEDICINE_CART_READY',
 }
 
-export enum DOCTOR_CALL_TYPE {
+export enum APPT_CALL_TYPE {
   AUDIO = 'AUDIO',
   VIDEO = 'VIDEO',
 }
 
-export enum DOCTOR_TYPE {
+export enum DOCTOR_CALL_TYPE {
   SENIOR = 'SENIOR',
   JUNIOR = 'JUNIOR',
 }
@@ -121,8 +121,9 @@ export async function sendCallsNotification(
   patientsDb: Connection,
   consultsDb: Connection,
   doctorsDb: Connection,
-  callType: DOCTOR_CALL_TYPE,
-  doctorType: DOCTOR_TYPE
+  callType: APPT_CALL_TYPE,
+  doctorType: DOCTOR_CALL_TYPE,
+  appointmentCallId: string
 ) {
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointment = await appointmentRepo.findById(pushNotificationInput.appointmentId);
@@ -131,7 +132,7 @@ export async function sendCallsNotification(
   //get doctor details
   const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
 
-  if (doctorType == DOCTOR_TYPE.JUNIOR) {
+  if (doctorType == DOCTOR_CALL_TYPE.JUNIOR) {
     const consultQueueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
     const queueDetails = await consultQueueRepo.findByAppointmentId(
       pushNotificationInput.appointmentId
@@ -189,6 +190,8 @@ export async function sendCallsNotification(
       doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
       sound: 'default',
       callType,
+      appointmentCallId,
+      doctorType,
     },
   };
 
