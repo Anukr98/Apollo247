@@ -1,11 +1,11 @@
 import React, { Fragment, useContext } from 'react';
-import { Typography, List, ListItem } from '@material-ui/core';
+import { Typography, List, ListItem, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_patientDetails } from 'graphql/types/GetCaseSheet';
 import { Gender } from 'graphql/types/globalTypes';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme: Theme) => ({
   container: {
     display: 'flex',
     flexFlow: 'row',
@@ -33,6 +33,30 @@ const useStyles = makeStyles(() => ({
     width: '100%',
     display: 'block',
   },
+  historyList: {
+    fontSize: 15,
+    fontWeight: 500,
+    color: '#01475b !important',
+    padding: 12,
+  },
+  drugAllergies: {
+    width: '45%',
+    display: 'inline-block',
+    paddingRight: 10,
+    [theme.breakpoints.down('xs')]: {
+      width: '100%',
+      paddingRight: 0,
+    },
+  },
+  dietAllergies: {
+    width: '45%',
+    display: 'inline-block',
+    float: 'right',
+    [theme.breakpoints.down('xs')]: {
+      width: '100%',
+      paddingRight: 0,
+    },
+  },
 }));
 
 interface LifeStyleProps {
@@ -57,17 +81,15 @@ export const PatientDetailLifeStyle: React.FC<LifeStyleProps> = (props) => {
               Patient’s Past Medical History
             </Typography>
             <Typography component="div" className={classes.content}>
-              <ListItem>
-                <List>
-                  {patientDetails &&
-                  patientDetails.patientMedicalHistory &&
-                  patientDetails.patientMedicalHistory.pastMedicalHistory
-                    ? patientDetails &&
-                      patientDetails.patientMedicalHistory &&
-                      patientDetails.patientMedicalHistory.pastMedicalHistory
-                    : 'None'}
-                </List>
-              </ListItem>
+              <div className={classes.historyList}>
+                {patientDetails &&
+                patientDetails.patientMedicalHistory &&
+                patientDetails.patientMedicalHistory.pastMedicalHistory
+                  ? patientDetails &&
+                    patientDetails.patientMedicalHistory &&
+                    patientDetails.patientMedicalHistory.pastMedicalHistory
+                  : 'None'}
+              </div>
             </Typography>
           </Typography>
         }
@@ -77,57 +99,51 @@ export const PatientDetailLifeStyle: React.FC<LifeStyleProps> = (props) => {
               Patient's Past Surgical History
             </Typography>
             <Typography component="div" className={classes.content}>
-              <ListItem>
-                <List>
-                  {patientDetails &&
-                  patientDetails.patientMedicalHistory &&
-                  patientDetails.patientMedicalHistory.pastSurgicalHistory
-                    ? patientDetails &&
-                      patientDetails.patientMedicalHistory &&
-                      patientDetails.patientMedicalHistory.pastSurgicalHistory
-                    : 'None'}
-                </List>
-              </ListItem>
+              <div className={classes.historyList}>
+                {patientDetails &&
+                patientDetails.patientMedicalHistory &&
+                patientDetails.patientMedicalHistory.pastSurgicalHistory
+                  ? patientDetails &&
+                    patientDetails.patientMedicalHistory &&
+                    patientDetails.patientMedicalHistory.pastSurgicalHistory
+                  : 'None'}
+              </div>
             </Typography>
           </Typography>
         }
         {
-          <Typography className={classes.fullRow} component="div">
+          <Typography className={classes.drugAllergies} component="div">
             <Typography component="h5" variant="h5" className={classes.header}>
               Drug Allergies
             </Typography>
             <Typography component="div" className={classes.content}>
-              <ListItem>
-                <List>
-                  {patientDetails &&
-                  patientDetails.patientMedicalHistory &&
-                  patientDetails.patientMedicalHistory.drugAllergies
-                    ? patientDetails &&
-                      patientDetails.patientMedicalHistory &&
-                      patientDetails.patientMedicalHistory.drugAllergies
-                    : 'None'}
-                </List>
-              </ListItem>
+              <div className={classes.historyList}>
+                {patientDetails &&
+                patientDetails.patientMedicalHistory &&
+                patientDetails.patientMedicalHistory.drugAllergies
+                  ? patientDetails &&
+                    patientDetails.patientMedicalHistory &&
+                    patientDetails.patientMedicalHistory.drugAllergies
+                  : 'None'}
+              </div>
             </Typography>
           </Typography>
         }
         {
-          <Typography className={classes.fullRow} component="div">
+          <Typography className={classes.dietAllergies} component="div">
             <Typography component="h5" variant="h5" className={classes.header}>
               Diet Allergies/Restrictions
             </Typography>
             <Typography component="div" className={classes.content}>
-              <ListItem>
-                <List>
-                  {patientDetails &&
-                  patientDetails.patientMedicalHistory &&
-                  patientDetails.patientMedicalHistory.dietAllergies
-                    ? patientDetails &&
-                      patientDetails.patientMedicalHistory &&
-                      patientDetails.patientMedicalHistory.dietAllergies
-                    : 'None'}
-                </List>
-              </ListItem>
+              <div className={classes.historyList}>
+                {patientDetails &&
+                patientDetails.patientMedicalHistory &&
+                patientDetails.patientMedicalHistory.dietAllergies
+                  ? patientDetails &&
+                    patientDetails.patientMedicalHistory &&
+                    patientDetails.patientMedicalHistory.dietAllergies
+                  : 'None'}
+              </div>
             </Typography>
           </Typography>
         }
