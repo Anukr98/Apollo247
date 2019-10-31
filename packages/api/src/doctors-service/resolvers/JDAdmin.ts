@@ -21,7 +21,7 @@ export const JDTypeDefs = gql`
   }
 
   extend type Query {
-    getJuniorDoctorDashboard(fromDate: Date, toDate: Date): DashoardData
+    getJuniorDoctorDashboard(fromDate: Date, toDate: Date, offset: Int, limit: Int): DashoardData
   }
 `;
 
@@ -37,7 +37,7 @@ type DashoardData = {
 };
 const getJuniorDoctorDashboard: Resolver<
   null,
-  { fromDate: Date; toDate: Date },
+  { fromDate: Date; toDate: Date; offset: Number; limit: Number },
   DoctorsServiceContext,
   DashoardData
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
