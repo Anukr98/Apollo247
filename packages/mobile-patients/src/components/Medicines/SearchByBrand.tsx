@@ -31,6 +31,7 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { Input } from 'react-native-elements';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -337,6 +338,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       <MedicineCard
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
+          CommonLogEvent('SEARCH_BY_BRAND', 'Save past Search');
           savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
             handleGraphQlError(e);
           });
@@ -354,12 +356,15 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         price={price}
         unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
         onPressAdd={() => {
+          CommonLogEvent('SEARCH_BY_BRAND', 'Add item to cart');
           onAddCartItem(medicine);
         }}
         onPressRemove={() => {
+          CommonLogEvent('SEARCH_BY_BRAND', 'Remove item from cart');
           onRemoveCartItem(medicine);
         }}
         onChangeUnit={(unit) => {
+          CommonLogEvent('SEARCH_BY_BRAND', 'Change unit in cart');
           onUpdateCartItem(medicine, unit);
         }}
         isCardExpanded={!!foundMedicineInCart}

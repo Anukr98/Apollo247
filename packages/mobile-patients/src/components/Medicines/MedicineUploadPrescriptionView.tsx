@@ -11,6 +11,7 @@ import { SelectEPrescriptionModal } from './SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from './UploadPrescriprionPopup';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -161,6 +162,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                 paddingHorizontal: 8,
               }}
               onPress={() => {
+                CommonLogEvent('MEDICINE_UPLOAD_PRESCRIPTION', `removePhysicalPrescription`);
                 removePhysicalPrescription && removePhysicalPrescription(item.title);
               }}
             >
