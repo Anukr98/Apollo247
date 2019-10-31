@@ -56,7 +56,6 @@ import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAnd
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
-import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -110,7 +109,6 @@ export enum AppRoutes {
   TestDetails = 'TestDetails',
   ManageProfile = 'ManageProfile',
   EditProfile = 'EditProfile',
-  ManageProfile = 'ManageProfile',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -284,9 +282,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.EditProfile]: {
     screen: EditProfile,
-  },
-  [AppRoutes.ManageProfile]: {
-    screen: ManageProfile,
   },
 };
 
