@@ -37,7 +37,7 @@ import {
   Gender,
   CASESHEET_STATUS,
   DOCTOR_CALL_TYPE,
-  DOCTOR_TYPE,
+  APPT_CALL_TYPE,
   Relation,
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
@@ -476,6 +476,7 @@ export const JDConsultRoom: React.FC = () => {
   const [lifeStyle, setLifeStyle] = useState<string>('');
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
+  const [callId, setcallId] = useState<string>('');
 
   /* case sheet data*/
   let assignedDoctorFirstName = '',
@@ -884,7 +885,7 @@ export const JDConsultRoom: React.FC = () => {
     }
   };*/
 
-  const sendCallNotificationFn = (callType: DOCTOR_CALL_TYPE) => {
+  const sendCallNotificationFn = (callType: APPT_CALL_TYPE) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -892,8 +893,12 @@ export const JDConsultRoom: React.FC = () => {
         variables: {
           appointmentId: appointmentId,
           callType: callType,
-          doctorType: DOCTOR_TYPE.JUNIOR,
+          doctorType: DOCTOR_CALL_TYPE.SENIOR,
         },
+      }).then((_data) => {
+        if(_data && _data!.data && _data!.data!.sendCallNotification && _data!.data!.sendCallNotification!.status){
+          setcallId(_data.data!.sendCallNotification!.callDetails.id);
+        }
       })
       .catch((error: ApolloError) => {
         console.log('Error in Call Notification', error.message);
@@ -1040,7 +1045,7 @@ export const JDConsultRoom: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
-      sendCallNotificationFn(flag ? DOCTOR_CALL_TYPE.VIDEO : DOCTOR_CALL_TYPE.AUDIO);
+      sendCallNotificationFn(flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO);
     }, 10);
   };
 
@@ -1230,6 +1235,7 @@ export const JDConsultRoom: React.FC = () => {
                     isAudioVideoCallEnded={(isAudioVideoCall: boolean) => {
                       setIsAuditoVideoCall(isAudioVideoCall);
                     }}
+                    callId={callId}
                   />
                 )}
                 <div className={classes.contentGroup}>

@@ -30,16 +30,18 @@ import {
   INITIATE_TRANSFER_APPONITMENT,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
 } from 'graphql/profiles';
-import { SEND_CALL_NOTIFICATION } from 'graphql/consults';
+import { END_CALL_NOTIFICATION } from 'graphql/consults';
 import {
   TRANSFER_INITIATED_TYPE,
-  STATUS,
-  DOCTOR_CALL_TYPE,
-  DOCTOR_TYPE,
+  STATUS
 } from 'graphql/types/globalTypes';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { CircularProgress } from '@material-ui/core';
+import {
+  EndCallNotification,
+  EndCallNotificationVariables,
+} from 'graphql/types/EndCallNotification';
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -614,6 +616,7 @@ interface CallPopoverProps {
   assignedDoctorFirstName: string;
   assignedDoctorLastName: string;
   isAudioVideoCallEnded: (isAudioVideoCall: boolean) => void;
+  callId: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -632,20 +635,6 @@ let transferObject: any = {
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
 
-function getCookieValue() {
-  const name = 'action=';
-  const ca = document.cookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === ' ') {
-      c = c.substring(1);
-    }
-    if (c.indexOf(name) === 0) {
-      return c.substring(name.length, c.length);
-    }
-  }
-  return '';
-}
 export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const { appointmentInfo, patientDetails } = useContext(CaseSheetContextJrd);
@@ -782,27 +771,23 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     );
     stopIntervalTimer();
-    sendStopCallNotificationFn(
-      getCookieValue() === 'videocall' ? DOCTOR_CALL_TYPE.VIDEO : DOCTOR_CALL_TYPE.AUDIO
-    );
+    sendStopCallNotificationFn();
 
     //setIsVideoCall(false);
   };
-  const sendStopCallNotificationFn = (callType: DOCTOR_CALL_TYPE) => {
-    // client
-    //   .query<SendCallNotification, SendCallNotificationVariables>({
-    //     query: SEND_CALL_NOTIFICATION,
-    //     fetchPolicy: 'no-cache',
-    //     variables: {
-    //       appointmentId: props.appointmentId,
-    //       callType: callType,
-    //       doctorType: DOCTOR_TYPE.JUNIOR,
-    //     },
-    //   })
-    //   .catch((error: ApolloError) => {
-    //     console.log('Error in Call Notification', error.message);
-    //     alert('An error occurred while sending notification to Client.');
-    //   });
+  const sendStopCallNotificationFn = () => {
+    client
+      .query<EndCallNotification, EndCallNotificationVariables>({
+        query: END_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentCallId: props.callId,
+        },
+      })
+      .catch((error: ApolloError) => {
+        console.log('Error in Call Notification', error.message);
+        alert('An error occurred while sending notification to Client.');
+      });
   };
 
   const autoSend = (callType: string) => {
@@ -1181,21 +1166,6 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status, response) => { }
     );
-    setTimeout(() => {
-      const texts = {
-        id: props.doctorId,
-        message: 'Before I go any further, would you be comfortable continuing to talk in English?',
-        isTyping: true,
-      };
-      pubnub.publish(
-        {
-          message: texts,
-          channel: channel,
-          storeInHistory: true,
-        },
-        (status, response) => {}
-      );
-    }, 3000);
   };
   const onStopConsult = () => {
     const text = {

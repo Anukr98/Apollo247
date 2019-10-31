@@ -70,7 +70,7 @@ import {
   CreateSeniorDoctorCaseSheetVariables,
 } from 'graphql/types/CreateSeniorDoctorCaseSheet';
 
-import { REQUEST_ROLES, STATUS, DOCTOR_CALL_TYPE, DOCTOR_TYPE } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, STATUS, DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -305,6 +305,7 @@ export const ConsultTabs: React.FC = () => {
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
+  const [callId, setcallId] = useState<string>('');
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -605,7 +606,7 @@ export const ConsultTabs: React.FC = () => {
     }
   }, []);
 
-  const sendCallNotificationFn = (callType: DOCTOR_CALL_TYPE) => {
+  const sendCallNotificationFn = (callType: APPT_CALL_TYPE) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -613,8 +614,12 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           appointmentId: appointmentId,
           callType: callType,
-          doctorType: DOCTOR_TYPE.SENIOR,
+          doctorType: DOCTOR_CALL_TYPE.SENIOR,
         },
+      }).then((_data) => {
+        if(_data && _data.data && _data.data.sendCallNotification && _data.data.sendCallNotification.status){
+          setcallId(_data.data.sendCallNotification.callDetails.id);
+        }
       })
       .catch((error: ApolloError) => {
         console.log('Error in Call Notification', error.message);
@@ -824,7 +829,7 @@ export const ConsultTabs: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
-      sendCallNotificationFn(flag ? DOCTOR_CALL_TYPE.VIDEO : DOCTOR_CALL_TYPE.AUDIO);
+      sendCallNotificationFn(flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO);
     }, 10);
   };
 
@@ -925,6 +930,7 @@ export const ConsultTabs: React.FC = () => {
                 isAppointmentEnded={isAppointmentEnded}
                 sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
                 setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
+                callId={callId}
               />
               <div>
                 {!isPdfPageOpen ? (

@@ -125,8 +125,8 @@ export const UPLOAD_CHAT_DOCUMENT = gql`
 export const SEND_CALL_NOTIFICATION = gql`
   query SendCallNotification(
     $appointmentId: String
-    $callType: DOCTOR_CALL_TYPE
-    $doctorType: DOCTOR_TYPE
+    $callType: APPT_CALL_TYPE
+    $doctorType: DOCTOR_CALL_TYPE
   ) {
     sendCallNotification(
       appointmentId: $appointmentId
@@ -134,6 +134,22 @@ export const SEND_CALL_NOTIFICATION = gql`
       doctorType: $doctorType
     ) {
       status
+      callDetails{
+        id
+      }
     }
   }
 `;
+
+export const END_CALL_NOTIFICATION = gql`
+  query EndCallNotification (
+    $appointmentCallId: String
+  ) {
+    endCallNotification(
+      appointmentCallId: $appointmentCallId
+    ) {
+      status
+    }
+  }
+`;
+
