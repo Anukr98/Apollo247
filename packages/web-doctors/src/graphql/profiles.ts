@@ -542,6 +542,7 @@ export const GET_CASESHEET = gql`
         followUp
         followUpDate
         followUpAfterInDays
+        followUpConsultType
         consultType
         notes
       }
@@ -699,6 +700,7 @@ export const MODIFY_CASESHEET = gql`
       followUp
       followUpAfterInDays
       followUpDate
+      followUpConsultType
       id
       medicinePrescription {
         medicineConsumptionDurationInDays

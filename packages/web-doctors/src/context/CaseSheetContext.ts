@@ -63,13 +63,14 @@ export interface CaseSheetContextProps {
   setConsultType: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   followUp: boolean[];
   setFollowUp: React.Dispatch<React.SetStateAction<boolean[]>> | (() => void);
+  followUpConsultType: string[];
+  setFollowUpConsultType: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   followUpAfterInDays: string[];
   setFollowUpAfterInDays: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   followUpDate: string[];
   setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   healthVault: GetCaseSheet_getCaseSheet_patientDetails_healthVault[] | null;
   pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
-
   height: string;
   weight: string;
   temperature: string;
@@ -124,6 +125,8 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setMedicinePrescription: () => {},
   consultType: [],
   setConsultType: () => {},
+  followUpConsultType: [],
+  setFollowUpConsultType: () => {},
   followUp: [],
   setFollowUp: () => {},
   followUpAfterInDays: [],
@@ -132,7 +135,6 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setFollowUpDate: () => {},
   healthVault: null,
   pastAppointments: null,
-
   height: '',
   weight: '',
   bp: '',

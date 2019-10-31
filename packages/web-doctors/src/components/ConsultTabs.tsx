@@ -17,6 +17,7 @@ import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import DialogContentText from '@material-ui/core/DialogContentText';
 // import DialogTitle from '@material-ui/core/DialogTitle';
 import { CasesheetView } from 'components/CasesheetView';
+import { APPOINTMENT_TYPE } from '../graphql/types/globalTypes';
 
 //import { Document } from 'react-pdf';
 import _omit from 'lodash/omit';
@@ -339,6 +340,7 @@ export const ConsultTabs: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
+  const [followUpConsultType, setFollowUpConsultType] = useState<string[]>([]);
   // const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
 
   const [bp, setBp] = useState<string>('');
@@ -430,6 +432,11 @@ export const ConsultTabs: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType
+            ? setFollowUpConsultType(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType,
+              ] as unknown) as string[])
+            : setFollowUpConsultType([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
             ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
             : setAppointmentStatus('');
@@ -729,6 +736,10 @@ export const ConsultTabs: React.FC = () => {
               followUp[0] && followUpAfterInDays[0] !== 'Custom'
                 ? parseInt(followUpAfterInDays[0], 10)
                 : 0,
+            followUpConsultType:
+              followUpConsultType[0] === APPOINTMENT_TYPE.PHYSICAL
+                ? APPOINTMENT_TYPE.PHYSICAL
+                : APPOINTMENT_TYPE.ONLINE,
             otherInstructions: otherInstructionsFinal,
             medicinePrescription: medicinePrescriptionFinal,
             id: caseSheetId,
@@ -860,6 +871,8 @@ export const ConsultTabs: React.FC = () => {
             appointmentInfo: casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment,
             createdDoctorProfile: casesheetInfo!.getCaseSheet!.caseSheetDetails!
               .createdDoctorProfile,
+            followUpConsultType,
+            setFollowUpConsultType,
             symptoms,
             setSymptoms,
             notes,
