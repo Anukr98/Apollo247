@@ -899,11 +899,11 @@ export const JDConsultRoom: React.FC = () => {
       .then((_data) => {
         if (
           _data &&
-          _data!.data &&
-          _data!.data!.sendCallNotification &&
-          _data!.data!.sendCallNotification!.status
+          _data.data &&
+          _data.data.sendCallNotification &&
+          _data.data.sendCallNotification.status
         ) {
-          setcallId(_data.data!.sendCallNotification!.callDetails.id);
+          setcallId(_data.data.sendCallNotification.callDetails.id);
         }
       })
       .catch((error: ApolloError) => {
