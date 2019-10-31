@@ -75,7 +75,11 @@ const getJuniorDoctorDashboard: Resolver<
     });
 
     //get Queue Items of junior doctors
-    juniorDoctorQueueItems = await queueRepo.getJuniorDoctorQueueCount(juniorDoctorIds);
+    juniorDoctorQueueItems = await queueRepo.getJuniorDoctorQueueCount(
+      juniorDoctorIds,
+      args.fromDate,
+      args.toDate
+    );
   }
 
   const DashoardData: DashoardData = {
