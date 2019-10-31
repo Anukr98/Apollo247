@@ -1,16 +1,14 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  DropdownGreen,
-  InjectionIcon,
-  MedicineIcon,
-  MedicineRxIcon,
-  SyrupBottleIcon,
   ArrowRight,
   CartIcon,
+  DropdownGreen,
+  MedicineIcon,
+  MedicineRxIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -32,20 +30,20 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
+import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import stripHtml from 'string-strip-html';
+import { useUIElements } from '../UIElementsProvider';
 
 const { width, height } = Dimensions.get('window');
-import stripHtml from 'string-strip-html';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -220,6 +218,50 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineError, setMedicineError] = useState<string>('Product Details Not Available!');
   const [popupHeight, setpopupHeight] = useState<number>(60);
 
+  const { showAphAlert } = useUIElements();
+
+  const formatTabData = (
+    index: number,
+    array: {
+      Caption: string;
+      CaptionDesc: string;
+    }[]
+  ) => {
+    const findDesc = (key: string) =>
+      (
+        array.find((item) => (item.Caption || '').toLowerCase() == key.toLowerCase()) || {
+          CaptionDesc: '',
+        }
+      ).CaptionDesc;
+
+    return index == 0
+      ? findDesc('Uses')
+      : index == 1
+      ? `${findDesc('How to use')}\n${findDesc('How it works')}`
+      : index == 2
+      ? `${findDesc('Side effects')}`
+      : index == 3
+      ? `${
+          findDesc('DRUG ALCOHOL INTERACTION')
+            ? `Alcohol:\n${findDesc('DRUG ALCOHOL INTERACTION')}\n`
+            : ''
+        }${
+          findDesc('DRUG PREGNANCY INTERACTION')
+            ? `Pregnancy:\n${findDesc('DRUG PREGNANCY INTERACTION')}\n`
+            : ''
+        }${
+          findDesc('DRUG MACHINERY INTERACTION (DRIVING)')
+            ? `Driving:\n${findDesc('DRUG MACHINERY INTERACTION (DRIVING)')}\n`
+            : ''
+        }${findDesc('KIDNEY') ? `Kidney:\n${findDesc('KIDNEY')}\n` : ''}${
+          findDesc('LIVER') ? `Liver:\n${findDesc('LIVER')}` : ''
+        }`
+      : index == 4
+      ? `${findDesc('DRUGS WARNINGS')}`
+      : `${findDesc('STORAGE')}`;
+  };
+  console.log({ PharmaOverview: medicineDetails!.PharmaOverview });
+
   const _medicineOverview =
     medicineDetails!.PharmaOverview &&
     medicineDetails!.PharmaOverview[0] &&
@@ -227,15 +269,37 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const medicineOverview =
     typeof _medicineOverview == 'string'
       ? []
-      : (_medicineOverview &&
-          _medicineOverview
-            .filter((item) => item.Caption.length > 0 && item.CaptionDesc.length > 0)
-            .map((item) => {
-              const Caption =
-                item.Caption.charAt(0).toUpperCase() + item.Caption.slice(1).toLowerCase();
-              return { ...item, Caption: Caption };
-            })) ||
-        [];
+      : (
+          (_medicineOverview &&
+            _medicineOverview
+              .filter((item) => item.Caption.length > 0 && item.CaptionDesc.length > 0)
+              .map((item) => {
+                const Caption =
+                  item.Caption.charAt(0).toUpperCase() + item.Caption.slice(1).toLowerCase();
+                return { ...item, Caption: Caption };
+              })) ||
+          []
+        )
+          .map((item, index, array) => {
+            console.log({ item, index, array });
+            return {
+              Caption:
+                index == 0
+                  ? 'Overview'
+                  : index == 1
+                  ? 'Usage'
+                  : index == 2
+                  ? 'Side Effects'
+                  : index == 3
+                  ? 'Precautions'
+                  : index == 4
+                  ? 'Drug Warnings'
+                  : 'Storage',
+              CaptionDesc: formatTabData(index, array),
+            };
+          })
+          .slice(0, 6)
+          .filter((i) => i.CaptionDesc) || [];
 
   let sku = props.navigation.getParam('sku'); // 'MED0017';
   console.log(sku, 'skusku');
@@ -401,11 +465,19 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             >
               Out Of Stock
             </Text>
-            <Button
-              title={'NOTIFY WHEN IN STOCK'}
-              style={{ backgroundColor: theme.colors.WHITE }}
-              titleTextStyle={{ color: '#fc9916' }}
-            />
+            {false && (
+              <Button
+                title={'NOTIFY WHEN IN STOCK'}
+                style={{ backgroundColor: theme.colors.WHITE }}
+                titleTextStyle={{ color: '#fc9916' }}
+                onPress={() => {
+                  showAphAlert!({
+                    title: 'Okay! :)',
+                    description: `You will be notified when ${medicineName} is back in stock.`,
+                  });
+                }}
+              />
+            )}
           </View>
         ) : (
           <View style={styles.bottomView}>

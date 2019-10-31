@@ -144,7 +144,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   //     });
   // }, []);
   const appointmentData = props.navigation.state.params!.data;
-  console.log('appointmentData', appointmentData);
+  // console.log('appointmentData', appointmentData);
   const callType = props.navigation.state.params!.callType
     ? props.navigation.state.params!.callType
     : '';
@@ -1499,7 +1499,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const messageView = (rowData: any, index: number) => {
-    console.log('messageView', rowData.message);
+    // console.log('messageView', rowData.message);
     return (
       <View
         style={{
