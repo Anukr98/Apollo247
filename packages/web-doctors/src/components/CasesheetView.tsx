@@ -174,6 +174,7 @@ export const CasesheetView: React.FC = (props) => {
     otherInstructions,
     followUpAfterInDays,
     followUpDate,
+    followUpConsultType,
   } = useContext(CaseSheetContext);
 
   let doctorFacilityDetails = null;
@@ -214,7 +215,7 @@ export const CasesheetView: React.FC = (props) => {
   };
 
   const getFollowUpData = () => {
-    return `Follow up (${_startCase(_toLower(consultType[0]))}) ${
+    return `Follow up (${_startCase(_toLower(followUpConsultType[0]))}) ${
       followUpAfterInDays[0] === '9'
         ? `on ${moment(followUpDate[0]).format('DD/MM/YYYY')}`
         : `after ${followUpAfterInDays[0]} days`
@@ -348,7 +349,7 @@ export const CasesheetView: React.FC = (props) => {
               <div className={classes.infoRow}>
                 <div className={classes.label}>Consult Type</div>
                 <div className={classes.labelContent}>
-                  <div className={classes.labelBlue}>{consultType}</div>
+                  <div className={classes.labelBlue}>{_startCase(_toLower(consultType[0]))}</div>
                 </div>
               </div>
             ) : null}
