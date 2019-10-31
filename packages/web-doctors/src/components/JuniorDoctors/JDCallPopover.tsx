@@ -1181,6 +1181,21 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status, response) => { }
     );
+    setTimeout(() => {
+      const texts = {
+        id: props.doctorId,
+        message: 'Before I go any further, would you be comfortable continuing to talk in English?',
+        isTyping: true,
+      };
+      pubnub.publish(
+        {
+          message: texts,
+          channel: channel,
+          storeInHistory: true,
+        },
+        (status, response) => {}
+      );
+    }, 3000);
   };
   const onStopConsult = () => {
     const text = {
