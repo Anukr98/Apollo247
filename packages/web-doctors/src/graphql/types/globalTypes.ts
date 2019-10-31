@@ -48,6 +48,7 @@ export enum DOCTOR_TYPE {
 }
 
 export enum DoctorType {
+  ADMIN = "ADMIN",
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
