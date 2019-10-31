@@ -32,6 +32,7 @@ import {
   CreateSeniorDoctorCaseSheetVariables,
 } from 'graphql/types/CreateSeniorDoctorCaseSheet';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { PatientLogHealthVault } from 'components/PatientLog/PatientDetailPanels/PatientLogHealthVault';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -261,7 +262,8 @@ export const PatientLogDetailsPage: React.FC = () => {
           ? setPastAppointments((_data!.data!.getCaseSheet!
               .pastAppointments as unknown) as GetCaseSheet_getCaseSheet_pastAppointments[])
           : setPastAppointments([]);
-      }).catch((error: ApolloError) => {
+      })
+      .catch((error: ApolloError) => {
         const networkErrorMessage = error.networkError ? error.networkError.message : null;
         const allMessages = error.graphQLErrors
           .map((e) => e.message)
@@ -340,7 +342,7 @@ export const PatientLogDetailsPage: React.FC = () => {
                   className={classes.expandIcon}
                 >
                   <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography variant="h3">Patient History &amp; Lifestyle</Typography>
+                    <Typography variant="h3">Patient’s Medical and Family History</Typography>
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails>
                     <PatientDetailLifeStyle patientDetails={patientDetails} />
@@ -352,7 +354,7 @@ export const PatientLogDetailsPage: React.FC = () => {
                     <Typography variant="h3">Patient Health Vault</Typography>
                   </ExpansionPanelSummary>
                   <ExpansionPanelDetails>
-                    <span>No data Found</span>
+                    <PatientLogHealthVault></PatientLogHealthVault>
                   </ExpansionPanelDetails>
                 </ExpansionPanel>
               </section>
