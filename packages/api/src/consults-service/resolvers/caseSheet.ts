@@ -75,6 +75,7 @@ export const caseSheetTypeDefs = gql`
     PAYROLL
     STAR_APOLLO
     JUNIOR
+    ADMIN
   }
 
   enum Gender {
