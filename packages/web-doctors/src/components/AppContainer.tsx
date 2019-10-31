@@ -38,6 +38,7 @@ const App: React.FC = () => {
   // TODO Why is this called patient?
   const currentDoctor = useCurrentPatient();
   const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
+  const isJDAdmin = currentDoctor && currentDoctor.doctorType === DoctorType.ADMIN;
 
   return isSignedIn ? (
     // TODO This should all be inside of a <Switch>, why are we rendering multiple routes simultaneously?
@@ -46,7 +47,9 @@ const App: React.FC = () => {
         exact
         path={clientRoutes.welcome()}
         render={() =>
-          isJuniorDoctor ? (
+          isJDAdmin ? (
+            <Redirect to={clientRoutes.juniorDoctorAdmin()} />
+          ) : isJuniorDoctor ? (
             <Redirect to={clientRoutes.juniorDoctor()} />
           ) : (
             <Redirect to={!isSignedIn.firebaseToken ? '/profile' : '/Calendar'} />
