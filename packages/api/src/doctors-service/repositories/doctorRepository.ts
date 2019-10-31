@@ -108,7 +108,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctor.specialty', 'specialty')
       .leftJoinAndSelect('doctor.consultHours', 'consultHours')
       .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
-      .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
+      .leftJoinAndSelect('doctorHospital.facility', 'facility')
       .where('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR })
       .andWhere('doctor.isActive = true')
       .andWhere(
@@ -133,7 +133,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctor.specialty', 'specialty')
       .leftJoinAndSelect('doctor.consultHours', 'consultHours')
       .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
-      .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
+      .leftJoinAndSelect('doctorHospital.facility', 'facility')
       .where('doctor.specialty = :specialtyId', {
         specialtyId,
       })
@@ -148,7 +148,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctor.specialty', 'specialty')
       .leftJoinAndSelect('doctor.consultHours', 'consultHours')
       .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
-      .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
+      .leftJoinAndSelect('doctorHospital.facility', 'facility')
       .where('doctor.specialty = :specialtyId', {
         specialtyId,
       })
@@ -346,7 +346,7 @@ export class DoctorRepository extends Repository<Doctor> {
       .leftJoinAndSelect('doctor.specialty', 'specialty')
       .leftJoinAndSelect('doctor.consultHours', 'consultHours')
       .leftJoinAndSelect('doctor.doctorHospital', 'doctorHospital')
-      .leftJoinAndSelect('doctorHospital.facility', 'doctorHospital.facility')
+      .leftJoinAndSelect('doctorHospital.facility', 'facility')
       .where('doctor.specialty = :specialty', { specialty })
       .andWhere('doctor.isActive = true')
       .andWhere('doctor.doctorType != :junior', { junior: DoctorType.JUNIOR });
