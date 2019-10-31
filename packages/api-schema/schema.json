@@ -1238,7 +1238,7 @@
                 "description": null,
                 "type": {
                   "kind": "ENUM",
-                  "name": "DOCTOR_CALL_TYPE",
+                  "name": "APPT_CALL_TYPE",
                   "ofType": null
                 },
                 "defaultValue": null
@@ -1248,7 +1248,7 @@
                 "description": null,
                 "type": {
                   "kind": "ENUM",
-                  "name": "DOCTOR_TYPE",
+                  "name": "DOCTOR_CALL_TYPE",
                   "ofType": null
                 },
                 "defaultValue": null
@@ -1267,6 +1267,33 @@
             "deprecationReason": null
           },
           {
+            "name": "endCallNotification",
+            "description": null,
+            "args": [
+              {
+                "name": "appointmentCallId",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "EndCallResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "sendApptNotification",
             "description": null,
             "args": [],
@@ -1276,6 +1303,33 @@
               "ofType": {
                 "kind": "OBJECT",
                 "name": "ApptNotificationResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "getCallDetails",
+            "description": null,
+            "args": [
+              {
+                "name": "id",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "CallDetailsResult",
                 "ofType": null
               }
             },
@@ -10711,7 +10765,7 @@
       },
       {
         "kind": "ENUM",
-        "name": "DOCTOR_CALL_TYPE",
+        "name": "APPT_CALL_TYPE",
         "description": null,
         "fields": null,
         "inputFields": null,
@@ -10734,7 +10788,7 @@
       },
       {
         "kind": "ENUM",
-        "name": "DOCTOR_TYPE",
+        "name": "DOCTOR_CALL_TYPE",
         "description": null,
         "fields": null,
         "inputFields": null,
@@ -10758,6 +10812,148 @@
       {
         "kind": "OBJECT",
         "name": "NotificationResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "status",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "Boolean",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "callDetails",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "AppointmentCallDetails",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "AppointmentCallDetails",
+        "description": null,
+        "fields": [
+          {
+            "name": "id",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "ID",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "callType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "doctorType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "startTime",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTime",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "endTime",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTime",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "createdDate",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTime",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "updatedDate",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTime",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "EndCallResult",
         "description": null,
         "fields": [
           {
@@ -10815,6 +11011,29 @@
                 "name": "String",
                 "ofType": null
               }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "CallDetailsResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "appointmentCallDetails",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "AppointmentCallDetails",
+              "ofType": null
             },
             "isDeprecated": false,
             "deprecationReason": null

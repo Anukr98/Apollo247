@@ -16,6 +16,16 @@ import { AppointmentCallDetailsRepository } from 'consults-service/repositories/
 import { format } from 'date-fns';
 
 export const doctorCallNotificationTypeDefs = gql`
+  type AppointmentCallDetails {
+    id: ID!
+    callType: String
+    doctorType: String
+    startTime: DateTime
+    endTime: DateTime
+    createdDate: DateTime
+    updatedDate: DateTime
+  }
+
   type NotificationResult {
     status: Boolean!
     callDetails: AppointmentCallDetails!
@@ -40,19 +50,19 @@ export const doctorCallNotificationTypeDefs = gql`
     SENIOR
   }
 
-  type CallDetailsResult  {
-  appointmentCallDetails: AppointmentCallDetails;
-}
+  type CallDetailsResult {
+    appointmentCallDetails: AppointmentCallDetails
+  }
 
   extend type Query {
     sendCallNotification(
       appointmentId: String
-      callType: DOCTOR_CALL_TYPE
-      doctorType: DOCTOR_TYPE
+      callType: APPT_CALL_TYPE
+      doctorType: DOCTOR_CALL_TYPE
     ): NotificationResult!
     endCallNotification(appointmentCallId: String): EndCallResult!
     sendApptNotification: ApptNotificationResult!
-    getCallDetails(id: string): CallDetailsResult!
+    getCallDetails(id: String): CallDetailsResult!
   }
 `;
 type NotificationResult = {

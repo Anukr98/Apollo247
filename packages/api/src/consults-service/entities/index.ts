@@ -12,7 +12,6 @@ import {
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { DoctorType } from 'doctors-service/entities';
-import { APPT_CALL_TYPE, DOCTOR_CALL_TYPE } from 'notifications-service/resolvers/notifications';
 
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
@@ -297,10 +296,10 @@ export class AppointmentCallDetails extends BaseEntity {
   id: string;
 
   @Column()
-  callType: APPT_CALL_TYPE;
+  callType: string;
 
   @Column()
-  doctorType: DOCTOR_CALL_TYPE;
+  doctorType: string;
 
   @Column({ type: 'timestamp' })
   startTime: Date;
