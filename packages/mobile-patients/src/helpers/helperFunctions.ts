@@ -4,6 +4,7 @@ import { GraphQLError } from 'graphql';
 import moment from 'moment';
 import { Alert, NetInfo, AsyncStorage } from 'react-native';
 import Geocoder from 'react-native-geocoding';
+import Permissions from 'react-native-permissions';
 
 const googleApiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
@@ -311,12 +312,9 @@ export const isEmptyObject = (object: Object) => {
 };
 
 export const getUserCurrentPosition = async () => {
-  console.log('getUserCurrentPosition');
-
   const item = await AsyncStorage.getItem('location');
-
-  // .then((item) => {
   const location = item ? JSON.parse(item) : null;
+
   if (location) {
     console.log(location, 'location');
 
@@ -326,29 +324,37 @@ export const getUserCurrentPosition = async () => {
     };
   } else {
     return new Promise(async (resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        console.log(position, 'position');
+      Permissions.request('location')
+        .then((response) => {
+          if (response === 'authorized') {
+            navigator.geolocation.getCurrentPosition(
+              async (position) => {
+                console.log(position, 'position');
 
-        (Geocoder as any).init(googleApiKey);
-        const jsonData = await (Geocoder as any).from(
-          position.coords.latitude,
-          position.coords.longitude
-        );
-        // .then((json) => {
-        if (jsonData) {
-          const result = jsonData.results[0];
-          const addressComponent = result.address_components[1].long_name || '';
-          console.log(jsonData, addressComponent, 'addressComponent');
-          resolve({
-            latlong: result.geometry.location,
-            name: addressComponent,
-          });
-        }
-        reject(null);
-        // })
-        // .catch((error) => console.warn(error));
-      });
+                (Geocoder as any).init(googleApiKey);
+                const jsonData = await (Geocoder as any).from(
+                  position.coords.latitude,
+                  position.coords.longitude
+                );
+                if (jsonData) {
+                  const result = jsonData.results[0];
+                  const addressComponent = result.address_components[1].long_name || '';
+                  console.log(jsonData, addressComponent, 'addressComponent');
+                  resolve({
+                    latlong: result.geometry.location,
+                    name: addressComponent,
+                  });
+                }
+                reject(null);
+              },
+              (error) => console.log(JSON.stringify(error)),
+              { enableHighAccuracy: false, timeout: 2000 }
+            );
+          }
+        })
+        .catch((error) => {
+          console.log(error, 'error permission');
+        });
     });
   }
-  // });
 };
