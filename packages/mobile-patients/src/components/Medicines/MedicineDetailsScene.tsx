@@ -1,16 +1,14 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
-  DropdownGreen,
-  InjectionIcon,
-  MedicineIcon,
-  MedicineRxIcon,
-  SyrupBottleIcon,
   ArrowRight,
   CartIcon,
+  DropdownGreen,
+  MedicineIcon,
+  MedicineRxIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -32,21 +30,20 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
+import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import stripHtml from 'string-strip-html';
+import { useUIElements } from '../UIElementsProvider';
 
 const { width, height } = Dimensions.get('window');
-import stripHtml from 'string-strip-html';
-import { Card } from '@aph/mobile-patients/src/components/ui/Card';
-import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -231,8 +228,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     }[]
   ) => {
     const findDesc = (key: string) =>
-      (array.find((item) => (item.Caption || '').toLowerCase() == key.toLowerCase()) || {})
-        .CaptionDesc || '';
+      (
+        array.find((item) => (item.Caption || '').toLowerCase() == key.toLowerCase()) || {
+          CaptionDesc: '',
+        }
+      ).CaptionDesc;
 
     return index == 0
       ? findDesc('Uses')
