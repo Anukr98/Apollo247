@@ -304,7 +304,7 @@ export class AppointmentCallDetails extends BaseEntity {
   @Column({ type: 'timestamp' })
   startTime: Date;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', nullable: true })
   endTime: Date;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
