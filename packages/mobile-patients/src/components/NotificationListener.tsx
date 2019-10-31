@@ -8,7 +8,11 @@ import firebase from 'react-native-firebase';
 import { Notification, NotificationOpen } from 'react-native-firebase/notifications';
 import InCallManager from 'react-native-incall-manager';
 import { NavigationScreenProps } from 'react-navigation';
-import { GET_APPOINTMENT_DATA, GET_MEDICINE_ORDER_DETAILS } from '../graphql/profiles';
+import {
+  GET_APPOINTMENT_DATA,
+  GET_MEDICINE_ORDER_DETAILS,
+  GET_CALL_DETAILS,
+} from '../graphql/profiles';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
@@ -22,6 +26,7 @@ import { aphConsole } from '../helpers/helperFunctions';
 import { useAllCurrentPatients } from '../hooks/authHooks';
 import { AppRoutes } from './NavigatorContainer';
 import { EPrescription, ShoppingCartItem, useShoppingCart } from './ShoppingCartProvider';
+import { getCallDetails, getCallDetailsVariables } from '../graphql/types/getCallDetails';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {
@@ -58,7 +63,7 @@ export interface NotificationListenerProps extends NavigationScreenProps {}
 export const NotificationListener: React.FC<NotificationListenerProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
-  const { showAphAlert, hideAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading } = useUIElements();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const client = useApolloClient();
 
@@ -275,6 +280,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
           let doctorName = data.doctorName;
           let userName = data.patientName;
+          setLoading;
 
           showAphAlert!({
             title: `Hi ${userName} :)`,
@@ -305,7 +311,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   onPress={() => {
                     aphConsole.log('data.appointmentId', data.appointmentId);
                     aphConsole.log('data.callType', data.callType);
-                    getAppointmentData(data.appointmentId, notificationType, data.callType);
+                    getCallStatus(
+                      data.appointmentCallId,
+                      data.appointmentId,
+                      notificationType,
+                      data.callType,
+                      doctorName
+                    );
                   }}
                 >
                   <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
@@ -381,12 +393,88 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       onNotificationListener();
     };
   }, []);
+
+  const getCallStatus = (
+    appointmentCallId: string,
+    appointmentId: string,
+    notificationType: string,
+    callType: string,
+    doctorName: string
+  ) => {
+    setLoading && setLoading(true);
+
+    client
+      .query<getCallDetails, getCallDetailsVariables>({
+        query: GET_CALL_DETAILS,
+        variables: {
+          appointmentCallId: appointmentCallId,
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        console.log('data', data);
+        try {
+          const endTime = data.data.getCallDetails.appointmentCallDetails.endTime;
+          console.log('call endTime', endTime);
+
+          if (endTime) {
+            InCallManager.stopRingtone();
+            InCallManager.stop();
+
+            console.log('call ended');
+            hideAphAlert && hideAphAlert();
+            setLoading && setLoading(false);
+
+            showAphAlert!({
+              title: `Oops :(`,
+              description: `You have missed the call from Dr. ${doctorName}`,
+              unDismissable: true,
+              children: (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    marginHorizontal: 20,
+                    alignItems: 'flex-end',
+                    marginVertical: 18,
+                  }}
+                >
+                  <TouchableOpacity
+                    style={styles.rescheduletyles}
+                    onPress={() => {
+                      hideAphAlert && hideAphAlert();
+                      setLoading && setLoading(false);
+                    }}
+                  >
+                    <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>{'OKAY'}</Text>
+                  </TouchableOpacity>
+                </View>
+              ),
+            });
+          } else {
+            setLoading && setLoading(false);
+            console.log('call ongoing');
+            getAppointmentData(appointmentId, notificationType, callType);
+          }
+        } catch (error) {
+          setLoading && setLoading(false);
+          hideAphAlert && hideAphAlert();
+        }
+      })
+      .catch((e: any) => {
+        setLoading && setLoading(false);
+        const error = JSON.parse(JSON.stringify(e));
+        console.log('getCallStatus error', error);
+      });
+  };
+
   const getAppointmentData = (
     appointmentId: string,
     notificationType: string,
     callType: string
   ) => {
     aphConsole.log('getAppointmentData', appointmentId, notificationType, callType);
+    setLoading && setLoading(true);
+
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
@@ -398,6 +486,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       .then((_data: any) => {
         try {
           hideAphAlert && hideAphAlert();
+          setLoading && setLoading(false);
 
           console.log(
             'GetDoctorNextAvailableSlot',
@@ -422,8 +511,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
               case 'call_started':
                 {
-                  // InCallManager.stopRingtone();
-                  // InCallManager.stop();
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: appointmentData[0],
                     callType: callType,
@@ -433,8 +520,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
               case 'chat_room':
                 {
-                  // InCallManager.stopRingtone();
-                  // InCallManager.stop();
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: appointmentData[0],
                     callType: callType,
@@ -448,11 +533,13 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           }
         } catch (error) {
           hideAphAlert && hideAphAlert();
+          setLoading && setLoading(false);
         }
       })
       .catch((e: any) => {
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while GetDoctorNextAvailableSlot', error);
+        setLoading && setLoading(false);
       });
   };
   return null;
