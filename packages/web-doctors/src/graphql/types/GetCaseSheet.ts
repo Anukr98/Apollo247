@@ -88,9 +88,6 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile
   __typename: "Facility";
   city: string | null;
   country: string | null;
-  facilityType: string;
-  id: string;
-  name: string;
   state: string | null;
   streetLine1: string | null;
   streetLine2: string | null;
