@@ -54,6 +54,7 @@ import {
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -943,6 +944,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const imgUri = item.thumbnail ? `${config.IMAGES_BASE_URL[0]}${item.thumbnail}` : '';
     return renderSearchSuggestionItem({
       onPress: () => {
+        CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: item.sku,
         });

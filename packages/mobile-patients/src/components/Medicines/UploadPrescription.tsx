@@ -45,6 +45,8 @@ import {
   PrescriptionMedicineInput,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   prescriptionCardStyle: {
@@ -131,6 +133,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
   };
 
   const onPressSubmit = async () => {
+    CommonLogEvent(
+      AppRoutes.UploadPrescription,
+      'Graph ql call for save prescription medicine order'
+    );
     setshowSpinner(true);
     const ePresUrls = EPrescriptions.map((item) => item.uploadedUrl);
     let ePresAndPhysicalPresUrls = [...ePresUrls];
@@ -243,6 +249,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 paddingHorizontal: 8,
               }}
               onPress={() => {
+                CommonLogEvent(AppRoutes.UploadPrescription, 'Physical prescription filter');
                 const filteredPres = PhysicalPrescriptions.filter(
                   (_item) => _item.title != item.title
                 );
@@ -358,6 +365,7 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 backgroundColor: 'transparent',
               }}
               onPress={() => {
+                CommonLogEvent(AppRoutes.UploadPrescription, 'Bottom error popup');
                 setBottomErrorPopup(false);
               }}
             >

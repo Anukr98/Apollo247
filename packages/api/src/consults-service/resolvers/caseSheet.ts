@@ -175,6 +175,7 @@ export const caseSheetTypeDefs = gql`
     doctorType: DoctorType
     followUp: Boolean
     followUpAfterInDays: String
+    followUpConsultType: APPOINTMENT_TYPE
     followUpDate: DateTime
     id: String
     medicinePrescription: [MedicinePrescription]

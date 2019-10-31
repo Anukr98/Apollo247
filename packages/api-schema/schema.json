@@ -7253,6 +7253,18 @@
             "deprecationReason": null
           },
           {
+            "name": "followUpConsultType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "APPOINTMENT_TYPE",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "followUpDate",
             "description": null,
             "args": [],
