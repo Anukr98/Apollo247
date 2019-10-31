@@ -388,8 +388,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         </View>
 
                         <Text style={styles.dataTextStyle}>
-                          {item.medicineDosage + ` ` + item.medicineUnit}
-                          {parseInt(item.medicineDosage || '1') > 1 &&
+                          {item.medicineTimings!.length *
+                            parseInt(item!.medicineConsumptionDurationInDays!) +
+                            ` ` +
+                            item.medicineUnit}
+                          {/* parseInt(item.medicineDosage || '1') > 1 */}
+                          {item.medicineTimings!.length > 1 &&
                           (item.medicineUnit == MEDICINE_UNIT.TABLET ||
                             item.medicineUnit == MEDICINE_UNIT.CAPSULE)
                             ? 'S'
@@ -421,7 +425,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 })}
                 <TouchableOpacity
                   onPress={() => {
-                    CommonLogEvent('CONSULT_DETAILS', 'Add to crat');
                     onAddToCart();
                   }}
                 >

@@ -126,9 +126,10 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
           });
         }
         break;
+
       case 'Cart_Ready':
         {
-          const orderId = data.orderId;
+          const orderId: number = parseInt(data.orderId || '0');
           console.log('Cart_Ready called');
           client
             .query<GetMedicineOrderDetails, GetMedicineOrderDetailsVariables>({
@@ -240,8 +241,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   style={styles.claimStyles}
                   onPress={() => {
                     hideAphAlert && hideAphAlert();
-                    InCallManager.stopRingtone();
-                    InCallManager.stop();
                   }}
                 >
                   <Text style={styles.rescheduleTextStyles}>{'CANCEL'}</Text>
@@ -250,8 +249,7 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
                   style={styles.rescheduletyles}
                   onPress={() => {
                     console.log('data.appointmentId', data.appointmentId);
-                    console.log('data.callType', data.callType);
-                    getAppointmentData(data.appointmentId, notificationType, data.callType);
+                    getAppointmentData(data.appointmentId, notificationType, '');
                   }}
                 >
                   <Text style={[styles.rescheduleTextStyles, { color: 'white' }]}>
@@ -322,7 +320,6 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
 
   useEffect(() => {
     console.log('createNotificationListeners');
-    console.log('route name notification', props.navigation.state);
     /*
      * Triggered when a particular notification has been received in foreground
      * */
@@ -379,12 +376,12 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       onNotificationListener();
     };
   }, []);
-
   const getAppointmentData = (
     appointmentId: string,
     notificationType: string,
     callType: string
   ) => {
+    aphConsole.log('getAppointmentData', appointmentId, notificationType, callType);
     client
       .query<getAppointmentData, getAppointmentDataVariables>({
         query: GET_APPOINTMENT_DATA,
