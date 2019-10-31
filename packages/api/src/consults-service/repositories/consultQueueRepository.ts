@@ -14,6 +14,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .select(['consultQueueItem.doctorId as doctorId'])
       .addSelect('COUNT(*) AS queuedConsultsCount')
       .where('consultQueueItem.doctorId IN (:...idArray)', { idArray })
+      .andWhere('consultQueueItem.isActive = :isactive', { isactive: true })
       .groupBy('consultQueueItem.doctorId')
       .getRawMany();
   }
