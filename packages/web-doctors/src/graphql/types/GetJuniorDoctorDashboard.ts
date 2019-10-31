@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, Gender } from "./globalTypes";
+import { Salutation, DOCTOR_ONLINE_STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetJuniorDoctorDashboard
@@ -10,12 +10,10 @@ import { DoctorType, Gender } from "./globalTypes";
 
 export interface GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorDetails {
   __typename: "Profile";
-  city: string | null;
-  country: string | null;
-  doctorType: DoctorType;
-  emailAddress: string | null;
   firstName: string | null;
-  gender: Gender | null;
+  lastName: string | null;
+  salutation: Salutation | null;
+  onlineStatus: DOCTOR_ONLINE_STATUS;
   id: string;
 }
 

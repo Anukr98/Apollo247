@@ -157,12 +157,10 @@ export const GET_JD_DASHBOARD = gql`
     getJuniorDoctorDashboard(fromDate: $fromDate, toDate: $toDate) {
       consultsBookedButNotInQueue
       juniorDoctorDetails {
-        city
-        country
-        doctorType
-        emailAddress
         firstName
-        gender
+        lastName
+        salutation
+        onlineStatus
         id
       }
       juniorDoctorQueueItems {
