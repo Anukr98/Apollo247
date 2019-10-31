@@ -125,6 +125,21 @@ export const JDAdminDashboard: React.FC = (props) => {
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>Admin Dashboard</div>
+            <span className={classes.pageHeader}>
+              Number of Consults booked but not in queue to be allocated
+            </span>{' '}
+            <span className={classes.pageHeader}>
+              {data.getJuniorDoctorDashboard.consultsBookedButNotInQueue}
+            </span>
+            <br />
+            <span className={classes.pageHeader}>
+              Number of Consults in queue waiting to be allocated
+            </span>{' '}
+            <span className={classes.pageHeader}>
+              {data.getJuniorDoctorDashboard.juniorDoctorQueueItems &&
+                data.getJuniorDoctorDashboard.juniorDoctorQueueItems.length > 0 &&
+                data.getJuniorDoctorDashboard.juniorDoctorQueueItems[0]!.queuedconsultscount}
+            </span>
             <div className={classes.tablePaper}>
               <Table className={classes.table} aria-label="simple table">
                 <TableHead>
@@ -147,22 +162,14 @@ export const JDAdminDashboard: React.FC = (props) => {
                   {data &&
                     data.getJuniorDoctorDashboard &&
                     data.getJuniorDoctorDashboard.juniorDoctorDetails.map((jd, index) => {
-                      <TableRow>
-                        <TableCell>
-                          <span className={classes.userActive}>{index + 1}</span>
-                        </TableCell>
-                        <TableCell>
-                          <span className={classes.userActive}>{jd && jd.firstName}</span>
-                        </TableCell>
-                        <TableCell>
-                          <span className={classes.userActive}>{jd && jd.onlineStatus}</span>
-                        </TableCell>
-                      </TableRow>;
+                      return (
+                        <TableRow>
+                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{jd && jd.firstName}</TableCell>
+                          <TableCell>{jd && jd.onlineStatus}</TableCell>
+                        </TableRow>
+                      );
                     })}
-                  <TableCell>
-                    <span className={classes.userActive}>12</span>
-                  </TableCell>
-                  <TableCell align="right">2334</TableCell>
                 </TableBody>
               </Table>
             </div>
