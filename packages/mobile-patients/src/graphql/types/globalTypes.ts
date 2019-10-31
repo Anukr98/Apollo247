@@ -43,6 +43,7 @@ export enum DiscountType {
 }
 
 export enum DoctorType {
+  ADMIN = "ADMIN",
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",

@@ -1180,3 +1180,19 @@ export const SAVE_ORDER_CANCEL_STATUS = gql`
     }
   }
 `;
+
+export const GET_CALL_DETAILS = gql`
+  query getCallDetails($appointmentCallId: String) {
+    getCallDetails(appointmentCallId: $appointmentCallId) {
+      appointmentCallDetails {
+        id
+        callType
+        doctorType
+        startTime
+        endTime
+        createdDate
+        updatedDate
+      }
+    }
+  }
+`;
