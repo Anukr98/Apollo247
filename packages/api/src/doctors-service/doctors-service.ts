@@ -45,6 +45,7 @@ import {
   blockedCalendarTypeDefs,
   blockedCalendarResolvers,
 } from 'doctors-service/resolvers/blockedCalendar';
+import { JDTypeDefs, JDResolvers } from 'doctors-service/resolvers/JDAdmin';
 
 (async () => {
   await connect();
@@ -124,6 +125,10 @@ import {
       {
         typeDefs: doctorDataTypeDefs,
         resolvers: doctorDataResolvers,
+      },
+      {
+        typeDefs: JDTypeDefs,
+        resolvers: JDResolvers,
       },
     ]),
   });

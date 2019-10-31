@@ -170,6 +170,7 @@ export const getDoctorDetailsTypeDefs = gql`
     id: ID!
     lastName: String
     mobileNumber: String!
+    onlineStatus: DOCTOR_ONLINE_STATUS!
     photoUrl: String
     qualification: String
     salutation: Salutation

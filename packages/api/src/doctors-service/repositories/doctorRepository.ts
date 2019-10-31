@@ -639,4 +639,12 @@ export class DoctorRepository extends Repository<Doctor> {
       });
     });
   }
+
+  getJuniorDoctorsList() {
+    const queryBuilder = this.createQueryBuilder('doctor')
+      .andWhere('doctor.isActive = true')
+      .andWhere('doctor.doctorType = :junior', { junior: DoctorType.JUNIOR })
+      .getMany();
+    return queryBuilder;
+  }
 }
