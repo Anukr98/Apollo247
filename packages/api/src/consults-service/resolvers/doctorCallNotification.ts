@@ -62,7 +62,7 @@ export const doctorCallNotificationTypeDefs = gql`
     ): NotificationResult!
     endCallNotification(appointmentCallId: String): EndCallResult!
     sendApptNotification: ApptNotificationResult!
-    getCallDetails(id: String): CallDetailsResult!
+    getCallDetails(appointmentCallId: String): CallDetailsResult!
   }
 `;
 type NotificationResult = {

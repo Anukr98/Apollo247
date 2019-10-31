@@ -1314,7 +1314,7 @@
             "description": null,
             "args": [
               {
-                "name": "id",
+                "name": "appointmentCallId",
                 "description": null,
                 "type": {
                   "kind": "SCALAR",
