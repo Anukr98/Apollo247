@@ -893,7 +893,7 @@ export const JDConsultRoom: React.FC = () => {
         variables: {
           appointmentId: appointmentId,
           callType: callType,
-          doctorType: DOCTOR_CALL_TYPE.SENIOR,
+          doctorType: DOCTOR_CALL_TYPE.JUNIOR,
         },
       })
       .then((_data) => {
