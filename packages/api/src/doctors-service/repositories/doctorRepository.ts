@@ -640,10 +640,13 @@ export class DoctorRepository extends Repository<Doctor> {
     });
   }
 
-  getJuniorDoctorsList() {
+  getJuniorDoctorsList(offset?: number, limit?: number) {
     const queryBuilder = this.createQueryBuilder('doctor')
       .andWhere('doctor.isActive = true')
       .andWhere('doctor.doctorType = :junior', { junior: DoctorType.JUNIOR })
+      .offset(offset)
+      .limit(limit)
+      .orderBy('doctor.firstName')
       .getMany();
     return queryBuilder;
   }

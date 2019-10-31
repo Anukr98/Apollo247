@@ -10,13 +10,7 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .getRawMany();
   }
 
-  getJuniorDoctorQueueCount(
-    idArray: string[],
-    fromDate: Date,
-    toDate: Date,
-    offset?: number,
-    limit?: number
-  ) {
+  getJuniorDoctorQueueCount(idArray: string[], fromDate: Date, toDate: Date) {
     const newStartDate = new Date(format(addDays(fromDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(toDate, 'yyyy-MM-dd') + 'T18:30');
     return this.createQueryBuilder('consultQueueItem')
@@ -27,8 +21,6 @@ export class ConsultQueueRepository extends Repository<ConsultQueueItem> {
       .andWhere('consultQueueItem.createdDate >= :newStartDate', { newStartDate })
       .andWhere('consultQueueItem.createdDate <= :newEndDate', { newEndDate })
       .groupBy('consultQueueItem.doctorId')
-      .offset(offset)
-      .limit(limit)
       .getRawMany();
   }
 

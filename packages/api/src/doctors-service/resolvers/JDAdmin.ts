@@ -37,7 +37,7 @@ type DashoardData = {
 };
 const getJuniorDoctorDashboard: Resolver<
   null,
-  { fromDate: Date; toDate: Date; offset: Number; limit: Number },
+  { fromDate: Date; toDate: Date; offset: number; limit: number },
   DoctorsServiceContext,
   DashoardData
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb }) => {
@@ -68,7 +68,7 @@ const getJuniorDoctorDashboard: Resolver<
   }
 
   //get junior doctor details
-  const juniorDoctorDetails = await doctorRepository.getJuniorDoctorsList();
+  const juniorDoctorDetails = await doctorRepository.getJuniorDoctorsList(args.offset, args.limit);
   if (juniorDoctorDetails != null) {
     const juniorDoctorIds = juniorDoctorDetails.map((doctor) => {
       return doctor.id;
