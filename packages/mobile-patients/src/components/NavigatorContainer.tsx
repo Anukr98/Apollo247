@@ -49,6 +49,8 @@ import { MobileHelp } from '@aph/mobile-patients/src/components/ui/MobileHelp';
 import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopByBrand';
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import { SearchByBrand } from '@aph/mobile-patients/src/components/Medicines/SearchByBrand';
+import { AsyncStorage } from 'react-native';
+import { CommonScreenLog } from '../FunctionHelpers/DeviceHelper';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -263,6 +265,12 @@ const stackConfig: StackNavigatorConfig = {
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: (sceneProps) => {
+    try {
+      AsyncStorage.setItem('setCurrentName', sceneProps.scene.route.routeName);
+      CommonScreenLog(sceneProps.scene.route.routeName, sceneProps.scene.route.routeName);
+    } catch (error) {
+      console.log('sceneProps error', error);
+    }
     return {
       transitionSpec: {
         duration: sceneProps.scene.route.routeName === 'TabBar' ? 0 : 100,
