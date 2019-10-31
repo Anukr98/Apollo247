@@ -68,15 +68,20 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
     aphConsole.log({ notificationType, title, body, data });
     aphConsole.log('processNotification', notification);
 
-    const setCurrentName = await AsyncStorage.getItem('setCurrentName');
-    aphConsole.log('setCurrentName', setCurrentName);
+    const currentScreenName = await AsyncStorage.getItem('setCurrentName');
+    aphConsole.log('setCurrentName', currentScreenName);
 
-    if (
-      setCurrentName === AppRoutes.ChatRoom ||
-      setCurrentName === AppRoutes.AppointmentDetails ||
-      setCurrentName === AppRoutes.AppointmentOnlineDetails
-    )
-      return;
+    if (notificationType === 'chat_room' || notificationType === 'call_started') {
+      if (currentScreenName === AppRoutes.ChatRoom) return;
+    }
+
+    if (notificationType === 'Reschedule_Appointment') {
+      if (
+        currentScreenName === AppRoutes.AppointmentDetails ||
+        currentScreenName === AppRoutes.AppointmentOnlineDetails
+      )
+        return;
+    }
 
     aphConsole.log('processNotification after return statement');
 
