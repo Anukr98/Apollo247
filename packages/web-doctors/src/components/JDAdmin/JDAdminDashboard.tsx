@@ -1,18 +1,19 @@
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
+import { CircularProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from 'react-apollo-hooks';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import { GET_JD_DASHBOARD } from 'graphql/doctors';
-import { GetJuniorDoctorDashboard } from 'graphql/types/GetJuniorDoctorDashboard';
-import { useApolloClient } from 'react-apollo-hooks';
-import { useAuth } from 'hooks/authHooks';
-import { ApolloError } from 'apollo-client';
-import { CircularProgress } from '@material-ui/core';
+import {
+  GetJuniorDoctorDashboard,
+  GetJuniorDoctorDashboardVariables,
+} from 'graphql/types/GetJuniorDoctorDashboard';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -97,44 +98,30 @@ const useStyles = makeStyles((theme: Theme) => {
 
 export const JDAdminDashboard: React.FC = (props) => {
   const classes = useStyles();
-  const { currentPatient, isSignedIn } = useAuth();
-  const client = useApolloClient();
-  const [loaded, setLoaded] = useState<boolean>(false);
-  const [JDAdminData, setJDAdminData] = useState<any>(null);
 
-  useEffect(() => {
-    if (isSignedIn) {
-      client
-        .query<GetJuniorDoctorDashboard>({
-          query: GET_JD_DASHBOARD,
-          fetchPolicy: 'no-cache',
-          variables: { fromDate: '2019-10-31', toDate: '2019-10-31' },
-        })
-        .then((_data) => {
-          if (_data.data && _data.data.getJuniorDoctorDashboard) {
-            setJDAdminData(_data.data.getJuniorDoctorDashboard);
-          }
-        })
-        .catch((error: ApolloError) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setLoaded(true);
-        });
-    }
-  }, []);
-
-  if (JDAdminData != null) {
-    console.log(JDAdminData.juniorDoctorDetails);
+  const { data, loading, error } = useQuery<
+    GetJuniorDoctorDashboard,
+    GetJuniorDoctorDashboardVariables
+  >(GET_JD_DASHBOARD, {
+    variables: {
+      fromDate: '2019-10-31',
+      toDate: '2019-10-31',
+    },
+    pollInterval: 10 * 1000,
+  });
+  if (error) {
+    return <div>Error :(</div>;
+  }
+  if (loading) {
+    return <CircularProgress />;
   }
 
-  return (
-    <div className={classes.root}>
-      <div className={classes.headerSticky}>
-        <Header />
-      </div>
-      {!loaded && <CircularProgress className={classes.loading} />}
-      {loaded && JDAdminData && (
+  if (data && data.getJuniorDoctorDashboard && data.getJuniorDoctorDashboard.juniorDoctorDetails) {
+    return (
+      <div className={classes.root}>
+        <div className={classes.headerSticky}>
+          <Header />
+        </div>
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>Admin Dashboard</div>
@@ -157,26 +144,33 @@ export const JDAdminDashboard: React.FC = (props) => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {JDAdminData &&
-                    JDAdminData.juniorDoctorDetails &&
-                    JDAdminData.juniorDoctorDetails.map((jd: any) => {
+                  {data &&
+                    data.getJuniorDoctorDashboard &&
+                    data.getJuniorDoctorDashboard.juniorDoctorDetails.map((jd, index) => {
                       <TableRow>
-                        <TableCell>123</TableCell>
-                        <TableCell>1</TableCell>
-                        <TableCell>{`${jd.salutation}. ${jd.firstName} ${jd.lastName}`}</TableCell>
                         <TableCell>
-                          <span className={classes.userActive}>{jd.onlineStatus}</span>
+                          <span className={classes.userActive}>{index + 1}</span>
                         </TableCell>
-                        <TableCell align="right">01</TableCell>
-                        <TableCell align="right">02</TableCell>
+                        <TableCell>
+                          <span className={classes.userActive}>{jd && jd.firstName}</span>
+                        </TableCell>
+                        <TableCell>
+                          <span className={classes.userActive}>{jd && jd.onlineStatus}</span>
+                        </TableCell>
                       </TableRow>;
                     })}
+                  <TableCell>
+                    <span className={classes.userActive}>12</span>
+                  </TableCell>
+                  <TableCell align="right">2334</TableCell>
                 </TableBody>
               </Table>
             </div>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  } else {
+    return <></>;
+  }
 };
