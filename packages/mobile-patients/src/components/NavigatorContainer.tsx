@@ -110,6 +110,7 @@ export enum AppRoutes {
   TestDetails = 'TestDetails',
   ManageProfile = 'ManageProfile',
   EditProfile = 'EditProfile',
+  TestsDetailScene = 'TestsDetailScene',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -283,6 +284,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.EditProfile]: {
     screen: EditProfile,
+  },
+  [AppRoutes.TestsDetailScene]: {
+    screen: TestsDetailScene,
   },
 };
 
