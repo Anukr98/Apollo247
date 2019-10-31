@@ -5,32 +5,44 @@ import {
   NotificationType,
   sendCallsNotification,
   DOCTOR_CALL_TYPE,
-  DOCTOR_TYPE,
+  APPT_CALL_TYPE,
 } from 'notifications-service/resolvers/notifications';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { AppointmentCallDetails } from 'consults-service/entities';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AppointmentCallDetailsRepository } from 'consults-service/repositories/appointmentCallDetailsRepository';
 import { format } from 'date-fns';
 
 export const doctorCallNotificationTypeDefs = gql`
   type NotificationResult {
     status: Boolean!
+    callDetails: AppointmentCallDetails!
   }
+
+  type EndCallResult {
+    status: Boolean!
+  }
+
   type ApptNotificationResult {
     status: Boolean!
     currentTime: String!
   }
 
-  enum DOCTOR_CALL_TYPE {
+  enum APPT_CALL_TYPE {
     AUDIO
     VIDEO
   }
 
-  enum DOCTOR_TYPE {
+  enum DOCTOR_CALL_TYPE {
     JUNIOR
     SENIOR
   }
+
+  type CallDetailsResult  {
+  appointmentCallDetails: AppointmentCallDetails;
+}
 
   extend type Query {
     sendCallNotification(
@@ -38,25 +50,75 @@ export const doctorCallNotificationTypeDefs = gql`
       callType: DOCTOR_CALL_TYPE
       doctorType: DOCTOR_TYPE
     ): NotificationResult!
+    endCallNotification(appointmentCallId: String): EndCallResult!
     sendApptNotification: ApptNotificationResult!
+    getCallDetails(id: string): CallDetailsResult!
   }
 `;
 type NotificationResult = {
   status: Boolean;
+  callDetails: AppointmentCallDetails;
 };
 type ApptNotificationResult = {
   status: Boolean;
   currentTime: string;
 };
+type EndCallResult = {
+  status: Boolean;
+};
+
+type CallDetailsResult = {
+  appointmentCallDetails: AppointmentCallDetails;
+};
+
+const endCallNotification: Resolver<
+  null,
+  { appointmentCallId: string },
+  ConsultServiceContext,
+  EndCallResult
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  const callDetailsRepo = consultsDb.getCustomRepository(AppointmentCallDetailsRepository);
+  await callDetailsRepo.updateCallDetails(args.appointmentCallId);
+  return { status: true };
+};
+
+const getCallDetails: Resolver<
+  null,
+  { appointmentCallId: string },
+  ConsultServiceContext,
+  CallDetailsResult
+> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
+  const callDetailsRepo = consultsDb.getCustomRepository(AppointmentCallDetailsRepository);
+  const appointmentCallDetails = await callDetailsRepo.getCallDetails(args.appointmentCallId);
+  if (!appointmentCallDetails) {
+    throw new AphError(AphErrorMessages.INVALID_CALL_ID, undefined, {});
+  }
+  return { appointmentCallDetails };
+};
+
 const sendCallNotification: Resolver<
   null,
-  { appointmentId: string; callType: DOCTOR_CALL_TYPE; doctorType: DOCTOR_TYPE },
+  { appointmentId: string; callType: APPT_CALL_TYPE; doctorType: DOCTOR_CALL_TYPE },
   ConsultServiceContext,
   NotificationResult
 > = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const apptDetails = await apptRepo.findById(args.appointmentId);
   if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+  const callDetailsRepo = consultsDb.getCustomRepository(AppointmentCallDetailsRepository);
+  const appointmentCallDetailsAttrs: Partial<AppointmentCallDetails> = {
+    appointment: apptDetails,
+    callType: args.callType,
+    doctorType: args.doctorType,
+    startTime: new Date(),
+  };
+  const appointmentCallDetails = await callDetailsRepo.saveAppointmentCallDetails(
+    appointmentCallDetailsAttrs
+  );
+
+  if (!appointmentCallDetails) {
+    throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
+  }
   const pushNotificationInput = {
     appointmentId: args.appointmentId,
     notificationType: NotificationType.CALL_APPOINTMENT,
@@ -67,11 +129,12 @@ const sendCallNotification: Resolver<
     consultsDb,
     doctorsDb,
     args.callType,
-    args.doctorType
+    args.doctorType,
+    appointmentCallDetails.id
   );
   console.log(notificationResult, 'doctor call appt notification');
 
-  return { status: true };
+  return { status: true, callDetails: appointmentCallDetails };
 };
 
 const sendApptNotification: Resolver<
@@ -106,5 +169,7 @@ export const doctorCallNotificationResolvers = {
   Query: {
     sendCallNotification,
     sendApptNotification,
+    endCallNotification,
+    getCallDetails,
   },
 };

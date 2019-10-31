@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { DoctorType } from 'doctors-service/entities';
+import { APPT_CALL_TYPE, DOCTOR_CALL_TYPE } from 'notifications-service/resolvers/notifications';
 
 export enum patientLogSort {
   MOST_RECENT = 'MOST_RECENT',
@@ -287,6 +288,45 @@ export class AppointmentSessions extends BaseEntity {
 }
 //AppointmentSessions ends
 
+//Appointment call details start
+
+//Appointment call details end
+@Entity()
+export class AppointmentCallDetails extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  callType: APPT_CALL_TYPE;
+
+  @Column()
+  doctorType: DOCTOR_CALL_TYPE;
+
+  @Column({ type: 'timestamp' })
+  startTime: Date;
+
+  @Column({ type: 'timestamp' })
+  endTime: Date;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
+  appointment: Appointment;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
 //Junior AppointmentSessions starts
 @Entity()
 export class JuniorAppointmentSessions extends BaseEntity {
