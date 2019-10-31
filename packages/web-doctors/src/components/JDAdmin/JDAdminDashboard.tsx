@@ -1,8 +1,8 @@
+import React from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { CircularProgress } from '@material-ui/core';
+import { LinearProgress } from '@material-ui/core';
 import { Header } from 'components/Header';
-import React, { useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -14,6 +14,8 @@ import {
   GetJuniorDoctorDashboard,
   GetJuniorDoctorDashboardVariables,
 } from 'graphql/types/GetJuniorDoctorDashboard';
+import { format } from 'date-fns';
+import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -96,7 +98,7 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const JDAdminDashboard: React.FC = (props) => {
+export const JDAdminDashboard: React.FC = (rops) => {
   const classes = useStyles();
 
   const { data, loading, error } = useQuery<
@@ -104,16 +106,18 @@ export const JDAdminDashboard: React.FC = (props) => {
     GetJuniorDoctorDashboardVariables
   >(GET_JD_DASHBOARD, {
     variables: {
-      fromDate: '2019-10-31',
-      toDate: '2019-10-31',
+      fromDate: format(new Date(), 'yyyy-MM-dd'),
+      toDate: format(new Date(), 'yyyy-MM-dd'),
     },
     pollInterval: 10 * 1000,
   });
+
   if (error) {
-    return <div>Error :(</div>;
+    return <div>An error occurred while loading Admin Dashboard :(</div>;
   }
+
   if (loading) {
-    return <CircularProgress />;
+    return <LinearProgress />;
   }
 
   if (data && data.getJuniorDoctorDashboard && data.getJuniorDoctorDashboard.juniorDoctorDetails) {
@@ -162,11 +166,27 @@ export const JDAdminDashboard: React.FC = (props) => {
                   {data &&
                     data.getJuniorDoctorDashboard &&
                     data.getJuniorDoctorDashboard.juniorDoctorDetails.map((jd, index) => {
+                      const onlineStatus =
+                        jd && jd.onlineStatus === DOCTOR_ONLINE_STATUS.ONLINE
+                          ? 'Logged In'
+                          : 'Away';
+                      const userClassName =
+                        jd && jd.onlineStatus === DOCTOR_ONLINE_STATUS.ONLINE
+                          ? classes.userActive
+                          : classes.userAway;
+                      const jrFirstName = (jd && jd.firstName) || '';
+                      const jrLastName = (jd && jd.lastName) || '';
                       return (
                         <TableRow>
                           <TableCell>{index + 1}</TableCell>
-                          <TableCell>{jd && jd.firstName}</TableCell>
-                          <TableCell>{jd && jd.onlineStatus}</TableCell>
+                          <TableCell>
+                            {jrFirstName}&nbsp;{jrLastName}
+                          </TableCell>
+                          <TableCell>
+                            <span className={userClassName}>{onlineStatus}</span>
+                          </TableCell>
+                          <TableCell>&nbsp;</TableCell>
+                          <TableCell>&nbsp;</TableCell>
                         </TableRow>
                       );
                     })}
