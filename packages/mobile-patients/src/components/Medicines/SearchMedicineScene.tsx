@@ -43,6 +43,7 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -394,6 +395,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               activeOpacity={1}
               // style={{ marginRight: 24 }}
               onPress={() => {
+                CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
                 props.navigation.navigate(AppRoutes.YourCart);
               }}
             >
@@ -593,12 +595,15 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         price={price}
         unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
         onPressAdd={() => {
+          CommonLogEvent(AppRoutes.SearchMedicineScene, 'Add item to cart');
           onAddCartItem(medicine);
         }}
         onPressRemove={() => {
+          CommonLogEvent(AppRoutes.SearchMedicineScene, 'Remove item from cart');
           onRemoveCartItem(medicine);
         }}
         onChangeUnit={(unit) => {
+          CommonLogEvent(AppRoutes.SearchMedicineScene, 'Change unit in cart');
           onUpdateCartItem(medicine, unit);
         }}
         isCardExpanded={!!foundMedicineInCart}

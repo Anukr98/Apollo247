@@ -10,6 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -145,6 +146,7 @@ export const ShopByBrand: React.FC<ShopByBrandProps> = (props) => {
                   }}
                   activeOpacity={1}
                   onPress={() => {
+                    CommonLogEvent(AppRoutes.ShopByBrand, 'Naviagte to search by brand view');
                     props.navigation.navigate(AppRoutes.SearchByBrand, {
                       title: item.title,
                       category_id: item.category_id,

@@ -139,6 +139,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     props.navigation.state.params!.isFollowcount
   );
   const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
+  const [testShow, setTestShow] = useState<boolean>(true);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -388,8 +389,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         </View>
 
                         <Text style={styles.dataTextStyle}>
-                          {item.medicineDosage + ` ` + item.medicineUnit}
-                          {parseInt(item.medicineDosage || '1') > 1 &&
+                          {item.medicineTimings!.length *
+                            parseInt(item!.medicineConsumptionDurationInDays!) +
+                            ` ` +
+                            item.medicineUnit}
+                          {/* parseInt(item.medicineDosage || '1') > 1 */}
+                          {item.medicineTimings!.length > 1 &&
                           (item.medicineUnit == MEDICINE_UNIT.TABLET ||
                             item.medicineUnit == MEDICINE_UNIT.CAPSULE)
                             ? 'S'
@@ -421,7 +426,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 })}
                 <TouchableOpacity
                   onPress={() => {
-                    CommonLogEvent('CONSULT_DETAILS', 'Add to crat');
                     onAddToCart();
                   }}
                 >
@@ -585,12 +589,46 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
     );
   };
 
+  const renderTestNotes = () => {
+    return (
+      <View>
+        <CollapseCard
+          heading="TEST SELECTION"
+          collapse={testShow}
+          onPress={() => setTestShow(!testShow)}
+        >
+          <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
+            {caseSheetDetails!.notes && caseSheetDetails!.notes !== null ? (
+              <View>
+                <Text style={styles.labelStyle}>
+                  {caseSheetDetails!.notes}
+                  {/* {caseSheetDetails!
+                    .otherInstructions!.map((item, i) => {
+                      if (item && item.instruction !== '') {
+                        return `${i + 1}. ${item.instruction}`;
+                      }
+                    })
+                    .join('\n')} */}
+                </Text>
+              </View>
+            ) : (
+              <View>
+                <Text style={styles.labelStyle}>No Test</Text>
+              </View>
+            )}
+          </View>
+        </CollapseCard>
+      </View>
+    );
+  };
+
   const renderData = () => {
     if (caseSheetDetails)
       return (
         <View>
           {renderSymptoms()}
           {renderPrescriptions()}
+          {renderTestNotes()}
           {renderDiagnosis()}
           {renderGenerealAdvice()}
           {renderFollowUp()}

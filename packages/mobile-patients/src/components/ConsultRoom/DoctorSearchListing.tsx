@@ -121,12 +121,13 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     { title: 'Online Consults' },
     { title: 'Clinic Visits' },
   ];
+  let latlng: locationType | null = null;
+
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
-  const [latlng, setlatlng] = useState<locationType | null>(null);
-
+  // const [latlng, setlatlng] = useState<locationType | null>(null);
   const [doctorsList, setDoctorsList] = useState<
     (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors | null)[]
   >([]);
@@ -181,6 +182,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         console.log('You can use the location');
+        fetchCurrentLocation();
       } else {
         console.log('location permission denied');
       }
@@ -193,15 +195,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     Platform.OS === 'android' && requestLocationPermission();
     getNetStatus().then((status) => {
       if (status) {
-        // fetchCurrentLocation();
-        getUserCurrentPosition()
-          .then((res: any) => {
-            res.name && setcurrentLocation(res.name.toUpperCase());
-            fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
-            setlatlng(res.latlong);
-            console.log(res, 'getUserCurrentPosition');
-          })
-          .catch((error) => console.log(error, 'getUserCurrentPosition err'));
+        fetchCurrentLocation();
 
         // fetchSpecialityFilterData(filterMode, FilterData);
       } else {
@@ -462,7 +456,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                   'location',
                   JSON.stringify({ latlong: obj.data.result.geometry.location, name: item.name })
                 );
-                setlatlng(obj.data.result.geometry.location);
+                // setlatlng(obj.data.result.geometry.location);
+                latlng = obj.data.result.geometry.location;
+                setshowSpinner(true);
+                fetchSpecialityFilterData(filterMode, FilterData, latlng);
               }
             } catch (error) {
               console.log(error);
@@ -481,7 +478,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     getUserCurrentPosition()
       .then((res: any) => {
         res.name && setcurrentLocation(res.name.toUpperCase());
-
+        fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
+        latlng = res.latlong;
         console.log(res, 'getUserCurrentPosition');
       })
       .catch((error) => console.log(error, 'getUserCurrentPosition err'));

@@ -205,6 +205,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
   const documentUpload = '^^#DocumentUpload';
+  const patientConsultStarted = '^^#PatientConsultStarted';
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;
@@ -293,7 +294,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== acceptcallMsg &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
-          message.message.message !== followupconsult
+          message.message.message !== followupconsult &&
+          message.message.message !== patientConsultStarted
         ) {
           setIsNewMsg(true);
         } else {
@@ -389,7 +391,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== acceptcallMsg &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
-      rowData.message !== followupconsult
+      rowData.message !== followupconsult &&
+      rowData.message !== patientConsultStarted
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -427,7 +430,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== acceptcallMsg &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
-      rowData.message !== followupconsult
+      rowData.message !== followupconsult &&
+      rowData.message !== patientConsultStarted
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -487,7 +491,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== acceptcallMsg &&
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
-      rowData.message !== followupconsult
+      rowData.message !== followupconsult &&
+      rowData.message !== patientConsultStarted
     ) {
       jrDrComponent++;
       leftComponent = 0;

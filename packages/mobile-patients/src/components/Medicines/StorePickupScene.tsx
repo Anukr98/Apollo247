@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -151,6 +152,7 @@ export const StorePickupScene: React.FC<StorePickupSceneProps> = (props) => {
         title={`${store.storename}\n${store.address}`}
         isSelected={storeId === store.storeid}
         onPress={() => {
+          CommonLogEvent('STORE_PICKUP_SCENE', `Selected store Id is ${store.storeid}`);
           setStoreId && setStoreId(store.storeid);
         }}
         containerStyle={{

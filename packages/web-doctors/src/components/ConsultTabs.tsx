@@ -17,6 +17,7 @@ import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import DialogContentText from '@material-ui/core/DialogContentText';
 // import DialogTitle from '@material-ui/core/DialogTitle';
 import { CasesheetView } from 'components/CasesheetView';
+import { APPOINTMENT_TYPE } from '../graphql/types/globalTypes';
 
 //import { Document } from 'react-pdf';
 import _omit from 'lodash/omit';
@@ -70,7 +71,7 @@ import {
   CreateSeniorDoctorCaseSheetVariables,
 } from 'graphql/types/CreateSeniorDoctorCaseSheet';
 
-import { REQUEST_ROLES, STATUS, DOCTOR_CALL_TYPE, DOCTOR_TYPE } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, STATUS, DOCTOR_CALL_TYPE, APPT_CALL_TYPE } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/case-sheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
 import { CaseSheetContext } from 'context/CaseSheetContext';
@@ -305,6 +306,7 @@ export const ConsultTabs: React.FC = () => {
   const [casesheetInfo, setCasesheetInfo] = useState<any>(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = React.useState(false);
+  const [callId, setcallId] = useState<string>('');
 
   const [loaded, setLoaded] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
@@ -338,6 +340,7 @@ export const ConsultTabs: React.FC = () => {
   const [caseSheetEdit, setCaseSheetEdit] = useState<boolean>(false);
   const [followUpAfterInDays, setFollowUpAfterInDays] = useState<string[]>([]);
   const [followUpDate, setFollowUpDate] = useState<string[]>([]);
+  const [followUpConsultType, setFollowUpConsultType] = useState<string[]>([]);
   // const [isPdfPopoverOpen, setIsPdfPopoverOpen] = useState<boolean>(false);
 
   const [bp, setBp] = useState<string>('');
@@ -429,6 +432,11 @@ export const ConsultTabs: React.FC = () => {
                 _data!.data!.getCaseSheet!.caseSheetDetails!.followUpDate,
               ] as unknown) as string[])
             : setFollowUpDate([]);
+          _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType
+            ? setFollowUpConsultType(([
+                _data!.data!.getCaseSheet!.caseSheetDetails!.followUpConsultType,
+              ] as unknown) as string[])
+            : setFollowUpConsultType([]);
           _data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status
             ? setAppointmentStatus(_data!.data!.getCaseSheet!.caseSheetDetails!.appointment!.status)
             : setAppointmentStatus('');
@@ -605,7 +613,7 @@ export const ConsultTabs: React.FC = () => {
     }
   }, []);
 
-  const sendCallNotificationFn = (callType: DOCTOR_CALL_TYPE) => {
+  const sendCallNotificationFn = (callType: APPT_CALL_TYPE) => {
     client
       .query<SendCallNotification, SendCallNotificationVariables>({
         query: SEND_CALL_NOTIFICATION,
@@ -613,8 +621,18 @@ export const ConsultTabs: React.FC = () => {
         variables: {
           appointmentId: appointmentId,
           callType: callType,
-          doctorType: DOCTOR_TYPE.SENIOR,
+          doctorType: DOCTOR_CALL_TYPE.SENIOR,
         },
+      })
+      .then((_data) => {
+        if (
+          _data &&
+          _data.data &&
+          _data.data.sendCallNotification &&
+          _data.data.sendCallNotification.status
+        ) {
+          setcallId(_data.data.sendCallNotification.callDetails.id);
+        }
       })
       .catch((error: ApolloError) => {
         console.log('Error in Call Notification', error.message);
@@ -718,6 +736,10 @@ export const ConsultTabs: React.FC = () => {
               followUp[0] && followUpAfterInDays[0] !== 'Custom'
                 ? parseInt(followUpAfterInDays[0], 10)
                 : 0,
+            followUpConsultType:
+              followUpConsultType[0] === APPOINTMENT_TYPE.PHYSICAL
+                ? APPOINTMENT_TYPE.PHYSICAL
+                : APPOINTMENT_TYPE.ONLINE,
             otherInstructions: otherInstructionsFinal,
             medicinePrescription: medicinePrescriptionFinal,
             id: caseSheetId,
@@ -824,7 +846,7 @@ export const ConsultTabs: React.FC = () => {
     document.cookie = cookieStr + ';path=/;';
     setTimeout(() => {
       setStartConsult(flag ? 'videocall' : 'audiocall');
-      sendCallNotificationFn(flag ? DOCTOR_CALL_TYPE.VIDEO : DOCTOR_CALL_TYPE.AUDIO);
+      sendCallNotificationFn(flag ? APPT_CALL_TYPE.VIDEO : APPT_CALL_TYPE.AUDIO);
     }, 10);
   };
 
@@ -849,6 +871,8 @@ export const ConsultTabs: React.FC = () => {
             appointmentInfo: casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment,
             createdDoctorProfile: casesheetInfo!.getCaseSheet!.caseSheetDetails!
               .createdDoctorProfile,
+            followUpConsultType,
+            setFollowUpConsultType,
             symptoms,
             setSymptoms,
             notes,
@@ -925,6 +949,7 @@ export const ConsultTabs: React.FC = () => {
                 isAppointmentEnded={isAppointmentEnded}
                 sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
                 setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
+                callId={callId}
               />
               <div>
                 {!isPdfPageOpen ? (

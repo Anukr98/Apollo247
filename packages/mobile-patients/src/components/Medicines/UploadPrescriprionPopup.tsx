@@ -28,6 +28,8 @@ import { ScrollView } from 'react-navigation';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import DocumentPicker from 'react-native-document-picker';
 import RNFetchBlob from 'react-native-fetch-blob';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -121,6 +123,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
   };
 
   const onClickTakePhoto = () => {
+    CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Take photo on click');
     setshowSpinner(true);
     ImagePicker.openCamera({
       // width: 400,
@@ -144,7 +147,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   const onClickGallery = async () => {
     setshowSpinner(true);
-
+    CommonLogEvent('UPLAOD_PRESCRIPTION_POPUP', 'Gallery opened');
     //   try {
     //     const docs = await DocumentPicker.pickMultiple({
     //       type: [DocumentPicker.types.images, DocumentPicker.types.pdf],

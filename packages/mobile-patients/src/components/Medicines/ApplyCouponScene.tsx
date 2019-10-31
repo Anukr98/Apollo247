@@ -15,6 +15,8 @@ import { GET_COUPONS } from '../../graphql/profiles';
 import { getCoupons, getCoupons_getCoupons_coupons } from '../../graphql/types/getCoupons';
 import { g, handleGraphQlError } from '../../helpers/helperFunctions';
 import { Spinner } from '../ui/Spinner';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -115,6 +117,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
           disabled={!(couponText.length > 3)}
           title="APPLY COUPON"
           onPress={() => {
+            CommonLogEvent(AppRoutes.ApplyCouponScene, 'Apply Coupon');
             const foundCoupon = couponList.find((coupon) => coupon!.code == couponText);
             if (foundCoupon) {
               applyCoupon(foundCoupon);
@@ -191,6 +194,7 @@ export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
         style={styles.radioButtonContainer}
         key={i}
         onPress={() => {
+          CommonLogEvent(AppRoutes.ApplyCouponScene, 'Check Minimum cart value and apply coupon');
           const minimumOrderAmount = coupon!.minimumOrderAmount;
           if (minimumOrderAmount && cartTotal < minimumOrderAmount)
             Alert.alert('Error', `Minimum cart value must be ${minimumOrderAmount} or more.`);

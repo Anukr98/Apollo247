@@ -104,6 +104,7 @@ export interface ModifyCaseSheet_modifyCaseSheet {
   followUp: boolean | null;
   followUpAfterInDays: string | null;
   followUpDate: any | null;
+  followUpConsultType: APPOINTMENT_TYPE | null;
   id: string | null;
   medicinePrescription: (ModifyCaseSheet_modifyCaseSheet_medicinePrescription | null)[] | null;
   notes: string | null;

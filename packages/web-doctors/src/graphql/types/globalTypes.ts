@@ -11,6 +11,11 @@ export enum APPOINTMENT_TYPE {
   PHYSICAL = "PHYSICAL",
 }
 
+export enum APPT_CALL_TYPE {
+  AUDIO = "AUDIO",
+  VIDEO = "VIDEO",
+}
+
 export enum AccountType {
   CURRENT = "CURRENT",
   SAVINGS = "SAVINGS",
@@ -33,8 +38,8 @@ export enum ConsultType {
 }
 
 export enum DOCTOR_CALL_TYPE {
-  AUDIO = "AUDIO",
-  VIDEO = "VIDEO",
+  JUNIOR = "JUNIOR",
+  SENIOR = "SENIOR",
 }
 
 export enum DOCTOR_ONLINE_STATUS {
@@ -42,12 +47,8 @@ export enum DOCTOR_ONLINE_STATUS {
   ONLINE = "ONLINE",
 }
 
-export enum DOCTOR_TYPE {
-  JUNIOR = "JUNIOR",
-  SENIOR = "SENIOR",
-}
-
 export enum DoctorType {
+  ADMIN = "ADMIN",
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
