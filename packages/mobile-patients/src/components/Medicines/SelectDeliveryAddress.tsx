@@ -9,6 +9,8 @@ import { SafeAreaView, StyleSheet, View, Alert, Platform } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Spinner } from '../ui/Spinner';
 import { pinCodeServiceabilityApi } from '../../helpers/apiCalls';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -44,9 +46,14 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
                 if (Availability) {
                   setSelectedAddressId && setSelectedAddressId(selectedId);
                   props.navigation.goBack();
+                  CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Address selected');
                 } else {
                   Alert.alert(
                     'Alert',
+                    'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
+                  );
+                  CommonLogEvent(
+                    AppRoutes.SelectDeliveryAddress,
                     'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
                   );
                   setSelectedAddressId && setSelectedAddressId('');
@@ -70,6 +77,7 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
         }${address.city}, ${address.state} - ${address.zipcode}`}
         isSelected={selectedId === address.id}
         onPress={() => {
+          CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Select pincode and Id');
           setselectedPinCode(address.zipcode!);
           setselectedId(address.id);
         }}

@@ -19,6 +19,7 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -173,6 +174,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
                   .length == 0
               }
               onPress={() => {
+                CommonLogEvent('SELECT_PRESCRIPTION_MODAL', 'Formatted e prescription');
                 props.onSubmit(
                   formattedEPrescriptions.filter((item) => selectedPrescription[item!.id])
                 );

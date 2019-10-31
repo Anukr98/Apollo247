@@ -42,6 +42,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { useUIElements } from '../UIElementsProvider';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -471,6 +472,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 style={{ backgroundColor: theme.colors.WHITE }}
                 titleTextStyle={{ color: '#fc9916' }}
                 onPress={() => {
+                  CommonLogEvent(
+                    AppRoutes.MedicineDetailsScene,
+                    `You will be notified when ${medicineName} is back in stock.`
+                  );
                   showAphAlert!({
                     title: 'Okay! :)',
                     description: `You will be notified when ${medicineName} is back in stock.`,
@@ -545,6 +550,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               <View style={{ width: 16 }} />
               <Button
                 onPress={() => {
+                  CommonLogEvent(AppRoutes.MedicineDetailsScene, 'Update quantity cart item');
                   updateQuantityCartItem(medicineDetails);
                   !isMedicineAddedToCart && onAddCartItem(medicineDetails);
                   props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
@@ -1109,6 +1115,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   <TouchableOpacity
                     style={styles.textViewStyle}
                     onPress={() => {
+                      CommonLogEvent(
+                        AppRoutes.MedicineDetailsScene,
+                        'Navigate to Medicine Details scene with sku'
+                      );
                       props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
                         sku: item.sku,
                         title: item.name,
