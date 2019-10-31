@@ -115,12 +115,28 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   useEffect(() => {
     firebase.analytics().setCurrentScreen(AppRoutes.OTPVerification, AppRoutes.OTPVerification);
-    BackHandler.addEventListener('hardwareBackPress', () => {
-      console.log('hihi');
-      setonClickOpen(false);
-      return true;
-    });
   });
+
+  const handleBack = async () => {
+    setonClickOpen(false);
+    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    return true;
+  };
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, []);
 
   const startInterval = useCallback(
     (timer: number) => {

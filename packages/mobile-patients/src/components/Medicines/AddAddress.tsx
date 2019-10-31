@@ -45,6 +45,7 @@ import {
 } from '../../graphql/types/updatePatientAddress';
 import { fonts } from '../../theme/fonts';
 import { AppRoutes } from '../NavigatorContainer';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 const { height } = Dimensions.get('window');
 const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 const styles = StyleSheet.create({
@@ -224,7 +225,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
   const onSavePress = async () => {
     setshowSpinner(true);
-
+    CommonLogEvent(AppRoutes.AddAddress, 'On Save Press clicked');
     if (props.navigation.getParam('KeyName') == 'Update') {
       const updateaddressInput = {
         id: props.navigation.getParam('DataAddress').id,
@@ -440,6 +441,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                 ({
                   optionText: item.firstName,
                   onPress: () => {
+                    CommonLogEvent(AppRoutes.AddAddress, 'Drop Down clicked');
                     setuserName(item.firstName!);
                     setuserId(item.id);
                     setShowPopup(false);

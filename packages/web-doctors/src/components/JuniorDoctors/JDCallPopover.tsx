@@ -12,6 +12,7 @@ import {
 } from '@material-ui/core';
 import Pubnub from 'pubnub';
 import moment from 'moment';
+import { ApolloError } from 'apollo-client';
 import { isEmpty } from 'lodash';
 import { AphSelect, AphTextField, AphButton } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
@@ -29,10 +30,15 @@ import {
   INITIATE_TRANSFER_APPONITMENT,
   SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME,
 } from 'graphql/profiles';
+import { END_CALL_NOTIFICATION } from 'graphql/consults';
 import { TRANSFER_INITIATED_TYPE, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 import { CircularProgress } from '@material-ui/core';
+import {
+  EndCallNotification,
+  EndCallNotificationVariables,
+} from 'graphql/types/EndCallNotification';
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -607,6 +613,7 @@ interface CallPopoverProps {
   assignedDoctorFirstName: string;
   assignedDoctorLastName: string;
   isAudioVideoCallEnded: (isAudioVideoCall: boolean) => void;
+  callId: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -640,6 +647,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
+  const patientConsultStarted = '^^#PatientConsultStarted';
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
@@ -760,7 +768,23 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       }
     );
     stopIntervalTimer();
+    sendStopCallNotificationFn();
+
     //setIsVideoCall(false);
+  };
+  const sendStopCallNotificationFn = () => {
+    client
+      .query<EndCallNotification, EndCallNotificationVariables>({
+        query: END_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentCallId: props.callId,
+        },
+      })
+      .catch((error: ApolloError) => {
+        console.log('Error in Call Notification', error.message);
+        alert('An error occurred while sending notification to Client.');
+      });
   };
 
   const autoSend = (callType: string) => {
@@ -1092,7 +1116,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== acceptcallMsg &&
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
-          message.message.message !== followupconsult
+          message.message.message !== followupconsult &&
+          message.message.message !== patientConsultStarted
         ) {
           setIsNewMsg(true);
         } else {
@@ -1138,6 +1163,21 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status, response) => {}
     );
+    // setTimeout(() => {
+    //   const texts = {
+    //     id: props.doctorId,
+    //     message: 'Before I go any further, would you be comfortable continuing to talk in English?',
+    //     isTyping: true,
+    //   };
+    //   pubnub.publish(
+    //     {
+    //       message: texts,
+    //       channel: channel,
+    //       storeInHistory: true,
+    //     },
+    //     (status, response) => {}
+    //   );
+    // }, 3000);
   };
   const onStopConsult = () => {
     const text = {

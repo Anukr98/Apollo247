@@ -9,6 +9,7 @@ import {
   ConsultQueueItem,
   JuniorAppointmentSessions,
   AppointmentDocuments,
+  AppointmentCallDetails,
 } from 'consults-service/entities/';
 import {
   ConsultHours,
@@ -80,6 +81,7 @@ export const connect = async () => {
         ConsultQueueItem,
         JuniorAppointmentSessions,
         AppointmentDocuments,
+        AppointmentCallDetails,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

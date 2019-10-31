@@ -285,15 +285,16 @@ const defaultMaterialTheme = createMuiTheme({
 export const FollowUp: React.FC = () => {
   const classes = useStyles();
   const {
-    consultType: consultTypeData,
-    setConsultType: setConsultTypeData,
     followUp,
     setFollowUp,
     followUpAfterInDays,
     setFollowUpAfterInDays,
     followUpDate,
     setFollowUpDate,
+    followUpConsultType: consultTypeData,
+    setFollowUpConsultType: setConsultTypeData,
   } = useContext(CaseSheetContext);
+  console.log(followUpAfterInDays[0]);
   const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(!!followUp[0]);
   const [followUpDays, setFollowUpDays] = useState<number>(
     parseInt(followUpAfterInDays[0], 10) || 5
@@ -303,7 +304,7 @@ export const FollowUp: React.FC = () => {
       (followUpDate[0] !== null && followUpDate[0] !== '' ? 9 : 5)
   );
   //const [defaultValue, setDefaultValue] = useState(followUpDate ? 9 : 5);
-  const [consultType, setConsultType] = useState<string>(consultTypeData[0]);
+  const [followUpConsultType, setFollowUpConsultType] = useState<string>(consultTypeData[0]);
   const [selectedDate, handleDateChange] = useState<Date>(
     followUp[0] && followUpDate[0] !== '' && followUpDate[0] !== null
       ? new Date(followUpDate[0])
@@ -313,7 +314,7 @@ export const FollowUp: React.FC = () => {
     if (!shouldFollowUp) {
       handleDateChange(new Date());
       setFollowUpDays(5);
-      setConsultType('');
+      setFollowUpConsultType('');
     }
   }, [shouldFollowUp]);
   // useEffect(() => {
@@ -323,10 +324,10 @@ export const FollowUp: React.FC = () => {
   //   }
   // }, [setFollowUpDays, setDefaultValue, followUpDate, defaultValue]);
   useEffect(() => {
-    consultTypeData[0] = consultType;
+    consultTypeData[0] = followUpConsultType;
     setConsultTypeData(consultTypeData);
-    if (shouldFollowUp && consultType === '') {
-      setConsultType('ONLINE');
+    if (shouldFollowUp && followUpConsultType === '') {
+      setFollowUpConsultType('ONLINE');
     }
 
     followUp[0] = shouldFollowUp;
@@ -337,7 +338,7 @@ export const FollowUp: React.FC = () => {
 
     followUpDate[0] = `${followUpDays === 9 ? selectedDate : addDays(new Date(), followUpDays)}`;
     setFollowUpDate(followUpDate);
-  }, [consultType, shouldFollowUp, followUpDays, selectedDate]);
+  }, [followUpConsultType, shouldFollowUp, followUpDays, selectedDate]);
   // console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
   // console.log(followUpDays);
   // console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
@@ -407,8 +408,8 @@ export const FollowUp: React.FC = () => {
               <Typography component="div">
                 <ToggleButtonGroup
                   exclusive
-                  value={consultType}
-                  onChange={(e, newValue) => setConsultType(newValue)}
+                  value={followUpConsultType}
+                  onChange={(e, newValue) => setFollowUpConsultType(newValue)}
                 >
                   <ToggleButton value="ONLINE" className={classes.button}>
                     <svg
