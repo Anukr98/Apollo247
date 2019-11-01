@@ -43,6 +43,7 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -274,6 +275,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               containerStyle={medicineCardContainerStyle}
               key={medicine.id}
               onPress={() => {
+                CommonLogEvent(AppRoutes.YourCart, 'Navigate to medicine details scene');
                 props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
                   sku: medicine.id,
                   title: medicine.name,
@@ -285,9 +287,11 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               imageUrl={imageUrl}
               onPressAdd={() => {}}
               onPressRemove={() => {
+                CommonLogEvent(AppRoutes.YourCart, 'Remove item from cart');
                 onRemoveCartItem(medicine);
               }}
               onChangeUnit={(unit) => {
+                CommonLogEvent(AppRoutes.YourCart, 'Change unit in cart');
                 onUpdateCartItem(medicine, unit);
               }}
               isCardExpanded={true}
@@ -365,6 +369,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               }${item.city}, ${item.state} - ${item.zipcode}`}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
+                CommonLogEvent(AppRoutes.YourCart, 'Check service availability');
                 checkServicability(item);
               }}
               containerStyle={{ marginTop: 16 }}
@@ -454,6 +459,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             title={`${store.storename}\n${store.address}`}
             isSelected={storeId === store.storeid}
             onPress={() => {
+              CommonLogEvent(AppRoutes.YourCart, 'Set store id');
               setStoreId && setStoreId(store.storeid);
             }}
             containerStyle={{ marginTop: 16 }}

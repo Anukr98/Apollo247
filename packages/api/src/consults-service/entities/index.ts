@@ -129,6 +129,9 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true, default: false })
   isTransfer: Boolean;
 
+  @Column({ nullable: true, default: false })
+  isConsultStarted: Boolean;
+
   @Column()
   patientId: string;
 
@@ -287,6 +290,45 @@ export class AppointmentSessions extends BaseEntity {
 }
 //AppointmentSessions ends
 
+//Appointment call details start
+
+//Appointment call details end
+@Entity()
+export class AppointmentCallDetails extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  callType: string;
+
+  @Column()
+  doctorType: string;
+
+  @Column({ type: 'timestamp' })
+  startTime: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  endTime: Date;
+
+  @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentPayments)
+  appointment: Appointment;
+
+  @Column()
+  createdDate: Date;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
 //Junior AppointmentSessions starts
 @Entity()
 export class JuniorAppointmentSessions extends BaseEntity {
