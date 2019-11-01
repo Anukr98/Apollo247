@@ -183,6 +183,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         rescheduleCount
         displayId
         appointmentState
+        isConsultStarted
         doctorInfo {
           id
           salutation
@@ -1177,6 +1178,22 @@ export const SAVE_ORDER_CANCEL_STATUS = gql`
     saveOrderCancelStatus(orderCancelInput: $orderCancelInput) {
       requestStatus
       requestMessage
+    }
+  }
+`;
+
+export const GET_CALL_DETAILS = gql`
+  query getCallDetails($appointmentCallId: String) {
+    getCallDetails(appointmentCallId: $appointmentCallId) {
+      appointmentCallDetails {
+        id
+        callType
+        doctorType
+        startTime
+        endTime
+        createdDate
+        updatedDate
+      }
     }
   }
 `;

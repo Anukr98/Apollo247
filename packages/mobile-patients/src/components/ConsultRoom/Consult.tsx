@@ -720,7 +720,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           }}
                         >
                           <Text style={styles.prepareForConsult}>
-                            {string.common.prepareForConsult}
+                            {item.isConsultStarted
+                              ? string.common.continueConsult
+                              : string.common.prepareForConsult}
                           </Text>
                         </TouchableOpacity>
                       )}

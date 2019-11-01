@@ -368,9 +368,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             props.doctor ? `${props.doctor.firstName} ${props.doctor.lastName}` : ''
           }.`}
         >
-          <ScrollView bounces={false}>
+          {/* <ScrollView bounces={false}>
             <Text style={styles.congratulationsDescriptionStyle}>{successSteps.join('\n')}</Text>
-          </ScrollView>
+          </ScrollView> */}
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               activeOpacity={1}

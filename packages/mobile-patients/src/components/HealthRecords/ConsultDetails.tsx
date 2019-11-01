@@ -590,30 +590,32 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   };
 
   const renderTestNotes = () => {
+    console.log('caseSheetDetails', caseSheetDetails);
     return (
       <View>
         <CollapseCard
-          heading="TEST SELECTION"
+          heading="TESTS SECTION"
           collapse={testShow}
           onPress={() => setTestShow(!testShow)}
         >
           <View style={[styles.cardViewStyle, { paddingBottom: 12 }]}>
-            {caseSheetDetails!.notes && caseSheetDetails!.notes !== null ? (
+            {caseSheetDetails!.diagnosticPrescription &&
+            caseSheetDetails!.diagnosticPrescription !== null ? (
               <View>
                 <Text style={styles.labelStyle}>
-                  {caseSheetDetails!.notes}
-                  {/* {caseSheetDetails!
-                    .otherInstructions!.map((item, i) => {
-                      if (item && item.instruction !== '') {
-                        return `${i + 1}. ${item.instruction}`;
+                  {/* {caseSheetDetails!.diagnosticPrescription[0]!.itemname} */}
+                  {caseSheetDetails!
+                    .diagnosticPrescription!.map((item, i) => {
+                      if (item && item.itemname !== '') {
+                        return `${i + 1}. ${item.itemname}`;
                       }
                     })
-                    .join('\n')} */}
+                    .join('\n')}
                 </Text>
               </View>
             ) : (
               <View>
-                <Text style={styles.labelStyle}>No Test</Text>
+                <Text style={styles.labelStyle}>No Tests</Text>
               </View>
             )}
           </View>

@@ -10,7 +10,8 @@
     "book_apointment": "BOOK APPOINTMENT",
     "available_in": "AVAILABLE IN",
     "greatPopup": "Great! :)",
-    "prepareForConsult": "PREPARE FOR CONSULT"
+    "prepareForConsult": "PREPARE FOR CONSULT",
+    "continueConsult": "CONTINUE CONSULT"
   },
   "login": {
     "hello": "hello!",
