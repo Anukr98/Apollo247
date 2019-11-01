@@ -95,6 +95,7 @@ export const getDoctorDetailsTypeDefs = gql`
     experience: String
     firebaseToken: String
     firstName: String!
+    fullName: String
     gender: Gender
     isActive: Boolean!
     id: ID!
@@ -167,6 +168,7 @@ export const getDoctorDetailsTypeDefs = gql`
     emailAddress: String
     experience: String
     firstName: String
+    fullName: String
     gender: Gender
     id: ID!
     lastName: String
