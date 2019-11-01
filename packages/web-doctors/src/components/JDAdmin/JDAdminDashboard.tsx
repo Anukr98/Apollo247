@@ -9,6 +9,7 @@ import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
+import TablePagination from '@material-ui/core/TablePagination';
 import { GET_JD_DASHBOARD } from 'graphql/doctors';
 import {
   GetJuniorDoctorDashboard,
@@ -16,6 +17,7 @@ import {
 } from 'graphql/types/GetJuniorDoctorDashboard';
 import { format } from 'date-fns';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
+import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -48,6 +50,7 @@ const useStyles = makeStyles((theme: Theme) => {
     tablePaper: {
       backgroundColor: theme.palette.common.white,
       boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.3)',
+      position: 'relative',
     },
     table: {
       width: '100%',
@@ -95,12 +98,63 @@ const useStyles = makeStyles((theme: Theme) => {
       marginBottom: 20,
       paddingBottom: 10,
     },
+    topSection: {
+      padding: 16,
+      backgroundColor: theme.palette.common.white,
+      marginBottom: 20,
+      color: '#02475b',
+    },
+    consultQueue: {
+      fontSize: 14,
+      color: '#02475b',
+    },
+    count: {
+      fontWeight: 'bold',
+      fontSize: 15,
+    },
+    paginationRoot: {
+      fontSize: 14,
+    },
+    pageCaption: {
+      fontSize: 14,
+    },
+    buttonDisabled: {
+      color: 'rgba(0,0,0,0.3) !important',
+    },
+    iconRoot: {
+      color: '#02475b',
+    },
+    rootSelect: {
+      marginRight: 20,
+    },
+    actionsRoot: {
+      marginLeft: 10,
+    },
+    menuItemRoot: {
+      backgroundColor: 'transparent !important',
+      color: '#02475b',
+    },
+    resetButton: {
+      position: 'absolute',
+      right: 14,
+      top: 16,
+      cursor: 'pointer',
+    },
   };
 });
 
 export const JDAdminDashboard: React.FC = (rops) => {
   const classes = useStyles();
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
 
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
   const { data, loading, error } = useQuery<
     GetJuniorDoctorDashboard,
     GetJuniorDoctorDashboardVariables
@@ -108,6 +162,8 @@ export const JDAdminDashboard: React.FC = (rops) => {
     variables: {
       fromDate: format(new Date(), 'yyyy-MM-dd'),
       toDate: format(new Date(), 'yyyy-MM-dd'),
+      offset: 0,
+      limit: 15,
     },
     pollInterval: 10 * 1000,
   });
@@ -129,22 +185,28 @@ export const JDAdminDashboard: React.FC = (rops) => {
         <div className={classes.container}>
           <div className={classes.pageContainer}>
             <div className={classes.pageHeader}>Admin Dashboard</div>
-            <span className={classes.pageHeader}>
-              Number of Consults booked but not in queue to be allocated
-            </span>{' '}
-            <span className={classes.pageHeader}>
-              {data.getJuniorDoctorDashboard.consultsBookedButNotInQueue}
-            </span>
-            <br />
-            <span className={classes.pageHeader}>
-              Number of Consults in queue waiting to be allocated
-            </span>{' '}
-            <span className={classes.pageHeader}>
-              {data.getJuniorDoctorDashboard.juniorDoctorQueueItems &&
-                data.getJuniorDoctorDashboard.juniorDoctorQueueItems.length > 0 &&
-                data.getJuniorDoctorDashboard.juniorDoctorQueueItems[0]!.queuedconsultscount}
-            </span>
+            <div className={classes.topSection}>
+              <div className={classes.consultQueue}>
+                <span>Number of Consults booked but not in queue to be allocated: </span>
+                <span className={classes.count}>
+                  {data.getJuniorDoctorDashboard.consultsBookedButNotInQueue}
+                </span>
+              </div>
+              {/** 
+              <div className={classes.consultQueue}>
+                <span>Number of Consults in queue waiting to be allocated: </span>
+                <span className={classes.count}>
+                  {data.getJuniorDoctorDashboard.juniorDoctorQueueItems &&
+                    data.getJuniorDoctorDashboard.juniorDoctorQueueItems.length > 0 &&
+                    data.getJuniorDoctorDashboard.juniorDoctorQueueItems[0]!.queuedconsultscount}
+                </span>
+              </div>
+              **/}
+            </div>
             <div className={classes.tablePaper}>
+              <div className={classes.resetButton}>
+                <img src={require('images/ic_reset.svg')} alt="" />
+              </div>
               <Table className={classes.table} aria-label="simple table">
                 <TableHead>
                   <TableRow>
@@ -154,9 +216,11 @@ export const JDAdminDashboard: React.FC = (rops) => {
                       Status <br />
                       <span>(Logged in, Away or Logged Out)</span>
                     </TableCell>
+                    {/** 
                     <TableCell>
                       Active Consults <br /> <span>(count)</span>
                     </TableCell>
+                     */}
                     <TableCell>
                       Queued Consults <br /> <span>(count)</span>
                     </TableCell>
@@ -185,13 +249,47 @@ export const JDAdminDashboard: React.FC = (rops) => {
                           <TableCell>
                             <span className={userClassName}>{onlineStatus}</span>
                           </TableCell>
-                          <TableCell>&nbsp;</TableCell>
+                          {/** <TableCell>&nbsp;</TableCell> */}
                           <TableCell>&nbsp;</TableCell>
                         </TableRow>
                       );
                     })}
                 </TableBody>
               </Table>
+              <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                classes={{
+                  root: classes.paginationRoot,
+                  caption: classes.pageCaption,
+                  selectIcon: classes.iconRoot,
+                  selectRoot: classes.rootSelect,
+                  actions: classes.actionsRoot,
+                  menuItem: classes.menuItemRoot,
+                }}
+                component="div"
+                count={
+                  data &&
+                  data.getJuniorDoctorDashboard &&
+                  data.getJuniorDoctorDashboard.juniorDoctorDetails &&
+                  data.getJuniorDoctorDashboard.juniorDoctorDetails.length
+                }
+                rowsPerPage={rowsPerPage}
+                page={page}
+                backIconButtonProps={{
+                  'aria-label': 'previous page',
+                  classes: {
+                    disabled: classes.buttonDisabled,
+                  },
+                }}
+                nextIconButtonProps={{
+                  'aria-label': 'next page',
+                  classes: {
+                    disabled: classes.buttonDisabled,
+                  },
+                }}
+                onChangePage={handleChangePage}
+                onChangeRowsPerPage={handleChangeRowsPerPage}
+              />
             </div>
           </div>
         </div>

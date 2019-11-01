@@ -37,4 +37,6 @@ export interface GetJuniorDoctorDashboard {
 export interface GetJuniorDoctorDashboardVariables {
   fromDate: any;
   toDate: any;
+  offset: number;
+  limit: number;
 }
