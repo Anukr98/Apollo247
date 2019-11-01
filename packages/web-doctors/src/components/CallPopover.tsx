@@ -16,6 +16,7 @@ import moment from 'moment';
 import { isEmpty } from 'lodash';
 import { AphSelect, AphTextField } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
+import { ApolloError } from 'apollo-client';
 import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Consult } from 'components/Consult';
@@ -39,6 +40,11 @@ import {
 } from 'graphql/profiles';
 import { TRANSFER_INITIATED_TYPE, STATUS } from 'graphql/types/globalTypes';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { END_CALL_NOTIFICATION } from 'graphql/consults';
+import {
+  EndCallNotification,
+  EndCallNotificationVariables,
+} from 'graphql/types/EndCallNotification';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -539,6 +545,7 @@ interface CallPopoverProps {
   isAppointmentEnded: boolean;
   sendToPatientAction: (isSentToPatient: boolean) => void;
   setIsPdfPageOpen: (flag: boolean) => void;
+  callId: string;
 }
 let intervalId: any;
 let stoppedTimer: number;
@@ -588,6 +595,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const transferconsult = '^^#transferconsult';
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
+  const patientConsultStarted = '^^#PatientConsultStarted';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);
@@ -709,6 +717,21 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     );
     //setIsVideoCall(false);
     stopIntervalTimer();
+    sendStopCallNotificationFn();
+  };
+  const sendStopCallNotificationFn = () => {
+    client
+      .query<EndCallNotification, EndCallNotificationVariables>({
+        query: END_CALL_NOTIFICATION,
+        fetchPolicy: 'no-cache',
+        variables: {
+          appointmentCallId: props.callId,
+        },
+      })
+      .catch((error: ApolloError) => {
+        console.log('Error in Call Notification', error.message);
+        alert('An error occurred while sending notification to Client.');
+      });
   };
   const autoSend = (callType: string) => {
     const text = {
@@ -1005,7 +1028,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult &&
-          message.message.message !== startConsult
+          message.message.message !== startConsult &&
+          message.message.message !== patientConsultStarted
         ) {
           setIsNewMsg(true);
         } else {

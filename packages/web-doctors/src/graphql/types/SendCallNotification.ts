@@ -2,15 +2,21 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DOCTOR_CALL_TYPE, DOCTOR_TYPE } from "./globalTypes";
+import { APPT_CALL_TYPE, DOCTOR_CALL_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: SendCallNotification
 // ====================================================
 
+export interface SendCallNotification_sendCallNotification_callDetails {
+  __typename: "AppointmentCallDetails";
+  id: string;
+}
+
 export interface SendCallNotification_sendCallNotification {
   __typename: "NotificationResult";
   status: boolean;
+  callDetails: SendCallNotification_sendCallNotification_callDetails;
 }
 
 export interface SendCallNotification {
@@ -19,6 +25,6 @@ export interface SendCallNotification {
 
 export interface SendCallNotificationVariables {
   appointmentId?: string | null;
-  callType?: DOCTOR_CALL_TYPE | null;
-  doctorType?: DOCTOR_TYPE | null;
+  callType?: APPT_CALL_TYPE | null;
+  doctorType?: DOCTOR_CALL_TYPE | null;
 }

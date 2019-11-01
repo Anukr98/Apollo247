@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Gender, Relation, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT } from "./globalTypes";
+import { Gender, Relation, STATUS, DoctorType, Salutation, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, APPOINTMENT_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetCaseSheet
@@ -163,6 +163,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails {
   followUp: boolean | null;
   followUpDate: any | null;
   followUpAfterInDays: string | null;
+  followUpConsultType: APPOINTMENT_TYPE | null;
   consultType: string | null;
   notes: string | null;
 }
