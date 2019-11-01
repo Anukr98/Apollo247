@@ -245,20 +245,6 @@ export interface TransferAppointmentInput {
   transferInitiatedId: string;
 }
 
-export interface UpdateCaseSheetInput {
-  symptoms?: string | null;
-  notes?: string | null;
-  diagnosis?: string | null;
-  diagnosticPrescription?: string | null;
-  followUp?: boolean | null;
-  followUpDate?: string | null;
-  followUpAfterInDays?: string | null;
-  otherInstructions?: string | null;
-  medicinePrescription?: string | null;
-  id?: string | null;
-  status?: CASESHEET_STATUS | null;
-}
-
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;
