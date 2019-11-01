@@ -17,7 +17,6 @@ import {
 } from 'graphql/types/GetJuniorDoctorDashboard';
 import { format } from 'date-fns';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
-import { AphButton } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -62,6 +61,7 @@ const useStyles = makeStyles((theme: Theme) => {
             fontWeight: 'bold',
             backgroundColor: 'rgba(0, 0, 0, 0.02)',
             lineHeight: '14px',
+            verticalAlign: 'top',
             '& span': {
               fontSize: 11,
               fontWeight: 400,
@@ -92,7 +92,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     pageHeader: {
       color: '#02475b',
-      fontSize: 14,
+      fontSize: 16,
       fontWeight: 500,
       borderBottom: '0.5px solid rgba(2,71,91,0.3)',
       marginBottom: 20,
