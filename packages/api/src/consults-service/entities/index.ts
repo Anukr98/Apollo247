@@ -129,6 +129,9 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true, default: false })
   isTransfer: Boolean;
 
+  @Column({ nullable: true, default: false })
+  isConsultStarted: Boolean;
+
   @Column()
   patientId: string;
 

@@ -130,6 +130,7 @@ const addToConsultQueue: Resolver<
   if (!chosenJrDoc) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
   const doctorId = chosenJrDoc.id;
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
+  await apptRepo.updateConsultStarted(appointmentId, true);
   return { id, doctorId };
 };
 

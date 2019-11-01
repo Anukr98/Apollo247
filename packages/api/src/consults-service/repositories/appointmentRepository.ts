@@ -768,4 +768,8 @@ export class AppointmentRepository extends Repository<Appointment> {
       order: { bookingDate: 'ASC' },
     });
   }
+
+  updateConsultStarted(id: string, status: Boolean) {
+    return this.update(id, { isConsultStarted: status });
+  }
 }

@@ -319,20 +319,6 @@ export const caseSheetTypeDefs = gql`
     severity: String
   }
 
-  input UpdateCaseSheetInput {
-    symptoms: String
-    notes: String
-    diagnosis: String
-    diagnosticPrescription: String
-    followUp: Boolean
-    followUpDate: String
-    followUpAfterInDays: String
-    otherInstructions: String
-    medicinePrescription: String
-    id: String
-    status: CASESHEET_STATUS
-  }
-
   input ModifyCaseSheetInput {
     symptoms: [SymptomInput!]
     notes: String
@@ -364,7 +350,6 @@ export const caseSheetTypeDefs = gql`
   }
 
   extend type Mutation {
-    updateCaseSheet(UpdateCaseSheetInput: UpdateCaseSheetInput): CaseSheet
     modifyCaseSheet(ModifyCaseSheetInput: ModifyCaseSheetInput): CaseSheet
     updatePatientPrescriptionSentStatus(
       caseSheetId: ID!
@@ -494,63 +479,6 @@ type UpdateCaseSheetInputArgs = { UpdateCaseSheetInput: UpdateCaseSheetInput };
 
 type PatientPrescriptionSentResponse = {
   success: boolean;
-};
-
-const updateCaseSheet: Resolver<
-  null,
-  UpdateCaseSheetInputArgs,
-  ConsultServiceContext,
-  CaseSheet
-> = async (parent, { UpdateCaseSheetInput }, { consultsDb, doctorsDb, patientsDb }) => {
-  const inputArguments = JSON.parse(JSON.stringify(UpdateCaseSheetInput));
-
-  //validate date
-  if (
-    inputArguments.followUpDate.length > 0 &&
-    isNaN(new Date(inputArguments.followUpDate).valueOf())
-  )
-    throw new AphError(AphErrorMessages.INVALID_DATE_FORMAT);
-
-  const followUpAfterInDays =
-    inputArguments.followUpAfterInDays == '' ? 0 : <number>inputArguments.followUpAfterInDays;
-  const followUpDate = inputArguments.followUpDate == '' ? null : <Date>inputArguments.followUpDate;
-
-  //validate casesheetid
-  const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
-  const getCaseSheetData = await caseSheetRepo.getCaseSheetById(inputArguments.id);
-  if (getCaseSheetData == null) throw new AphError(AphErrorMessages.INVALID_CASESHEET_ID);
-
-  getCaseSheetData.symptoms = JSON.parse(inputArguments.symptoms);
-  getCaseSheetData.notes = inputArguments.notes;
-  getCaseSheetData.diagnosis = JSON.parse(inputArguments.diagnosis);
-  getCaseSheetData.diagnosticPrescription = JSON.parse(inputArguments.diagnosticPrescription);
-  getCaseSheetData.otherInstructions = JSON.parse(inputArguments.otherInstructions);
-  getCaseSheetData.medicinePrescription = JSON.parse(inputArguments.medicinePrescription);
-  getCaseSheetData.followUp = inputArguments.followUp;
-  if (followUpDate) getCaseSheetData.followUpDate = followUpDate;
-  getCaseSheetData.followUpAfterInDays = followUpAfterInDays;
-  getCaseSheetData.status = inputArguments.status;
-
-  const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.findById(getCaseSheetData.patientId);
-  if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
-
-  //convert casesheet to prescription
-  const client = new AphStorageClient(
-    process.env.AZURE_STORAGE_CONNECTION_STRING_API,
-    process.env.AZURE_STORAGE_CONTAINER_NAME
-  );
-
-  const rxPdfData = await convertCaseSheetToRxPdfData(getCaseSheetData, doctorsDb, patientData);
-  const pdfDocument = generateRxPdfDocument(rxPdfData);
-  const blob = await uploadRxPdf(client, inputArguments.id, pdfDocument);
-  if (blob == null) throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
-  getCaseSheetData.blobName = blob.name;
-
-  const caseSheetAttrs: Omit<Partial<CaseSheet>, 'id'> = getCaseSheetData;
-
-  await caseSheetRepo.updateCaseSheet(inputArguments.id, caseSheetAttrs);
-  return getCaseSheetData;
 };
 
 type ModifyCaseSheetInput = {
@@ -921,7 +849,6 @@ export const caseSheetResolvers = {
   },
 
   Mutation: {
-    updateCaseSheet,
     modifyCaseSheet,
     updatePatientPrescriptionSentStatus,
     createJuniorDoctorCaseSheet,
