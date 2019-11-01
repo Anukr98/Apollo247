@@ -597,50 +597,6 @@ export const GET_CASESHEET = gql`
   }
 `;
 
-export const UPDATE_CASESHEET = gql`
-  mutation UpdateCaseSheet($UpdateCaseSheetInput: UpdateCaseSheetInput) {
-    updateCaseSheet(UpdateCaseSheetInput: $UpdateCaseSheetInput) {
-      consultType
-      blobName
-      appointment {
-        id
-      }
-      diagnosis {
-        name
-      }
-      diagnosticPrescription {
-        itemname
-      }
-      doctorId
-      followUp
-      followUpAfterInDays
-      followUpDate
-      id
-      medicinePrescription {
-        id
-        medicineConsumptionDurationInDays
-        medicineName
-        medicineDosage
-        medicineTimings
-        medicineUnit
-        medicineInstructions
-      }
-      notes
-      patientId
-      symptoms {
-        symptom
-        since
-        howOften
-        severity
-      }
-      otherInstructions {
-        instruction
-      }
-      status
-    }
-  }
-`;
-
 export const MODIFY_CASESHEET = gql`
   mutation ModifyCaseSheet($ModifyCaseSheetInput: ModifyCaseSheetInput) {
     modifyCaseSheet(ModifyCaseSheetInput: $ModifyCaseSheetInput) {
