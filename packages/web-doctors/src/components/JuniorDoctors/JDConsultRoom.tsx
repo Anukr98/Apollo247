@@ -841,49 +841,6 @@ export const JDConsultRoom: React.FC = () => {
     // redirect back to consults.
     window.location.href = clientRoutes.juniorDoctor();
   };
-  /*
-  const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
-    // console.log(diagnosis && diagnosis.length, diagnosis!, flag);
-    if (diagnosis || flag) {
-      setSaving(true);
-      client
-        .mutate<UpdateCaseSheet, UpdateCaseSheetVariables>({
-          mutation: UPDATE_CASESHEET,
-          variables: {
-            UpdateCaseSheetInput: {
-              symptoms: symptoms!.length > 0 ? JSON.stringify(symptoms) : null,
-              notes: notesJrd.length > 0 ? notesJrd : null,
-              diagnosis: diagnosis!.length > 0 ? JSON.stringify(diagnosis) : null,
-              diagnosticPrescription:
-                diagnosticPrescription!.length > 0 ? JSON.stringify(diagnosticPrescription) : null,
-              followUp: false,
-              followUpDate: '',
-              followUpAfterInDays: '',
-              otherInstructions:
-                otherInstructions!.length > 0 ? JSON.stringify(otherInstructions) : null,
-              medicinePrescription:
-                medicinePrescription!.length > 0 ? JSON.stringify(medicinePrescription) : null,
-              id: caseSheetId,
-              status: endConsult ? CASESHEET_STATUS.COMPLETED : CASESHEET_STATUS.PENDING,
-            },
-          },
-          fetchPolicy: 'no-cache',
-        })
-        .then((_data) => {
-          // savePatientAllergiesMutation();
-          // savePatientFamilyHistoryMutation();
-          // savePatientLifeStyleMutation();
-          setSaving(false);
-        })
-        .catch((e) => {
-          const error = JSON.parse(JSON.stringify(e));
-          const errorMessage = error && error.message;
-          alert(errorMessage);
-          setSaving(false);
-          console.log('Error occured while update casesheet', e);
-        });
-    }
-  };*/
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE) => {
     client
@@ -893,7 +850,7 @@ export const JDConsultRoom: React.FC = () => {
         variables: {
           appointmentId: appointmentId,
           callType: callType,
-          doctorType: DOCTOR_CALL_TYPE.SENIOR,
+          doctorType: DOCTOR_CALL_TYPE.JUNIOR,
         },
       })
       .then((_data) => {
