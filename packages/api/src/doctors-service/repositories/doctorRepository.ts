@@ -644,8 +644,8 @@ export class DoctorRepository extends Repository<Doctor> {
     const queryBuilder = this.createQueryBuilder('doctor')
       .andWhere('doctor.isActive = true')
       .andWhere('doctor.doctorType = :junior', { junior: DoctorType.JUNIOR })
-      .offset(offset)
-      .limit(limit)
+      .take(limit)
+      .skip(offset)
       .orderBy('doctor.firstName')
       .getMany();
     return queryBuilder;
