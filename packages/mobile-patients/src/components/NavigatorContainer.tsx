@@ -100,7 +100,6 @@ export enum AppRoutes {
   ShopByBrand = 'ShopByBrand',
   ImageSliderScreen = 'ImageSliderScreen',
   SearchByBrand = 'SearchByBrand',
-  TestsDetailScene = 'TestsDetailScene',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -259,9 +258,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SearchByBrand]: {
     screen: SearchByBrand,
-  },
-  [AppRoutes.TestsDetailScene]: {
-    screen: TestsDetailScene,
   },
 };
 
