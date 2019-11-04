@@ -155,9 +155,6 @@ export const JDAdminDashboard: React.FC = (rops) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
-  const onReload = () => {
-    window.location.reload();
-  };
 
   const { data, loading, error } = useQuery<
     GetJuniorDoctorDashboard,
@@ -213,7 +210,7 @@ export const JDAdminDashboard: React.FC = (rops) => {
                   src={require('images/ic_reset.svg')}
                   alt=""
                   onClick={() => {
-                    onReload();
+                    window.location.reload();
                   }}
                 />
               </div>
@@ -267,9 +264,11 @@ export const JDAdminDashboard: React.FC = (rops) => {
                               data.getJuniorDoctorDashboard.juniorDoctorQueueItems.length > 0 &&
                               data.getJuniorDoctorDashboard.juniorDoctorQueueItems.map(
                                 (consult) => {
-                                  return jd!.id === consult!.doctorid
-                                    ? consult!.queuedconsultscount
-                                    : '--';
+                                  const jdId = jd && jd.id;
+                                  const consultDoctorId = consult && consult.doctorid;
+                                  const queuedconsultscount =
+                                    consult && consult.queuedconsultscount;
+                                  return jdId === consultDoctorId ? queuedconsultscount : '--';
                                 }
                               )}
                           </TableCell>
