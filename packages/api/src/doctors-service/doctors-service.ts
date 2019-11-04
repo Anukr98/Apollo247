@@ -2,6 +2,7 @@ import '@aph/universal/dist/global';
 import { buildFederatedSchema } from '@apollo/federation';
 import { GatewayHeaders } from 'api-gateway';
 import { ApolloServer } from 'apollo-server';
+import winston from 'winston';
 import { connect } from 'doctors-service/database/connect';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { Doctor } from 'doctors-service/entities';
@@ -46,9 +47,18 @@ import {
   blockedCalendarResolvers,
 } from 'doctors-service/resolvers/blockedCalendar';
 import { JDTypeDefs, JDResolvers } from 'doctors-service/resolvers/JDAdmin';
+import { format, differenceInMilliseconds } from 'date-fns';
 
 (async () => {
   await connect();
+
+  //configure winston for doctors service
+  winston.configure({
+    transports: [
+      new winston.transports.File({ filename: 'access-logs/doctors-service.log', level: 'info' }),
+      new winston.transports.File({ filename: 'error-logs/doctors-service.log', level: 'error' }),
+    ],
+  });
 
   const server = new ApolloServer({
     context: async ({ req }) => {
@@ -131,6 +141,51 @@ import { JDTypeDefs, JDResolvers } from 'doctors-service/resolvers/JDAdmin';
         resolvers: JDResolvers,
       },
     ]),
+    plugins: [
+      /* This plugin is defined in-line. */
+      {
+        serverWillStart() {
+          //winston.log('info', 'Server starting up!');
+          console.log('Server starting up!');
+        },
+        requestDidStart({ operationName, request }) {
+          /* Within this returned object, define functions that respond
+             to request-specific lifecycle events. */
+          const reqStartTime = new Date();
+          const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+          console.log(reqStartTimeFormatted);
+          return {
+            parsingDidStart(requestContext) {
+              // winston.log({
+              //   message: 'Request Starting',
+              //   time: reqStartTimeFormatted,
+              //   operation: requestContext.request.query,
+              //   level: 'info',
+              // });
+            },
+            didEncounterErrors(requestContext) {
+              requestContext.errors.forEach((error) => {
+                //winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
+              });
+            },
+            willSendResponse({ response }) {
+              const errorCount = (response.errors || []).length;
+              const responseLog = {
+                message: 'Request Ended',
+                time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+                durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
+                errorCount,
+                level: 'info',
+                response: response,
+              };
+              //remove response if there is no error
+              if (errorCount === 0) delete responseLog.response;
+              //winston.log(responseLog);
+            },
+          };
+        },
+      },
+    ],
   });
 
   server.listen({ port: process.env.DOCTORS_SERVICE_PORT }).then(({ url }) => {

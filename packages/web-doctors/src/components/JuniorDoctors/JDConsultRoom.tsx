@@ -839,7 +839,7 @@ export const JDConsultRoom: React.FC = () => {
     endConsultAutoAction();
 
     // redirect back to consults.
-    window.location.href = clientRoutes.juniorDoctor();
+    // window.location.href = clientRoutes.juniorDoctor();
   };
 
   const sendCallNotificationFn = (callType: APPT_CALL_TYPE) => {
@@ -964,11 +964,13 @@ export const JDConsultRoom: React.FC = () => {
 
   // this will trigger end consult automatically after one minute
   const endConsultAutoAction = () => {
-    mutationRemoveConsult();
+    saveCasesheetAction(true, true);
+    mutationRemoveConsult().then(() => {
+      window.location.href = clientRoutes.juniorDoctor();
+    });
     // savePatientAllergiesMutation();
     // savePatientFamilyHistoryMutation();
     // savePatientLifeStyleMutation();
-    saveCasesheetAction(true, true);
     // trigger auto submit popup
     // setIsAutoSubmitDialogOpened(true);
   };
