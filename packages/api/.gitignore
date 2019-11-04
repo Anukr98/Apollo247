@@ -5,3 +5,5 @@ node_modules
 **/*secrets.json
 .DS_Store
 .awcache
+access-logs
+error-logs
