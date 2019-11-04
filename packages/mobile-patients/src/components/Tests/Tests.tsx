@@ -255,6 +255,67 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
   };
 
+  const autoSearch = (searchText: string) => {
+    getNetStatus().then((status) => {
+      if (status) {
+        axios
+          .get(
+            `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${key}`
+          )
+          .then((obj) => {
+            try {
+              if (obj.data.predictions) {
+                const address = obj.data.predictions.map(
+                  (item: {
+                    place_id: string;
+                    structured_formatting: {
+                      main_text: string;
+                    };
+                  }) => {
+                    return { name: item.structured_formatting.main_text, placeId: item.place_id };
+                  }
+                );
+                setlocationSearchList(address);
+              }
+            } catch {}
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    });
+  };
+
+  const saveLatlong = (item: { name: string; placeId: string }) => {
+    getNetStatus().then((status) => {
+      if (status) {
+        axios
+          .get(
+            `https://maps.googleapis.com/maps/api/place/details/json?placeid=${item.placeId}&key=${key}`
+          )
+          .then((obj) => {
+            try {
+              if (obj.data.result.geometry && obj.data.result.geometry.location) {
+                AsyncStorage.setItem(
+                  'location',
+                  JSON.stringify({ latlong: obj.data.result.geometry.location, name: item.name })
+                );
+                // setlatlng(obj.data.result.geometry.location);
+                latlng = obj.data.result.geometry.location;
+                // setLoading(true);
+                // fetchSpecialityFilterData(filterMode, FilterData, latlng);
+              }
+            } catch (error) {
+              console.log(error);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    });
+  };
+
   const renderPopup = () => {
     if (showLocationpopup) {
       return (
@@ -388,7 +449,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
-
   const renderTopView = () => {
     return (
       <View
