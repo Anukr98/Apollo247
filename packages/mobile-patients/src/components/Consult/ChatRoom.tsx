@@ -538,7 +538,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     });
 
     getHistory(0);
-    // automatedTextFromPatient();
+
+    console.log('appointmentData.isConsultStarted', appointmentData.isConsultStarted);
+
+    if (!appointmentData.isConsultStarted) {
+      automatedTextFromPatient();
+    }
     // registerForPushNotification();
 
     pubnub.addListener({
@@ -631,12 +636,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           const end: number = res.endTimeToken ? res.endTimeToken : 1;
 
           const msgs = res.messages;
-          console.log('msgs', msgs);
+          // console.log('msgs', msgs);
 
           res.messages.forEach((element, index) => {
             newmessage[newmessage.length] = element.entry;
           });
-          console.log('res', res);
+          // console.log('res', res);
           setLoading(false);
 
           if (messages.length !== newmessage.length) {
@@ -673,6 +678,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const successSteps = [
+    'Hello! Let’s get you feeling better in 4 simple steps.\nWe will:\n',
     'Let’s get you feeling better in 5 simple steps :)\n',
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
@@ -791,7 +797,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const addMessages = (message: Pubnub.MessageEvent) => {
-    console.log('addMessages', addMessages);
+    // console.log('addMessages', addMessages);
     insertText[insertText.length] = message.message;
     setMessages(() => [...(insertText as [])]);
     if (!isCall || !isAudioCall) {
@@ -1985,7 +1991,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               rowData.message === rescheduleConsultMsg ? (
                 <>{transferReschedule(rowData, index)}</>
               ) : (
-                <>{messageView(rowData, index)}</>
+                <>
+                  {rowData.message === consultPatientStartedMsg ? (
+                    <>{patientAutomatedMessage(rowData, index)}</>
+                  ) : (
+                    <>{messageView(rowData, index)}</>
+                  )}
+                </>
               )}
             </>
           )}
@@ -3465,7 +3477,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           title={'CONSULT ROOM'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => props.navigation.dispatch(
+            StackActions.reset({
+              index: 0,
+              key: null,
+              actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+            })
+          )}
+          // onPressLeftIcon={() => props.navigation.goBack()}
         />
 
         {doctorJoined ? (

@@ -168,6 +168,7 @@ export const Header: React.FC = (props) => {
   // TODO remove currentPatient and name it as currentDoctor
   const currentDoctor = useCurrentPatient();
   const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
+  const isAdminDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.ADMIN;
 
   return (
     <header className={classes.header}>
@@ -207,7 +208,7 @@ export const Header: React.FC = (props) => {
                     </div>
                   ) : (
                     <div>
-                      {!isJuniorDoctor ? (
+                      {!isJuniorDoctor && !isAdminDoctor ? (
                         <span title="Inbox">
                           <img
                             onClick={() => setSelectedTab(3)}
@@ -215,7 +216,7 @@ export const Header: React.FC = (props) => {
                           />
                         </span>
                       ) : null}
-                      {!isJuniorDoctor ? (
+                      {!isJuniorDoctor && !isAdminDoctor ? (
                         <span title="Notification">
                           <img
                             onClick={() => setSelectedTab(4)}
@@ -223,20 +224,21 @@ export const Header: React.FC = (props) => {
                           />
                         </span>
                       ) : null}
-                      <span
-                        title="Help"
-                        className={`${selectedTab === 5 && classes.menuItemActiveHelp}`}
-                      >
-                        <img
-                          onClick={() => {
-                            isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
-                            setSelectedTab(5);
-                          }}
-                          src={require('images/ic_help.svg')}
-                        />
-                      </span>
-
-                      {isJuniorDoctor ? (
+                      {!isAdminDoctor && (
+                        <span
+                          title="Help"
+                          className={`${selectedTab === 5 && classes.menuItemActiveHelp}`}
+                        >
+                          <img
+                            onClick={() => {
+                              isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                              setSelectedTab(5);
+                            }}
+                            src={require('images/ic_help.svg')}
+                          />
+                        </span>
+                      )}
+                      {isJuniorDoctor || isAdminDoctor ? (
                         <span
                           title="My Profile"
                           className={`${window.location.href.includes('/jd-profile') &&

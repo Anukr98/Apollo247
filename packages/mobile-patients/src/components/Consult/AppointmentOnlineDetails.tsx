@@ -191,6 +191,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [nextSlotAvailable, setNextSlotAvailable] = useState<any>('');
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
+  // const [consultStarted, setConsultStarted] = useState<boolean>(false);
+
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
 
@@ -205,6 +207,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       NextAvailableSlotAPI();
     }
   }, [currentPatient]);
+
+  // useEffect(() => {
+  //   console.log('consultStarted', consultStarted);
+  // }, []);
 
   const client = useApolloClient();
 
@@ -521,14 +527,15 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             />
             {data.appointmentState != APPOINTMENT_STATE.AWAITING_RESCHEDULE ? (
               <Button
-                title={'START CONSULTATION'}
+                title={data.isConsultStarted ? 'CONTINUE CONSULTATION' : 'START CONSULTATION'}
                 style={styles.startConsultText}
                 onPress={() => {
-                  CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'START_CONSULTATION_Clicked');
+                  CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'START_CONSULTATION_CLICKED');
                   props.navigation.navigate(AppRoutes.ChatRoom, {
                     data: data,
                     callType: '',
                   });
+                  // setConsultStarted(true);
                 }}
               />
             ) : null}

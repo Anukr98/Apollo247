@@ -150,7 +150,7 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       obj!.doctorType === 'PAYROLL'
     );
   });
-  console.log('pharama', item);
+  // console.log('pharama', item);
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();

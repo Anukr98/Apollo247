@@ -74,12 +74,14 @@ const getJuniorDoctorDashboard: Resolver<
       return doctor.id;
     });
 
-    //get Queue Items of junior doctors
-    juniorDoctorQueueItems = await queueRepo.getJuniorDoctorQueueCount(
-      juniorDoctorIds,
-      args.fromDate,
-      args.toDate
-    );
+    if (juniorDoctorIds.length > 0) {
+      //get Queue Items of junior doctors
+      juniorDoctorQueueItems = await queueRepo.getJuniorDoctorQueueCount(
+        juniorDoctorIds,
+        args.fromDate,
+        args.toDate
+      );
+    }
   }
 
   const DashoardData: DashoardData = {

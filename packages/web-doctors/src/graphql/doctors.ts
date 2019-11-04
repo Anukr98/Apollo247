@@ -151,3 +151,22 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
     }
   }
 `;
+
+export const GET_JD_DASHBOARD = gql`
+  query GetJuniorDoctorDashboard($fromDate: Date!, $toDate: Date!, $offset: Int!, $limit: Int!) {
+    getJuniorDoctorDashboard(fromDate: $fromDate, toDate: $toDate, offset: $offset, limit: $limit) {
+      consultsBookedButNotInQueue
+      juniorDoctorDetails {
+        firstName
+        lastName
+        salutation
+        onlineStatus
+        id
+      }
+      juniorDoctorQueueItems {
+        doctorid
+        queuedconsultscount
+      }
+    }
+  }
+`;

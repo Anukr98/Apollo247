@@ -23,6 +23,7 @@ import { JDProfile } from 'components/JuniorDoctors/JDProfile';
 import { JDConsultRoom } from 'components/JuniorDoctors/JDConsultRoom';
 
 import { DoctorType } from 'graphql/types/globalTypes';
+import { JDAdminDashboard } from 'components/JDAdmin/JDAdminDashboard';
 
 const App: React.FC = () => {
   const classes = useStyles();
@@ -37,6 +38,7 @@ const App: React.FC = () => {
   // TODO Why is this called patient?
   const currentDoctor = useCurrentPatient();
   const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
+  const isJDAdmin = currentDoctor && currentDoctor.doctorType === DoctorType.ADMIN;
 
   return isSignedIn ? (
     // TODO This should all be inside of a <Switch>, why are we rendering multiple routes simultaneously?
@@ -45,7 +47,9 @@ const App: React.FC = () => {
         exact
         path={clientRoutes.welcome()}
         render={() =>
-          isJuniorDoctor ? (
+          isJDAdmin ? (
+            <Redirect to={clientRoutes.juniorDoctorAdmin()} />
+          ) : isJuniorDoctor ? (
             <Redirect to={clientRoutes.juniorDoctor()} />
           ) : (
             <Redirect to={!isSignedIn.firebaseToken ? '/profile' : '/Calendar'} />
@@ -70,6 +74,7 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.juniorDoctor()} component={JuniorDoctor} />
       <AuthRouted exact path={clientRoutes.patientDetails()} component={PatientDetails} />
       <AuthRouted exact path={clientRoutes.juniorDoctorProfile()} component={JDProfile} />
+      <AuthRouted exact path={clientRoutes.juniorDoctorAdmin()} component={JDAdminDashboard} />
       <AuthRouted
         exact
         path={clientRoutes.JDConsultRoom({
