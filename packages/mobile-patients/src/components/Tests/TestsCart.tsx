@@ -4,14 +4,19 @@ import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/compone
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { PhysicalPrescription, ShoppingCartItem, useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, CalendarShow, CouponIcon, MedicineIcon, CrossPopup, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight, CalendarShow, CouponIcon, DropdownGreen, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
+import { ScheduleCalander } from '@aph/mobile-patients/src/components/ui/ScheduleCalander';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { GET_PATIENT_ADDRESS_LIST, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
 import { getPatientAddressList, getPatientAddressListVariables } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
@@ -19,27 +24,11 @@ import { pinCodeServiceabilityApi, searchPickupStoresApi } from '@aph/mobile-pat
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
-import { ActivityIndicator, SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Platform, Dimensions } from 'react-native';
+import { ActivityIndicator, Dimensions, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
-import { ConsultOnline } from '../ConsultRoom/ConsultOnline';
-import moment from 'moment';
-import {
-    Afternoon,
-    AfternoonUnselected,
-    Evening,
-    EveningUnselected,
-    Morning,
-    MorningUnselected,
-    Night,
-    NightUnselected,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { ScheduleCalander } from '../ui/ScheduleCalander';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { AddProfile } from '../ui/AddProfile';
 
 const styles = StyleSheet.create({
     labelView: {

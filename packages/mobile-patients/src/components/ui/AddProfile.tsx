@@ -1,18 +1,14 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { Afternoon, AfternoonUnselected, CrossPopup, Evening, EveningUnselected, Morning, MorningUnselected, Night, NightUnselected } from '@aph/mobile-patients/src/components/ui/Icons';
-import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import { timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect, useState } from 'react';
-import { Dimensions, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert, Keyboard } from 'react-native';
-import { CalendarView, CALENDAR_TYPE } from './CalendarView';
-import { Header } from './Header';
-import { StickyBottomComponent } from './StickyBottomComponent';
-import { NavigationScreenProps } from 'react-navigation';
-import { TextInputComponent } from './TextInputComponent';
-import { DatePicker } from './DatePicker';
-import Moment from 'moment';
+import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { CrossPopup } from '@aph/mobile-patients/src/components/ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Moment from 'moment';
+import React, { useState } from 'react';
+import { Alert, Dimensions, Keyboard, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
