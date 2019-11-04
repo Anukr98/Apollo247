@@ -285,7 +285,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               price={medicine.price!}
               unit={medicine.quantity}
               imageUrl={imageUrl}
-              onPressAdd={() => {}}
+              onPressAdd={() => { }}
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Remove item from cart');
                 onRemoveCartItem(medicine);
@@ -299,9 +299,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               isPrescriptionRequired={medicine.prescriptionRequired}
               subscriptionStatus={'unsubscribed'}
               packOfCount={parseInt(medicine.mou || '0')}
-              onChangeSubscription={() => {}}
-              onEditPress={() => {}}
-              onAddSubscriptionPress={() => {}}
+              onChangeSubscription={() => { }}
+              onEditPress={() => { }}
+              onAddSubscriptionPress={() => { }}
             />
           );
         })}
@@ -366,7 +366,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               key={item.id}
               title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}${
                 item.landmark ? ',\n' : ''
-              }${item.city}, ${item.state} - ${item.zipcode}`}
+                }${item.city}, ${item.state} - ${item.zipcode}`}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Check service availability');
