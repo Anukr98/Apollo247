@@ -1,14 +1,14 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { Afternoon, AfternoonUnselected, CrossPopup, Evening, EveningUnselected, Morning, MorningUnselected, Night, NightUnselected } from '@aph/mobile-patients/src/components/ui/Icons';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CalendarView, CALENDAR_TYPE } from './CalendarView';
-import { Header } from './Header';
-import { StickyBottomComponent } from './StickyBottomComponent';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
