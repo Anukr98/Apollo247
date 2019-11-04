@@ -12,15 +12,19 @@ import {
   PersonFocused,
   ShoppingCart,
   ShoppingCartFocused,
+  TestsIconFocused,
+  TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
+import { Tests } from './Tests/Tests';
 
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': <ConsultationRoom />,
   'HEALTH RECORDS': <MyHealth />,
   MEDICINES: <ShoppingCart />,
+  TESTS: <TestsIcon />,
   'MY ACCOUNT': <Person />,
 };
 
@@ -28,6 +32,7 @@ const routeToFocusedIcon: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': <ConsultationRoomFocused />,
   'HEALTH RECORDS': <MyHealthFocused />,
   MEDICINES: <ShoppingCartFocused />,
+  TESTS: <TestsIconFocused />,
   'MY ACCOUNT': <PersonFocused />,
 };
 
@@ -35,6 +40,7 @@ const routeConfigMap: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': Consult,
   'HEALTH RECORDS': HealthRecordsHome,
   MEDICINES: Medicine,
+  TESTS: Tests,
   'MY ACCOUNT': MyAccount,
 };
 
