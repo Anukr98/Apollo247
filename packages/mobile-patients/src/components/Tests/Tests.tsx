@@ -170,6 +170,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const fetchCurrentLocation = () => {
+    // Geocoder.init(key);
+    // console.log(getUserCurrentPosition(), 'getUserCurrentPosition');
     getUserCurrentPosition()
       .then((res: any) => {
         res.name && setcurrentLocation(res.name.toUpperCase());
@@ -178,6 +180,55 @@ export const Tests: React.FC<TestsProps> = (props) => {
         console.log(res, 'getUserCurrentPosition');
       })
       .catch((error) => console.log(error, 'getUserCurrentPosition err'));
+    // AsyncStorage.getItem('location').then((item) => {
+    //   const location = item ? JSON.parse(item) : null;
+    //   if (location) {
+    //     location.name && setcurrentLocation(location.name.toUpperCase());
+    //   } else {
+    //     navigator.geolocation.getCurrentPosition(
+    //       (position) => {
+    //         const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+    //         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+    //         console.log(searchstring, 'searchstring');
+
+    //         // Geocoder.from(position.coords.latitude, position.coords.longitude)
+    //         //   .then((json) => {
+    //         //     const addressComponent = json.results[0].address_components[1].long_name || '';
+    //         //     console.log(json, addressComponent, 'addressComponent');
+    //         //     setcurrentLocation(addressComponent.toUpperCase());
+    //         //   })
+    //         //   .catch((error) => console.warn(error));
+    //         // axios
+    //         //   .get(url)
+    //         //   .then((obj) => {
+    //         //     try {
+    //         //       if (
+    //         //         obj.data.results.length > 0 &&
+    //         //         obj.data.results[0].address_components.length > 0
+    //         //       ) {
+    //         //         const address = obj.data.results[0].address_components[0].short_name;
+    //         //         setcurrentLocation(address.toUpperCase());
+    //         //         AsyncStorage.setItem(
+    //         //           'location',
+    //         //           JSON.stringify({
+    //         //             latlong: obj.data.results[0].geometry.location,
+    //         //             name: address.toUpperCase(),
+    //         //           })
+    //         //         );
+    //         //       }
+    //         //     } catch {}
+    //         //   })
+    //         //   .catch((error) => {
+    //         //     console.log(error, 'geocode error');
+    //         //   });
+    //       },
+    //       (error) => {
+    //         console.log(error.code, error.message, 'getCurrentPosition error');
+    //       },
+    //       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    //     );
+    //   }
+    // });
   };
 
   // Common Views
@@ -325,6 +376,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       ...theme.fonts.IBMPlexSansMedium(18),
                     }}
                     onPress={() => {
+                      // CommonLogEvent(AppRoutes.DoctorSearchListing, 'Search List clicked');
                       setcurrentLocation(item.name);
                       saveLatlong(item);
                       setshowLocationpopup(false);
