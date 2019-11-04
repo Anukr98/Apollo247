@@ -66,7 +66,7 @@ export const connect = async () => {
       username: process.env.CONSULTS_DB_USER,
       password: process.env.CONSULTS_DB_PASSWORD,
       database: `consults_${process.env.NODE_ENV}`,
-      logging: true,
+      logging: process.env.NODE_ENV === 'production' ? false : true,
       synchronize: true,
     },
     {
@@ -89,7 +89,7 @@ export const connect = async () => {
       username: process.env.DOCTORS_DB_USER,
       password: process.env.DOCTORS_DB_PASSWORD,
       database: `doctors_${process.env.NODE_ENV}`,
-      logging: true,
+      logging: process.env.NODE_ENV === 'production' ? false : true,
     },
     {
       name: 'patients-db',
@@ -118,7 +118,7 @@ export const connect = async () => {
       username: process.env.PROFILES_DB_USER,
       password: process.env.PROFILES_DB_PASSWORD,
       database: `profiles_${process.env.NODE_ENV}`,
-      logging: true,
+      logging: process.env.NODE_ENV === 'production' ? false : true,
     },
   ]).catch((error) => {
     throw new Error(error);

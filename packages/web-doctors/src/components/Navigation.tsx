@@ -59,6 +59,7 @@ export const Navigation: React.FC = (props) => {
         to={isJuniorDoctor ? clientRoutes.juniorDoctor() : clientRoutes.welcome()}
         className={` ${(window.location.href.toLowerCase().includes('/calendar') ||
           window.location.href.toLowerCase().includes('/junior-doctor') ||
+          window.location.href.toLowerCase().includes('/jd-admin') ||
           window.location.href.toLowerCase().includes('/jd-consultroom')) &&
           classes.menuItemActive}`}
       >
