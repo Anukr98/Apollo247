@@ -1,4 +1,4 @@
-import gql from "graphql-tag";
+import gql from 'graphql-tag';
 
 /* get doctor details by doctor id */
 export const GET_DOCTOR_DETAILS_BY_ID = gql`
@@ -129,10 +129,7 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
 
 export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
   query SearchDoctorAndSpecialtyByName($searchText: String!, $patientId: ID!) {
-    SearchDoctorAndSpecialtyByName(
-      searchText: $searchText
-      patientId: $patientId
-    ) {
+    SearchDoctorAndSpecialtyByName(searchText: $searchText, patientId: $patientId) {
       doctors {
         id
         firstName
@@ -239,9 +236,7 @@ export const PATIENT_APPOINTMENT_HISTORY = gql`
 `;
 
 export const GET_DOCTOR_AVAILABLE_SLOTS = gql`
-  query GetDoctorAvailableSlots(
-    $DoctorAvailabilityInput: DoctorAvailabilityInput
-  ) {
+  query GetDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput) {
     getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
       availableSlots
     }
@@ -264,12 +259,8 @@ export const BOOK_APPOINTMENT = gql`
 `;
 
 export const GET_PATIENT_APPOINTMENTS = gql`
-  query GetPatientAppointments(
-    $patientAppointmentsInput: PatientAppointmentsInput
-  ) {
-    getPatinetAppointments(
-      patientAppointmentsInput: $patientAppointmentsInput
-    ) {
+  query GetPatientAppointments($patientAppointmentsInput: PatientAppointmentsInput) {
+    getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput) {
       patinetAppointments {
         id
         patientId
@@ -303,12 +294,8 @@ export const GET_PATIENT_APPOINTMENTS = gql`
 `;
 
 export const GET_DOCTOR_NEXT_AVAILABILITY = gql`
-  query GetDoctorNextAvailableSlot(
-    $DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput
-  ) {
-    getDoctorNextAvailableSlot(
-      DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput
-    ) {
+  query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput) {
+    getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {
       doctorAvailalbeSlots {
         doctorId
         availableSlot
