@@ -145,7 +145,7 @@ import { format, differenceInMilliseconds } from 'date-fns';
       /* This plugin is defined in-line. */
       {
         serverWillStart() {
-          winston.log('info', 'Server starting up!');
+          //winston.log('info', 'Server starting up!');
           console.log('Server starting up!');
         },
         requestDidStart({ operationName, request }) {
@@ -153,18 +153,19 @@ import { format, differenceInMilliseconds } from 'date-fns';
              to request-specific lifecycle events. */
           const reqStartTime = new Date();
           const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+          console.log(reqStartTimeFormatted);
           return {
             parsingDidStart(requestContext) {
-              winston.log({
-                message: 'Request Starting',
-                time: reqStartTimeFormatted,
-                operation: requestContext.request.query,
-                level: 'info',
-              });
+              // winston.log({
+              //   message: 'Request Starting',
+              //   time: reqStartTimeFormatted,
+              //   operation: requestContext.request.query,
+              //   level: 'info',
+              // });
             },
             didEncounterErrors(requestContext) {
               requestContext.errors.forEach((error) => {
-                winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
+                //winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
               });
             },
             willSendResponse({ response }) {
@@ -179,7 +180,7 @@ import { format, differenceInMilliseconds } from 'date-fns';
               };
               //remove response if there is no error
               if (errorCount === 0) delete responseLog.response;
-              winston.log(responseLog);
+              //winston.log(responseLog);
             },
           };
         },
