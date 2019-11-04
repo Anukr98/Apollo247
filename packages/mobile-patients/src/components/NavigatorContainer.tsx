@@ -53,6 +53,7 @@ import { AsyncStorage } from 'react-native';
 import { CommonScreenLog } from '../FunctionHelpers/DeviceHelper';
 import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
+import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -103,6 +104,7 @@ export enum AppRoutes {
   SearchByBrand = 'SearchByBrand',
   TestsCart = 'TestsCart',
   MedAndTestCart = 'MedAndTestCart',
+  TestDetails = 'TestDetails',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -267,6 +269,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.MedAndTestCart]: {
     screen: MedAndTestCart,
+  },
+  [AppRoutes.TestDetails]: {
+    screen: TestDetails,
   },
 };
 
