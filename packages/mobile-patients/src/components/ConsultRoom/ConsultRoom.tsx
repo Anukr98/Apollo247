@@ -8,6 +8,7 @@ import {
   MyHealth,
   Person,
   ShoppingCart,
+  TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -174,6 +175,11 @@ const tabBarOptions: TabBarOptions[] = [
   },
   {
     id: 4,
+    title: 'TESTS',
+    image: <TestsIcon style={{ marginTop: -4 }} />,
+  },
+  {
+    id: 5,
     title: 'MY ACCOUNT',
     image: <Person style={{ marginTop: -4 }} />,
   },
@@ -547,6 +553,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
+                  CommonLogEvent(AppRoutes.ConsultRoom, 'TESTS clicked');
+                  props.navigation.navigate('TESTS');
+                } else if (i == 4) {
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MY_ACCOUNT clicked');
                   props.navigation.navigate('MY ACCOUNT');
                 }
@@ -554,7 +563,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             >
               <View
                 style={{
-                  width: width / 4,
+                  width: width / 5,
                   height: 57,
                   alignItems: 'center',
                   justifyContent: 'center',
