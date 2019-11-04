@@ -11,7 +11,14 @@ import {
   SearchSendIcon,
   SyrupBottleIcon,
   TestsIcon,
+  LocationOn,
+  LocationOff,
 } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  getNetStatus,
+  getUserCurrentPosition,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
+import axios from 'axios';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -48,9 +55,13 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
+  PermissionsAndroid,
+  Platform,
+  AsyncStorage,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -74,6 +85,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
+const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+
+export type locationType = { lat: string; lng: string };
 
 export interface TestsProps extends NavigationScreenProps {}
 
@@ -100,13 +114,32 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
   }, []);
 
+  useEffect(() => {
+    Platform.OS === 'android' && requestLocationPermission();
+    getNetStatus().then((status) => {
+      if (status) {
+        fetchCurrentLocation();
+        // fetchSpecialityFilterData(filterMode, FilterData);
+      } else {
+        setLoading(false);
+        setError(true);
+      }
+    });
+  }, []);
   const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
+  const [currentLocation, setcurrentLocation] = useState<string>('');
+  const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
+  const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
+    []
+  );
+
   const offerBanner = (g(data, 'mainbanners') || [])[0];
   const offerBannerImage = ''; //g(offerBanner, 'image');
   const shopByCategory = g(data, 'shop_by_category') || [];
   const hotSellers = g(data, 'hot_sellers', 'products') || [];
+  let latlng: locationType | null = null;
 
   const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
     GetMedicineOrdersList,
@@ -119,6 +152,84 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const _orders =
     (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
 
+  const requestLocationPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('You can use the location');
+        fetchCurrentLocation();
+      } else {
+        console.log('location permission denied');
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const fetchCurrentLocation = () => {
+    // Geocoder.init(key);
+    // console.log(getUserCurrentPosition(), 'getUserCurrentPosition');
+    getUserCurrentPosition()
+      .then((res: any) => {
+        res.name && setcurrentLocation(res.name.toUpperCase());
+        // fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
+        latlng = res.latlong;
+        console.log(res, 'getUserCurrentPosition');
+      })
+      .catch((error) => console.log(error, 'getUserCurrentPosition err'));
+    // AsyncStorage.getItem('location').then((item) => {
+    //   const location = item ? JSON.parse(item) : null;
+    //   if (location) {
+    //     location.name && setcurrentLocation(location.name.toUpperCase());
+    //   } else {
+    //     navigator.geolocation.getCurrentPosition(
+    //       (position) => {
+    //         const searchstring = position.coords.latitude + ',' + position.coords.longitude;
+    //         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
+    //         console.log(searchstring, 'searchstring');
+
+    //         // Geocoder.from(position.coords.latitude, position.coords.longitude)
+    //         //   .then((json) => {
+    //         //     const addressComponent = json.results[0].address_components[1].long_name || '';
+    //         //     console.log(json, addressComponent, 'addressComponent');
+    //         //     setcurrentLocation(addressComponent.toUpperCase());
+    //         //   })
+    //         //   .catch((error) => console.warn(error));
+    //         // axios
+    //         //   .get(url)
+    //         //   .then((obj) => {
+    //         //     try {
+    //         //       if (
+    //         //         obj.data.results.length > 0 &&
+    //         //         obj.data.results[0].address_components.length > 0
+    //         //       ) {
+    //         //         const address = obj.data.results[0].address_components[0].short_name;
+    //         //         setcurrentLocation(address.toUpperCase());
+    //         //         AsyncStorage.setItem(
+    //         //           'location',
+    //         //           JSON.stringify({
+    //         //             latlong: obj.data.results[0].geometry.location,
+    //         //             name: address.toUpperCase(),
+    //         //           })
+    //         //         );
+    //         //       }
+    //         //     } catch {}
+    //         //   })
+    //         //   .catch((error) => {
+    //         //     console.log(error, 'geocode error');
+    //         //   });
+    //       },
+    //       (error) => {
+    //         console.log(error.code, error.message, 'getCurrentPosition error');
+    //       },
+    //       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    //     );
+    //   }
+    // });
+  };
+  
   // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
@@ -132,7 +243,204 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
+  
+  const autoSearch = (searchText: string) => {
+    getNetStatus().then((status) => {
+      if (status) {
+        axios
+          .get(
+            `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${key}`
+          )
+          .then((obj) => {
+            try {
+              if (obj.data.predictions) {
+                const address = obj.data.predictions.map(
+                  (item: {
+                    place_id: string;
+                    structured_formatting: {
+                      main_text: string;
+                    };
+                  }) => {
+                    return { name: item.structured_formatting.main_text, placeId: item.place_id };
+                  }
+                );
+                setlocationSearchList(address);
+              }
+            } catch { }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    });
+  };
 
+  const saveLatlong = (item: { name: string; placeId: string }) => {
+    getNetStatus().then((status) => {
+      if (status) {
+        axios
+          .get(
+            `https://maps.googleapis.com/maps/api/place/details/json?placeid=${item.placeId}&key=${key}`
+          )
+          .then((obj) => {
+            try {
+              if (obj.data.result.geometry && obj.data.result.geometry.location) {
+                AsyncStorage.setItem(
+                  'location',
+                  JSON.stringify({ latlong: obj.data.result.geometry.location, name: item.name })
+                );
+                // setlatlng(obj.data.result.geometry.location);
+                latlng = obj.data.result.geometry.location;
+                // setLoading(true);
+                // fetchSpecialityFilterData(filterMode, FilterData, latlng);
+              }
+            } catch (error) {
+              console.log(error);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+    });
+  };
+
+
+  const renderPopup = () => {
+    if (showLocationpopup) {
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            alignItems: 'center',
+            zIndex: 15,
+            elevation: 15,
+          }}
+          onPress={() => setshowLocationpopup(false)}
+        >
+          <View
+            style={{
+              ...theme.viewStyles.cardViewStyle,
+              width: 235,
+              padding: 16,
+              marginTop: 40,
+            }}
+          >
+            <Text
+              style={{
+                color: theme.colors.CARD_HEADER,
+                ...theme.fonts.IBMPlexSansMedium(14),
+              }}
+            >
+              Current Location
+            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <View style={{ flex: 7 }}>
+                <TextInputComponent
+                  value={currentLocation}
+                  onChangeText={(value) => {
+                    setcurrentLocation(value);
+                    autoSearch(value);
+                  }}
+                />
+              </View>
+              <View
+                style={{
+                  marginLeft: 20,
+                  alignItems: 'flex-end',
+                  justifyContent: 'center',
+                  marginBottom: 10,
+                }}
+              >
+                <LocationOn />
+              </View>
+            </View>
+            <View>
+              {locationSearchList.map((item, i) => (
+                <View
+                  key={i}
+                  style={{
+                    borderBottomWidth: 0.5,
+                    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+                    paddingVertical: 7,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: theme.colors.LIGHT_BLUE,
+                      ...theme.fonts.IBMPlexSansMedium(18),
+                    }}
+                    onPress={() => {
+                      // CommonLogEvent(AppRoutes.DoctorSearchListing, 'Search List clicked');
+                      setcurrentLocation(item.name);
+                      saveLatlong(item);
+                      setshowLocationpopup(false);
+                    }}
+                  >
+                    {item.name}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+  };
+
+  const renderLocation = () => {
+    return (
+      <View style={{ flexDirection: 'row', right: 35 }}>
+        {currentLocation === '' ? (
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => {
+              getNetStatus().then((status) => {
+                if (status) {
+                  setshowLocationpopup(true);
+                  fetchCurrentLocation();
+                } else {
+                  setError(true);
+                }
+              });
+            }}
+          >
+            <LocationOff />
+          </TouchableOpacity>
+        ) : (
+          <View>
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => setshowLocationpopup(true)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              {currentLocation ? (
+                <Text
+                  style={{
+                    color: theme.colors.SHERPA_BLUE,
+                    ...theme.fonts.IBMPlexSansSemiBold(13),
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {currentLocation}
+                </Text>
+              ) : null}
+              <LocationOn />
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+    );
+  };
+  
   const renderTopView = () => {
     return (
       <View
@@ -151,6 +459,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <ApolloLogo />
         </TouchableOpacity>
         <View style={{ flexDirection: 'row' }}>
+          {renderLocation()}
           <TouchableOpacity
             activeOpacity={1}
             onPress={() =>
@@ -759,7 +1068,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         disabled={!shouldEnableSearchSend}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
+          props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText:searchText, isTest:true });
           setSearchText('');
           setMedicineList([]);
         }}
@@ -776,7 +1085,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <Input
           onSubmitEditing={() => {
             if (searchText.length > 2) {
-              props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
+              props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText: searchText, isTest: true });
             }
           }}
           value={searchText}
@@ -966,6 +1275,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
+      {renderPopup()}
     </View>
   );
 };
