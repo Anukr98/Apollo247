@@ -99,6 +99,10 @@ export const ShoppingCart: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_medsntest.png')} />
 );
 
+export const TestsIcon: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/ic_test.png')} />
+);
+
 export const Person: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_account.png')} />
 );
@@ -113,6 +117,10 @@ export const MyHealthFocused: React.FC<IconProps> = (props) => (
 
 export const ShoppingCartFocused: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_medsntest_white.png')} />
+);
+
+export const TestsIconFocused: React.FC<IconProps> = (props) => (
+  <IconBase size="sm" {...props} source={require('./icons/test_focused.png')} />
 );
 
 export const PersonFocused: React.FC<IconProps> = (props) => (

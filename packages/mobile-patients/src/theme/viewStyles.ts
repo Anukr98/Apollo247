@@ -33,7 +33,8 @@ export const viewStyles = {
     padding: number = 16,
     margin: number = 20,
     borderRadius: number = 10,
-    backgroundColor: string = '#fff'
+    backgroundColor: string = '#fff',
+    elevation: number = 16
   ): ViewStyle => ({
     padding,
     margin,
@@ -43,7 +44,7 @@ export const viewStyles = {
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.5,
     shadowRadius: 8,
-    elevation: 16,
+    elevation,
   }),
   // F, S, C, O, LH, LS
   text: getTextStyle,
