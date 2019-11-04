@@ -2,6 +2,7 @@ import '@aph/universal/dist/global';
 import { buildFederatedSchema } from '@apollo/federation';
 //import { GatewayHeaders } from 'api-gateway';
 import { ApolloServer } from 'apollo-server';
+import winston from 'winston';
 //import gql from 'graphql-tag';
 import 'reflect-metadata';
 import {
@@ -16,10 +17,27 @@ import { getConnection } from 'typeorm';
 import { NotificationsServiceContext } from 'notifications-service/NotificationsServiceContext';
 import { connect } from 'notifications-service/database/connect';
 import { emailTypeDefs, emailResolvers } from 'notifications-service/resolvers/email';
+import { format, differenceInMilliseconds } from 'date-fns';
+
 //import fetch from 'node-fetch';
 
 (async () => {
   await connect();
+
+  //configure winston for notifications service
+  winston.configure({
+    transports: [
+      new winston.transports.File({
+        filename: 'access-logs/notifications-service.log',
+        level: 'info',
+      }),
+      new winston.transports.File({
+        filename: 'error-logs/notifications-service.log',
+        level: 'error',
+      }),
+    ],
+  });
+
   const server = new ApolloServer({
     context: async ({ req }) => {
       const headers = req.headers as GatewayHeaders;
@@ -47,6 +65,50 @@ import { emailTypeDefs, emailResolvers } from 'notifications-service/resolvers/e
         resolvers: emailResolvers,
       },
     ]),
+    plugins: [
+      /* This plugin is defined in-line. */
+      {
+        serverWillStart() {
+          winston.log('info', 'Server starting up!');
+          console.log('Server starting up!');
+        },
+        requestDidStart({ operationName, request }) {
+          /* Within this returned object, define functions that respond
+             to request-specific lifecycle events. */
+          const reqStartTime = new Date();
+          const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+          return {
+            parsingDidStart(requestContext) {
+              winston.log({
+                message: 'Request Starting',
+                time: reqStartTimeFormatted,
+                operation: requestContext.request.query,
+                level: 'info',
+              });
+            },
+            didEncounterErrors(requestContext) {
+              requestContext.errors.forEach((error) => {
+                winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
+              });
+            },
+            willSendResponse({ response }) {
+              const errorCount = (response.errors || []).length;
+              const responseLog = {
+                message: 'Request Ended',
+                time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+                durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
+                errorCount,
+                level: 'info',
+                response: response,
+              };
+              //remove response if there is no error
+              if (errorCount === 0) delete responseLog.response;
+              winston.log(responseLog);
+            },
+          };
+        },
+      },
+    ],
   });
 
   server.listen({ port: process.env.NOTIFICATIONS_SERVICE_PORT }).then(({ url }) => {
