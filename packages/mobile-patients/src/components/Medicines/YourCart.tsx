@@ -2,7 +2,7 @@ import {
   uploadFile,
   uploadFileVariables,
 } from '@aph/mobile-patients/src//graphql/types/uploadFile';
-import { aphConsole, handleGraphQlError, timeTo12HrFormat } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { aphConsole, handleGraphQlError } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -13,7 +13,7 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, CouponIcon, MedicineIcon, CalendarShow, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -41,15 +41,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import moment from 'moment';
-import { ScheduleCalander } from '@aph/mobile-patients/src/components/ui/ScheduleCalander';
-import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
-import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -86,62 +80,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  dateTextStyle: {
-    ...theme.fonts.IBMPlexSansMedium(14),
-    color: theme.colors.SHERPA_BLUE,
-    lineHeight: 24,
-  },
-  optionsView: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingBottom: 16,
-  },
-  buttonStyle: {
-    width: 'auto',
-    marginRight: 8,
-    marginTop: 12,
-    backgroundColor: theme.colors.WHITE,
-  },
-  buttonTextStyle: {
-    paddingHorizontal: 12,
-    color: theme.colors.APP_GREEN,
-    ...theme.fonts.IBMPlexSansMedium(15),
-  },
-  placeholderViewStyle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
-    borderBottomWidth: 2,
-    paddingTop: 6,
-    paddingBottom: 3,
-    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
-  },
-  placeholderStyle: {
-    color: theme.colors.placeholderTextColor,
-  },
-  placeholderTextStyle: {
-    color: '#01475b',
-    ...theme.fonts.IBMPlexSansMedium(18),
-  },
 });
-type clinicHoursData = {
-  week: string,
-  time: string
-};
-
-type TimeArray = {
-  label: string;
-  time: string[];
-}[];
-
-type Profile = {
-  pid: string;
-  name: string;
-};
 
 export interface YourCartProps extends NavigationScreenProps {
   isComingFromConsult: boolean;
-  isTestCart?: boolean;
 }
 {
 }
@@ -171,45 +113,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     setStores,
     ePrescriptions,
   } = useShoppingCart();
-  const isTestCart = props.navigation.getParam('isTestCart');
 
-  const { width, height } = Dimensions.get('window');
-  const tabs = isTestCart ? [{ title: 'Home Visit', subtitle: 'Appointment Slot' }, { title: 'Clinic Visit', subtitle: 'Clinic Hours' }] : [{ title: 'Home Delivery', subtitle: '' }, { title: 'Store Pick Up', subtitle: '' }];
-  const clinicHours: clinicHoursData[] = [
-    {
-      week: 'Mon - Fri',
-      time: '9:00 AM - 5:00 PM'
-    },
-    {
-      week: 'Sat - Sun',
-      time: '10:00 AM - 3:30 PM'
-    },
-  ];
-
-  const [profile, setProfile] = useState<Profile>({ pid: '', name: '' });
-  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
-  const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
-  const [date, setDate] = useState<Date>(new Date());
-  const [timeArray, settimeArray] = useState<TimeArray>([]);
-  const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
-  const [profileArray, setProfileArray] = useState<Profile[]>([]);
-
+  const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
   const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
   const { showAphAlert, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
-
-  const addNewProfileText = (data: Profile[], newEntry?: Profile) => {
-    let pArray = data;
-    if (newEntry) {
-      pArray.pop();
-      pArray.push(newEntry)
-    }
-    pArray.push({ pid: 'ADD NEW PROFILE', name: 'ADD NEW PROFILE' });
-    return pArray
-  }
 
   useEffect(() => {
     if (!currentPatient) {
@@ -240,11 +151,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         })) ||
       setLoading!(false);
   }, [currentPatientId]);
-
-  useEffect(() => {
-    setProfileArray(addNewProfileText(profileArray));
-  }, [profileArray]);
-
 
   /*  useEffect(() => {
     getCartInfo()
@@ -291,8 +197,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={isTestCart ? 'TESTS CART' : 'YOUR CART'}
-        titleStyle={{ marginLeft: isTestCart ? 20 : 0 }}
+        title={'YOUR CART'}
         rightComponent={
           <View>
             <TouchableOpacity
@@ -377,7 +282,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 });
               }}
               medicineName={medicine.name!}
-              // originalPrice={10}
               price={medicine.price!}
               unit={medicine.quantity}
               imageUrl={imageUrl}
@@ -392,7 +296,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               }}
               isCardExpanded={true}
               isInStock={true}
-              isTest={isTestCart}
               isPrescriptionRequired={medicine.prescriptionRequired}
               subscriptionStatus={'unsubscribed'}
               packOfCount={parseInt(medicine.mou || '0')}
@@ -582,76 +485,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
-  const renderPickupHours = () => {
-    return (
-      <View>
-        <View style={styles.rowSpaceBetweenStyle}>
-          <Text style={styles.dateTextStyle}>Date</Text>
-          <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
-        </View>
-        <View style={styles.rowSpaceBetweenStyle}>
-          <Text style={styles.dateTextStyle}>Time</Text>
-          <Text style={styles.dateTextStyle}>{timeTo12HrFormat(selectedTimeSlot)}</Text>
-        </View>
-        <Text
-          style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
-          onPress={() => { setDisplaySchedule(true) }}
-        >
-          PICK ANOTHER SLOT
-              </Text>
-      </View>
-    )
-  };
-
-  const renderClinicHours = () => {
-    return (
-      <View>
-        {clinicHours.map(({ week, time }) => {
-          return (
-            <View style={styles.rowSpaceBetweenStyle}>
-              <Text style={styles.dateTextStyle}>{week}</Text>
-              <Text style={styles.dateTextStyle}>{time}</Text>
-            </View>
-          )
-        })}
-      </View>
-    )
-  };
-
-  const renderTimingCard = () => {
-    return (
-      selectedTab === tabs[0].title && deliveryAddressId || selectedTab === tabs[1].title ?
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginHorizontal: 20,
-            marginTop: 4,
-            marginBottom: 24,
-            padding: 16,
-          }}
-        >
-          <View style={{ flexDirection: 'row' }}>
-            <CalendarShow />
-            <Text style={{
-              ...theme.fonts.IBMPlexSansMedium(16),
-              color: theme.colors.SHERPA_BLUE,
-              lineHeight: 24,
-              paddingLeft: 16,
-            }}
-            >{selectedTab === tabs[0].title ? tabs[0].subtitle : tabs[1].subtitle}</Text>
-          </View>
-          <View style={[styles.separatorStyle, { marginTop: 10, marginBottom: 12.5 }]} />
-          {selectedTab === tabs[0].title ? renderPickupHours() : renderClinicHours()}
-        </View>
-        :
-        <View style={{ padding: 12 }}></View>
-    )
-  }
-
   const renderDelivery = () => {
     return (
       <View>
-        {renderLabel(isTestCart ? 'WHERE TO COLLECT SAMPLE FROM?' : 'WHERE SHOULD WE DELIVER?')}
+        {renderLabel('WHERE SHOULD WE DELIVER?')}
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
@@ -676,7 +513,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
           {selectedTab === tabs[0].title ? renderHomeDelivery() : renderStorePickup()}
         </View>
-        {isTestCart && renderTimingCard()}
       </View>
     );
   };
@@ -883,107 +719,14 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
-  const renderProfilePicker = () => {
-    return (
-      <MaterialMenu
-        dataObject={profileArray}
-        selectedText={profile.pid}
-        menuContainer={{ alignItems: 'flex-end' }}
-        itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
-        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
-        selectedTextStyle={{
-          ...theme.viewStyles.text('M', 16, '#00b38e'),
-          alignSelf: 'flex-start'
-        }}
-        lastTextStyle={{
-          ...theme.viewStyles.text('B', 13, '#fc9916')
-        }}
-        bottomPadding={{ paddingBottom: 20 }}
-        lastContainerStyle={{ height: 38, borderBottomWidth: 0, alignItems: 'flex-end', justifyContent: 'flex-end' }}
-        onPressObject={(selectedUser) => {
-          if (selectedUser.pid === 'ADD NEW PROFILE')
-            setDisplayAddProfile(true)
-          else
-            setProfile(selectedUser)
-        }}>
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <View style={styles.placeholderViewStyle}>
-            <Text
-              style={[
-                styles.placeholderTextStyle,
-                ,
-                profile.pid !== '' ? null : styles.placeholderStyle,
-              ]}
-            >
-              {profile.pid !== '' ? profile.name : 'Select who are these tests for'}
-            </Text>
-            <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-              <DropdownGreen />
-            </View>
-          </View>
-        </View>
-      </MaterialMenu>
-    )
-  }
-
-  const renderProfiles = () => {
-    return (
-      <View>
-        {renderLabel('WHO ARE THESE TESTS FOR?')}
-        <View
-          style={{
-            ...theme.viewStyles.cardViewStyle,
-            marginHorizontal: 20,
-            paddingHorizontal: 16,
-            marginTop: 16,
-            marginBottom: 20,
-            paddingTop: 8,
-            paddingBottom: 16
-          }}
-        >
-          {renderProfilePicker()}
-          <Text
-            style={{
-              ...theme.fonts.IBMPlexSansMedium(16),
-              lineHeight: 24,
-              marginTop: 8,
-              color: theme.colors.SKY_BLUE
-            }}
-          >
-            {`All the tests must be for one person. Tests for multiple profiles will require separate purchases.`}
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
   return (
     <View style={{ flex: 1 }}>
-      {displaySchedule &&
-        <ScheduleCalander
-          date={date}
-          setDate={(date) => setDate(date)}
-          setdisplayoverlay={setDisplaySchedule}
-          selectedTimeSlot={selectedTimeSlot}
-          setselectedTimeSlot={(selected) => setselectedTimeSlot(selected)}
-          timeArray={timeArray}
-          CALENDAR_TYPE={CALENDAR_TYPE.WEEK} />
-      }
-      {displayAddProfile &&
-        <AddProfile
-          setdisplayoverlay={setDisplayAddProfile}
-          setProfile={(profile) => {
-            setProfile(profile)
-            setProfileArray(addNewProfileText(profileArray, profile))
-          }} />
-      }
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
-            {isTestCart && renderProfiles()}
-            <MedicineUploadPrescriptionView isTest={isTestCart} navigation={props.navigation} />
+            <MedicineUploadPrescriptionView navigation={props.navigation} />
             {renderDelivery()}
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
