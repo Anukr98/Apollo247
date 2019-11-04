@@ -1,81 +1,81 @@
-import { Theme, Grid } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
-import React from 'react';
-import { DoctorCard } from 'components/DoctorCard';
-import _uniqueId from 'lodash/uniqueId';
-import _map from 'lodash/map';
-import LinearProgress from '@material-ui/core/LinearProgress';
+import { Theme, Grid } from "@material-ui/core";
+import { makeStyles } from "@material-ui/styles";
+import React from "react";
+import { DoctorCard } from "components/DoctorCard";
+import _uniqueId from "lodash/uniqueId";
+import _map from "lodash/map";
+import LinearProgress from "@material-ui/core/LinearProgress";
 
-import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { SEARCH_DOCTORS_AND_SPECIALITY } from 'graphql/doctors';
-import { SpecialitiesProps } from 'components/Specialities';
-import { Specialities } from 'components/Specialities';
+import { useQueryWithSkip } from "hooks/apolloHooks";
+import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from "graphql/doctors";
+import { SpecialitiesProps } from "components/Specialities";
+import { Specialities } from "components/Specialities";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     sectionHeader: {
-      color: '#02475b',
+      color: "#02475b",
       fontSize: 14,
       fontWeight: 500,
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      borderBottom: "1px solid rgba(1,71,91,0.3)",
       paddingBottom: 10,
       paddingTop: 10,
       marginBottom: 20,
-      display: 'flex',
-      alignItems: 'center',
+      display: "flex",
+      alignItems: "center"
     },
     count: {
-      marginLeft: 'auto',
+      marginLeft: "auto"
     },
     welcome: {
       paddingTop: 85,
-      [theme.breakpoints.down('xs')]: {
-        paddingTop: 78,
-      },
+      [theme.breakpoints.down("xs")]: {
+        paddingTop: 78
+      }
     },
     booksLink: {
       color: theme.palette.primary.main,
-      textDecoration: 'underline',
+      textDecoration: "underline"
     },
     headerSticky: {
-      position: 'fixed',
-      width: '100%',
+      position: "fixed",
+      width: "100%",
       zIndex: 99,
-      top: 0,
+      top: 0
     },
     container: {
       maxWidth: 1064,
-      margin: 'auto',
+      margin: "auto"
     },
     bottomMenuRoot: {
-      position: 'fixed',
-      width: '100%',
+      position: "fixed",
+      width: "100%",
       zIndex: 99,
       bottom: 0,
-      height: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        display: 'none',
+      height: "auto",
+      [theme.breakpoints.up("sm")]: {
+        display: "none"
       },
-      '& button': {
-        padding: '10px 0',
-      },
+      "& button": {
+        padding: "10px 0"
+      }
     },
     labelRoot: {
-      width: '100%',
+      width: "100%"
     },
     iconLabel: {
       fontSize: 12,
-      color: '#67919d',
+      color: "#67919d",
       paddingTop: 10,
-      textTransform: 'uppercase',
+      textTransform: "uppercase"
     },
     iconSelected: {
-      fontSize: '12px !important',
-      color: theme.palette.primary.main,
+      fontSize: "12px !important",
+      color: theme.palette.primary.main
     },
     doctorListingPage: {
-      borderRadius: '0 0 10px 10px',
-      backgroundColor: '#f7f8f5',
+      borderRadius: "0 0 10px 10px",
+      backgroundColor: "#f7f8f5"
     },
     breadcrumbs: {
       marginLeft: 20,
@@ -84,79 +84,84 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 15,
       paddingBottom: 10,
       fontWeight: 600,
-      color: '#02475b',
-      textTransform: 'uppercase',
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
+      color: "#02475b",
+      textTransform: "uppercase",
+      borderBottom: "1px solid rgba(1,71,91,0.3)"
     },
     doctorListingSection: {
-      display: 'flex',
-      padding: 20,
+      display: "flex",
+      padding: 20
     },
     searchSection: {
-      width: 'calc(100% - 328px)',
-      paddingLeft: 20,
+      width: "calc(100% - 328px)",
+      paddingLeft: 20
     },
     pageHeader: {
       fontSize: 17,
       fontWeight: 500,
-      color: '#0087ba',
-      borderBottom: '1px solid rgba(1,71,91,0.3)',
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: 20,
+      color: "#0087ba",
+      borderBottom: "1px solid rgba(1,71,91,0.3)",
+      display: "flex",
+      alignItems: "center",
+      marginBottom: 20
     },
     filterSection: {
-      marginLeft: 'auto',
-      '& button:last-child': {
-        marginRight: 0,
-      },
+      marginLeft: "auto",
+      "& button:last-child": {
+        marginRight: 0
+      }
     },
     filterButton: {
-      boxShadow: 'none',
+      boxShadow: "none",
       fontSize: 12,
       fontWeight: 500,
-      color: '#658f9b',
-      backgroundColor: 'transparent',
-      textTransform: 'none',
-      borderBottom: '5px solid #f7f8f5',
+      color: "#658f9b",
+      backgroundColor: "transparent",
+      textTransform: "none",
+      borderBottom: "5px solid #f7f8f5",
       borderRadius: 0,
       paddingLeft: 0,
       paddingRight: 0,
       marginLeft: 10,
-      marginRight: 10,
+      marginRight: 10
     },
     buttonActive: {
-      borderBottom: '5px solid #00b38e',
-      color: '#02475b',
+      borderBottom: "5px solid #00b38e",
+      color: "#02475b"
     },
     searchList: {
       paddingBottom: 20,
-      [theme.breakpoints.down('xs')]: {
-        paddingBottom: 14,
+      [theme.breakpoints.down("xs")]: {
+        paddingBottom: 14
       },
-      '& >div': {
-        [theme.breakpoints.down('xs')]: {
+      "& >div": {
+        [theme.breakpoints.down("xs")]: {
           marginLeft: -6,
           marginRight: -6,
-          width: 'calc(100% + 12px)',
+          width: "calc(100% + 12px)"
         },
-        '& >div': {
-          [theme.breakpoints.down('xs')]: {
-            padding: '6px !important',
-          },
-        },
-      },
-    },
+        "& >div": {
+          [theme.breakpoints.down("xs")]: {
+            padding: "6px !important"
+          }
+        }
+      }
+    }
   };
 });
 
-export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (props) => {
+export const PossibleSpecialitiesAndDoctors: React.FC<
+  SpecialitiesProps
+> = props => {
   const classes = useStyles();
 
   const { matched, speciality, disableFilter } = props;
-  const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY, {
-    variables: { searchText: '' },
-  });
+  const { data, loading } = useQueryWithSkip(
+    SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME,
+    {
+      variables: { searchText: "" }
+    }
+  );
 
   if (loading) {
     return <LinearProgress variant="query" />;
@@ -169,14 +174,16 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
         <div className={classes.sectionHeader}>
           <span>Possible Doctors</span>
           <span className={classes.count}>
-            {matchingDoctors > 0 && matchingDoctors < 10 ? `0${matchingDoctors}` : matchingDoctors}
+            {matchingDoctors > 0 && matchingDoctors < 10
+              ? `0${matchingDoctors}`
+              : matchingDoctors}
           </span>
         </div>
         <div className={classes.searchList}>
           <Grid spacing={2} container>
-            {_map(data.SearchDoctorAndSpecialty.doctors, (doctorDetails) => {
+            {_map(data.SearchDoctorAndSpecialty.doctors, doctorDetails => {
               return (
-                <Grid item sm={6} key={_uniqueId('doctor_')}>
+                <Grid item sm={6} key={_uniqueId("doctor_")}>
                   <DoctorCard doctorDetails={doctorDetails} />
                 </Grid>
               );

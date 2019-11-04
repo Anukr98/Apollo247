@@ -1,4 +1,4 @@
-import gql from 'graphql-tag';
+import gql from "graphql-tag";
 
 /* get doctor details by doctor id */
 export const GET_DOCTOR_DETAILS_BY_ID = gql`
@@ -84,29 +84,6 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
   }
 `;
 
-export const SEARCH_DOCTORS_AND_SPECIALITY = gql`
-  query SearchDoctorAndSpecialty($searchText: String!) {
-    SearchDoctorAndSpecialty(searchText: $searchText) {
-      doctors {
-        id
-        firstName
-        lastName
-        speciality
-        experience
-        education
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        photoUrl
-        city
-      }
-      specialties {
-        name
-        image
-      }
-    }
-  }
-`;
-
 export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
   query GetDoctorsBySpecialtyAndFilters($filterInput: FilterDoctorInput) {
     getDoctorsBySpecialtyAndFilters(filterInput: $filterInput) {
@@ -152,7 +129,10 @@ export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
 
 export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
   query SearchDoctorAndSpecialtyByName($searchText: String!, $patientId: ID!) {
-    SearchDoctorAndSpecialtyByName(searchText: $searchText, patientId: $patientId) {
+    SearchDoctorAndSpecialtyByName(
+      searchText: $searchText
+      patientId: $patientId
+    ) {
       doctors {
         id
         firstName
@@ -241,25 +221,6 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
   }
 `;
 
-export const DOCTORS_BY_SPECIALITY = gql`
-  query GetSpecialtyDoctorsWithFilters($filterInput: filterInput) {
-    getSpecialtyDoctorsWithFilters(filterInput: $filterInput) {
-      doctors {
-        id
-        firstName
-        lastName
-        speciality
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        education
-        city
-        photoUrl
-        experience
-      }
-    }
-  }
-`;
-
 export const PATIENT_APPOINTMENT_HISTORY = gql`
   query AppointmentHistory($appointmentHistoryInput: AppointmentHistoryInput) {
     getAppointmentHistory(appointmentHistoryInput: $appointmentHistoryInput) {
@@ -278,7 +239,9 @@ export const PATIENT_APPOINTMENT_HISTORY = gql`
 `;
 
 export const GET_DOCTOR_AVAILABLE_SLOTS = gql`
-  query GetDoctorAvailableSlots($DoctorAvailabilityInput: DoctorAvailabilityInput) {
+  query GetDoctorAvailableSlots(
+    $DoctorAvailabilityInput: DoctorAvailabilityInput
+  ) {
     getDoctorAvailableSlots(DoctorAvailabilityInput: $DoctorAvailabilityInput) {
       availableSlots
     }
@@ -301,8 +264,12 @@ export const BOOK_APPOINTMENT = gql`
 `;
 
 export const GET_PATIENT_APPOINTMENTS = gql`
-  query GetPatientAppointments($patientAppointmentsInput: PatientAppointmentsInput) {
-    getPatinetAppointments(patientAppointmentsInput: $patientAppointmentsInput) {
+  query GetPatientAppointments(
+    $patientAppointmentsInput: PatientAppointmentsInput
+  ) {
+    getPatinetAppointments(
+      patientAppointmentsInput: $patientAppointmentsInput
+    ) {
       patinetAppointments {
         id
         patientId
@@ -336,8 +303,12 @@ export const GET_PATIENT_APPOINTMENTS = gql`
 `;
 
 export const GET_DOCTOR_NEXT_AVAILABILITY = gql`
-  query GetDoctorNextAvailableSlot($DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput) {
-    getDoctorNextAvailableSlot(DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput) {
+  query GetDoctorNextAvailableSlot(
+    $DoctorNextAvailableSlotInput: DoctorNextAvailableSlotInput
+  ) {
+    getDoctorNextAvailableSlot(
+      DoctorNextAvailableSlotInput: $DoctorNextAvailableSlotInput
+    ) {
       doctorAvailalbeSlots {
         doctorId
         availableSlot

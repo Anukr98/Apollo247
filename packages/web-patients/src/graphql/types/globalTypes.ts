@@ -23,6 +23,7 @@ export enum ConsultType {
 }
 
 export enum DoctorType {
+  ADMIN = "ADMIN",
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
@@ -98,6 +99,11 @@ export enum Salutation {
   MRS = "MRS",
 }
 
+export enum SpecialtySearchType {
+  ID = "ID",
+  NAME = "NAME",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",
@@ -139,7 +145,9 @@ export interface DoctorPhysicalAvailabilityInput {
 
 export interface FilterDoctorInput {
   patientId?: string | null;
-  specialty: string;
+  specialty?: string | null;
+  specialtySearchType?: SpecialtySearchType | null;
+  specialtyName?: (string | null)[] | null;
   city?: (string | null)[] | null;
   experience?: (Range | null)[] | null;
   availability?: (string | null)[] | null;
@@ -147,7 +155,13 @@ export interface FilterDoctorInput {
   fees?: (Range | null)[] | null;
   gender?: (Gender | null)[] | null;
   language?: (string | null)[] | null;
-  location?: string | null;
+  geolocation?: Geolocation | null;
+  consultMode?: ConsultMode | null;
+}
+
+export interface Geolocation {
+  latitude: number;
+  longitude: number;
 }
 
 export interface MedicineCartInput {
@@ -230,17 +244,7 @@ export interface UpdatePatientInput {
   emailAddress?: string | null;
   dateOfBirth?: any | null;
   relation?: Relation | null;
-}
-
-export interface filterInput {
-  specialty: string;
-  city?: (string | null)[] | null;
-  experience?: (string | null)[] | null;
-  availability?: (string | null)[] | null;
-  fees?: (string | null)[] | null;
-  gender?: (string | null)[] | null;
-  language?: (string | null)[] | null;
-  location?: string | null;
+  photoUrl?: string | null;
 }
 
 //==============================================================

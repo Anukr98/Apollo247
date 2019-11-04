@@ -39,7 +39,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   id: string;
   firstName: string;
   lastName: string;
-  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty;
+  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_specialty | null;
   experience: string | null;
   photoUrl: string | null;
   qualification: string | null;
@@ -63,7 +63,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
   id: string;
   firstName: string;
   lastName: string;
-  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty;
+  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_specialty | null;
   experience: string | null;
   photoUrl: string | null;
   qualification: string | null;
@@ -123,7 +123,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_o
   lastName: string;
   experience: string | null;
   id: string;
-  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_specialty;
+  specialty: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_specialty | null;
   photoUrl: string | null;
   qualification: string | null;
   consultHours: (SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_consultHours | null)[] | null;

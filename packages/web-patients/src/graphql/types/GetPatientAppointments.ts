@@ -28,7 +28,7 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
   streetLine1: string | null;
   streetLine2: string | null;
   streetLine3: string | null;
-  specialty: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty;
+  specialty: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_specialty | null;
 }
 
 export interface GetPatientAppointments_getPatinetAppointments_patinetAppointments {
