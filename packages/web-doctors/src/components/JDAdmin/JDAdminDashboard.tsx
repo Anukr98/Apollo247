@@ -17,6 +17,9 @@ import {
 } from 'graphql/types/GetJuniorDoctorDashboard';
 import { format } from 'date-fns';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
+import { AphButton } from '@aph/web-ui-components';
+import { JuniorDoctor } from 'components/JuniorDoctors/JuniorDoctor';
+import { Consult } from 'components/Consult';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -155,6 +158,10 @@ export const JDAdminDashboard: React.FC = (rops) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+  const onReload = () => {
+    window.location.reload();
+  };
+
   const { data, loading, error } = useQuery<
     GetJuniorDoctorDashboard,
     GetJuniorDoctorDashboardVariables
@@ -175,6 +182,18 @@ export const JDAdminDashboard: React.FC = (rops) => {
   if (loading) {
     return <LinearProgress />;
   }
+
+  const getQueuedConsults = (juniorDoctor: any, queuedConsults: any) => {
+    if (queuedConsults && queuedConsults.length > 0) {
+      const jdConsultQueue = queuedConsults.filter(
+        (consult: any) => juniorDoctor.id === consult.doctorid
+      );
+      if (jdConsultQueue.length > 0) {
+        return jdConsultQueue && jdConsultQueue[0].queuedconsultscount;
+      }
+      return '--';
+    }
+  };
 
   if (data && data.getJuniorDoctorDashboard && data.getJuniorDoctorDashboard.juniorDoctorDetails) {
     return (
@@ -205,7 +224,13 @@ export const JDAdminDashboard: React.FC = (rops) => {
             </div>
             <div className={classes.tablePaper}>
               <div className={classes.resetButton}>
-                <img src={require('images/ic_reset.svg')} alt="" />
+                <img
+                  src={require('images/ic_reset.svg')}
+                  alt=""
+                  onClick={() => {
+                    onReload();
+                  }}
+                />
               </div>
               <Table className={classes.table} aria-label="simple table">
                 <TableHead>
@@ -241,7 +266,7 @@ export const JDAdminDashboard: React.FC = (rops) => {
                       const jrFirstName = (jd && jd.firstName) || '';
                       const jrLastName = (jd && jd.lastName) || '';
                       return (
-                        <TableRow>
+                        <TableRow key={index}>
                           <TableCell>{index + 1}</TableCell>
                           <TableCell>
                             {jrFirstName}&nbsp;{jrLastName}
@@ -250,7 +275,14 @@ export const JDAdminDashboard: React.FC = (rops) => {
                             <span className={userClassName}>{onlineStatus}</span>
                           </TableCell>
                           {/** <TableCell>&nbsp;</TableCell> */}
-                          <TableCell>&nbsp;</TableCell>
+                          <TableCell>
+                            {getQueuedConsults(
+                              jd,
+                              data &&
+                                data.getJuniorDoctorDashboard &&
+                                data.getJuniorDoctorDashboard.juniorDoctorQueueItems
+                            ) || 0}
+                          </TableCell>
                         </TableRow>
                       );
                     })}
