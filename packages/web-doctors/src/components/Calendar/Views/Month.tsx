@@ -10,6 +10,14 @@ import {
 } from 'graphql/types/GetDoctorAppointments';
 import { addMinutes, format, startOfToday } from 'date-fns/esm';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { GetDoctorAppointments_getDoctorAppointments_appointmentsHistory_caseSheet as caseSheetInfo } from 'graphql/types/GetDoctorAppointments';
+
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -44,6 +52,10 @@ const useStyles = makeStyles((theme: Theme) => {
         margin: 'auto',
         width: 30,
       },
+    },
+    popoverTile: {
+      color: '#fcb716',
+      fontWeight: 500,
     },
     moreIcon: {
       width: '7%',
@@ -178,6 +190,8 @@ interface MonthEvent {
   title: string;
   start: Date;
   end: Date;
+  patientId: string;
+  caseSheet: (caseSheetInfo | null)[];
 }
 
 const localizer = momentLocalizer(moment);
@@ -187,13 +201,15 @@ const eventsAdapter = (data: GetDoctorAppointments) => {
   if (data && data.getDoctorAppointments) {
     eventList = (data.getDoctorAppointments.appointmentsHistory || []).map(
       (appointment: GetDoctorAppointments_getDoctorAppointments_appointmentsHistory | null) => {
-        const { id, appointmentDateTime, patientInfo } = appointment!;
+        const { id, appointmentDateTime, patientInfo, patientId, caseSheet } = appointment!;
         const start = new Date(appointmentDateTime);
         return {
           id,
           title: `${format(start, 'hh:mm aa')} ${patientInfo!.firstName} ${patientInfo!.lastName}`,
           start,
           end: addMinutes(start, 15),
+          patientId,
+          caseSheet: caseSheet || [],
         };
       }
     );
@@ -229,11 +245,27 @@ const Toolbar = (toolbar: ToolbarProps) => {
 export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange, onMonthSelected }) => {
   const classes = useStyles();
   const [events, setEvents] = useState<MonthEvent[]>(eventsAdapter(data));
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState(date);
 
   useEffect(() => {
     setEvents(eventsAdapter(data));
   }, [data]);
+
+  const goToConsultRoom = (event: MonthEvent) => {
+    const jrdCaseSheet =
+      event.caseSheet.length > 0
+        ? event.caseSheet.filter(
+            (cdetails: caseSheetInfo | null) =>
+              cdetails && cdetails.doctorType === 'JUNIOR' && cdetails.status === 'COMPLETED'
+          )
+        : [];
+    if (jrdCaseSheet.length > 0) {
+      window.location.href = `/consulttabs/${event.id}/${event.patientId}/0`;
+    } else {
+      setIsDialogOpen(true);
+    }
+  };
 
   return (
     <div className={classes.calendarContainer}>
@@ -253,6 +285,7 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange, onMonth
           events={events}
           localizer={localizer}
           views={{ month: true }}
+          onSelectEvent={(e) => goToConsultRoom(e)}
           onRangeChange={(range) => onMonthChange(range)}
           components={{ toolbar: Toolbar }}
           onNavigate={(date) => {
@@ -264,6 +297,30 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange, onMonth
       <div className={classes.moreIcon}>
         <img src={require('images/ic_more.svg')} alt="" />
       </div>
+      <Dialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        disableBackdropClick
+        disableEscapeKeyDown
+      >
+        <DialogTitle className={classes.popoverTile}>Apollo 24x7</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            You can start this consultation only after Junior Doctor has filled the case sheet.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            color="primary"
+            onClick={() => {
+              setIsDialogOpen(false);
+            }}
+            autoFocus
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
