@@ -284,7 +284,12 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
 
     const firstName = doctorDetails.getDoctorDetailsById.firstName;
     const lastName = doctorDetails.getDoctorDetailsById.lastName;
-    const speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+
+    let speciality;
+    if (doctorDetails.getDoctorDetailsById.specialty) {
+      speciality = doctorDetails.getDoctorDetailsById.specialty.name;
+    }
+
     const experience = doctorDetails.getDoctorDetailsById.experience;
     const education = doctorDetails.getDoctorDetailsById.qualification;
     const awards = doctorDetails.getDoctorDetailsById.awards;

@@ -7,7 +7,7 @@ import _map from 'lodash/map';
 import LinearProgress from '@material-ui/core/LinearProgress';
 
 import { useQueryWithSkip } from 'hooks/apolloHooks';
-import { SEARCH_DOCTORS_AND_SPECIALITY } from 'graphql/doctors';
+import { SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME } from 'graphql/doctors';
 import { SpecialitiesProps } from 'components/Specialities';
 import { Specialities } from 'components/Specialities';
 
@@ -154,7 +154,7 @@ export const PossibleSpecialitiesAndDoctors: React.FC<SpecialitiesProps> = (prop
   const classes = useStyles();
 
   const { matched, speciality, disableFilter } = props;
-  const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY, {
+  const { data, loading } = useQueryWithSkip(SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME, {
     variables: { searchText: '' },
   });
 

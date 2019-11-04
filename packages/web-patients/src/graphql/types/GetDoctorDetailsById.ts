@@ -108,7 +108,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById {
   qualification: string | null;
   doctorType: DoctorType;
   starTeam: (GetDoctorDetailsById_getDoctorDetailsById_starTeam | null)[] | null;
-  specialty: GetDoctorDetailsById_getDoctorDetailsById_specialty;
+  specialty: GetDoctorDetailsById_getDoctorDetailsById_specialty | null;
   zip: string | null;
   doctorHospital: GetDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   consultHours: (GetDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;

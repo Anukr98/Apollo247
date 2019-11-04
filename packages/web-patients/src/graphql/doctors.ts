@@ -84,29 +84,6 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
   }
 `;
 
-export const SEARCH_DOCTORS_AND_SPECIALITY = gql`
-  query SearchDoctorAndSpecialty($searchText: String!) {
-    SearchDoctorAndSpecialty(searchText: $searchText) {
-      doctors {
-        id
-        firstName
-        lastName
-        speciality
-        experience
-        education
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        photoUrl
-        city
-      }
-      specialties {
-        name
-        image
-      }
-    }
-  }
-`;
-
 export const GET_DOCTORS_BY_SPECIALITY_AND_FILTERS = gql`
   query GetDoctorsBySpecialtyAndFilters($filterInput: FilterDoctorInput) {
     getDoctorsBySpecialtyAndFilters(filterInput: $filterInput) {
@@ -236,25 +213,6 @@ export const SEARCH_DOCTORS_AND_SPECIALITY_BY_NAME = gql`
             id
           }
         }
-      }
-    }
-  }
-`;
-
-export const DOCTORS_BY_SPECIALITY = gql`
-  query GetSpecialtyDoctorsWithFilters($filterInput: filterInput) {
-    getSpecialtyDoctorsWithFilters(filterInput: $filterInput) {
-      doctors {
-        id
-        firstName
-        lastName
-        speciality
-        availableForPhysicalConsultation
-        availableForVirtualConsultation
-        education
-        city
-        photoUrl
-        experience
       }
     }
   }

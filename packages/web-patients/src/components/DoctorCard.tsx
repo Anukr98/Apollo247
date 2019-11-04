@@ -254,7 +254,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
                 )}`}
               </div>
               <div className={classes.doctorType}>
-                {doctorDetails.specialty.name}
+                {doctorDetails.specialty ? doctorDetails.specialty.name : null}
                 <span className={classes.doctorExp}>
                   {doctorDetails.experience}{' '}
                   {doctorDetails && parseInt(doctorDetails.experience || '1', 10) > 1

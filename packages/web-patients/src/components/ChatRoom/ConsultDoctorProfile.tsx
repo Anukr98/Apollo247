@@ -323,7 +323,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
 
   if (data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments) {
     const previousAppointments = data.getPatinetAppointments.patinetAppointments;
-    const findAppointment = _findIndex(previousAppointments, { id: appointmentId });
+    const findAppointment = _findIndex(previousAppointments, {
+      id: appointmentId,
+    });
     if (findAppointment >= 0) {
       appointmentDetails.push(previousAppointments[findAppointment]);
     }
@@ -351,7 +353,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
       ? doctorDetails.getDoctorDetailsById.lastName
       : '';
   const speciality =
-    doctorDetails && doctorDetails.getDoctorDetailsById
+    doctorDetails &&
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.specialty
       ? doctorDetails.getDoctorDetailsById.specialty.name
       : '';
   const experience =

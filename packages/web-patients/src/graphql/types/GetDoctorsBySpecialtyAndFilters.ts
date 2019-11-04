@@ -50,7 +50,7 @@ export interface GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   id: string;
   firstName: string;
   lastName: string;
-  specialty: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_specialty;
+  specialty: GetDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_specialty | null;
   experience: string | null;
   photoUrl: string | null;
   qualification: string | null;
