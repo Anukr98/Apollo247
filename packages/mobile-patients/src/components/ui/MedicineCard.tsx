@@ -56,6 +56,9 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansSemiBold(13),
     letterSpacing: 0.33,
   },
+  unitAndRupeeOfferText: {
+    ...theme.viewStyles.text('M', 13, '#02475b', 0.6, undefined, 0.33),
+  },
   takeRegularView: {
     backgroundColor: '#f7f8f5',
     borderRadius: 5,
@@ -121,8 +124,10 @@ const styles = StyleSheet.create({
 });
 
 export interface MedicineCardProps {
+  isTest?: boolean;
   medicineName: string;
   personName?: string;
+  originalPrice?: number,
   price: number;
   imageUrl?: string;
   type?: Doseform;
@@ -145,10 +150,12 @@ export interface MedicineCardProps {
 export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const [dropDownVisible, setDropDownVisible] = useState(false);
   const {
+    isTest,
     isCardExpanded,
     packOfCount,
     medicineName,
     personName,
+    originalPrice,
     price,
     imageUrl,
     type,
@@ -169,13 +176,25 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderTitleAndIcon = () => {
     return (
       <View style={styles.rowSpaceBetweenView}>
-        <Text style={styles.medicineTitle}>{medicineName}</Text>
-
-        {isInStock
-          ? isCardExpanded
-            ? renderTouchable(<RemoveIcon />, () => onPressRemove())
-            : renderTouchable(<AddIcon />, () => onPressAdd())
-          : null}
+        <View>
+          <Text style={styles.medicineTitle}>{medicineName}</Text>
+          {isTest
+            ? !!packOfCount && isCardExpanded && (
+              <Text style={styles.packOfTextStyle}>{`Includes ${packOfCount} test${packOfCount == 1 ? '' : 's'}`}</Text>
+            )
+            : !!packOfCount && (
+              <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount}`}</Text>
+            )
+          }
+          {renderOutOfStock()}
+        </View>
+        <View style={{ justifyContent: 'flex-start' }}>
+          {isInStock
+            ? isCardExpanded
+              ? renderTouchable(<RemoveIcon />, () => onPressRemove())
+              : renderTouchable(<AddIcon />, () => onPressAdd())
+            : null}
+        </View>
       </View>
     );
   };
@@ -222,20 +241,34 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderUnitDropdownAndPrice = () => {
     return (
       <View style={styles.unitAndPriceView}>
-        <View style={{ flex: 1 }}>
-          <MaterialMenu onPress={(selectedQuantity) => onChangeUnit(selectedQuantity as number)}>
-            <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
-              <View style={[{ flex: 1, alignItems: 'flex-start' }]}>
-                <Text style={styles.unitAndRupeeText}>{`QTY : ${unit}`}</Text>
-              </View>
-              <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-                <DropdownGreen />
-              </View>
+        {isTest
+          ? <></>
+          : <>
+            <View style={{ flex: 1 }}>
+              <MaterialMenu onPress={(selectedQuantity) => onChangeUnit(selectedQuantity as number)}>
+                <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
+                  <View style={[{ flex: 1, alignItems: 'flex-start' }]}>
+                    <Text style={styles.unitAndRupeeText}>{`QTY : ${unit}`}</Text>
+                  </View>
+                  <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              </MaterialMenu>
             </View>
-          </MaterialMenu>
-        </View>
-        <View style={styles.verticalSeparator} />
-        <View style={[styles.flexStyle, { alignItems: 'flex-end' }]}>
+            <View style={styles.verticalSeparator} />
+          </>
+        }
+        <View style={[styles.flexStyle, { alignItems: 'flex-end', justifyContent: 'flex-end', flexDirection: 'row' }]}>
+          {originalPrice &&
+            <Text style={[styles.unitAndRupeeOfferText, { marginRight: 4 }]}>
+              {'('}
+              <Text style={{ textDecorationLine: 'line-through' }}>
+                {`Rs. ${originalPrice}`}
+              </Text>
+              {')'}
+            </Text>
+          }
           <Text style={styles.unitAndRupeeText}>{`Rs. ${price}`}</Text>
         </View>
       </View>
@@ -256,8 +289,8 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         ) : isPrescriptionRequired ? (
           <MedicineRxIcon />
         ) : (
-          <MedicineIcon />
-        )}
+              <MedicineIcon />
+            )}
       </View>
     );
   };
@@ -277,14 +310,25 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     return !isInStock ? (
       <Text style={styles.outOfStockStyle}>Out Of Stock</Text>
     ) : !isCardExpanded ? (
-      <Text style={styles.priceTextCollapseStyle}>Rs. {price}</Text>
+      <View style={{ flexDirection: 'row' }}>
+        <Text style={styles.priceTextCollapseStyle}>Rs. {price}</Text>
+        {originalPrice &&
+          <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
+            {'('}
+            <Text style={{ textDecorationLine: 'line-through' }}>
+              {`Rs. ${originalPrice}`}
+            </Text>
+            {')'}
+          </Text>
+        }
+      </View>
     ) : null;
   };
 
   const outOfStockContainerStyle: ViewStyle = !isInStock
     ? {
-        backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-      }
+      backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+    }
     : {};
   return (
     <TouchableOpacity
@@ -300,9 +344,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           {renderOutOfStock()}
           {isCardExpanded ? (
             <>
-              {!!packOfCount && (
-                <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount}`}</Text>
-              )}
               <View style={[styles.separator, { marginTop: 0 }]} />
               {renderUnitDropdownAndPrice()}
             </>
