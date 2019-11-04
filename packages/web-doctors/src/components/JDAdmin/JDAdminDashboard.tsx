@@ -155,6 +155,7 @@ export const JDAdminDashboard: React.FC = (rops) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+
   const { data, loading, error } = useQuery<
     GetJuniorDoctorDashboard,
     GetJuniorDoctorDashboardVariables
@@ -205,7 +206,13 @@ export const JDAdminDashboard: React.FC = (rops) => {
             </div>
             <div className={classes.tablePaper}>
               <div className={classes.resetButton}>
-                <img src={require('images/ic_reset.svg')} alt="" />
+                <img
+                  src={require('images/ic_reset.svg')}
+                  alt=""
+                  onClick={() => {
+                    window.location.reload();
+                  }}
+                />
               </div>
               <Table className={classes.table} aria-label="simple table">
                 <TableHead>
@@ -241,7 +248,7 @@ export const JDAdminDashboard: React.FC = (rops) => {
                       const jrFirstName = (jd && jd.firstName) || '';
                       const jrLastName = (jd && jd.lastName) || '';
                       return (
-                        <TableRow>
+                        <TableRow key={index}>
                           <TableCell>{index + 1}</TableCell>
                           <TableCell>
                             {jrFirstName}&nbsp;{jrLastName}
@@ -250,7 +257,21 @@ export const JDAdminDashboard: React.FC = (rops) => {
                             <span className={userClassName}>{onlineStatus}</span>
                           </TableCell>
                           {/** <TableCell>&nbsp;</TableCell> */}
-                          <TableCell>&nbsp;</TableCell>
+                          <TableCell>
+                            {data &&
+                              data.getJuniorDoctorDashboard &&
+                              data.getJuniorDoctorDashboard.juniorDoctorQueueItems &&
+                              data.getJuniorDoctorDashboard.juniorDoctorQueueItems.length > 0 &&
+                              data.getJuniorDoctorDashboard.juniorDoctorQueueItems.map(
+                                (consult) => {
+                                  const jdId = jd && jd.id;
+                                  const consultDoctorId = consult && consult.doctorid;
+                                  const queuedconsultscount =
+                                    consult && consult.queuedconsultscount;
+                                  return jdId === consultDoctorId ? queuedconsultscount : '--';
+                                }
+                              )}
+                          </TableCell>
                         </TableRow>
                       );
                     })}
