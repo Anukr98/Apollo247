@@ -191,7 +191,7 @@ interface MonthEvent {
   start: Date;
   end: Date;
   patientId: string;
-  caseSheet: any;
+  caseSheet: (caseSheetInfo | null)[];
 }
 
 const localizer = momentLocalizer(moment);
@@ -209,7 +209,7 @@ const eventsAdapter = (data: GetDoctorAppointments) => {
           start,
           end: addMinutes(start, 15),
           patientId,
-          caseSheet,
+          caseSheet: caseSheet || [],
         };
       }
     );
@@ -256,8 +256,8 @@ export const Month: React.FC<MonthProps> = ({ date, data, onMonthChange, onMonth
     const jrdCaseSheet =
       event.caseSheet.length > 0
         ? event.caseSheet.filter(
-            (cdetails: caseSheetInfo) =>
-              cdetails.doctorType === 'JUNIOR' && cdetails.status === 'COMPLETED'
+            (cdetails: caseSheetInfo | null) =>
+              cdetails && cdetails.doctorType === 'JUNIOR' && cdetails.status === 'COMPLETED'
           )
         : [];
     if (jrdCaseSheet.length > 0) {
