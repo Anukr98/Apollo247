@@ -1299,7 +1299,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     <div className={classes.stickyHeader}>
       <div className={classes.breadcrumbs}>
         <div>
-          {props.appointmentStatus !== 'COMPLETED' && (
+          {(props.appointmentStatus !== 'COMPLETED' || isClickedOnEdit) && (
             <Prompt message="Are you sure to exit?" when={props.startAppointment}></Prompt>
           )}
           <Link to="/calendar">
