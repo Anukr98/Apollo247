@@ -9,7 +9,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
-import _sample from 'lodash/sample';
+//import _sample from 'lodash/sample';
 import { DOCTOR_ONLINE_STATUS, DoctorType } from 'doctors-service/entities';
 import { CaseSheetRepository } from 'consults-service/repositories/caseSheetRepository';
 
@@ -29,9 +29,18 @@ export const consultQueueTypeDefs = gql`
     getConsultQueue(doctorId: String!): GetConsultQueueResult!
   }
 
+  type JuniorDoctorsList {
+    juniorDoctorId: ID!
+    doctorName: String!
+    queueCount: Int!
+  }
+
   type AddToConsultQueueResult {
     id: Int!
     doctorId: String!
+    totalJuniorDoctors: Int!
+    totalJuniorDoctorsOnline: Int!
+    juniorDoctorsList: [JuniorDoctorsList]!
   }
 
   type RemoveFromConsultQueueResult {
@@ -100,7 +109,19 @@ const getConsultQueue: Resolver<
 };
 
 type AddToConsultQueueInput = { appointmentId: string };
-type AddToConsultQueueResult = { id: number; doctorId: string };
+type AddToConsultQueueResult = {
+  id: number;
+  doctorId: string;
+  totalJuniorDoctors: number;
+  totalJuniorDoctorsOnline: number;
+  juniorDoctorsList: JuniorDoctorsList[];
+};
+type JuniorDoctorsList = {
+  juniorDoctorId: string;
+  doctorName: string;
+  queueCount: number;
+};
+
 const addToConsultQueue: Resolver<
   null,
   AddToConsultQueueInput,
@@ -109,29 +130,73 @@ const addToConsultQueue: Resolver<
 > = async (parent, { appointmentId }, context) => {
   const { cqRepo, docRepo, apptRepo, caseSheetRepo } = getRepos(context);
   await apptRepo.findOneOrFail(appointmentId);
-
+  const jrDocList: JuniorDoctorsList[] = [];
   const juniorDoctorCaseSheet = await caseSheetRepo.getJuniorDoctorCaseSheet(appointmentId);
   if (juniorDoctorCaseSheet != null) {
     const queueResult: AddToConsultQueueResult = {
       id: 0,
       doctorId: '',
+      totalJuniorDoctors: 0,
+      totalJuniorDoctorsOnline: 0,
+      juniorDoctorsList: jrDocList,
     };
     return queueResult;
   }
 
   const existingQueueItem = await cqRepo.findOne({ appointmentId });
   if (existingQueueItem) throw new AphError(AphErrorMessages.APPOINTMENT_ALREADY_IN_CONSULT_QUEUE);
-  const onlineJrDocs = await docRepo.find({
+  /*const onlineJrDocs = await docRepo.find({
     onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
     doctorType: DoctorType.JUNIOR,
     isActive: true,
   });
   const chosenJrDoc = _sample(onlineJrDocs);
   if (!chosenJrDoc) throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
-  const doctorId = chosenJrDoc.id;
+  const doctorId = chosenJrDoc.id;*/
+  const onlineJrDocs = await docRepo.find({
+    onlineStatus: DOCTOR_ONLINE_STATUS.ONLINE,
+    doctorType: DoctorType.JUNIOR,
+    isActive: true,
+  });
+  const juniorDocs = await docRepo.find({
+    doctorType: DoctorType.JUNIOR,
+    isActive: true,
+  });
+  let doctorId: string = '0';
+  const nextDoctorId = await cqRepo.getNextJuniorDoctor(context.doctorsDb);
+  if (nextDoctorId && nextDoctorId != '0') {
+    doctorId = nextDoctorId;
+  } else {
+    throw new AphError(AphErrorMessages.NO_ONLINE_DOCTORS);
+  }
   const { id } = await cqRepo.save(cqRepo.create({ appointmentId, doctorId, isActive: true }));
   await apptRepo.updateConsultStarted(appointmentId, true);
-  return { id, doctorId };
+  function getJuniorDocInfo() {
+    return new Promise(async (resolve, reject) => {
+      onlineJrDocs.map(async (doctor) => {
+        const queueCount = await cqRepo.count({ where: { doctorId: doctor.id, isActive: true } });
+        const jrDoctor: JuniorDoctorsList = {
+          doctorName: doctor.firstName + ' ' + doctor.lastName,
+          juniorDoctorId: doctor.id,
+          queueCount,
+        };
+        jrDocList.push(jrDoctor);
+        if (jrDocList.length == onlineJrDocs.length) {
+          resolve(jrDocList);
+        }
+      });
+    });
+  }
+  if (onlineJrDocs.length > 0) {
+    await getJuniorDocInfo();
+  }
+  return {
+    id,
+    doctorId,
+    totalJuniorDoctors: juniorDocs.length,
+    totalJuniorDoctorsOnline: onlineJrDocs.length,
+    juniorDoctorsList: jrDocList,
+  };
 };
 
 type RemoveFromConsultQueueInput = { id: number };
