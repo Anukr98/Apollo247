@@ -51,7 +51,6 @@ import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageS
 import { SearchByBrand } from '@aph/mobile-patients/src/components/Medicines/SearchByBrand';
 import { AsyncStorage } from 'react-native';
 import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
-import { TestsDetailScene } from '@aph/mobile-patients/src/components/Tests/TestsDetailScene';
 import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
@@ -110,7 +109,6 @@ export enum AppRoutes {
   TestDetails = 'TestDetails',
   ManageProfile = 'ManageProfile',
   EditProfile = 'EditProfile',
-  TestsDetailScene = 'TestsDetailScene',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -284,9 +282,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.EditProfile]: {
     screen: EditProfile,
-  },
-  [AppRoutes.TestsDetailScene]: {
-    screen: TestsDetailScene,
   },
 };
 
