@@ -51,7 +51,6 @@ import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageS
 import { SearchByBrand } from '@aph/mobile-patients/src/components/Medicines/SearchByBrand';
 import { AsyncStorage } from 'react-native';
 import { CommonScreenLog } from '../FunctionHelpers/DeviceHelper';
-import { TestsDetailScene } from '@aph/mobile-patients/src/components/Tests/TestsDetailScene';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -100,7 +99,6 @@ export enum AppRoutes {
   ShopByBrand = 'ShopByBrand',
   ImageSliderScreen = 'ImageSliderScreen',
   SearchByBrand = 'SearchByBrand',
-  TestsDetailScene = 'TestsDetailScene',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -259,9 +257,6 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SearchByBrand]: {
     screen: SearchByBrand,
-  },
-  [AppRoutes.TestsDetailScene]: {
-    screen: TestsDetailScene,
   },
 };
 
