@@ -176,19 +176,19 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderTitleAndIcon = () => {
     return (
       <View style={styles.rowSpaceBetweenView}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.medicineTitle}>{medicineName}</Text>
           {isTest
             ? !!packOfCount && isCardExpanded && (
               <Text style={styles.packOfTextStyle}>{`Includes ${packOfCount} test${packOfCount == 1 ? '' : 's'}`}</Text>
             )
-            : !!packOfCount && (
+            : !!packOfCount && isCardExpanded && (
               <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount}`}</Text>
             )
           }
           {renderOutOfStock()}
         </View>
-        <View style={{ justifyContent: 'flex-start' }}>
+        <View style={{ flex: 0.1, justifyContent: 'flex-start' }}>
           {isInStock
             ? isCardExpanded
               ? renderTouchable(<RemoveIcon />, () => onPressRemove())
@@ -341,7 +341,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         {renderMedicineIcon()}
         <View style={styles.flexStyle}>
           {renderTitleAndIcon()}
-          {renderOutOfStock()}
           {isCardExpanded ? (
             <>
               <View style={[styles.separator, { marginTop: 0 }]} />
