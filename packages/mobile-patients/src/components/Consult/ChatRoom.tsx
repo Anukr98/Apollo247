@@ -832,7 +832,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const keyboardDidHide = () => {
     setHeightList(isIphoneX() ? height - 166 : Platform.OS === 'ios' ? height - 141 : height - 141);
     setDropDownBottomStyle(isIphoneX() ? 50 : 15);
-    setDropdownVisible(false);
   };
 
   const send = (textMessage: string) => {
