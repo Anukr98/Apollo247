@@ -122,6 +122,7 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
     const [gender, setGender] = useState<string>('');
     const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
     const { isIphoneX } = DeviceHelper();
+    const isValidProfile = firstName && lastName && date && gender
 
     const renderHeader = () => {
         return (
@@ -132,7 +133,6 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
                 }}
                 leftIcon={'backArrow'}
                 title={'Add New Profile'}
-                titleStyle={{ marginLeft: 20 }}
                 onPressLeftIcon={() => props.setdisplayoverlay(false)}
             />
         );
@@ -152,23 +152,10 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
                     <View style={styles.buttonSeperatorStyle} />
                     <Button
                         onPress={() => {
-                            let validationMessage = ''
-                            if (!firstName) {
-                                validationMessage = 'Enter valid first name';
-                            } else if (!lastName) {
-                                validationMessage = 'Enter valid last name';
-                            } else if (!date) {
-                                validationMessage = 'Enter valid date of birth';
-                            } else if (!gender) {
-                                validationMessage = 'Please select gender';
-                            }
-                            if (validationMessage) {
-                                Alert.alert('Error', validationMessage);
-                            } else {
-                                props.setProfile({ pid: date, name: firstName + ' ' + lastName })
-                                props.setdisplayoverlay(false)
-                            }
+                            props.setProfile({ pid: date, name: firstName + ' ' + lastName })
+                            props.setdisplayoverlay(false)
                         }}
+                        disabled={!isValidProfile}
                         title={'SAVE & USE'}
                         style={styles.bottomButtonStyle}
                     />
