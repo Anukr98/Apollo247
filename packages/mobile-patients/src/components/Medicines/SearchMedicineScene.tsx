@@ -44,6 +44,7 @@ import {
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
 export interface SearchMedicineSceneProps
   extends NavigationScreenProps<{
     searchText: string;
-    isTest: boolean
+    isTest: boolean;
   }> {}
 
 export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) => {
@@ -147,7 +148,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
+  const { addCartItem, removeCartItem, updateCartItem, cartItems } = isTest
+    ? useDiagnosticsCart()
+    : useShoppingCart();
   const { showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
@@ -265,6 +268,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
         thumbnail,
+        originalprice: price,
       });
   };
 
@@ -390,7 +394,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       <Header
         container={{ borderBottomWidth: 0 }}
         leftIcon={'backArrow'}
-        title={isTest ?'SEARCH TESTS ':'SEARCH MEDICINE'}
+        title={isTest ? 'SEARCH TESTS ' : 'SEARCH MEDICINE'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
@@ -398,7 +402,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               // style={{ marginRight: 24 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
-                props.navigation.navigate(AppRoutes.YourCart);
+                props.navigation.navigate(isTest ? AppRoutes.TestsCart : AppRoutes.YourCart);
               }}
             >
               <CartIcon />
@@ -644,7 +648,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               ListHeaderComponent={
                 (medicineList.length > 0 && (
                   <SectionHeaderComponent
-                    sectionTitle={isTest ? `Matching Tests — ${medicineList.length}`:`Matching Medicines — ${medicineList.length}`}
+                    sectionTitle={
+                      isTest
+                        ? `Matching Tests — ${medicineList.length}`
+                        : `Matching Medicines — ${medicineList.length}`
+                    }
                     style={{ marginBottom: 0 }}
                   />
                 )) ||

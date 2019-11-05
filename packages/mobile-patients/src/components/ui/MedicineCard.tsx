@@ -5,6 +5,7 @@ import {
   DropdownGreen,
   MedicineIcon,
   MedicineRxIcon,
+  TestsIcon,
   RemoveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -132,7 +133,7 @@ export interface MedicineCardProps {
   type?: Doseform;
   subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
   packOfCount?: number;
-  unit: number;
+  unit?: number;
   isInStock: boolean;
   isPrescriptionRequired: boolean;
   isCardExpanded: boolean;
@@ -288,7 +289,15 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       <View style={{ width: 40, marginRight: 12, alignItems: 'center' }}>
         {imageUrl ? (
           <Image
-            PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+            PlaceholderContent={
+              isPrescriptionRequired ? (
+                <MedicineRxIcon />
+              ) : isTest ? (
+                <TestsIcon />
+              ) : (
+                <MedicineIcon />
+              )
+            }
             placeholderStyle={{ backgroundColor: 'transparent' }}
             source={{ uri: imageUrl }}
             style={{ height: 40, width: 40 }}
@@ -296,6 +305,8 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           />
         ) : isPrescriptionRequired ? (
           <MedicineRxIcon />
+        ) : isTest ? (
+          <TestsIcon />
         ) : (
           <MedicineIcon />
         )}

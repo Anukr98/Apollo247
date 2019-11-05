@@ -445,7 +445,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       (!ordersLoading && _orders.length > 0 && (
         <ListCard
-          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
+          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene, { isTest: true })}
           container={{ marginBottom: 24, marginTop: 20 }}
           title={'Your Orders'}
           leftIcon={<TestsIcon />}

@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
 type OrderStatusType = MEDICINE_ORDER_STATUS;
 
 export interface OrderCardProps {
+  isTest?: boolean;
   orderId: string;
   title: string;
   description: string;
@@ -110,6 +111,10 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
     props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
     props.status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY;
+
+  const isReschedule =
+    props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+    props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED;
 
   const getProgressWidth = (
     status: OrderCardProps['status'],
@@ -188,6 +193,25 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
     );
   };
 
+  const renderReschedule = () => {
+    return (
+      <View>
+        <View style={[styles.separator, { marginTop: 16, marginBottom: 7 }]} />
+        <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text
+              style={{
+                ...theme.viewStyles.yellowTextStyle,
+              }}
+            >
+              RESCHEDULE
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderDetails = () => {
     return (
       <View style={styles.detailsViewStyle}>
@@ -195,6 +219,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
         {renderDescriptionAndId()}
         {renderGraphicalStatus()}
         {renderStatusAndTime()}
+        {props.isTest && isReschedule && renderReschedule()}
       </View>
     );
   };
