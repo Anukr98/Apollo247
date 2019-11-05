@@ -19,6 +19,12 @@ export enum Gender {
   OTHER = 'OTHER',
 }
 
+export enum PATIENT_ADDRESS_TYPE {
+  HOME = 'HOME',
+  OFFICE = 'OFFICE',
+  OTHER = 'OTHER',
+}
+
 export enum Relation {
   ME = 'ME',
   MOTHER = 'MOTHER',
@@ -563,10 +569,16 @@ export class PatientAddress extends BaseEntity {
   addressLine2: string;
 
   @Column({ nullable: true })
+  addressType: PATIENT_ADDRESS_TYPE;
+
+  @Column({ nullable: true })
   city: string;
 
   @Column({ nullable: true })
   mobileNumber: string;
+
+  @Column({ nullable: true })
+  otherAddressType: string;
 
   @Column({ nullable: true })
   state: string;
