@@ -185,7 +185,7 @@ const dataAdapter = (data: GetDoctorAppointments | undefined) => {
 };
 
 const getRange = (date: Date) => {
-  return { start: startOfDay(date), end: addDays(startOfDay(date), 1) };
+  return { start: startOfDay(date), end: addDays(startOfDay(date), 0) };
 };
 
 const getMonthRange = ({ start, end }: { start: string | Date; end: string | Date }) => {
