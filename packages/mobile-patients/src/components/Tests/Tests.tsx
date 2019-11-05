@@ -180,7 +180,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       .catch((error) => console.log(error, 'getUserCurrentPosition err'));
   };
 
-  // Common Views
+  // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
     return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;

@@ -9,9 +9,6 @@ import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React from 'react';
-import React, { useState } from 'react';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-
 import {
   BackHandler,
   Image,
@@ -24,7 +21,6 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   separatorStyle: {
