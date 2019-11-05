@@ -29,19 +29,18 @@ export const getDoctorDetailsTypeDefs = gql`
     BOTH
   }
   enum DoctorType {
+    APOLLO
+    PAYROLL
+    STAR_APOLLO
+    JUNIOR
+    ADMIN
+  }
+
+  enum LoggedInUserType {
     DOCTOR
     JUNIOR
     ADMIN
     SECRETARY
-  }
-
-  enum LoggedInUserType {
-    APOLLO
-    PAYROLL
-    STAR_APOLLO
-    SECRETARY
-    ADMIN
-    JDADMIN
   }
 
   enum Salutation {
@@ -219,10 +218,10 @@ export const getDoctorDetailsTypeDefs = gql`
 `;
 
 enum LoggedInUserType {
-  DOCTOR,
-  SECRETARY,
-  ADMIN,
-  JDADMIN,
+  DOCTOR = 'DOCTOR',
+  SECRETARY = 'SECRETARY',
+  ADMIN = 'ADMIN',
+  JDADMIN = 'JDADMIN',
 }
 
 const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
