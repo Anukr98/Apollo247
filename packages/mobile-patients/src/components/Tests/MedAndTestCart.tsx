@@ -21,6 +21,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   separatorStyle: {
