@@ -24,6 +24,7 @@ import { JDConsultRoom } from 'components/JuniorDoctors/JDConsultRoom';
 
 import { DoctorType } from 'graphql/types/globalTypes';
 import { JDAdminDashboard } from 'components/JDAdmin/JDAdminDashboard';
+import { SecrateryDashboard } from 'components/SecrateryDashboard';
 
 const App: React.FC = () => {
   const classes = useStyles();
@@ -75,6 +76,7 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.patientDetails()} component={PatientDetails} />
       <AuthRouted exact path={clientRoutes.juniorDoctorProfile()} component={JDProfile} />
       <AuthRouted exact path={clientRoutes.juniorDoctorAdmin()} component={JDAdminDashboard} />
+      <AuthRouted exact path={clientRoutes.secrateryDashboard()} component={SecrateryDashboard} />
       <AuthRouted
         exact
         path={clientRoutes.JDConsultRoom({
