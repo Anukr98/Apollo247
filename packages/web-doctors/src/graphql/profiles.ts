@@ -229,6 +229,14 @@ export const CREATE_CASESHEET_FOR_JRD = gql`
   }
 `;
 
+export const CANCEL_APPOINTMENT = gql`
+  mutation CancelAppointment($cancelAppointmentInput: CancelAppointmentInput) {
+    cancelAppointment(cancelAppointmentInput: $cancelAppointmentInput) {
+      status
+    }
+  }
+`;
+
 export const CREATE_CASESHEET_FOR_SRD = gql`
   mutation CreateSeniorDoctorCaseSheet($appointmentId: String) {
     createSeniorDoctorCaseSheet(appointmentId: $appointmentId) {

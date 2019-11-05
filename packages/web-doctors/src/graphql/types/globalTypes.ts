@@ -149,6 +149,13 @@ export enum patientLogType {
   REGULAR = "REGULAR",
 }
 
+export interface CancelAppointmentInput {
+  appointmentId: string;
+  cancelReason?: string | null;
+  cancelledBy: TRANSFER_INITIATED_TYPE;
+  cancelledById: string;
+}
+
 export interface CreateAppointmentSessionInput {
   appointmentId: string;
   requestRole: REQUEST_ROLES;
