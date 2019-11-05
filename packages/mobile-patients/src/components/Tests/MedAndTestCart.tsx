@@ -1,0 +1,166 @@
+import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
+import React, { useState } from 'react';
+import {
+  BackHandler,
+  Image,
+  ImageSourcePropType,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
+
+const styles = StyleSheet.create({
+  separatorStyle: {
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+  },
+});
+
+type ArrayTest = {
+  id: number;
+  title: string;
+  descripiton: string;
+  image: ImageSourcePropType;
+};
+
+const arrayTest: ArrayTest[] = [
+  {
+    id: 1,
+    title: `Medicines`,
+    descripiton: 'No Items',
+    image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
+  },
+  {
+    id: 2,
+    title: 'Tests',
+    descripiton: '2 Items',
+    image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
+  },
+];
+
+export interface MedAndTestCartProps
+  extends NavigationScreenProps<{
+    isComingFromConsult: boolean;
+  }> {}
+
+export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
+  const backDataFunctionality = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    props.navigation.goBack();
+    return false;
+  };
+
+  const renderHeader = () => {
+    return (
+      <View>
+        <Header
+          title={'YOUR CART'}
+          leftIcon="backArrow"
+          container={{ borderBottomWidth: 0 }}
+          onPressLeftIcon={() => backDataFunctionality()}
+          rightComponent={
+            <TouchableOpacity
+            // onPress={() => {
+            //     setCancelAppointment(true);
+            // }}
+            >
+              <More />
+            </TouchableOpacity>
+          }
+        />
+      </View>
+    );
+  };
+
+  const renderMedicines = () => {
+    return (
+      <View>
+        {arrayTest.map((serviceTitle, i) => (
+          <View key={i} style={{}}>
+            <TouchableOpacity
+              activeOpacity={1}
+              key={i}
+              // onPress={() => {
+              //     if (i === 0) {
+              //         setShowPopop(true);
+              //     }
+              //     if (i === 1) {
+              //         props.navigation.navigate(AppRoutes.SearchMedicineScene);
+              //     }
+              // }}
+            >
+              <View
+                style={{
+                  ...viewStyles.cardViewStyle,
+                  ...viewStyles.shadowStyle,
+                  padding: 16,
+                  marginHorizontal: 20,
+                  backgroundColor: i === 0 ? '#f0f1ec' : colors.WHITE,
+                  flexDirection: 'row',
+                  height: 88,
+                  marginTop: i === 0 ? 16 : 8,
+                  marginBottom: arrayTest.length === i + 1 ? 20 : 8,
+                }}
+                key={i}
+              >
+                <View style={{ flex: 1, justifyContent: 'space-between', paddingRight: 32 }}>
+                  <Text
+                    style={{
+                      color: colors.LIGHT_BLUE,
+                      lineHeight: 24,
+                      textAlign: 'left',
+                      ...fonts.IBMPlexSansMedium(17),
+                    }}
+                  >
+                    {serviceTitle.title}
+                  </Text>
+                  <View style={styles.separatorStyle} />
+                  <Text
+                    style={{
+                      color: colors.LIGHT_BLUE,
+                      opacity: 0.6,
+                      textAlign: 'left',
+                      ...fonts.IBMPlexSansMedium(12),
+                      lineHeight: 20,
+                      letterSpacing: 0.04,
+                    }}
+                  >
+                    {serviceTitle.descripiton}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    width: 62,
+                  }}
+                >
+                  <Image style={{ height: 56, width: 56 }} source={serviceTitle.image} />
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+  return (
+    <SafeAreaView style={{ ...theme.viewStyles.container }}>
+      {renderHeader()}
+
+      <ScrollView bounces={false} style={{ marginTop: 20 }}>
+        <SectionHeader leftText={'SELECT A CART TO CHECKOUT'} />
+        {renderMedicines()}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
