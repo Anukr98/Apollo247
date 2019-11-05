@@ -373,6 +373,19 @@ export const NotificationListener: React.FC<NotificationListenerProps> = (props)
       })
       .catch(() => {});
 
+    try {
+      const channel = new firebase.notifications.Android.Channel(
+        'fcm_FirebaseNotifiction_default_channel',
+        'Apollo',
+        firebase.notifications.Android.Importance.Default
+      )
+        .setDescription('Demo app description')
+        .setSound('incallmanager_ringtone.mp3');
+      firebase.notifications().android.createChannel(channel);
+    } catch (error) {
+      aphConsole.log('error in notification channel', error);
+    }
+
     /*
      * If your app is in background, you can listen for when a notification is clicked / tapped / opened as follows:
      * */

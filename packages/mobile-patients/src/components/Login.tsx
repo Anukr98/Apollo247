@@ -229,6 +229,7 @@ export const Login: React.FC<LoginProps> = (props) => {
           } else {
             sendOtp(phoneNumber)
               .then((confirmResult) => {
+                CommonLogEvent(AppRoutes.Login, 'OTP_SENT');
                 console.log('confirmResult login', confirmResult);
                 props.navigation.navigate(AppRoutes.OTPVerification, {
                   otpString,
@@ -237,6 +238,9 @@ export const Login: React.FC<LoginProps> = (props) => {
               })
               .catch((error: RNFirebase.RnError) => {
                 console.log(error, 'error');
+                console.log(error.message, 'errormessage');
+
+                CommonLogEvent(AppRoutes.Login, error.message);
 
                 Alert.alert(
                   'Error',
