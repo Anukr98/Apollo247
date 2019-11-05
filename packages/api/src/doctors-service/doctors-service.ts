@@ -47,7 +47,7 @@ import {
   blockedCalendarResolvers,
 } from 'doctors-service/resolvers/blockedCalendar';
 import { JDTypeDefs, JDResolvers } from 'doctors-service/resolvers/JDAdmin';
-import { format, differenceInMilliseconds } from 'date-fns';
+//import { format, differenceInMilliseconds } from 'date-fns';
 
 (async () => {
   await connect();
@@ -152,28 +152,28 @@ import { format, differenceInMilliseconds } from 'date-fns';
           /* Within this returned object, define functions that respond
              to request-specific lifecycle events. */
           const reqStartTime = new Date();
-          const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
-          console.log(reqStartTimeFormatted);
+          //const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+          console.log(reqStartTime);
           return {
             parsingDidStart(requestContext) {
               winston.log({
                 message: 'Request Starting',
-                time: reqStartTimeFormatted,
+                time: reqStartTime,
                 operation: requestContext.request.query,
                 level: 'info',
               });
             },
             didEncounterErrors(requestContext) {
               requestContext.errors.forEach((error) => {
-                winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
+                winston.log('error', `Encountered Error at ${reqStartTime}: `, error);
               });
             },
             willSendResponse({ response }) {
               const errorCount = (response.errors || []).length;
               const responseLog = {
                 message: 'Request Ended',
-                time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
-                durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
+                time: new Date(),
+                durationInMilliSeconds: new Date().getTime() - reqStartTime.getTime(),
                 errorCount,
                 level: 'info',
                 response: response,
