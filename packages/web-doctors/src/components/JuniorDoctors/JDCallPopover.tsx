@@ -944,7 +944,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartAppointmentButton(true);
     }
   };
-  // const client = useApolloClient();
+  const client = useApolloClient();
   // const doctorSpeciality = (searchText: string) => {
   //   client
   //     .query<SearchDoctorAndSpecialtyByName, SearchDoctorAndSpecialtyByNameVariables>({
