@@ -288,6 +288,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
                 });
               }}
               medicineName={medicine.name!}
+              originalPrice={medicine.originalprice!}
               price={medicine.price!}
               unit={medicine.quantity}
               imageUrl={imageUrl}
