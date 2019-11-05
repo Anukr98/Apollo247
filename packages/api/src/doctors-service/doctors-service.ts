@@ -47,7 +47,7 @@ import {
   blockedCalendarResolvers,
 } from 'doctors-service/resolvers/blockedCalendar';
 import { JDTypeDefs, JDResolvers } from 'doctors-service/resolvers/JDAdmin';
-//import { format, differenceInMilliseconds } from 'date-fns';
+import { format, differenceInMilliseconds } from 'date-fns';
 
 (async () => {
   await connect();
@@ -152,35 +152,35 @@ import { JDTypeDefs, JDResolvers } from 'doctors-service/resolvers/JDAdmin';
           /* Within this returned object, define functions that respond
              to request-specific lifecycle events. */
           const reqStartTime = new Date();
-          //const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
-          console.log(reqStartTime);
+          const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+          console.log(reqStartTimeFormatted);
           return {
             parsingDidStart(requestContext) {
-              winston.log({
-                message: 'Request Starting',
-                time: reqStartTime,
-                operation: requestContext.request.query,
-                level: 'info',
-              });
+              // winston.log({
+              //   message: 'Request Starting',
+              //   time: reqStartTimeFormatted,
+              //   operation: requestContext.request.query,
+              //   level: 'info',
+              // });
             },
             didEncounterErrors(requestContext) {
               requestContext.errors.forEach((error) => {
-                winston.log('error', `Encountered Error at ${reqStartTime}: `, error);
+                //winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
               });
             },
             willSendResponse({ response }) {
               const errorCount = (response.errors || []).length;
               const responseLog = {
                 message: 'Request Ended',
-                time: new Date(),
-                durationInMilliSeconds: new Date().getTime() - reqStartTime.getTime(),
+                time: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSX"),
+                durationInMilliSeconds: differenceInMilliseconds(new Date(), reqStartTime),
                 errorCount,
                 level: 'info',
                 response: response,
               };
               //remove response if there is no error
               if (errorCount === 0) delete responseLog.response;
-              winston.log(responseLog);
+              //winston.log(responseLog);
             },
           };
         },
