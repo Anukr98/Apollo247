@@ -154,7 +154,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() =>
-              props.navigation.navigate(AppRoutes.TestsCart, { isComingFromConsult: true })
+              props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
             }
             style={{ right: 20 }}
           >
@@ -360,7 +360,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         : undefined,
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
-      onPress: () => props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku }),
+      onPress: () => props.navigation.navigate(AppRoutes.TestDetails, { sku }),
       style: {
         marginHorizontal: 4,
         marginTop: 16,
