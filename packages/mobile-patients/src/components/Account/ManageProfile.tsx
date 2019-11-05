@@ -32,6 +32,26 @@ import { Gender, Relation } from '../../graphql/types/globalTypes';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { PatientDefaultImage } from '../ui/Icons';
 import { Spinner } from '../ui/Spinner';
+import React from 'react';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import {
+  View,
+  Text,
+  Image,
+  SafeAreaView,
+  BackHandler,
+  TouchableOpacity,
+  StyleSheet,
+  ImageSourcePropType,
+} from 'react-native';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
+import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const styles = StyleSheet.create({
   separatorStyle: {
