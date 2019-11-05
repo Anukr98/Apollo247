@@ -118,6 +118,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   //specialty ends
 
   //hospital details starts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hospitals = doctorData.map((row: any) => {
     return {
       name: row.PHYSICALCONSULTATIONLOCATIONNAME,
@@ -135,6 +136,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   //hospital details ends
 
   //insert doctor starts
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await doctorData.map((element: any) => {
     //mapping specialties
     finalSpecialtiesList.forEach((specialty) => {
@@ -145,6 +147,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
     });
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const formatedDoctorData = doctorData.map((element: any) => {
     const doctorProfilePhoto =
       typeof element.IMAGEURL == 'undefined'
@@ -194,6 +197,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   const doctorInsertResult = await doctorRepo.insertOrUpdateAllDoctors(formatedDoctorData);
   //doctor Hospital
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await doctorData.map((element: any) => {
     //mapping specialties
     doctorInsertResult.forEach((doctor) => {
@@ -203,7 +207,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
       }
     });
   });
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await doctorData.map((element: any) => {
     //mapping specialties
     facilitiesResult.forEach((facility) => {
@@ -221,7 +225,7 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
   });
 
   const virtualHospital = facilitiesResult.filter((element) => element.name == '');
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dostorHospital: Partial<DoctorAndHospital>[] = await doctorData.map((element: any) => {
     return {
       doctor: element.FULLNAME,
@@ -238,7 +242,9 @@ const insertData: Resolver<null, {}, DoctorsServiceContext, string> = async (
 
   console.log('DoctorHospitalResult >>>>>>:: ', dostorHospital);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const consultHours: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   doctorData.forEach((element: any) => {
     //mapping specialties
     doctorHospitalResult.forEach((docFacility) => {
