@@ -62,6 +62,7 @@ import {
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -93,7 +94,7 @@ export interface TestsProps extends NavigationScreenProps {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
   const config = AppConfig.Configuration;
-  const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
+  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert } = useUIElements();
@@ -178,7 +179,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       })
       .catch((error) => console.log(error, 'getUserCurrentPosition err'));
   };
-  
+
   // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
@@ -192,7 +193,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
-  
+
   const autoSearch = (searchText: string) => {
     getNetStatus().then((status) => {
       if (status) {
@@ -215,7 +216,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 );
                 setlocationSearchList(address);
               }
-            } catch { }
+            } catch {}
           })
           .catch((error) => {
             console.log(error);
@@ -253,7 +254,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       }
     });
   };
-
 
   const renderPopup = () => {
     if (showLocationpopup) {
@@ -388,7 +388,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       </View>
     );
   };
-  
+
   const renderTopView = () => {
     return (
       <View
@@ -450,8 +450,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           title={'Your Orders'}
           leftIcon={<TestsIcon />}
         />
-      )) ||
-      null
+      )) || <View style={{ height: 24 }} />
     );
   };
 
@@ -594,8 +593,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         mou: mou,
         name: name,
         price: specialPrice,
-        prescriptionRequired: is_prescription_required == '1',
-        quantity: 1,
         thumbnail,
       });
     const removeFromCart = () => removeCartItem!(sku);
@@ -696,7 +693,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ]}
       >
         <View style={{ flex: 1, flexDirection: 'row' }}>
-          <View style={{ flexGrow: 1, flexDirection: 'row' }}>
+          <View style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
             <View style={{ width: Dimensions.get('window').width * 0.4 }}>
               <Text style={theme.viewStyles.text('SB', 16, '#02475b', 1, 24)}>{title}</Text>
               <View style={{ height: 8 }} />
@@ -706,7 +703,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
               <View style={{ height: 16 }} />
               <Text style={theme.viewStyles.text('M', 14, '#0087ba', 1, 22)}>{desc}</Text>
             </View>
-            <View style={{ width: 16 }} />
             <View style={{}}>
               <Image
                 source={{ uri: 'https://via.placeholder.com/120', height: 120, width: 120 }}
@@ -1016,7 +1012,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         disabled={!shouldEnableSearchSend}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText:searchText, isTest:true });
+          props.navigation.navigate(AppRoutes.SearchMedicineScene, {
+            searchText: searchText,
+            isTest: true,
+          });
           setSearchText('');
           setMedicineList([]);
         }}
@@ -1033,7 +1032,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <Input
           onSubmitEditing={() => {
             if (searchText.length > 2) {
-              props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText: searchText, isTest: true });
+              props.navigation.navigate(AppRoutes.SearchMedicineScene, {
+                searchText: searchText,
+                isTest: true,
+              });
             }
           }}
           value={searchText}

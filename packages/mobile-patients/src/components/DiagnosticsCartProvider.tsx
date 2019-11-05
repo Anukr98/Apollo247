@@ -7,8 +7,11 @@ import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert, AsyncStorage } from 'react-native';
-import { useAllCurrentPatients } from '../hooks/authHooks';
-import { EPrescription, PhysicalPrescription } from './ShoppingCartProvider';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import {
+  EPrescription,
+  PhysicalPrescription,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 
 export interface DiagnosticsCartItem {
   id: string;
@@ -35,6 +38,8 @@ export interface DiagnosticsCartContextProps {
   couponDiscount: number;
   deliveryCharges: number;
   grandTotal: number;
+
+  uploadPrescriptionRequired: boolean;
 
   ePrescriptions: EPrescription[];
   addEPrescription: ((item: EPrescription) => void) | null;
@@ -69,7 +74,7 @@ export interface DiagnosticsCartContextProps {
   clearCartInfo: (() => void) | null;
 }
 
-export const ShoppingCartContext = createContext<DiagnosticsCartContextProps>({
+export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
   forPatientId: '',
   setPatientId: null,
 
@@ -83,6 +88,8 @@ export const ShoppingCartContext = createContext<DiagnosticsCartContextProps>({
   couponDiscount: 0,
   deliveryCharges: 0,
   grandTotal: 0,
+
+  uploadPrescriptionRequired: false,
 
   ePrescriptions: [],
   addEPrescription: null,
@@ -117,7 +124,7 @@ const showGenericAlert = (message: string) => {
   Alert.alert('Alert', message);
 };
 
-export const ShoppingCartProvider: React.FC = (props) => {
+export const DiagnosticsCartProvider: React.FC = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const id = (currentPatient && currentPatient.id) || '';
   const AsyncStorageKeys = {
@@ -253,7 +260,10 @@ export const ShoppingCartProvider: React.FC = (props) => {
   ) => {
     const foundIndex = physicalPrescriptions.findIndex((item) => item.title == itemUpdates.title);
     if (foundIndex !== -1) {
-      physicalPrescriptions[foundIndex] = { ...physicalPrescriptions[foundIndex], ...itemUpdates };
+      physicalPrescriptions[foundIndex] = {
+        ...physicalPrescriptions[foundIndex],
+        ...itemUpdates,
+      };
       setPhysicalPrescriptions([...physicalPrescriptions]);
     }
   };
@@ -330,7 +340,7 @@ export const ShoppingCartProvider: React.FC = (props) => {
   }, [cartTotal]);
 
   return (
-    <ShoppingCartContext.Provider
+    <DiagnosticsCartContext.Provider
       value={{
         forPatientId,
         setPatientId,
@@ -345,6 +355,8 @@ export const ShoppingCartProvider: React.FC = (props) => {
         grandTotal,
         couponDiscount,
         deliveryCharges,
+
+        uploadPrescriptionRequired: false,
 
         ePrescriptions,
         addEPrescription,
@@ -376,9 +388,9 @@ export const ShoppingCartProvider: React.FC = (props) => {
       }}
     >
       {props.children}
-    </ShoppingCartContext.Provider>
+    </DiagnosticsCartContext.Provider>
   );
 };
 
 export const useDiagnosticsCart = () =>
-  useContext<DiagnosticsCartContextProps>(ShoppingCartContext);
+  useContext<DiagnosticsCartContextProps>(DiagnosticsCartContext);
