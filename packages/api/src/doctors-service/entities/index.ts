@@ -552,3 +552,28 @@ export class DoctorDeviceTokens extends BaseEntity {
   }
 }
 //doctor device token ends
+
+//admin user starts
+export enum AdminType {
+  ADMIN = 'ADMIN',
+  JDADMIN = 'JDADMIN',
+}
+@Entity()
+export class AdminUsers extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ default: true })
+  isActive: Boolean;
+
+  @Column()
+  @Validate(MobileNumberValidator)
+  mobileNumber: string;
+
+  @Column()
+  userType: AdminType;
+}
+//admin user ends
