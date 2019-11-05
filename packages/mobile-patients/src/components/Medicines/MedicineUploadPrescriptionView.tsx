@@ -11,7 +11,8 @@ import { SelectEPrescriptionModal } from './SelectEPrescriptionModal';
 import { UploadPrescriprionPopup } from './UploadPrescriprionPopup';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -32,12 +33,16 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface MedicineUploadPrescriptionViewProps extends NavigationScreenProps { isTest?: boolean } { }
+export interface MedicineUploadPrescriptionViewProps extends NavigationScreenProps {
+  isTest?: boolean;
+}
+{
+}
 
 export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescriptionViewProps> = (
   props
 ) => {
-  const { isTest } = props
+  const { isTest } = props;
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const { currentPatient } = useAllCurrentPatients();
@@ -51,7 +56,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     ePrescriptions,
     setEPrescriptions,
     removeEPrescription,
-  } = useShoppingCart();
+  } = isTest ? useDiagnosticsCart() : useShoppingCart();
 
   const renderLabel = (label: string, rightText?: string) => {
     return (
@@ -106,7 +111,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   ) => {
     return (
       <View key={i} style={{}}>
-        <TouchableOpacity activeOpacity={1} key={i} onPress={() => { }}>
+        <TouchableOpacity activeOpacity={1} key={i} onPress={() => {}}>
           <View
             style={{
               ...theme.viewStyles.cardViewStyle,
@@ -137,15 +142,15 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                   }}
                 />
               ) : (
-                  <Image
-                    style={{
-                      height: 40,
-                      width: 30,
-                      borderRadius: 5,
-                    }}
-                    source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
-                  />
-                )}
+                <Image
+                  style={{
+                    height: 40,
+                    width: 30,
+                    borderRadius: 5,
+                  }}
+                  source={{ uri: `data:image/jpeg;base64,${item.base64}` }}
+                />
+              )}
             </View>
             <View style={{ flex: 1 }}>
               <TextInputComponent
@@ -313,8 +318,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                 >
                   {isTest
                     ? `Prescriptions help the pathologists to understand the requirements better. If you have a prescription, you can upload them.`
-                    : `Items in your cart marked with ‘Rx’ need prescriptions to complete your purchase. Please upload the necessary prescriptions`
-                  }
+                    : `Items in your cart marked with ‘Rx’ need prescriptions to complete your purchase. Please upload the necessary prescriptions`}
                 </Text>
                 <Text
                   style={{
@@ -329,8 +333,8 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
               {!isTest && consultDoctorCTA()}
             </View>
           ) : (
-              rendePrescriptions()
-            )}
+            rendePrescriptions()
+          )}
         </View>
       );
     }

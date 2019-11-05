@@ -1,3 +1,6 @@
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { More } from '@aph/mobile-patients/src/components/ui/Icons';
@@ -5,9 +8,7 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import React, { useState } from 'react';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-
+import React from 'react';
 import {
   BackHandler,
   Image,
@@ -20,7 +21,6 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   separatorStyle: {
@@ -43,6 +43,7 @@ export interface MedAndTestCartProps
 
 export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
   const { cartItems } = useShoppingCart();
+  const { cartItems: testCartItems } = useDiagnosticsCart();
   console.log('length : ' + cartItems.length);
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
@@ -60,7 +61,7 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
     {
       id: 2,
       title: 'Tests',
-      descripiton: cartItems.length > 0 ? `${cartItems.length} Items` : 'No Items',
+      descripiton: testCartItems.length > 0 ? `${testCartItems.length} Items` : 'No Items',
       image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
     },
   ];
