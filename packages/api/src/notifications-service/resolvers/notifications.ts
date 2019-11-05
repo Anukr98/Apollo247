@@ -184,17 +184,18 @@ export async function sendCallsNotification(
       body: notificationBody,
     },
     data: {
-      type: 'call_started',
+      type: 'chat_room',
       appointmentId: appointment.id.toString(),
       patientName: patientDetails.firstName,
       doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-      sound: 'default',
+      sound: 'incallmanager_ringtone.mp3',
+      android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       callType,
       appointmentCallId,
       doctorType,
     },
   };
-
+  //call_started
   console.log(payload, 'notification payload', pushNotificationInput.notificationType);
   //options
   const options = {
@@ -402,7 +403,8 @@ export async function sendNotification(
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-        sound: 'default',
+        sound: 'incallmanager_ringtone.mp3',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
     };
   }

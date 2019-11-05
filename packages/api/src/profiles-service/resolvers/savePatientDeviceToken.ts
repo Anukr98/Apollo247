@@ -34,8 +34,13 @@ export const saveDeviceTokenTypeDefs = gql`
     deviceToken: PatientDeviceTokens
   }
 
+  type DeleteTokenResult {
+    status: Boolean!
+  }
+
   extend type Mutation {
     saveDeviceToken(SaveDeviceTokenInput: SaveDeviceTokenInput): DeviceTokenResult!
+    deleteDeviceToken(tokenId: String): DeleteTokenResult!
   }
 `;
 
@@ -83,8 +88,24 @@ const saveDeviceToken: Resolver<
   return { deviceToken };
 };
 
+type DeleteTokenResult = {
+  status: Boolean;
+};
+
+const deleteDeviceToken: Resolver<
+  null,
+  { tokenId: string },
+  ProfilesServiceContext,
+  DeleteTokenResult
+> = async (parent, args, { profilesDb }) => {
+  const deviceTokenRepo = profilesDb.getCustomRepository(PatientDeviceTokenRepository);
+  await deviceTokenRepo.deleteDeviceToken(args.tokenId);
+  return { status: true };
+};
+
 export const saveDeviceTokenResolvers = {
   Mutation: {
     saveDeviceToken,
+    deleteDeviceToken,
   },
 };
