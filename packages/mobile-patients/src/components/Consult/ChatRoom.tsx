@@ -1934,6 +1934,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           backgroundColor: '#0087ba',
           marginLeft: 38,
           borderRadius: 10,
+          marginBottom: 4,
         }}
       >
         {rowData.automatedText ? (
@@ -3476,13 +3477,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           title={'CONSULT ROOM'}
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0, zIndex: 100 }}
-          onPressLeftIcon={() => props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-            })
-          )}
+          onPressLeftIcon={() =>
+            props.navigation.dispatch(
+              StackActions.reset({
+                index: 0,
+                key: null,
+                actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+              })
+            )
+          }
           // onPressLeftIcon={() => props.navigation.goBack()}
         />
 

@@ -16,7 +16,7 @@ const PharmaApiConfig = {
     SHOP_BY_CITY: [apolloUatBaseUrl],
     IMAGES_BASE_URL: [`${apolloUatBaseUrl}/pub/media`],
     GET_DELIVERY_TIME: [
-      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      'http://tpuat.apollopharmacy.org:9090/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
@@ -34,7 +34,7 @@ const PharmaApiConfig = {
     SHOP_BY_CITY: [apolloProdBaseUrl],
     IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media`],
     GET_DELIVERY_TIME: [
-      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      'http://tpuat.apollopharmacy.org:9090/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
