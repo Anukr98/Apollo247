@@ -3,6 +3,7 @@ import {
   DiscountType,
   MEDICINE_DELIVERY_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -19,6 +20,7 @@ export interface DiagnosticsCartItem {
   mou: string; // pack of how many units (eg. 10 tablets)
   price: number;
   thumbnail: string | null;
+  originalprice: number;
 }
 
 export interface DiagnosticsCartContextProps {
@@ -56,8 +58,14 @@ export interface DiagnosticsCartContextProps {
   removePhysicalPrescription: ((base64: string) => void) | null;
   physicalPrescriptions: PhysicalPrescription[];
 
+  addAddress: ((address: savePatientAddress_savePatientAddress_patientAddress) => void) | null;
   deliveryAddressId: string;
   setDeliveryAddressId: ((id: string) => void) | null;
+  addresses: savePatientAddress_savePatientAddress_patientAddress[];
+  setAddresses:
+    | ((addresses: savePatientAddress_savePatientAddress_patientAddress[]) => void)
+    | null;
+
   clinicId: string;
   setClinicId: ((id: string) => void) | null;
 
@@ -110,6 +118,9 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
 
   deliveryAddressId: '',
   setDeliveryAddressId: null,
+  addresses: [],
+  setAddresses: null,
+  addAddress: null,
   clinicId: '',
   setClinicId: null,
   deliveryType: null,
@@ -143,6 +154,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [coupon, setCoupon] = useState<DiagnosticsCartContextProps['coupon']>(null);
 
   const [clinics, setClinics] = useState<Store[]>([]);
+  const [addresses, setAddresses] = useState<
+    savePatientAddress_savePatientAddress_patientAddress[]
+  >([]);
   const [pinCode, setPinCode] = useState<string>('');
 
   const [clinicId, _setClinicId] = useState<DiagnosticsCartContextProps['clinicId']>('');
@@ -187,6 +201,10 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     }
     const newItems = [...ePrescriptions, itemToAdd];
     setEPrescriptions(newItems);
+  };
+
+  const addAddress = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+    setAddresses([address, ...addresses]);
   };
 
   const setCartItems: DiagnosticsCartContextProps['setCartItems'] = (cartItems) => {
@@ -369,6 +387,9 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         updatePhysicalPrescription,
         removePhysicalPrescription,
 
+        addresses,
+        setAddresses,
+        addAddress,
         deliveryAddressId,
         setDeliveryAddressId,
         deliveryType,

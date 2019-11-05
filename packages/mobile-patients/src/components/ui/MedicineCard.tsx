@@ -5,6 +5,7 @@ import {
   DropdownGreen,
   MedicineIcon,
   MedicineRxIcon,
+  TestsIcon,
   RemoveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
@@ -127,13 +128,13 @@ export interface MedicineCardProps {
   isTest?: boolean;
   medicineName: string;
   personName?: string;
-  originalPrice?: number,
+  originalPrice?: number;
   price: number;
   imageUrl?: string;
   type?: Doseform;
   subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
   packOfCount?: number;
-  unit: number;
+  unit?: number;
   isInStock: boolean;
   isPrescriptionRequired: boolean;
   isCardExpanded: boolean;
@@ -179,13 +180,16 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
         <View style={{ flex: 1 }}>
           <Text style={styles.medicineTitle}>{medicineName}</Text>
           {isTest
-            ? !!packOfCount && isCardExpanded && (
-              <Text style={styles.packOfTextStyle}>{`Includes ${packOfCount} test${packOfCount == 1 ? '' : 's'}`}</Text>
-            )
-            : !!packOfCount && isCardExpanded && (
-              <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount}`}</Text>
-            )
-          }
+            ? !!packOfCount &&
+              isCardExpanded && (
+                <Text style={styles.packOfTextStyle}>{`Includes ${packOfCount} test${
+                  packOfCount == 1 ? '' : 's'
+                }`}</Text>
+              )
+            : !!packOfCount &&
+              isCardExpanded && (
+                <Text style={styles.packOfTextStyle}>{`Pack of ${packOfCount}`}</Text>
+              )}
           {renderOutOfStock()}
         </View>
         <View style={{ flex: 0.1, justifyContent: 'flex-start' }}>
@@ -241,11 +245,14 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   const renderUnitDropdownAndPrice = () => {
     return (
       <View style={styles.unitAndPriceView}>
-        {isTest
-          ? <></>
-          : <>
+        {isTest ? (
+          <></>
+        ) : (
+          <>
             <View style={{ flex: 1 }}>
-              <MaterialMenu onPress={(selectedQuantity) => onChangeUnit(selectedQuantity as number)}>
+              <MaterialMenu
+                onPress={(selectedQuantity) => onChangeUnit(selectedQuantity as number)}
+              >
                 <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
                   <View style={[{ flex: 1, alignItems: 'flex-start' }]}>
                     <Text style={styles.unitAndRupeeText}>{`QTY : ${unit}`}</Text>
@@ -258,17 +265,20 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
             </View>
             <View style={styles.verticalSeparator} />
           </>
-        }
-        <View style={[styles.flexStyle, { alignItems: 'flex-end', justifyContent: 'flex-end', flexDirection: 'row' }]}>
-          {originalPrice &&
+        )}
+        <View
+          style={[
+            styles.flexStyle,
+            { alignItems: 'flex-end', justifyContent: 'flex-end', flexDirection: 'row' },
+          ]}
+        >
+          {originalPrice && originalPrice != price && (
             <Text style={[styles.unitAndRupeeOfferText, { marginRight: 4 }]}>
               {'('}
-              <Text style={{ textDecorationLine: 'line-through' }}>
-                {`Rs. ${originalPrice}`}
-              </Text>
+              <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${originalPrice}`}</Text>
               {')'}
             </Text>
-          }
+          )}
           <Text style={styles.unitAndRupeeText}>{`Rs. ${price}`}</Text>
         </View>
       </View>
@@ -280,7 +290,15 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       <View style={{ width: 40, marginRight: 12, alignItems: 'center' }}>
         {imageUrl ? (
           <Image
-            PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+            PlaceholderContent={
+              isPrescriptionRequired ? (
+                <MedicineRxIcon />
+              ) : isTest ? (
+                <TestsIcon />
+              ) : (
+                <MedicineIcon />
+              )
+            }
             placeholderStyle={{ backgroundColor: 'transparent' }}
             source={{ uri: imageUrl }}
             style={{ height: 40, width: 40 }}
@@ -288,9 +306,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           />
         ) : isPrescriptionRequired ? (
           <MedicineRxIcon />
+        ) : isTest ? (
+          <TestsIcon />
         ) : (
-              <MedicineIcon />
-            )}
+          <MedicineIcon />
+        )}
       </View>
     );
   };
@@ -312,23 +332,21 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     ) : !isCardExpanded ? (
       <View style={{ flexDirection: 'row' }}>
         <Text style={styles.priceTextCollapseStyle}>Rs. {price}</Text>
-        {originalPrice &&
+        {originalPrice && originalPrice != price && (
           <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
             {'('}
-            <Text style={{ textDecorationLine: 'line-through' }}>
-              {`Rs. ${originalPrice}`}
-            </Text>
+            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${originalPrice}`}</Text>
             {')'}
           </Text>
-        }
+        )}
       </View>
     ) : null;
   };
 
   const outOfStockContainerStyle: ViewStyle = !isInStock
     ? {
-      backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
-    }
+        backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+      }
     : {};
   return (
     <TouchableOpacity
