@@ -285,6 +285,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                             onPress={() => {
                                 if (props.navigation.getParam('isComingFromConsult'))
                                     props.navigation.navigate(AppRoutes.SearchMedicineScene);
+
                                 else props.navigation.goBack();
                             }}
                         >

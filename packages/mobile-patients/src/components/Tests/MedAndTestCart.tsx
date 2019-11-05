@@ -6,6 +6,8 @@ import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import React, { useState } from 'react';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+
 import {
   BackHandler,
   Image,
@@ -18,6 +20,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   separatorStyle: {
@@ -33,32 +36,34 @@ type ArrayTest = {
   image: ImageSourcePropType;
 };
 
-const arrayTest: ArrayTest[] = [
-  {
-    id: 1,
-    title: `Medicines`,
-    descripiton: 'No Items',
-    image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
-  },
-  {
-    id: 2,
-    title: 'Tests',
-    descripiton: '2 Items',
-    image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
-  },
-];
-
 export interface MedAndTestCartProps
   extends NavigationScreenProps<{
     isComingFromConsult: boolean;
   }> {}
 
 export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
+  const { cartItems } = useShoppingCart();
+  console.log('length : ' + cartItems.length);
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     props.navigation.goBack();
     return false;
   };
+
+  const arrayTest: ArrayTest[] = [
+    {
+      id: 1,
+      title: `Medicines`,
+      descripiton: cartItems.length > 0 ? `${cartItems.length} Items` : 'No Items',
+      image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
+    },
+    {
+      id: 2,
+      title: 'Tests',
+      descripiton: cartItems.length > 0 ? `${cartItems.length} Items` : 'No Items',
+      image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
+    },
+  ];
 
   const renderHeader = () => {
     return (
@@ -83,6 +88,7 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
   };
 
   const renderMedicines = () => {
+    const isComingFromConsult = props.navigation.getParam('isComingFromConsult');
     return (
       <View>
         {arrayTest.map((serviceTitle, i) => (
@@ -90,14 +96,11 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               key={i}
-              // onPress={() => {
-              //     if (i === 0) {
-              //         setShowPopop(true);
-              //     }
-              //     if (i === 1) {
-              //         props.navigation.navigate(AppRoutes.SearchMedicineScene);
-              //     }
-              // }}
+              onPress={() => {
+                props.navigation.navigate(i == 0 ? AppRoutes.YourCart : AppRoutes.TestsCart, {
+                  isComingFromConsult,
+                });
+              }}
             >
               <View
                 style={{
@@ -105,7 +108,7 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
                   ...viewStyles.shadowStyle,
                   padding: 16,
                   marginHorizontal: 20,
-                  backgroundColor: i === 0 ? '#f0f1ec' : colors.WHITE,
+                  backgroundColor: cartItems.length === 0 ? '#f0f1ec' : colors.WHITE,
                   flexDirection: 'row',
                   height: 88,
                   marginTop: i === 0 ? 16 : 8,
