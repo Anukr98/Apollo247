@@ -33,7 +33,6 @@ export enum DoctorType {
   PAYROLL = 'PAYROLL',
   STAR_APOLLO = 'STAR_APOLLO',
   JUNIOR = 'JUNIOR',
-  ADMIN = 'ADMIN',
 }
 
 export enum FacilityType {

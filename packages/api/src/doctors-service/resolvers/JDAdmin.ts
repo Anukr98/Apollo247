@@ -48,7 +48,7 @@ const getJuniorDoctorDashboard: Resolver<
   const adminRepository = doctorsDb.getCustomRepository(AdminUser);
   const adminData = await adminRepository.checkValidAccess(mobileNumber, true);
   if (adminData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-  if (adminData.userType !== AdminType.ADMIN) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (adminData.userType !== AdminType.JDADMIN) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   return getJuniorDoctorsDashboard(
     args.fromDate,
