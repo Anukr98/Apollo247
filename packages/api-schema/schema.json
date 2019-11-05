@@ -11557,7 +11557,17 @@
             "description": null,
             "args": [
               {
-                "name": "tokenId",
+                "name": "deviceToken",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "patientId",
                 "description": null,
                 "type": {
                   "kind": "SCALAR",
