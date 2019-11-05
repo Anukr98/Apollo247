@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { PatientAddress } from 'profiles-service/entities';
+import { PatientAddress, PATIENT_ADDRESS_TYPE } from 'profiles-service/entities';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
@@ -17,6 +17,14 @@ export const addPatientAddressTypeDefs = gql`
     zipcode: String!
     mobileNumber: String
     landmark: String
+    addressType: PATIENT_ADDRESS_TYPE
+    otherAddressType: String
+  }
+
+  enum PATIENT_ADDRESS_TYPE {
+    HOME
+    OFFICE
+    OTHER
   }
 
   input UpdatePatientAddressInput {
@@ -28,6 +36,8 @@ export const addPatientAddressTypeDefs = gql`
     zipcode: String!
     mobileNumber: String
     landmark: String
+    addressType: PATIENT_ADDRESS_TYPE
+    otherAddressType: String
   }
 
   type PatientAddress {
@@ -41,6 +51,8 @@ export const addPatientAddressTypeDefs = gql`
     landmark: String
     createdDate: Date
     updatedDate: Date
+    addressType: PATIENT_ADDRESS_TYPE
+    otherAddressType: String
   }
 
   type AddPatientAddressResult {
@@ -76,6 +88,8 @@ type PatientAddressInput = {
   state: string;
   zipcode: string;
   landmark: string;
+  addressType: PATIENT_ADDRESS_TYPE;
+  otherAddressType: string;
 };
 
 type UpdatePatientAddressInput = {
@@ -87,6 +101,8 @@ type UpdatePatientAddressInput = {
   state: string;
   zipcode: string;
   landmark: string;
+  addressType: PATIENT_ADDRESS_TYPE;
+  otherAddressType: string;
 };
 
 type PatientAddressInputArgs = { PatientAddressInput: PatientAddressInput };

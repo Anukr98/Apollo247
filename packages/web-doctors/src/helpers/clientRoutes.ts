@@ -26,6 +26,7 @@ export const clientRoutes = {
   JDConsultRoom: ({ appointmentId, patientId, queueId, isActive }: JDConsultRoomParams) =>
     `/jd-consultroom/${appointmentId}/${patientId}/${queueId}/${isActive}`,
   juniorDoctorAdmin: () => '/jd-admin',
+  secrateryDashboard: () => '/secratery',
 };
 
 export const clientBaseUrl = () => webDoctorsBaseUrl();
