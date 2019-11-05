@@ -60,7 +60,7 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
     });
     return startEndTimes;
   }
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async insertOrUpdateAllConsultHours(availabilityData: any[]) {
     const consultHours: Partial<ConsultHours>[] = [];
     availabilityData.forEach((consultHourData) => {
