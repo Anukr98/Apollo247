@@ -290,9 +290,13 @@ export const Header: React.FC = (props) => {
                   >
                     <img
                       className={classes.accountIc}
-                      onClick={() =>
-                        isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true)
-                      }
+                      onClick={() => {
+                        if (isProtected) {
+                          protectWithLoginPopup();
+                        } else if (!isAdminDoctor) {
+                          setIsHelpPopupOpen(true);
+                        }
+                      }}
                       src={require('images/ic_account.svg')}
                     />
                   </div>
@@ -328,7 +332,7 @@ export const Header: React.FC = (props) => {
               }}
               classes={{ paper: classes.signedTopPopover }}
             >
-              {isSignedIn || isAdminDoctor ? (
+              {isSignedIn ? (
                 <Paper className={classes.afterloginForm}>
                   <Button
                     onClick={() => {

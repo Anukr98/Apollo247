@@ -185,7 +185,7 @@ export const JDAdminDashboard: React.FC = (rops) => {
         </div>
         <div className={classes.container}>
           <div className={classes.pageContainer}>
-            <div className={classes.pageHeader}>Admin Dashboard</div>
+            <div className={classes.pageHeader}>Admin Dashboard - Junior Doctors</div>
             <div className={classes.topSection}>
               <div className={classes.consultQueue}>
                 <span>Number of Consults booked but not in queue to be allocated: </span>
@@ -251,9 +251,7 @@ export const JDAdminDashboard: React.FC = (rops) => {
                         data.getJuniorDoctorDashboard &&
                         data.getJuniorDoctorDashboard.juniorDoctorQueueItems &&
                         data.getJuniorDoctorDashboard.juniorDoctorQueueItems.find((consult) => {
-                          return consult && consult.doctorid === jdId
-                            ? consult.doctorid === jdId
-                            : '-';
+                          return consult && consult.doctorid === jdId;
                         });
                       return (
                         <TableRow key={index}>
@@ -266,47 +264,54 @@ export const JDAdminDashboard: React.FC = (rops) => {
                           </TableCell>
                           {/** <TableCell>&nbsp;</TableCell> */}
                           <TableCell>
-                            {jrdConsultRow && jrdConsultRow.queuedconsultscount}
+                            {(jrdConsultRow && jrdConsultRow.queuedconsultscount) || '--'}
                           </TableCell>
                         </TableRow>
                       );
                     })}
                 </TableBody>
               </Table>
-              <TablePagination
-                rowsPerPageOptions={[10, 25, 100]}
-                classes={{
-                  root: classes.paginationRoot,
-                  caption: classes.pageCaption,
-                  selectIcon: classes.iconRoot,
-                  selectRoot: classes.rootSelect,
-                  actions: classes.actionsRoot,
-                  menuItem: classes.menuItemRoot,
-                }}
-                component="div"
-                count={
-                  data &&
-                  data.getJuniorDoctorDashboard &&
-                  data.getJuniorDoctorDashboard.juniorDoctorDetails &&
-                  data.getJuniorDoctorDashboard.juniorDoctorDetails.length
-                }
-                rowsPerPage={rowsPerPage}
-                page={page}
-                backIconButtonProps={{
-                  'aria-label': 'previous page',
-                  classes: {
-                    disabled: classes.buttonDisabled,
-                  },
-                }}
-                nextIconButtonProps={{
-                  'aria-label': 'next page',
-                  classes: {
-                    disabled: classes.buttonDisabled,
-                  },
-                }}
-                onChangePage={handleChangePage}
-                onChangeRowsPerPage={handleChangeRowsPerPage}
-              />
+              <>
+                {data &&
+                data.getJuniorDoctorDashboard &&
+                data.getJuniorDoctorDashboard.juniorDoctorDetails &&
+                data.getJuniorDoctorDashboard.juniorDoctorDetails.length > 100 ? (
+                  <TablePagination
+                    rowsPerPageOptions={[10, 25, 100]}
+                    classes={{
+                      root: classes.paginationRoot,
+                      caption: classes.pageCaption,
+                      selectIcon: classes.iconRoot,
+                      selectRoot: classes.rootSelect,
+                      actions: classes.actionsRoot,
+                      menuItem: classes.menuItemRoot,
+                    }}
+                    component="div"
+                    count={
+                      data &&
+                      data.getJuniorDoctorDashboard &&
+                      data.getJuniorDoctorDashboard.juniorDoctorDetails &&
+                      data.getJuniorDoctorDashboard.juniorDoctorDetails.length
+                    }
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    backIconButtonProps={{
+                      'aria-label': 'previous page',
+                      classes: {
+                        disabled: classes.buttonDisabled,
+                      },
+                    }}
+                    nextIconButtonProps={{
+                      'aria-label': 'next page',
+                      classes: {
+                        disabled: classes.buttonDisabled,
+                      },
+                    }}
+                    onChangePage={handleChangePage}
+                    onChangeRowsPerPage={handleChangeRowsPerPage}
+                  />
+                ) : null}
+              </>
             </div>
           </div>
         </div>
