@@ -78,7 +78,7 @@ export const getAppointmentHistoryTypeDefs = gql`
 
   extend type Query {
     getAppointmentHistory(appointmentHistoryInput: AppointmentHistoryInput): AppointmentResult!
-    getDoctorAppointments(startDate: Date, endDate: Date): DoctorAppointmentResult
+    getDoctorAppointments(startDate: Date, endDate: Date, doctorId: String): DoctorAppointmentResult
     getAppointmentData(appointmentId: String): DoctorAppointmentResult
     getPatientLog(
       offset: Int
@@ -133,11 +133,12 @@ const getAppointmentHistory: Resolver<
 
 const getDoctorAppointments: Resolver<
   null,
-  { startDate: Date; endDate: Date },
+  { startDate: Date; endDate: Date; doctorId: string },
   ConsultServiceContext,
   AppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext'; 
-import { Doctor, AdminType, AdminUsers, Secretary, DoctorType } from 'doctors-service/entities/'; 
+import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
+import { Doctor, AdminType, AdminUsers, Secretary, DoctorType } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -174,11 +174,11 @@ export const getDoctorDetailsTypeDefs = gql`
     name: String!
     mobileNumber: String!
     isActive: Boolean!
-    doctorSecretary: DoctorSecretary
+    doctorSecretary: [DoctorSecretary]
   }
 
   type DoctorSecretary {
-    doctor: [DoctorDetails]
+    doctor: Profile
   }
 
   type Packages {
@@ -294,8 +294,6 @@ const findLoggedinUserDetails: Resolver<
 
   const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
   const secretaryData = await secretaryRepo.getSecretary(mobileNumber, true);
-  console.log('------------', mobileNumber);
-  console.log(JSON.stringify(secretaryData));
 
   if (doctorData) {
     if (!doctorData.firebaseToken)
@@ -342,7 +340,7 @@ const findLoggedinUserDetails: Resolver<
       doctorDetails: null,
       JDAdminDetails: null,
       adminDetails: null,
-      secretaryDetails: null,
+      secretaryDetails: secretaryData,
     };
   } else throw new AphError(AphErrorMessages.UNAUTHORIZED);
 };
