@@ -314,7 +314,7 @@ export const Header: React.FC = (props) => {
               </Button>
             </DialogActions>
           </Dialog>
-          {isSignedIn ? (
+          {isSignedIn || isAdminDoctor ? (
             <Popover
               open={isHelpPopupOpen}
               anchorEl={avatarRef.current}
@@ -328,7 +328,7 @@ export const Header: React.FC = (props) => {
               }}
               classes={{ paper: classes.signedTopPopover }}
             >
-              {isSignedIn ? (
+              {isSignedIn || isAdminDoctor ? (
                 <Paper className={classes.afterloginForm}>
                   <Button
                     onClick={() => {

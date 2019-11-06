@@ -54,7 +54,7 @@ const App: React.FC = () => {
           ) : isJuniorDoctor ? (
             <Redirect to={clientRoutes.juniorDoctor()} />
           ) : (
-            <Redirect to={isSignedIn && isSignedIn.firebaseToken ? '/profile' : '/Calendar'} />
+            <Redirect to={!(isSignedIn && isSignedIn.firebaseToken) ? '/profile' : '/Calendar'} />
           )
         }
       />

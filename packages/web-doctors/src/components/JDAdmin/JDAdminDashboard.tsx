@@ -221,7 +221,7 @@ export const JDAdminDashboard: React.FC = (rops) => {
                     <TableCell>Name</TableCell>
                     <TableCell>
                       Status <br />
-                      <span>(Logged in, Away or Logged Out)</span>
+                      <span>(Logged in or Away)</span>
                     </TableCell>
                     {/** 
                     <TableCell>
