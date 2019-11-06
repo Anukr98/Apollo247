@@ -50,7 +50,7 @@ export const Navigation: React.FC = (props) => {
   // TODO remove currentPatient and name it as currentDoctor
   const currentDoctor = useCurrentPatient();
   const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
-  const isAdminDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.ADMIN;
+  const isAdminDoctor = false;
 
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
