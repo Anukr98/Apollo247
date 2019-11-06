@@ -26,6 +26,7 @@ import {
   FileBig,
   Remove,
   CrossPopup,
+  DoctorPlaceholderImage,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
@@ -1002,7 +1003,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </View>
                 {rowData.transferInfo.photoUrl &&
                 rowData.transferInfo.photoUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
                 ) ? (
                   <Image
                     source={{ uri: rowData.transferInfo.photoUrl }}
@@ -1553,16 +1554,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               left: 0,
             }}
           >
-            {appointmentData.doctorInfo.photoUrl ? (
+            {appointmentData.doctorInfo.thumbnailUrl &&
+            appointmentData.doctorInfo.thumbnailUrl.match(
+              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+            ) ? (
               <Image
-                source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
+                resizeMode={'contain'}
                 style={{
                   width: 32,
                   height: 32,
                 }}
               />
             ) : (
-              <DoctorImage
+              <DoctorPlaceholderImage
                 style={{
                   width: 32,
                   height: 32,
@@ -1763,16 +1768,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   left: 0,
                 }}
               >
-                {appointmentData.doctorInfo.photoUrl ? (
+                {appointmentData.doctorInfo.thumbnailUrl &&
+                appointmentData.doctorInfo.thumbnailUrl.match(
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                ) ? (
                   <Image
-                    source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                    source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
+                    resizeMode={'contain'}
                     style={{
                       width: 32,
                       height: 32,
                     }}
                   />
                 ) : (
-                  <DoctorImage
+                  <DoctorPlaceholderImage
                     style={{
                       width: 32,
                       height: 32,
@@ -1866,16 +1875,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   left: 0,
                 }}
               >
-                {appointmentData.doctorInfo.photoUrl ? (
+                {appointmentData.doctorInfo.thumbnailUrl &&
+                appointmentData.doctorInfo.thumbnailUrl.match(
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                ) ? (
                   <Image
-                    source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                    source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
+                    resizeMode={'contain'}
                     style={{
                       width: 32,
                       height: 32,
                     }}
                   />
                 ) : (
-                  <DoctorImage
+                  <DoctorPlaceholderImage
                     style={{
                       width: 32,
                       height: 32,

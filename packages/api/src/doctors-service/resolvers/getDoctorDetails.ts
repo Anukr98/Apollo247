@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Doctor, AdminType, AdminUsers, Secretary } from 'doctors-service/entities/';
+import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext'; 
+import { Doctor, AdminType, AdminUsers, Secretary, DoctorType } from 'doctors-service/entities/'; 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -39,8 +39,9 @@ export const getDoctorDetailsTypeDefs = gql`
   enum LoggedInUserType {
     DOCTOR
     JUNIOR
-    ADMIN
     SECRETARY
+    ADMIN
+    JDADMIN
   }
 
   enum Salutation {
@@ -231,6 +232,7 @@ export const getDoctorDetailsTypeDefs = gql`
 
 enum LoggedInUserType {
   DOCTOR = 'DOCTOR',
+  JUNIOR = 'JUNIOR',
   SECRETARY = 'SECRETARY',
   ADMIN = 'ADMIN',
   JDADMIN = 'JDADMIN',
@@ -298,8 +300,12 @@ const findLoggedinUserDetails: Resolver<
   if (doctorData) {
     if (!doctorData.firebaseToken)
       await doctorRepository.updateFirebaseId(doctorData.id, firebaseUid);
+
     return {
-      loggedInUserType: LoggedInUserType.DOCTOR,
+      loggedInUserType:
+        doctorData.doctorType === DoctorType.JUNIOR
+          ? LoggedInUserType.JUNIOR
+          : LoggedInUserType.DOCTOR,
       doctorDetails: doctorData,
       JDAdminDetails: null,
       adminDetails: null,

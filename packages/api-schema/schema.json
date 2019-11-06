@@ -6543,13 +6543,19 @@
             "deprecationReason": null
           },
           {
+            "name": "SECRETARY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "ADMIN",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "SECRETARY",
+            "name": "JDADMIN",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -11639,7 +11645,17 @@
             "description": null,
             "args": [
               {
-                "name": "tokenId",
+                "name": "deviceToken",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "patientId",
                 "description": null,
                 "type": {
                   "kind": "SCALAR",

@@ -168,7 +168,7 @@ export const Header: React.FC = (props) => {
   // TODO remove currentPatient and name it as currentDoctor
   const currentDoctor = useCurrentPatient();
   const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
-  const isAdminDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.ADMIN;
+  const isAdminDoctor = false;
 
   return (
     <header className={classes.header}>

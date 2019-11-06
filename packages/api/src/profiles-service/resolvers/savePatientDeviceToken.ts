@@ -40,7 +40,7 @@ export const saveDeviceTokenTypeDefs = gql`
 
   extend type Mutation {
     saveDeviceToken(SaveDeviceTokenInput: SaveDeviceTokenInput): DeviceTokenResult!
-    deleteDeviceToken(tokenId: String): DeleteTokenResult!
+    deleteDeviceToken(deviceToken: String, patientId: String): DeleteTokenResult!
   }
 `;
 
@@ -94,12 +94,15 @@ type DeleteTokenResult = {
 
 const deleteDeviceToken: Resolver<
   null,
-  { tokenId: string },
+  { deviceToken: string; patientId: string },
   ProfilesServiceContext,
   DeleteTokenResult
 > = async (parent, args, { profilesDb }) => {
   const deviceTokenRepo = profilesDb.getCustomRepository(PatientDeviceTokenRepository);
-  await deviceTokenRepo.deleteDeviceToken(args.tokenId);
+  const tokenDetails = await deviceTokenRepo.findDeviceToken(args.patientId, args.deviceToken);
+  if (tokenDetails == null)
+    throw new AphError(AphErrorMessages.NO_DEVICE_TOKEN_EXIST, undefined, {});
+  await deviceTokenRepo.deleteDeviceToken(tokenDetails.id);
   return { status: true };
 };
 

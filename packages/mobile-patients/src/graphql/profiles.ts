@@ -199,6 +199,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           qualification
           city
           photoUrl
+          thumbnailUrl
           doctorType
           doctorHospital {
             facility {
@@ -233,6 +234,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         qualification
         city
         photoUrl
+        thumbnailUrl
         doctorType
         doctorHospital {
           facility {
@@ -272,6 +274,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           qualification
           city
           photoUrl
+          thumbnailUrl
           doctorType
           doctorHospital {
             facility {
@@ -312,6 +315,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         qualification
         city
         photoUrl
+        thumbnailUrl
         doctorType
         doctorHospital {
           facility {
@@ -442,6 +446,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         experience
         city
         photoUrl
+        thumbnailUrl
         qualification
         specialty {
           name
