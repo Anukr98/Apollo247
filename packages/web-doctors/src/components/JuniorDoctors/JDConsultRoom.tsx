@@ -39,6 +39,7 @@ import {
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
   Relation,
+  STATUS,
 } from 'graphql/types/globalTypes';
 import { CaseSheet } from 'components/JuniorDoctors/JDCaseSheet/CaseSheet';
 import { useAuth } from 'hooks/authHooks';
@@ -1014,6 +1015,19 @@ export const JDConsultRoom: React.FC = () => {
     }, 10);
   };
 
+  const disableChat = () => {
+    let status;
+    if (
+      casesheetInfo &&
+      casesheetInfo.getJuniorDoctorCaseSheet &&
+      casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails &&
+      casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment
+    ) {
+      status = casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.status;
+    }
+    return isActive === 'done' || (status && status === STATUS.CANCELLED) ? true : false;
+  };
+
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 1;
 
@@ -1227,7 +1241,7 @@ export const JDConsultRoom: React.FC = () => {
                           appointmentId={appointmentId}
                           doctorId={doctorId}
                           patientId={patientId}
-                          disableChat={isActive === 'done' ? true : false}
+                          disableChat={disableChat()}
                           isNewMessage={(isNewMessage: boolean) => setIsNewMessage(isNewMessage)}
                           autoCloseCaseSheet={autoCloseCaseSheet}
                         />
