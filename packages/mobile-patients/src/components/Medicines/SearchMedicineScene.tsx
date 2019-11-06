@@ -568,19 +568,18 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       index == array.length - 1 ? { marginBottom: 20 } : {},
     ];
     const foundMedicineInCart = cartItems.find((item) => item.id == medicine.sku);
-    const price = medicine.special_price
+    const price = medicine.price;
+    const specialPrice = medicine.special_price
       ? typeof medicine.special_price == 'string'
         ? parseInt(medicine.special_price)
         : medicine.special_price
-      : medicine.price;
+      : undefined;
 
     return (
       <MedicineCard
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
-          savePastSeacrh(medicine.sku, medicine.name).catch((e) => {
-            handleGraphQlError(e);
-          });
+          savePastSeacrh(medicine.sku, medicine.name).catch((e) => {});
           props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
             sku: medicine.sku,
             title: medicine.name,
@@ -593,6 +592,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             : ''
         }
         price={price}
+        specialPrice={specialPrice}
         unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
         onPressAdd={() => {
           CommonLogEvent(AppRoutes.SearchMedicineScene, 'Add item to cart');
