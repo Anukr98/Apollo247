@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { Patient } from 'profiles-service/entities';
+import { Patient, Gender, Relation } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -16,12 +16,64 @@ export const getPatientTypeDefs = gql`
   type GetPatientsResult {
     patients: [Patient!]!
   }
+
+  type DeleteProfileResult {
+    status: Boolean!
+  }
+  input PatientProfileInput {
+    firstName: String!
+    lastName: String!
+    dateOfBirth: Date!
+    gender: Gender!
+    relation: Relation!
+    email: String!
+    photoUrl: String!
+    mobileNumber: String!
+  }
+  input EditProfileInput {
+    firstName: String!
+    lastName: String!
+    dateOfBirth: Date!
+    gender: Gender!
+    relation: Relation!
+    email: String!
+    photoUrl: String!
+    id: ID!
+  }
   extend type Query {
     getPatientById(patientId: String): PatientInfo
     getPatientByMobileNumber(mobileNumber: String): PatientList
     getPatients: GetPatientsResult
   }
+  extend type Mutation {
+    deleteProfile(patientId: String): DeleteProfileResult!
+    addNewProfile(patientProfileInput: PatientProfileInput): PatientInfo!
+    editProfile(editProfileInput: EditProfileInput): PatientInfo!
+  }
 `;
+
+type PatientProfileInput = {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Date;
+  gender: Gender;
+  relation: Relation;
+  email: string;
+  photoUrl: string;
+  mobileNumber: string;
+  firebaseUid: string;
+};
+
+type EditProfileInput = {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: Date;
+  gender: Gender;
+  relation: Relation;
+  email: string;
+  photoUrl: string;
+  id: string;
+};
 
 type PatientInfo = {
   patient: Patient;
@@ -29,6 +81,13 @@ type PatientInfo = {
 type PatientList = {
   patients: Patient[];
 };
+
+type DeleteProfileResult = {
+  status: Boolean;
+};
+
+type PatientProfileInputArgs = { patientProfileInput: PatientProfileInput };
+type EditProfileInputArgs = { editProfileInput: EditProfileInput };
 
 const getPatientById: Resolver<
   null,
@@ -58,6 +117,50 @@ const getPatientByMobileNumber: Resolver<
   return { patients };
 };
 
+const addNewProfile: Resolver<
+  null,
+  PatientProfileInputArgs,
+  ProfilesServiceContext,
+  PatientInfo
+> = async (parent, { patientProfileInput }, { firebaseUid, mobileNumber, profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  patientProfileInput.firebaseUid = firebaseUid;
+  const pateintDetails = await patientRepo.findByMobileNumber(patientProfileInput.mobileNumber);
+  if (pateintDetails == null)
+    throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
+  //console.log(patientProfileInput, 'patient input');
+  const patient = await patientRepo.saveNewProfile(patientProfileInput);
+  return { patient };
+};
+
+const editProfile: Resolver<
+  null,
+  EditProfileInputArgs,
+  ProfilesServiceContext,
+  PatientInfo
+> = async (parent, { editProfileInput }, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const editProfileAttrs = editProfileInput;
+  delete editProfileAttrs.id;
+  await patientRepo.updateProfile(editProfileInput.id, editProfileAttrs);
+  const patient = await patientRepo.findById(editProfileInput.id);
+  if (patient == null) throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {});
+  return { patient };
+};
+
+const deleteProfile: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  DeleteProfileResult
+> = async (parent, args, { profilesDb }) => {
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patient = await patientRepo.findById(args.patientId);
+  if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  await patientRepo.deleteProfile(args.patientId);
+  return { status: true };
+};
+
 const getPatients = () => {
   return { patients: [] };
 };
@@ -67,5 +170,10 @@ export const getPatientResolvers = {
     getPatientById,
     getPatientByMobileNumber,
     getPatients,
+  },
+  Mutation: {
+    deleteProfile,
+    addNewProfile,
+    editProfile,
   },
 };
