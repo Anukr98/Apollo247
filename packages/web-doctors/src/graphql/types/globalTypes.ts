@@ -48,7 +48,6 @@ export enum DOCTOR_ONLINE_STATUS {
 }
 
 export enum DoctorType {
-  ADMIN = "ADMIN",
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",

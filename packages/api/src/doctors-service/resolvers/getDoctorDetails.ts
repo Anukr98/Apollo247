@@ -1,13 +1,14 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Doctor, AdminType, AdminUsers } from 'doctors-service/entities/';
+import { Doctor, AdminType, AdminUsers, Secretary } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { getConnection } from 'typeorm';
 import { AdminUser } from 'doctors-service/repositories/adminRepository';
 import { DashboardData, getJuniorDoctorsDashboard } from 'doctors-service/resolvers/JDAdmin';
+import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum Gender {
@@ -164,7 +165,19 @@ export const getDoctorDetailsTypeDefs = gql`
     doctorDetails: DoctorDetails
     JDAdminDetails: DashboardData
     adminDetails: AdminUsers
-    secretaryDetails: DoctorDetails
+    secretaryDetails: Secretary
+  }
+
+  type Secretary {
+    id: String!
+    name: String!
+    mobileNumber: String!
+    isActive: Boolean!
+    doctorSecretary: DoctorSecretary
+  }
+
+  type DoctorSecretary {
+    doctor: [DoctorDetails]
   }
 
   type Packages {
@@ -261,7 +274,7 @@ type LoggedInUserDetails = {
   doctorDetails: Doctor | null;
   JDAdminDetails: DashboardData | null;
   adminDetails: AdminUsers | null;
-  secretaryDetails: Doctor | null;
+  secretaryDetails: Secretary | null;
 };
 
 const findLoggedinUserDetails: Resolver<
@@ -276,6 +289,11 @@ const findLoggedinUserDetails: Resolver<
 
   const adminRepository = doctorsDb.getCustomRepository(AdminUser);
   const adminData = await adminRepository.checkValidAccess(mobileNumber, true);
+
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryData = await secretaryRepo.getSecretary(mobileNumber, true);
+  console.log('------------', mobileNumber);
+  console.log(JSON.stringify(secretaryData));
 
   if (doctorData) {
     if (!doctorData.firebaseToken)
@@ -312,6 +330,14 @@ const findLoggedinUserDetails: Resolver<
         secretaryDetails: null,
       };
     } else throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  } else if (secretaryData) {
+    return {
+      loggedInUserType: LoggedInUserType.SECRETARY,
+      doctorDetails: null,
+      JDAdminDetails: null,
+      adminDetails: null,
+      secretaryDetails: null,
+    };
   } else throw new AphError(AphErrorMessages.UNAUTHORIZED);
 };
 
