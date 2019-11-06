@@ -3,8 +3,8 @@ import { Theme } from '@material-ui/core';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
-import { useCurrentPatient } from 'hooks/authHooks';
-import { DoctorType } from 'graphql/types/globalTypes';
+import { useAuth } from 'hooks/authHooks';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -48,9 +48,8 @@ export const Navigation: React.FC = (props) => {
   const classes = useStyles();
 
   // TODO remove currentPatient and name it as currentDoctor
-  const currentDoctor = useCurrentPatient();
-  const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
-  const isAdminDoctor = false;
+  const isJuniorDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.JUNIOR;
+  const isAdminDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.JDADMIN;
 
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
