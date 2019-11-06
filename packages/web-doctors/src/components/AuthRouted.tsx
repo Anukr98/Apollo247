@@ -6,7 +6,7 @@ import { LoggedInUserType } from 'graphql/types/globalTypes';
 
 export const AuthRouted: React.FC<RouteProps> = (props) => {
   const { isSigningIn, isSignedIn, currentUserType } = useAuth();
-  return isSignedIn || isSigningIn || currentUserType === LoggedInUserType.ADMIN ? (
+  return isSignedIn || isSigningIn || currentUserType === LoggedInUserType.JDADMIN ? (
     <Route {...props} />
   ) : (
     <Redirect to={clientRoutes.welcome()} />

@@ -63,6 +63,7 @@ export enum Gender {
 export enum LoggedInUserType {
   ADMIN = "ADMIN",
   DOCTOR = "DOCTOR",
+  JDADMIN = "JDADMIN",
   JUNIOR = "JUNIOR",
   SECRETARY = "SECRETARY",
 }

@@ -169,7 +169,7 @@ export const Header: React.FC = (props) => {
   const currentUserType = useAuth().currentUserType;
 
   const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
-  const isAdminDoctor = useAuth() && currentUserType === LoggedInUserType.ADMIN;
+  const isAdminDoctor = useAuth() && currentUserType === LoggedInUserType.JDADMIN;
 
   return (
     <header className={classes.header}>

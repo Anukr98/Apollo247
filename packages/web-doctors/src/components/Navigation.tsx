@@ -49,7 +49,7 @@ export const Navigation: React.FC = (props) => {
 
   // TODO remove currentPatient and name it as currentDoctor
   const isJuniorDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.JUNIOR;
-  const isAdminDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.ADMIN;
+  const isAdminDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.JDADMIN;
 
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">

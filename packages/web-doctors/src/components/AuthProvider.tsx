@@ -232,7 +232,7 @@ export const AuthProvider: React.FC = (props) => {
           res.data &&
           res.data.findLoggedinUserDetails &&
           res.data.findLoggedinUserDetails.loggedInUserType &&
-          res.data.findLoggedinUserDetails.loggedInUserType !== LoggedInUserType.ADMIN
+          res.data.findLoggedinUserDetails.loggedInUserType !== LoggedInUserType.JDADMIN
         ) {
           const [signInResult, signInError] = await wait(
             apolloClient.mutate<GetDoctorDetails, GetDoctorDetails>({
