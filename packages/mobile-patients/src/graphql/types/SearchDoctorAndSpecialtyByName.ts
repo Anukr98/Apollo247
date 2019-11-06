@@ -41,6 +41,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_d
   qualification: string | null;
   city: string | null;
   photoUrl: string | null;
+  thumbnailUrl: string | null;
   doctorType: DoctorType;
   doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_doctors_doctorHospital[];
 }
@@ -95,6 +96,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_p
   qualification: string | null;
   city: string | null;
   photoUrl: string | null;
+  thumbnailUrl: string | null;
   doctorType: DoctorType;
   doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors_doctorHospital[];
 }
@@ -156,6 +158,7 @@ export interface SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_o
   qualification: string | null;
   city: string | null;
   photoUrl: string | null;
+  thumbnailUrl: string | null;
   doctorType: DoctorType;
   doctorHospital: SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_otherDoctors_doctorHospital[];
 }

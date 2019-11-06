@@ -188,7 +188,8 @@ export async function sendCallsNotification(
       appointmentId: appointment.id.toString(),
       patientName: patientDetails.firstName,
       doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-      sound: 'default',
+      sound: 'incallmanager_ringtone.mp3',
+      android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       callType,
       appointmentCallId,
       doctorType,
@@ -387,11 +388,16 @@ export async function sendNotification(
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        sound: 'default',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
     };
   }
 
-  if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+  if (
+    pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT ||
+    pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
+  ) {
     payload = {
       notification: {
         title: notificationTitle,
@@ -403,6 +409,7 @@ export async function sendNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         sound: 'default',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
     };
   }

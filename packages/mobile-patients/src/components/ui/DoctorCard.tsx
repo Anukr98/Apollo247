@@ -98,6 +98,7 @@ type rowData = {
   city?: string | null;
   awards?: string | null;
   photoUrl?: string | null;
+  thumbnailUrl?: string | null;
   specialty?: getDoctorDetailsById_getDoctorDetailsById_specialty;
   registrationNumber?: string;
   onlineConsultationFees?: string;
@@ -335,12 +336,12 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             ) : null} */}
             <View style={styles.imageView}>
               {/* {rowData.image} */}
-              {rowData.photoUrl &&
-              rowData.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+              {rowData.thumbnailUrl &&
+              rowData.thumbnailUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
                 <Image
                   style={{ height: 80, borderRadius: 40, width: 80 }}
                   source={{
-                    uri: rowData.photoUrl,
+                    uri: rowData.thumbnailUrl,
                   }}
                   resizeMode={'contain'}
                 />

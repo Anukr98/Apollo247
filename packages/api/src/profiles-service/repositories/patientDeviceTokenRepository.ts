@@ -22,4 +22,8 @@ export class PatientDeviceTokenRepository extends Repository<PatientDeviceTokens
   getDeviceToken(patient: string) {
     return this.find({ select: ['deviceToken'], where: { patient } });
   }
+
+  deleteDeviceToken(id: string) {
+    return this.delete(id);
+  }
 }
