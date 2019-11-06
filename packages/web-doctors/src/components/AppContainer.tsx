@@ -39,7 +39,7 @@ const App: React.FC = () => {
   // TODO Why is this called patient?
   const currentDoctor = useCurrentPatient();
   const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
-  const isJDAdmin = currentDoctor && currentDoctor.doctorType === DoctorType.ADMIN;
+  const isJDAdmin = false;
 
   return isSignedIn ? (
     // TODO This should all be inside of a <Switch>, why are we rendering multiple routes simultaneously?
