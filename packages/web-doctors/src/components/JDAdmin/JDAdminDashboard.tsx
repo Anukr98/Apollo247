@@ -164,7 +164,7 @@ export const JDAdminDashboard: React.FC = (rops) => {
       fromDate: format(new Date(), 'yyyy-MM-dd'),
       toDate: format(new Date(), 'yyyy-MM-dd'),
       offset: 0,
-      limit: 15,
+      limit: 100,
     },
     pollInterval: 10 * 1000,
   });
