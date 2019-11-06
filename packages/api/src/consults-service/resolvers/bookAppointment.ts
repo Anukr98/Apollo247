@@ -12,6 +12,8 @@ import { DoctorHospitalRepository } from 'doctors-service/repositories/doctorHos
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 //import { addMinutes, format, addMilliseconds } from 'date-fns';
 import { sendSMS } from 'notifications-service/resolvers/notifications';
+import { sendMail } from 'notifications-service/resolvers/email';
+import { EmailMessage } from 'types/notificationMessageTypes';
 import { ApiConstants } from 'ApiConstants';
 import { addMilliseconds, format } from 'date-fns';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
@@ -236,6 +238,28 @@ const bookAppointment: Resolver<
     doctorsDb
   );
   console.log(notificationResult, 'book appt notification');
+  const toEmailId =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_APPT_EMAILID
+      : ApiConstants.PATIENT_APPT_EMAILID_PRODUCTION;
+
+  const ccEmailIds =
+    process.env.NODE_ENV == 'dev' ||
+    process.env.NODE_ENV == 'development' ||
+    process.env.NODE_ENV == 'local'
+      ? ApiConstants.PATIENT_APPT_CC_EMAILID
+      : ApiConstants.PATIENT_APPT_CC_EMAILID_PRODUCTION;
+  const emailContent: EmailMessage = {
+    ccEmail: ccEmailIds.toString(),
+    toEmail: toEmailId.toString(),
+    subject: ApiConstants.APPT_MAIL_SUBJECT.toString(),
+    fromEmail: ApiConstants.PATIENT_HELP_FROM_EMAILID.toString(),
+    fromName: ApiConstants.PATIENT_HELP_FROM_NAME.toString(),
+    messageContent: smsMessage,
+  };
+  sendMail(emailContent);
   //message queue starts
   /*const doctorName = docDetails.firstName + '' + docDetails.lastName;
   const speciality = docDetails.specialty.name;
