@@ -138,8 +138,14 @@ const getDoctorAppointments: Resolver<
   AppointmentResult
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  let doctordata;
 
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (args.doctorId === undefined) {
+    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  } else {
+    doctordata = await doctorRepository.findById(args.doctorId);
+  }
+
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
