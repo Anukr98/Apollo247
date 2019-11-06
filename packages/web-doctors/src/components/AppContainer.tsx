@@ -15,14 +15,14 @@ import { Calendar } from 'components/Calendar';
 import { PatientLog } from 'components/PatientLog/PatientLog';
 import { ConsultTabs } from 'components/ConsultTabs';
 import { AuthProvider } from 'components/AuthProvider';
-import { useAuth, useCurrentPatient } from 'hooks/authHooks';
+import { useAuth } from 'hooks/authHooks';
 import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
 import { JuniorDoctor } from 'components/JuniorDoctors/JuniorDoctor';
 import { PatientDetails } from 'components/JuniorDoctors/PatientDetails';
 import { JDProfile } from 'components/JuniorDoctors/JDProfile';
 import { JDConsultRoom } from 'components/JuniorDoctors/JDConsultRoom';
 
-import { DoctorType } from 'graphql/types/globalTypes';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { JDAdminDashboard } from 'components/JDAdmin/JDAdminDashboard';
 import { SecrateryDashboard } from 'components/SecrateryDashboard';
 
@@ -36,12 +36,13 @@ const App: React.FC = () => {
       );
   }, [signInError]);
 
-  // TODO Why is this called patient?
-  const currentDoctor = useCurrentPatient();
-  const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
-  const isJDAdmin = false;
+  const currentUserType = useAuth().currentUserType;
 
-  return isSignedIn ? (
+  // TODO Why is this called patient?
+  const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
+  const isJDAdmin = useAuth() && currentUserType === LoggedInUserType.JDADMIN;
+
+  return isSignedIn || isJDAdmin ? (
     // TODO This should all be inside of a <Switch>, why are we rendering multiple routes simultaneously?
     <div className={classes.app}>
       <AuthRouted
@@ -53,7 +54,7 @@ const App: React.FC = () => {
           ) : isJuniorDoctor ? (
             <Redirect to={clientRoutes.juniorDoctor()} />
           ) : (
-            <Redirect to={!isSignedIn.firebaseToken ? '/profile' : '/Calendar'} />
+            <Redirect to={!(isSignedIn && isSignedIn.firebaseToken) ? '/profile' : '/Calendar'} />
           )
         }
       />

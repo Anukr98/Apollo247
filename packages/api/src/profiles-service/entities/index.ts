@@ -512,6 +512,9 @@ export class Patient extends BaseEntity {
   @Column({ nullable: true })
   relation: Relation;
 
+  @Column({ nullable: true, default: true })
+  isActive: Boolean;
+
   @OneToMany((type) => SearchHistory, (searchHistory) => searchHistory.patient)
   searchHistory: SearchHistory[];
 
