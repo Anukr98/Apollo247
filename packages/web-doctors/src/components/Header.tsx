@@ -16,8 +16,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
-import { useCurrentPatient } from 'hooks/authHooks';
-import { DoctorType } from 'graphql/types/globalTypes';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -166,9 +165,9 @@ export const Header: React.FC = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   // TODO remove currentPatient and name it as currentDoctor
-  const currentDoctor = useCurrentPatient();
-  const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
-  const isAdminDoctor = false;
+
+  const isJuniorDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.JUNIOR;
+  const isAdminDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.ADMIN;
 
   return (
     <header className={classes.header}>

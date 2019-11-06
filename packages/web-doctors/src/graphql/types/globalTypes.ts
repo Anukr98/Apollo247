@@ -48,7 +48,6 @@ export enum DOCTOR_ONLINE_STATUS {
 }
 
 export enum DoctorType {
-  ADMIN = "ADMIN",
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
@@ -59,6 +58,13 @@ export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
   OTHER = "OTHER",
+}
+
+export enum LoggedInUserType {
+  ADMIN = "ADMIN",
+  DOCTOR = "DOCTOR",
+  JUNIOR = "JUNIOR",
+  SECRETARY = "SECRETARY",
 }
 
 export enum MEDICINE_TIMINGS {
