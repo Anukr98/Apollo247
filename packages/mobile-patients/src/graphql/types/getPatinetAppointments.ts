@@ -42,6 +42,7 @@ export interface getPatinetAppointments_getPatinetAppointments_patinetAppointmen
   qualification: string | null;
   city: string | null;
   photoUrl: string | null;
+  thumbnailUrl: string | null;
   doctorType: DoctorType;
   doctorHospital: getPatinetAppointments_getPatinetAppointments_patinetAppointments_doctorInfo_doctorHospital[];
 }
