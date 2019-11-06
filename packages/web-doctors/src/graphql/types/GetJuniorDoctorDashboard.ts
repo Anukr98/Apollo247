@@ -24,7 +24,7 @@ export interface GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorQ
 }
 
 export interface GetJuniorDoctorDashboard_getJuniorDoctorDashboard {
-  __typename: "DashoardData";
+  __typename: "DashboardData";
   consultsBookedButNotInQueue: number | null;
   juniorDoctorDetails: (GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorDetails | null)[] | null;
   juniorDoctorQueueItems: (GetJuniorDoctorDashboard_getJuniorDoctorDashboard_juniorDoctorQueueItems | null)[] | null;

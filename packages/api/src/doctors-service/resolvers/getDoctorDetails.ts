@@ -304,7 +304,7 @@ const findLoggedinUserDetails: Resolver<
       };
     } else if (adminData.userType === AdminType.JDADMIN) {
       return {
-        loggedInUserType: LoggedInUserType.ADMIN,
+        loggedInUserType: LoggedInUserType.JDADMIN,
         doctorDetails: null,
         JDAdminDetails: await getJuniorDoctorsDashboard(
           new Date(),
