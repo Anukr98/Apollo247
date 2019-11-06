@@ -166,8 +166,10 @@ export const Header: React.FC = (props) => {
 
   // TODO remove currentPatient and name it as currentDoctor
 
-  const isJuniorDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.JUNIOR;
-  const isAdminDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.ADMIN;
+  const currentUserType = useAuth().currentUserType;
+
+  const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
+  const isAdminDoctor = useAuth() && currentUserType === LoggedInUserType.ADMIN;
 
   return (
     <header className={classes.header}>
@@ -278,8 +280,12 @@ export const Header: React.FC = (props) => {
                   <div
                     className={classes.accontDiv}
                     onClick={() => {
-                      isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
-                      setSelectedTab(5);
+                      if (isAdminDoctor) {
+                        setIsDialogOpen(true);
+                      } else {
+                        isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                        setSelectedTab(5);
+                      }
                     }}
                   >
                     <img

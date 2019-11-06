@@ -20,7 +20,6 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
-import { BlurLinear } from '@material-ui/icons';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];

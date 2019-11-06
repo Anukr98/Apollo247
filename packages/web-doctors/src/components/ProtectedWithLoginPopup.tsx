@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 
 export interface ProtectedWithLoginPopupProps {
   children: React.FC<{ protectWithLoginPopup: () => void; isProtected: boolean }>;
@@ -7,8 +8,8 @@ export interface ProtectedWithLoginPopupProps {
 
 export const ProtectedWithLoginPopup: React.FC<ProtectedWithLoginPopupProps> = (props) => {
   const { setIsLoginPopupVisible: setLoginPopupVisible } = useLoginPopupState();
-  const { isSignedIn, isSigningIn } = useAuth();
-  const isProtected = !isSignedIn && !isSigningIn;
+  const { isSignedIn, isSigningIn, currentUserType } = useAuth();
+  const isProtected = !isSignedIn && !isSigningIn && currentUserType !== LoggedInUserType.ADMIN;
   const protectWithLoginPopup = () => {
     if (isProtected) setLoginPopupVisible(true);
   };

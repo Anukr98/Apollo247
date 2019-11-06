@@ -22,7 +22,7 @@ import { PatientDetails } from 'components/JuniorDoctors/PatientDetails';
 import { JDProfile } from 'components/JuniorDoctors/JDProfile';
 import { JDConsultRoom } from 'components/JuniorDoctors/JDConsultRoom';
 
-import { DoctorType, LoggedInUserType } from 'graphql/types/globalTypes';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { JDAdminDashboard } from 'components/JDAdmin/JDAdminDashboard';
 import { SecrateryDashboard } from 'components/SecrateryDashboard';
 
@@ -36,9 +36,11 @@ const App: React.FC = () => {
       );
   }, [signInError]);
 
+  const currentUserType = useAuth().currentUserType;
+
   // TODO Why is this called patient?
-  const isJuniorDoctor = useAuth() && useAuth().currentUserType === LoggedInUserType.JUNIOR;
-  const isJDAdmin = useAuth() && useAuth().currentUserType === LoggedInUserType.ADMIN;
+  const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
+  const isJDAdmin = useAuth() && currentUserType === LoggedInUserType.ADMIN;
 
   return isSignedIn || isJDAdmin ? (
     // TODO This should all be inside of a <Switch>, why are we rendering multiple routes simultaneously?
