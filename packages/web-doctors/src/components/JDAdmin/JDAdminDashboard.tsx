@@ -238,15 +238,23 @@ export const JDAdminDashboard: React.FC = (rops) => {
                     data.getJuniorDoctorDashboard &&
                     data.getJuniorDoctorDashboard.juniorDoctorDetails.map((jd, index) => {
                       const onlineStatus =
-                        jd && jd.onlineStatus === DOCTOR_ONLINE_STATUS.ONLINE
-                          ? 'Logged In'
-                          : 'Away';
+                        jd && jd.onlineStatus === DOCTOR_ONLINE_STATUS.ONLINE ? 'Online' : 'Away';
                       const userClassName =
                         jd && jd.onlineStatus === DOCTOR_ONLINE_STATUS.ONLINE
                           ? classes.userActive
                           : classes.userAway;
                       const jrFirstName = (jd && jd.firstName) || '';
                       const jrLastName = (jd && jd.lastName) || '';
+                      const jdId = jd && jd.id;
+                      const jrdConsultRow =
+                        data &&
+                        data.getJuniorDoctorDashboard &&
+                        data.getJuniorDoctorDashboard.juniorDoctorQueueItems &&
+                        data.getJuniorDoctorDashboard.juniorDoctorQueueItems.find((consult) => {
+                          return consult && consult.doctorid === jdId
+                            ? consult.doctorid === jdId
+                            : '-';
+                        });
                       return (
                         <TableRow key={index}>
                           <TableCell>{index + 1}</TableCell>
@@ -258,19 +266,7 @@ export const JDAdminDashboard: React.FC = (rops) => {
                           </TableCell>
                           {/** <TableCell>&nbsp;</TableCell> */}
                           <TableCell>
-                            {data &&
-                              data.getJuniorDoctorDashboard &&
-                              data.getJuniorDoctorDashboard.juniorDoctorQueueItems &&
-                              data.getJuniorDoctorDashboard.juniorDoctorQueueItems.length > 0 &&
-                              data.getJuniorDoctorDashboard.juniorDoctorQueueItems.map(
-                                (consult) => {
-                                  const jdId = jd && jd.id;
-                                  const consultDoctorId = consult && consult.doctorid;
-                                  const queuedconsultscount =
-                                    consult && consult.queuedconsultscount;
-                                  return jdId === consultDoctorId ? queuedconsultscount : '--';
-                                }
-                              )}
+                            {jrdConsultRow && jrdConsultRow.queuedconsultscount}
                           </TableCell>
                         </TableRow>
                       );
