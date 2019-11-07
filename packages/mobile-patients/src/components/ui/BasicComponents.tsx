@@ -1,6 +1,15 @@
-import React from 'react';
-import { StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
+import React, { useState } from 'react';
+import {
+  StyleProp,
+  StyleSheet,
+  Text,
+  TextStyle,
+  View,
+  ViewStyle,
+  ImagePropsBase,
+} from 'react-native';
 import { theme } from '../../theme/theme';
+import { Image } from 'react-native-elements';
 
 export interface SectionHeaderProps {
   leftText: string;
@@ -57,4 +66,37 @@ export const Spearator: React.FC<SpearatorProps> = (props) => {
   });
 
   return <View style={[styles.separator, props.style]} />;
+};
+
+export const ImagePlaceholderView = () => {
+  return (
+    <View
+      style={{
+        height: '100%',
+        width: '100%',
+        borderRadius: 5,
+        backgroundColor: 'rgba(0,0,0,0.2)',
+      }}
+    >
+      {/* <ApolloLogo resizeMode="contain" style={{ flex: 1, height: 'auto', width: 'auto' }} /> */}
+    </View>
+  );
+};
+
+interface AphImageProps extends ImagePropsBase {
+  errorPlaceholderView: Element;
+}
+export const AphImage: React.FC<AphImageProps> = (props) => {
+  const [source, setSource] = useState(props.source);
+  const { errorPlaceholderView, ...attributes } = props;
+
+  return (
+    <Image
+      source={source}
+      onError={(error) => {
+        setSource({ uri: '' });
+      }}
+      {...attributes}
+    />
+  );
 };
