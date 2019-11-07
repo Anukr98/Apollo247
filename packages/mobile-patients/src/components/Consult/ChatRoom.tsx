@@ -263,6 +263,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const consultPatientStartedMsg = '^^#PatientConsultStarted';
   const firstMessage = '^^#firstMessage';
   const secondMessage = '^^#secondMessage';
+  const languageQue = '^^#languageQue';
+  const jdThankyou = '^^#jdThankyou';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -691,13 +693,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const successSteps = [
-    'Hello! Let’s get you feeling better in 4 simple steps.\nWe will:\n',
     'Let’s get you feeling better in 5 simple steps :)\n',
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
     '4. Avail 1 free follow-up*\n',
-    '5. Chat with your doctor*\n',
+    '5. Chat with your doctor**\n',
     '* 7 days after your first consultation.\n\n',
     `A doctor from Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName}’s team will join you shortly to collect your medical details. These details are essential for Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName} to help you and will take around 3-5 minutes.`,
   ];
@@ -729,7 +730,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           return obj.message === firstMessage;
         });
 
-        if (result.length === 0) {
+        const startConsultResult = insertText.filter((obj: any) => {
+          console.log('resultinsertText', obj.message);
+          return obj.message === startConsultMsg;
+        });
+
+        const startConsultjrResult = insertText.filter((obj: any) => {
+          console.log('resultinsertText', obj.message);
+          return obj.message === startConsultjr;
+        });
+
+        if (
+          result.length === 0 &&
+          startConsultResult.length === 0 &&
+          startConsultjrResult.length === 0
+        ) {
           console.log('result.length ', result);
           pubnub.publish(
             {
@@ -766,7 +781,21 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           return obj.message === secondMessage;
         });
 
-        if (result.length === 0) {
+        const startConsultResult = insertText.filter((obj: any) => {
+          console.log('resultinsertText', obj.message);
+          return obj.message === startConsultMsg;
+        });
+
+        const startConsultjrResult = insertText.filter((obj: any) => {
+          console.log('resultinsertText', obj.message);
+          return obj.message === startConsultjr;
+        });
+
+        if (
+          result.length === 0 &&
+          startConsultResult.length === 0 &&
+          startConsultjrResult.length === 0
+        ) {
           console.log('result.length ', result);
           pubnub.publish(
             {
@@ -2055,6 +2084,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const doctorAutomatedMessage = (rowData: any, index: number) => {
+    return (
+      <View
+        style={{
+          backgroundColor: '#0087ba',
+          marginLeft: 38,
+          borderRadius: 10,
+          marginBottom: 4,
+          width: 244,
+        }}
+      >
+        {rowData.automatedText ? (
+          <Text
+            style={{
+              color: '#ffffff',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              ...theme.fonts.IBMPlexSansMedium(15),
+              textAlign: 'left',
+            }}
+          >
+            {rowData.automatedText}
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
   const renderChatRow = (
     rowData: { id: string; message: string; duration: string; transferInfo: any; url: any },
     index: number
@@ -2096,9 +2153,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   {rowData.message === consultPatientStartedMsg ? (
                     <>{patientAutomatedMessage(rowData, index)}</>
                   ) : rowData.message === firstMessage ? (
-                    <>{patientAutomatedMessage(rowData, index)}</>
+                    <>{doctorAutomatedMessage(rowData, index)}</>
                   ) : rowData.message === secondMessage ? (
-                    <>{patientAutomatedMessage(rowData, index)}</>
+                    <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === languageQue ? (
+                    <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === jdThankyou ? (
+                    <>{doctorAutomatedMessage(rowData, index)}</>
                   ) : (
                     <>{messageView(rowData, index)}</>
                   )}
