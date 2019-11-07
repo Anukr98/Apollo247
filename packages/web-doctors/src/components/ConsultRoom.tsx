@@ -209,6 +209,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const firstMessage = '^^#firstMessage';
   const secondMessage = '^^#secondMessage';
   const languageQue = '^^#languageQue';
+  const jdThankyou = '^^#jdThankyou';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -381,7 +382,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message === startConsult ||
       rowData.message === startConsultjr ||
       rowData.message === stopConsult ||
-      rowData.message === languageQue
+      rowData.message === languageQue ||
+      rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
     } else {
