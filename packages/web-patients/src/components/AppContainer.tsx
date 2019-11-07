@@ -92,8 +92,7 @@ const theme = createMuiTheme({ ...aphTheme });
 const AppContainer: React.FC = () => {
   TrackJS.install({
     token: 'b85489445e5f4b48a0ffe851082f8e37',
-    application: 'web-patients',
-    // for more configuration options, see https://docs.trackjs.com
+    application: process.env.NODE_ENV, // for more configuration options, see https://docs.trackjs.com
   });
 
   return (
