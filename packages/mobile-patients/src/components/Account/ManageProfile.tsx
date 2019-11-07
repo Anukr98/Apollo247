@@ -1,57 +1,34 @@
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import React, { useState, useEffect } from 'react';
+import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import {
+  View,
+  Text,
+  Image,
+  SafeAreaView,
+  BackHandler,
+  TouchableOpacity,
+  StyleSheet,
+  ImageSourcePropType,
+} from 'react-native';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import { Relation, Gender } from '../../graphql/types/globalTypes';
+import { PatientDefaultImage } from '../ui/Icons';
 import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Alert,
-  BackHandler,
-  Image,
-  ImageSourcePropType,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { GET_PATIENTS_MOBILE } from '../../graphql/profiles';
 import {
-  getPatientByMobileNumber,
   getPatientByMobileNumberVariables,
+  getPatientByMobileNumber,
   getPatientByMobileNumber_getPatientByMobileNumber_patients,
 } from '../../graphql/types/getPatientByMobileNumber';
-import { Gender, Relation } from '../../graphql/types/globalTypes';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { PatientDefaultImage } from '../ui/Icons';
-import { Spinner } from '../ui/Spinner';
-import React from 'react';
-import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  View,
-  Text,
-  Image,
-  SafeAreaView,
-  BackHandler,
-  TouchableOpacity,
-  StyleSheet,
-  ImageSourcePropType,
-} from 'react-native';
-import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { colors } from '@aph/mobile-patients/src/theme/colors';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
-import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const styles = StyleSheet.create({
   separatorStyle: {

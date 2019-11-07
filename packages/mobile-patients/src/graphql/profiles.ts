@@ -38,23 +38,10 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
-export const GET_PATIENTS = gql`
+export const GET_PATIENT = gql`
   query getPatients {
     getPatients {
       patients {
-        addressList {
-          id
-          addressType
-          addressLine1
-          addressLine2
-          state
-          landmark
-          createdDate
-          updatedDate
-          mobileNumber
-          city
-          otherAddressType
-        }
         id
         mobileNumber
         firstName
