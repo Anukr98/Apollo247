@@ -221,6 +221,13 @@ export const AuthProvider: React.FC = (props) => {
             findLoggedinUserDetails_findLoggedinUserDetails
           >({ mutation: LOGGED_IN_USER_DETAILS })
         );
+        if (error || !res.data) {
+          if (error) console.error(signInError);
+          setSignInError(true);
+          setIsSigningIn(false);
+          app.auth().signOut();
+          return;
+        }
         if (
           res.data &&
           res.data.findLoggedinUserDetails &&
