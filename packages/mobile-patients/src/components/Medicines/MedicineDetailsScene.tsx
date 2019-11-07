@@ -37,6 +37,7 @@ import {
   TouchableOpacity,
   View,
   BackHandler,
+  Keyboard,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -439,6 +440,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const fetchDeliveryTime = () => {
+    Keyboard.dismiss();
     setshowDeliverySpinner(true);
     getDeliveryTime({
       postalcode: pincode,
