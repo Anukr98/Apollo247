@@ -60,6 +60,14 @@ export enum Gender {
   OTHER = "OTHER",
 }
 
+export enum LoggedInUserType {
+  ADMIN = "ADMIN",
+  DOCTOR = "DOCTOR",
+  JDADMIN = "JDADMIN",
+  JUNIOR = "JUNIOR",
+  SECRETARY = "SECRETARY",
+}
+
 export enum MEDICINE_TIMINGS {
   EVENING = "EVENING",
   MORNING = "MORNING",

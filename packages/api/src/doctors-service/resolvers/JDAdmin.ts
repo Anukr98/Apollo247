@@ -77,7 +77,8 @@ export const getJuniorDoctorsDashboard = async (
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const appointmentData = await appointmentRepo.getAllAppointmentsWithOutLimit(fromDate, toDate);
   const queueRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
-  if (appointmentData != null) {
+
+  if (appointmentData != null && appointmentData.length > 0) {
     const appointmentIds = appointmentData.map((appointment) => {
       return appointment.id;
     });

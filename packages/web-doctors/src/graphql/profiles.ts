@@ -45,6 +45,15 @@ export const REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM = gql`
     }
   }
 `;
+
+export const LOGGED_IN_USER_DETAILS = gql`
+  query findLoggedinUserDetails {
+    findLoggedinUserDetails {
+      loggedInUserType
+    }
+  }
+`;
+
 export const GET_DOCTOR_DETAILS = gql`
   query GetDoctorDetails {
     getDoctorDetails {
