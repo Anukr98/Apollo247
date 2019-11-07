@@ -38,6 +38,40 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
+export const GET_PATIENT = gql`
+  query getPatients {
+    getPatients {
+      patients {
+        id
+        mobileNumber
+        firstName
+        lastName
+        relation
+        uhid
+        gender
+        emailAddress
+        gender
+        dateOfBirth
+      }
+    }
+  }
+`;
+export const GET_PATIENTS_MOBILE = gql`
+  query getPatientByMobileNumber($mobileNumber: String) {
+    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+      patients {
+        id
+        firstName
+        dateOfBirth
+        gender
+        uhid
+        lastName
+        relation
+        photoUrl
+      }
+    }
+  }
+`;
 export const BOOK_APPOINTMENT = gql`
   mutation bookAppointment($bookAppointment: BookAppointmentInput!) {
     bookAppointment(appointmentInput: $bookAppointment) {
@@ -199,6 +233,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           qualification
           city
           photoUrl
+          thumbnailUrl
           doctorType
           doctorHospital {
             facility {
@@ -233,6 +268,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         qualification
         city
         photoUrl
+        thumbnailUrl
         doctorType
         doctorHospital {
           facility {
@@ -272,6 +308,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           qualification
           city
           photoUrl
+          thumbnailUrl
           doctorType
           doctorHospital {
             facility {
@@ -312,6 +349,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         qualification
         city
         photoUrl
+        thumbnailUrl
         doctorType
         doctorHospital {
           facility {
@@ -442,6 +480,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         experience
         city
         photoUrl
+        thumbnailUrl
         qualification
         specialty {
           name

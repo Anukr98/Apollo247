@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -18,6 +18,17 @@ import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
+import { Relation, Gender } from '../../graphql/types/globalTypes';
+import { PatientDefaultImage } from '../ui/Icons';
+import { useApolloClient } from 'react-apollo-hooks';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { GET_PATIENTS_MOBILE } from '../../graphql/profiles';
+import {
+  getPatientByMobileNumberVariables,
+  getPatientByMobileNumber,
+  getPatientByMobileNumber_getPatientByMobileNumber_patients,
+} from '../../graphql/types/getPatientByMobileNumber';
 
 const styles = StyleSheet.create({
   separatorStyle: {
@@ -30,50 +41,53 @@ const styles = StyleSheet.create({
   },
 });
 
-type ArrayTest = {
-  id: number;
-  title: string;
-  referredBy: string;
-  gender: string;
-  age: string;
-  //   descripiton: string;
-  uhid: string;
-  dob: string;
-  image: ImageSourcePropType;
-};
-
 export interface ManageProfileProps extends NavigationScreenProps {}
 
 export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
-  const arrayTest: ArrayTest[] = [
-    {
-      id: 1,
-      title: `Surj Gupta`,
-      referredBy: 'SELF',
-      gender: 'MALE',
-      age: '31',
-      uhid: 'APD1.0010783329',
-      dob: ' 27 Nov, 1987',
-      image: require('@aph/mobile-patients/src/images/doctor/rahul.png'),
-    },
-    {
-      id: 2,
-      title: 'Preeti Gupta',
-      referredBy: 'WIFE',
-      gender: 'FEMALE',
-      age: '29',
-      //   descripiton: 'WIFE   |   FEMALE   |   29',
-      uhid: ' APD1.0010783329',
-      dob: '18 Nov, 1989',
-      image: require('@aph/mobile-patients/src/images/doctor/rakhi.png'),
-    },
-  ];
+  const date = new Date();
+  date.setFullYear(1987, 10, 27);
+  const client = useApolloClient();
+  const [profiles, setProfiles] = useState<
+    (getPatientByMobileNumber_getPatientByMobileNumber_patients | null)[]
+  >();
+  const { currentPatient } = useAllCurrentPatients();
 
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     props.navigation.goBack();
     return false;
   };
+  useEffect(() => {
+    console.log(currentPatient!.mobileNumber);
+    client
+      .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
+        query: GET_PATIENTS_MOBILE,
+        variables: {
+          mobileNumber: currentPatient!.mobileNumber,
+        },
+
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data: { getPatientByMobileNumber } }) => {
+        try {
+          if (
+            getPatientByMobileNumber &&
+            getPatientByMobileNumber.patients &&
+            getPatientByMobileNumber.patients.length
+          ) {
+            console.log(getPatientByMobileNumber.patients);
+            setProfiles(getPatientByMobileNumber.patients);
+          }
+        } catch (error) {
+          console.log('error', error);
+        }
+      })
+      .catch((e: any) => {
+        console.log('error', e);
+      })
+      .finally(() => {});
+  }, []);
+
   const renderHeader = () => {
     return (
       <View>
@@ -88,98 +102,113 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   };
 
   const renderProfilesDetails = () => {
-    return (
-      <View>
-        {arrayTest.map((serviceTitle, i) => (
-          <View key={i} style={{}}>
-            <TouchableOpacity
-              activeOpacity={1}
-              key={i}
-              // onPress={() => {
-              //     props.navigation.navigate(i == 0 ? AppRoutes.YourCart : AppRoutes.TestsCart, {
-              //         isComingFromConsult,
-              //     });
-              // }}
-            >
-              <View
-                style={{
-                  ...viewStyles.cardViewStyle,
-                  ...viewStyles.shadowStyle,
-                  padding: 16,
-                  marginHorizontal: 20,
-                  backgroundColor: colors.WHITE,
-                  flexDirection: 'row',
-                  height: 145,
-                  //   marginTop: i === 0 ? 16 : 8,
-                  marginBottom: 8,
-                }}
-                key={i}
-              >
-                <View style={styles.imageView}>
-                  {/* {serviceTitle.photoUrl &&
-                            serviceTitle.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
-                  <Image style={styles.profileImageStyle} source={serviceTitle.image} />
-                  {/* )} */}
-                </View>
-
-                <View style={{ flex: 1, justifyContent: 'space-between' }}>
-                  <Text
+    if (profiles)
+      return (
+        <View>
+          {profiles.map((item, i) =>
+            item ? (
+              <View key={i} style={{}}>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  key={i}
+                  // onPress={() => {
+                  //   props.navigation.navigate(AppRoutes.EditProfile, {
+                  //     isEdit: true,
+                  //     profileData: profile,
+                  //   });
+                  // }}
+                >
+                  <View
                     style={{
-                      color: colors.LIGHT_BLUE,
-                      textAlign: 'left',
-                      ...fonts.IBMPlexSansSemiBold(18),
-                      top: 8,
+                      ...viewStyles.cardViewStyle,
+                      ...viewStyles.shadowStyle,
+                      padding: 16,
+                      marginHorizontal: 20,
+                      backgroundColor: colors.WHITE,
+                      flexDirection: 'row',
+                      height: 145,
+                      marginTop: i === 0 ? 16 : 8,
                       marginBottom: 8,
                     }}
                   >
-                    {serviceTitle.title}
-                  </Text>
-                  <View style={styles.separatorStyle} />
-                  <Text
-                    style={{
-                      color: '#0087ba',
-                      textAlign: 'left',
-                      ...fonts.IBMPlexSansMedium(12),
-                    }}
-                  >
-                    {serviceTitle.referredBy} &nbsp; | &nbsp; {serviceTitle.gender} &nbsp;| &nbsp;
-                    {serviceTitle.age}
-                  </Text>
-                  <View style={styles.separatorStyle} />
-                  <Text
-                    style={{
-                      color: '#02475b',
-                      textAlign: 'left',
-                      ...fonts.IBMPlexSansMedium(12),
-                    }}
-                  >
-                    UHID : {serviceTitle.uhid}
-                  </Text>
-                  <Text
-                    style={{
-                      color: '#02475b',
-                      textAlign: 'left',
-                      ...fonts.IBMPlexSansMedium(12),
-                    }}
-                  >
-                    DOB :{serviceTitle.dob}
-                  </Text>
-                </View>
+                    <View style={styles.imageView}>
+                      {item.photoUrl &&
+                      item.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+                        <Image
+                          style={styles.profileImageStyle}
+                          source={{
+                            uri: item.photoUrl,
+                          }}
+                          resizeMode={'contain'}
+                        />
+                      ) : (
+                        <PatientDefaultImage style={styles.profileImageStyle} />
+                      )}
+                      {/* {profile.photoUrl &&
+                            profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
+                      {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
+                      {/* )} */}
+                    </View>
+
+                    <View style={{ flex: 1, justifyContent: 'space-between' }}>
+                      <Text
+                        style={{
+                          color: colors.LIGHT_BLUE,
+                          textAlign: 'left',
+                          ...fonts.IBMPlexSansSemiBold(18),
+                          top: 8,
+                          marginBottom: 8,
+                        }}
+                      >
+                        {item.firstName + ' ' + item.lastName}
+                      </Text>
+                      <View style={styles.separatorStyle} />
+                      <Text
+                        style={{
+                          color: '#0087ba',
+                          textAlign: 'left',
+                          ...fonts.IBMPlexSansMedium(12),
+                        }}
+                      >
+                        {item.relation} &nbsp; | &nbsp; {item.gender} &nbsp;| &nbsp;
+                        {item.dateOfBirth && moment().diff(item.dateOfBirth, 'years')}
+                      </Text>
+                      <View style={styles.separatorStyle} />
+                      <Text
+                        style={{
+                          color: '#02475b',
+                          textAlign: 'left',
+                          ...fonts.IBMPlexSansMedium(12),
+                        }}
+                      >
+                        UHID : {item.uhid}
+                      </Text>
+                      <Text
+                        style={{
+                          color: '#02475b',
+                          textAlign: 'left',
+                          ...fonts.IBMPlexSansMedium(12),
+                        }}
+                      >
+                        DOB : {item.dateOfBirth && moment(item.dateOfBirth).format('DD MMM, YYYY')}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-          </View>
-        ))}
-      </View>
-    );
+            ) : null
+          )}
+        </View>
+      );
   };
 
   const renderBottomStickyComponent = () => {
     return (
-      <StickyBottomComponent defaultBG>
+      <StickyBottomComponent defaultBG style={{}}>
         <Button
           title="ADD NEW PROFILE"
           style={{ flex: 1, marginHorizontal: 60 }}
-          onPress={() => props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true })}
+          // onPress={() => props.navigation.navigate(AppRoutes.EditProfile, { isEdit: false })}
         />
       </StickyBottomComponent>
     );
@@ -192,9 +221,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       }}
     >
       {renderHeader()}
-      <ScrollView bounces={false} style={{ marginTop: 20 }}>
-        {renderProfilesDetails()}
-      </ScrollView>
+      <ScrollView bounces={false}>{renderProfilesDetails()}</ScrollView>
       {renderBottomStickyComponent()}
     </SafeAreaView>
   );
