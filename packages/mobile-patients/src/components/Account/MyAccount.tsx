@@ -259,7 +259,17 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     return (
       <View>
         <ListCard
-          container={{ marginTop: 20 }}
+          container={{ marginTop: 14 }}
+          title={'Manage Profiles'}
+          leftIcon={<NotificaitonAccounts />}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.ManageProfile, {
+              mobileNumber: profileDetails && profileDetails.mobileNumber,
+            })
+          }
+        />
+        <ListCard
+          container={{ marginTop: 4 }}
           title={'Address Book'}
           leftIcon={<Location />}
           onPress={() => props.navigation.navigate(AppRoutes.AddressBook)}

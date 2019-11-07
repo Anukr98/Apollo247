@@ -1,37 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { NavigationScreenProps } from 'react-navigation';
+import Moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
-  View,
-  SafeAreaView,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  Keyboard,
+  Alert,
   Dimensions,
   Image,
+  Keyboard,
   Platform,
-  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Text } from 'react-native-elements';
-import { theme } from '../../theme/theme';
-import { Header } from '../ui/Header';
-import { StickyBottomComponent } from '../ui/StickyBottomComponent';
-import { Button } from '../ui/Button';
+import { NavigationScreenProps } from 'react-navigation';
 import { DeviceHelper } from '../../FunctionHelpers/DeviceHelper';
-import { TextInputComponent } from '../ui/TextInputComponent';
-import { DatePicker } from '../ui/DatePicker';
-import Moment from 'moment';
-import { MaterialMenu } from '../ui/MaterialMenu';
-import {
-  DropdownGreen,
-  More,
-  PatientDefaultImage,
-  SearchSendIcon,
-  DoctorPlaceholderImage,
-  Plus,
-} from '../ui/Icons';
+import { ADD_NEW_PROFILE, DELETE_PROFILE, EDIT_PROFILE } from '../../graphql/profiles';
+import { addNewProfile } from '../../graphql/types/addNewProfile';
+import { deleteProfile, deleteProfileVariables } from '../../graphql/types/deleteProfile';
+import { editProfile } from '../../graphql/types/editProfile';
+import { Gender, Relation } from '../../graphql/types/globalTypes';
+import { theme } from '../../theme/theme';
 import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
-import { Relation, Gender } from '../../graphql/types/globalTypes';
+import { AppRoutes } from '../NavigatorContainer';
+import { Button } from '../ui/Button';
+import { DatePicker } from '../ui/DatePicker';
+import { Header } from '../ui/Header';
+import { DropdownGreen, More, PatientDefaultImage, Plus } from '../ui/Icons';
+import { MaterialMenu } from '../ui/MaterialMenu';
+import { Spinner } from '../ui/Spinner';
+import { StickyBottomComponent } from '../ui/StickyBottomComponent';
+import { TextInputComponent } from '../ui/TextInputComponent';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -141,32 +141,79 @@ const styles = StyleSheet.create({
 
 type profile = {
   id?: string;
-  email: string;
+  email?: string;
   firstName: string;
   lastName: string;
-  relation: string;
-  gender: string;
+  relation: Relation | undefined;
+  gender: Gender | undefined;
   uhid?: string;
-  dateOfBirth: string;
+  dateOfBirth?: Date;
+  photoUrl?: string;
+  allergies?: string;
+  number?: string;
 };
 
 type genderOptions = {
-  name: string;
+  name: Gender;
+  title: string;
 };
 
 const GenderOptions: genderOptions[] = [
   {
-    name: 'Male',
+    name: Gender.MALE,
+    title: 'Male',
   },
   {
-    name: 'Female',
+    name: Gender.FEMALE,
+    title: 'Female',
   },
   {
-    name: 'Other',
+    name: Gender.OTHER,
+    title: 'Other',
   },
 ];
 
-const relationArray = ['Self', 'Spouse', 'Child', 'Father', 'Mother', 'Other'];
+type RelationArray = {
+  key: Relation;
+  title: string;
+};
+
+const relationArray: RelationArray[] = [
+  { key: Relation.ME, title: 'Self' },
+  {
+    key: Relation.FATHER,
+    title: 'Father',
+  },
+  {
+    key: Relation.MOTHER,
+    title: 'Mother',
+  },
+  {
+    key: Relation.HUSBAND,
+    title: 'Husband',
+  },
+  {
+    key: Relation.WIFE,
+    title: 'Wife',
+  },
+  {
+    key: Relation.BROTHER,
+    title: 'Brother',
+  },
+  {
+    key: Relation.SISTER,
+    title: 'Sister',
+  },
+  {
+    key: Relation.COUSIN,
+    title: 'Cousin',
+  },
+  {
+    key: Relation.OTHER,
+    title: 'Other',
+  },
+];
+
 export interface EditProfileProps extends NavigationScreenProps {
   isEdit: boolean;
 }
@@ -174,21 +221,22 @@ export interface EditProfileProps extends NavigationScreenProps {
 }
 
 export const EditProfile: React.FC<EditProfileProps> = (props) => {
-  const isEdit = true; //props;
-  const photoUrl = 'we';
-
+  const isEdit = props.navigation.getParam('isEdit');
   const { width, height } = Dimensions.get('window');
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
-  const [profileData, setProfileData] = useState<profile>(props.navigation.getParam('userData'));
+  const [profileData, setProfileData] = useState<profile>(props.navigation.getParam('profileData'));
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
-  const [date, setDate] = useState<string>('');
-  const [gender, setGender] = useState<string>('');
-  const [relation, setRelation] = useState<string>('');
+  const [photoUrl, setPhotoUrl] = useState<string>('');
+  const [date, setDate] = useState<Date>();
+  const [gender, setGender] = useState<Gender>();
+  const [relation, setRelation] = useState<string>();
   const [email, setEmail] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
+  const client = useApolloClient();
 
   const isSatisfyingEmailRegex = (value: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
@@ -204,29 +252,119 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   useEffect(() => {
     if (profileData) {
-      setFirstName(profileData.firstName);
-      setLastName(profileData.lastName);
-      setDate(profileData.dateOfBirth);
+      setFirstName(profileData.firstName || '');
+      setLastName(profileData.lastName || '');
+      setDate(new Date(profileData.dateOfBirth!));
       setGender(profileData.gender);
-      setRelation(profileData.relation);
-      setEmail(profileData.email);
+      relationArray.map((relation) => {
+        if (relation.key === profileData.relation) {
+          setRelation(relation.title);
+        }
+      });
+      setEmail(profileData.email || '');
+      setPhotoUrl(profileData.photoUrl || '');
     }
   }, []);
 
-  const updateProfile = () => {
-    const updatedData: profile = {
-      firstName: firstName,
-      lastName: lastName,
-      dateOfBirth: date,
-      gender: gender,
-      relation: relation,
-      email: email,
-    };
-    if (profileData) {
-      setProfileData({ ...profileData, ...updatedData });
-    } else {
-      setProfileData(updatedData);
-    }
+  const deleteUserProfile = () => {
+    setLoading(true);
+    client
+      .mutate<deleteProfile, deleteProfileVariables>({
+        mutation: DELETE_PROFILE,
+        variables: {
+          patientId: profileData.id,
+        },
+      })
+      .then((data) => {
+        props.navigation.pop(2);
+        props.navigation.push(AppRoutes.ManageProfile, {
+          mobileNumber: props.navigation.getParam('mobileNumber'),
+        });
+      })
+      .catch((e) => {
+        Alert.alert('Alert', e.message);
+        console.log(JSON.stringify(e), 'eeeee');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const updateUserProfile = () => {
+    setLoading(true);
+    let relationValue = Relation.ME;
+    relationArray.map((i) => {
+      if (i.title === relation) {
+        relationValue = i.key;
+      }
+    });
+    client
+      .mutate<editProfile, any>({
+        mutation: EDIT_PROFILE,
+        variables: {
+          editProfileInput: {
+            id: profileData.id,
+            photoUrl: photoUrl,
+            firstName: firstName,
+            lastName: lastName,
+            relation: relationValue,
+            gender: gender,
+            dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+            emailAddress: email,
+          },
+        },
+      })
+      .then((data) => {
+        props.navigation.pop(2);
+        props.navigation.push(AppRoutes.ManageProfile, {
+          mobileNumber: props.navigation.getParam('mobileNumber'),
+        });
+      })
+      .catch((e) => {
+        Alert.alert('Alert', e.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const newProfile = () => {
+    setLoading(true);
+    let relationValue = Relation.ME;
+    relationArray.map((i) => {
+      if (i.title === relation) {
+        relationValue = i.key;
+      }
+    });
+    client
+      .mutate<addNewProfile, any>({
+        mutation: ADD_NEW_PROFILE,
+        variables: {
+          PatientProfileInput: {
+            firstName: firstName,
+            lastName: lastName,
+            dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+            gender: gender,
+            relation: relationValue,
+            emailAddress: email,
+            photoUrl: photoUrl,
+            mobileNumber: props.navigation.getParam('mobileNumber'),
+          },
+        },
+      })
+      .then((data) => {
+        props.navigation.pop(2);
+        props.navigation.push(AppRoutes.ManageProfile, {
+          mobileNumber: props.navigation.getParam('mobileNumber'),
+        });
+      })
+      .catch((e) => {
+        Alert.alert('Alert', e.message);
+        console.log(JSON.stringify(e), 'eeeee');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const renderUploadSelection = () => {
@@ -320,19 +458,19 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 style={[
                   styles.placeholderTextStyle,
                   ,
-                  date !== '' ? null : styles.placeholderStyle,
+                  date !== undefined ? null : styles.placeholderStyle,
                 ]}
               >
-                {date !== '' ? date : 'dd/mm/yyyy'}
+                {date !== undefined ? Moment(date).format('DD/MM/YYYY') : 'dd/mm/yyyy'}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
         <DatePicker
+          date={date}
           isDateTimePickerVisible={isDateTimePickerVisible}
           handleDatePicked={(date) => {
-            const formatDate = Moment(date).format('DD/MM/YYYY');
-            setDate(formatDate);
+            setDate(date);
             setIsDateTimePickerVisible(false);
             Keyboard.dismiss();
           }}
@@ -358,7 +496,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         {GenderOptions.map((option) => (
           <Button
             key={option.name}
-            title={option.name}
+            title={option.title}
             style={[
               styles.buttonViewStyle,
               gender === option.name ? styles.selectedButtonViewStyle : null,
@@ -374,9 +512,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   };
 
   const renderRelation = () => {
+    const relationsData = relationArray.map((i) => i.title);
     return (
       <MaterialMenu
-        data={relationArray}
+        data={relationsData}
         selectedText={relation}
         menuContainer={{ alignItems: 'flex-end' }}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
@@ -396,10 +535,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               style={[
                 styles.placeholderTextStyle,
                 ,
-                relation !== '' ? null : styles.placeholderStyle,
+                relation !== undefined ? null : styles.placeholderStyle,
               ]}
             >
-              {relation !== '' ? relation : 'Select who are these tests for'}
+              {relation !== undefined ? relation : 'Select who are these tests for'}
             </Text>
             <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
               <DropdownGreen />
@@ -461,14 +600,16 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             titleTextStyle={styles.bottomWhiteButtonTextStyle}
           />
           <View style={styles.buttonSeperatorStyle} />
-          <Button
-            onPress={() => {
-              updateProfile();
-            }}
-            disabled={!isValidProfile}
-            title={'SAVE'}
-            style={styles.bottomButtonStyle}
-          />
+          <View style={styles.bottomButtonStyle}>
+            <Button
+              onPress={() => {
+                isEdit ? updateUserProfile() : newProfile();
+              }}
+              disabled={!isValidProfile}
+              title={'SAVE'}
+              style={styles.bottomButtonStyle}
+            />
+          </View>
         </View>
       </StickyBottomComponent>
     );
@@ -506,6 +647,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 setDeleteProfile(false);
+                deleteUserProfile();
               }}
             >
               <View
@@ -514,7 +656,14 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                   width: 145,
                   height: 45,
                   marginLeft: width - 165,
-                  marginTop: 64,
+                  ...Platform.select({
+                    ios: {
+                      marginTop: isIphoneX ? height * 0.1 : height * 0.08,
+                    },
+                    android: {
+                      marginTop: height * 0.05,
+                    },
+                  }),
                   borderRadius: 10,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -550,6 +699,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         {renderButtons()}
       </SafeAreaView>
       {deleteProfile && isEdit && renderDeleteButton()}
+      {loading && <Spinner />}
     </View>
   );
 };
