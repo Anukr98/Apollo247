@@ -26,7 +26,7 @@ import { aphConsole, isEmptyObject } from '@aph/mobile-patients/src/helpers/help
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -208,11 +208,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     {} as MedicineProductDetails
   );
 
-  const [medDetailsList, setMedDetailsList] = useState<{
+  type MedDetailsList = {
     index: number;
     details: MedicineProductDetails[];
     substitutes: MedicineProductDetails[][];
-  }>({ index: 0, details: [], substitutes: [] });
+  };
+
+  const medDetailsListRef = useRef<MedDetailsList>({
+    index: 0,
+    details: [],
+    substitutes: [],
+  });
 
   const [apiError, setApiError] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
@@ -269,7 +275,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       ? `${findDesc('DRUGS WARNINGS')}`
       : `${findDesc('STORAGE')}`;
   };
-  console.log({ PharmaOverview: medicineDetails!.PharmaOverview });
 
   const _medicineOverview =
     medicineDetails!.PharmaOverview &&
@@ -290,7 +295,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           []
         )
           .map((item, index, array) => {
-            console.log({ item, index, array });
             return {
               Caption:
                 index == 0
@@ -321,20 +325,21 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const cartItemsCount = cartItems.length;
 
   const handleBack = async () => {
-    const index = medDetailsList.index;
-    BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    const index = medDetailsListRef.current.index;
     if (index > 1) {
-      setSubstitutes(medDetailsList.substitutes[index - 1]);
-      setmedicineDetails(medDetailsList.details[index - 1]);
-      setMedDetailsList({
+      setSubstitutes(medDetailsListRef.current.substitutes[index - 1]);
+      setmedicineDetails(medDetailsListRef.current.details[index - 1]);
+      medDetailsListRef.current = {
         index: index - 1,
-        details: [...medDetailsList.details.slice(0, index)],
-        substitutes: [...medDetailsList.substitutes.slice(0, index)],
-      });
+        details: [...medDetailsListRef.current.details.slice(0, index)],
+        substitutes: [...medDetailsListRef.current.substitutes.slice(0, index)],
+      };
+
       setTimeout(() => {
         scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0);
       }, 10);
     } else {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
       props.navigation.goBack();
     }
     return false;
@@ -342,12 +347,12 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
 
   useEffect(() => {
     const setData = async () => {
-      const index = medDetailsList.index + 1;
-      setMedDetailsList({
+      const index = medDetailsListRef.current.index + 1;
+      medDetailsListRef.current = {
         index,
-        details: [...medDetailsList.details, medicineDetails],
-        substitutes: [...medDetailsList.substitutes, Substitutes],
-      });
+        details: [...medDetailsListRef.current.details, medicineDetails],
+        substitutes: [...medDetailsListRef.current.substitutes, Substitutes],
+      };
     };
 
     setLoading(true);
@@ -369,7 +374,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           aphConsole.log('MedicineDetailsScene err', err);
           setApiError(!!err);
           setLoading(false);
-          // Alert.alert(err);
         });
       fetchSubstitutes();
     });
