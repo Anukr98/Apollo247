@@ -669,6 +669,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
             }, 1000);
+          } else {
+            if (!appointmentData.isConsultStarted) {
+              automatedTextFromPatient();
+            }
           }
         } catch (error) {
           setLoading(false);
