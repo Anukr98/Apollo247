@@ -20,6 +20,7 @@ import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { TrackJS } from 'trackjs';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
@@ -138,6 +139,7 @@ export const AuthProvider: React.FC = (props) => {
     return new Promise((resolve, reject) => {
       setVerifyOtpError(false);
       if (!captchaPlacement) {
+        TrackJS.track(!captchaPlacement);
         setSendOtpError(true);
         reject();
         return;
@@ -159,10 +161,12 @@ export const AuthProvider: React.FC = (props) => {
           );
           setIsSendingOtp(false);
           if (phoneAuthError) {
+            TrackJS.track(phoneAuthError);
             setSendOtpError(true);
             reject();
             return;
           }
+          TrackJS.track(phoneAuthResult);
           otpVerifier = phoneAuthResult;
           setSendOtpError(false);
           captcha.clear();
@@ -241,6 +245,7 @@ export const AuthProvider: React.FC = (props) => {
           );
           if (signInError || !signInResult.data || !signInResult.data.getDoctorDetails) {
             if (signInError) console.error(signInError);
+            TrackJS.track(signInError);
             setSignInError(true);
             setIsSigningIn(false);
             app.auth().signOut();
