@@ -646,6 +646,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
   const patientConsultStarted = '^^#PatientConsultStarted';
+  const firstMessage = '^^#firstMessage';
+  const secondMessage = '^^#secondMessage';
+  const languageQue = '^^#languageQue';
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
@@ -1116,7 +1119,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult &&
-          message.message.message !== patientConsultStarted
+          message.message.message !== patientConsultStarted &&
+          message.message.message !== firstMessage &&
+          message.message.message !== secondMessage
         ) {
           setIsNewMsg(true);
         } else {
@@ -1162,21 +1167,22 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       },
       (status, response) => {}
     );
-    // setTimeout(() => {
-    //   const texts = {
-    //     id: props.doctorId,
-    //     message: 'Before I go any further, would you be comfortable continuing to talk in English?',
-    //     isTyping: true,
-    //   };
-    //   pubnub.publish(
-    //     {
-    //       message: texts,
-    //       channel: channel,
-    //       storeInHistory: true,
-    //     },
-    //     (status, response) => {}
-    //   );
-    // }, 3000);
+    setTimeout(() => {
+      const texts = {
+        id: props.doctorId,
+        message: languageQue,
+        automatedText: 'Before I go any further, would you be comfortable continuing to talk in English?',
+        isTyping: true,
+      };
+      pubnub.publish(
+        {
+          message: texts,
+          channel: channel,
+          storeInHistory: true,
+        },
+        (status, response) => {}
+      );
+    }, 2000);
   };
   const onStopConsult = () => {
     const text = {
