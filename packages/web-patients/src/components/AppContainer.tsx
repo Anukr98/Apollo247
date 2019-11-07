@@ -29,6 +29,7 @@ import { AddRecords } from 'components/HealthRecords/AddRecords';
 import { OrdersLanding } from 'components/Orders/OrdersLanding';
 import { TrackOrderLanding } from 'components/Orders/TrackOrderLanding';
 import { StoragePoc } from 'components/StoragePoc';
+import { TrackJS } from 'trackjs';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -89,6 +90,12 @@ const App: React.FC = () => {
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {
+  TrackJS.install({
+    token: 'b85489445e5f4b48a0ffe851082f8e37',
+    application: 'web-patients',
+    // for more configuration options, see https://docs.trackjs.com
+  });
+
   return (
     <BrowserRouter>
       <AuthProvider>
