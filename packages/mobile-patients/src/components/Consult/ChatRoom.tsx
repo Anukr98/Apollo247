@@ -261,6 +261,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const imageconsult = '^^#DocumentUpload';
   const startConsultjr = '^^#startconsultJr';
   const consultPatientStartedMsg = '^^#PatientConsultStarted';
+  const firstMessage = '^^#firstMessage';
+  const secondMessage = '^^#secondMessage';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -540,11 +542,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     getHistory(0);
 
-    console.log('appointmentData.isConsultStarted', appointmentData.isConsultStarted);
-
-    if (!appointmentData.isConsultStarted) {
-      automatedTextFromPatient();
-    }
     // registerForPushNotification();
 
     pubnub.addListener({
@@ -666,13 +663,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               getHistory(end);
             }
 
+            checkAutomatedPatientText();
+
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
             }, 1000);
           } else {
-            if (!appointmentData.isConsultStarted) {
-              automatedTextFromPatient();
-            }
+            checkAutomatedPatientText();
           }
         } catch (error) {
           setLoading(false);
@@ -680,6 +677,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       }
     );
+  };
+
+  const checkAutomatedPatientText = () => {
+    const result = insertText.filter((obj: any) => {
+      console.log('resultinsertText', obj.message);
+      return obj.message === consultPatientStartedMsg;
+    });
+    if (result.length === 0) {
+      console.log('result.length ', result);
+      automatedTextFromPatient();
+    }
   };
 
   const successSteps = [
@@ -690,7 +698,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     '3. Get a prescription and meds, if necessary\n',
     '4. Avail 1 free follow-up*\n',
     '5. Chat with your doctor*\n',
-    '* 7 days after your first consultation.',
+    '* 7 days after your first consultation.\n\n',
+    `A doctor from Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName}’s team will join you shortly to collect your medical details. These details are essential for Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName} to help you and will take around 3-5 minutes.`,
   ];
 
   const automatedTextFromPatient = () => {
@@ -709,6 +718,75 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       (status, response) => {}
     );
   };
+
+  useEffect(() => {
+    setTimeout(function() {
+      if (jrDoctorJoined == false) {
+        console.log('Alert Shows After 30000 Seconds of Delay.');
+
+        const result = insertText.filter((obj: any) => {
+          console.log('resultinsertText', obj.message);
+          return obj.message === firstMessage;
+        });
+
+        if (result.length === 0) {
+          console.log('result.length ', result);
+          pubnub.publish(
+            {
+              channel: channel,
+              message: {
+                message: firstMessage,
+                automatedText: `Hi ${currentPatient &&
+                  currentPatient.firstName}, sorry to keep you waiting. Dr. ${
+                  appointmentData.doctorInfo.firstName
+                } ${
+                  appointmentData.doctorInfo.lastName
+                }’s team is with another patient right now. Your consultation prep will start soon.`,
+                id: doctorId,
+                isTyping: true,
+              },
+              storeInHistory: true,
+              sendByPost: true,
+            },
+            (status, response) => {}
+          );
+        }
+      } else {
+      }
+    }, 30000);
+  }, []);
+
+  useEffect(() => {
+    setTimeout(function() {
+      if (jrDoctorJoined == false) {
+        console.log('Alert Shows After 60000 Seconds of Delay.');
+
+        const result = insertText.filter((obj: any) => {
+          console.log('resultinsertText', obj.message);
+          return obj.message === secondMessage;
+        });
+
+        if (result.length === 0) {
+          console.log('result.length ', result);
+          pubnub.publish(
+            {
+              channel: channel,
+              message: {
+                message: secondMessage,
+                automatedText: `Sorry, but all the members in Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
+                id: doctorId,
+                isTyping: true,
+              },
+              storeInHistory: true,
+              sendByPost: true,
+            },
+            (status, response) => {}
+          );
+        }
+      } else {
+      }
+    }, 60000);
+  }, []);
 
   const checkingAppointmentDates = () => {
     try {
@@ -793,6 +871,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === consultPatientStartedMsg) {
         console.log('consultPatientStartedMsg');
+        addMessages(message);
+      } else if (message.message.message === firstMessage) {
+        console.log('firstMessage');
+        addMessages(message);
+      } else if (message.message.message === secondMessage) {
+        console.log('secondMessage');
         addMessages(message);
       }
     } else {
@@ -2010,6 +2094,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               ) : (
                 <>
                   {rowData.message === consultPatientStartedMsg ? (
+                    <>{patientAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === firstMessage ? (
+                    <>{patientAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === secondMessage ? (
                     <>{patientAutomatedMessage(rowData, index)}</>
                   ) : (
                     <>{messageView(rowData, index)}</>
