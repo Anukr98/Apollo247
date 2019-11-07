@@ -248,7 +248,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
           style={{ width: '100%', minHeight: imgHeight }}
           source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
-          resizeMode="contain"
+          // resizeMode="contain"
           // style={{ width: Dimensions.get('screen').width, height: 120 }}
         />
       );
