@@ -335,6 +335,14 @@ export const CasesheetView: React.FC = (props) => {
                 </div>
               </div>
             ) : null}
+            {appointmentInfo && appointmentInfo.displayId ? (
+              <div className={classes.infoRow}>
+                <div className={classes.label}>Appt Id</div>
+                <div className={classes.labelContent}>
+                  <div className={classes.labelBlue}>{appointmentInfo.displayId}</div>
+                </div>
+              </div>
+            ) : null}
             {appointmentInfo && appointmentInfo.appointmentDateTime ? (
               <div className={classes.infoRow}>
                 <div className={classes.label}>Consult Date</div>
