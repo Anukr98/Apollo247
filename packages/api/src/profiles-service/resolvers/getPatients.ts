@@ -26,7 +26,7 @@ export const getPatientTypeDefs = gql`
     dateOfBirth: Date!
     gender: Gender!
     relation: Relation!
-    email: String!
+    emailAddress: String!
     photoUrl: String!
     mobileNumber: String!
   }
@@ -36,7 +36,7 @@ export const getPatientTypeDefs = gql`
     dateOfBirth: Date!
     gender: Gender!
     relation: Relation!
-    email: String!
+    emailAddress: String!
     photoUrl: String!
     id: ID!
   }
@@ -58,7 +58,7 @@ type PatientProfileInput = {
   dateOfBirth: Date;
   gender: Gender;
   relation: Relation;
-  email: string;
+  emailAddress: string;
   photoUrl: string;
   mobileNumber: string;
   firebaseUid: string;
@@ -70,7 +70,7 @@ type EditProfileInput = {
   dateOfBirth: Date;
   gender: Gender;
   relation: Relation;
-  email: string;
+  emailAddress: string;
   photoUrl: string;
   id: string;
 };
@@ -140,10 +140,10 @@ const editProfile: Resolver<
   PatientInfo
 > = async (parent, { editProfileInput }, { profilesDb }) => {
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
-  const editProfileAttrs = editProfileInput;
-  delete editProfileAttrs.id;
-  await patientRepo.updateProfile(editProfileInput.id, editProfileAttrs);
-  const patient = await patientRepo.findById(editProfileInput.id);
+  const patientId = editProfileInput.id;
+  delete editProfileInput.id;
+  await patientRepo.updateProfile(patientId, editProfileInput);
+  const patient = await patientRepo.findById(patientId);
   if (patient == null) throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, {});
   return { patient };
 };

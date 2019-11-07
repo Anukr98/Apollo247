@@ -13500,7 +13500,7 @@
             "defaultValue": null
           },
           {
-            "name": "email",
+            "name": "emailAddress",
             "description": null,
             "type": {
               "kind": "NON_NULL",
@@ -13623,7 +13623,7 @@
             "defaultValue": null
           },
           {
-            "name": "email",
+            "name": "emailAddress",
             "description": null,
             "type": {
               "kind": "NON_NULL",
