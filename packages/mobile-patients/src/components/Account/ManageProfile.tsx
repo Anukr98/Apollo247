@@ -52,6 +52,10 @@ const styles = StyleSheet.create({
   },
   imageView: {
     marginRight: 16,
+    overflow: 'hidden',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
 });
 
