@@ -241,31 +241,27 @@ export const SignIn: React.FC<PopupProps> = (props) => {
     </div>
   ) : displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
-      {count < 2 && (
-        <IdleTimer
-          element={document}
-          onIdle={(e) => {
-            console.log('OTP sending..');
-            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
-            console.log('OTP sent after 30 sec ', count);
-            setCount(count + 1);
-          }}
-          debounce={250}
-          timeout={1000 * 30 * 1}
-        />
-      )}
       {count < 3 && (
-        <IdleTimer
-          element={document}
-          onIdle={(e) => {
-            console.log('OTP sending..');
-            sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
-            console.log('OTP sent after 60 sec ', count);
-            setCount(count + 1);
-          }}
-          debounce={250}
-          timeout={1000 * 30 * 2}
-        />
+        <div>
+          <IdleTimer
+            element={document}
+            onIdle={(e) => {
+              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+              setCount(count + 1);
+            }}
+            debounce={250}
+            timeout={1000 * 30 * 1}
+          />
+          <IdleTimer
+            element={document}
+            onIdle={(e) => {
+              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+              setCount(count + 1);
+            }}
+            debounce={250}
+            timeout={1000 * 30 * 2}
+          />
+        </div>
       )}
       <Button
         className={classes.backButton}
