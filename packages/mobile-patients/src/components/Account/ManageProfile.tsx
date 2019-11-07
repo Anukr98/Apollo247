@@ -38,6 +38,10 @@ const styles = StyleSheet.create({
   profileImageStyle: { width: 80, height: 80, borderRadius: 40 },
   imageView: {
     marginRight: 16,
+    overflow: 'hidden',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
 });
 
