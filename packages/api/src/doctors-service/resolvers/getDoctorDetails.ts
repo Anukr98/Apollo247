@@ -1,13 +1,14 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Doctor, AdminType, AdminUsers } from 'doctors-service/entities/';
+import { Doctor, AdminType, AdminUsers, Secretary, DoctorType } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { getConnection } from 'typeorm';
 import { AdminUser } from 'doctors-service/repositories/adminRepository';
 import { DashboardData, getJuniorDoctorsDashboard } from 'doctors-service/resolvers/JDAdmin';
+import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum Gender {
@@ -38,8 +39,9 @@ export const getDoctorDetailsTypeDefs = gql`
   enum LoggedInUserType {
     DOCTOR
     JUNIOR
-    ADMIN
     SECRETARY
+    ADMIN
+    JDADMIN
   }
 
   enum Salutation {
@@ -164,7 +166,19 @@ export const getDoctorDetailsTypeDefs = gql`
     doctorDetails: DoctorDetails
     JDAdminDetails: DashboardData
     adminDetails: AdminUsers
-    secretaryDetails: DoctorDetails
+    secretaryDetails: Secretary
+  }
+
+  type Secretary {
+    id: String!
+    name: String!
+    mobileNumber: String!
+    isActive: Boolean!
+    doctorSecretary: [DoctorSecretary]
+  }
+
+  type DoctorSecretary {
+    doctor: Profile
   }
 
   type Packages {
@@ -218,6 +232,7 @@ export const getDoctorDetailsTypeDefs = gql`
 
 enum LoggedInUserType {
   DOCTOR = 'DOCTOR',
+  JUNIOR = 'JUNIOR',
   SECRETARY = 'SECRETARY',
   ADMIN = 'ADMIN',
   JDADMIN = 'JDADMIN',
@@ -261,7 +276,7 @@ type LoggedInUserDetails = {
   doctorDetails: Doctor | null;
   JDAdminDetails: DashboardData | null;
   adminDetails: AdminUsers | null;
-  secretaryDetails: Doctor | null;
+  secretaryDetails: Secretary | null;
 };
 
 const findLoggedinUserDetails: Resolver<
@@ -277,11 +292,18 @@ const findLoggedinUserDetails: Resolver<
   const adminRepository = doctorsDb.getCustomRepository(AdminUser);
   const adminData = await adminRepository.checkValidAccess(mobileNumber, true);
 
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryData = await secretaryRepo.getSecretary(mobileNumber, true);
+
   if (doctorData) {
     if (!doctorData.firebaseToken)
       await doctorRepository.updateFirebaseId(doctorData.id, firebaseUid);
+
     return {
-      loggedInUserType: LoggedInUserType.DOCTOR,
+      loggedInUserType:
+        doctorData.doctorType === DoctorType.JUNIOR
+          ? LoggedInUserType.JUNIOR
+          : LoggedInUserType.DOCTOR,
       doctorDetails: doctorData,
       JDAdminDetails: null,
       adminDetails: null,
@@ -298,7 +320,7 @@ const findLoggedinUserDetails: Resolver<
       };
     } else if (adminData.userType === AdminType.JDADMIN) {
       return {
-        loggedInUserType: LoggedInUserType.ADMIN,
+        loggedInUserType: LoggedInUserType.JDADMIN,
         doctorDetails: null,
         JDAdminDetails: await getJuniorDoctorsDashboard(
           new Date(),
@@ -312,6 +334,14 @@ const findLoggedinUserDetails: Resolver<
         secretaryDetails: null,
       };
     } else throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  } else if (secretaryData) {
+    return {
+      loggedInUserType: LoggedInUserType.SECRETARY,
+      doctorDetails: null,
+      JDAdminDetails: null,
+      adminDetails: null,
+      secretaryDetails: secretaryData,
+    };
   } else throw new AphError(AphErrorMessages.UNAUTHORIZED);
 };
 
