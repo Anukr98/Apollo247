@@ -598,7 +598,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const patientConsultStarted = '^^#PatientConsultStarted';
   const firstMessage = '^^#firstMessage';
   const secondMessage = '^^#secondMessage';
-  const languageQue = '^^#languageQue';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [startingTime, setStartingTime] = useState<number>(0);

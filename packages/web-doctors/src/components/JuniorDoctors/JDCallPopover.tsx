@@ -649,6 +649,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const firstMessage = '^^#firstMessage';
   const secondMessage = '^^#secondMessage';
   const languageQue = '^^#languageQue';
+  const jdThankyou = '^^#jdThankyou';
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [startAppointment, setStartAppointment] = React.useState<boolean>(false);
@@ -1043,16 +1044,17 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       const text = {
         id: props.doctorId,
         isTyping: true,
-        message:
+        message: jdThankyou,
+        automatedText:
           'Thank you ' +
           patientDetails!.firstName +
           ' ' +
           patientDetails!.lastName +
-          '! We will share these details with Dr. ' +
+          '! Dr. ' +
           props.assignedDoctorFirstName +
           ' ' +
           props.assignedDoctorLastName +
-          "'who will be here with you at your scheduled consult time.",
+          ", will be with you at your booked consultation time.",
       };
       pubnub.publish(
         {
