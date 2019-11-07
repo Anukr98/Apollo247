@@ -163,6 +163,9 @@ export class Doctor extends BaseEntity {
   @OneToMany((type) => DoctorDeviceTokens, (doctorDeviceTokens) => doctorDeviceTokens.doctor)
   doctorDeviceTokens: DoctorDeviceTokens[];
 
+  @Column({ nullable: true, default: 15 })
+  consultDuration: number;
+
   @Column({ nullable: true })
   country: string;
 
