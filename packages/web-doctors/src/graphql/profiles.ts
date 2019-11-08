@@ -50,6 +50,37 @@ export const LOGGED_IN_USER_DETAILS = gql`
   query findLoggedinUserDetails {
     findLoggedinUserDetails {
       loggedInUserType
+      secretaryDetails {
+        name
+        doctorSecretary {
+          doctor {
+            city
+            country
+            doctorType
+            delegateNumber
+            emailAddress
+            experience
+            firstName
+            id
+            lastName
+            mobileNumber
+            onlineConsultationFees
+            onlineStatus
+            photoUrl
+            physicalConsultationFees
+            qualification
+            registrationNumber
+            salutation
+            state
+            streetLine1
+            streetLine2
+            streetLine3
+            zip
+          }
+        }
+        mobileNumber
+        isActive
+      }
     }
   }
 `;

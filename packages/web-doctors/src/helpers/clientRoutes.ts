@@ -21,12 +21,13 @@ export const clientRoutes = {
   juniorDoctor: () => '/junior-doctor',
   patientDetails: () => '/patient-details',
   juniorDoctorProfile: () => '/jd-profile',
+  secretaryProfile: () => '/secretaryprofile',
   ConsultTabs: (appointmentId: string, patientId: string, tabValue: string) =>
     `/Consulttabs/${appointmentId}/${patientId}/${tabValue}`,
   JDConsultRoom: ({ appointmentId, patientId, queueId, isActive }: JDConsultRoomParams) =>
     `/jd-consultroom/${appointmentId}/${patientId}/${queueId}/${isActive}`,
   juniorDoctorAdmin: () => '/jd-admin',
-  secrateryDashboard: () => '/secratery',
+  secretaryDashboard: () => '/secretary',
 };
 
 export const clientBaseUrl = () => webDoctorsBaseUrl();

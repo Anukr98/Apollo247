@@ -24,7 +24,8 @@ import { JDConsultRoom } from 'components/JuniorDoctors/JDConsultRoom';
 import { TrackJS } from 'trackjs';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { JDAdminDashboard } from 'components/JDAdmin/JDAdminDashboard';
-import { SecrateryDashboard } from 'components/SecrateryDashboard';
+import { SecretaryDashboard } from 'components/SecretaryDashboard';
+import { SecretaryProfile } from 'components/SecretaryProfile';
 
 const App: React.FC = () => {
   const classes = useStyles();
@@ -41,8 +42,8 @@ const App: React.FC = () => {
   // TODO Why is this called patient?
   const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
   const isJDAdmin = useAuth() && currentUserType === LoggedInUserType.JDADMIN;
-
-  return isSignedIn || isJDAdmin ? (
+  const isSecretary = useAuth() && currentUserType === LoggedInUserType.SECRETARY;
+  return isSignedIn || isJDAdmin || isSecretary ? (
     // TODO This should all be inside of a <Switch>, why are we rendering multiple routes simultaneously?
     <div className={classes.app}>
       <AuthRouted
@@ -53,6 +54,8 @@ const App: React.FC = () => {
             <Redirect to={clientRoutes.juniorDoctorAdmin()} />
           ) : isJuniorDoctor ? (
             <Redirect to={clientRoutes.juniorDoctor()} />
+          ) : isSecretary ? (
+            <Redirect to={clientRoutes.secretaryDashboard()} />
           ) : (
             <Redirect to={!(isSignedIn && isSignedIn.firebaseToken) ? '/profile' : '/Calendar'} />
           )
@@ -76,8 +79,9 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.juniorDoctor()} component={JuniorDoctor} />
       <AuthRouted exact path={clientRoutes.patientDetails()} component={PatientDetails} />
       <AuthRouted exact path={clientRoutes.juniorDoctorProfile()} component={JDProfile} />
+      <AuthRouted exact path={clientRoutes.secretaryProfile()} component={SecretaryProfile} />
       <AuthRouted exact path={clientRoutes.juniorDoctorAdmin()} component={JDAdminDashboard} />
-      <AuthRouted exact path={clientRoutes.secrateryDashboard()} component={SecrateryDashboard} />
+      <AuthRouted exact path={clientRoutes.secretaryDashboard()} component={SecretaryDashboard} />
       <AuthRouted
         exact
         path={clientRoutes.JDConsultRoom({

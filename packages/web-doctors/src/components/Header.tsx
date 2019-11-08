@@ -170,6 +170,7 @@ export const Header: React.FC = (props) => {
 
   const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
   const isAdminDoctor = useAuth() && currentUserType === LoggedInUserType.JDADMIN;
+  const isSecretary = useAuth() && currentUserType === LoggedInUserType.SECRETARY;
 
   return (
     <header className={classes.header}>
@@ -179,7 +180,6 @@ export const Header: React.FC = (props) => {
             <img src={require('images/ic_logo.png')} />
           </Link>
         </div>
-
         {isSignedIn &&
           !window.location.href.includes('/profile') &&
           !window.location.href.includes('/patientlogdetailspage') && <Navigation />}
@@ -187,7 +187,10 @@ export const Header: React.FC = (props) => {
           {isJuniorDoctor ? <DoctorOnlineStatusButton /> : null}
           <ProtectedWithLoginPopup>
             {({ protectWithLoginPopup, isProtected }) => (
-              <div className={`${!isSignedIn ? classes.userCircle : ''}`} ref={avatarRef}>
+              <div
+                className={`${!isSignedIn && !isSecretary ? classes.userCircle : ''}`}
+                ref={avatarRef}
+              >
                 {isSigningIn ? (
                   <CircularProgress />
                 ) : isSignedIn ? (
@@ -276,7 +279,7 @@ export const Header: React.FC = (props) => {
                       </span> */}
                     </div>
                   )
-                ) : (
+                ) : !isSecretary ? (
                   <div
                     className={classes.accontDiv}
                     onClick={() => {
@@ -300,6 +303,32 @@ export const Header: React.FC = (props) => {
                       src={require('images/ic_account.svg')}
                     />
                   </div>
+                ) : (
+                  <div>
+                    <span
+                      title="Help"
+                      className={`${selectedTab === 5 && classes.menuItemActiveHelp}`}
+                    >
+                      <img
+                        onClick={() => {
+                          setIsHelpPopupOpen(true);
+                          setSelectedTab(5);
+                        }}
+                        src={require('images/ic_help.svg')}
+                      />
+                    </span>
+                    <span
+                      title="My Profile"
+                      className={`${selectedTab === 6 && classes.menuItemActive}`}
+                    >
+                      <Link to={clientRoutes.secretaryProfile()}>
+                        <img
+                          onClick={() => setSelectedTab(6)}
+                          src={require('images/ic_profile.svg')}
+                        />
+                      </Link>
+                    </span>
+                  </div>
                 )}
               </div>
             )}
@@ -318,7 +347,7 @@ export const Header: React.FC = (props) => {
               </Button>
             </DialogActions>
           </Dialog>
-          {isSignedIn || isAdminDoctor ? (
+          {isSignedIn || isAdminDoctor || isSecretary ? (
             <Popover
               open={isHelpPopupOpen}
               anchorEl={avatarRef.current}
