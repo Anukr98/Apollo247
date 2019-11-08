@@ -38,10 +38,23 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
-export const GET_PATIENT = gql`
+export const GET_PATIENTS = gql`
   query getPatients {
     getPatients {
       patients {
+        addressList {
+          id
+          addressType
+          addressLine1
+          addressLine2
+          state
+          landmark
+          createdDate
+          updatedDate
+          mobileNumber
+          city
+          otherAddressType
+        }
         id
         mobileNumber
         firstName
@@ -61,17 +74,61 @@ export const GET_PATIENTS_MOBILE = gql`
     getPatientByMobileNumber(mobileNumber: $mobileNumber) {
       patients {
         id
-        firstName
-        dateOfBirth
-        gender
         uhid
+        firstName
         lastName
+        mobileNumber
+        dateOfBirth
+        emailAddress
+        gender
         relation
+        photoUrl
         photoUrl
       }
     }
   }
 `;
+
+export const ADD_NEW_PROFILE = gql`
+  mutation addNewProfile($PatientProfileInput: PatientProfileInput!) {
+    addNewProfile(patientProfileInput: $PatientProfileInput) {
+      patient {
+        id
+        uhid
+        mobileNumber
+        firstName
+        lastName
+        emailAddress
+        gender
+      }
+    }
+  }
+`;
+
+export const EDIT_PROFILE = gql`
+  mutation editProfile($editProfileInput: EditProfileInput!) {
+    editProfile(editProfileInput: $editProfileInput) {
+      patient {
+        id
+        photoUrl
+        firstName
+        lastName
+        relation
+        gender
+        dateOfBirth
+        emailAddress
+      }
+    }
+  }
+`;
+export const DELETE_PROFILE = gql`
+  mutation deleteProfile($patientId: String) {
+    deleteProfile(patientId: $patientId) {
+      status
+    }
+  }
+`;
+
 export const BOOK_APPOINTMENT = gql`
   mutation bookAppointment($bookAppointment: BookAppointmentInput!) {
     bookAppointment(appointmentInput: $bookAppointment) {

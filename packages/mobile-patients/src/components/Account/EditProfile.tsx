@@ -647,7 +647,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 setDeleteProfile(false);
-                deleteUserProfile();
+                // deleteUserProfile();
               }}
             >
               <View
