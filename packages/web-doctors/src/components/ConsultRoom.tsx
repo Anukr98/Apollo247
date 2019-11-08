@@ -51,13 +51,6 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       position: 'relative',
     },
-    chatImgBubble: {
-      padding: 0,
-      '& img': {
-        maxWidth: '100%',
-        verticalAlign: 'middle',
-      },
-    },
     patientAvatar: {
       position: 'absolute',
       left: -40,
@@ -82,19 +75,28 @@ const useStyles = makeStyles((theme: Theme) => {
       textAlign: 'left',
       wordBreak: 'break-word',
     },
+    chatImgBubble: {
+      padding: 0,
+      border: 'none',
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
+    },
     doctor: {
-      backgroundColor: '#f0f4f5',
-      padding: '12px 16px',
+      backgroundColor: 'transparent',
+      padding: '6px 16px',
       color: '#02475b',
       fontWeight: theme.typography.fontWeightMedium,
       display: 'inline-block',
       borderRadius: 10,
-      boxShadow: '0 2px 4px 0 #00000026',
+      boxShadow: 'none',
       marginRight: 30,
       textAlign: 'left',
       fontSize: 16,
       maxWidth: '40%',
       wordBreak: 'break-all',
+      border: 'none',
     },
     boldTxt: {
       fontWeight: 700,
@@ -212,7 +214,13 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'none',
     },
     addImgBtn: {
-      marginRight: 16,
+      background: 'transparent',
+      minWidth: 35,
+      maxWidth: 35,
+      boxShadow: 'none',
+      '&:hover': {
+        background: 'transparent',
+      },
     },
     sendBtn: {
       marginLeft: 16,
