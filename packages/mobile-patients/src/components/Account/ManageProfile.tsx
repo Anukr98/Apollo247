@@ -76,7 +76,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   const client = useApolloClient();
 
   const [profiles, setProfiles] = useState<
-    getPatientByMobileNumber_getPatientByMobileNumber_patients[]
+    (getPatientByMobileNumber_getPatientByMobileNumber_patients | null)[]
   >();
   const [loading, setLoading] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
@@ -97,9 +97,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then((data) => {
-        const profileData: any = data.data.getPatientByMobileNumber;
-        setProfiles(profileData && profileData!.patients);
-        console.log(profileData.patients);
+        const profileData = data.data.getPatientByMobileNumber;
+        profileData && setProfiles(profileData!.patients!);
       })
       .catch((e: any) => {
         Alert.alert('Alert', e.message);
