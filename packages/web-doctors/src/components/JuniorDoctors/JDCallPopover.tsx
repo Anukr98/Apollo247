@@ -166,6 +166,13 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor: '#fff',
       },
     },
+    cancelConsultError: {
+      fontSize: 10,
+      padding: '2px 0px',
+      fontWeight: 400,
+      color: 'red',
+      backgroundColor: '#fff',
+    },
     timeLeft: {
       fontSize: 12,
       fontWeight: 500,
@@ -362,7 +369,7 @@ const useStyles = makeStyles((theme: Theme) => {
     tabFooter: {
       background: 'white',
       position: 'absolute',
-      height: 60,
+      height: 70,
       paddingTop: '10px',
       borderBottomLeftRadius: '10px',
       borderBottomRightRadius: '10px',
@@ -679,7 +686,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
   const [isCancelPopoverOpen, setIsCancelPopoverOpen] = useState<boolean>(false);
   const [reason, setReason] = useState<string>('I am running late from previous consult');
   const [cancelReason, setCancelReason] = useState<string>('Not related to my specialty');
-  const [cancelError, setCancelError] = useState<string>('');
+  const [cancelError, setCancelError] = useState<string | null>(null);
   const [textOther, setTextOther] = useState(false);
   const [otherTextValue, setOtherTextValue] = useState('');
   const [textOtherCancel, setTextOtherCancel] = useState(false);
@@ -991,7 +998,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           props.assignedDoctorFirstName +
           ' ' +
           props.assignedDoctorLastName +
-          ", will be with you at your booked consultation time.",
+          ', will be with you at your booked consultation time.',
       };
       pubnub.publish(
         {
@@ -1110,7 +1117,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
       const texts = {
         id: props.doctorId,
         message: languageQue,
-        automatedText: 'Before I go any further, would you be comfortable continuing to talk in English?',
+        automatedText:
+          'Before I go any further, would you be comfortable continuing to talk in English?',
         isTyping: true,
       };
       pubnub.publish(
@@ -1556,7 +1564,10 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
 
       <Modal
         open={isCancelPopoverOpen}
-        onClose={() => setIsCancelPopoverOpen(false)}
+        onClose={() => {
+          setIsCancelPopoverOpen(false);
+          setCancelError(null);
+        }}
         disableBackdropClick
         disableEscapeKeyDown
       >
@@ -1569,6 +1580,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                 alt=""
                 onClick={() => {
                   setIsCancelPopoverOpen(false);
+                  setCancelError(null);
                 }}
               />
             </Button>
@@ -1660,6 +1672,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
               className={classes.cancelConsult}
               onClick={() => {
                 setIsCancelPopoverOpen(false);
+                setCancelError(null);
               }}
             >
               Cancel
@@ -1676,13 +1689,13 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                     window.location.href = clientRoutes.juniorDoctor();
                   })
                   .catch((e: ApolloError) => {
-                    setCancelError(e.message);
+                    setCancelError(e.graphQLErrors[0].message);
                   });
               }}
             >
               Cancel Consult
             </Button>
-            <span>{cancelError}</span>
+            {cancelError && <div className={classes.cancelConsultError}>{cancelError}</div>}
           </div>
         </Paper>
       </Modal>
