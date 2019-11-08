@@ -225,6 +225,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   interface SuggestionType {
     name: string;
     price: number;
+    specialPrice?: number;
     isOutOfStock: boolean;
     type: Doseform;
     imgUri?: string;
@@ -267,9 +268,26 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               {'Out Of Stock'}
             </Text>
           ) : (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
-              Rs. {data.price}
-            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+                }}
+              >
+                Rs. {data.specialPrice || data.price}
+              </Text>
+              {data.specialPrice ? (
+                <Text
+                  style={[
+                    { ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04), marginLeft: 8 },
+                  ]}
+                >
+                  {'('}
+                  <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${data.price}`}</Text>
+                  {')'}
+                </Text>
+              ) : null}
+            </View>
           )}
         </View>
       );
@@ -281,7 +299,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
           {data.imgUri ? (
             <Image
               // placeholderStyle={styles.imagePlaceholderStyle}
-              PlaceholderContent={<ImagePlaceholderView />}
+              // PlaceholderContent={<ImagePlaceholderView />}
               source={{ uri: data.imgUri }}
               style={{ height: 40, width: 40 }}
               resizeMode="contain"
@@ -318,6 +336,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     const imgUri = item.thumbnail
       ? `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${item.thumbnail}`
       : '';
+    const specialPrice = item.special_price
+      ? typeof item.special_price == 'string'
+        ? parseInt(item.special_price)
+        : item.special_price
+      : undefined;
+
     return renderSearchSuggestionItem({
       onPress: () => {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
@@ -327,6 +351,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
       },
       name: item.name,
       price: item.price,
+      specialPrice,
       isOutOfStock: !item.is_in_stock,
       type: ((item.PharmaOverview || [])[0] || {}).Doseform,
       style: {
