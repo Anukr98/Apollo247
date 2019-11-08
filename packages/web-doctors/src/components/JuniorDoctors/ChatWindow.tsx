@@ -313,6 +313,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
   const patientConsultStarted = '^^#PatientConsultStarted';
+  const firstMessage = '^^#firstMessage';
+  const secondMessage = '^^#secondMessage';
+  const languageQue = '^^#languageQue';
+  const jdThankyou = '^^#jdThankyou';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -393,7 +397,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     getHistory(0);
 
     pubnub.addListener({
-      status: (statusEvent) => {},
+      status: (statusEvent) => { },
       message: (message) => {
         console.log(message.message);
         insertText[insertText.length] = message.message;
@@ -409,7 +413,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult &&
-          message.message.message !== patientConsultStarted
+          message.message.message !== patientConsultStarted &&
+          message.message.message !== firstMessage &&
+          message.message.message !== secondMessage
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -477,7 +483,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.message === startConsult ||
       rowData.message === startConsultjr ||
-      rowData.message === stopConsult
+      rowData.message === stopConsult ||
+      rowData.message === languageQue ||
+      rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
     } else {
@@ -495,7 +503,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult &&
-      rowData.message !== patientConsultStarted
+      rowData.message !== patientConsultStarted &&
+      rowData.message !== firstMessage &&
+      rowData.message !== secondMessage
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -525,33 +535,33 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
-            <div
-              className={`${classes.chatBubble} ${
-                rowData.message === documentUpload ? classes.chatImgBubble : ''
-              }`}
-            >
-              {leftComponent == 1 && !rowData.duration && (
-                <div className={classes.patientAvatar}>
-                  <Avatar
-                    className={classes.avatar}
-                    src={
-                      patientDetails && patientDetails.photoUrl
-                        ? patientDetails!.photoUrl
-                        : require('images/no_photo_icon_round.svg')
-                    }
-                    alt=""
-                  />
+                <div
+                  className={`${classes.chatBubble} ${
+                    rowData.message === documentUpload ? classes.chatImgBubble : ''
+                    }`}
+                >
+                  {leftComponent == 1 && !rowData.duration && (
+                    <div className={classes.patientAvatar}>
+                      <Avatar
+                        className={classes.avatar}
+                        src={
+                          patientDetails && patientDetails.photoUrl
+                            ? patientDetails!.photoUrl
+                            : require('images/no_photo_icon_round.svg')
+                        }
+                        alt=""
+                      />
+                    </div>
+                  )}
+                  {rowData.message === documentUpload ? (
+                    <a href={rowData.url} target="_blank">
+                      <img src={rowData.url} alt={rowData.url} />
+                    </a>
+                  ) : (
+                      <span>{getAutomatedMessage(rowData)}</span>
+                    )}
                 </div>
               )}
-              {rowData.message === documentUpload ? (
-                <a href={rowData.url} target="_blank">
-                  <img src={rowData.url} alt={rowData.url} />
-                </a>
-              ) : (
-                <span>{getAutomatedMessage(rowData)}</span>
-              )}
-            </div>
-          )}
         </div>
       );
     }
@@ -564,7 +574,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult &&
-      rowData.message !== patientConsultStarted
+      rowData.message !== patientConsultStarted &&
+      rowData.message !== firstMessage &&
+      rowData.message !== secondMessage
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -594,35 +606,35 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
-            <div
-              className={`${classes.chatBubble} ${classes.patientBubble} ${
-                rowData.message === documentUpload ? classes.chatImgBubble : ''
-              }`}
-            >
-              {rightComponent == 1 && !rowData.duration && (
-                <div className={classes.patientAvatar}>
-                  <Avatar
-                    className={classes.avatar}
-                    src={
-                      patientDetails && patientDetails.photoUrl
-                        ? patientDetails!.photoUrl
-                        : require('images/no_photo_icon_round.svg')
-                    }
-                    alt=""
-                  />
+                <div
+                  className={`${classes.chatBubble} ${classes.patientBubble} ${
+                    rowData.message === documentUpload ? classes.chatImgBubble : ''
+                    }`}
+                >
+                  {rightComponent == 1 && !rowData.duration && (
+                    <div className={classes.patientAvatar}>
+                      <Avatar
+                        className={classes.avatar}
+                        src={
+                          patientDetails && patientDetails.photoUrl
+                            ? patientDetails!.photoUrl
+                            : require('images/no_photo_icon_round.svg')
+                        }
+                        alt=""
+                      />
+                    </div>
+                  )}
+                  {rowData.message === documentUpload ? (
+                    <div className={classes.imageUpload}>
+                      <a href={rowData.url} target="_blank">
+                        <img src={rowData.url} alt={rowData.url} />
+                      </a>
+                    </div>
+                  ) : (
+                      <span>{getAutomatedMessage(rowData)}</span>
+                    )}
                 </div>
               )}
-              {rowData.message === documentUpload ? (
-                <div className={classes.imageUpload}>
-                  <a href={rowData.url} target="_blank">
-                    <img src={rowData.url} alt={rowData.url} />
-                  </a>
-                </div>
-              ) : (
-                <span>{getAutomatedMessage(rowData)}</span>
-              )}
-            </div>
-          )}
         </div>
       );
     }
@@ -634,8 +646,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-        })
+        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+      })
       : '';
 
   const toggelChatVideo = () => {
@@ -679,7 +691,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
     };
     sendMsg(stoptext, true);

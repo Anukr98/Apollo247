@@ -14,6 +14,7 @@ import _uniqueId from 'lodash/uniqueId';
 import { GetCurrentPatients } from 'graphql/types/GetCurrentPatients';
 import { GET_CURRENT_PATIENTS } from 'graphql/profiles';
 import { isTest, isFirebaseLoginTest } from 'helpers/testHelpers';
+import { TrackJS } from 'trackjs';
 
 export interface AuthContextProps {
   currentPatientId: string | null;
@@ -64,6 +65,7 @@ const buildApolloClient = (authToken: string, handleUnauthenticated: () => void)
   const errorLink = onError((error) => {
     const { graphQLErrors, operation, forward } = error;
     if (isLocal || isDevelopment) console.error(error);
+    TrackJS.console.error(error);
     if (graphQLErrors) {
       const unauthenticatedError = graphQLErrors.some(
         (gqlError) => gqlError.extensions && gqlError.extensions.code === 'UNAUTHENTICATED'
@@ -129,6 +131,7 @@ export const AuthProvider: React.FC = (props) => {
     return new Promise((resolve, reject) => {
       setVerifyOtpError(false);
       if (!captchaPlacement) {
+        TrackJS.track(!captchaPlacement);
         setSendOtpError(true);
         reject();
         return;
@@ -148,11 +151,13 @@ export const AuthProvider: React.FC = (props) => {
             .auth()
             .signInWithPhoneNumber(phoneNumber, captcha)
             .catch((error) => {
+              TrackJS.track(error);
               setSendOtpError(true);
               reject();
               throw error;
             });
           setIsSendingOtp(false);
+          TrackJS.track(phoneAuthResult);
           otpVerifier = phoneAuthResult;
           setSendOtpError(false);
           captcha.clear();

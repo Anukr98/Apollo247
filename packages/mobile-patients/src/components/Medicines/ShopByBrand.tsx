@@ -8,8 +8,16 @@ import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceH
 import { Brand, getAllBrands } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import {
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {

@@ -161,8 +161,8 @@ export const JDAdminDashboard: React.FC = (rops) => {
     GetJuniorDoctorDashboardVariables
   >(GET_JD_DASHBOARD, {
     variables: {
-      fromDate: format(new Date(), 'yyyy-MM-dd'),
-      toDate: format(new Date(), 'yyyy-MM-dd'),
+      fromDate: '2019-09-01',
+      toDate: '2099-12-31',
       offset: 0,
       limit: 100,
     },

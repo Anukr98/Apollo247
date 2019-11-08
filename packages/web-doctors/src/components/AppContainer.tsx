@@ -21,7 +21,7 @@ import { JuniorDoctor } from 'components/JuniorDoctors/JuniorDoctor';
 import { PatientDetails } from 'components/JuniorDoctors/PatientDetails';
 import { JDProfile } from 'components/JuniorDoctors/JDProfile';
 import { JDConsultRoom } from 'components/JuniorDoctors/JDConsultRoom';
-
+import { TrackJS } from 'trackjs';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { JDAdminDashboard } from 'components/JDAdmin/JDAdminDashboard';
 import { SecrateryDashboard } from 'components/SecrateryDashboard';
@@ -125,6 +125,10 @@ const useStyles = makeStyles((theme: Theme) => {
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {
+  TrackJS.install({
+    token: 'b85489445e5f4b48a0ffe851082f8e37',
+    application: process.env.NODE_ENV, // for more configuration options, see https://docs.trackjs.com
+  });
   return (
     <BrowserRouter>
       <AuthProvider>

@@ -323,6 +323,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
           sku: item.sku,
         });
+        resetSearchState();
       },
       name: item.name,
       price: item.price,
@@ -364,8 +365,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     const goToSearchPage = () => {
       if (searchText.length > 2) {
         props.navigation.navigate(AppRoutes.SearchMedicineScene, { searchText });
-        setSearchText('');
-        setMedicineList([]);
+        resetSearchState();
       }
     };
     const enableSearchEnterBtn = searchText.length > 0 && medicineList.length > 0;
@@ -499,6 +499,12 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     );
   };
 
+  const resetSearchState = () => {
+    setMedicineList([]);
+    setSearchText('');
+    setsearchSate(undefined);
+  };
+
   const renderOverlay = () => {
     const overlayStyle = {
       flex: 1,
@@ -513,11 +519,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     return (
       (medicineList.length || searchSate == 'load') && (
         <View style={overlayStyle}>
-          <TouchableOpacity
-            onPress={() => {
-              Alert.alert('Overlay');
-            }}
-          ></TouchableOpacity>
+          <TouchableOpacity activeOpacity={1} style={overlayStyle} onPress={resetSearchState} />
         </View>
       )
     );

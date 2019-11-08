@@ -14,6 +14,7 @@ import { AphInput } from '@aph/web-ui-components';
 import { useAuth } from 'hooks/authHooks';
 import _isNumber from 'lodash/isNumber';
 import _times from 'lodash/times';
+import IdleTimer from 'react-idle-timer';
 import React, { createRef, RefObject, useEffect, useState, useRef } from 'react';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import { AphTextField } from '@aph/web-ui-components';
@@ -179,7 +180,7 @@ export const SignIn: React.FC<PopupProps> = (props) => {
   const [timer, setTimer] = useState(179);
 
   const placeRecaptchaAfterMe = useRef(null);
-
+  const [count, setCount] = useState(1);
   const {
     sendOtp,
     sendOtpError,
@@ -240,6 +241,28 @@ export const SignIn: React.FC<PopupProps> = (props) => {
     </div>
   ) : displayOtpInput ? (
     <div className={`${classes.loginFormWrap} ${classes.otpFormWrap}`}>
+      {count < 3 && (
+        <div>
+          <IdleTimer
+            element={document}
+            onIdle={(e) => {
+              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+              setCount(count + 1);
+            }}
+            debounce={250}
+            timeout={1000 * 30 * 1}
+          />
+          <IdleTimer
+            element={document}
+            onIdle={(e) => {
+              sendOtp(mobileNumberWithPrefix, placeRecaptchaAfterMe.current);
+              setCount(count + 1);
+            }}
+            debounce={250}
+            timeout={1000 * 30 * 2}
+          />
+        </div>
+      )}
       <Button
         className={classes.backButton}
         onClick={() => {

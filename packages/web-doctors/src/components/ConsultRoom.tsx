@@ -206,6 +206,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const followupconsult = '^^#followupconsult';
   const documentUpload = '^^#DocumentUpload';
   const patientConsultStarted = '^^#PatientConsultStarted';
+  const firstMessage = '^^#firstMessage';
+  const secondMessage = '^^#secondMessage';
+  const languageQue = '^^#languageQue';
+  const jdThankyou = '^^#jdThankyou';
+
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;
@@ -281,7 +286,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getHistory(0);
 
     pubnub.addListener({
-      status: (statusEvent) => {},
+      status: (statusEvent) => { },
       message: (message) => {
         insertText[insertText.length] = message.message;
         console.log(message.message);
@@ -295,7 +300,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult &&
-          message.message.message !== patientConsultStarted
+          message.message.message !== patientConsultStarted &&
+          message.message.message !== firstMessage &&
+          message.message.message !== secondMessage
         ) {
           setIsNewMsg(true);
         } else {
@@ -374,7 +381,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.message === startConsult ||
       rowData.message === startConsultjr ||
-      rowData.message === stopConsult
+      rowData.message === stopConsult ||
+      rowData.message === languageQue ||
+      rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
     } else {
@@ -392,7 +401,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult &&
-      rowData.message !== patientConsultStarted
+      rowData.message !== patientConsultStarted &&
+      rowData.message !== firstMessage &&
+      rowData.message !== secondMessage
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -415,10 +426,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              <div>
-                <span>{getAutomatedMessage(rowData)}</span>
-              </div>
-            )}
+                  <div>
+                    <span>{getAutomatedMessage(rowData)}</span>
+                  </div>
+                )}
           </div>
         </div>
       );
@@ -431,7 +442,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult &&
-      rowData.message !== patientConsultStarted
+      rowData.message !== patientConsultStarted &&
+      rowData.message !== firstMessage &&
+      rowData.message !== secondMessage
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -465,22 +478,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              <div>
-                {rowData.message === documentUpload ? (
-                  <div style={{ width: '200px', height: 'auto' }}>
-                    <a href={rowData.url} target="_blank">
-                      <img
-                        style={{ width: '200px', height: 'auto' }}
-                        src={rowData.url}
-                        alt={rowData.url}
-                      />
-                    </a>
+                  <div>
+                    {rowData.message === documentUpload ? (
+                      <div style={{ width: '200px', height: 'auto' }}>
+                        <a href={rowData.url} target="_blank">
+                          <img
+                            style={{ width: '200px', height: 'auto' }}
+                            src={rowData.url}
+                            alt={rowData.url}
+                          />
+                        </a>
+                      </div>
+                    ) : (
+                        <span>{getAutomatedMessage(rowData)}</span>
+                      )}
                   </div>
-                ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -492,7 +505,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult &&
-      rowData.message !== patientConsultStarted
+      rowData.message !== patientConsultStarted &&
+      rowData.message !== firstMessage &&
+      rowData.message !== secondMessage
     ) {
       jrDrComponent++;
       leftComponent = 0;
@@ -515,22 +530,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              <div>
-                {rowData.message === documentUpload ? (
-                  <div style={{ width: '200px', height: 'auto' }}>
-                    <a href={rowData.url} target="_blank">
-                      <img
-                        style={{ width: '200px', height: 'auto' }}
-                        src={rowData.url}
-                        alt={rowData.url}
-                      />
-                    </a>
+                  <div>
+                    {rowData.message === documentUpload ? (
+                      <div style={{ width: '200px', height: 'auto' }}>
+                        <a href={rowData.url} target="_blank">
+                          <img
+                            style={{ width: '200px', height: 'auto' }}
+                            src={rowData.url}
+                            alt={rowData.url}
+                          />
+                        </a>
+                      </div>
+                    ) : (
+                        <span>{getAutomatedMessage(rowData)}</span>
+                      )}
                   </div>
-                ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
                 )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -542,8 +557,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-        })
+        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+      })
       : '';
   // const toggelChatVideo = () => {
   //   setIsNewMsg(false);
