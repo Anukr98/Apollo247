@@ -102,6 +102,9 @@ export class BlockedCalendarItem extends BaseEntity {
 //consult Hours starts
 @Entity()
 export class ConsultHours extends BaseEntity {
+  @Column({ nullable: true, default: 15 })
+  consultDuration: number;
+
   @Column()
   consultMode: ConsultMode;
 
@@ -162,9 +165,6 @@ export class Doctor extends BaseEntity {
 
   @OneToMany((type) => DoctorDeviceTokens, (doctorDeviceTokens) => doctorDeviceTokens.doctor)
   doctorDeviceTokens: DoctorDeviceTokens[];
-
-  @Column({ nullable: true, default: 15 })
-  consultDuration: number;
 
   @Column({ nullable: true })
   country: string;
