@@ -14,6 +14,7 @@ import {
   NotificationIcon,
   SearchSendIcon,
   SyrupBottleIcon,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -50,11 +51,14 @@ import {
   View,
   ViewStyle,
   Keyboard,
+  AsyncStorage,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from '../UIElementsProvider';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { MaterialMenu } from '../ui/MaterialMenu';
+import { string } from '../../strings/string';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -77,6 +81,22 @@ const styles = StyleSheet.create({
     opacity: 0.5,
     borderRadius: 5,
   },
+  hiTextStyle: {
+    marginLeft: 20,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  nameTextStyle: {
+    marginLeft: 5,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  seperatorStyle: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    marginTop: 5,
+    marginHorizontal: 5,
+  },
 });
 
 export interface MedicineProps extends NavigationScreenProps {}
@@ -84,13 +104,25 @@ export interface MedicineProps extends NavigationScreenProps {}
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
+  const [userName, setuserName] = useState<string | number>('');
   const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
   const cartItemsCount = cartItems.length;
-  const { currentPatient } = useAllCurrentPatients();
-  const { showAphAlert } = useUIElements();
 
+  const { showAphAlert } = useUIElements();
+  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
   useEffect(() => {
+    const getDataFromTree = async () => {
+      const storeVallue = await AsyncStorage.getItem('selectUserId');
+      console.log('storeVallue', storeVallue);
+      setCurrentPatientId(storeVallue);
+    };
+
+    getDataFromTree();
+    let userName =
+      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
+    userName = userName.toLowerCase();
+    setuserName(userName);
     getMedicinePageProducts()
       .then((d) => {
         setData(d.data);
@@ -104,7 +136,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           description: "We're unable to fetch products, try later.",
         });
       });
-  }, []);
+  }, [currentPatient]);
 
   // Api Call
   // const { data, loading, error } = useFetch(() => getMedicinePageProducts());
@@ -155,7 +187,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           flexDirection: 'row',
           paddingTop: 16,
           paddingHorizontal: 20,
-          backgroundColor: theme.colors.WHITE,
+          //backgroundColor: theme.colors.WHITE,
         }}
       >
         <TouchableOpacity
@@ -1064,7 +1096,41 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <Text
+          <View
+            style={{
+              marginBottom: 5,
+            }}
+          >
+            <MaterialMenu
+              onPress={(item) => {
+                console.log(item);
+
+                const val = (allCurrentPatients || []).find((_item) => _item.firstName == item);
+                console.log('val', val!.id);
+
+                setCurrentPatientId!(val!.id);
+                AsyncStorage.setItem('selectUserId', val!.id);
+              }}
+              data={(allCurrentPatients || []).map((item) => item.firstName)}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  paddingRight: 8,
+                  borderRightWidth: 0.5,
+                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                }}
+              >
+                <Text style={styles.hiTextStyle}>hi</Text>
+                <View>
+                  <Text style={styles.nameTextStyle}>{userName}</Text>
+                  <View style={styles.seperatorStyle} />
+                </View>
+                <DropdownGreen style={{ marginTop: 8 }} />
+              </View>
+            </MaterialMenu>
+          </View>
+          {/* <Text
             style={{
               height: isSearchFocused ? 0 : 'auto',
               ...theme.viewStyles.text('SB', 36, '#02475b', 1),
@@ -1077,7 +1143,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               currentPatient.firstName &&
               `hi ${currentPatient.firstName.toLowerCase()}!`) ||
               ''}
-          </Text>
+          </Text> */}
 
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>
             <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
