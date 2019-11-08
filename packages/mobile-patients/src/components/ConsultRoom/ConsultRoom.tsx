@@ -8,6 +8,7 @@ import {
   MyHealth,
   Person,
   ShoppingCart,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -47,8 +48,10 @@ import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { NotificationListener } from '../NotificationListener';
+import { MaterialMenu } from '../ui/MaterialMenu';
 
 const { width, height } = Dimensions.get('window');
+console.log(useAllCurrentPatients, 'useAllCurrentPatients');
 
 const styles = StyleSheet.create({
   viewName: {
@@ -187,13 +190,20 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
   const [showMenu, setShowMenu] = useState<boolean>(false);
-  const [userName, setuserName] = useState<string>('');
+  const [userName, setuserName] = useState<string | number>('');
   const { analytics, getPatientApiCall } = useAuth();
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
   useEffect(() => {
+    const getDataFromTree = async () => {
+      const storeVallue = await AsyncStorage.getItem('selectUserId');
+      console.log('storeVallue', storeVallue);
+      setCurrentPatientId(storeVallue);
+    };
+
+    getDataFromTree();
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
@@ -581,6 +591,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
+
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -624,7 +636,36 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   <ApolloLogo />
                 </TouchableOpacity>
               </View>
-              <View
+              <View>
+                <MaterialMenu
+                  onPress={(item) => {
+                    console.log(item);
+                    const val = (allCurrentPatients || []).find((_item) => _item.firstName == item);
+                    console.log('val', val!.id);
+                    setCurrentPatientId!(val!.id);
+                    AsyncStorage.setItem('selectUserId', val!.id);
+                  }}
+                  data={(allCurrentPatients || []).map((item) => item.firstName)}
+                >
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      //justifyContent: 'space-between',
+                      paddingRight: 8,
+                      borderRightWidth: 0.5,
+                      borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                    }}
+                  >
+                    <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+                    <View>
+                      <Text style={styles.nameTextStyle}>{userName}</Text>
+                      <View style={styles.seperatorStyle} />
+                    </View>
+                    <DropdownGreen style={{ marginTop: 8 }} />
+                  </View>
+                </MaterialMenu>
+              </View>
+              {/* <View
                 // activeOpacity={1}
                 // onPress={() => setShowMenu(true)}
                 style={{
@@ -634,23 +675,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.hiTextStyle}>
-                    {string.home.hi} {userName}!
-                  </Text>
-                  {/* <View>
+                  <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+                  <View>
                     <View
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
                       }}
                     >
-                      <Text style={styles.nameTextStyle}>{userName}!</Text>
+                      <Text style={styles.nameTextStyle}> {userName}!</Text>
                       <DropdownGreen style={{ marginTop: 8 }} />
                     </View>
                     <View style={styles.seperatorStyle} />
-                  </View> */}
+                  </View>
                 </View>
-              </View>
+              </View> */}
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
             </View>
           </View>

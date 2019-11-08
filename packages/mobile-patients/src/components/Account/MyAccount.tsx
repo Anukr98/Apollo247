@@ -94,9 +94,26 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { signOut, getPatientApiCall } = useAuth();
 
   useEffect(() => {
+    console.log('cu', currentPatient && currentPatient!.id);
+
     if (!currentPatient) {
       getPatientApiCall();
     }
+  }, [currentPatient]);
+  useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      setshowSpinner(true);
+      getNetStatus().then((status) => {
+        if (status) {
+          getPatientApiCall();
+        } else {
+          setshowSpinner(false);
+        }
+      });
+    });
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+    };
   }, [currentPatient]);
 
   const headMov = scrollY.interpolate({
@@ -189,6 +206,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     AsyncStorage.setItem('userLoggedIn', 'false');
     AsyncStorage.setItem('multiSignUp', 'false');
     AsyncStorage.setItem('signUp', 'false');
+    AsyncStorage.setItem('selectUserId', '');
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -208,7 +226,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
     const input = {
       deviceToken: currentDeviceToken.deviceToken,
-      patientId: currentPatient ? currentPatient.id : '',
+      patientId: currentPatient ? currentPatient && currentPatient.id : '',
     };
     console.log('deleteDeviceTokenInput', input);
 
@@ -224,9 +242,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         onPressLogout();
       })
       .catch((e: string) => {
-        console.log('Error occured while adding Doctor', e);
-        setshowSpinner(false);
-        onPressLogout();
+        try {
+          console.log('delete device token', e);
+          setshowSpinner(false);
+          onPressLogout();
+        } catch {}
       });
   };
 
@@ -285,7 +305,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             borderBottomWidth: 0,
           }}
           rightComponent={
-            <TouchableOpacity activeOpacity={1} onPress={deleteDeviceToken}>
+            <TouchableOpacity activeOpacity={1} onPress={() => deleteDeviceToken()}>
               <Text>Logout</Text>
             </TouchableOpacity>
           }

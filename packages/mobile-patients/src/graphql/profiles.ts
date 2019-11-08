@@ -540,6 +540,8 @@ export const SAVE_PATIENT_ADDRESS = gql`
         landmark
         createdDate
         updatedDate
+        addressType
+        otherAddressType
       }
     }
   }
@@ -557,6 +559,31 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         landmark
         createdDate
         updatedDate
+        addressType
+        otherAddressType
+      }
+    }
+  }
+`;
+export const DELETE_PATIENT_ADDRESS = gql`
+  mutation deletePatientAddress($id: String) {
+    deletePatientAddress(id: $id) {
+      status
+    }
+  }
+`;
+
+export const GET_PATIENTS_MOBILE = gql`
+  query getPatientByMobileNumber($mobileNumber: String) {
+    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+      patients {
+        id
+        firstName
+        dateOfBirth
+        gender
+        uhid
+        lastName
+        relation
       }
     }
   }
@@ -575,6 +602,8 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         landmark
         createdDate
         updatedDate
+        addressType
+        otherAddressType
       }
     }
   }
@@ -974,6 +1003,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
         displayId
         bookingDate
         caseSheet {
+          notes
           blobName
           consultType
           diagnosis {

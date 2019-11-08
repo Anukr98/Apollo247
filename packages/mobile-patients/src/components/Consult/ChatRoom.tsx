@@ -281,6 +281,54 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
+
+  useEffect(() => {
+    setTimeout(function() {
+      if (jrDoctorJoined == false) {
+        console.log('Alert Shows After 30000 Seconds of Delay.');
+        pubnub.publish(
+          {
+            channel: channel,
+            message: {
+              message: firstMessage,
+              automatedText: `Hi ${currentPatient &&
+                currentPatient.firstName}, sorry to keep you waiting. Dr.(SD)’s team is with another patient right now. Your consultation prep will start soon.`,
+              id: doctorId,
+              isTyping: true,
+            },
+            storeInHistory: true,
+            sendByPost: true,
+          },
+          (status, response) => {}
+        );
+      } else {
+      }
+    }, 30000);
+  }, []);
+  useEffect(() => {
+    setTimeout(function() {
+      if (jrDoctorJoined == false) {
+        console.log('Alert Shows After 60000 Seconds of Delay.');
+        pubnub.publish(
+          {
+            channel: channel,
+            message: {
+              message: secondMessage,
+              automatedText:
+                'Sorry, but all the members in Dr.(SD)’s team are busy right now. We will send you a notification as soon as they are available for collecting your details',
+              id: doctorId,
+              isTyping: true,
+            },
+            storeInHistory: true,
+            sendByPost: true,
+          },
+          (status, response) => {}
+        );
+      } else {
+      }
+    }, 60000);
+  }, []);
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');

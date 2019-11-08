@@ -8,8 +8,12 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   SAVE_PATIENT_ADDRESS,
   UPDATE_PATIENT_ADDRESS,
+  DELETE_PATIENT_ADDRESS,
 } from '@aph/mobile-patients/src/graphql/profiles';
-import { PatientAddressInput } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  PatientAddressInput,
+  PATIENT_ADDRESS_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   savePatientAddress,
   savePatientAddressVariables,
@@ -37,6 +41,8 @@ import {
   Text,
   TextInput,
   View,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import {
@@ -46,7 +52,14 @@ import {
 import { fonts } from '../../theme/fonts';
 import { AppRoutes } from '../NavigatorContainer';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-const { height } = Dimensions.get('window');
+import { Remove, RemoveIcon, More } from '../ui/Icons';
+import { MaterialMenu } from '../ui/MaterialMenu';
+import { colors } from '../../theme/colors';
+import {
+  deletePatientAddress,
+  deletePatientAddressVariables,
+} from '../../graphql/types/deletePatientAddress';
+const { height, width } = Dimensions.get('window');
 const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 const styles = StyleSheet.create({
   placeholderTextStyle: {
@@ -104,6 +117,19 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingBottom: 0,
   },
+  buttonViewStyle: {
+    width: '30%',
+    backgroundColor: 'white',
+  },
+  selectedButtonViewStyle: {
+    backgroundColor: theme.colors.APP_GREEN,
+  },
+  buttonTitleStyle: {
+    color: theme.colors.APP_GREEN,
+  },
+  selectedButtonTitleStyle: {
+    color: theme.colors.WHITE,
+  },
 });
 
 export interface AddAddressProps extends NavigationScreenProps {
@@ -111,9 +137,25 @@ export interface AddAddressProps extends NavigationScreenProps {
   DataAddress?: any;
 }
 
+type addressOptions = {
+  name: PATIENT_ADDRESS_TYPE;
+};
+
+const AddressOptions: addressOptions[] = [
+  {
+    name: PATIENT_ADDRESS_TYPE.HOME,
+  },
+  {
+    name: PATIENT_ADDRESS_TYPE.OFFICE,
+  },
+  {
+    name: PATIENT_ADDRESS_TYPE.OTHER,
+  },
+];
 export const AddAddress: React.FC<AddAddressProps> = (props) => {
   console.log('KeyName', props.navigation.getParam('KeyName'));
-
+  const isEdit = props.navigation.getParam('KeyName') === 'Update';
+  const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [userName, setuserName] = useState<string>('');
   const [userId, setuserId] = useState<string>('');
@@ -125,13 +167,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const [state, setstate] = useState<string>('');
   const [showPopup, setShowPopup] = useState<boolean>(false);
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-
+  const [addressType, setAddressType] = useState<PATIENT_ADDRESS_TYPE>();
+  const [optionalAddress, setOptionalAddress] = useState<string>('');
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
-
+  const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -145,6 +188,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       setstate(props.navigation.getParam('DataAddress').state);
       setpincode(props.navigation.getParam('DataAddress').zipcode);
       setaddressLine1(props.navigation.getParam('DataAddress').addressLine1);
+      setAddressType(props.navigation.getParam('DataAddress').addressType);
+      setOptionalAddress(props.navigation.getParam('DataAddress').otherAddressType);
     } else {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -221,7 +266,10 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     city &&
     city.length > 1 &&
     state &&
-    state.length > 1;
+    state.length > 1 &&
+    addressType !== undefined &&
+    (addressType !== PATIENT_ADDRESS_TYPE.OTHER ||
+      (addressType === PATIENT_ADDRESS_TYPE.OTHER && optionalAddress));
 
   const saveAddress = (addressInput: PatientAddressInput) =>
     client.mutate<savePatientAddress, savePatientAddressVariables>({
@@ -273,6 +321,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         zipcode: pincode,
         landmark: landMark,
         mobileNumber: phoneNumber,
+        addressType: addressType,
+        otherAddressType: optionalAddress,
       };
       console.log(addressInput, 'addressInput');
       try {
@@ -328,6 +378,19 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           props.navigation.getParam('KeyName') == 'Update' ? 'EDIT ADDRESS' : 'ADD NEW ADDRESS'
         }
         onPressLeftIcon={() => props.navigation.goBack()}
+        rightComponent={
+          props.navigation.getParam('KeyName') == 'Update' ? (
+            <TouchableOpacity
+              onPress={() => {
+                console.log(props.navigation.getParam('DataAddress').id, !displayoverlay);
+                // setdisplayoverlay(true);
+                setDeleteProfile(true);
+              }}
+            >
+              <More />
+            </TouchableOpacity>
+          ) : null
+        }
       />
     );
   };
@@ -417,7 +480,35 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         aphConsole.error({ e });
       });
   };
-
+  const renderAddressOption = () => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginBottom: 10,
+          paddingHorizontal: 2,
+        }}
+      >
+        {AddressOptions.map((option) => (
+          <Button
+            key={option.name}
+            title={option.name}
+            style={[
+              styles.buttonViewStyle,
+              addressType === option.name ? styles.selectedButtonViewStyle : null,
+            ]}
+            titleTextStyle={
+              addressType === option.name
+                ? styles.selectedButtonTitleStyle
+                : styles.buttonTitleStyle
+            }
+            onPress={() => setAddressType(option.name)}
+          />
+        ))}
+      </View>
+    );
+  };
   const renderAddress = () => {
     return (
       <View
@@ -456,7 +547,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             )}
           />
         )}
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Full Name</Text>
+        {/* <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Full Name</Text>
         <TextInputComponent
           value={userName}
           onChangeText={(text) =>
@@ -487,17 +578,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
               setphoneNumber(phoneNumber)
             }
           />
-          {/* <TextInputComponent
-            value={phoneNumber}
-            onChangeText={(phoneNumber) =>
-              (phoneNumber == '' || /^[6-9]{1}\d{0,9}$/.test(phoneNumber)) &&
-              setphoneNumber(phoneNumber)
-            }
-            placeholder={'Phone Number'}
-            maxLength={10}
-            inputStyle={styles.inputStyle}
-          /> */}
-        </View>
+        </View> */}
         {/* <View style={{ flexDirection: 'row' }}>
           <Text
             style={{
@@ -579,6 +660,21 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           placeholder={'Enter area / locality name'}
           multiline={true}
         />
+        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Address Type </Text>
+        {renderAddressOption()}
+        {addressType === PATIENT_ADDRESS_TYPE.OTHER && (
+          <TextInputComponent
+            value={optionalAddress}
+            onChangeText={(optionalAddress) =>
+              optionalAddress.startsWith(' ') || city.startsWith('.')
+                ? null
+                : (optionalAddress == '' || /^([a-zA-Z0-9.\s])+$/.test(optionalAddress)) &&
+                  setOptionalAddress(optionalAddress)
+            }
+            placeholder={'Enter address type'}
+            multiline={true}
+          />
+        )}
         {/* <TextInputComponent
           value={state}
           onChangeText={(state) =>
@@ -600,13 +696,118 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
     );
   };
   const keyboardVerticalOffset = Platform.OS === 'android' ? { keyboardVerticalOffset: 20 } : {};
+  const renderDeleteButton = () => {
+    return (
+      <View
+        style={{
+          position: 'absolute',
+          height: height,
+          width: width,
+          flex: 1,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => {
+            setDeleteProfile(false);
+          }}
+        >
+          <View
+            style={{
+              margin: 0,
+              height: height,
+              width: width,
+              backgroundColor: 'transparent',
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() => {
+                //deleteUserProfile();
+                setDeleteProfile(false);
+                client
+                  .mutate<deletePatientAddress, deletePatientAddressVariables>({
+                    mutation: DELETE_PATIENT_ADDRESS,
+                    variables: { id: props.navigation.getParam('DataAddress').id },
+                    fetchPolicy: 'no-cache',
+                  })
+                  .then((_data: any) => {
+                    console.log(('dat', _data));
+                    props.navigation.push(AppRoutes.AddressBook);
+                  })
+                  .catch((e) => {
+                    const error = JSON.parse(JSON.stringify(e));
+                    const errorMessage = error && error.message;
+                    console.log(
+                      'Error occured while render Delete MedicalOrder',
+                      errorMessage,
+                      error
+                    );
+                    Alert.alert('Error', errorMessage);
+                  });
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: 'white',
+                  width: 145,
+                  height: 45,
+                  marginLeft: width - 165,
+                  marginTop: 64,
+                  borderRadius: 10,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  ...theme.viewStyles.shadowStyle,
+                }}
+              >
+                <Text
+                  style={{
+                    ...theme.viewStyles.text('M', 16, '#02475b'),
+                    backgroundColor: 'white',
+                    textAlign: 'center',
+                  }}
+                >
+                  Delete Profile
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
   return (
     <View style={{ flex: 1 }}>
       <SafeAreaView style={theme.viewStyles.container}>
         {renderHeader()}
+
         <KeyboardAvoidingView behavior={'padding'} style={{ flex: 1 }} {...keyboardVerticalOffset}>
           <ScrollView bounces={false}>{renderAddress()}</ScrollView>
           {/* <StickyBottomComponent defaultBG> */}
+
+          {/* {displayoverlay ? (
+            <Button
+              title="Delete Address"
+              style={{
+                position: 'absolute',
+                width: 159,
+                height: 58,
+                backgroundColor: '#ffffff',
+                top: -5,
+                shadowColor: colors.SHADOW_GRAY,
+                shadowOffset: { width: 0, height: 6 },
+                shadowOpacity: 0.8,
+                shadowRadius: 5,
+                marginLeft: width / 2,
+              }}
+              titleTextStyle={{ color: '#02475b', ...theme.fonts.IBMPlexSansMedium(18) }}
+              onPress={() => setdisplayoverlay(false)}
+            />
+          ) : null} */}
           <View
             style={{
               width: '100%',
@@ -626,6 +827,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         </KeyboardAvoidingView>
       </SafeAreaView>
       {showSpinner && <Spinner />}
+      {deleteProfile && isEdit && renderDeleteButton()}
     </View>
   );
 };
