@@ -63,6 +63,11 @@ import {
 } from 'profiles-service/resolvers/getMedicineOrdersList';
 import { uploadFileTypeDefs, uploadFileResolvers } from 'profiles-service/resolvers/uploadFile';
 import {
+  uploadDocumentTypeDefs,
+  uploadDocumentResolvers,
+} from 'profiles-service/resolvers/uploadDocumentToPrism';
+
+import {
   addPatientMedicalRecordTypeDefs,
   addPatientMedicalRecordResolvers,
 } from 'profiles-service/resolvers/addMedicalRecord';
@@ -222,6 +227,10 @@ import { format, differenceInMilliseconds } from 'date-fns';
       {
         typeDefs: uploadFileTypeDefs,
         resolvers: uploadFileResolvers,
+      },
+      {
+        typeDefs: uploadDocumentTypeDefs,
+        resolvers: uploadDocumentResolvers,
       },
       {
         typeDefs: addPatientMedicalRecordTypeDefs,

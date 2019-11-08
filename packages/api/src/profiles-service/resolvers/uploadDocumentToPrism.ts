@@ -1,37 +1,46 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Resolver } from 'api-gateway';
+import { UPLOAD_FILE_TYPES } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 import { format } from 'date-fns';
 
-export const uploadFileTypeDefs = gql`
-  enum UPLOAD_FILE_TYPES {
-    JPG
-    PNG
-    JPEG
-    PDF
-  }
-
+export const uploadDocumentTypeDefs = gql`
   type UploadPrismDocumentResult {
     status: Boolean
   }
+  input UploadDocumentInput {
+    fileType: UPLOAD_FILE_TYPES
+    base64FileInput: String
+    patientId: String
+  }
 
   extend type Mutation {
-    uploadDocument(fileType: String, base64FileInput: String): UploadPrismDocumentResult!
+    uploadDocument(uploadDocumentInput: UploadDocumentInput): UploadPrismDocumentResult!
   }
 `;
 type UploadPrismDocumentResult = {
   status: Boolean;
 };
 
+type UploadDocumentInput = {
+  fileType: UPLOAD_FILE_TYPES;
+  base64FileInput: string;
+  patientId: string;
+};
+
+type UploadDocInputArgs = { uploadDocumentInput: UploadDocumentInput };
+
 const uploadDocument: Resolver<
   null,
-  { fileType: string; base64FileInput: string },
+  UploadDocInputArgs,
   ProfilesServiceContext,
   UploadPrismDocumentResult
-> = async (parent, args, { mobileNumber, profilesDb }) => {
-  const fileName = format(new Date(), 'ddmmyyyy-HHmmss') + '.' + args.fileType.toLowerCase();
+> = async (parent, { uploadDocumentInput }, { mobileNumber, profilesDb }) => {
+  console.log(uploadDocumentInput.base64FileInput, uploadDocumentInput.fileType);
+  const fileName =
+    format(new Date(), 'ddmmyyyy-HHmmss') + '.' + uploadDocumentInput.fileType.toLowerCase();
   console.log(fileName);
 
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
@@ -44,20 +53,24 @@ const uploadDocument: Resolver<
   const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
   console.log(prismUserList);
 
-  // const authTokenPromise = await fetch(
-  //   `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`
-  // )
-  // .then((res) => res.json())
-  // .catch((error: JSON) => {
-  //   throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
-  // });
+  //check if current user uhid matches with response uhids
+  const uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);
+  console.log(uhid);
 
-  // };
+  if (!uhid) {
+    throw new Error('Patient UHID Error');
+  }
+
+  //just call get prism user details with the corresponding uhid
+  patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+
+  const uploadResponse = patientsRepo.uploadDocumentToPrism(uhid, prismAuthToken);
+  console.log(uploadResponse);
 
   return { status: true };
 };
 
-export const uploadFileResolvers = {
+export const uploadDocumentResolvers = {
   Mutation: {
     uploadDocument,
   },
