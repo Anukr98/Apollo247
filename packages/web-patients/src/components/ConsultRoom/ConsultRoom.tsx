@@ -171,12 +171,12 @@ const useStyles = makeStyles((theme: Theme) => {
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
 export const ConsultRoom: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   const currentDate = new Date().toISOString().substring(0, 10);
   const { isSignedIn } = useAuth();
   const mascotRef = useRef(null);
-  const [isPopoverOpen] = React.useState<boolean>(true);
+  const [isPopoverOpen] = React.useState<boolean>(false);
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAppointments,
@@ -245,7 +245,10 @@ export const ConsultRoom: React.FC = (props) => {
                 <AphSelect
                   value={currentPatient.id}
                   onChange={(e) => setCurrentPatientId(e.target.value as Patient['id'])}
-                  classes={{ root: classes.selectMenuRoot, selectMenu: classes.selectMenuItem }}
+                  classes={{
+                    root: classes.selectMenuRoot,
+                    selectMenu: classes.selectMenuItem,
+                  }}
                 >
                   {allCurrentPatients.map((patient) => {
                     const isSelected = patient.id === currentPatient.id;

@@ -8,3 +8,12 @@ export const UPDATE_APPOINTMENT_SESSION = gql`
     }
   }
 `;
+
+export const ADD_TO_CONSULT_QUEUE = gql`
+  mutation AddToConsultQueue($appointmentId: String!) {
+    addToConsultQueue(appointmentId: $appointmentId) {
+      id
+      doctorId
+    }
+  }
+`;
