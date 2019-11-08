@@ -156,12 +156,12 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                   key={i}
                 >
                   <View style={styles.imageView}>
-                    {profile.photoUrl &&
-                    profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+                    {profile!.photoUrl &&
+                    profile!.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
                       <Image
                         style={styles.profileImageStyle}
                         source={{
-                          uri: profile.photoUrl,
+                          uri: profile!.photoUrl,
                         }}
                         resizeMode={'contain'}
                       />
@@ -184,7 +184,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         marginBottom: 8,
                       }}
                     >
-                      {profile.firstName + ' ' + profile.lastName}
+                      {profile!.firstName + ' ' + profile!.lastName}
                     </Text>
                     <View style={styles.separatorStyle} />
                     <Text
@@ -194,10 +194,11 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         ...fonts.IBMPlexSansMedium(12),
                       }}
                     >
-                      {profile.relation === Relation.ME ? 'SELF' : profile.relation} &nbsp; | &nbsp;
-                      {' '}
-                      {profile.gender} &nbsp;| &nbsp;
-                      {profile.dateOfBirth && moment().diff(profile.dateOfBirth, 'years')}
+                      {profile!.relation === Relation.ME ? 'SELF' : profile!.relation}
+                      {profile!.relation && ' | '}
+                      {profile!.gender}
+                      {profile!.gender && ' | '}
+                      {profile!.dateOfBirth && moment().diff(profile!.dateOfBirth, 'years')}
                     </Text>
                     <View style={styles.separatorStyle} />
                     <Text
@@ -207,7 +208,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         ...fonts.IBMPlexSansMedium(12),
                       }}
                     >
-                      UHID : {profile.uhid}
+                      UHID : {profile!.uhid}
                     </Text>
                     <Text
                       style={{
@@ -217,7 +218,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                       }}
                     >
                       DOB :{' '}
-                      {profile.dateOfBirth && moment(profile.dateOfBirth).format('DD MMM, YYYY')}
+                      {profile!.dateOfBirth && moment(profile!.dateOfBirth).format('DD MMM, YYYY')}
                     </Text>
                   </View>
                 </View>

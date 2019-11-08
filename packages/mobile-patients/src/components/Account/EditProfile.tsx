@@ -238,13 +238,22 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const { isIphoneX } = DeviceHelper();
   const client = useApolloClient();
 
+  const isSatisfyingNameRegex = (value: string) =>
+    value == ' '
+      ? false
+      : value == '' || /^[a-zA-Z]+(([' ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+      ? true
+      : false;
+
   const isSatisfyingEmailRegex = (value: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
       value
     );
   const isValidProfile =
     firstName &&
+    isSatisfyingNameRegex(firstName) &&
     lastName &&
+    isSatisfyingNameRegex(lastName) &&
     date &&
     gender &&
     relation &&
@@ -603,6 +612,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           <View style={styles.bottomButtonStyle}>
             <Button
               onPress={() => {
+                setFirstName(firstName.trim());
+                setLastName(lastName.trim());
+                setEmail(email.trim());
                 isEdit ? updateUserProfile() : newProfile();
               }}
               disabled={!isValidProfile}
