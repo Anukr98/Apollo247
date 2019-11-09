@@ -255,6 +255,9 @@ export class Doctor extends BaseEntity {
   @Column({ nullable: true })
   salutation: Salutation;
 
+  @OneToOne((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.doctor)
+  doctorSecretary: DoctorSecretary;
+
   @ManyToOne((type) => DoctorSpecialty, (specialty) => specialty.doctor)
   specialty: DoctorSpecialty;
 

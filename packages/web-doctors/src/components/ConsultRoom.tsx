@@ -1,10 +1,22 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Theme, Button } from '@material-ui/core';
+import { Theme, Button, Avatar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import { AphInput, AphButton } from '@aph/web-ui-components';
+import { AphInput, AphButton, AphTextField } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContentText from '@material-ui/core/DialogContentText';
+
+const client = new AphStorageClient(
+  process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
+  process.env.AZURE_STORAGE_CONTAINER_NAME
+);
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -35,19 +47,56 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 15,
       wordBreak: 'break-all',
     },
+    patientBubble: {
+      backgroundColor: theme.palette.common.white,
+      position: 'relative',
+    },
+    patientAvatar: {
+      position: 'absolute',
+      left: -40,
+      bottom: 0,
+    },
+    avatar: {
+      width: 32,
+      height: 32,
+    },
+    chatBubble: {
+      backgroundColor: '#f7f7f7',
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
+      borderRadius: 10,
+      padding: '9px 16px',
+      color: '#02475b',
+      fontSize: 15,
+      lineHeight: 1.47,
+      letterSpacing: 'normal',
+      opacity: 0.8,
+      display: 'inline-block',
+      maxWidth: 236,
+      textAlign: 'left',
+      wordBreak: 'break-word',
+    },
+    chatImgBubble: {
+      padding: 0,
+      border: 'none',
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
+    },
     doctor: {
-      backgroundColor: '#f0f4f5',
-      padding: '12px 16px',
+      backgroundColor: 'transparent',
+      padding: '6px 16px',
       color: '#02475b',
       fontWeight: theme.typography.fontWeightMedium,
       display: 'inline-block',
       borderRadius: 10,
-      boxShadow: '0 2px 4px 0 #00000026',
+      boxShadow: 'none',
       marginRight: 30,
       textAlign: 'left',
       fontSize: 16,
       maxWidth: '40%',
       wordBreak: 'break-all',
+      border: 'none',
     },
     boldTxt: {
       fontWeight: 700,
@@ -127,6 +176,21 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       lineHeight: '24px',
     },
+    chatSendBtn: {
+      boxShadow: 'none',
+      backgroundColor: 'transparent',
+      minWidth: 'auto',
+      padding: 0,
+      marginLeft: 16,
+      paddingTop: 8,
+      //display: 'none',
+      '&:hover': {
+        backgroundColor: 'transparent',
+      },
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
+    },
     callMsg: {
       fontSize: 14,
       color: '#02475b',
@@ -150,11 +214,23 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'none',
     },
     addImgBtn: {
-      marginRight: 16,
+      background: 'transparent',
+      minWidth: 35,
+      maxWidth: 35,
+      boxShadow: 'none',
+      '&:hover': {
+        background: 'transparent',
+      },
     },
     sendBtn: {
       marginLeft: 16,
       //display: 'none',
+    },
+    imageUpload: {
+      overflow: 'hidden',
+      borderRadius: 10,
+      width: 100,
+      height: 100,
     },
   };
 });
@@ -190,6 +266,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   // const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
+  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
+  const [fileUploading, setFileUploading] = React.useState<boolean>(false);
+  const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
   // const covertVideoMsg = '^^convert`video^^';
@@ -286,7 +365,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getHistory(0);
 
     pubnub.addListener({
-      status: (statusEvent) => { },
+      status: (statusEvent) => {},
       message: (message) => {
         insertText[insertText.length] = message.message;
         console.log(message.message);
@@ -346,6 +425,21 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           getHistory(end);
         }
         resetMessagesAction();
+        srollToBottomAction();
+      }
+    );
+  };
+
+  const sendMsg = (msgObject: any, isStoreInHistory: boolean) => {
+    pubnub.publish(
+      {
+        channel: channel,
+        message: msgObject,
+        storeInHistory: isStoreInHistory,
+        sendByPost: true,
+      },
+      (status, response) => {
+        setMessageText('');
         srollToBottomAction();
       }
     );
@@ -426,10 +520,36 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-                  <div>
-                    <span>{getAutomatedMessage(rowData)}</span>
+              // <div>
+              //   <span>{getAutomatedMessage(rowData)}</span>
+              // </div>
+              <div
+                className={`${classes.chatBubble} ${
+                  rowData.message === documentUpload ? classes.chatImgBubble : ''
+                }`}
+              >
+                {leftComponent == 1 && !rowData.duration && (
+                  <div className={classes.patientAvatar}>
+                    <Avatar
+                      className={classes.avatar}
+                      src={
+                        patientDetails && patientDetails.photoUrl
+                          ? patientDetails!.photoUrl
+                          : require('images/no_photo_icon_round.svg')
+                      }
+                      alt=""
+                    />
                   </div>
                 )}
+                {rowData.message === documentUpload ? (
+                  <div>
+                    <img src={rowData.url} alt={rowData.url} />
+                  </div>
+                ) : (
+                  <span>{getAutomatedMessage(rowData)}</span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       );
@@ -478,22 +598,50 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-                  <div>
-                    {rowData.message === documentUpload ? (
-                      <div style={{ width: '200px', height: 'auto' }}>
-                        <a href={rowData.url} target="_blank">
-                          <img
-                            style={{ width: '200px', height: 'auto' }}
-                            src={rowData.url}
-                            alt={rowData.url}
-                          />
-                        </a>
-                      </div>
-                    ) : (
-                        <span>{getAutomatedMessage(rowData)}</span>
-                      )}
+              // <div>
+              //   {rowData.message === documentUpload ? (
+              //     <div style={{ width: '200px', height: 'auto' }}>
+              //       <a href={rowData.url} target="_blank">
+              //         <img
+              //           style={{ width: '200px', height: 'auto' }}
+              //           src={rowData.url}
+              //           alt={rowData.url}
+              //         />
+              //       </a>
+              //     </div>
+              //   ) : (
+              //     <span>{getAutomatedMessage(rowData)}</span>
+              //   )}
+              // </div>
+              <div
+                className={`${classes.chatBubble} ${classes.patientBubble} ${
+                  rowData.message === documentUpload ? classes.chatImgBubble : ''
+                }`}
+              >
+                {rightComponent == 1 && !rowData.duration && (
+                  <div className={classes.patientAvatar}>
+                    <Avatar
+                      className={classes.avatar}
+                      src={
+                        patientDetails && patientDetails.photoUrl
+                          ? patientDetails!.photoUrl
+                          : require('images/no_photo_icon_round.svg')
+                      }
+                      alt=""
+                    />
                   </div>
                 )}
+                {rowData.message === documentUpload ? (
+                  <div className={classes.imageUpload}>
+                    <div>
+                      <img src={rowData.url} alt={rowData.url} />
+                    </div>
+                  </div>
+                ) : (
+                  <span>{getAutomatedMessage(rowData)}</span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       );
@@ -530,22 +678,48 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-                  <div>
-                    {rowData.message === documentUpload ? (
-                      <div style={{ width: '200px', height: 'auto' }}>
-                        <a href={rowData.url} target="_blank">
-                          <img
-                            style={{ width: '200px', height: 'auto' }}
-                            src={rowData.url}
-                            alt={rowData.url}
-                          />
-                        </a>
-                      </div>
-                    ) : (
-                        <span>{getAutomatedMessage(rowData)}</span>
-                      )}
+              // <div>
+              //   {rowData.message === documentUpload ? (
+              //     <div style={{ width: '200px', height: 'auto' }}>
+              //       <a href={rowData.url} target="_blank">
+              //         <img
+              //           style={{ width: '200px', height: 'auto' }}
+              //           src={rowData.url}
+              //           alt={rowData.url}
+              //         />
+              //       </a>
+              //     </div>
+              //   ) : (
+              //     <span>{getAutomatedMessage(rowData)}</span>
+              //   )}
+              // </div>
+              <div
+                className={`${classes.chatBubble} ${
+                  rowData.message === documentUpload ? classes.chatImgBubble : ''
+                }`}
+              >
+                {leftComponent == 1 && !rowData.duration && (
+                  <div className={classes.patientAvatar}>
+                    <Avatar
+                      className={classes.avatar}
+                      src={
+                        patientDetails && patientDetails.photoUrl
+                          ? patientDetails!.photoUrl
+                          : require('images/no_photo_icon_round.svg')
+                      }
+                      alt=""
+                    />
                   </div>
                 )}
+                {rowData.message === documentUpload ? (
+                  <div>
+                    <img src={rowData.url} alt={rowData.url} />
+                  </div>
+                ) : (
+                  <span>{getAutomatedMessage(rowData)}</span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       );
@@ -557,8 +731,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-      })
+          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+        })
       : '';
   // const toggelChatVideo = () => {
   //   setIsNewMsg(false);
@@ -686,7 +860,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           )}
           {(!showVideo || showVideoChat) && (
             <div className={classes.chatFooterSection}>
-              <div>
+              {/* <div>
                 <Button className={classes.addImgBtn}>
                   <img src={require('images/ic_add_circle.svg')} alt="" />
                 </Button>
@@ -714,10 +888,158 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 >
                   <img src={require('images/ic_send.svg')} alt="" />
                 </AphButton>
+              </div> */}
+              <div>
+                <Button
+                  className={classes.addImgBtn}
+                  variant="contained"
+                  component="label"
+                  disabled={fileUploading}
+                >
+                  <img src={require('images/ic_add_circle.svg')} alt="" />
+                  <input
+                    type="file"
+                    style={{ display: 'none' }}
+                    disabled={fileUploading}
+                    // onChange={async (e) => {
+                    //   setIsUploading(false);
+                    //   setUploadedFileUrl(null);
+                    //   const files = e.currentTarget.files;
+                    //   const file = files && files.length > 0 ? files[0] : null;
+                    //   if (file) {
+                    //     setIsUploading(true);
+                    //     const aphBlob = await client.uploadBrowserFile({ file }).catch((error) => {
+                    //       throw error;
+                    //     });
+                    //     const url = client.getBlobUrl(aphBlob.name);
+                    //     console.log(aphBlob, url);
+                    //     setUploadedFileUrl(url);
+                    //     setIsUploading(false);
+                    //   }
+                    // }}
+                    onChange={async (e) => {
+                      const fileNames = e.target.files;
+                      if (fileNames && fileNames.length > 0) {
+                        setFileUploading(true);
+                        const file = fileNames[0] || null;
+                        const fileExtension = file.name.split('.').pop();
+                        const fileSize = file.size;
+                        if (fileSize > 2000000) {
+                          setFileUploadErrorMessage(
+                            'Invalid File Size. File size must be less than 2MB'
+                          );
+                          setIsDialogOpen(true);
+                        } else if (
+                          fileExtension &&
+                          (fileExtension.toLowerCase() === 'png' ||
+                            fileExtension.toLowerCase() === 'jpg' ||
+                            fileExtension.toLowerCase() === 'pdf' ||
+                            fileExtension.toLowerCase() === 'jpeg')
+                        ) {
+                          if (file) {
+                            const aphBlob = await client
+                              .uploadBrowserFile({ file })
+                              .catch((error) => {
+                                throw error;
+                              });
+                            console.log(aphBlob, 'aphBlob');
+                            const url = client.getBlobUrl(aphBlob.name);
+                            console.log('url', url);
+                            const uploadObject = {
+                              id: doctorId,
+                              fileType: `image`,
+                              message: `^^#DocumentUpload`,
+                              url: url,
+                              isTyping: true,
+                            };
+                            console.log('aphBlob', aphBlob, url);
+                            sendMsg(uploadObject, true);
+                            setFileUploading(false);
+                          }
+                        } else {
+                          setFileUploadErrorMessage(
+                            'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
+                          );
+                          setIsDialogOpen(true);
+                        }
+                      }
+                    }}
+                  />
+                </Button>
+                )}
+                <AphTextField
+                  className={classes.inputWidth}
+                  inputProps={{ type: 'text' }}
+                  placeholder="Type here..."
+                  value={messageText}
+                  onKeyPress={(e) => {
+                    if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
+                      send();
+                    }
+                  }}
+                  onChange={(event) => {
+                    setMessageText(event.currentTarget.value);
+                  }}
+                />
+                <AphButton
+                  className={classes.chatSendBtn}
+                  onClick={() => {
+                    if (messageText.trim() !== '') {
+                      send();
+                    }
+                  }}
+                >
+                  <img src={require('images/ic_send.svg')} alt="" />
+                </AphButton>
+                {/* {props.disableChat && (
+              <Button className={classes.chatsendcircle} variant="contained" component="label">
+                <img src={require('images/ic_add_circle.svg')} alt="" />
+                <input
+                  type="file"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const fileNames = e.target.files;
+                    if (fileNames && fileNames.length > 0) {
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const dataURL = reader.result;
+                        setChatUploadFile(dataURL);
+                        mutationUploadChatDocument();
+                        // console.log(dataURL);
+                      };
+                      reader.readAsDataURL(fileNames[0]);
+                    }
+                  }}
+                />
+              </Button>
+            )} */}
               </div>
             </div>
           )}
         </div>
+        <Dialog
+          open={isDialogOpen}
+          onClose={() => setIsDialogOpen(false)}
+          disableBackdropClick
+          disableEscapeKeyDown
+        >
+          <DialogTitle>File Upload Error</DialogTitle>
+          <DialogContent>
+            <DialogContentText>{fileUploadErrorMessage}</DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              color="primary"
+              onClick={() => {
+                setIsDialogOpen(false);
+                setFileUploading(false);
+              }}
+              autoFocus
+            >
+              Ok
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </div>
   );
