@@ -18,6 +18,7 @@ export const delegateFunctionsTypeDefs = gql`
     updateDelegateNumber(delegateNumber: String): Profile
     removeDelegateNumber: Profile
     addSecretary(secretaryId: ID!): DoctorSecretaryData
+    removeSecretary(secretaryId: ID!): DoctorDetails
   }
   extend type Query {
     getSecretaryList: [SecretaryDetails]
@@ -108,7 +109,7 @@ const addSecretary: Resolver<
     secretaryDetails.id
   );
 
-  if (doctorSecretaryRecord.length > 0)
+  if (doctorSecretaryRecord)
     throw new AphError(AphErrorMessages.SECRETARY_DOCTOR_COMBINATION_EXIST);
 
   //insert DoctorSecretary record
@@ -121,12 +122,46 @@ const addSecretary: Resolver<
   return doctorSecretary;
 };
 
+const removeSecretary: Resolver<
+  null,
+  { secretaryId: string },
+  DoctorsServiceContext,
+  Doctor
+> = async (parent, args, { mobileNumber, doctorsDb }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //check if secretary id is valid.
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryDetails = await secretaryRepo.getSecretaryById(args.secretaryId);
+  if (secretaryDetails == null) throw new AphError(AphErrorMessages.INVALID_SECRETARY_ID);
+
+  //check if secretary & doctor combination already exist
+  const doctorSecretaryRepo = doctorsDb.getCustomRepository(DoctorSecretaryRepository);
+  const doctorSecretaryRecord = await doctorSecretaryRepo.findRecord(
+    doctorData.id,
+    secretaryDetails.id
+  );
+
+  if (doctorSecretaryRecord == null)
+    throw new AphError(AphErrorMessages.SECRETARY_DOCTOR_COMBINATION_DOESNOT_EXIST);
+
+  //remove doctor secretary details
+  await doctorSecretaryRepo.removeFromDoctorSecretary(doctorSecretaryRecord.id);
+
+  const updatedDoctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (updatedDoctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  return updatedDoctorData;
+};
+
 export const delegateFunctionsResolvers = {
   Mutation: {
     updateDelegateNumber,
     removeDelegateNumber,
     addSecretary,
-    //removeSecretary,
+    removeSecretary,
   },
 
   Query: { getSecretaryList },

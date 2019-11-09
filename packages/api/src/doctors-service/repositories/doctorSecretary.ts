@@ -16,6 +16,10 @@ export class DoctorSecretaryRepository extends Repository<DoctorSecretary> {
   }
 
   findRecord(doctor: string, secretary: string) {
-    return this.find({ where: { doctor, secretary } });
+    return this.findOne({ where: { doctor, secretary } });
+  }
+
+  removeFromDoctorSecretary(id: string) {
+    return this.delete(id);
   }
 }
