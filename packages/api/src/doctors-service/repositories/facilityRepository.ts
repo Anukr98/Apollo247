@@ -61,7 +61,7 @@ export class FacilityRepository extends Repository<Facility> {
   getFacilityUniqueTerm(facility: Partial<Facility>) {
     let facilityName = '';
     if (facility.name) facilityName = facility.name.trim().toLowerCase();
-    //if (facility.streetLine1) facilityName += '_' + facility.streetLine1.trim().toLowerCase();
+    if (facility.streetLine1) facilityName += '_' + facility.streetLine1.trim().toLowerCase();
     return facilityName;
   }
 
