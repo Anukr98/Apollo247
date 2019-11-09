@@ -23,4 +23,8 @@ export class SecretaryRepository extends Repository<Secretary> {
       ],
     });
   }
+
+  getSecretaryList() {
+    return this.find({});
+  }
 }

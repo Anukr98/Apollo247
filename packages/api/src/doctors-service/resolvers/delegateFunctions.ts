@@ -4,13 +4,17 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
-import { Doctor } from 'doctors-service/entities';
+import { Doctor, Secretary } from 'doctors-service/entities';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
+import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 
 export const delegateFunctionsTypeDefs = gql`
   extend type Mutation {
     updateDelegateNumber(delegateNumber: String): Profile
     removeDelegateNumber: Profile
+  }
+  extend type Query {
+    getSecretaryList: [SecretaryDetails]
   }
 `;
 
@@ -63,9 +67,26 @@ const removeDelegateNumber: Resolver<null, {}, DoctorsServiceContext, Doctor> = 
   return updatedDoctorDetails;
 };
 
+const getSecretaryList: Resolver<null, {}, DoctorsServiceContext, Secretary[]> = async (
+  parent,
+  args,
+  { mobileNumber, doctorsDb }
+) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  return await secretaryRepo.getSecretaryList();
+};
+
 export const delegateFunctionsResolvers = {
   Mutation: {
     updateDelegateNumber,
     removeDelegateNumber,
+    //addSecretary,
+    //removeSecretary,
   },
+
+  Query: { getSecretaryList },
 };
