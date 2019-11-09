@@ -43,7 +43,6 @@ export enum DiscountType {
 }
 
 export enum DoctorType {
-  ADMIN = "ADMIN",
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
@@ -121,6 +120,12 @@ export enum MedicalTestUnit {
   GM = "GM",
   GM_SLASH_DL = "GM_SLASH_DL",
   _PERCENT_ = "_PERCENT_",
+}
+
+export enum PATIENT_ADDRESS_TYPE {
+  HOME = "HOME",
+  OFFICE = "OFFICE",
+  OTHER = "OTHER",
 }
 
 export enum Relation {
@@ -344,6 +349,8 @@ export interface PatientAddressInput {
   zipcode: string;
   mobileNumber?: string | null;
   landmark?: string | null;
+  addressType?: PATIENT_ADDRESS_TYPE | null;
+  otherAddressType?: string | null;
 }
 
 export interface PatientAppointmentsInput {
@@ -420,6 +427,8 @@ export interface UpdatePatientAddressInput {
   zipcode: string;
   mobileNumber?: string | null;
   landmark?: string | null;
+  addressType?: PATIENT_ADDRESS_TYPE | null;
+  otherAddressType?: string | null;
 }
 
 export interface UpdatePatientInput {
