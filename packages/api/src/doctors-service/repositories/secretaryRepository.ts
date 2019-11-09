@@ -27,4 +27,8 @@ export class SecretaryRepository extends Repository<Secretary> {
   getSecretaryList() {
     return this.find({});
   }
+
+  getSecretaryById(id: string) {
+    return this.findOne({ where: { id } });
+  }
 }

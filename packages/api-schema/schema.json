@@ -4851,7 +4851,7 @@
             "args": [],
             "type": {
               "kind": "OBJECT",
-              "name": "doctorSecretaryDetails",
+              "name": "DoctorSecretaryDetails",
               "ofType": null
             },
             "isDeprecated": false,
@@ -5583,7 +5583,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "doctorSecretaryDetails",
+        "name": "DoctorSecretaryDetails",
         "description": null,
         "fields": [
           {
@@ -12600,6 +12600,33 @@
             "deprecationReason": null
           },
           {
+            "name": "addSecretary",
+            "description": null,
+            "args": [
+              {
+                "name": "secretaryId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "ID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "DoctorSecretaryData",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "makeTeamDoctorActive",
             "description": null,
             "args": [
@@ -16947,6 +16974,41 @@
             "type": {
               "kind": "SCALAR",
               "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "DoctorSecretaryData",
+        "description": null,
+        "fields": [
+          {
+            "name": "doctor",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Profile",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "secretary",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Secretary",
               "ofType": null
             },
             "isDeprecated": false,

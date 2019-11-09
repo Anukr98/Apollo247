@@ -126,7 +126,7 @@ export const getDoctorDetailsTypeDefs = gql`
     bankAccount: [BankAccount]
     consultHours: [ConsultHours]
     doctorHospital: [DoctorHospital!]!
-    doctorSecretary: doctorSecretaryDetails
+    doctorSecretary: DoctorSecretaryDetails
     packages: [Packages]
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
@@ -170,7 +170,7 @@ export const getDoctorDetailsTypeDefs = gql`
     secretaryDetails: Secretary
   }
 
-  type doctorSecretaryDetails {
+  type DoctorSecretaryDetails {
     secretary: Secretary
   }
 

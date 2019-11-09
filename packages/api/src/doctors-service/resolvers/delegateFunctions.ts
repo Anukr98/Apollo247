@@ -4,14 +4,20 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
-import { Doctor, Secretary } from 'doctors-service/entities';
+import { Doctor, Secretary, DoctorSecretary } from 'doctors-service/entities';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
+import { DoctorSecretaryRepository } from 'doctors-service/repositories/doctorSecretary';
 
 export const delegateFunctionsTypeDefs = gql`
+  type DoctorSecretaryData {
+    doctor: Profile
+    secretary: Secretary
+  }
   extend type Mutation {
     updateDelegateNumber(delegateNumber: String): Profile
     removeDelegateNumber: Profile
+    addSecretary(secretaryId: ID!): DoctorSecretaryData
   }
   extend type Query {
     getSecretaryList: [SecretaryDetails]
@@ -80,11 +86,46 @@ const getSecretaryList: Resolver<null, {}, DoctorsServiceContext, Secretary[]> =
   return await secretaryRepo.getSecretaryList();
 };
 
+const addSecretary: Resolver<
+  null,
+  { secretaryId: string },
+  DoctorsServiceContext,
+  DoctorSecretary
+> = async (parent, args, { mobileNumber, doctorsDb }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //check if secretary id is valid.
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryDetails = await secretaryRepo.getSecretaryById(args.secretaryId);
+  if (secretaryDetails == null) throw new AphError(AphErrorMessages.INVALID_SECRETARY_ID);
+
+  //check if secretary & doctor combination already exist
+  const doctorSecretaryRepo = doctorsDb.getCustomRepository(DoctorSecretaryRepository);
+  const doctorSecretaryRecord = await doctorSecretaryRepo.findRecord(
+    doctorData.id,
+    secretaryDetails.id
+  );
+
+  if (doctorSecretaryRecord.length > 0)
+    throw new AphError(AphErrorMessages.SECRETARY_DOCTOR_COMBINATION_EXIST);
+
+  //insert DoctorSecretary record
+  const doctorSecretaryDetails: Partial<DoctorSecretary> = {
+    secretary: secretaryDetails,
+    doctor: doctorData,
+  };
+
+  const doctorSecretary = await doctorSecretaryRepo.saveDoctorSecretary(doctorSecretaryDetails);
+  return doctorSecretary;
+};
+
 export const delegateFunctionsResolvers = {
   Mutation: {
     updateDelegateNumber,
     removeDelegateNumber,
-    //addSecretary,
+    addSecretary,
     //removeSecretary,
   },
 
