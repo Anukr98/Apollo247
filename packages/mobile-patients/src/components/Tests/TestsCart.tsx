@@ -909,13 +909,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
     return (
       <MaterialMenu
-        dataObject={pickerData}
-        defaultObject={[]}
+        options={pickerData}
+        defaultOptions={[]}
         selectedText={profile.pid}
-        menuContainer={{
+        menuContainerStyle={{
           alignItems: 'flex-end',
-          alignSelf: 'flex-end',
           marginTop: 16,
+          marginLeft: width / 2 - 95,
         }}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
@@ -933,7 +933,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           alignItems: 'flex-end',
           justifyContent: 'flex-end',
         }}
-        onPressObject={(selectedUser) => {
+        onPress={(selectedUser) => {
           if (selectedUser.key === 'ADD NEW PROFILE') setDisplayAddProfile(true);
           else {
             profileArray.map((i) => {

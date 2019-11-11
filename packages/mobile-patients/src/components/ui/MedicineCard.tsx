@@ -241,6 +241,10 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
   };
 
   const renderUnitDropdownAndPrice = () => {
+    const opitons = Array.from({ length: 20 }).map((_, i) => {
+      return { key: (i + 1).toString(), value: i + 1 };
+    });
+
     return (
       <View style={styles.unitAndPriceView}>
         {isTest ? (
@@ -249,7 +253,12 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           <>
             <View style={{ flex: 1 }}>
               <MaterialMenu
-                onPress={(selectedQuantity) => onChangeUnit(selectedQuantity as number)}
+                options={opitons}
+                selectedText={unit!.toString()}
+                selectedTextStyle={{
+                  ...theme.viewStyles.text('M', 16, '#00b38e'),
+                }}
+                onPress={(selectedQuantity) => onChangeUnit(selectedQuantity.value as number)}
               >
                 <View style={[styles.unitDropdownContainer, { marginRight: 6 }]}>
                   <View style={[{ flex: 1, alignItems: 'flex-start' }]}>

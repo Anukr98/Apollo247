@@ -507,6 +507,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderBottomButtons = () => {
+    const opitons = Array.from({ length: 20 }).map((_, i) => {
+      return { key: (i + 1).toString(), value: i + 1 };
+    });
+
     return (
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
         {isOutOfStock ? (
@@ -561,7 +565,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   flex: 1,
                 }}
               >
-                <MaterialMenu onPress={(selectedQuantity) => setselectedQuantity(selectedQuantity)}>
+                <MaterialMenu
+                  options={opitons}
+                  selectedText={selectedQuantity!.toString()}
+                  selectedTextStyle={{
+                    ...theme.viewStyles.text('M', 16, '#00b38e'),
+                  }}
+                  onPress={(selectedQuantity) => setselectedQuantity(selectedQuantity.value)}
+                >
                   <View
                     style={{
                       flexDirection: 'row',

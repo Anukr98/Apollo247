@@ -35,20 +35,18 @@ export type Option = {
   onPress?: () => void;
 };
 
-type Object = {
+type OptionsObject = {
   key: string;
-  value: string;
+  value: string | number;
 };
 
 export interface MaterialMenuProps {
-  onPress?: (arg0: string | number) => void;
-  data?: (string | number)[];
-  onPressObject?: (arg0: Object) => void;
-  dataObject?: Object[];
-  defaultObject?: Object[];
+  onPress: (arg0: OptionsObject) => void;
+  options: OptionsObject[];
+  defaultOptions?: OptionsObject[];
   itemContainer?: StyleProp<ViewStyle> | undefined;
   itemTextStyle?: StyleProp<TextStyle> | undefined;
-  menuContainer?: StyleProp<ViewStyle> | undefined;
+  menuContainerStyle?: StyleProp<ViewStyle> | undefined;
   selectedText?: string | number;
   selectedTextStyle?: StyleProp<TextStyle> | undefined;
   lastTextStyle?: StyleProp<TextStyle> | undefined;
@@ -66,68 +64,40 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
   const showMenu = () => {
     menuRef.current.show();
   };
-  const numbers: (string | number)[] = props.data
-    ? props.data
-    : Array.from({ length: 20 }).map((_, i) => i + 1);
-  const addProfile: Object[] = (props.defaultObject && props.defaultObject) || [];
-  let dataObject: Object[] = props.dataObject ? props.dataObject : [];
-  dataObject = dataObject.length === 0 ? addProfile : dataObject;
+  const defOption: OptionsObject[] = (props.defaultOptions && props.defaultOptions) || [];
+  let optionsObject: OptionsObject[] = props.options ? props.options : [];
+  optionsObject = optionsObject.length === 0 ? defOption : optionsObject;
   return (
     <Menu
       ref={menuRef}
       button={<TouchableOpacity onPress={showMenu}>{props.children}</TouchableOpacity>}
-      style={[styles.menuContainer, props.menuContainer]}
+      style={[styles.menuContainer, props.menuContainerStyle]}
     >
       <ScrollView bounces={false} style={{ paddingVertical: 8 }}>
-        {!!props.dataObject
-          ? dataObject.map((item, index) => (
-              <MenuItem
-                key={item.key}
-                onPress={() => {
-                  hideMenu();
-                  props.onPressObject && props.onPressObject(item);
-                }}
-                style={[
-                  styles.itemContainer,
-                  props.itemContainer,
-                  dataObject.length - 1 === index ? props.lastContainerStyle : {},
-                ]}
-                textStyle={[
-                  styles.itemTextStyle,
-                  props.itemTextStyle,
-                  !!props.selectedText && props.selectedText === item.key
-                    ? props.selectedTextStyle
-                    : {},
-                  dataObject.length - 1 === index ? props.lastTextStyle : {},
-                ]}
-              >
-                {item.value}
-              </MenuItem>
-            ))
-          : numbers.map((number, index) => (
-              <MenuItem
-                key={number}
-                onPress={() => {
-                  hideMenu();
-                  props.onPress && props.onPress(number);
-                }}
-                style={[
-                  styles.itemContainer,
-                  props.itemContainer,
-                  numbers.length - 1 === index ? props.lastContainerStyle : {},
-                ]}
-                textStyle={[
-                  styles.itemTextStyle,
-                  props.itemTextStyle,
-                  !!props.selectedText && props.selectedText === number
-                    ? props.selectedTextStyle
-                    : {},
-                  numbers.length - 1 === index ? props.lastTextStyle : {},
-                ]}
-              >
-                {number.toString()}
-              </MenuItem>
-            ))}
+        {optionsObject.map((item, index) => (
+          <MenuItem
+            key={item.key}
+            onPress={() => {
+              hideMenu();
+              props.onPress && props.onPress(item);
+            }}
+            style={[
+              styles.itemContainer,
+              props.itemContainer,
+              optionsObject.length - 1 === index ? props.lastContainerStyle : {},
+            ]}
+            textStyle={[
+              styles.itemTextStyle,
+              props.itemTextStyle,
+              !!props.selectedText && props.selectedText === item.key
+                ? props.selectedTextStyle
+                : {},
+              optionsObject.length - 1 === index ? props.lastTextStyle : {},
+            ]}
+          >
+            {item.value}
+          </MenuItem>
+        ))}
         <View style={[{ paddingBottom: 25 }, props.bottomPadding]} />
       </ScrollView>
     </Menu>
