@@ -20,27 +20,27 @@ const PharmaApiConfig = {
       pharmaTokenYXV,
     ],
     GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`],
+    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
   },
   prod: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
     MED_DETAIL: [apolloProdBaseUrl, pharmaToken201],
-    MED_SEARCH_SUGGESTION: [apolloUatBaseUrl, pharmaToken201],
+    MED_SEARCH_SUGGESTION: [apolloProdBaseUrl, pharmaToken201],
     STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
     SHOP_BY_CITY: [apolloProdBaseUrl],
     IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media`],
     GET_DELIVERY_TIME: [
-      'http://tpuat.apollopharmacy.org:9090/IEngine/webresources/Inventory/getDeliveryTimePartial',
+      'http://online.apollopharmacy.org:8085/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,
     ],
-    GET_SUBSTITUTES: [`${apolloUatBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
-    PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`],
-    MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
-    ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
+    GET_SUBSTITUTES: [`${apolloProdBaseUrl}/popcsrchprdsubt_api.php`, pharmaToken201],
+    PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
+    MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
+    ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
   },
 };
 
@@ -69,26 +69,6 @@ const Configuration = {
 //   LOG_ENVIRONMENT: 'release',
 //   ANALYTICAL_ENIVRONMENT: 'debug',
 //   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-//   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
-//   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
-//   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-//   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
-//   DELIVERY_CHARGES: 25,
-//   PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
-//   PRO_TOKBOX_KEY: '46429002',
-//   PRO_PUBNUB_PUBLISH: 'pub-c-d32f262d-c014-471d-95fe-b45903651cfd',
-//   PRO_PUBNUB_SUBSCRIBER: 'sub-c-015f75e4-daca-11e9-85e7-eae1db32c94a',
-//   // PRO_PUBNUB_PUBLISH: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
-//   // PRO_PUBNUB_SUBSCRIBER: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
-//   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
-//   ...PharmaApiConfig.dev,
-// };
-
-// QA
-// const Configuration = {
-//   LOG_ENVIRONMENT: 'release',
-//   ANALYTICAL_ENIVRONMENT: 'release',
-//   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
 //   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
 //   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
 //   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
@@ -105,6 +85,7 @@ const Configuration = {
 //Production
 // const Configuration = {
 //   LOG_ENVIRONMENT: 'release',
+//   ANALYTICAL_ENIVRONMENT: 'release',
 //   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
 //   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
 //   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',

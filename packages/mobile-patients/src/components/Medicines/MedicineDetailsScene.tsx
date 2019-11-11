@@ -26,7 +26,7 @@ import { aphConsole, isEmptyObject } from '@aph/mobile-patients/src/helpers/help
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -36,13 +36,15 @@ import {
   Text,
   TouchableOpacity,
   View,
+  BackHandler,
+  Keyboard,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
-import { useUIElements } from '../UIElementsProvider';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -206,6 +208,19 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
+
+  type MedDetailsList = {
+    index: number;
+    details: MedicineProductDetails[];
+    substitutes: MedicineProductDetails[][];
+  };
+
+  const medDetailsListRef = useRef<MedDetailsList>({
+    index: 0,
+    details: [],
+    substitutes: [],
+  });
+
   const [apiError, setApiError] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setselectedTab] = useState<string>('');
@@ -261,7 +276,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       ? `${findDesc('DRUGS WARNINGS')}`
       : `${findDesc('STORAGE')}`;
   };
-  console.log({ PharmaOverview: medicineDetails!.PharmaOverview });
 
   const _medicineOverview =
     medicineDetails!.PharmaOverview &&
@@ -282,7 +296,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           []
         )
           .map((item, index, array) => {
-            console.log({ item, index, array });
             return {
               Caption:
                 index == 0
@@ -302,7 +315,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           .slice(0, 6)
           .filter((i) => i.CaptionDesc) || [];
 
-  let sku = props.navigation.getParam('sku'); // 'MED0017';
+  const sku = props.navigation.getParam('sku'); // 'MED0017';
   console.log(sku, 'skusku');
 
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
@@ -312,30 +325,60 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
   const cartItemsCount = cartItems.length;
 
-  useEffect(() => {
-    setLoading(true);
-    sku = props.navigation.getParam('sku');
-    scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0);
-    console.log(sku, 'useEffect sku');
+  const handleBack = async () => {
+    const index = medDetailsListRef.current.index;
+    if (index > 1) {
+      setSubstitutes(medDetailsListRef.current.substitutes[index - 1]);
+      setmedicineDetails(medDetailsListRef.current.details[index - 1]);
+      medDetailsListRef.current = {
+        index: index - 1,
+        details: [...medDetailsListRef.current.details.slice(0, index)],
+        substitutes: [...medDetailsListRef.current.substitutes.slice(0, index)],
+      };
 
-    getMedicineDetailsApi(sku)
-      .then(({ data }) => {
-        console.log(data, 'getMedicineDetailsApi');
-        if (data && data.productdp) {
-          setmedicineDetails((data && data.productdp[0]) || {});
-        } else if (data && data.message) {
-          setMedicineError(data.message);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        aphConsole.log('MedicineDetailsScene err', err);
-        setApiError(!!err);
-        setLoading(false);
-        // Alert.alert(err);
-      });
-    fetchSubstitutes();
-  }, [props.navigation.getParam('sku')]);
+      setTimeout(() => {
+        scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0);
+      }, 10);
+    } else {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+      props.navigation.goBack();
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    const setData = async () => {
+      const index = medDetailsListRef.current.index + 1;
+      medDetailsListRef.current = {
+        index,
+        details: [...medDetailsListRef.current.details, medicineDetails],
+        substitutes: [...medDetailsListRef.current.substitutes, Substitutes],
+      };
+    };
+
+    setLoading(true);
+    setData().then(() => {
+      scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0);
+      aphConsole.log('useEffect sku\n', { sku });
+
+      getMedicineDetailsApi(sku)
+        .then(({ data }) => {
+          aphConsole.log(data, 'getMedicineDetailsApi');
+          if (data && data.productdp) {
+            setmedicineDetails((data && data.productdp[0]) || {});
+          } else if (data && data.message) {
+            setMedicineError(data.message);
+          }
+          setLoading(false);
+        })
+        .catch((err) => {
+          aphConsole.log('MedicineDetailsScene err', err);
+          setApiError(!!err);
+          setLoading(false);
+        });
+      fetchSubstitutes();
+    });
+  }, [sku]);
 
   useEffect(() => {
     if (medicineOverview.length > 0) {
@@ -354,6 +397,21 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       }, 10);
     }
   }, [deliveryTime, deliveryError]);
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, []);
 
   const onAddCartItem = ({
     sku,
@@ -382,6 +440,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const fetchDeliveryTime = () => {
+    Keyboard.dismiss();
     setshowDeliverySpinner(true);
     getDeliveryTime({
       postalcode: pincode,
@@ -426,6 +485,8 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const fetchSubstitutes = () => {
     getSubstitutes(sku)
       .then(({ data }) => {
+        console.log({ data });
+
         try {
           console.log('getSubstitutes', data);
           if (data) {
@@ -442,7 +503,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           console.log(error);
         }
       })
-      .catch((err) => console.log(err, 'err'));
+      .catch((err) => console.log({ err }));
   };
 
   const renderBottomButtons = () => {
@@ -1164,7 +1225,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={handleBack}
           title={'PRODUCT DETAIL'}
           titleStyle={{ marginHorizontal: 10 }}
           container={{ borderBottomWidth: 0, ...theme.viewStyles.shadowStyle }}

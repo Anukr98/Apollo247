@@ -248,6 +248,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
           style={{ width: '100%', minHeight: imgHeight }}
           source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
+          // resizeMode="contain"
+          // style={{ width: Dimensions.get('screen').width, height: 120 }}
         />
       );
   };
@@ -434,7 +436,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   title: `${item.title || 'Products'}`.toUpperCase(),
                 }),
               {
-                // marginRight: 8,
                 marginHorizontal: 4,
                 marginTop: 16,
                 marginBottom: 20,
@@ -474,7 +475,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   containerStyle={{
                     ...theme.viewStyles.card(0, 0),
                     elevation: 10,
-                    // marginRight: 8,
+
                     marginHorizontal: 4,
                     marginTop: 16,
                     marginBottom: 20,
@@ -512,7 +513,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const renderDiscountedPrice = () => {
       const styles = StyleSheet.create({
         discountedPriceText: {
-          ...theme.viewStyles.text('M', 14, '#01475b', 1, 24),
+          ...theme.viewStyles.text('M', 14, '#01475b', 0.6, 24),
           textAlign: 'center',
         },
         priceText: {
@@ -540,7 +541,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             elevation: 10,
             height: 232,
             width: 152,
-            // marginRight: 8,
             marginHorizontal: 4,
             alignItems: 'center',
             ...style,
@@ -548,7 +548,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         >
           <Image
             placeholderStyle={styles.imagePlaceholderStyle}
-            // placeholderStyle={{ backgroundColor: '#f0f1ec', borderRadius: 5 }}
             source={{ uri: imgUrl }}
             style={{ height: 68, width: 68, marginBottom: 8 }}
           />
@@ -621,7 +620,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku }),
       style: {
-        // marginRight: 8,
         marginHorizontal: 4,
         marginTop: 16,
         marginBottom: 20,
@@ -666,7 +664,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   title: `${item.title || 'Products'}`.toUpperCase(),
                 }),
               {
-                // marginRight: 8,
                 marginHorizontal: 4,
                 marginTop: 16,
                 marginBottom: 20,
@@ -709,7 +706,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   title: `${item.title || 'Products'}`.toUpperCase(),
                 }),
               {
-                // marginRight: 8,
                 marginHorizontal: 4,
                 marginTop: 16,
                 marginBottom: 40,
@@ -921,6 +917,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }
           }}
           value={searchText}
+          autoCapitalize="none"
+          spellCheck={false}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => {
             setSearchFocused(false);

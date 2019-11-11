@@ -452,8 +452,17 @@ export const getProductsByCategoryApi = (
   categoryId: string,
   pageId: number = 1
 ): Promise<AxiosResponse<MedicineProductsResponse>> => {
-  return Axios.get(
-    `${config.PRODUCTS_BY_CATEGORY[0]}?category_id=${categoryId}&page_id=${pageId}&type=category`
+  return Axios.post(
+    `${config.PRODUCTS_BY_CATEGORY[0]}?category_id=${categoryId}&page_id=${pageId}&type=category`,
+    {
+      category_id: categoryId,
+      page_id: pageId,
+    },
+    {
+      headers: {
+        Authorization: config.PRODUCTS_BY_CATEGORY[1],
+      },
+    }
   );
 };
 

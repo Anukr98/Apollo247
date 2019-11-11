@@ -5,12 +5,10 @@ import {
   DropdownGreen,
   MedicineIcon,
   MedicineRxIcon,
-  TestsIcon,
   RemoveIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
@@ -128,13 +126,13 @@ export interface MedicineCardProps {
   isTest?: boolean;
   medicineName: string;
   personName?: string;
-  originalPrice?: number;
+  specialPrice?: number;
   price: number;
   imageUrl?: string;
   type?: Doseform;
   subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
   packOfCount?: number;
-  unit?: number;
+  unit: number;
   isInStock: boolean;
   isPrescriptionRequired: boolean;
   isCardExpanded: boolean;
@@ -156,7 +154,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
     packOfCount,
     medicineName,
     personName,
-    originalPrice,
+    specialPrice,
     price,
     imageUrl,
     type,
@@ -272,14 +270,14 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
             { alignItems: 'flex-end', justifyContent: 'flex-end', flexDirection: 'row' },
           ]}
         >
-          {originalPrice && originalPrice != price && (
+          {specialPrice && (
             <Text style={[styles.unitAndRupeeOfferText, { marginRight: 4 }]}>
               {'('}
-              <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${originalPrice}`}</Text>
+              <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
               {')'}
             </Text>
           )}
-          <Text style={styles.unitAndRupeeText}>{`Rs. ${price}`}</Text>
+          <Text style={styles.unitAndRupeeText}>{`Rs. ${specialPrice || price}`}</Text>
         </View>
       </View>
     );
@@ -290,15 +288,7 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       <View style={{ width: 40, marginRight: 12, alignItems: 'center' }}>
         {imageUrl ? (
           <Image
-            PlaceholderContent={
-              isPrescriptionRequired ? (
-                <MedicineRxIcon />
-              ) : isTest ? (
-                <TestsIcon />
-              ) : (
-                <MedicineIcon />
-              )
-            }
+            PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
             placeholderStyle={{ backgroundColor: 'transparent' }}
             source={{ uri: imageUrl }}
             style={{ height: 40, width: 40 }}
@@ -306,8 +296,6 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
           />
         ) : isPrescriptionRequired ? (
           <MedicineRxIcon />
-        ) : isTest ? (
-          <TestsIcon />
         ) : (
           <MedicineIcon />
         )}
@@ -331,11 +319,11 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       <Text style={styles.outOfStockStyle}>Out Of Stock</Text>
     ) : !isCardExpanded ? (
       <View style={{ flexDirection: 'row' }}>
-        <Text style={styles.priceTextCollapseStyle}>Rs. {price}</Text>
-        {originalPrice && originalPrice != price && (
+        <Text style={styles.priceTextCollapseStyle}>Rs. {specialPrice || price}</Text>
+        {specialPrice && (
           <Text style={[styles.priceTextCollapseStyle, { marginLeft: 4 }]}>
             {'('}
-            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${originalPrice}`}</Text>
+            <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${price}`}</Text>
             {')'}
           </Text>
         )}

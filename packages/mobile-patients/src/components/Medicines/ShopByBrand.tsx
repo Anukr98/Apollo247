@@ -4,13 +4,20 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { Brand, getAllBrands } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Text } from 'react-native-elements';
-import { NavigationScreenProps, ScrollView, FlatList } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import {
+  FlatList,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
