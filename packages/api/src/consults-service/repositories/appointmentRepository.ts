@@ -499,7 +499,8 @@ export class AppointmentRepository extends Repository<Appointment> {
         }
         const duration = Math.floor(60 / docConsultHr.consultDuration);
         console.log(duration, 'doctor duration');
-        let slotsCount = (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
+        let slotsCount =
+          (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
         if (slotsCount - Math.floor(slotsCount) == 0.5) {
           slotsCount = Math.ceil(slotsCount);
         } else {
