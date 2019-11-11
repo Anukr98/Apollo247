@@ -150,12 +150,11 @@ export const SecretaryDashboard: React.FC = (props) => {
             </div>
             <div className={classes.doctorsGroup}>
               <Grid spacing={2} container>
-                <Grid item sm={4}>
-                  {console.log(secretaryList!.length)}
-                  {secretaryList &&
-                    secretaryList.length > 0 &&
-                    secretaryList.map((item, index) => {
-                      return (
+                {secretaryList &&
+                  secretaryList.length > 0 &&
+                  secretaryList.map((item, index) => {
+                    return (
+                      <Grid item sm={4} key={index}>
                         <div className={classes.doctorCard}>
                           <div className={classes.doctoImage}>
                             <Avatar
@@ -182,7 +181,7 @@ export const SecretaryDashboard: React.FC = (props) => {
                                     item!.doctor!.firstName!.split(' ')[0]
                                   } ${item!.doctor!.lastName!.charAt(0)}.`}
                             </div>
-                            {/*   <div className={classes.doctorType}>
+                            <div className={classes.doctorType}>
                               <span>
                                 {item!.doctor!.specialty!.name.toUpperCase()} |{' '}
                                 {item!.doctor!.experience} YRS
@@ -203,12 +202,12 @@ export const SecretaryDashboard: React.FC = (props) => {
                               {item!.doctor!.doctorHospital[0]!.facility!.city
                                 ? item!.doctor!.doctorHospital[0]!.facility!.city
                                 : ''}
-                            </div> */}
+                            </div>
                           </div>
                         </div>
-                      );
-                    })}
-                </Grid>
+                      </Grid>
+                    );
+                  })}
               </Grid>
             </div>
           </div>

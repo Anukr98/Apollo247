@@ -76,6 +76,18 @@ export const LOGGED_IN_USER_DETAILS = gql`
             streetLine2
             streetLine3
             zip
+            specialty {
+              name
+            }
+            doctorHospital {
+              facility {
+                name
+                streetLine1
+                streetLine2
+                streetLine3
+                city
+              }
+            }
           }
         }
         mobileNumber

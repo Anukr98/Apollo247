@@ -106,6 +106,7 @@ export const SecretaryProfile: React.FC = (props) => {
             <div className={classes.doctorInfo}>
               <div className={classes.customScroll}>
                 <div className={classes.doctorName}>{doctorName}</div>
+                <div className={classes.doctorName}>{secretary && secretary.mobileNumber}</div>
               </div>
             </div>
             <div className={classes.bottomActions}>
