@@ -1,20 +1,20 @@
-import React, { useEffect, useState, useContext } from "react";
-import { Theme, Button, Avatar, Modal } from "@material-ui/core";
-import { makeStyles } from "@material-ui/styles";
-import { AphTextField, AphButton } from "@aph/web-ui-components";
-import Pubnub from "pubnub";
-import Scrollbars from "react-custom-scrollbars";
-import { JDConsult } from "components/JuniorDoctors/JDConsult";
+import React, { useEffect, useState, useContext } from 'react';
+import { Theme, Button, Avatar, Modal } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import { AphTextField, AphButton } from '@aph/web-ui-components';
+import Pubnub from 'pubnub';
+import Scrollbars from 'react-custom-scrollbars';
+import { JDConsult } from 'components/JuniorDoctors/JDConsult';
 // import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
 // import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
 // import { useMutation } from 'react-apollo-hooks';
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import { AphStorageClient } from "@aph/universal/dist/AphStorageClient";
-import { CaseSheetContext } from "context/CaseSheetContext";
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
+import { CaseSheetContext } from 'context/CaseSheetContext';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -24,292 +24,292 @@ const client = new AphStorageClient(
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      padding: "10px 15px 20px 15px"
+      padding: '10px 15px 20px 15px',
     },
     container: {
-      position: "relative",
-      backgroundColor: "#fff",
-      borderRadius: 10
+      position: 'relative',
+      backgroundColor: '#fff',
+      borderRadius: 10,
     },
     audioVideoContainer: {
-      position: "relative"
+      position: 'relative',
     },
     chatBody: {
-      padding: "20px 10px",
-      borderRadius: 10
+      padding: '20px 10px',
+      borderRadius: 10,
     },
     customScroll: {
-      padding: "0 10px",
-      paddingBottom: 20
+      padding: '0 10px',
+      paddingBottom: 20,
     },
     petient: {
-      color: "#0087ba",
-      textAlign: "left",
-      backgroundColor: "#fff",
-      padding: "12px 16px",
+      color: '#0087ba',
+      textAlign: 'left',
+      backgroundColor: '#fff',
+      padding: '12px 16px',
       fontWeight: theme.typography.fontWeightMedium,
-      display: "inline-block",
+      display: 'inline-block',
       borderRadius: 10,
-      boxShadow: "0 2px 4px 0 #00000026",
+      boxShadow: '0 2px 4px 0 #00000026',
       fontSize: 15,
-      wordBreak: "break-all"
+      wordBreak: 'break-all',
     },
     doctor: {
-      backgroundColor: "#f0f4f5",
-      padding: "12px 16px",
-      color: "#02475b",
+      backgroundColor: '#f0f4f5',
+      padding: '12px 16px',
+      color: '#02475b',
       fontWeight: theme.typography.fontWeightMedium,
-      display: "inline-block",
+      display: 'inline-block',
       borderRadius: 10,
-      boxShadow: "0 2px 4px 0 #00000026",
-      textAlign: "left",
+      boxShadow: '0 2px 4px 0 #00000026',
+      textAlign: 'left',
       fontSize: 16,
-      maxWidth: "40%",
-      wordBreak: "break-all"
+      maxWidth: '40%',
+      wordBreak: 'break-all',
     },
     boldTxt: {
-      fontWeight: 700
+      fontWeight: 700,
     },
     sendMsgBtn: {
-      backgroundColor: "#F9F9F9",
-      color: "#000",
-      width: "30%",
-      align: "right"
+      backgroundColor: '#F9F9F9',
+      color: '#000',
+      width: '30%',
+      align: 'right',
     },
     inputWidth: {
-      "& input": {
-        paddingRight: 35
-      }
+      '& input': {
+        paddingRight: 35,
+      },
     },
     showIncomingBox: {
-      color: "#f00"
+      color: '#f00',
     },
     docterChat: {
-      display: "block",
-      width: "100%",
-      textAlign: "right",
-      margin: "5px 0 10px 0"
+      display: 'block',
+      width: '100%',
+      textAlign: 'right',
+      margin: '5px 0 10px 0',
     },
     patientChat: {
-      display: "block",
-      maxWidth: "50%",
-      margin: "5px 5px 10px 70px",
-      position: "relative",
-      "& img": {
-        position: "absolute",
+      display: 'block',
+      maxWidth: '50%',
+      margin: '5px 5px 10px 70px',
+      position: 'relative',
+      '& img': {
+        position: 'absolute',
         left: -50,
         top: 5,
         width: 40,
-        borderRadius: "50%"
-      }
+        borderRadius: '50%',
+      },
     },
     chatFooter: {
-      padding: "6px 16px 20px 16px",
+      padding: '6px 16px 20px 16px',
       backgroundColor: theme.palette.common.white,
-      boxShadow: "0 -5px 20px 0 rgba(128, 128, 128, 0.15)",
-      position: "relative",
-      borderRadius: "0 0 10px 10px",
-      display: "flex"
+      boxShadow: '0 -5px 20px 0 rgba(128, 128, 128, 0.15)',
+      position: 'relative',
+      borderRadius: '0 0 10px 10px',
+      display: 'flex',
     },
     chatsendcircle: {
-      backgroundColor: "transparent",
-      boxShadow: "none",
-      minWidth: "auto",
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      minWidth: 'auto',
       padding: 0,
       marginRight: 16,
       paddingTop: 8,
-      "&:hover": {
-        backgroundColor: "transparent"
+      '&:hover': {
+        backgroundColor: 'transparent',
       },
-      "&:focus": {
-        backgroundColor: "transparent"
-      }
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
     },
     missCall: {
-      color: "#890000",
-      backgroundColor: "rgba(229, 0, 0, 0.1)",
+      color: '#890000',
+      backgroundColor: 'rgba(229, 0, 0, 0.1)',
       borderRadius: 10,
-      padding: "5px 20px",
+      padding: '5px 20px',
       fontSize: 12,
       fontWeight: 500,
-      lineHeight: "24px"
+      lineHeight: '24px',
     },
     callMsg: {
       fontSize: 14,
-      color: "#02475b",
+      color: '#02475b',
       fontWeight: 500,
-      lineHeight: "normal",
-      "& img": {
-        position: "relative",
+      lineHeight: 'normal',
+      '& img': {
+        position: 'relative',
         top: 5,
         marginRight: 7,
         left: 0,
-        width: "auto"
-      }
+        width: 'auto',
+      },
     },
     durationMsg: {
       fontSize: 10,
       marginTop: 2,
-      display: "block"
+      display: 'block',
     },
     none: {
-      display: "none"
+      display: 'none',
     },
     doctorChatRow: {
       paddingBottom: 8,
-      textAlign: "right"
+      textAlign: 'right',
     },
     chatBubble: {
-      backgroundColor: "#f7f7f7",
-      border: "solid 1px rgba(2, 71, 91, 0.15)",
+      backgroundColor: '#f7f7f7',
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
       borderRadius: 10,
-      padding: "9px 16px",
-      color: "#02475b",
+      padding: '9px 16px',
+      color: '#02475b',
       fontSize: 15,
       lineHeight: 1.47,
-      letterSpacing: "normal",
+      letterSpacing: 'normal',
       opacity: 0.8,
-      display: "inline-block",
+      display: 'inline-block',
       maxWidth: 236,
-      textAlign: "left",
-      wordBreak: "break-word"
+      textAlign: 'left',
+      wordBreak: 'break-word',
     },
     chatImgBubble: {
       padding: 0,
-      "& img": {
-        maxWidth: "100%",
-        verticalAlign: "middle"
-      }
+      '& img': {
+        maxWidth: '100%',
+        verticalAlign: 'middle',
+      },
     },
     patientBubble: {
       backgroundColor: theme.palette.common.white,
-      position: "relative"
+      position: 'relative',
     },
     callStatusMessage: {
-      paddingTop: 12
+      paddingTop: 12,
     },
     messageText: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "flex-end",
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
       fontSize: 14,
       fontWeight: 500,
-      color: "#02475b",
-      "& span:first-child": {
+      color: '#02475b',
+      '& span:first-child': {
         paddingRight: 12,
-        "& img": {
-          verticalAlign: "middle"
-        }
-      }
+        '& img': {
+          verticalAlign: 'middle',
+        },
+      },
     },
     callDuration: {
-      textAlign: "right",
+      textAlign: 'right',
       fontSize: 10,
       fontWeight: 500,
-      color: "#02475b"
+      color: '#02475b',
     },
     patientChatRow: {
       paddingBottom: 8,
-      textAlign: "left",
-      paddingLeft: 40
+      textAlign: 'left',
+      paddingLeft: 40,
     },
     patientAvatar: {
-      position: "absolute",
+      position: 'absolute',
       left: -40,
-      bottom: 0
+      bottom: 0,
     },
     avatar: {
       width: 32,
-      height: 32
+      height: 32,
     },
     customScrollWrap: {
       marginBottom: -37,
-      "& >div": {
-        top: "20px !important",
-        bottom: "0 !important"
-      }
+      '& >div': {
+        top: '20px !important',
+        bottom: '0 !important',
+      },
     },
     chatSendBtn: {
-      boxShadow: "none",
-      backgroundColor: "transparent",
-      minWidth: "auto",
+      boxShadow: 'none',
+      backgroundColor: 'transparent',
+      minWidth: 'auto',
       padding: 0,
       marginLeft: 16,
       paddingTop: 8,
       //display: 'none',
-      "&:hover": {
-        backgroundColor: "transparent"
+      '&:hover': {
+        backgroundColor: 'transparent',
       },
-      "&:focus": {
-        backgroundColor: "transparent"
-      }
+      '&:focus': {
+        backgroundColor: 'transparent',
+      },
     },
     imageUpload: {
-      overflow: "hidden",
+      overflow: 'hidden',
       borderRadius: 10,
       width: 100,
       height: 100,
-      cursor: "pointer"
+      cursor: 'pointer',
     },
     modalWindowWrap: {
-      display: "table",
-      height: "100%",
-      width: "100%",
-      outline: "none",
-      "&:focus": {
-        outline: "none"
-      }
+      display: 'table',
+      height: '100%',
+      width: '100%',
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
     },
     tableContent: {
-      display: "table-cell",
-      verticalAlign: "middle",
-      width: "100%",
-      "&:focus": {
-        outline: "none"
-      }
+      display: 'table-cell',
+      verticalAlign: 'middle',
+      width: '100%',
+      '&:focus': {
+        outline: 'none',
+      },
     },
     modalWindow: {
       backgroundColor: theme.palette.common.black,
       maxWidth: 600,
-      margin: "auto",
+      margin: 'auto',
       borderRadius: 10,
-      boxShadow: "0 5px 20px 0 rgba(0, 0, 0, 0.2)",
-      outline: "none",
-      "&:focus": {
-        outline: "none"
-      }
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
     },
     modalHeader: {
       minHeight: 56,
-      textAlign: "center",
+      textAlign: 'center',
       fontSize: 13,
       fontWeight: 600,
       letterSpacing: 0.5,
       color: theme.palette.common.white,
-      padding: "16px 50px",
-      textTransform: "uppercase",
-      position: "relative",
-      wordBreak: "break-word"
+      padding: '16px 50px',
+      textTransform: 'uppercase',
+      position: 'relative',
+      wordBreak: 'break-word',
     },
     modalClose: {
-      position: "absolute",
+      position: 'absolute',
       right: 16,
       top: 16,
       width: 24,
       height: 24,
-      cursor: "pointer"
+      cursor: 'pointer',
     },
     modalFooter: {
       height: 56,
-      textAlign: "center",
+      textAlign: 'center',
       padding: 16,
-      textTransform: "uppercase"
+      textTransform: 'uppercase',
     },
     modalContent: {
-      "& img": {
-        maxWidth: "100%"
-      }
-    }
+      '& img': {
+        maxWidth: '100%',
+      },
+    },
   };
 });
 
@@ -337,59 +337,57 @@ interface ConsultRoomProps {
 // let timerIntervalId: any;
 // let stoppedConsulTimer: number;
 
-export const ChatWindow: React.FC<ConsultRoomProps> = props => {
+export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const classes = useStyles();
   const isVideoCall = false;
 
   const [showVideo, setShowVideo] = useState<boolean>(false);
   const [showVideoChat, setShowVideoChat] = useState<boolean>(false);
   const [messages, setMessages] = useState<MessagesObjectProps[]>([]);
-  const [messageText, setMessageText] = useState<string>("");
-  const [msg, setMsg] = useState<string>("");
+  const [messageText, setMessageText] = useState<string>('');
+  const [msg, setMsg] = useState<string>('');
   // const [isVideoCall, setIsVideoCall] = useState<boolean>(false);
   const [isCallAccepted, setIsCallAccepted] = useState<boolean>(false);
   const [isNewMsg, setIsNewMsg] = useState<boolean>(false);
   const [convertVideo, setConvertVideo] = useState<boolean>(false);
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
-  const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<
-    string
-  >("");
+  const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [modalOpen, setModalOpen] = React.useState(false);
 
   // this hook is used to send auto chat message when the consult is closed by system
   useEffect(() => {
-    console.log("auto close case sheet action....", props.autoCloseCaseSheet);
+    console.log('auto close case sheet action....', props.autoCloseCaseSheet);
   }, [props.autoCloseCaseSheet]);
 
-  const covertVideoMsg = "^^convert`video^^";
-  const covertAudioMsg = "^^convert`audio^^";
-  const videoCallMsg = "^^callme`video^^";
-  const audioCallMsg = "^^callme`audio^^";
-  const stopcallMsg = "^^callme`stop^^";
-  const acceptcallMsg = "^^callme`accept^^";
-  const startConsult = "^^#startconsult";
-  const startConsultjr = "^^#startconsultJr";
-  const stopConsult = "^^#stopconsult";
-  const documentUpload = "^^#DocumentUpload";
-  const transferconsult = "^^#transferconsult";
-  const rescheduleconsult = "^^#rescheduleconsult";
-  const followupconsult = "^^#followupconsult";
-  const patientConsultStarted = "^^#PatientConsultStarted";
+  const covertVideoMsg = '^^convert`video^^';
+  const covertAudioMsg = '^^convert`audio^^';
+  const videoCallMsg = '^^callme`video^^';
+  const audioCallMsg = '^^callme`audio^^';
+  const stopcallMsg = '^^callme`stop^^';
+  const acceptcallMsg = '^^callme`accept^^';
+  const startConsult = '^^#startconsult';
+  const startConsultjr = '^^#startconsultJr';
+  const stopConsult = '^^#stopconsult';
+  const documentUpload = '^^#DocumentUpload';
+  const transferconsult = '^^#transferconsult';
+  const rescheduleconsult = '^^#rescheduleconsult';
+  const followupconsult = '^^#followupconsult';
+  const patientConsultStarted = '^^#PatientConsultStarted';
+  const firstMessage = '^^#firstMessage';
+  const secondMessage = '^^#secondMessage';
+  const languageQue = '^^#languageQue';
+  const jdThankyou = '^^#jdThankyou';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
   const channel = props.appointmentId;
-  const subscribekey: string = process.env.SUBSCRIBE_KEY
-    ? process.env.SUBSCRIBE_KEY
-    : "";
-  const publishkey: string = process.env.PUBLISH_KEY
-    ? process.env.PUBLISH_KEY
-    : "";
+  const subscribekey: string = process.env.SUBSCRIBE_KEY ? process.env.SUBSCRIBE_KEY : '';
+  const publishkey: string = process.env.PUBLISH_KEY ? process.env.PUBLISH_KEY : '';
   const config: Pubnub.PubnubConfig = {
     subscribeKey: subscribekey,
     publishKey: publishkey,
-    ssl: true
+    ssl: true,
   };
   let leftComponent = 0;
   let rightComponent = 0;
@@ -420,16 +418,16 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
 
   const srollToBottomAction = () => {
     setTimeout(() => {
-      const scrollDiv = document.getElementById("scrollDiv");
+      const scrollDiv = document.getElementById('scrollDiv');
       if (scrollDiv) {
         scrollDiv!.scrollIntoView();
       }
     }, 200);
   };
   const resetMessagesAction = () => {
-    if (messageText === "") {
-      setMsg("reset");
-      setMsg("");
+    if (messageText === '') {
+      setMsg('reset');
+      setMsg('');
     }
   };
 
@@ -454,14 +452,14 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
   useEffect(() => {
     pubnub.subscribe({
       channels: [channel],
-      withPresence: true
+      withPresence: true,
     });
 
     getHistory(0);
 
     pubnub.addListener({
-      status: statusEvent => {},
-      message: message => {
+      status: (statusEvent) => {},
+      message: (message) => {
         console.log(message.message);
         insertText[insertText.length] = message.message;
         setMessages(() => [...insertText]);
@@ -476,7 +474,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult &&
-          message.message.message !== patientConsultStarted
+          message.message.message !== patientConsultStarted &&
+          message.message.message !== firstMessage &&
+          message.message.message !== secondMessage
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -485,7 +485,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
           setIsCallAccepted(true);
         }
         resetMessagesAction();
-      }
+      },
     });
     return function cleanup() {
       pubnub.unsubscribe({ channels: [channel] });
@@ -499,7 +499,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
         reverse: true,
         count: 1000,
         stringifiedTimeToken: true,
-        start: timetoken
+        start: timetoken,
       },
       (status, res) => {
         const newmessage: MessagesObjectProps[] = messages;
@@ -524,15 +524,15 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
   const send = () => {
     const text = {
       id: doctorId,
-      message: messageText
+      message: messageText,
     };
-    setMessageText("");
+    setMessageText('');
     pubnub.publish(
       {
         channel: channel,
         message: text,
         storeInHistory: true,
-        sendByPost: true
+        sendByPost: true,
       },
       (status, response) => {
         resetMessagesAction();
@@ -544,7 +544,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
     if (
       rowData.message === startConsult ||
       rowData.message === startConsultjr ||
-      rowData.message === stopConsult
+      rowData.message === stopConsult ||
+      rowData.message === languageQue ||
+      rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
     } else {
@@ -562,22 +564,24 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult &&
-      rowData.message !== patientConsultStarted
+      rowData.message !== patientConsultStarted &&
+      rowData.message !== firstMessage &&
+      rowData.message !== secondMessage
     ) {
       leftComponent++;
       rightComponent = 0;
       return (
         <div className={classes.doctorChatRow}>
-          {rowData.duration === "00 : 00" ? (
+          {rowData.duration === '00 : 00' ? (
             <div className={classes.none}>
               <div className={classes.messageText}>
                 <span>
-                  <img src={require("images/ic_missedcall.svg")} />
+                  <img src={require('images/ic_missedcall.svg')} />
                 </span>
                 <span>
-                  {rowData.message.toLocaleLowerCase() === "video call ended"
-                    ? "You missed a video call"
-                    : "You missed a voice call"}
+                  {rowData.message.toLocaleLowerCase() === 'video call ended'
+                    ? 'You missed a video call'
+                    : 'You missed a voice call'}
                 </span>
               </div>
             </div>
@@ -585,18 +589,16 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
             <div className={classes.callStatusMessage}>
               <div className={classes.messageText}>
                 <span>
-                  <img src={require("images/ic_round_call.svg")} />
+                  <img src={require('images/ic_round_call.svg')} />
                 </span>
                 <span>{rowData.message}</span>
               </div>
-              <div className={classes.callDuration}>
-                Duration- {rowData.duration}
-              </div>
+              <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
             <div
               className={`${classes.chatBubble} ${
-                rowData.message === documentUpload ? classes.chatImgBubble : ""
+                rowData.message === documentUpload ? classes.chatImgBubble : ''
               }`}
             >
               {leftComponent == 1 && !rowData.duration && (
@@ -606,17 +608,14 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
                     src={
                       patientDetails && patientDetails.photoUrl
                         ? patientDetails!.photoUrl
-                        : require("images/no_photo_icon_round.svg")
+                        : require('images/no_photo_icon_round.svg')
                     }
                     alt=""
                   />
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <div
-                  className={classes.imageUpload}
-                  onClick={() => setModalOpen(true)}
-                >
+                <div className={classes.imageUpload} onClick={() => setModalOpen(true)}>
                   <img src={rowData.url} alt={rowData.url} />
                 </div>
               ) : (
@@ -636,22 +635,24 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult &&
-      rowData.message !== patientConsultStarted
+      rowData.message !== patientConsultStarted &&
+      rowData.message !== firstMessage &&
+      rowData.message !== secondMessage
     ) {
       leftComponent = 0;
       rightComponent++;
       return (
         <div className={classes.patientChatRow}>
-          {rowData.duration === "00 : 00" ? (
+          {rowData.duration === '00 : 00' ? (
             <div className={classes.callStatusMessage}>
               <div className={classes.messageText}>
                 <span>
-                  <img src={require("images/ic_missedcall.svg")} />
+                  <img src={require('images/ic_missedcall.svg')} />
                 </span>
                 <span>
-                  {rowData.message.toLocaleLowerCase() === "video call ended"
-                    ? "You missed a video call"
-                    : "You missed a voice call"}
+                  {rowData.message.toLocaleLowerCase() === 'video call ended'
+                    ? 'You missed a video call'
+                    : 'You missed a voice call'}
                 </span>
               </div>
             </div>
@@ -659,18 +660,16 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
             <div className={classes.callStatusMessage}>
               <div className={classes.messageText}>
                 <span>
-                  <img src={require("images/ic_round_call.svg")} />
+                  <img src={require('images/ic_round_call.svg')} />
                 </span>
                 <span>{rowData.message}</span>
               </div>
-              <div className={classes.callDuration}>
-                Duration- {rowData.duration}
-              </div>
+              <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
             <div
               className={`${classes.chatBubble} ${classes.patientBubble} ${
-                rowData.message === documentUpload ? classes.chatImgBubble : ""
+                rowData.message === documentUpload ? classes.chatImgBubble : ''
               }`}
             >
               {rightComponent == 1 && !rowData.duration && (
@@ -680,17 +679,14 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
                     src={
                       patientDetails && patientDetails.photoUrl
                         ? patientDetails!.photoUrl
-                        : require("images/no_photo_icon_round.svg")
+                        : require('images/no_photo_icon_round.svg')
                     }
                     alt=""
                   />
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <div
-                  onClick={() => setModalOpen(true)}
-                  className={classes.imageUpload}
-                >
+                <div onClick={() => setModalOpen(true)} className={classes.imageUpload}>
                   <img src={rowData.url} alt={rowData.url} />
                 </div>
               ) : (
@@ -702,7 +698,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
       );
     }
     if (rowData.id !== patientId && rowData.id !== doctorId) {
-      return "";
+      return '';
     }
   };
 
@@ -711,7 +707,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
       ? messages.map((item: MessagesObjectProps, index: number) => {
           return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
         })
-      : "";
+      : '';
 
   const toggelChatVideo = () => {
     setIsNewMsg(false);
@@ -729,10 +725,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
         channel: channel,
         message: msgObject,
         storeInHistory: isStoreInHistory,
-        sendByPost: true
+        sendByPost: true,
       },
       (status, response) => {
-        setMessageText("");
+        setMessageText('');
         srollToBottomAction();
       }
     );
@@ -743,28 +739,20 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
     setShowVideo(false);
     setShowVideoChat(false);
     const cookieStr = `action=`;
-    document.cookie = cookieStr + ";path=/;";
+    document.cookie = cookieStr + ';path=/;';
     const text = {
       id: doctorId,
       message: stopcallMsg,
-      isTyping: true
+      isTyping: true,
     };
     sendMsg(text, true);
     const stoptext = {
       id: doctorId,
-      message: `${
-        props.startConsult === "videocall" ? "Video" : "Audio"
-      } call ended`,
+      message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
       duration: `${
-        timerLastMinuts.toString().length < 2
-          ? "0" + timerLastMinuts
-          : timerLastMinuts
-      } : ${
-        timerLastSeconds.toString().length < 2
-          ? "0" + timerLastSeconds
-          : timerLastSeconds
-      }`,
-      isTyping: true
+        timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      isTyping: true,
     };
     sendMsg(stoptext, true);
   };
@@ -774,11 +762,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
     setShowVideo(false);
     setShowVideoChat(false);
     const cookieStr = `action=`;
-    document.cookie = cookieStr + ";path=/;";
+    document.cookie = cookieStr + ';path=/;';
     const text = {
       id: doctorId,
       message: stopcallMsg,
-      isTyping: true
+      isTyping: true,
     };
     sendMsg(text, true);
   };
@@ -788,7 +776,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
     setTimeout(() => {
       const text = {
         isTyping: true,
-        message: convertVideo ? covertVideoMsg : covertAudioMsg
+        message: convertVideo ? covertVideoMsg : covertAudioMsg,
       };
       sendMsg(text, false);
     }, 10);
@@ -796,9 +784,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
 
   return (
     <div className={classes.root}>
-      <div
-        className={!showVideo ? classes.container : classes.audioVideoContainer}
-      >
+      <div className={!showVideo ? classes.container : classes.audioVideoContainer}>
         {showVideo && (
           <JDConsult
             toggelChatVideo={() => toggelChatVideo()}
@@ -820,7 +806,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
             <Scrollbars
               className={classes.customScrollWrap}
               autoHide={true}
-              style={{ height: "calc(100vh - 324px" }}
+              style={{ height: 'calc(100vh - 324px' }}
             >
               <div className={classes.customScroll}>
                 {messagessHtml}
@@ -838,10 +824,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
                 component="label"
                 disabled={fileUploading}
               >
-                <img src={require("images/ic_add_circle.svg")} alt="" />
+                <img src={require('images/ic_add_circle.svg')} alt="" />
                 <input
                   type="file"
-                  style={{ display: "none" }}
+                  style={{ display: 'none' }}
                   disabled={fileUploading}
                   // onChange={async (e) => {
                   //   setIsUploading(false);
@@ -859,29 +845,29 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
                   //     setIsUploading(false);
                   //   }
                   // }}
-                  onChange={async e => {
+                  onChange={async (e) => {
                     const fileNames = e.target.files;
                     if (fileNames && fileNames.length > 0) {
                       setFileUploading(true);
                       const file = fileNames[0] || null;
-                      const fileExtension = file.name.split(".").pop();
+                      const fileExtension = file.name.split('.').pop();
                       const fileSize = file.size;
                       if (fileSize > 2000000) {
                         setFileUploadErrorMessage(
-                          "Invalid File Size. File size must be less than 2MB"
+                          'Invalid File Size. File size must be less than 2MB'
                         );
                         setIsDialogOpen(true);
                       } else if (
                         fileExtension &&
-                        (fileExtension.toLowerCase() === "png" ||
-                          fileExtension.toLowerCase() === "jpg" ||
-                          fileExtension.toLowerCase() === "pdf" ||
-                          fileExtension.toLowerCase() === "jpeg")
+                        (fileExtension.toLowerCase() === 'png' ||
+                          fileExtension.toLowerCase() === 'jpg' ||
+                          fileExtension.toLowerCase() === 'pdf' ||
+                          fileExtension.toLowerCase() === 'jpeg')
                       ) {
                         if (file) {
                           const aphBlob = await client
                             .uploadBrowserFile({ file })
-                            .catch(error => {
+                            .catch((error) => {
                               throw error;
                             });
                           const url = client.getBlobUrl(aphBlob.name);
@@ -890,14 +876,14 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
                             fileType: `image`,
                             message: `^^#DocumentUpload`,
                             url: url,
-                            isTyping: true
+                            isTyping: true,
                           };
                           sendMsg(uploadObject, true);
                           setFileUploading(false);
                         }
                       } else {
                         setFileUploadErrorMessage(
-                          "Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed."
+                          'Invalid File Extension. Only files with .jpg, .png or .pdf extensions are allowed.'
                         );
                         setIsDialogOpen(true);
                       }
@@ -908,18 +894,15 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
             )}
             <AphTextField
               className={classes.inputWidth}
-              inputProps={{ type: "text" }}
+              inputProps={{ type: 'text' }}
               placeholder="Type here..."
               value={messageText}
-              onKeyPress={e => {
-                if (
-                  (e.which == 13 || e.keyCode == 13) &&
-                  messageText.trim() !== ""
-                ) {
+              onKeyPress={(e) => {
+                if ((e.which == 13 || e.keyCode == 13) && messageText.trim() !== '') {
                   send();
                 }
               }}
-              onChange={event => {
+              onChange={(event) => {
                 setMessageText(event.currentTarget.value);
               }}
               disabled={props.disableChat}
@@ -927,12 +910,12 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
             <AphButton
               className={classes.chatSendBtn}
               onClick={() => {
-                if (messageText.trim() !== "") {
+                if (messageText.trim() !== '') {
                   send();
                 }
               }}
             >
-              <img src={require("images/ic_send.svg")} alt="" />
+              <img src={require('images/ic_send.svg')} alt="" />
             </AphButton>
             {/* {props.disableChat && (
               <Button className={classes.chatsendcircle} variant="contained" component="label">
@@ -989,15 +972,12 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
             <div className={classes.modalWindow}>
               <div className={classes.modalHeader}>
                 IMAGE001.JPG
-                <div
-                  className={classes.modalClose}
-                  onClick={() => setModalOpen(false)}
-                >
-                  <img src={require("images/ic_round_clear.svg")} alt="" />
+                <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
+                  <img src={require('images/ic_round_clear.svg')} alt="" />
                 </div>
               </div>
               <div className={classes.modalContent}>
-                <img src={require("images/patient_01.png")} alt="" />
+                <img src={require('images/patient_01.png')} alt="" />
               </div>
               <div className={classes.modalFooter}></div>
             </div>

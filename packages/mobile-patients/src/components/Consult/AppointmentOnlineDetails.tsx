@@ -4,7 +4,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { More, DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
   CANCEL_APPOINTMENT,
@@ -499,9 +499,18 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                 </View>
               </View>
               <View style={styles.imageView}>
-                {data.doctorInfo.photoUrl ? (
-                  <Image source={{ uri: data.doctorInfo.photoUrl }} style={styles.doctorImage} />
-                ) : null}
+                {data.doctorInfo.thumbnailUrl &&
+                data.doctorInfo.thumbnailUrl.match(
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                ) ? (
+                  <Image
+                    source={{ uri: data.doctorInfo.thumbnailUrl }}
+                    resizeMode={'contain'}
+                    style={styles.doctorImage}
+                  />
+                ) : (
+                  <DoctorPlaceholderImage />
+                )}
               </View>
             </View>
           </View>

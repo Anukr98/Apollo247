@@ -5,25 +5,31 @@ import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
-import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
+import { GET_DOCTOR_DETAILS, LOGGED_IN_USER_DETAILS } from 'graphql/profiles';
 import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails,
 } from 'graphql/types/GetDoctorDetails';
+import {
+  findLoggedinUserDetails,
+  findLoggedinUserDetails_findLoggedinUserDetails,
+} from 'graphql/types/findLoggedinUserDetails';
 import { apiRoutes } from '@aph/universal/dist/aphRoutes';
 import React, { useEffect, useState } from 'react';
 import { ApolloProvider } from 'react-apollo';
 import { ApolloProvider as ApolloHooksProvider } from 'react-apollo-hooks';
 import _uniqueId from 'lodash/uniqueId';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { TrackJS } from 'trackjs';
 
 function wait<R, E>(promise: Promise<R>): [R, E] {
   return (promise.then((data: R) => [data, null], (err: E) => [null, err]) as any) as [R, E];
 }
 
 export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
-  currentPatient: Doctor | null;
+  currentUser: Doctor | null;
   //allCurrentPatients: Patient[] | null;
-  setCurrentPatient: ((p: Doctor) => void) | null;
+  setCurrentUser: ((p: Doctor) => void) | null;
 
   sendOtp: ((phoneNumber: string, captchaPlacement: HTMLElement | null) => Promise<unknown>) | null;
   sendOtpError: boolean;
@@ -39,11 +45,14 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
 
   isLoginPopupVisible: boolean;
   setIsLoginPopupVisible: ((isLoginPopupVisible: boolean) => void) | null;
+
+  currentUserType: string | null;
+  setCurrentUserType: ((p: string) => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
-  currentPatient: null,
-  setCurrentPatient: null,
+  currentUser: null,
+  setCurrentUser: null,
   //allCurrentPatients: null,
 
   sendOtp: null,
@@ -60,6 +69,9 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   isLoginPopupVisible: false,
   setIsLoginPopupVisible: null,
+
+  currentUserType: null,
+  setCurrentUserType: null,
 });
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -106,7 +118,7 @@ export const AuthProvider: React.FC = (props) => {
   const [authToken, setAuthToken] = useState<string>('');
   apolloClient = buildApolloClient(authToken, () => getFirebaseToken());
 
-  const [currentPatient, setCurrentPatient] = useState<AuthContextProps['currentPatient']>(null);
+  const [currentUser, setCurrentUser] = useState<AuthContextProps['currentUser']>(null);
 
   const [isSendingOtp, setIsSendingOtp] = useState<AuthContextProps['isSendingOtp']>(false);
   const [sendOtpError, setSendOtpError] = useState<AuthContextProps['sendOtpError']>(false);
@@ -121,10 +133,13 @@ export const AuthProvider: React.FC = (props) => {
     AuthContextProps['isLoginPopupVisible']
   >(false);
 
+  const [currentUserType, setCurrentUserType] = useState<AuthContextProps['currentUserType']>(null);
+
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
       setVerifyOtpError(false);
       if (!captchaPlacement) {
+        TrackJS.track(!captchaPlacement);
         setSendOtpError(true);
         reject();
         return;
@@ -146,10 +161,12 @@ export const AuthProvider: React.FC = (props) => {
           );
           setIsSendingOtp(false);
           if (phoneAuthError) {
+            TrackJS.track(phoneAuthError);
             setSendOtpError(true);
             reject();
             return;
           }
+          TrackJS.track(phoneAuthResult);
           otpVerifier = phoneAuthResult;
           setSendOtpError(false);
           captcha.clear();
@@ -200,21 +217,51 @@ export const AuthProvider: React.FC = (props) => {
           return;
         }
         setAuthToken(jwt);
-
         setIsSigningIn(true);
-        const [signInResult, signInError] = await wait(
-          apolloClient.mutate<GetDoctorDetails, GetDoctorDetails>({ mutation: GET_DOCTOR_DETAILS })
+
+        const [res, error] = await wait(
+          apolloClient.mutate<
+            findLoggedinUserDetails,
+            findLoggedinUserDetails_findLoggedinUserDetails
+          >({ mutation: LOGGED_IN_USER_DETAILS })
         );
-        if (signInError || !signInResult.data || !signInResult.data.getDoctorDetails) {
-          if (signInError) console.error(signInError);
+        if (error || !res.data) {
+          if (error) console.error(signInError);
           setSignInError(true);
           setIsSigningIn(false);
           app.auth().signOut();
           return;
         }
-        const doctors = signInResult.data.getDoctorDetails;
-        setCurrentPatient(doctors);
-        setSignInError(false);
+        if (
+          res.data &&
+          res.data.findLoggedinUserDetails &&
+          res.data.findLoggedinUserDetails.loggedInUserType
+        ) {
+          setCurrentUserType(res.data.findLoggedinUserDetails.loggedInUserType);
+        }
+        if (
+          res.data &&
+          res.data.findLoggedinUserDetails &&
+          res.data.findLoggedinUserDetails.loggedInUserType &&
+          res.data.findLoggedinUserDetails.loggedInUserType !== LoggedInUserType.JDADMIN
+        ) {
+          const [signInResult, signInError] = await wait(
+            apolloClient.mutate<GetDoctorDetails, GetDoctorDetails>({
+              mutation: GET_DOCTOR_DETAILS,
+            })
+          );
+          if (signInError || !signInResult.data || !signInResult.data.getDoctorDetails) {
+            if (signInError) console.error(signInError);
+            TrackJS.track(signInError);
+            setSignInError(true);
+            setIsSigningIn(false);
+            app.auth().signOut();
+            return;
+          }
+          const doctors = signInResult.data.getDoctorDetails;
+          setCurrentUser(doctors);
+          setSignInError(false);
+        }
       }
       setIsSigningIn(false);
     });
@@ -224,8 +271,10 @@ export const AuthProvider: React.FC = (props) => {
       <ApolloHooksProvider client={apolloClient}>
         <AuthContext.Provider
           value={{
-            currentPatient,
-            setCurrentPatient,
+            currentUserType,
+            setCurrentUserType,
+            currentUser,
+            setCurrentUser,
             sendOtp,
             sendOtpError,
             isSendingOtp,

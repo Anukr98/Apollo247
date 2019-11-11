@@ -8,6 +8,7 @@ import {
   Mascot,
   OnlineConsult,
   PhysicalConsult,
+  DoctorPlaceholderImage,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
@@ -540,14 +541,28 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     )}
 
                     <View style={styles.imageView}>
-                      {item.doctorInfo && item.doctorInfo.photoUrl && (
+                      {item.doctorInfo &&
+                      item.doctorInfo.thumbnailUrl &&
+                      item.doctorInfo.thumbnailUrl.match(
+                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                      ) ? (
                         <Image
                           style={{
                             width: 60,
                             height: 60,
                             borderRadius: 30,
                           }}
-                          source={{ uri: item.doctorInfo.photoUrl }}
+                          source={{ uri: item.doctorInfo.thumbnailUrl }}
+                          resizeMode={'contain'}
+                        />
+                      ) : (
+                        <DoctorPlaceholderImage
+                          style={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: 30,
+                          }}
+                          resizeMode={'contain'}
                         />
                       )}
 

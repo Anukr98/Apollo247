@@ -26,6 +26,7 @@ import {
   FileBig,
   Remove,
   CrossPopup,
+  DoctorPlaceholderImage,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import {
@@ -260,6 +261,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const imageconsult = '^^#DocumentUpload';
   const startConsultjr = '^^#startconsultJr';
   const consultPatientStartedMsg = '^^#PatientConsultStarted';
+  const firstMessage = '^^#firstMessage';
+  const secondMessage = '^^#secondMessage';
+  const languageQue = '^^#languageQue';
+  const jdThankyou = '^^#jdThankyou';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -541,11 +546,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     getHistory(0);
 
-    console.log('appointmentData.isConsultStarted', appointmentData.isConsultStarted);
-
-    if (!appointmentData.isConsultStarted) {
-      automatedTextFromPatient();
-    }
     // registerForPushNotification();
 
     pubnub.addListener({
@@ -669,9 +669,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               getHistory(end);
             }
 
+            checkAutomatedPatientText();
+
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
             }, 1000);
+          } else {
+            checkAutomatedPatientText();
           }
         } catch (error) {
           setLoading(false);
@@ -681,6 +685,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const checkAutomatedPatientText = () => {
+    const result = insertText.filter((obj: any) => {
       // console.log('resultinsertText', obj.message);
       return obj.message === consultPatientStartedMsg;
     });
@@ -691,13 +697,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const successSteps = [
-    'Hello! Let’s get you feeling better in 4 simple steps.\nWe will:\n',
+    'Let’s get you feeling better in 5 simple steps :)\n',
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
     '4. Avail 1 free follow-up*\n',
-    '5. Chat with your doctor*\n',
-    '* 7 days after your first consultation.',
+    '5. Chat with your doctor**\n',
+    '* 7 days after your first consultation.\n\n',
+    `A doctor from Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName}’s team will join you shortly to collect your medical details. These details are essential for Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName} to help you and will take around 3-5 minutes.`,
   ];
 
   const automatedTextFromPatient = () => {
@@ -903,6 +910,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === consultPatientStartedMsg) {
         console.log('consultPatientStartedMsg');
+        addMessages(message);
+      } else if (message.message.message === firstMessage) {
+        console.log('firstMessage');
+        addMessages(message);
+      } else if (message.message.message === secondMessage) {
+        console.log('secondMessage');
         addMessages(message);
       }
     } else {
@@ -1117,7 +1130,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </View>
                 {rowData.transferInfo.photoUrl &&
                 rowData.transferInfo.photoUrl.match(
-                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
                 ) ? (
                   <Image
                     source={{ uri: rowData.transferInfo.photoUrl }}
@@ -1668,16 +1681,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               left: 0,
             }}
           >
-            {appointmentData.doctorInfo.photoUrl ? (
+            {appointmentData.doctorInfo.thumbnailUrl &&
+            appointmentData.doctorInfo.thumbnailUrl.match(
+              /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+            ) ? (
               <Image
-                source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
+                resizeMode={'contain'}
                 style={{
                   width: 32,
                   height: 32,
                 }}
               />
             ) : (
-              <DoctorImage
+              <DoctorPlaceholderImage
                 style={{
                   width: 32,
                   height: 32,
@@ -1878,16 +1895,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   left: 0,
                 }}
               >
-                {appointmentData.doctorInfo.photoUrl ? (
+                {appointmentData.doctorInfo.thumbnailUrl &&
+                appointmentData.doctorInfo.thumbnailUrl.match(
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                ) ? (
                   <Image
-                    source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                    source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
+                    resizeMode={'contain'}
                     style={{
                       width: 32,
                       height: 32,
                     }}
                   />
                 ) : (
-                  <DoctorImage
+                  <DoctorPlaceholderImage
                     style={{
                       width: 32,
                       height: 32,
@@ -1981,16 +2002,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   left: 0,
                 }}
               >
-                {appointmentData.doctorInfo.photoUrl ? (
+                {appointmentData.doctorInfo.thumbnailUrl &&
+                appointmentData.doctorInfo.thumbnailUrl.match(
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                ) ? (
                   <Image
-                    source={{ uri: appointmentData.doctorInfo.photoUrl }}
+                    source={{ uri: appointmentData.doctorInfo.thumbnailUrl }}
+                    resizeMode={'contain'}
                     style={{
                       width: 32,
                       height: 32,
                     }}
                   />
                 ) : (
-                  <DoctorImage
+                  <DoctorPlaceholderImage
                     style={{
                       width: 32,
                       height: 32,
@@ -2069,6 +2094,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const doctorAutomatedMessage = (rowData: any, index: number) => {
+    return (
+      <View
+        style={{
+          backgroundColor: '#0087ba',
+          marginLeft: 38,
+          borderRadius: 10,
+          marginBottom: 4,
+          width: 244,
+        }}
+      >
+        {rowData.automatedText ? (
+          <Text
+            style={{
+              color: '#ffffff',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              ...theme.fonts.IBMPlexSansMedium(15),
+              textAlign: 'left',
+            }}
+          >
+            {rowData.automatedText}
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
   const renderChatRow = (
     rowData: { id: string; message: string; duration: string; transferInfo: any; url: any },
     index: number
@@ -2109,6 +2162,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <>
                   {rowData.message === consultPatientStartedMsg ? (
                     <>{patientAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === firstMessage ? (
+                    <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === secondMessage ? (
+                    <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === languageQue ? (
+                    <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === jdThankyou ? (
+                    <>{doctorAutomatedMessage(rowData, index)}</>
                   ) : (
                     <>{messageView(rowData, index)}</>
                   )}

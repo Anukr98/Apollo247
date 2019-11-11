@@ -366,7 +366,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
           title={'Appointment Confirmation'}
           description={`Your appointment has been successfully booked with Dr. ${
             props.doctor ? `${props.doctor.firstName} ${props.doctor.lastName}` : ''
-          }.`}
+          }. Please go to consult room 10-15 minutes prior to your appointment. Answering a few medical questions in advance will make your appointment process quick and smooth :)`}
         >
           {/* <ScrollView bounces={false}>
             <Text style={styles.congratulationsDescriptionStyle}>{successSteps.join('\n')}</Text>
