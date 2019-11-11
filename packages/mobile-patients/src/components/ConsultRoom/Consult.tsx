@@ -572,10 +572,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                     <View style={{ flex: 1, marginRight: 16 }}>
                       <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                        Dr.{' '}
-                        {item.doctorInfo
-                          ? `${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
-                          : ''}
+                        {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
                       </Text>
                       {item.isFollowUp == 'true' ? (
                         <Text
@@ -810,7 +807,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return (
       <View style={{ width: '100%' }}>
         <View style={styles.viewName}>
-          <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
+          <View
+            style={{
+              justifyContent: 'space-between',
+              flexDirection: 'row',
+              paddingTop: 16,
+              paddingHorizontal: 0,
+              backgroundColor: theme.colors.WHITE,
+              marginTop: 4,
+            }}
+          >
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}

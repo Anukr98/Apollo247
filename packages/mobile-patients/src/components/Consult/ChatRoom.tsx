@@ -704,7 +704,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     '4. Avail 1 free follow-up*\n',
     '5. Chat with your doctor**\n',
     '* 7 days after your first consultation.\n\n',
-    `A doctor from Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName}’s team will join you shortly to collect your medical details. These details are essential for Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName} to help you and will take around 3-5 minutes.`,
+    `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
   ];
 
   const automatedTextFromPatient = () => {
@@ -756,10 +756,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               message: {
                 message: firstMessage,
                 automatedText: `Hi ${currentPatient &&
-                  currentPatient.firstName}, sorry to keep you waiting. Dr. ${
-                  appointmentData.doctorInfo.firstName
-                } ${
-                  appointmentData.doctorInfo.lastName
+                  currentPatient.firstName}, sorry to keep you waiting. ${
+                  appointmentData.doctorInfo.displayName
                 }’s team is with another patient right now. Your consultation prep will start soon.`,
                 id: doctorId,
                 isTyping: true,
@@ -809,7 +807,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               channel: channel,
               message: {
                 message: secondMessage,
-                automatedText: `Sorry, but all the members in Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
+                automatedText: `Sorry, but all the members in ${appointmentData.doctorInfo.displayName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
                 id: doctorId,
                 isTyping: true,
               },
@@ -1488,7 +1486,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const reschduleLoadView = (rowData: any, index: number, type: string) => {
-    console.log('reschduleLoadView', appointmentData.doctorInfo.firstName);
+    console.log('reschduleLoadView', appointmentData.doctorInfo.displayName);
     return (
       <>
         <View
@@ -1512,7 +1510,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             {newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
               ? 'We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.'
-              : `Since you hace already rescheduled 3 times with Dr. ${appointmentData.doctorInfo.firstName}, we will consider this a new paid appointment.`}
+              : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`}
           </Text>
         </View>
         <View
@@ -1535,7 +1533,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               marginTop: 12,
             }}
           >
-            Next slot for Dr. {appointmentData.doctorInfo.firstName} is available on —
+            Next slot for {appointmentData.doctorInfo.displayName} is available on —
             {/* Next slot for Dr. {rowData.transferInfo.doctorInfo.firstName} is available on — */}
           </Text>
           <View
@@ -2585,7 +2583,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     textAlign: 'center',
                   }}
                 >
-                  {appointmentData.doctorInfo.firstName}
+                  {appointmentData.doctorInfo.displayName}
                 </Text>
               </>
             )}
@@ -2806,7 +2804,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             textAlign: 'center',
           }}
         >
-          {appointmentData.doctorInfo.firstName}
+          {appointmentData.doctorInfo.displayName}
         </Text>
         <View
           style={{
@@ -3693,8 +3691,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {jrDoctorJoined
-                ? `Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName}'s team doctor has joined`
-                : `Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName} has joined!`}
+                ? `${appointmentData.doctorInfo.displayName}'s team doctor has joined`
+                : `${appointmentData.doctorInfo.displayName} has joined!`}
             </Text>
           </View>
         ) : null}
