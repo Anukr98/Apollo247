@@ -240,7 +240,7 @@ export const Calendar: React.FC = () => {
         <div className={classes.container}>
           <div className={classes.tabHeading}>
             <Typography variant="h1">
-              {currentPatient && `hello dr. ${(currentPatient!.lastName || '').toLowerCase()} :)`}
+              {currentPatient && `hello  ${(currentPatient!.displayName || '').toLowerCase()} :)`}
             </Typography>
             {viewSelection === 'day' ? (
               <p>
