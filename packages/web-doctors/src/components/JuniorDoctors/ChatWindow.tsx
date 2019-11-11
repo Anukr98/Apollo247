@@ -354,6 +354,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [modalOpen, setModalOpen] = React.useState(false);
+  const [imgPrevUrl, setImgPrevUrl] = React.useState();
 
   // this hook is used to send auto chat message when the consult is closed by system
   useEffect(() => {
@@ -615,7 +616,13 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <div className={classes.imageUpload} onClick={() => setModalOpen(true)}>
+                <div
+                  className={classes.imageUpload}
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(rowData.url);
+                  }}
+                >
                   <img src={rowData.url} alt={rowData.url} />
                 </div>
               ) : (
@@ -686,7 +693,13 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <div onClick={() => setModalOpen(true)} className={classes.imageUpload}>
+                <div
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(rowData.url);
+                  }}
+                  className={classes.imageUpload}
+                >
                   <img src={rowData.url} alt={rowData.url} />
                 </div>
               ) : (
@@ -971,13 +984,13 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           <div className={classes.tableContent}>
             <div className={classes.modalWindow}>
               <div className={classes.modalHeader}>
-                IMAGE001.JPG
+                {/* IMAGE001.JPG */}
                 <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
                   <img src={require('images/ic_round_clear.svg')} alt="" />
                 </div>
               </div>
               <div className={classes.modalContent}>
-                <img src={require('images/patient_01.png')} alt="" />
+                <img src={imgPrevUrl} alt="" />
               </div>
               <div className={classes.modalFooter}></div>
             </div>
