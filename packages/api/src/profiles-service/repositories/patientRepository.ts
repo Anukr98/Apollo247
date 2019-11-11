@@ -1,6 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { Patient } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
+import requestPromise from 'request-promise';
 
 import {
   PrismGetAuthTokenResponse,
@@ -9,6 +10,7 @@ import {
   PrismGetUsersResponse,
   PrismSignUpUserData,
 } from 'types/prism';
+import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -78,7 +80,7 @@ export class PatientRepository extends Repository<Patient> {
       });
 
     console.log('prism auth token response', authTokenResult);
-    return authTokenResult != null ? authTokenResult.response : null;
+    return authTokenResult !== null ? authTokenResult.response : null;
   }
 
   //utility method to get prism users list
@@ -121,51 +123,79 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   //utility method to get prism user details
-  getPrismUsersDetails(uhid: string, authToken: string) {
+  async getPrismUsersDetails(uhid: string, authToken: string) {
     const prismHeaders = {
       method: 'GET',
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    fetch(
+    const detailsResult = await fetch(
       `${process.env.PRISM_GET_USER_DETAILS_API}?authToken=${authToken}&uhid=${uhid}`,
       prismHeaders
     )
-      .then((res) => res.json())
+      .then((res) => {
+        return res.json();
+      })
       .catch((error) => {
         throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
       });
+
+    return detailsResult;
   }
 
-  async uploadDocumentToPrism(uhid: string, authToken: string) {
-    const payLoad = {
-      file:
-        '{"file":"feq2LwtsrQADd3nNLyxBAAAEEEEAAAQQ8CPAOtAdUikQAAQQQQAABBBBorwABdHvPLS1DAAEEEEAAAQQQ8CBAAO0BlSIRQAABBBBAAAEE2itAAN3ec0vLEEAAAQQQQAABBDwIEEB7QKVIBBBAAAEEEEAAgfYKEEC399zSMgQQQAABBBBAAAEPAgTQHlApEgEEEEAAAQQQQKC9AgTQ7T23tAwBBBBAAAEEEEDAgwABtAdUikQAAQQQQAABBBBorwABdHvPLS1DAAEEEEAAAQQQ8CBAAO0BlSIRQAABBBBAAAEE2itAAN3ec0vLEEAAAQQQQAABBDwIEEB7QKVIBBBAAAEEEEAAgfYKEEC399zSMgQQQAABBBBAAAEPAgTQHlApEgEEEEAAAQQQQKC9AgTQ7T23tAwBBBBAAAEEEEDAgwABtAdUikQAAQQQQAABBBBorwABdHvPLS1DAAEEEEAAAQQQ8CBAAO0BlSIRQAABBBBAAAEE2itAAN3ec0vLEEAAAQQQQAABBDwIEEB7QKVIBBBAAAEEEEAAgfYKEEC399zSMgQQQAABBBBAAAEPAgTQHlApEgEEEEAAAQQQQKC9AgTQ7T23tAwBBBBAAAEEEEDAgwABtAdUikQAAQQQQAABBBBorwABdHvPLS1DAAEEEEAAAQQQ8CBAAO0BlSIRQAABBBBAAAEE2itAAN3ec0vLEEAAAQQQQAABBDwIEEB7QKVIBBBAAAEEEEAAgfYKEEC399zSMgQQQAABBBBAAAEPAgTQHlApEgEEEEAAAQQQQKC9Av8DeJrFsb7n4X8AAAAASUVORK5CYII=",',
-      authtoken: authToken,
-      format: 'png',
-      tag: 'HealthChecks',
-      programe: 'prog2',
-      date: '1572253220',
+  async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
+    console.log(uhid, prismAuthToken);
+
+    const currentTimeStamp = Math.floor(new Date().getTime() / 1000);
+    const randomNumber = Math.floor(Math.random() * 10000);
+    const fileFormat = docInput.fileType.toLowerCase();
+    const documentName = `${currentTimeStamp}${randomNumber}.${fileFormat}`;
+    const formData = {
+      file: docInput.base64FileInput,
+      authtoken: prismAuthToken,
+      format: fileFormat,
+      tag: docInput.category,
+      programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
+      date: currentTimeStamp,
       uhid: uhid,
-      category: 'OpSummary',
-      filename: 'TestFile1234.png',
+      category: docInput.category,
+      filename: documentName,
     };
-    console.log(process.env.PRISM_UPLOAD_RECORDS_API);
-    const uploadResult = await fetch('http://blue.phrdemo.com/ui/data/uploaduserrecords', {
+
+    const options = {
       method: 'POST',
+      url: `${process.env.PRISM_UPLOAD_RECORDS_API}`,
       headers: {
-        'Content-Type': 'application/json',
-        'content-type': 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW',
+        Connection: 'keep-alive',
+        'Accept-Encoding': 'gzip, deflate',
+        Host: 'blue.phrdemo.com',
+        Accept: '*/*',
       },
-      body: JSON.stringify(payLoad),
-    })
-      .then((res) => res.text())
-      .catch((error) => {
-        console.log('error in upload:====== ', error);
+      formData: formData,
+    };
+    console.log('==========================', options, '=================');
+
+    const uploadResult = await requestPromise(options)
+      .then((res) => {
+        console.log('in rseponseee', res);
+
+        return JSON.parse(res);
+      })
+      .catch((err) => {
+        console.log(err);
         throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
       });
 
-    console.log('upload records response', uploadResult);
-    return uploadResult;
+    console.log(
+      'upload result ------->',
+      uploadResult,
+      uploadResult['errorCode'],
+      uploadResult['response'],
+      uploadResult != null,
+      uploadResult.response != null,
+      uploadResult !== null && uploadResult.response !== null,
+      uploadResult.response
+    );
+    return uploadResult && uploadResult.response ? uploadResult.response : null;
   }
 }

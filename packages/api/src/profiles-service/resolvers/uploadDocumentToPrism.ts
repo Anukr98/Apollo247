@@ -1,12 +1,16 @@
 import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Resolver } from 'api-gateway';
-import { UPLOAD_FILE_TYPES } from 'profiles-service/entities';
+import { UPLOAD_FILE_TYPES, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 import { format } from 'date-fns';
 
 export const uploadDocumentTypeDefs = gql`
+  enum PRISM_DOCUMENT_CATEGORY {
+    HealthChecks
+    OpSummary
+  }
   type UploadPrismDocumentResult {
     status: Boolean
   }
@@ -14,6 +18,7 @@ export const uploadDocumentTypeDefs = gql`
     fileType: UPLOAD_FILE_TYPES
     base64FileInput: String
     patientId: String
+    category: PRISM_DOCUMENT_CATEGORY
   }
 
   extend type Mutation {
@@ -24,10 +29,11 @@ type UploadPrismDocumentResult = {
   status: Boolean;
 };
 
-type UploadDocumentInput = {
+export type UploadDocumentInput = {
   fileType: UPLOAD_FILE_TYPES;
   base64FileInput: string;
   patientId: string;
+  category: PRISM_DOCUMENT_CATEGORY;
 };
 
 type UploadDocInputArgs = { uploadDocumentInput: UploadDocumentInput };
@@ -55,17 +61,22 @@ const uploadDocument: Resolver<
 
   //check if current user uhid matches with response uhids
   const uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);
-  console.log(uhid);
+  console.log('uhid==========>', uhid);
 
   if (!uhid) {
     throw new Error('Patient UHID Error');
   }
 
   //just call get prism user details with the corresponding uhid
-  patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+  const userDetails = await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+  console.log('userDetails==============', userDetails);
 
-  const uploadResponse = patientsRepo.uploadDocumentToPrism(uhid, prismAuthToken);
-  console.log(uploadResponse);
+  const uploadResponse = await patientsRepo.uploadDocumentToPrism(
+    uhid,
+    prismAuthToken,
+    uploadDocumentInput
+  );
+  console.log('uploadResponse--------------------------', uploadResponse);
 
   return { status: true };
 };

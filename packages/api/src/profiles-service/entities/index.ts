@@ -68,6 +68,11 @@ export enum UPLOAD_FILE_TYPES {
   PDF = 'PDF',
 }
 
+export enum PRISM_DOCUMENT_CATEGORY {
+  HealthChecks = 'HealthChecks',
+  OpSummary = 'OpSummary',
+}
+
 export enum MEDICINE_DELIVERY_TYPE {
   HOME_DELIVERY = 'HOME_DELIVERY',
   STORE_PICKUP = 'STORE_PICKUP',
