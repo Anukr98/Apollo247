@@ -766,7 +766,7 @@ export const ConsultTabs: React.FC = () => {
           // setIsPopoverOpen(true);
           setIsConfirmDialogOpen(true);
         }
-        if(sendToPatientFlag){
+        if (sendToPatientFlag) {
           sendToPatientAction();
         }
       })
@@ -931,7 +931,9 @@ export const ConsultTabs: React.FC = () => {
               <CallPopover
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                 createSessionAction={createSessionAction}
-                saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) => saveCasesheetAction(flag, sendToPatientFlag)}
+                saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
+                  saveCasesheetAction(flag, sendToPatientFlag)
+                }
                 endConsultAction={endConsultAction}
                 appointmentId={appointmentId}
                 appointmentDateTime={appointmentDateTime}
