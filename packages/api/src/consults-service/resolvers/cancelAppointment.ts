@@ -1,16 +1,17 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { TRANSFER_INITIATED_TYPE, STATUS } from 'consults-service/entities';
+import { STATUS, REQUEST_ROLES } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
     appointmentId: ID!
     cancelReason: String
-    cancelledBy: TRANSFER_INITIATED_TYPE!
+    cancelledBy: REQUEST_ROLES!
     cancelledById: ID!
   }
 
@@ -30,7 +31,7 @@ type CancelAppointmentResult = {
 type CancelAppointmentInput = {
   appointmentId: string;
   cancelReason: string;
-  cancelledBy: TRANSFER_INITIATED_TYPE;
+  cancelledBy: REQUEST_ROLES;
   cancelledById: string;
 };
 
@@ -50,6 +51,10 @@ const cancelAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
+  if (appointment.appointmentDateTime <= new Date()) {
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+  }
+
   if (appointment.status !== STATUS.PENDING && appointment.status !== STATUS.CONFIRMED) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -57,8 +62,23 @@ const cancelAppointment: Resolver<
   await appointmentRepo.cancelAppointment(
     cancelAppointmentInput.appointmentId,
     cancelAppointmentInput.cancelledBy,
-    cancelAppointmentInput.cancelledById
+    cancelAppointmentInput.cancelledById,
+    cancelAppointmentInput.cancelReason
   );
+
+  if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.DOCTOR) {
+    const pushNotificationInput = {
+      appointmentId: appointment.id,
+      notificationType: NotificationType.DOCTOR_CANCEL_APPOINTMENT,
+    };
+    const notificationResult = sendNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb
+    );
+    console.log(notificationResult);
+  }
 
   return { status: STATUS.CANCELLED };
 };

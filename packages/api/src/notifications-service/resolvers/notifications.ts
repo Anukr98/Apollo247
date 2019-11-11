@@ -83,6 +83,7 @@ export enum NotificationType {
   BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
   CALL_APPOINTMENT = 'CALL_APPOINTMENT',
   MEDICINE_CART_READY = 'MEDICINE_CART_READY',
+  DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
 }
 
 export enum APPT_CALL_TYPE {
@@ -280,8 +281,17 @@ export async function sendNotification(
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
-
-  if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
+  if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
+    notificationTitle = ApiConstants.CANCEL_APPT_TITLE;
+    notificationBody = ApiConstants.CANCEL_APPT_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    notificationBody = notificationBody.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
+  } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
     notificationTitle = ApiConstants.RESCHEDULE_INITIATION_TITLE;
     notificationBody = ApiConstants.RESCHEDULE_INITIATION_BODY.replace(
       '{0}',
