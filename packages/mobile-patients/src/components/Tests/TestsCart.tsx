@@ -904,48 +904,50 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const renderProfilePicker = () => {
     return (
-      <MaterialMenu
-        dataObject={profileArray}
-        selectedText={profile.pid}
-        menuContainer={{ alignItems: 'flex-end' }}
-        itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
-        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
-        selectedTextStyle={{
-          ...theme.viewStyles.text('M', 16, '#00b38e'),
-          alignSelf: 'flex-start',
-        }}
-        lastTextStyle={{
-          ...theme.viewStyles.text('B', 13, '#fc9916'),
-        }}
-        bottomPadding={{ paddingBottom: 20 }}
-        lastContainerStyle={{
-          height: 38,
-          borderBottomWidth: 0,
-          alignItems: 'flex-end',
-          justifyContent: 'flex-end',
-        }}
-        onPressObject={(selectedUser) => {
-          if (selectedUser.pid === 'ADD NEW PROFILE') setDisplayAddProfile(true);
-          else setProfile(selectedUser);
-        }}
-      >
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <View style={styles.placeholderViewStyle}>
-            <Text
-              style={[
-                styles.placeholderTextStyle,
-                ,
-                profile.pid !== '' ? null : styles.placeholderStyle,
-              ]}
-            >
-              {profile.pid !== '' ? profile.name : 'Select who are these tests for'}
-            </Text>
-            <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-              <DropdownGreen />
+      <View style={{ marginLeft: width / 2 - 20 }}>
+        <MaterialMenu
+          dataObject={profileArray}
+          selectedText={profile.pid}
+          menuContainer={{ alignItems: 'flex-end' }}
+          itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
+          itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
+          selectedTextStyle={{
+            ...theme.viewStyles.text('M', 16, '#00b38e'),
+            alignSelf: 'flex-start',
+          }}
+          lastTextStyle={{
+            ...theme.viewStyles.text('B', 13, '#fc9916'),
+          }}
+          bottomPadding={{ paddingBottom: 20 }}
+          lastContainerStyle={{
+            height: 38,
+            borderBottomWidth: 0,
+            alignItems: 'flex-end',
+            justifyContent: 'flex-end',
+          }}
+          onPressObject={(selectedUser) => {
+            if (selectedUser.pid === 'ADD NEW PROFILE') setDisplayAddProfile(true);
+            else setProfile(selectedUser);
+          }}
+        >
+          <View style={{ flexDirection: 'row', marginBottom: 8, marginLeft: -(width / 2 - 20) }}>
+            <View style={styles.placeholderViewStyle}>
+              <Text
+                style={[
+                  styles.placeholderTextStyle,
+                  ,
+                  profile.pid !== '' ? null : styles.placeholderStyle,
+                ]}
+              >
+                {profile.pid !== '' ? profile.name : 'Select who are these tests for'}
+              </Text>
+              <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                <DropdownGreen />
+              </View>
             </View>
           </View>
-        </View>
-      </MaterialMenu>
+        </MaterialMenu>
+      </View>
     );
   };
 
