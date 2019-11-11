@@ -97,7 +97,7 @@ export class Appointment extends BaseEntity {
   bookingDate: Date;
 
   @Column({ nullable: true })
-  cancelledBy: TRANSFER_INITIATED_TYPE;
+  cancelledBy: REQUEST_ROLES;
 
   @Column({ nullable: true })
   cancelledById: string;
@@ -107,6 +107,9 @@ export class Appointment extends BaseEntity {
 
   @Column({ generated: 'increment' })
   displayId: number;
+
+  @Column({ nullable: true })
+  doctorCancelReason: string;
 
   @Column()
   doctorId: string;
@@ -131,6 +134,9 @@ export class Appointment extends BaseEntity {
 
   @Column({ nullable: true, default: false })
   isConsultStarted: Boolean;
+
+  @Column({ nullable: true })
+  patientCancelReason: string;
 
   @Column()
   patientId: string;
