@@ -29,7 +29,12 @@ import {
   InitiateRescheduleAppointmentVariables,
 } from 'graphql/types/InitiateRescheduleAppointment';
 import { INITIATE_RESCHDULE_APPONITMENT } from 'graphql/profiles';
-import { REQUEST_ROLES,TRANSFER_INITIATED_TYPE, STATUS, DoctorType } from 'graphql/types/globalTypes';
+import {
+  REQUEST_ROLES,
+  TRANSFER_INITIATED_TYPE,
+  STATUS,
+  DoctorType,
+} from 'graphql/types/globalTypes';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { END_CALL_NOTIFICATION } from 'graphql/consults';
 import {
@@ -1045,7 +1050,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       doctorInfo: currentPatient,
       pdfUrl: props.prescriptionPdf,
     };
-    console.log(followupObj);
+
     if (folloupDateTime !== '') {
       setTimeout(() => {
         pubnub.publish(
@@ -1086,6 +1091,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         otherErrorCancel: false,
       });
     }
+  };
+
+  const isPastAppointment = () => {
+    const diff = moment.duration(
+      moment(new Date(props.appointmentDateTime)).diff(
+        moment(moment(new Date()).format('YYYY-MM-DD HH:mm:ss'))
+      )
+    );
+    return diff.asMinutes() + 15 < 0;
   };
 
   const currentDoctor = useCurrentPatient();
@@ -1461,21 +1475,23 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <div>
                 <ul className={classes.popOverUL}>
                   {/* <li>Share Case Sheet</li> */}
-                  <li
-                    onClick={() => {
-                      if (
-                        appointmentInfo!.status === STATUS.PENDING ||
-                        appointmentInfo!.status === STATUS.IN_PROGRESS
-                      ) {
-                        handleCloseThreeDots();
-                        setIsCancelPopoverOpen(true);
-                      } else {
-                        alert('You are not allowed to cancel the appointment');
-                      }
-                    }}
-                  >
-                    End or Cancel Consult
-                  </li>
+                  {!isPastAppointment() && (
+                    <li
+                      onClick={() => {
+                        if (
+                          appointmentInfo!.status === STATUS.PENDING ||
+                          appointmentInfo!.status === STATUS.IN_PROGRESS
+                        ) {
+                          handleCloseThreeDots();
+                          setIsCancelPopoverOpen(true);
+                        } else {
+                          alert('You are not allowed to cancel the appointment');
+                        }
+                      }}
+                    >
+                      End or Cancel Consult
+                    </li>
+                  )}
                   {(props.startAppointment ||
                     !(
                       props.isAppointmentEnded ||
