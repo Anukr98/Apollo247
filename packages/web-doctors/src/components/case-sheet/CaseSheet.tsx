@@ -258,6 +258,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         <section className={classes.column}>
           {items.map((item) => (
             <ExpansionPanel
+              key={item.key}
               expanded={item.state}
               onChange={handlePanelExpansion(item.key)}
               className={classes.expandIcon}
