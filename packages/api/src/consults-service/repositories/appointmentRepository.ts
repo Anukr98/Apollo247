@@ -497,8 +497,15 @@ export class AppointmentRepository extends Repository<Appointment> {
           st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
           consultStartTime = new Date(st);
         }
-        const slotsCount =
-          (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
+        const duration = Math.floor(60 / docConsultHr.consultDuration);
+        console.log(duration, 'doctor duration');
+        let slotsCount =
+          (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
+        if (slotsCount - Math.floor(slotsCount) == 0.5) {
+          slotsCount = Math.ceil(slotsCount);
+        } else {
+          slotsCount = Math.floor(slotsCount);
+        }
         const dayStartTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
         let startTime = new Date(previousDate.toDateString() + ' ' + dayStartTime);
         //console.log(slotsCount, 'slots count');
@@ -507,7 +514,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           .fill(0)
           .map(() => {
             const stTime = startTime;
-            startTime = addMinutes(startTime, 15);
+            startTime = addMinutes(startTime, docConsultHr.consultDuration);
             const stTimeHours = stTime
               .getUTCHours()
               .toString()
@@ -522,6 +529,12 @@ export class AppointmentRepository extends Repository<Appointment> {
             availableSlots.push(generatedSlot);
             return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
           });
+        const lastSlot = new Date(availableSlots[availableSlots.length - 1]);
+        const lastMins = Math.abs(differenceInMinutes(lastSlot, consultEndTime));
+        console.log(lastMins, 'last mins', lastSlot);
+        if (lastMins < docConsultHr.consultDuration) {
+          availableSlots.pop();
+        }
         //console.log(availableSlotsReturn);
       });
       if (doctorAppointments && doctorAppointments.length > 0) {
