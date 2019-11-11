@@ -212,7 +212,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
 
     analytics.setAnalyticsCollectionEnabled(true);
-    CommonScreenLog(AppRoutes.ConsultRoom, AppRoutes.ConsultRoom);
   }, [currentPatient, analytics, userName, props.navigation.state.params]);
 
   useEffect(() => {

@@ -231,30 +231,147 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     <View style={{ paddingBottom: 19 }} />
   );
 
-  //   const renderSearchInput = () => {
-  //     return (
-  //       <View style={{ paddingHorizontal: 20, backgroundColor: theme.colors.WHITE }}>
-  //         <TextInputComponent
-  //           conatinerstyles={{ paddingBottom: 0 }}
-  //           inputStyle={[
-  //             styles.searchValueStyle,
-  //             isNoMedicinesFound ? { borderBottomColor: '#e50000' } : {},
-  //           ]}
-  //           textInputprops={{
-  //             ...(isNoMedicinesFound ? { selectionColor: '#e50000' } : {}),
-  //             autoFocus: true,
-  //           }}
-  //           value={searchText}
-  //           placeholder="Search medicine and more"
-  //           underlineColorAndroid="transparent"
-  //           onChangeText={(value) => {
-  //             onSearch(value);
-  //           }}
-  //         />
-  //         {renderSorryMessage}
-  //       </View>
-  //     );
-  //   };
+  interface SuggestionType {
+    name: string;
+    price: number;
+    specialPrice?: number;
+    isOutOfStock: boolean;
+    type: Doseform;
+    imgUri?: string;
+    prescriptionRequired: boolean;
+    onPress: () => void;
+    showSeparator?: boolean;
+    style?: ViewStyle;
+  }
+
+  const renderSearchSuggestionItem = (data: SuggestionType) => {
+    const localStyles = StyleSheet.create({
+      containerStyle: {
+        ...data.style,
+      },
+      iconAndDetailsContainerStyle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 9.5,
+        marginHorizontal: 12,
+      },
+      iconOrImageContainerStyle: {
+        width: 40,
+      },
+      nameAndPriceViewStyle: {
+        flex: 1,
+      },
+    });
+
+    const renderNamePriceAndInStockStatus = () => {
+      return (
+        <View style={localStyles.nameAndPriceViewStyle}>
+          <Text
+            numberOfLines={1}
+            style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}
+          >
+            {data.name}
+          </Text>
+          {data.isOutOfStock ? (
+            <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
+              {'Out Of Stock'}
+            </Text>
+          ) : (
+            <View style={{ flexDirection: 'row' }}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+                }}
+              >
+                Rs. {data.specialPrice || data.price}
+              </Text>
+              {data.specialPrice ? (
+                <Text
+                  style={[
+                    { ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04), marginLeft: 8 },
+                  ]}
+                >
+                  {'('}
+                  <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${data.price}`}</Text>
+                  {')'}
+                </Text>
+              ) : null}
+            </View>
+          )}
+        </View>
+      );
+    };
+
+    const renderIconOrImage = () => {
+      return (
+        <View style={localStyles.iconOrImageContainerStyle}>
+          {data.imgUri ? (
+            <Image
+              // placeholderStyle={styles.imagePlaceholderStyle}
+              // PlaceholderContent={<ImagePlaceholderView />}
+              source={{ uri: data.imgUri }}
+              style={{ height: 40, width: 40 }}
+              resizeMode="contain"
+            />
+          ) : data.type == 'SYRUP' ? (
+            <SyrupBottleIcon />
+          ) : data.type == 'INJECTION' ? (
+            <InjectionIcon />
+          ) : data.prescriptionRequired ? (
+            <MedicineRxIcon />
+          ) : (
+            <MedicineIcon />
+          )}
+        </View>
+      );
+    };
+
+    return (
+      <TouchableOpacity activeOpacity={1} onPress={data.onPress}>
+        <View style={localStyles.containerStyle} key={data.name}>
+          <View style={localStyles.iconAndDetailsContainerStyle}>
+            {renderIconOrImage()}
+            <View style={{ width: 16 }} />
+            {renderNamePriceAndInStockStatus()}
+          </View>
+          {data.showSeparator ? <Spearator /> : null}
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderSearchSuggestionItemView = (data: ListRenderItemInfo<MedicineProduct>) => {
+    const { index, item } = data;
+    const imgUri = item.thumbnail
+      ? `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${item.thumbnail}`
+      : '';
+    const specialPrice = item.special_price
+      ? typeof item.special_price == 'string'
+        ? parseInt(item.special_price)
+        : item.special_price
+      : undefined;
+
+    return renderSearchSuggestionItem({
+      onPress: () => {
+        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+          sku: item.sku,
+        });
+        resetSearchState();
+      },
+      name: item.name,
+      price: item.price,
+      specialPrice,
+      isOutOfStock: !item.is_in_stock,
+      type: ((item.PharmaOverview || [])[0] || {}).Doseform,
+      style: {
+        marginHorizontal: 20,
+        paddingBottom: index == medicineList.length - 1 ? 10 : 0,
+      },
+      showSeparator: !(index == medicineList.length - 1),
+      imgUri,
+      prescriptionRequired: item.is_prescription_required == '1',
+    });
+  };
 
   const renderSearchInput = () => {
     const styles = StyleSheet.create({

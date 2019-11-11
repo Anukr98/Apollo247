@@ -100,8 +100,6 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
     if (currentPatient && currentPatient.firstName) {
       setuserName(currentPatient.firstName);
     }
-
-    CommonScreenLog(AppRoutes.SymptomChecker, AppRoutes.SymptomChecker);
   }, [currentPatient, userName, props.navigation.state.params]);
 
   const patientAge =

@@ -38,98 +38,41 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
-export const GET_PATIENTS = gql`
+export const GET_PATIENT = gql`
   query getPatients {
     getPatients {
       patients {
-        addressList {
-          id
-          addressType
-          addressLine1
-          addressLine2
-          state
-          landmark
-          createdDate
-          updatedDate
-          mobileNumber
-          city
-          otherAddressType
-        }
         id
+        addressType
+        addressLine1
+        addressLine2
+        state
+        landmark
+        createdDate
+        updatedDate
         mobileNumber
-        firstName
-        lastName
-        relation
-        uhid
-        gender
-        emailAddress
-        gender
-        dateOfBirth
+        city
+        otherAddressType
       }
     }
   }
 `;
-
 export const GET_PATIENTS_MOBILE = gql`
   query getPatientByMobileNumber($mobileNumber: String) {
     getPatientByMobileNumber(mobileNumber: $mobileNumber) {
       patients {
         id
-        uhid
         firstName
-        lastName
-        mobileNumber
         dateOfBirth
-        emailAddress
         gender
+        uhid
+        lastName
         relation
         photoUrl
-        photoUrl
       }
     }
   }
 `;
-
-export const ADD_NEW_PROFILE = gql`
-  mutation addNewProfile($PatientProfileInput: PatientProfileInput!) {
-    addNewProfile(patientProfileInput: $PatientProfileInput) {
-      patient {
-        id
-        uhid
-        mobileNumber
-        firstName
-        lastName
-        emailAddress
-        gender
-      }
-    }
-  }
-`;
-
-export const EDIT_PROFILE = gql`
-  mutation editProfile($editProfileInput: EditProfileInput!) {
-    editProfile(editProfileInput: $editProfileInput) {
-      patient {
-        id
-        photoUrl
-        firstName
-        lastName
-        relation
-        gender
-        dateOfBirth
-        emailAddress
-      }
-    }
-  }
-`;
-export const DELETE_PROFILE = gql`
-  mutation deleteProfile($patientId: String) {
-    deleteProfile(patientId: $patientId) {
-      status
-    }
-  }
-`;
-
 export const BOOK_APPOINTMENT = gql`
   mutation bookAppointment($bookAppointment: BookAppointmentInput!) {
     bookAppointment(appointmentInput: $bookAppointment) {

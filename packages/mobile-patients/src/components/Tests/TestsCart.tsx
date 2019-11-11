@@ -600,7 +600,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View>
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Date</Text>
-          <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
+          <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
         </View>
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Time</Text>

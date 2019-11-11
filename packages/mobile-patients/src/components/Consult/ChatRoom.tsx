@@ -267,6 +267,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   let intervalId: NodeJS.Timeout;
   let stoppedTimer: number;
+  let thirtySecondTimer: any;
+  let minuteTimer: any;
 
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
@@ -576,6 +578,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       keyboardDidHideListener.remove();
       KeepAwake.deactivate();
       Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_PAN);
+      minuteTimer && clearTimeout(minuteTimer);
+      thirtySecondTimer && clearTimeout(thirtySecondTimer);
     };
   }, []);
 
@@ -677,9 +681,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+      // console.log('resultinsertText', obj.message);
+      return obj.message === consultPatientStartedMsg;
+    });
+    if (result.length === 0) {
+      console.log('result.length ', result);
+      automatedTextFromPatient();
+    }
+  };
+
   const successSteps = [
     'Hello! Let’s get you feeling better in 4 simple steps.\nWe will:\n',
-    'Let’s get you feeling better in 5 simple steps :)\n',
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
@@ -704,6 +716,109 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       (status, response) => {}
     );
   };
+
+  useEffect(() => {
+    thirtySecondTimer = setTimeout(function() {
+      if (jrDoctorJoined == false) {
+        // console.log('Alert Shows After 30000 Seconds of Delay.');
+
+        const result = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === firstMessage;
+        });
+
+        const startConsultResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === startConsultMsg;
+        });
+
+        const startConsultjrResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === startConsultjr;
+        });
+
+        if (
+          result.length === 0 &&
+          startConsultResult.length === 0 &&
+          startConsultjrResult.length === 0
+        ) {
+          // console.log('result.length ', result);
+          pubnub.publish(
+            {
+              channel: channel,
+              message: {
+                message: firstMessage,
+                automatedText: `Hi ${currentPatient &&
+                  currentPatient.firstName}, sorry to keep you waiting. Dr. ${
+                  appointmentData.doctorInfo.firstName
+                } ${
+                  appointmentData.doctorInfo.lastName
+                }’s team is with another patient right now. Your consultation prep will start soon.`,
+                id: doctorId,
+                isTyping: true,
+              },
+              storeInHistory: true,
+              sendByPost: true,
+            },
+            (status, response) => {}
+          );
+        } else {
+          thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        }
+      } else {
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+      }
+    }, 30000);
+  }, []);
+
+  useEffect(() => {
+    minuteTimer = setTimeout(function() {
+      if (jrDoctorJoined == false) {
+        // console.log('Alert Shows After 60000 Seconds of Delay.');
+
+        const result = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === secondMessage;
+        });
+
+        const startConsultResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === startConsultMsg;
+        });
+
+        const startConsultjrResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === startConsultjr;
+        });
+
+        if (
+          result.length === 0 &&
+          startConsultResult.length === 0 &&
+          startConsultjrResult.length === 0
+        ) {
+          // console.log('result.length ', result);
+          pubnub.publish(
+            {
+              channel: channel,
+              message: {
+                message: secondMessage,
+                automatedText: `Sorry, but all the members in Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
+                id: doctorId,
+                isTyping: true,
+              },
+              storeInHistory: true,
+              sendByPost: true,
+            },
+            (status, response) => {}
+          );
+        } else {
+          minuteTimer && clearTimeout(minuteTimer);
+        }
+      } else {
+        minuteTimer && clearTimeout(minuteTimer);
+      }
+    }, 60000);
+  }, []);
 
   const checkingAppointmentDates = () => {
     try {
@@ -3088,6 +3203,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             changeVideoStyles();
             setDropdownVisible(false);
 
+            // InCallManager.setSpeakerphoneOn(true)
+            // InCallManager.chooseAudioRoute('EARPIECE')
             if (token) {
               PublishAudioVideo();
             } else {

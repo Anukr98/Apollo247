@@ -176,7 +176,7 @@ interface ConsultationsCardProps {
 }
 
 export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   let bookedAppointments: appointmentDetails[] = [];
 
@@ -322,7 +322,9 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         </div>
                       </div>
                       <div className={classes.cardBottomActons}>
-                        <AphButton>Start Consult</AphButton>
+                        <Link to={clientRoutes.chatRoom(appointmentId, doctorId)}>
+                          <AphButton>Start Consult</AphButton>
+                        </Link>
                         <div className={classes.noteText}>
                           You are entitled to 1 free follow-up!
                         </div>

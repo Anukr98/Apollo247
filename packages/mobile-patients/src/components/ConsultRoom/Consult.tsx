@@ -187,7 +187,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   useEffect(() => {
-    CommonScreenLog(AppRoutes.Consult, AppRoutes.Consult);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
