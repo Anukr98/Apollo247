@@ -340,7 +340,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                       setIsValidOTP(true);
                     }
                     setInvalidOtpCount(invalidOtpCount + 1);
-                    setOtp('');
+                    // setOtp('');
                   }
                 }, 1000);
               } catch (error) {
