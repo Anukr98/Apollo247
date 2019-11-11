@@ -638,7 +638,7 @@ export const ConsultTabs: React.FC = () => {
       });
   };
 
-  const sendToPatientAction = (flag: boolean) => {
+  const sendToPatientAction = () => {
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
@@ -660,7 +660,7 @@ export const ConsultTabs: React.FC = () => {
       });
   };
 
-  const saveCasesheetAction = (flag: boolean) => {
+  const saveCasesheetAction = (flag: boolean, sendToPatientFlag: boolean) => {
     // followUp: followUp[0],
     // followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
     // followUpAfterInDays:
@@ -759,13 +759,15 @@ export const ConsultTabs: React.FC = () => {
       .then((_data) => {
         if (_data && _data!.data!.modifyCaseSheet && _data!.data!.modifyCaseSheet!.blobName) {
           const url = storageClient.getBlobUrl(_data!.data!.modifyCaseSheet!.blobName);
-          console.log(url);
           setPrescriptionPdf(url);
           setSaving(false);
         }
         if (!flag) {
           // setIsPopoverOpen(true);
           setIsConfirmDialogOpen(true);
+        }
+        if(sendToPatientFlag){
+          sendToPatientAction();
         }
       })
       .catch((e) => {
@@ -778,7 +780,7 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const endConsultAction = () => {
-    saveCasesheetAction(false);
+    saveCasesheetAction(false, false);
   };
 
   const endConsultActionFinal = () => {
@@ -929,7 +931,7 @@ export const ConsultTabs: React.FC = () => {
               <CallPopover
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                 createSessionAction={createSessionAction}
-                saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
+                saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) => saveCasesheetAction(flag, sendToPatientFlag)}
                 endConsultAction={endConsultAction}
                 appointmentId={appointmentId}
                 appointmentDateTime={appointmentDateTime}
@@ -945,7 +947,7 @@ export const ConsultTabs: React.FC = () => {
                 appointmentStatus={appointmentStatus}
                 sentToPatient={sentToPatient}
                 isAppointmentEnded={isAppointmentEnded}
-                sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
+                //sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
                 setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
                 callId={callId}
               />
