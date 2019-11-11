@@ -97,6 +97,7 @@
     "react-hot-loader": "^4.9.0",
     "react-router": "^5.0.1",
     "react-router-dom": "^5.0.1",
+    "trackjs": "^3.7.2",
     "unfetch": "^4.1.0",
     "uuid": "^3.3.3",
     "validator": "^11.1.0"
