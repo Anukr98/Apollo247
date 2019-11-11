@@ -2,19 +2,23 @@ import { Theme, Popover } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { clientRoutes } from 'helpers/clientRoutes';
 import { ChatWindow } from 'components/ChatRoom/ChatWindow';
 import { ConsultDoctorProfile } from 'components/ChatRoom/ConsultDoctorProfile';
 import { useParams } from 'hooks/routerHooks';
 import { useAuth } from 'hooks/authHooks';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
+import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
+import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
 import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
 } from 'graphql/types/GetDoctorDetailsById';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import LinearProgress from '@material-ui/core/LinearProgress';
+import { useMutation } from 'react-apollo-hooks';
+import { ApolloError } from 'apollo-client';
 import { ChatMessage } from 'components/ChatRoom/ChatMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -180,7 +184,7 @@ const useStyles = makeStyles((theme: Theme) => {
 type Params = { appointmentId: string; doctorId: string };
 
 export const ChatRoom: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const params = useParams<Params>();
   const [hasDoctorJoined, setHasDoctorJoined] = useState<boolean>(false);
   const appointmentId = params.appointmentId;
@@ -188,6 +192,25 @@ export const ChatRoom: React.FC = (props) => {
   const { isSignedIn } = useAuth();
   const mascotRef = useRef(null);
   const [isPopoverOpen] = React.useState<boolean>(true);
+
+  const mutationRequestToJrDoctor = useMutation<AddToConsultQueue, AddToConsultQueueVariables>(
+    ADD_TO_CONSULT_QUEUE,
+    {
+      variables: {
+        appointmentId,
+      },
+    }
+  );
+
+  useEffect(() => {
+    mutationRequestToJrDoctor()
+      .then((res: any) => {
+        console.log(res);
+      })
+      .catch((e: ApolloError) => {
+        console.log(e);
+      });
+  }, []);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,

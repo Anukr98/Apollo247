@@ -4,13 +4,24 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AphError } from 'AphError';
-import { Doctor } from 'doctors-service/entities';
+import { Doctor, Secretary, DoctorSecretary } from 'doctors-service/entities';
 import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
+import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
+import { DoctorSecretaryRepository } from 'doctors-service/repositories/doctorSecretary';
 
 export const delegateFunctionsTypeDefs = gql`
+  type DoctorSecretaryData {
+    doctor: Profile
+    secretary: Secretary
+  }
   extend type Mutation {
     updateDelegateNumber(delegateNumber: String): Profile
     removeDelegateNumber: Profile
+    addSecretary(secretaryId: ID!): DoctorSecretaryData
+    removeSecretary(secretaryId: ID!): DoctorDetails
+  }
+  extend type Query {
+    getSecretaryList: [SecretaryDetails]
   }
 `;
 
@@ -63,9 +74,95 @@ const removeDelegateNumber: Resolver<null, {}, DoctorsServiceContext, Doctor> = 
   return updatedDoctorDetails;
 };
 
+const getSecretaryList: Resolver<null, {}, DoctorsServiceContext, Secretary[]> = async (
+  parent,
+  args,
+  { mobileNumber, doctorsDb }
+) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  return await secretaryRepo.getSecretaryList();
+};
+
+const addSecretary: Resolver<
+  null,
+  { secretaryId: string },
+  DoctorsServiceContext,
+  DoctorSecretary
+> = async (parent, args, { mobileNumber, doctorsDb }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //check if secretary id is valid.
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryDetails = await secretaryRepo.getSecretaryById(args.secretaryId);
+  if (secretaryDetails == null) throw new AphError(AphErrorMessages.INVALID_SECRETARY_ID);
+
+  //check if secretary & doctor combination already exist
+  const doctorSecretaryRepo = doctorsDb.getCustomRepository(DoctorSecretaryRepository);
+  const doctorSecretaryRecord = await doctorSecretaryRepo.findRecord(
+    doctorData.id,
+    secretaryDetails.id
+  );
+
+  if (doctorSecretaryRecord)
+    throw new AphError(AphErrorMessages.SECRETARY_DOCTOR_COMBINATION_EXIST);
+
+  //insert DoctorSecretary record
+  const doctorSecretaryDetails: Partial<DoctorSecretary> = {
+    secretary: secretaryDetails,
+    doctor: doctorData,
+  };
+
+  const doctorSecretary = await doctorSecretaryRepo.saveDoctorSecretary(doctorSecretaryDetails);
+  return doctorSecretary;
+};
+
+const removeSecretary: Resolver<
+  null,
+  { secretaryId: string },
+  DoctorsServiceContext,
+  Doctor
+> = async (parent, args, { mobileNumber, doctorsDb }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //check if secretary id is valid.
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryDetails = await secretaryRepo.getSecretaryById(args.secretaryId);
+  if (secretaryDetails == null) throw new AphError(AphErrorMessages.INVALID_SECRETARY_ID);
+
+  //check if secretary & doctor combination already exist
+  const doctorSecretaryRepo = doctorsDb.getCustomRepository(DoctorSecretaryRepository);
+  const doctorSecretaryRecord = await doctorSecretaryRepo.findRecord(
+    doctorData.id,
+    secretaryDetails.id
+  );
+
+  if (doctorSecretaryRecord == null)
+    throw new AphError(AphErrorMessages.SECRETARY_DOCTOR_COMBINATION_DOESNOT_EXIST);
+
+  //remove doctor secretary details
+  await doctorSecretaryRepo.removeFromDoctorSecretary(doctorSecretaryRecord.id);
+
+  const updatedDoctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (updatedDoctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  return updatedDoctorData;
+};
+
 export const delegateFunctionsResolvers = {
   Mutation: {
     updateDelegateNumber,
     removeDelegateNumber,
+    addSecretary,
+    removeSecretary,
   },
+
+  Query: { getSecretaryList },
 };

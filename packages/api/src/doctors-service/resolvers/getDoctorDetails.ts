@@ -126,6 +126,7 @@ export const getDoctorDetailsTypeDefs = gql`
     bankAccount: [BankAccount]
     consultHours: [ConsultHours]
     doctorHospital: [DoctorHospital!]!
+    doctorSecretary: DoctorSecretaryDetails
     packages: [Packages]
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
@@ -169,12 +170,23 @@ export const getDoctorDetailsTypeDefs = gql`
     secretaryDetails: Secretary
   }
 
+  type DoctorSecretaryDetails {
+    secretary: Secretary
+  }
+
   type Secretary {
     id: String!
     name: String!
     mobileNumber: String!
     isActive: Boolean!
     doctorSecretary: [DoctorSecretary]
+  }
+
+  type SecretaryDetails {
+    id: String!
+    name: String!
+    mobileNumber: String!
+    isActive: Boolean!
   }
 
   type DoctorSecretary {
@@ -253,6 +265,7 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
   }
+
   return doctordata;
 };
 

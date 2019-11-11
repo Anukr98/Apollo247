@@ -47,6 +47,7 @@ const PharmaApiConfig = {
 //Development;
 const Configuration = {
   LOG_ENVIRONMENT: 'debug',
+  ANALYTICAL_ENIVRONMENT: 'debug',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
@@ -66,6 +67,7 @@ const Configuration = {
 // QA
 // const Configuration = {
 //   LOG_ENVIRONMENT: 'release',
+//   ANALYTICAL_ENIVRONMENT: 'debug',
 //   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
 //   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
 //   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
@@ -83,6 +85,7 @@ const Configuration = {
 //Production
 // const Configuration = {
 //   LOG_ENVIRONMENT: 'release',
+//   ANALYTICAL_ENIVRONMENT: 'release',
 //   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
 //   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
 //   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
