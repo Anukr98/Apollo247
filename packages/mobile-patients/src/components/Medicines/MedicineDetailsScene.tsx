@@ -418,6 +418,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     mou,
     name,
     price,
+    special_price,
     is_prescription_required,
     thumbnail,
   }: MedicineProduct) => {
@@ -425,7 +426,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       id: sku,
       mou,
       name,
-      price,
+      price: special_price
+        ? typeof special_price == 'string'
+          ? parseInt(special_price)
+          : special_price
+        : price,
       prescriptionRequired: is_prescription_required == '1',
       quantity: Number(selectedQuantity),
       thumbnail: thumbnail,
@@ -1180,7 +1185,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                         AppRoutes.MedicineDetailsScene,
                         'Navigate to Medicine Details scene with sku'
                       );
-                      props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+                      props.navigation.push(AppRoutes.MedicineDetailsScene, {
                         sku: item.sku,
                         title: item.name,
                       });

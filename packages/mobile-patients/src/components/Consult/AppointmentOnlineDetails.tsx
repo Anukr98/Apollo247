@@ -460,17 +460,17 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             title="UPCOMING ONLINE VISIT"
             leftIcon="backArrow"
             rightComponent={
-              <TouchableOpacity
-                onPress={() => {
-                  CommonLogEvent(
-                    AppRoutes.AppointmentOnlineDetails,
-                    'UPCOMING ONLINE VISIT Clicked'
-                  );
-                  setCancelAppointment(true);
-                }}
-              >
-                <More />
-              </TouchableOpacity>
+              dateIsAfter ? (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
+                    setCancelAppointment(true);
+                  }}
+                >
+                  <More />
+                </TouchableOpacity>
+              ) : null
             }
             onPressLeftIcon={() => props.navigation.goBack()}
           />

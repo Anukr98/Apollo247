@@ -533,14 +533,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         : 'Online Consult '}
                     </Text>
                   </View>
-                  {caseSheetDetails!.followUpAfterInDays == null ? (
+                  {caseSheetDetails!.followUpAfterInDays! <= '7' ? (
                     <Text style={styles.dataTextStyle}>
-                      Recommended after{' '}
-                      {moment(caseSheetDetails!.followUpDate).format('DD MMM YYYY')}{' '}
+                      Recommended after {caseSheetDetails!.followUpAfterInDays} days
                     </Text>
                   ) : (
                     <Text style={styles.dataTextStyle}>
-                      Recommended after {caseSheetDetails!.followUpAfterInDays} days
+                      Follow up on {moment(caseSheetDetails!.followUpDate).format('DD MMM YYYY')}{' '}
                     </Text>
                   )}
                 </View>
