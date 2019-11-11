@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
 export interface SearchMedicineSceneProps
   extends NavigationScreenProps<{
     searchText: string;
-    isTest: boolean
+    isTest: boolean;
   }> {}
 
 export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) => {
@@ -390,7 +390,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       <Header
         container={{ borderBottomWidth: 0 }}
         leftIcon={'backArrow'}
-        title={isTest ?'SEARCH TESTS ':'SEARCH MEDICINE'}
+        title={isTest ? 'SEARCH TESTS ' : 'SEARCH MEDICINE'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
@@ -594,7 +594,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             : ''
         }
         isTest={isTest}
-        // originalPrice={}
+        // specialPrice={}
         price={price}
         specialPrice={specialPrice}
         unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
@@ -644,7 +644,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               ListHeaderComponent={
                 (medicineList.length > 0 && (
                   <SectionHeaderComponent
-                    sectionTitle={isTest ? `Matching Tests — ${medicineList.length}`:`Matching Medicines — ${medicineList.length}`}
+                    sectionTitle={
+                      isTest
+                        ? `Matching Tests — ${medicineList.length}`
+                        : `Matching Medicines — ${medicineList.length}`
+                    }
                     style={{ marginBottom: 0 }}
                   />
                 )) ||

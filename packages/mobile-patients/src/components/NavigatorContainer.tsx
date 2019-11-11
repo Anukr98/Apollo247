@@ -286,7 +286,7 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
 };
 
 const stackConfig: StackNavigatorConfig = {
-  initialRouteName: AppRoutes.SplashScreen,
+  initialRouteName: AppRoutes.TestsCart,
   headerMode: 'none',
   cardStyle: { backgroundColor: 'transparent' },
   transitionConfig: (sceneProps) => {

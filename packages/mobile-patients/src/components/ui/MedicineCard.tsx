@@ -132,7 +132,7 @@ export interface MedicineCardProps {
   type?: Doseform;
   subscriptionStatus: 'already-subscribed' | 'subscribed-now' | 'unsubscribed';
   packOfCount?: number;
-  unit: number;
+  unit?: number;
   isInStock: boolean;
   isPrescriptionRequired: boolean;
   isCardExpanded: boolean;

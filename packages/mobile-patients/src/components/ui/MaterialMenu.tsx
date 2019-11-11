@@ -1,6 +1,14 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View, TextStyle, StyleProp, ViewStyle } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  TextStyle,
+  StyleProp,
+  ViewStyle,
+} from 'react-native';
 import Menu, { MenuItem } from 'react-native-material-menu';
 
 const styles = StyleSheet.create({
@@ -27,20 +35,21 @@ export type Option = {
   onPress?: () => void;
 };
 
-type Profile = {
-  pid: string;
-  name: string;
+type Object = {
+  key: string;
+  value: string;
 };
 
 export interface MaterialMenuProps {
   onPress?: (arg0: string | number) => void;
   data?: (string | number)[];
-  onPressObject?: (arg0: Profile) => void;
-  dataObject?: Profile[];
+  onPressObject?: (arg0: Object) => void;
+  dataObject?: Object[];
+  defaultObject?: Object[];
   itemContainer?: StyleProp<ViewStyle> | undefined;
   itemTextStyle?: StyleProp<TextStyle> | undefined;
   menuContainer?: StyleProp<ViewStyle> | undefined;
-  selectedText?: (string | number);
+  selectedText?: string | number;
   selectedTextStyle?: StyleProp<TextStyle> | undefined;
   lastTextStyle?: StyleProp<TextStyle> | undefined;
   lastContainerStyle?: StyleProp<ViewStyle> | undefined;
@@ -60,9 +69,9 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
   const numbers: (string | number)[] = props.data
     ? props.data
     : Array.from({ length: 20 }).map((_, i) => i + 1);
-  const addProfile: Profile[] = [{ pid: 'ADD NEW PROFILE', name: 'ADD NEW PROFILE' }]
-  let dataObject: Profile[] = props.dataObject ? props.dataObject : []
-  dataObject = dataObject.length === 0 ? addProfile : dataObject
+  const addProfile: Object[] = (props.defaultObject && props.defaultObject) || [];
+  let dataObject: Object[] = props.dataObject ? props.dataObject : [];
+  dataObject = dataObject.length === 0 ? addProfile : dataObject;
   return (
     <Menu
       ref={menuRef}
@@ -70,42 +79,55 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
       style={[styles.menuContainer, props.menuContainer]}
     >
       <ScrollView bounces={false} style={{ paddingVertical: 8 }}>
-        {!!props.dataObject ?
-          dataObject.map((item, index) => (
-            <MenuItem
-              key={item.pid}
-              onPress={() => {
-                hideMenu();
-                props.onPressObject && props.onPressObject(item);
-              }}
-              style={[styles.itemContainer, props.itemContainer,
-              dataObject.length - 1 === index ? props.lastContainerStyle : {}]}
-              textStyle={[styles.itemTextStyle, props.itemTextStyle,
-              !!props.selectedText && props.selectedText === item.pid ?
-                props.selectedTextStyle : {},
-              dataObject.length - 1 === index ? props.lastTextStyle : {}]}
-            >
-              {item.name}
-            </MenuItem>
-          ))
-          :
-          numbers.map((number, index) => (
-            <MenuItem
-              key={number}
-              onPress={() => {
-                hideMenu();
-                props.onPress && props.onPress(number);
-              }}
-              style={[styles.itemContainer, props.itemContainer,
-              numbers.length - 1 === index ? props.lastContainerStyle : {}]}
-              textStyle={[styles.itemTextStyle, props.itemTextStyle,
-              !!props.selectedText && props.selectedText === number ?
-                props.selectedTextStyle : {},
-              numbers.length - 1 === index ? props.lastTextStyle : {}]}
-            >
-              {number.toString()}
-            </MenuItem>
-          ))}
+        {!!props.dataObject
+          ? dataObject.map((item, index) => (
+              <MenuItem
+                key={item.key}
+                onPress={() => {
+                  hideMenu();
+                  props.onPressObject && props.onPressObject(item);
+                }}
+                style={[
+                  styles.itemContainer,
+                  props.itemContainer,
+                  dataObject.length - 1 === index ? props.lastContainerStyle : {},
+                ]}
+                textStyle={[
+                  styles.itemTextStyle,
+                  props.itemTextStyle,
+                  !!props.selectedText && props.selectedText === item.key
+                    ? props.selectedTextStyle
+                    : {},
+                  dataObject.length - 1 === index ? props.lastTextStyle : {},
+                ]}
+              >
+                {item.value}
+              </MenuItem>
+            ))
+          : numbers.map((number, index) => (
+              <MenuItem
+                key={number}
+                onPress={() => {
+                  hideMenu();
+                  props.onPress && props.onPress(number);
+                }}
+                style={[
+                  styles.itemContainer,
+                  props.itemContainer,
+                  numbers.length - 1 === index ? props.lastContainerStyle : {},
+                ]}
+                textStyle={[
+                  styles.itemTextStyle,
+                  props.itemTextStyle,
+                  !!props.selectedText && props.selectedText === number
+                    ? props.selectedTextStyle
+                    : {},
+                  numbers.length - 1 === index ? props.lastTextStyle : {},
+                ]}
+              >
+                {number.toString()}
+              </MenuItem>
+            ))}
         <View style={[{ paddingBottom: 25 }, props.bottomPadding]} />
       </ScrollView>
     </Menu>

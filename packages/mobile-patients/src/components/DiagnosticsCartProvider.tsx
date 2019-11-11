@@ -20,7 +20,7 @@ export interface DiagnosticsCartItem {
   mou: string; // pack of how many units (eg. 10 tablets)
   price: number;
   thumbnail: string | null;
-  originalprice: number;
+  specialPrice: number;
 }
 
 export interface DiagnosticsCartContextProps {

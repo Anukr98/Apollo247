@@ -405,7 +405,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               isCardExpanded={true}
               isInStock={true}
               isTest={true}
-              originalPrice={test.originalprice!}
+              specialPrice={test.specialPrice!}
               isPrescriptionRequired={false}
               subscriptionStatus={'unsubscribed'}
               packOfCount={parseInt(test.mou || '0')}
@@ -903,51 +903,64 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderProfilePicker = () => {
+    const pickerData = profileArray.map((i) => {
+      return { key: i.pid, value: i.name };
+    });
+
     return (
-      <View style={{ marginLeft: width / 2 - 20 }}>
-        <MaterialMenu
-          dataObject={profileArray}
-          selectedText={profile.pid}
-          menuContainer={{ alignItems: 'flex-end' }}
-          itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
-          itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
-          selectedTextStyle={{
-            ...theme.viewStyles.text('M', 16, '#00b38e'),
-            alignSelf: 'flex-start',
-          }}
-          lastTextStyle={{
-            ...theme.viewStyles.text('B', 13, '#fc9916'),
-          }}
-          bottomPadding={{ paddingBottom: 20 }}
-          lastContainerStyle={{
-            height: 38,
-            borderBottomWidth: 0,
-            alignItems: 'flex-end',
-            justifyContent: 'flex-end',
-          }}
-          onPressObject={(selectedUser) => {
-            if (selectedUser.pid === 'ADD NEW PROFILE') setDisplayAddProfile(true);
-            else setProfile(selectedUser);
-          }}
-        >
-          <View style={{ flexDirection: 'row', marginBottom: 8, marginLeft: -(width / 2 - 20) }}>
-            <View style={styles.placeholderViewStyle}>
-              <Text
-                style={[
-                  styles.placeholderTextStyle,
-                  ,
-                  profile.pid !== '' ? null : styles.placeholderStyle,
-                ]}
-              >
-                {profile.pid !== '' ? profile.name : 'Select who are these tests for'}
-              </Text>
-              <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-                <DropdownGreen />
-              </View>
+      <MaterialMenu
+        dataObject={pickerData}
+        defaultObject={[]}
+        selectedText={profile.pid}
+        menuContainer={{
+          alignItems: 'flex-end',
+          alignSelf: 'flex-end',
+          marginTop: 16,
+        }}
+        itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
+        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
+        selectedTextStyle={{
+          ...theme.viewStyles.text('M', 16, '#00b38e'),
+          alignSelf: 'flex-start',
+        }}
+        lastTextStyle={{
+          ...theme.viewStyles.text('B', 13, '#fc9916'),
+        }}
+        bottomPadding={{ paddingBottom: 20 }}
+        lastContainerStyle={{
+          height: 38,
+          borderBottomWidth: 0,
+          alignItems: 'flex-end',
+          justifyContent: 'flex-end',
+        }}
+        onPressObject={(selectedUser) => {
+          if (selectedUser.key === 'ADD NEW PROFILE') setDisplayAddProfile(true);
+          else {
+            profileArray.map((i) => {
+              if (selectedUser.key === i.pid) {
+                setProfile(i);
+              }
+            });
+          }
+        }}
+      >
+        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+          <View style={styles.placeholderViewStyle}>
+            <Text
+              style={[
+                styles.placeholderTextStyle,
+                ,
+                profile.pid !== '' ? null : styles.placeholderStyle,
+              ]}
+            >
+              {profile.pid !== '' ? profile.name : 'Select who are these tests for'}
+            </Text>
+            <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+              <DropdownGreen />
             </View>
           </View>
-        </MaterialMenu>
-      </View>
+        </View>
+      </MaterialMenu>
     );
   };
 
