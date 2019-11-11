@@ -1305,6 +1305,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                   stopInterval();
                   onStopConsult();
                   props.endConsultAction();
+                  if (showVideo) {
+                    stopAudioVideoCall();
+                  }
                   setDisableOnCancel(true);
                 }}
               >

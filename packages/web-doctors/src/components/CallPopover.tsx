@@ -525,7 +525,7 @@ interface errorObjectReshedule {
 interface CallPopoverProps {
   setStartConsultAction(isVideo: boolean): void;
   createSessionAction: () => void;
-  saveCasesheetAction: (onlySave: boolean) => void;
+  saveCasesheetAction: (onlySave: boolean, sendToPatientFlag: boolean) => void;
   endConsultAction: () => void;
   startAppointmentClick: (startAppointment: boolean) => void;
   appointmentId: string;
@@ -541,7 +541,7 @@ interface CallPopoverProps {
   appointmentStatus: String;
   sentToPatient: boolean;
   isAppointmentEnded: boolean;
-  sendToPatientAction: (isSentToPatient: boolean) => void;
+  //sendToPatientAction: (isSentToPatient: boolean) => void;
   setIsPdfPageOpen: (flag: boolean) => void;
   callId: string;
 }
@@ -1253,7 +1253,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         className={classes.endconsultButton}
                         disabled={props.saving}
                         onClick={() => {
-                          props.sendToPatientAction(true);
+                          //props.sendToPatientAction(true);
+                          props.saveCasesheetAction(true, true);
                         }}
                       >
                         Send To Patient
@@ -1264,7 +1265,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     <Fragment>
                       <Button
                         className={classes.backButton}
-                        onClick={() => props.saveCasesheetAction(true)}
+                        onClick={() => props.saveCasesheetAction(true, false)}
                       >
                         Save
                       </Button>
@@ -1291,7 +1292,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.backButton}
                     disabled={props.saving}
                     onClick={() => {
-                      props.saveCasesheetAction(true);
+                      props.saveCasesheetAction(true, false);
                     }}
                   >
                     Save
@@ -1300,11 +1301,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     className={classes.endconsultButton}
                     disabled={props.saving}
                     onClick={() => {
-                      //onStopConsult();
-                      //setStartAppointment(!startAppointment);
                       stopInterval();
+                      if (showVideo) {
+                        stopAudioVideoCall();
+                      }
                       props.endConsultAction();
-                      //setCaseSheetEdit(false);
                       setDisableOnCancel(true);
                     }}
                   >
