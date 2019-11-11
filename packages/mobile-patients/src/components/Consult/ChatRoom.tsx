@@ -1113,7 +1113,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   >
                     <Text
                       style={{
-                        textAlign: 'right',
+                        textAlign: 'left',
                         color: '#fc9916',
                         ...theme.fonts.IBMPlexSansBold(13),
                         lineHeight: 24,
@@ -2206,7 +2206,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginLeft: 12,
-                    textAlign: 'right',
+                    textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(14),
                   }}
                 >
@@ -2216,7 +2216,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginTop: 2,
-                    textAlign: 'right',
+                    textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
                 >
@@ -2313,7 +2313,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       color: '#01475b',
                       paddingHorizontal: 16,
                       paddingVertical: 12,
-                      textAlign: 'right',
+                          textAlign: 'left',
                       ...theme.fonts.IBMPlexSansMedium(16),
                     }}
                   >
