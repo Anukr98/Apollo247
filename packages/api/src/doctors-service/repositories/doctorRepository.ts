@@ -652,4 +652,8 @@ export class DoctorRepository extends Repository<Doctor> {
       .getMany();
     return queryBuilder;
   }
+
+  updateNextAvailSlot(id: string, nextAvailableSlot: Date) {
+    return this.update(id, { nextAvailableSlot });
+  }
 }
