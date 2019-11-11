@@ -19,7 +19,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   const Consult = props.navigation.state.params ? props.navigation.state.params.Consult : '';
   console.log(Consult, 'Consultval');
   const onSubmitClick = async () => {
-    CommonLogEvent(AppRoutes.SymptomChecker, 'onSubmitClick clicked');
+    CommonLogEvent(AppRoutes.SymptomChecker, 'Show doctors clicked');
 
     const ss = await $Generator({ type: 'showSpeciality' });
 

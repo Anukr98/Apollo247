@@ -322,6 +322,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     // if (movedata == 'MoveDoctor') {
     //   props.navigation.push(AppRoutes.SymptomChecker);
     // } else {
+    CommonLogEvent(AppRoutes.DoctorSearch, 'Go back clicked');
     props.navigation.goBack();
     // }
     return false;
