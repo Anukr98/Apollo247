@@ -101,6 +101,12 @@ const useStyles = makeStyles(() => ({
   nodataFound: {
     fontSize: 14,
   },
+  body2: {
+    fontSize: '10px',
+    fontWeight: 500,
+    lineHeight: 1.2,
+    color: 'rgba(2, 71, 91, 0.6)',
+  },
 }));
 
 const theme = createMuiTheme({
@@ -166,14 +172,14 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
           <Grid item container spacing={2}>
             <Grid item lg={5} sm={5} xs={4} key={1} container>
               <Grid lg={12} sm={12} xs={12} key={6} item>
-                <div>
-                  <Typography gutterBottom variant="body2">
+                <div className={classes.body2}>
+                  <div>
                     <div className={classes.circleDot}></div>
                     {`${format(
                       new Date(data.appointmentDateTime),
                       'dd  MMMMMMMMMMMM yyyy, h:mm a'
                     )}`}
-                  </Typography>
+                  </div>
                 </div>
               </Grid>
             </Grid>

@@ -272,6 +272,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   let intervalId: NodeJS.Timeout;
   let stoppedTimer: number;
+  let thirtySecondTimer: any;
+  let minuteTimer: any;
 
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
@@ -576,6 +578,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       keyboardDidHideListener.remove();
       KeepAwake.deactivate();
       Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_PAN);
+      minuteTimer && clearTimeout(minuteTimer);
+      thirtySecondTimer && clearTimeout(thirtySecondTimer);
     };
   }, []);
 
@@ -683,7 +687,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const checkAutomatedPatientText = () => {
     const result = insertText.filter((obj: any) => {
-      console.log('resultinsertText', obj.message);
+      // console.log('resultinsertText', obj.message);
       return obj.message === consultPatientStartedMsg;
     });
     if (result.length === 0) {
@@ -721,22 +725,22 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   useEffect(() => {
-    setTimeout(function() {
+    thirtySecondTimer = setTimeout(function() {
       if (jrDoctorJoined == false) {
-        console.log('Alert Shows After 30000 Seconds of Delay.');
+        // console.log('Alert Shows After 30000 Seconds of Delay.');
 
         const result = insertText.filter((obj: any) => {
-          console.log('resultinsertText', obj.message);
+          // console.log('resultinsertText', obj.message);
           return obj.message === firstMessage;
         });
 
         const startConsultResult = insertText.filter((obj: any) => {
-          console.log('resultinsertText', obj.message);
+          // console.log('resultinsertText', obj.message);
           return obj.message === startConsultMsg;
         });
 
         const startConsultjrResult = insertText.filter((obj: any) => {
-          console.log('resultinsertText', obj.message);
+          // console.log('resultinsertText', obj.message);
           return obj.message === startConsultjr;
         });
 
@@ -745,7 +749,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           startConsultResult.length === 0 &&
           startConsultjrResult.length === 0
         ) {
-          console.log('result.length ', result);
+          // console.log('result.length ', result);
           pubnub.publish(
             {
               channel: channel,
@@ -765,29 +769,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             },
             (status, response) => {}
           );
+        } else {
+          thirtySecondTimer && clearTimeout(thirtySecondTimer);
         }
       } else {
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
       }
     }, 30000);
   }, []);
 
   useEffect(() => {
-    setTimeout(function() {
+    minuteTimer = setTimeout(function() {
       if (jrDoctorJoined == false) {
-        console.log('Alert Shows After 60000 Seconds of Delay.');
+        // console.log('Alert Shows After 60000 Seconds of Delay.');
 
         const result = insertText.filter((obj: any) => {
-          console.log('resultinsertText', obj.message);
+          // console.log('resultinsertText', obj.message);
           return obj.message === secondMessage;
         });
 
         const startConsultResult = insertText.filter((obj: any) => {
-          console.log('resultinsertText', obj.message);
+          // console.log('resultinsertText', obj.message);
           return obj.message === startConsultMsg;
         });
 
         const startConsultjrResult = insertText.filter((obj: any) => {
-          console.log('resultinsertText', obj.message);
+          // console.log('resultinsertText', obj.message);
           return obj.message === startConsultjr;
         });
 
@@ -796,7 +803,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           startConsultResult.length === 0 &&
           startConsultjrResult.length === 0
         ) {
-          console.log('result.length ', result);
+          // console.log('result.length ', result);
           pubnub.publish(
             {
               channel: channel,
@@ -811,8 +818,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             },
             (status, response) => {}
           );
+        } else {
+          minuteTimer && clearTimeout(minuteTimer);
         }
       } else {
+        minuteTimer && clearTimeout(minuteTimer);
       }
     }, 60000);
   }, []);
@@ -3254,6 +3264,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             changeVideoStyles();
             setDropdownVisible(false);
 
+            // InCallManager.setSpeakerphoneOn(true)
+            // InCallManager.chooseAudioRoute('EARPIECE')
             if (token) {
               PublishAudioVideo();
             } else {

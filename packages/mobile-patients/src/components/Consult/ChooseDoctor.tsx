@@ -103,7 +103,6 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
   // console.log(appointmentData, 'appointmentData');
   // console.log(props.navigation.state.params!.patientId, 'pppp');
   useEffect(() => {
-    CommonScreenLog(AppRoutes.ChooseDoctor, AppRoutes.ChooseDoctor);
     getNetStatus().then((status) => {
       if (status) {
         console.log('Network status', status);
