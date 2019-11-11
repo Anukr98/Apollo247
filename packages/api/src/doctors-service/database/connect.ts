@@ -23,6 +23,8 @@ import {
   StarTeam,
   BlockedCalendarItem,
   AdminUsers,
+  Secretary,
+  DoctorSecretary,
 } from 'doctors-service/entities';
 import {
   Coupon,
@@ -61,6 +63,8 @@ export const connect = async () => {
         DoctorDeviceTokens,
         BlockedCalendarItem,
         AdminUsers,
+        Secretary,
+        DoctorSecretary,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

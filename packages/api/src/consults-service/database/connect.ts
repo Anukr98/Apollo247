@@ -23,6 +23,8 @@ import {
   DoctorDeviceTokens,
   BlockedCalendarItem,
   AdminUsers,
+  Secretary,
+  DoctorSecretary,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -84,6 +86,8 @@ export const connect = async () => {
         DoctorDeviceTokens,
         BlockedCalendarItem,
         AdminUsers,
+        Secretary,
+        DoctorSecretary,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
