@@ -18,9 +18,9 @@ import {
   patientLogType,
   APPOINTMENT_STATE,
   APPOINTMENT_TYPE,
-  TRANSFER_INITIATED_TYPE,
   CONSULTS_RX_SEARCH_FILTER,
   AppointmentDocuments,
+  REQUEST_ROLES,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -673,12 +673,31 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.update(id, { appointmentDateTime, rescheduleCount, appointmentState });
   }
 
-  cancelAppointment(id: string, cancelledBy: TRANSFER_INITIATED_TYPE, cancelledById: string) {
-    return this.update(id, { status: STATUS.CANCELLED, cancelledBy, cancelledById }).catch(
-      (cancelError) => {
+  cancelAppointment(
+    id: string,
+    cancelledBy: REQUEST_ROLES,
+    cancelledById: string,
+    cancelReason: string
+  ) {
+    if (cancelledBy == REQUEST_ROLES.DOCTOR) {
+      return this.update(id, {
+        status: STATUS.CANCELLED,
+        cancelledBy,
+        cancelledById,
+        doctorCancelReason: cancelReason,
+      }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
-      }
-    );
+      });
+    } else {
+      return this.update(id, {
+        status: STATUS.CANCELLED,
+        cancelledBy,
+        cancelledById,
+        patientCancelReason: cancelReason,
+      }).catch((cancelError) => {
+        throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
+      });
+    }
   }
 
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {

@@ -19710,7 +19710,7 @@
               "name": null,
               "ofType": {
                 "kind": "ENUM",
-                "name": "TRANSFER_INITIATED_TYPE",
+                "name": "REQUEST_ROLES",
                 "ofType": null
               }
             },
