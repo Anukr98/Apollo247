@@ -63,6 +63,7 @@ export const GET_DOCTOR_DETAILS = gql`
       dateOfBirth
       doctorType
       delegateNumber
+      displayName
       emailAddress
       experience
       firebaseToken
