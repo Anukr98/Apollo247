@@ -29,7 +29,7 @@ import {
   InitiateRescheduleAppointmentVariables,
 } from 'graphql/types/InitiateRescheduleAppointment';
 import { INITIATE_RESCHDULE_APPONITMENT } from 'graphql/profiles';
-import { TRANSFER_INITIATED_TYPE, STATUS, DoctorType } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES,TRANSFER_INITIATED_TYPE, STATUS, DoctorType } from 'graphql/types/globalTypes';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { END_CALL_NOTIFICATION } from 'graphql/consults';
 import {
@@ -1103,9 +1103,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         cancelAppointmentInput: {
           appointmentId: params.id,
           cancelReason: cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
-          cancelledBy: isSeniorDoctor
-            ? TRANSFER_INITIATED_TYPE.DOCTOR
-            : TRANSFER_INITIATED_TYPE.PATIENT,
+          cancelledBy: isSeniorDoctor ? REQUEST_ROLES.DOCTOR : REQUEST_ROLES.PATIENT,
           cancelledById: isSeniorDoctor ? srDoctorId || '' : params.patientId,
         },
       },

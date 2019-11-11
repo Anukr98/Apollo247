@@ -159,7 +159,7 @@ export enum patientLogType {
 export interface CancelAppointmentInput {
   appointmentId: string;
   cancelReason?: string | null;
-  cancelledBy: TRANSFER_INITIATED_TYPE;
+  cancelledBy: REQUEST_ROLES;
   cancelledById: string;
 }
 
