@@ -8,6 +8,7 @@ import {
   Not,
   Connection,
   In,
+  getCustomRepository,
 } from 'typeorm';
 import {
   Appointment,
@@ -29,7 +30,7 @@ import { format, addMinutes, differenceInMinutes, addDays, subDays } from 'date-
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
-import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -570,9 +571,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           foundFlag = 1;
         }
       });
-      const doctorRepo = doctorsDb.getCustomRepository(DoctorRepository);
-
-      doctorRepo.updateNextAvailSlot(doctorId, new Date(finalSlot));
+      const doctorSlotRepo = getCustomRepository(DoctorNextAvaialbleSlotsRepository);
+      doctorSlotRepo.updateSlot(doctorId, appointmentType, new Date(finalSlot));
       return finalSlot;
     } else {
       return '';
