@@ -111,22 +111,26 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
             </Text>
           </View>
 
-          <View
-            style={{
-              borderBottomWidth: 0.5,
-              borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-            }}
-          />
-          <Text
-            style={{
-              marginTop: 7.5,
-              color: theme.colors.SKY_BLUE,
-              textAlign: 'left',
-              ...theme.fonts.IBMPlexSansMedium(12),
-            }}
-          >
-            {medicines}
-          </Text>
+          {!!medicines && (
+            <>
+              <View
+                style={{
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+                }}
+              />
+              <Text
+                style={{
+                  marginTop: 7.5,
+                  color: theme.colors.SKY_BLUE,
+                  textAlign: 'left',
+                  ...theme.fonts.IBMPlexSansMedium(12),
+                }}
+              >
+                {medicines}
+              </Text>
+            </>
+          )}
         </View>
       </View>
     </View>
