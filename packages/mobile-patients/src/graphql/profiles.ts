@@ -38,10 +38,23 @@ export const UPDATE_PATIENT = gql`
   }
 `;
 
-export const GET_PATIENT = gql`
+export const GET_PATIENTS = gql`
   query getPatients {
     getPatients {
       patients {
+        addressList {
+          id
+          addressType
+          addressLine1
+          addressLine2
+          state
+          landmark
+          createdDate
+          updatedDate
+          mobileNumber
+          city
+          otherAddressType
+        }
         id
         mobileNumber
         firstName
@@ -56,6 +69,7 @@ export const GET_PATIENT = gql`
     }
   }
 `;
+
 export const GET_PATIENTS_MOBILE = gql`
   query getPatientByMobileNumber($mobileNumber: String) {
     getPatientByMobileNumber(mobileNumber: $mobileNumber) {
