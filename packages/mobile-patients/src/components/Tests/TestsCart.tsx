@@ -7,14 +7,14 @@ import {
   handleGraphQlError,
   timeTo12HrFormat,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  DiagnosticsCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  PhysicalPrescription,
-  ShoppingCartItem,
-  useShoppingCart,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { PhysicalPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
@@ -24,7 +24,7 @@ import {
   CalendarShow,
   CouponIcon,
   DropdownGreen,
-  MedicineIcon,
+  TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
@@ -166,8 +166,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     addresses,
     setDeliveryAddressId,
     deliveryAddressId,
-    storeId,
-    setStoreId,
     deliveryCharges,
     cartTotal,
     couponDiscount,
@@ -178,10 +176,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     physicalPrescriptions,
     pinCode,
     setPinCode,
-    stores,
-    setStores,
+    clinicId,
+    setClinicId,
+    clinics,
+    setClinics,
     ePrescriptions,
-  } = useShoppingCart();
+  } = useDiagnosticsCart();
 
   const dateCalculator = (val: number) => {
     var today = new Date();
@@ -215,7 +215,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   ]);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
   const [profileArray, setProfileArray] = useState<Profile[]>([]);
-  const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
+  const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
@@ -293,13 +293,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         });
     }, []);*/
 
-  const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
-    if (!(unit < 1)) {
-      updateCartItem && updateCartItem({ id, quantity: unit });
-    }
-  };
-
-  const onRemoveCartItem = ({ id }: ShoppingCartItem) => {
+  const onRemoveCartItem = ({ id }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
   };
 
@@ -321,6 +315,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                 if (isComingFromConsult)
                   props.navigation.navigate(AppRoutes.SearchMedicineScene, {
                     isComingFromConsult,
+                    isTest: true,
                   });
                 else props.navigation.goBack();
               }}
@@ -371,17 +366,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             Your Cart is empty
           </Text>
         )}
-        {cartItems.map((medicine, index, array) => {
+        {cartItems.map((test, index, array) => {
           const medicineCardContainerStyle = [
             { marginBottom: 8, marginHorizontal: 20 },
             index == 0 ? { marginTop: 20 } : {},
             index == array.length - 1 ? { marginBottom: 20 } : {},
           ];
           const imageUrl =
-            medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
-              ? medicine.thumbnail.startsWith('http')
-                ? medicine.thumbnail
-                : `${AppConfig.Configuration.IMAGES_BASE_URL}${medicine.thumbnail}`
+            test.thumbnail && !test.thumbnail.includes('/default/placeholder')
+              ? test.thumbnail.startsWith('http')
+                ? test.thumbnail
+                : `${AppConfig.Configuration.IMAGES_BASE_URL}${test.thumbnail}`
               : '';
 
           return (
@@ -390,34 +385,30 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               //   currentPatient && currentPatient.firstName ? currentPatient.firstName : ''
               // }
               containerStyle={medicineCardContainerStyle}
-              key={medicine.id}
+              key={test.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Navigate to medicine details scene');
                 props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-                  sku: medicine.id,
-                  title: medicine.name,
+                  sku: test.id,
+                  title: test.name,
                 });
               }}
-              medicineName={medicine.name!}
-              price={medicine.price!}
-              unit={medicine.quantity}
+              medicineName={test.name!}
+              price={test.price!}
               imageUrl={imageUrl}
               onPressAdd={() => {}}
               onPressRemove={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Remove item from cart');
-                onRemoveCartItem(medicine);
+                onRemoveCartItem(test);
               }}
-              onChangeUnit={(unit) => {
-                CommonLogEvent(AppRoutes.YourCart, 'Change unit in cart');
-                onUpdateCartItem(medicine, unit);
-              }}
+              onChangeUnit={() => {}}
               isCardExpanded={true}
               isInStock={true}
               isTest={true}
-              originalPrice={medicine.price === 14.23 ? 100 : undefined}
-              isPrescriptionRequired={medicine.prescriptionRequired}
+              originalPrice={test.originalprice!}
+              isPrescriptionRequired={false}
               subscriptionStatus={'unsubscribed'}
-              packOfCount={parseInt(medicine.mou || '0')}
+              packOfCount={parseInt(test.mou || '0')}
               onChangeSubscription={() => {}}
               onEditPress={() => {}}
               onAddSubscriptionPress={() => {}}
@@ -441,7 +432,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           showAphAlert!({
             title: 'Uh oh.. :(',
             description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby clinics, or change the pincode.',
           });
         }
       })
@@ -529,25 +520,25 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         searchPickupStoresApi(pincode)
           .then(({ data: { Stores, stores_count } }) => {
             setStorePickUpLoading(false);
-            setStores && setStores(stores_count > 0 ? Stores : []);
+            setClinics && setClinics(stores_count > 0 ? Stores : []);
           })
           .catch((e) => {
             setStorePickUpLoading(false);
           });
       } else {
-        setStores && setStores([]);
-        setStoreId && setStoreId('');
+        setClinics && setClinics([]);
+        setClinicId && setClinicId('');
       }
     }
   };
 
   const renderStorePickup = () => {
-    const selectedStoreIndex = stores.findIndex(({ storeid }) => storeid == storeId);
-    const storesLength = stores.length;
+    const selectedStoreIndex = clinics.findIndex(({ storeid }) => storeid == clinicId);
+    const storesLength = clinics.length;
     const spliceStartIndex =
       selectedStoreIndex == storesLength - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
     const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-    const slicedStoreList = [...stores].slice(startIndex, startIndex + 2);
+    const slicedStoreList = [...clinics].slice(startIndex, startIndex + 2);
 
     return (
       <View style={{ margin: 16, marginTop: 20 }}>
@@ -558,7 +549,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           placeholder={'Enter Pincode'}
         />
         {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
-        {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
+        {!storePickUpLoading && pinCode.length == 6 && clinics.length == 0 && (
           <Text
             style={{
               paddingTop: 10,
@@ -568,7 +559,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             }}
           >
             Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
-            from a nearby store, or change the pincode.
+            from a nearby clinic, or change the pincode.
           </Text>
         )}
 
@@ -576,23 +567,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <RadioSelectionItem
             key={store.storeid}
             title={`${store.storename}\n${store.address}`}
-            isSelected={storeId === store.storeid}
+            isSelected={clinicId === store.storeid}
             onPress={() => {
               CommonLogEvent(AppRoutes.YourCart, 'Set store id');
-              setStoreId && setStoreId(store.storeid);
+              setClinicId && setClinicId(store.storeid);
             }}
             containerStyle={{ marginTop: 16 }}
             hideSeparator={index == array.length - 1}
           />
         ))}
         <View>
-          {stores.length > 2 && (
+          {clinics.length > 2 && (
             <Text
               style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
               onPress={() =>
                 props.navigation.navigate(AppRoutes.StorPickupScene, {
                   pincode: pinCode,
-                  stores: stores,
+                  stores: clinics,
                 })
               }
             >
@@ -609,11 +600,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View>
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Date</Text>
-          <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
+          <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
         </View>
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Time</Text>
-          <Text style={styles.dateTextStyle}>{timeTo12HrFormat(selectedTimeSlot)}</Text>
+          <Text style={styles.dateTextStyle}>
+            {selectedTimeSlot ? timeTo12HrFormat(selectedTimeSlot) : ''}
+          </Text>
         </View>
         <Text
           style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
@@ -643,7 +636,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderTimingCard = () => {
-    return (selectedTab === tabs[0].title && deliveryAddressId) || selectedTab === tabs[1].title ? (
+    return (selectedTab === tabs[0].title && deliveryAddressId) ||
+      (selectedTab === tabs[1].title && clinicId) ? (
       <View
         style={{
           ...theme.viewStyles.cardViewStyle,
@@ -811,7 +805,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           paddingBottom: 8,
         }}
       >
-        <MedicineIcon />
+        <TestsIcon />
         <Text style={[styles.blueTextStyle, { paddingTop: 4 }]}>{item.name}</Text>
         <View style={[styles.separatorStyle, { marginTop: 3, marginBottom: 5 }]} />
         <Text style={styles.medicineCostStyle}>{item.cost}</Text>
@@ -850,7 +844,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const disableProceedToPay = !(
     cartItems.length > 0 &&
-    !!(deliveryAddressId || storeId) &&
+    !!(deliveryAddressId || clinicId) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
       : true)

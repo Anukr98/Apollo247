@@ -124,11 +124,11 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
   const { signOut, getPatientApiCall } = useAuth();
 
   const isSatisfyingNameRegex = (value: string) =>
-    value == ' ' ? false : value == '' || /^[a-zA-Z ]+$/.test(value) ? true : false;
-  // const isSatisfyingEmailRegex = (value: string) =>
-  //   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
-  //     value
-  //   );
+    value == ' '
+      ? false
+      : value == '' || /^[a-zA-Z]+(([' ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+      ? true
+      : false;
 
   const isSatisfyingEmailRegex = (value: string) =>
     /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);

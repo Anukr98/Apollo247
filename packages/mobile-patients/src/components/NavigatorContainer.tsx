@@ -54,6 +54,7 @@ import { CommonScreenLog } from '../FunctionHelpers/DeviceHelper';
 import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 
 export enum AppRoutes {
@@ -106,6 +107,7 @@ export enum AppRoutes {
   TestsCart = 'TestsCart',
   MedAndTestCart = 'MedAndTestCart',
   TestDetails = 'TestDetails',
+  EditProfile = 'EditProfile',
   ManageProfile = 'ManageProfile',
 }
 
@@ -274,6 +276,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.TestDetails]: {
     screen: TestDetails,
+  },
+  [AppRoutes.EditProfile]: {
+    screen: EditProfile,
   },
   [AppRoutes.ManageProfile]: {
     screen: ManageProfile,
