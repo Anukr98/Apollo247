@@ -379,6 +379,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     mou,
     name,
     price,
+    special_price,
     is_prescription_required,
     thumbnail,
   }: MedicineProduct) => {
@@ -386,7 +387,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       id: sku,
       mou,
       name,
-      price,
+      price: special_price
+        ? typeof special_price == 'string'
+          ? parseInt(special_price)
+          : special_price
+        : price,
       prescriptionRequired: is_prescription_required == '1',
       quantity: Number(selectedQuantity),
       thumbnail: thumbnail,

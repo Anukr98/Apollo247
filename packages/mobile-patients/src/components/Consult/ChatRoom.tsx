@@ -3455,7 +3455,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'CHOOSE FROM\nGALLERY',
-          prescription: 'UPLOAD\nFROMPHR',
+          prescription: 'UPLOAD\nFROM PHR',
         }}
         hideTAndCs={false}
         onClickClose={() => setDropdownVisible(false)}
