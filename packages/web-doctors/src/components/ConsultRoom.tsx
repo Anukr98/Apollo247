@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Theme, Button, Avatar } from '@material-ui/core';
+import { Theme, Button, Avatar, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput, AphButton, AphTextField } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
@@ -47,10 +47,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 15,
       wordBreak: 'break-all',
     },
-    patientBubble: {
-      backgroundColor: theme.palette.common.white,
-      position: 'relative',
-    },
     patientAvatar: {
       position: 'absolute',
       left: -40,
@@ -74,6 +70,10 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: 236,
       textAlign: 'left',
       wordBreak: 'break-word',
+    },
+    patientBubble: {
+      backgroundColor: theme.palette.common.white,
+      position: 'relative',
     },
     chatImgBubble: {
       padding: 0,
@@ -229,8 +229,70 @@ const useStyles = makeStyles((theme: Theme) => {
     imageUpload: {
       overflow: 'hidden',
       borderRadius: 10,
-      width: 100,
-      height: 100,
+      width: 130,
+      cursor: 'pointer',
+    },
+    modalWindowWrap: {
+      display: 'table',
+      height: '100%',
+      width: '100%',
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    tableContent: {
+      display: 'table-cell',
+      verticalAlign: 'middle',
+      width: '100%',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    modalWindow: {
+      backgroundColor: theme.palette.common.black,
+      maxWidth: 600,
+      margin: 'auto',
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    modalHeader: {
+      minHeight: 56,
+      textAlign: 'center',
+      fontSize: 13,
+      fontWeight: 600,
+      letterSpacing: 0.5,
+      color: theme.palette.common.white,
+      padding: '16px 50px',
+      textTransform: 'uppercase',
+      position: 'relative',
+      wordBreak: 'break-word',
+    },
+    modalClose: {
+      position: 'absolute',
+      right: 16,
+      top: 16,
+      width: 24,
+      height: 24,
+      cursor: 'pointer',
+    },
+    modalFooter: {
+      height: 56,
+      textAlign: 'center',
+      padding: 16,
+      textTransform: 'uppercase',
+    },
+    modalContent: {
+      textAlign: 'center',
+      maxHeight: 'calc(100% - 212px)',
+      overflow: 'hidden',
+      '& img': {
+        maxWidth: '100%',
+      },
     },
   };
 });
@@ -269,6 +331,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [imgPrevUrl, setImgPrevUrl] = React.useState();
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
   // const covertVideoMsg = '^^convert`video^^';
@@ -365,7 +429,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     getHistory(0);
 
     pubnub.addListener({
-      status: (statusEvent) => {},
+      status: (statusEvent) => { },
       message: (message) => {
         insertText[insertText.length] = message.message;
         console.log(message.message);
@@ -520,36 +584,45 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              // <div>
-              //   <span>{getAutomatedMessage(rowData)}</span>
-              // </div>
-              <div
-                className={`${classes.chatBubble} ${
-                  rowData.message === documentUpload ? classes.chatImgBubble : ''
-                }`}
-              >
-                {leftComponent == 1 && !rowData.duration && (
-                  <div className={classes.patientAvatar}>
-                    <Avatar
-                      className={classes.avatar}
-                      src={
-                        patientDetails && patientDetails.photoUrl
-                          ? patientDetails!.photoUrl
-                          : require('images/no_photo_icon_round.svg')
-                      }
-                      alt=""
-                    />
+                  // <div>
+                  //   <span>{getAutomatedMessage(rowData)}</span>
+                  // </div>
+                  <div
+                    className={`${classes.chatBubble} ${
+                      rowData.message === documentUpload ? classes.chatImgBubble : ''
+                      }`}
+                  >
+                    {leftComponent == 1 && !rowData.duration && (
+                      <div className={classes.patientAvatar}>
+                        <Avatar
+                          className={classes.avatar}
+                          src={
+                            patientDetails && patientDetails.photoUrl
+                              ? patientDetails!.photoUrl
+                              : require('images/no_photo_icon_round.svg')
+                          }
+                          alt=""
+                        />
+                      </div>
+                    )}
+                    {rowData.message === documentUpload ? (
+                      // <div>
+                      //   <img src={rowData.url} alt={rowData.url} />
+                      // </div>
+                      <div
+                        onClick={() => {
+                          setModalOpen(true);
+                          setImgPrevUrl(rowData.url);
+                        }}
+                        className={classes.imageUpload}
+                      >
+                        <img src={rowData.url} alt={rowData.url} />
+                      </div>
+                    ) : (
+                        <span>{getAutomatedMessage(rowData)}</span>
+                      )}
                   </div>
                 )}
-                {rowData.message === documentUpload ? (
-                  <div>
-                    <img src={rowData.url} alt={rowData.url} />
-                  </div>
-                ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
-                )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -571,19 +644,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rightComponent++;
       return (
         <div className={classes.patientChat}>
-          <div className={rowData.duration ? classes.callMsg : classes.petient}>
-            {rightComponent == 1 && !rowData.duration && (
-              <span className={classes.boldTxt}>
-                <img
-                  className={classes.patientIcon}
-                  src={
-                    patientDetails!.photoUrl
-                      ? patientDetails!.photoUrl
-                      : require('images/no_photo_icon_round.svg')
-                  }
-                />
-              </span>
-            )}
+          <div className={rowData.duration ? classes.callMsg : ''}>
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
@@ -598,50 +659,39 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              // <div>
-              //   {rowData.message === documentUpload ? (
-              //     <div style={{ width: '200px', height: 'auto' }}>
-              //       <a href={rowData.url} target="_blank">
-              //         <img
-              //           style={{ width: '200px', height: 'auto' }}
-              //           src={rowData.url}
-              //           alt={rowData.url}
-              //         />
-              //       </a>
-              //     </div>
-              //   ) : (
-              //     <span>{getAutomatedMessage(rowData)}</span>
-              //   )}
-              // </div>
-              <div
-                className={`${classes.chatBubble} ${classes.patientBubble} ${
-                  rowData.message === documentUpload ? classes.chatImgBubble : ''
-                }`}
-              >
-                {rightComponent == 1 && !rowData.duration && (
-                  <div className={classes.patientAvatar}>
-                    <Avatar
-                      className={classes.avatar}
-                      src={
-                        patientDetails && patientDetails.photoUrl
-                          ? patientDetails!.photoUrl
-                          : require('images/no_photo_icon_round.svg')
-                      }
-                      alt=""
-                    />
+                  <div
+                    className={`${classes.chatBubble} ${classes.patientBubble} ${
+                      rowData.message === documentUpload ? classes.chatImgBubble : ''
+                      }`}
+                  >
+                    {rightComponent == 1 && !rowData.duration && (
+                      <div className={classes.patientAvatar}>
+                        <Avatar
+                          className={classes.avatar}
+                          src={
+                            patientDetails && patientDetails.photoUrl
+                              ? patientDetails!.photoUrl
+                              : require('images/no_photo_icon_round.svg')
+                          }
+                          alt=""
+                        />
+                      </div>
+                    )}
+                    {rowData.message === documentUpload ? (
+                      <div
+                        onClick={() => {
+                          setModalOpen(true);
+                          setImgPrevUrl(rowData.url);
+                        }}
+                        className={classes.imageUpload}
+                      >
+                        <img src={rowData.url} alt={rowData.url} />
+                      </div>
+                    ) : (
+                        <span>{getAutomatedMessage(rowData)}</span>
+                      )}
                   </div>
                 )}
-                {rowData.message === documentUpload ? (
-                  <div className={classes.imageUpload}>
-                    <div>
-                      <img src={rowData.url} alt={rowData.url} />
-                    </div>
-                  </div>
-                ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
-                )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -678,48 +728,54 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              // <div>
-              //   {rowData.message === documentUpload ? (
-              //     <div style={{ width: '200px', height: 'auto' }}>
-              //       <a href={rowData.url} target="_blank">
-              //         <img
-              //           style={{ width: '200px', height: 'auto' }}
-              //           src={rowData.url}
-              //           alt={rowData.url}
-              //         />
-              //       </a>
-              //     </div>
-              //   ) : (
-              //     <span>{getAutomatedMessage(rowData)}</span>
-              //   )}
-              // </div>
-              <div
-                className={`${classes.chatBubble} ${
-                  rowData.message === documentUpload ? classes.chatImgBubble : ''
-                }`}
-              >
-                {leftComponent == 1 && !rowData.duration && (
-                  <div className={classes.patientAvatar}>
-                    <Avatar
-                      className={classes.avatar}
-                      src={
-                        patientDetails && patientDetails.photoUrl
-                          ? patientDetails!.photoUrl
-                          : require('images/no_photo_icon_round.svg')
-                      }
-                      alt=""
-                    />
+                  // <div>
+                  //   {rowData.message === documentUpload ? (
+                  //     <div style={{ width: '200px', height: 'auto' }}>
+                  //       <a href={rowData.url} target="_blank">
+                  //         <img
+                  //           style={{ width: '200px', height: 'auto' }}
+                  //           src={rowData.url}
+                  //           alt={rowData.url}
+                  //         />
+                  //       </a>
+                  //     </div>
+                  //   ) : (
+                  //     <span>{getAutomatedMessage(rowData)}</span>
+                  //   )}
+                  // </div>
+                  <div
+                    className={`${classes.chatBubble} ${
+                      rowData.message === documentUpload ? classes.chatImgBubble : ''
+                      }`}
+                  >
+                    {leftComponent == 1 && !rowData.duration && (
+                      <div className={classes.patientAvatar}>
+                        <Avatar
+                          className={classes.avatar}
+                          src={
+                            patientDetails && patientDetails.photoUrl
+                              ? patientDetails!.photoUrl
+                              : require('images/no_photo_icon_round.svg')
+                          }
+                          alt=""
+                        />
+                      </div>
+                    )}
+                    {rowData.message === documentUpload ? (
+                      <div
+                        onClick={() => {
+                          setModalOpen(true);
+                          setImgPrevUrl(rowData.url);
+                        }}
+                        className={classes.imageUpload}
+                      >
+                        <img src={rowData.url} alt={rowData.url} />
+                      </div>
+                    ) : (
+                        <span>{getAutomatedMessage(rowData)}</span>
+                      )}
                   </div>
                 )}
-                {rowData.message === documentUpload ? (
-                  <div>
-                    <img src={rowData.url} alt={rowData.url} />
-                  </div>
-                ) : (
-                  <span>{getAutomatedMessage(rowData)}</span>
-                )}
-              </div>
-            )}
           </div>
         </div>
       );
@@ -731,8 +787,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-        })
+        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+      })
       : '';
   // const toggelChatVideo = () => {
   //   setIsNewMsg(false);
@@ -1040,6 +1096,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </Button>
           </DialogActions>
         </Dialog>
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+          <div className={classes.modalWindowWrap}>
+            <div className={classes.tableContent}>
+              <div className={classes.modalWindow}>
+                <div className={classes.modalHeader}>
+                  {/* IMAGE001.JPG */}
+                  <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
+                    <img src={require('images/ic_round_clear.svg')} alt="" />
+                  </div>
+                </div>
+                <div className={classes.modalContent}>
+                  <img src={imgPrevUrl} alt="" />
+                </div>
+                <div className={classes.modalFooter}></div>
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );

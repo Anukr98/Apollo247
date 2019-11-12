@@ -427,15 +427,17 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             title="UPCOMING CLINIC VISIT"
             leftIcon="backArrow"
             rightComponent={
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
-                  setCancelAppointment(true);
-                }}
-              >
-                <More />
-              </TouchableOpacity>
+              dateIsAfter ? (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
+                    setCancelAppointment(true);
+                  }}
+                >
+                  <More />
+                </TouchableOpacity>
+              ) : null
             }
             onPressLeftIcon={() => props.navigation.goBack()}
           />

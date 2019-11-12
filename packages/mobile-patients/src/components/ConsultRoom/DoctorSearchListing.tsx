@@ -74,6 +74,8 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
   },
 });
+
+let latlng: locationType | null = null;
 const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 export type filterDataType = {
@@ -121,7 +123,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     { title: 'Online Consults' },
     { title: 'Clinic Visits' },
   ];
-  let latlng: locationType | null = null;
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
@@ -480,6 +481,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
         latlng = res.latlong;
         console.log(res, 'getUserCurrentPosition');
+        AsyncStorage.setItem(
+          'location',
+          JSON.stringify({
+            latlong: res.latlong,
+            name: res.name.toUpperCase(),
+            zipcode: res.zipcode,
+          })
+        );
       })
       .catch((error) => console.log(error, 'getUserCurrentPosition err'));
     // AsyncStorage.getItem('location').then((item) => {
@@ -540,10 +549,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              CommonLogEvent(
-                AppRoutes.DoctorSearchListing,
-                'Doctor SearchListing RightHeader clicked'
-              );
+              CommonLogEvent(AppRoutes.DoctorSearchListing, 'Location popup clicked');
               getNetStatus().then((status) => {
                 if (status) {
                   setshowLocationpopup(true);
@@ -584,7 +590,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <TouchableOpacity
           activeOpacity={1}
           style={{ marginLeft: 20 }}
-          onPress={() => setDisplayFilter(true)}
+          onPress={() => {
+            CommonLogEvent(AppRoutes.DoctorSearchListing, 'Filter view opened');
+            setDisplayFilter(true);
+          }}
         >
           <Filter />
         </TouchableOpacity>
@@ -598,6 +607,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (movedata == 'MoveDoctor') {
       props.navigation.push(AppRoutes.SymptomChecker);
     } else {
+      CommonLogEvent(AppRoutes.DoctorSearchListing, 'Go back clicked');
       props.navigation.goBack();
     }
     return false;
@@ -764,6 +774,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 : ConsultMode.PHYSICAL;
             setfilterMode(selectedFilterMode);
             fetchSpecialityFilterData(selectedFilterMode);
+            CommonLogEvent(AppRoutes.DoctorSearchListing, selectedFilterMode);
           }}
           selectedTab={selectedTab}
         />
@@ -897,6 +908,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             getNetStatus().then((status) => {
               if (status) {
                 fetchSpecialityFilterData(filterMode, selecteddata);
+                CommonLogEvent(
+                  AppRoutes.DoctorSearchListing,
+                  `Filter selected data ${selecteddata}`
+                );
               } else {
                 setshowSpinner(false);
                 setshowOfflinePopup(true);

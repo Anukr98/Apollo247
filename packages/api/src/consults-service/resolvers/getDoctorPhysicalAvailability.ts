@@ -64,8 +64,17 @@ const getDoctorPhysicalAvailableSlots: Resolver<
         st = `${previousDate.toDateString()} ${timeSlot.startTime.toString()}`;
         consultStartTime = new Date(st);
       }
-      console.log(consultStartTime, consultEndTime, 'conslt hours');
-      const slotsCount = (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
+      //console.log(consultStartTime, consultEndTime, 'conslt hours');
+      const duration = Math.floor(60 / timeSlot.consultDuration);
+      console.log(duration, 'doctor duration');
+      let slotsCount =
+        (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
+      if (slotsCount - Math.floor(slotsCount) == 0.5) {
+        slotsCount = Math.ceil(slotsCount);
+      } else {
+        slotsCount = Math.floor(slotsCount);
+      }
+      console.log(slotsCount, 'slot count', differenceInMinutes(consultEndTime, consultStartTime));
       console.log(slotsCount, 'slots count', differenceInMinutes(consultEndTime, consultStartTime));
       const stTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
       let startTime = new Date(previousDate.toDateString() + ' ' + stTime);
@@ -73,7 +82,7 @@ const getDoctorPhysicalAvailableSlots: Resolver<
         .fill(0)
         .map(() => {
           const stTime = startTime;
-          startTime = addMinutes(startTime, 15);
+          startTime = addMinutes(startTime, timeSlot.consultDuration);
           const stTimeHours = stTime
             .getHours()
             .toString()
@@ -88,6 +97,12 @@ const getDoctorPhysicalAvailableSlots: Resolver<
           availableSlots.push(generatedSlot);
           return generatedSlot;
         });
+      const lastSlot = new Date(availableSlots[availableSlots.length - 1]);
+      const lastMins = Math.abs(differenceInMinutes(lastSlot, consultEndTime));
+      console.log(lastMins, 'last mins', lastSlot);
+      if (lastMins < timeSlot.consultDuration) {
+        availableSlots.pop();
+      }
     });
   }
   console.log(availableSlotsReturn, 'return slots');

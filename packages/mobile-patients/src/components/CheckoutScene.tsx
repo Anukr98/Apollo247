@@ -45,6 +45,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -331,7 +332,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         container={styles.headerContainerStyle}
         leftIcon={'backArrow'}
         title={'CHECKOUT'}
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => {
+          CommonLogEvent(AppRoutes.CheckoutScene, 'Go back clicked');
+          props.navigation.goBack();
+        }}
       />
     );
   };
@@ -455,7 +459,13 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const renderPaymentModesCard = () => {
     const payUsingPaytmOption = (
-      <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          CommonLogEvent(AppRoutes.CheckoutScene, 'Pay online');
+          setCashOnDelivery(!isCashOnDelivery);
+        }}
+      >
         <View style={[styles.paymentModeRowStyle, { marginBottom: 16 }]}>
           {isCashOnDelivery ? <RadioButtonUnselectedIcon /> : <RadioButtonIcon />}
           <Text style={styles.paymentModeTextStyle}>
@@ -466,7 +476,13 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     );
 
     const cashOnDeliveryOption = (
-      <TouchableOpacity activeOpacity={1} onPress={() => setCashOnDelivery(!isCashOnDelivery)}>
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={() => {
+          CommonLogEvent(AppRoutes.CheckoutScene, 'Cash on delivery');
+          setCashOnDelivery(!isCashOnDelivery);
+        }}
+      >
         <View style={[styles.paymentModeRowStyle]}>
           {!isCashOnDelivery ? <RadioButtonUnselectedIcon /> : <RadioButtonIcon />}
           <Text style={styles.paymentModeTextStyle}>Cash On Delivery</Text>
@@ -505,6 +521,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           style={{ width: '66.66%' }}
           title={`PAY RS. ${grandTotal.toPrecision()}`}
           onPress={() => {
+            try {
+              CommonLogEvent(AppRoutes.CheckoutScene, `PAY RS. ${grandTotal.toPrecision()}`);
+            } catch (error) {}
             initiateOrder();
           }}
           // disabled={isPayDisabled}

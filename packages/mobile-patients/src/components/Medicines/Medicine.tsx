@@ -236,7 +236,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(120);
   const { width: winWidth } = Dimensions.get('window');
   const renderOfferBanner = () => {
-    if (loading) return renderSectionLoader();
+    if (loading) return null;
     else if (offerBannerImage)
       return (
         <Image

@@ -513,7 +513,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 activeOpacity={1}
                 style={[styles.doctorView]}
                 onPress={() => {
-                  CommonLogEvent(AppRoutes.Consult, 'Consult Online clicked');
+                  CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
                   item.appointmentType === 'ONLINE'
                     ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
                         data: item,
@@ -572,10 +572,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                     <View style={{ flex: 1, marginRight: 16 }}>
                       <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                        Dr.{' '}
-                        {item.doctorInfo
-                          ? `${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
-                          : ''}
+                        {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
                       </Text>
                       {item.isFollowUp == 'true' ? (
                         <Text
@@ -708,7 +705,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
-                            CommonLogEvent(AppRoutes.Consult, 'Consult Online clicked');
+                            CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
                             item.appointmentType === 'ONLINE'
                               ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
                                   data: item,
@@ -746,7 +743,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+                          CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
                           props.navigation.navigate(AppRoutes.ChatRoom, {
                             data: item,
                             callType: '',
@@ -787,8 +784,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               paddingLeft: 3,
                             }}
                           >
-                            {day1.diff(day2, 'days')} more{' '}
-                            {day1.diff(day2, 'days') == 1 ? 'day' : 'days'}
+                            {day1.diff(day2, 'days') == 0
+                              ? 'today'
+                              : day1.diff(day2, 'days') +
+                                'more ' +
+                                (day1.diff(day2, 'days') == 1 ? 'day' : 'days')}
                           </Text>
                         </View>
                       </TouchableOpacity>
@@ -810,7 +810,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return (
       <View style={{ width: '100%' }}>
         <View style={styles.viewName}>
-          <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
+          <View
+            style={{
+              justifyContent: 'space-between',
+              flexDirection: 'row',
+              paddingTop: 16,
+              paddingHorizontal: 0,
+              backgroundColor: theme.colors.WHITE,
+              marginTop: 4,
+            }}
+          >
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
