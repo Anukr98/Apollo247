@@ -85,6 +85,7 @@ export const getAppointmentHistoryTypeDefs = gql`
       limit: Int
       sortBy: patientLogSort
       type: patientLogType
+      doctorId: ID
     ): [PatientLog]
   }
 `;
@@ -197,12 +198,25 @@ type PatientLog = {
 
 const getPatientLog: Resolver<
   null,
-  { offset?: number; limit?: number; sortBy: patientLogSort; type: patientLogType },
+  {
+    offset?: number;
+    limit?: number;
+    sortBy: patientLogSort;
+    type: patientLogType;
+    doctorId: string;
+  },
   ConsultServiceContext,
   PatientLog[] | null
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  let doctordata;
+
+  if (args.doctorId === undefined) {
+    doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  } else {
+    doctordata = await doctorRepository.findById(args.doctorId);
+  }
+
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
