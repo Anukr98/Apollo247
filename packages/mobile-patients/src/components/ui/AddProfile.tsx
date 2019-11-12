@@ -17,7 +17,15 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
+import { Gender, Relation } from '../../graphql/types/globalTypes';
+import { useApolloClient } from 'react-apollo-hooks';
+import { addNewProfile } from '../../graphql/types/addNewProfile';
+import { ADD_NEW_PROFILE } from '../../graphql/profiles';
+import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
+import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
+import { Spinner } from './Spinner';
 
 const { width, height } = Dimensions.get('window');
 
@@ -99,38 +107,87 @@ const styles = StyleSheet.create({
 });
 
 type genderOptions = {
-  name: string;
-};
-type Profile = {
-  pid: string;
-  name: string;
+  name: Gender;
+  title: string;
 };
 
 const GenderOptions: genderOptions[] = [
   {
-    name: 'Male',
+    name: Gender.MALE,
+    title: 'Male',
   },
   {
-    name: 'Female',
+    name: Gender.FEMALE,
+    title: 'Female',
   },
   {
-    name: 'Other',
+    name: Gender.OTHER,
+    title: 'Other',
   },
 ];
 
 export interface AddProfileProps {
   setdisplayoverlay: (args0: boolean) => void;
-  setProfile: (args0: Profile) => void;
+  setProfile: (args0: GetCurrentPatients_getCurrentPatients_patients) => void;
 }
 
 export const AddProfile: React.FC<AddProfileProps> = (props) => {
+  const client = useApolloClient();
+  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
   const [date, setDate] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
-  const isValidProfile = firstName && lastName && date && gender;
+  const isSatisfyingNameRegex = (value: string) =>
+    value == ' '
+      ? false
+      : value == '' || /^[a-zA-Z]+(([' ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+      ? true
+      : false;
+
+  const isValidProfile =
+    firstName &&
+    isSatisfyingNameRegex(firstName) &&
+    lastName &&
+    isSatisfyingNameRegex(lastName) &&
+    date &&
+    gender;
+
+  const newProfile = () => {
+    setLoading(true);
+    client
+      .mutate<addNewProfile, any>({
+        mutation: ADD_NEW_PROFILE,
+        variables: {
+          PatientProfileInput: {
+            firstName: firstName,
+            lastName: lastName,
+            dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+            gender: gender,
+            relation: Relation.OTHER,
+            emailAddress: '',
+            photoUrl: '',
+            mobileNumber: currentPatient!.mobileNumber,
+          },
+        },
+      })
+      .then((data) => {
+        props.setProfile(data.data!.addNewProfile
+          .patient as GetCurrentPatients_getCurrentPatients_patients);
+        getPatientApiCall();
+        props.setdisplayoverlay(false);
+      })
+      .catch((e) => {
+        Alert.alert('Alert', e.message);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   const renderHeader = () => {
     return (
@@ -160,8 +217,7 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
           <View style={styles.buttonSeperatorStyle} />
           <Button
             onPress={() => {
-              props.setProfile({ pid: date, name: firstName + ' ' + lastName });
-              props.setdisplayoverlay(false);
+              newProfile();
             }}
             disabled={!isValidProfile}
             title={'SAVE & USE'}
@@ -300,6 +356,7 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
           {renderButtons()}
         </View>
       </View>
+      {loading && <Spinner />}
     </View>
   );
 };
