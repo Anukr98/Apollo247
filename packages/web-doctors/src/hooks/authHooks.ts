@@ -4,15 +4,18 @@ import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 const useAuthContext = () => useContext(AuthContext);
 
 export const useCurrentPatient = () => {
-  const doctorFromAuthCache = useAuthContext().currentPatient;
+  const doctorFromAuthCache = useAuthContext().currentUser;
   return doctorFromAuthCache;
 };
 // export const useAllCurrentPatients = () => useAuthContext().allCurrentPatients;
 // export const useIsSignedIn = () => useAllCurrentPatients() != null;
 
 export const useAuth = () => {
+  const currentUserType = useAuthContext().currentUserType;
+  const setCurrentUserType = useAuthContext().setCurrentUserType;
+
   const currentPatient = useCurrentPatient();
-  const setCurrentPatient = useAuthContext().setCurrentPatient!;
+  const setCurrentPatient = useAuthContext().setCurrentUser!;
   // const allCurrentPatients = useAllCurrentPatients();
 
   const verifyOtp = useAuthContext().verifyOtp!;
@@ -45,6 +48,9 @@ export const useAuth = () => {
     signInError,
     isSigningIn,
     signOut,
+
+    currentUserType,
+    setCurrentUserType,
   };
 };
 

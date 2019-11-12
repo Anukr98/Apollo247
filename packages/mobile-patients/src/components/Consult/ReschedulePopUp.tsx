@@ -42,7 +42,6 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   // console.log('isbelowthree', props.isbelowthree);
 
   useEffect(() => {
-    CommonScreenLog('ReschedulePopUp', 'ReschedulePopUp');
     try {
       let count = 4 - props.rescheduleCount;
 

@@ -343,7 +343,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               availableInMin <= 60 && availableInMin > 0
                 ? `${nextAvailability(NextAvailableSlot)}`
                 : // ? `in ${availableInMin} min${availableInMin == 1 ? '' : 's'}`
-                  `on ${Moment(new Date(NextAvailableSlot), 'HH:mm:ss.SSSz').format(
+                  `available on ${Moment(new Date(NextAvailableSlot), 'HH:mm:ss.SSSz').format(
                     'DD MMM, h:mm a'
                   )}`
             }!\nWould you like to consult now or schedule for later?`}

@@ -10,6 +10,9 @@ import {
   StarTeam,
   DoctorDeviceTokens,
   BlockedCalendarItem,
+  AdminUsers,
+  Secretary,
+  DoctorSecretary,
 } from 'doctors-service/entities';
 import {
   Patient,
@@ -42,6 +45,7 @@ import {
   JuniorAppointmentSessions,
   AppointmentDocuments,
   AppointmentCallDetails,
+  DoctorNextAvaialbleSlots,
 } from 'consults-service/entities';
 
 export const connect = async () => {
@@ -88,6 +92,9 @@ export const connect = async () => {
         Packages,
         DoctorDeviceTokens,
         BlockedCalendarItem,
+        AdminUsers,
+        Secretary,
+        DoctorSecretary,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
@@ -109,6 +116,7 @@ export const connect = async () => {
         JuniorAppointmentSessions,
         AppointmentDocuments,
         AppointmentCallDetails,
+        DoctorNextAvaialbleSlots,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,

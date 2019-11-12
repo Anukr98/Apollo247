@@ -83,6 +83,7 @@ export enum NotificationType {
   BOOK_APPOINTMENT = 'BOOK_APPOINTMENT',
   CALL_APPOINTMENT = 'CALL_APPOINTMENT',
   MEDICINE_CART_READY = 'MEDICINE_CART_READY',
+  DOCTOR_CANCEL_APPOINTMENT = 'DOCTOR_CANCEL_APPOINTMENT',
 }
 
 export enum APPT_CALL_TYPE {
@@ -188,7 +189,8 @@ export async function sendCallsNotification(
       appointmentId: appointment.id.toString(),
       patientName: patientDetails.firstName,
       doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
-      sound: 'default',
+      sound: 'incallmanager_ringtone.mp3',
+      android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       callType,
       appointmentCallId,
       doctorType,
@@ -279,8 +281,17 @@ export async function sendNotification(
 
   let notificationTitle: string = '';
   let notificationBody: string = '';
-
-  if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
+  if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
+    notificationTitle = ApiConstants.CANCEL_APPT_TITLE;
+    notificationBody = ApiConstants.CANCEL_APPT_BODY.replace(
+      '{0}',
+      patientDetails.firstName
+    );
+    notificationBody = notificationBody.replace(
+      '{1}',
+      doctorDetails.firstName + ' ' + doctorDetails.lastName
+    );
+  } else if (pushNotificationInput.notificationType == NotificationType.INITIATE_RESCHEDULE) {
     notificationTitle = ApiConstants.RESCHEDULE_INITIATION_TITLE;
     notificationBody = ApiConstants.RESCHEDULE_INITIATION_BODY.replace(
       '{0}',
@@ -387,11 +398,16 @@ export async function sendNotification(
         appointmentId: appointment.id.toString(),
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
+        sound: 'default',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
     };
   }
 
-  if (pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT) {
+  if (
+    pushNotificationInput.notificationType == NotificationType.CALL_APPOINTMENT ||
+    pushNotificationInput.notificationType == NotificationType.INITIATE_SENIOR_APPT_SESSION
+  ) {
     payload = {
       notification: {
         title: notificationTitle,
@@ -403,6 +419,7 @@ export async function sendNotification(
         patientName: patientDetails.firstName,
         doctorName: doctorDetails.firstName + ' ' + doctorDetails.lastName,
         sound: 'default',
+        android_channel_id: 'fcm_FirebaseNotifiction_default_channel',
       },
     };
   }

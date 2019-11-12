@@ -42,9 +42,11 @@ export interface getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters
   salutation: Salutation | null;
   firstName: string;
   lastName: string;
+  displayName: string | null;
   experience: string | null;
   city: string | null;
   photoUrl: string | null;
+  thumbnailUrl: string | null;
   qualification: string | null;
   specialty: getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctors_specialty | null;
   onlineConsultationFees: string;

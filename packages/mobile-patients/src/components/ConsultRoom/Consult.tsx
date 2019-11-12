@@ -8,6 +8,7 @@ import {
   Mascot,
   OnlineConsult,
   PhysicalConsult,
+  DoctorPlaceholderImage,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
@@ -187,7 +188,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
 
   useEffect(() => {
-    CommonScreenLog(AppRoutes.Consult, AppRoutes.Consult);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -541,14 +541,28 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     )}
 
                     <View style={styles.imageView}>
-                      {item.doctorInfo && item.doctorInfo.photoUrl && (
+                      {item.doctorInfo &&
+                      item.doctorInfo.thumbnailUrl &&
+                      item.doctorInfo.thumbnailUrl.match(
+                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                      ) ? (
                         <Image
                           style={{
                             width: 60,
                             height: 60,
                             borderRadius: 30,
                           }}
-                          source={{ uri: item.doctorInfo.photoUrl }}
+                          source={{ uri: item.doctorInfo.thumbnailUrl }}
+                          resizeMode={'contain'}
+                        />
+                      ) : (
+                        <DoctorPlaceholderImage
+                          style={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: 30,
+                          }}
+                          resizeMode={'contain'}
                         />
                       )}
 
@@ -558,10 +572,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                     <View style={{ flex: 1, marginRight: 16 }}>
                       <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                        Dr.{' '}
-                        {item.doctorInfo
-                          ? `${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
-                          : ''}
+                        {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
                       </Text>
                       {item.isFollowUp == 'true' ? (
                         <Text
@@ -796,7 +807,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return (
       <View style={{ width: '100%' }}>
         <View style={styles.viewName}>
-          <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
+          <View
+            style={{
+              justifyContent: 'space-between',
+              flexDirection: 'row',
+              paddingTop: 16,
+              paddingHorizontal: 0,
+              backgroundColor: theme.colors.WHITE,
+              marginTop: 4,
+            }}
+          >
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}

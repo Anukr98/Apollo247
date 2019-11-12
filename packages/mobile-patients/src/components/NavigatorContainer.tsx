@@ -50,7 +50,7 @@ import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopB
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import { SearchByBrand } from '@aph/mobile-patients/src/components/Medicines/SearchByBrand';
 import { AsyncStorage } from 'react-native';
-import { CommonScreenLog } from '../FunctionHelpers/DeviceHelper';
+import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -260,6 +260,27 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
 };
 
+const logTabEvents = (routing: any) => {
+  if (routing.routeName === 'TabBar') {
+    switch (routing.index) {
+      case 0:
+        CommonLogEvent('TAB_BAR', 'CONSULT_ROOM clicked');
+        break;
+      case 1:
+        CommonLogEvent('TAB_BAR', 'HEALTH_RECORDS clicked');
+        break;
+      case 2:
+        CommonLogEvent('TAB_BAR', 'MEDICINES clicked');
+        break;
+      case 3:
+        CommonLogEvent('TAB_BAR', 'MY_ACCOUNT clicked');
+        break;
+      default:
+        break;
+    }
+  }
+};
+
 const stackConfig: StackNavigatorConfig = {
   initialRouteName: AppRoutes.SplashScreen,
   headerMode: 'none',
@@ -268,6 +289,8 @@ const stackConfig: StackNavigatorConfig = {
     try {
       AsyncStorage.setItem('setCurrentName', sceneProps.scene.route.routeName);
       CommonScreenLog(sceneProps.scene.route.routeName, sceneProps.scene.route.routeName);
+      logTabEvents(sceneProps.scene.route);
+      console.log('sceneProps success', sceneProps.scene.route);
     } catch (error) {
       console.log('sceneProps error', error);
     }

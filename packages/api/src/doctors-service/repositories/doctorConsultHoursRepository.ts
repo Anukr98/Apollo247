@@ -1,7 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { ConsultHours, WeekDay } from 'doctors-service/entities';
 import { addMilliseconds, format } from 'date-fns';
-
+import { Doctor } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
@@ -76,7 +76,7 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
         arrWeekDays.forEach((weekDay: WeekDay) => {
           arrDayTimes.forEach((dayTimes: DayTimes) => {
             const dayConsultHour: Partial<ConsultHours> = {
-              weekDay: weekDay,
+              weekDay: weekDay.trim(),
               startTime: dayTimes.startTime,
               endTime: dayTimes.endTime,
               ...consultHourData,

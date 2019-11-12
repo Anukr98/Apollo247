@@ -14,6 +14,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
 import { getConnection } from 'typeorm';
 import { ApiConstants } from 'ApiConstants';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const getCurrentPatientsTypeDefs = gql`
   enum Gender {
@@ -67,7 +68,7 @@ const getCurrentPatients: Resolver<
   {},
   ProfilesServiceContext,
   GetCurrentPatientsResult
-> = async (parent, args, { firebaseUid, mobileNumber }) => {
+> = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
   let isPrismWorking = 1;
   const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
   const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
@@ -107,7 +108,7 @@ const getCurrentPatients: Resolver<
         isPrismWorking = 0;
       });
   }
-  console.log(uhids, 'uhid');
+  console.log(uhids, 'uhid', isPrismWorking);
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
@@ -124,7 +125,7 @@ const getCurrentPatients: Resolver<
     //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
     patientPromises = uhids.response!.signUpUserData.map((data) => {
       return findOrCreatePatient(
-        { uhid: data.uhid, mobileNumber },
+        { uhid: data.UHID, mobileNumber },
         {
           firebaseUid,
           firstName: data.userName,
@@ -154,9 +155,12 @@ const getCurrentPatients: Resolver<
     ];
   }
 
-  const patients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
+  const updatePatients = await Promise.all(patientPromises).catch((findOrCreateErrors) => {
     throw new AphError(AphErrorMessages.UPDATE_PROFILE_ERROR, undefined, { findOrCreateErrors });
   });
+  console.log(updatePatients);
+  const patientRepo = profilesDb.getCustomRepository(PatientRepository);
+  const patients = await patientRepo.findByMobileNumber(mobileNumber);
   return { patients };
 };
 

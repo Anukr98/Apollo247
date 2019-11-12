@@ -57,6 +57,9 @@ const styles = StyleSheet.create({
   imageView: {
     margin: 16,
     width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: 'hidden',
   },
   doctorNameStyles: {
     paddingTop: 32,
@@ -98,6 +101,7 @@ type rowData = {
   city?: string | null;
   awards?: string | null;
   photoUrl?: string | null;
+  thumbnailUrl?: string | null;
   specialty?: getDoctorDetailsById_getDoctorDetailsById_specialty;
   registrationNumber?: string;
   onlineConsultationFees?: string;
@@ -335,12 +339,16 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             ) : null} */}
             <View style={styles.imageView}>
               {/* {rowData.image} */}
-              {rowData.photoUrl &&
-              rowData.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+              {rowData.thumbnailUrl &&
+              rowData.thumbnailUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
                 <Image
-                  style={{ height: 80, borderRadius: 40, width: 80 }}
+                  style={{
+                    height: 80,
+                    borderRadius: 40,
+                    width: 80,
+                  }}
                   source={{
-                    uri: rowData.photoUrl,
+                    uri: rowData.thumbnailUrl,
                   }}
                   resizeMode={'contain'}
                 />
@@ -353,9 +361,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             ) : null} */}
             </View>
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
-              <Text style={styles.doctorNameStyles}>
-                Dr. {rowData.firstName} {rowData.lastName}
-              </Text>
+              <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
               <Text style={styles.doctorSpecializationStyles}>
                 {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''} |{' '}
                 {rowData.experience} YR

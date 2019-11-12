@@ -16,8 +16,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 import { Navigation } from 'components/Navigation';
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { DoctorOnlineStatusButton } from 'components/DoctorOnlineStatusButton';
-import { useCurrentPatient } from 'hooks/authHooks';
-import { DoctorType } from 'graphql/types/globalTypes';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -166,9 +165,11 @@ export const Header: React.FC = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   // TODO remove currentPatient and name it as currentDoctor
-  const currentDoctor = useCurrentPatient();
-  const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
-  const isAdminDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.ADMIN;
+
+  const currentUserType = useAuth().currentUserType;
+
+  const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
+  const isAdminDoctor = useAuth() && currentUserType === LoggedInUserType.JDADMIN;
 
   return (
     <header className={classes.header}>
@@ -279,15 +280,23 @@ export const Header: React.FC = (props) => {
                   <div
                     className={classes.accontDiv}
                     onClick={() => {
-                      isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
-                      setSelectedTab(5);
+                      if (isAdminDoctor) {
+                        setIsDialogOpen(true);
+                      } else {
+                        isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true);
+                        setSelectedTab(5);
+                      }
                     }}
                   >
                     <img
                       className={classes.accountIc}
-                      onClick={() =>
-                        isProtected ? protectWithLoginPopup() : setIsHelpPopupOpen(true)
-                      }
+                      onClick={() => {
+                        if (isProtected) {
+                          protectWithLoginPopup();
+                        } else if (!isAdminDoctor) {
+                          setIsHelpPopupOpen(true);
+                        }
+                      }}
                       src={require('images/ic_account.svg')}
                     />
                   </div>
@@ -309,7 +318,7 @@ export const Header: React.FC = (props) => {
               </Button>
             </DialogActions>
           </Dialog>
-          {isSignedIn ? (
+          {isSignedIn || isAdminDoctor ? (
             <Popover
               open={isHelpPopupOpen}
               anchorEl={avatarRef.current}

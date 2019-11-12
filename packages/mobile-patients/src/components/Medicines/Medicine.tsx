@@ -248,6 +248,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           }}
           style={{ width: '100%', minHeight: imgHeight }}
           source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
+          // resizeMode="contain"
+          // style={{ width: Dimensions.get('screen').width, height: 120 }}
         />
       );
   };
@@ -434,7 +436,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   title: `${item.title || 'Products'}`.toUpperCase(),
                 }),
               {
-                // marginRight: 8,
                 marginHorizontal: 4,
                 marginTop: 16,
                 marginBottom: 20,
@@ -474,7 +475,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   containerStyle={{
                     ...theme.viewStyles.card(0, 0),
                     elevation: 10,
-                    // marginRight: 8,
+
                     marginHorizontal: 4,
                     marginTop: 16,
                     marginBottom: 20,
@@ -512,7 +513,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     const renderDiscountedPrice = () => {
       const styles = StyleSheet.create({
         discountedPriceText: {
-          ...theme.viewStyles.text('M', 14, '#01475b', 1, 24),
+          ...theme.viewStyles.text('M', 14, '#01475b', 0.6, 24),
           textAlign: 'center',
         },
         priceText: {
@@ -540,7 +541,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             elevation: 10,
             height: 232,
             width: 152,
-            // marginRight: 8,
             marginHorizontal: 4,
             alignItems: 'center',
             ...style,
@@ -548,7 +548,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         >
           <Image
             placeholderStyle={styles.imagePlaceholderStyle}
-            // placeholderStyle={{ backgroundColor: '#f0f1ec', borderRadius: 5 }}
             source={{ uri: imgUrl }}
             style={{ height: 68, width: 68, marginBottom: 8 }}
           />
@@ -621,7 +620,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
       onPress: () => props.navigation.navigate(AppRoutes.MedicineDetailsScene, { sku }),
       style: {
-        // marginRight: 8,
         marginHorizontal: 4,
         marginTop: 16,
         marginBottom: 20,
@@ -666,7 +664,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   title: `${item.title || 'Products'}`.toUpperCase(),
                 }),
               {
-                // marginRight: 8,
                 marginHorizontal: 4,
                 marginTop: 16,
                 marginBottom: 20,
@@ -709,7 +706,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   title: `${item.title || 'Products'}`.toUpperCase(),
                 }),
               {
-                // marginRight: 8,
                 marginHorizontal: 4,
                 marginTop: 16,
                 marginBottom: 40,
@@ -763,6 +759,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   interface SuggestionType {
     name: string;
     price: number;
+    specialPrice?: number;
     isOutOfStock: boolean;
     type: Doseform;
     imgUri?: string;
@@ -805,9 +802,26 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               {'Out Of Stock'}
             </Text>
           ) : (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
-              Rs. {data.price}
-            </Text>
+            <View style={{ flexDirection: 'row' }}>
+              <Text
+                style={{
+                  ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+                }}
+              >
+                Rs. {data.specialPrice || data.price}
+              </Text>
+              {data.specialPrice ? (
+                <Text
+                  style={[
+                    { ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04), marginLeft: 8 },
+                  ]}
+                >
+                  {'('}
+                  <Text style={{ textDecorationLine: 'line-through' }}>{`Rs. ${data.price}`}</Text>
+                  {')'}
+                </Text>
+              ) : null}
+            </View>
           )}
         </View>
       );
@@ -818,7 +832,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         <View style={localStyles.iconOrImageContainerStyle}>
           {data.imgUri ? (
             <Image
-              placeholderStyle={styles.imagePlaceholderStyle}
+              // placeholderStyle={styles.imagePlaceholderStyle}
               source={{ uri: data.imgUri }}
               style={{ height: 40, width: 40 }}
               resizeMode="contain"
@@ -903,6 +917,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             }
           }}
           value={searchText}
+          autoCapitalize="none"
+          spellCheck={false}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => {
             setSearchFocused(false);
@@ -942,6 +958,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const renderSearchSuggestionItemView = (data: ListRenderItemInfo<MedicineProduct>) => {
     const { index, item } = data;
     const imgUri = item.thumbnail ? `${config.IMAGES_BASE_URL[0]}${item.thumbnail}` : '';
+    const specialPrice = item.special_price
+      ? typeof item.special_price == 'string'
+        ? parseInt(item.special_price)
+        : item.special_price
+      : undefined;
     return renderSearchSuggestionItem({
       onPress: () => {
         CommonLogEvent(AppRoutes.Medicine, 'Search suggestion Item');
@@ -951,6 +972,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
       name: item.name,
       price: item.price,
+      specialPrice: specialPrice,
       isOutOfStock: !item.is_in_stock,
       type: ((item.PharmaOverview || [])[0] || {}).Doseform,
       style: {

@@ -23,7 +23,6 @@ export enum ConsultType {
 }
 
 export enum DoctorType {
-  ADMIN = "ADMIN",
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
@@ -63,6 +62,12 @@ export enum MEDICINE_ORDER_STATUS {
   QUOTE = "QUOTE",
   RETURN_ACCEPTED = "RETURN_ACCEPTED",
   RETURN_INITIATED = "RETURN_INITIATED",
+}
+
+export enum PATIENT_ADDRESS_TYPE {
+  HOME = "HOME",
+  OFFICE = "OFFICE",
+  OTHER = "OTHER",
 }
 
 export enum Relation {
@@ -210,6 +215,8 @@ export interface PatientAddressInput {
   zipcode: string;
   mobileNumber?: string | null;
   landmark?: string | null;
+  addressType?: PATIENT_ADDRESS_TYPE | null;
+  otherAddressType?: string | null;
 }
 
 export interface PatientAppointmentsInput {

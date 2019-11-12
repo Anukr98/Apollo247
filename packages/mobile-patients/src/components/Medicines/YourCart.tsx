@@ -205,7 +205,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               onPress={() => {
                 if (props.navigation.getParam('isComingFromConsult'))
                   props.navigation.navigate(AppRoutes.SearchMedicineScene);
-                else props.navigation.goBack();
+                else {
+                  CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
+                  props.navigation.goBack();
+                }
               }}
             >
               <Text
@@ -219,7 +222,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             </TouchableOpacity>
           </View>
         }
-        onPressLeftIcon={() => props.navigation.goBack()}
+        onPressLeftIcon={() => {
+          CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
+          props.navigation.goBack();
+        }}
       />
     );
   };
@@ -380,7 +386,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <View style={styles.rowSpaceBetweenStyle}>
           <Text
             style={styles.yellowTextStyle}
-            onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
+            onPress={() => {
+              CommonLogEvent(AppRoutes.YourCart, 'Add new address');
+              props.navigation.navigate(AppRoutes.AddAddress);
+            }}
           >
             ADD NEW ADDRESS
           </Text>
@@ -737,7 +746,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           <Button
             disabled={disableProceedToPay}
             title={`PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
-            onPress={() => onPressProceedToPay()}
+            onPress={() => {
+              CommonLogEvent(AppRoutes.YourCart, 'PROCEED TO PAY');
+              onPressProceedToPay();
+            }}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>

@@ -165,7 +165,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
-    CommonScreenLog(AppRoutes.DoctorSearchListing, AppRoutes.DoctorSearchListing);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -541,10 +540,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
-              CommonLogEvent(
-                AppRoutes.DoctorSearchListing,
-                'Doctor SearchListing RightHeader clicked'
-              );
+              CommonLogEvent(AppRoutes.DoctorSearchListing, 'Location popup clicked');
               getNetStatus().then((status) => {
                 if (status) {
                   setshowLocationpopup(true);
@@ -599,6 +595,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     if (movedata == 'MoveDoctor') {
       props.navigation.push(AppRoutes.SymptomChecker);
     } else {
+      CommonLogEvent(AppRoutes.DoctorSearchListing, 'Go back clicked');
       props.navigation.goBack();
     }
     return false;

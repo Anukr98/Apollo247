@@ -15,15 +15,16 @@ import { Calendar } from 'components/Calendar';
 import { PatientLog } from 'components/PatientLog/PatientLog';
 import { ConsultTabs } from 'components/ConsultTabs';
 import { AuthProvider } from 'components/AuthProvider';
-import { useAuth, useCurrentPatient } from 'hooks/authHooks';
+import { useAuth } from 'hooks/authHooks';
 import { aphTheme, AphThemeProvider } from '@aph/web-ui-components';
 import { JuniorDoctor } from 'components/JuniorDoctors/JuniorDoctor';
 import { PatientDetails } from 'components/JuniorDoctors/PatientDetails';
 import { JDProfile } from 'components/JuniorDoctors/JDProfile';
 import { JDConsultRoom } from 'components/JuniorDoctors/JDConsultRoom';
-
-import { DoctorType } from 'graphql/types/globalTypes';
+import { TrackJS } from 'trackjs';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { JDAdminDashboard } from 'components/JDAdmin/JDAdminDashboard';
+import { SecrateryDashboard } from 'components/SecrateryDashboard';
 
 const App: React.FC = () => {
   const classes = useStyles();
@@ -35,12 +36,13 @@ const App: React.FC = () => {
       );
   }, [signInError]);
 
-  // TODO Why is this called patient?
-  const currentDoctor = useCurrentPatient();
-  const isJuniorDoctor = currentDoctor && currentDoctor.doctorType === DoctorType.JUNIOR;
-  const isJDAdmin = currentDoctor && currentDoctor.doctorType === DoctorType.ADMIN;
+  const currentUserType = useAuth().currentUserType;
 
-  return isSignedIn ? (
+  // TODO Why is this called patient?
+  const isJuniorDoctor = useAuth() && currentUserType === LoggedInUserType.JUNIOR;
+  const isJDAdmin = useAuth() && currentUserType === LoggedInUserType.JDADMIN;
+
+  return isSignedIn || isJDAdmin ? (
     // TODO This should all be inside of a <Switch>, why are we rendering multiple routes simultaneously?
     <div className={classes.app}>
       <AuthRouted
@@ -52,7 +54,7 @@ const App: React.FC = () => {
           ) : isJuniorDoctor ? (
             <Redirect to={clientRoutes.juniorDoctor()} />
           ) : (
-            <Redirect to={!isSignedIn.firebaseToken ? '/profile' : '/Calendar'} />
+            <Redirect to={!(isSignedIn && isSignedIn.firebaseToken) ? '/profile' : '/Calendar'} />
           )
         }
       />
@@ -75,6 +77,7 @@ const App: React.FC = () => {
       <AuthRouted exact path={clientRoutes.patientDetails()} component={PatientDetails} />
       <AuthRouted exact path={clientRoutes.juniorDoctorProfile()} component={JDProfile} />
       <AuthRouted exact path={clientRoutes.juniorDoctorAdmin()} component={JDAdminDashboard} />
+      <AuthRouted exact path={clientRoutes.secrateryDashboard()} component={SecrateryDashboard} />
       <AuthRouted
         exact
         path={clientRoutes.JDConsultRoom({
@@ -122,6 +125,10 @@ const useStyles = makeStyles((theme: Theme) => {
 const theme = createMuiTheme({ ...aphTheme });
 
 const AppContainer: React.FC = () => {
+  TrackJS.install({
+    token: 'b85489445e5f4b48a0ffe851082f8e37',
+    application: process.env.NODE_ENV, // for more configuration options, see https://docs.trackjs.com
+  });
   return (
     <BrowserRouter>
       <AuthProvider>

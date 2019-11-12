@@ -1,6 +1,10 @@
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { Location, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  Location,
+  More,
+  DoctorPlaceholderImage,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState, useEffect } from 'react';
@@ -156,7 +160,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
-    CommonScreenLog(AppRoutes.AppointmentDetails, AppRoutes.AppointmentDetails);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -507,14 +510,20 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                 </View>
               </View>
               <View style={styles.imageView}>
-                {data.doctorInfo.photoUrl && (
+                {data.doctorInfo.thumbnailUrl &&
+                data.doctorInfo.thumbnailUrl.match(
+                  /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+                ) ? (
                   <Image
-                    source={{ uri: data.doctorInfo.photoUrl }}
+                    source={{ uri: data.doctorInfo.thumbnailUrl }}
+                    resizeMode={'contain'}
                     style={{
                       width: 80,
                       height: 80,
                     }}
                   />
+                ) : (
+                  <DoctorPlaceholderImage />
                 )}
               </View>
             </View>

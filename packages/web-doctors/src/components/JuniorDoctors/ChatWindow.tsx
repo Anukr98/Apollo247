@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Theme, Button, Avatar } from '@material-ui/core';
+import { Theme, Button, Avatar, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
@@ -249,6 +249,66 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: 10,
       width: 100,
       height: 100,
+      cursor: 'pointer',
+    },
+    modalWindowWrap: {
+      display: 'table',
+      height: '100%',
+      width: '100%',
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    tableContent: {
+      display: 'table-cell',
+      verticalAlign: 'middle',
+      width: '100%',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    modalWindow: {
+      backgroundColor: theme.palette.common.black,
+      maxWidth: 600,
+      margin: 'auto',
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    modalHeader: {
+      minHeight: 56,
+      textAlign: 'center',
+      fontSize: 13,
+      fontWeight: 600,
+      letterSpacing: 0.5,
+      color: theme.palette.common.white,
+      padding: '16px 50px',
+      textTransform: 'uppercase',
+      position: 'relative',
+      wordBreak: 'break-word',
+    },
+    modalClose: {
+      position: 'absolute',
+      right: 16,
+      top: 16,
+      width: 24,
+      height: 24,
+      cursor: 'pointer',
+    },
+    modalFooter: {
+      height: 56,
+      textAlign: 'center',
+      padding: 16,
+      textTransform: 'uppercase',
+    },
+    modalContent: {
+      '& img': {
+        maxWidth: '100%',
+      },
     },
   };
 });
@@ -293,6 +353,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [imgPrevUrl, setImgPrevUrl] = React.useState();
 
   // this hook is used to send auto chat message when the consult is closed by system
   useEffect(() => {
@@ -313,6 +375,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const rescheduleconsult = '^^#rescheduleconsult';
   const followupconsult = '^^#followupconsult';
   const patientConsultStarted = '^^#PatientConsultStarted';
+  const firstMessage = '^^#firstMessage';
+  const secondMessage = '^^#secondMessage';
+  const languageQue = '^^#languageQue';
+  const jdThankyou = '^^#jdThankyou';
 
   const doctorId = props.doctorId;
   const patientId = props.patientId;
@@ -409,7 +475,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== transferconsult &&
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult &&
-          message.message.message !== patientConsultStarted
+          message.message.message !== patientConsultStarted &&
+          message.message.message !== firstMessage &&
+          message.message.message !== secondMessage
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -477,7 +545,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     if (
       rowData.message === startConsult ||
       rowData.message === startConsultjr ||
-      rowData.message === stopConsult
+      rowData.message === stopConsult ||
+      rowData.message === languageQue ||
+      rowData.message === jdThankyou
     ) {
       return rowData.automatedText;
     } else {
@@ -495,7 +565,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult &&
-      rowData.message !== patientConsultStarted
+      rowData.message !== patientConsultStarted &&
+      rowData.message !== firstMessage &&
+      rowData.message !== secondMessage
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -544,9 +616,15 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <a href={rowData.url} target="_blank">
+                <div
+                  className={classes.imageUpload}
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(rowData.url);
+                  }}
+                >
                   <img src={rowData.url} alt={rowData.url} />
-                </a>
+                </div>
               ) : (
                 <span>{getAutomatedMessage(rowData)}</span>
               )}
@@ -564,7 +642,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== transferconsult &&
       rowData.message !== rescheduleconsult &&
       rowData.message !== followupconsult &&
-      rowData.message !== patientConsultStarted
+      rowData.message !== patientConsultStarted &&
+      rowData.message !== firstMessage &&
+      rowData.message !== secondMessage
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -613,10 +693,14 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <div className={classes.imageUpload}>
-                  <a href={rowData.url} target="_blank">
-                    <img src={rowData.url} alt={rowData.url} />
-                  </a>
+                <div
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(rowData.url);
+                  }}
+                  className={classes.imageUpload}
+                >
+                  <img src={rowData.url} alt={rowData.url} />
                 </div>
               ) : (
                 <span>{getAutomatedMessage(rowData)}</span>
@@ -658,6 +742,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       },
       (status, response) => {
         setMessageText('');
+        srollToBottomAction();
       }
     );
   };
@@ -894,6 +979,24 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        <div className={classes.modalWindowWrap}>
+          <div className={classes.tableContent}>
+            <div className={classes.modalWindow}>
+              <div className={classes.modalHeader}>
+                {/* IMAGE001.JPG */}
+                <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
+                  <img src={require('images/ic_round_clear.svg')} alt="" />
+                </div>
+              </div>
+              <div className={classes.modalContent}>
+                <img src={imgPrevUrl} alt="" />
+              </div>
+              <div className={classes.modalFooter}></div>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

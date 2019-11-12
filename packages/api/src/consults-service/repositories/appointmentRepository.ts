@@ -8,6 +8,7 @@ import {
   Not,
   Connection,
   In,
+  getCustomRepository,
 } from 'typeorm';
 import {
   Appointment,
@@ -18,9 +19,9 @@ import {
   patientLogType,
   APPOINTMENT_STATE,
   APPOINTMENT_TYPE,
-  TRANSFER_INITIATED_TYPE,
   CONSULTS_RX_SEARCH_FILTER,
   AppointmentDocuments,
+  REQUEST_ROLES,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
 import { AphError } from 'AphError';
@@ -29,6 +30,7 @@ import { format, addMinutes, differenceInMinutes, addDays, subDays } from 'date-
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -497,8 +499,15 @@ export class AppointmentRepository extends Repository<Appointment> {
           st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
           consultStartTime = new Date(st);
         }
-        const slotsCount =
-          (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * 4;
+        const duration = Math.floor(60 / docConsultHr.consultDuration);
+        console.log(duration, 'doctor duration');
+        let slotsCount =
+          (Math.abs(differenceInMinutes(consultEndTime, consultStartTime)) / 60) * duration;
+        if (slotsCount - Math.floor(slotsCount) == 0.5) {
+          slotsCount = Math.ceil(slotsCount);
+        } else {
+          slotsCount = Math.floor(slotsCount);
+        }
         const dayStartTime = consultStartTime.getHours() + ':' + consultStartTime.getMinutes();
         let startTime = new Date(previousDate.toDateString() + ' ' + dayStartTime);
         //console.log(slotsCount, 'slots count');
@@ -507,7 +516,7 @@ export class AppointmentRepository extends Repository<Appointment> {
           .fill(0)
           .map(() => {
             const stTime = startTime;
-            startTime = addMinutes(startTime, 15);
+            startTime = addMinutes(startTime, docConsultHr.consultDuration);
             const stTimeHours = stTime
               .getUTCHours()
               .toString()
@@ -522,6 +531,12 @@ export class AppointmentRepository extends Repository<Appointment> {
             availableSlots.push(generatedSlot);
             return `${startDateStr}T${stTimeHours}:${stTimeMins}${endStr}`;
           });
+        const lastSlot = new Date(availableSlots[availableSlots.length - 1]);
+        const lastMins = Math.abs(differenceInMinutes(lastSlot, consultEndTime));
+        console.log(lastMins, 'last mins', lastSlot);
+        if (lastMins < docConsultHr.consultDuration) {
+          availableSlots.pop();
+        }
         //console.log(availableSlotsReturn);
       });
       if (doctorAppointments && doctorAppointments.length > 0) {
@@ -556,6 +571,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           foundFlag = 1;
         }
       });
+      const doctorSlotRepo = getCustomRepository(DoctorNextAvaialbleSlotsRepository);
+      doctorSlotRepo.updateSlot(doctorId, appointmentType, new Date(finalSlot));
       return finalSlot;
     } else {
       return '';
@@ -660,12 +677,31 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.update(id, { appointmentDateTime, rescheduleCount, appointmentState });
   }
 
-  cancelAppointment(id: string, cancelledBy: TRANSFER_INITIATED_TYPE, cancelledById: string) {
-    return this.update(id, { status: STATUS.CANCELLED, cancelledBy, cancelledById }).catch(
-      (cancelError) => {
+  cancelAppointment(
+    id: string,
+    cancelledBy: REQUEST_ROLES,
+    cancelledById: string,
+    cancelReason: string
+  ) {
+    if (cancelledBy == REQUEST_ROLES.DOCTOR) {
+      return this.update(id, {
+        status: STATUS.CANCELLED,
+        cancelledBy,
+        cancelledById,
+        doctorCancelReason: cancelReason,
+      }).catch((cancelError) => {
         throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
-      }
-    );
+      });
+    } else {
+      return this.update(id, {
+        status: STATUS.CANCELLED,
+        cancelledBy,
+        cancelledById,
+        patientCancelReason: cancelReason,
+      }).catch((cancelError) => {
+        throw new AphError(AphErrorMessages.CANCEL_APPOINTMENT_ERROR, undefined, { cancelError });
+      });
+    }
   }
 
   getAppointmentsByPatientId(patientId: string, startDate: Date, endDate: Date) {

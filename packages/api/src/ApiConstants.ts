@@ -48,4 +48,17 @@ export enum ApiConstants {
   CART_READY_BODY = 'Hi {0}, your prescription cart is ready',
 
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
+
+  TO_MAIL = 'sriram.kanchan@popcornapps.com',
+  CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
+  FROM_MAIL = 'info@popcornapps.com',
+  APPT_MAIL_SUBJECT = 'Your appointment has been booked successfully',
+  FROM_NAME = 'Admin',
+  PATIENT_APPT_EMAILID = 'sriram.kanchan@popcornapps.com',
+  PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com,sumeeth.kumar@popcornapps.com',
+  PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
+  PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sumeeth.kumar@popcornapps.com,sriram.kanchan@popcornapps.com,raj@popcornapps.com',
+
+  CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
+  CANCEL_APPT_BODY = 'Hi {0}! :) Dr. {1} has cancelled your consultation.',
 }

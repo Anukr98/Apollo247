@@ -189,6 +189,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           salutation
           firstName
           lastName
+          displayName
           experience
           onlineConsultationFees
           physicalConsultationFees
@@ -199,6 +200,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           qualification
           city
           photoUrl
+          thumbnailUrl
           doctorType
           doctorHospital {
             facility {
@@ -224,6 +226,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         salutation
         firstName
         lastName
+        displayName
         experience
         specialty {
           name
@@ -233,6 +236,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         qualification
         city
         photoUrl
+        thumbnailUrl
         doctorType
         doctorHospital {
           facility {
@@ -263,6 +267,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           salutation
           firstName
           lastName
+          displayName
           experience
           specialty {
             name
@@ -272,6 +277,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           qualification
           city
           photoUrl
+          thumbnailUrl
           doctorType
           doctorHospital {
             facility {
@@ -303,6 +309,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         salutation
         firstName
         lastName
+        displayName
         experience
         specialty {
           name
@@ -312,6 +319,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         qualification
         city
         photoUrl
+        thumbnailUrl
         doctorType
         doctorHospital {
           facility {
@@ -439,9 +447,11 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         salutation
         firstName
         lastName
+        displayName
         experience
         city
         photoUrl
+        thumbnailUrl
         qualification
         specialty {
           name
@@ -1003,6 +1013,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           salutation
           firstName
           lastName
+          displayName
           experience
           city
           onlineConsultationFees
@@ -1130,6 +1141,7 @@ export const GET_APPOINTMENT_DATA = gql`
           salutation
           firstName
           lastName
+          displayName
           experience
           onlineConsultationFees
           physicalConsultationFees
@@ -1194,6 +1206,14 @@ export const GET_CALL_DETAILS = gql`
         createdDate
         updatedDate
       }
+    }
+  }
+`;
+
+export const DELETE_DEVICE_TOKEN = gql`
+  mutation deleteDeviceToken($deviceToken: String, $patientId: String) {
+    deleteDeviceToken(deviceToken: $deviceToken, patientId: $patientId) {
+      status
     }
   }
 `;

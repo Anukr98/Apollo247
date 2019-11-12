@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { makeStyles } from '@material-ui/styles';
 import {
   Theme,
@@ -161,9 +161,10 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(
     props.startAppointment
   );
-  const [followUp, setFollowUp] = useState<boolean>(props.startAppointment);
+  const [followUpPanel, setFollowUpPanel] = useState<boolean>(props.startAppointment);
   const [otherInstructions, setOtherInstructions] = useState<boolean>(props.startAppointment);
   const [vitals, setVitals] = useState<boolean>(props.startAppointment);
+
   const items = [
     { key: 'symptoms', value: 'Chief Complaints', state: symptoms, component: <Symptoms /> },
     {
@@ -204,8 +205,15 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       state: otherInstructions,
       component: <OtherInstructions />,
     },
-    { key: 'followup', value: 'Follow up', state: followUp, component: <FollowUp /> },
+    { key: 'followup', value: 'Follow up', state: followUpPanel, component: <FollowUp /> },
   ];
+
+  const { notes, setSRDNotes, followUp, setFollowUp } = useContext(CaseSheetContext);
+
+  useEffect(() => {
+    followUp[0] = props.startAppointment;
+    setFollowUp(followUp);
+  }, [props.startAppointment]);
 
   const handlePanelExpansion = (expansionKey: string) => (
     e: React.ChangeEvent<{}>,
@@ -237,17 +245,13 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         setDiagnosticPrescription(isExpanded);
         break;
       case 'followup':
-        setFollowUp(isExpanded);
+        setFollowUpPanel(isExpanded);
         break;
       case 'otherInstructions':
         setOtherInstructions(isExpanded);
         break;
     }
   };
-
-  const { notes, setSRDNotes } = useContext(CaseSheetContext);
-
-  console.log('notes in casesheet', notes);
 
   return (
     <div className={classes.container}>
@@ -258,6 +262,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
         <section className={classes.column}>
           {items.map((item) => (
             <ExpansionPanel
+              key={item.key}
               expanded={item.state}
               onChange={handlePanelExpansion(item.key)}
               className={classes.expandIcon}

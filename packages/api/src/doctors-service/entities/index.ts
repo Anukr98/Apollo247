@@ -33,7 +33,6 @@ export enum DoctorType {
   PAYROLL = 'PAYROLL',
   STAR_APOLLO = 'STAR_APOLLO',
   JUNIOR = 'JUNIOR',
-  ADMIN = 'ADMIN',
 }
 
 export enum FacilityType {
@@ -103,6 +102,9 @@ export class BlockedCalendarItem extends BaseEntity {
 //consult Hours starts
 @Entity()
 export class ConsultHours extends BaseEntity {
+  @Column({ nullable: true, default: 15 })
+  consultDuration: number;
+
   @Column()
   consultMode: ConsultMode;
 
@@ -229,6 +231,9 @@ export class Doctor extends BaseEntity {
   @Validate(MobileNumberValidator)
   mobileNumber: string;
 
+  @Column({ nullable: true, type: 'timestamp' })
+  nextAvailableSlot: Date;
+
   @Column({ type: 'float8' })
   onlineConsultationFees: Number;
 
@@ -252,6 +257,9 @@ export class Doctor extends BaseEntity {
 
   @Column({ nullable: true })
   salutation: Salutation;
+
+  @OneToOne((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.doctor)
+  doctorSecretary: DoctorSecretary;
 
   @ManyToOne((type) => DoctorSpecialty, (specialty) => specialty.doctor)
   specialty: DoctorSpecialty;
@@ -552,3 +560,74 @@ export class DoctorDeviceTokens extends BaseEntity {
   }
 }
 //doctor device token ends
+
+//admin user starts
+export enum AdminType {
+  ADMIN = 'ADMIN',
+  JDADMIN = 'JDADMIN',
+}
+@Entity()
+export class AdminUsers extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ default: true })
+  isActive: Boolean;
+
+  @Column()
+  @Validate(MobileNumberValidator)
+  mobileNumber: string;
+
+  @Column()
+  userType: AdminType;
+}
+//admin user ends
+
+//secretary starts
+@Entity()
+export class Secretary extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @OneToMany((type) => DoctorSecretary, (doctorSecretary) => doctorSecretary.secretary)
+  doctorSecretary: DoctorSecretary[];
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  @Validate(NameValidator)
+  name: string;
+
+  @Column()
+  @Validate(MobileNumberValidator)
+  mobileNumber: string;
+
+  @Column({ default: true })
+  isActive: Boolean;
+}
+//secretary ends
+
+//doctor secretary starts
+@Entity()
+export class DoctorSecretary extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @OneToOne((type) => Doctor)
+  @JoinColumn()
+  doctor: Doctor;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ default: true })
+  isActive: Boolean;
+
+  @ManyToOne((type) => Secretary, (secretary) => secretary.doctorSecretary)
+  secretary: Secretary;
+}
+//doctor secretary ends

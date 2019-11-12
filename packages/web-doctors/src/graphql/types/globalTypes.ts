@@ -48,7 +48,6 @@ export enum DOCTOR_ONLINE_STATUS {
 }
 
 export enum DoctorType {
-  ADMIN = "ADMIN",
   APOLLO = "APOLLO",
   JUNIOR = "JUNIOR",
   PAYROLL = "PAYROLL",
@@ -59,6 +58,14 @@ export enum Gender {
   FEMALE = "FEMALE",
   MALE = "MALE",
   OTHER = "OTHER",
+}
+
+export enum LoggedInUserType {
+  ADMIN = "ADMIN",
+  DOCTOR = "DOCTOR",
+  JDADMIN = "JDADMIN",
+  JUNIOR = "JUNIOR",
+  SECRETARY = "SECRETARY",
 }
 
 export enum MEDICINE_TIMINGS {
@@ -147,6 +154,13 @@ export enum patientLogType {
   All = "All",
   FOLLOW_UP = "FOLLOW_UP",
   REGULAR = "REGULAR",
+}
+
+export interface CancelAppointmentInput {
+  appointmentId: string;
+  cancelReason?: string | null;
+  cancelledBy: REQUEST_ROLES;
+  cancelledById: string;
 }
 
 export interface CreateAppointmentSessionInput {

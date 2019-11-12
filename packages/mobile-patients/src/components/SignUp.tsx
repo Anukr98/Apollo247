@@ -155,7 +155,6 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       console.log('No current patients available');
       getPatientApiCall();
     }
-    CommonScreenLog(AppRoutes.SignUp, AppRoutes.SignUp);
   }, [currentPatient]);
 
   useEffect(() => {

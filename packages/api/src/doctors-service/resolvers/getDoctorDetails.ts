@@ -1,11 +1,14 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
-import { Doctor } from 'doctors-service/entities/';
+import { Doctor, AdminType, AdminUsers, Secretary, DoctorType } from 'doctors-service/entities/';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { getConnection } from 'typeorm';
+import { AdminUser } from 'doctors-service/repositories/adminRepository';
+import { DashboardData, getJuniorDoctorsDashboard } from 'doctors-service/resolvers/JDAdmin';
+import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 
 export const getDoctorDetailsTypeDefs = gql`
   enum Gender {
@@ -31,15 +34,14 @@ export const getDoctorDetailsTypeDefs = gql`
     PAYROLL
     STAR_APOLLO
     JUNIOR
-    ADMIN
   }
 
   enum LoggedInUserType {
-    APOLLO
-    PAYROLL
-    STAR_APOLLO
+    DOCTOR
+    JUNIOR
     SECRETARY
-    NONE
+    ADMIN
+    JDADMIN
   }
 
   enum Salutation {
@@ -62,6 +64,11 @@ export const getDoctorDetailsTypeDefs = gql`
     FRIDAY
     SATURDAY
   }
+
+  type AdminUsers {
+    mobileNumber: String
+  }
+
   type BankAccount {
     accountHolderName: String!
     accountNumber: String!
@@ -119,6 +126,7 @@ export const getDoctorDetailsTypeDefs = gql`
     bankAccount: [BankAccount]
     consultHours: [ConsultHours]
     doctorHospital: [DoctorHospital!]!
+    doctorSecretary: DoctorSecretaryDetails
     packages: [Packages]
     specialty: DoctorSpecialties
     starTeam: [StarTeam]
@@ -152,6 +160,37 @@ export const getDoctorDetailsTypeDefs = gql`
     streetLine2: String
     streetLine3: String
     zipcode: String
+  }
+
+  type LoggedInUserDetails {
+    loggedInUserType: LoggedInUserType
+    doctorDetails: DoctorDetails
+    JDAdminDetails: DashboardData
+    adminDetails: AdminUsers
+    secretaryDetails: Secretary
+  }
+
+  type DoctorSecretaryDetails {
+    secretary: Secretary
+  }
+
+  type Secretary {
+    id: String!
+    name: String!
+    mobileNumber: String!
+    isActive: Boolean!
+    doctorSecretary: [DoctorSecretary]
+  }
+
+  type SecretaryDetails {
+    id: String!
+    name: String!
+    mobileNumber: String!
+    isActive: Boolean!
+  }
+
+  type DoctorSecretary {
+    doctor: Profile
   }
 
   type Packages {
@@ -199,16 +238,16 @@ export const getDoctorDetailsTypeDefs = gql`
   extend type Query {
     getDoctorDetails: DoctorDetails
     getDoctorDetailsById(id: String): DoctorDetails
-    findLoggedinUserType: LoggedInUserType
+    findLoggedinUserDetails: LoggedInUserDetails
   }
 `;
 
 enum LoggedInUserType {
-  APOLLO,
-  PAYROLL,
-  STAR_APOLLO,
-  SECRETARY,
-  NONE,
+  DOCTOR = 'DOCTOR',
+  JUNIOR = 'JUNIOR',
+  SECRETARY = 'SECRETARY',
+  ADMIN = 'ADMIN',
+  JDADMIN = 'JDADMIN',
 }
 
 const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = async (
@@ -226,6 +265,7 @@ const getDoctorDetails: Resolver<null, {}, DoctorsServiceContext, Doctor> = asyn
   } catch (getProfileError) {
     throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
   }
+
   return doctordata;
 };
 
@@ -244,28 +284,78 @@ const getDoctorDetailsById: Resolver<null, { id: string }, DoctorsServiceContext
   return doctordata;
 };
 
-const findLoggedinUserType: Resolver<null, {}, DoctorsServiceContext, LoggedInUserType> = async (
-  parent,
-  args,
-  { mobileNumber, doctorsDb, firebaseUid }
-) => {
-  let doctorData;
-  let doctorType;
-  try {
-    const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-    doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-    if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-    const doctorType =
-      doctorData.delegateNumber === mobileNumber
-        ? LoggedInUserType.SECRETARY
-        : doctorData.doctorType;
+type LoggedInUserDetails = {
+  loggedInUserType: LoggedInUserType;
+  doctorDetails: Doctor | null;
+  JDAdminDetails: DashboardData | null;
+  adminDetails: AdminUsers | null;
+  secretaryDetails: Secretary | null;
+};
 
-    return doctorType;
-  } catch (getProfileError) {
-    throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, { getProfileError });
-  }
+const findLoggedinUserDetails: Resolver<
+  null,
+  {},
+  DoctorsServiceContext,
+  LoggedInUserDetails
+> = async (parent, args, { mobileNumber, doctorsDb, consultsDb, firebaseUid }) => {
+  //check if doctor
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
 
-  return doctorType;
+  const adminRepository = doctorsDb.getCustomRepository(AdminUser);
+  const adminData = await adminRepository.checkValidAccess(mobileNumber, true);
+
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryData = await secretaryRepo.getSecretary(mobileNumber, true);
+
+  if (doctorData) {
+    if (!doctorData.firebaseToken)
+      await doctorRepository.updateFirebaseId(doctorData.id, firebaseUid);
+
+    return {
+      loggedInUserType:
+        doctorData.doctorType === DoctorType.JUNIOR
+          ? LoggedInUserType.JUNIOR
+          : LoggedInUserType.DOCTOR,
+      doctorDetails: doctorData,
+      JDAdminDetails: null,
+      adminDetails: null,
+      secretaryDetails: null,
+    };
+  } else if (adminData) {
+    if (adminData.userType === AdminType.ADMIN) {
+      return {
+        loggedInUserType: LoggedInUserType.ADMIN,
+        doctorDetails: null,
+        JDAdminDetails: null,
+        adminDetails: adminData,
+        secretaryDetails: null,
+      };
+    } else if (adminData.userType === AdminType.JDADMIN) {
+      return {
+        loggedInUserType: LoggedInUserType.JDADMIN,
+        doctorDetails: null,
+        JDAdminDetails: await getJuniorDoctorsDashboard(
+          new Date(),
+          new Date(),
+          0,
+          100,
+          doctorsDb,
+          consultsDb
+        ),
+        adminDetails: null,
+        secretaryDetails: null,
+      };
+    } else throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  } else if (secretaryData) {
+    return {
+      loggedInUserType: LoggedInUserType.SECRETARY,
+      doctorDetails: null,
+      JDAdminDetails: null,
+      adminDetails: null,
+      secretaryDetails: secretaryData,
+    };
+  } else throw new AphError(AphErrorMessages.UNAUTHORIZED);
 };
 
 export const getDoctorDetailsResolvers = {
@@ -287,6 +377,6 @@ export const getDoctorDetailsResolvers = {
   Query: {
     getDoctorDetails,
     getDoctorDetailsById,
-    findLoggedinUserType,
+    findLoggedinUserDetails,
   },
 };
