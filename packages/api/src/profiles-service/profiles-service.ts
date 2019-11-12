@@ -12,6 +12,10 @@ import {
   getCurrentPatientsTypeDefs,
 } from 'profiles-service/resolvers/getCurrentPatients';
 import {
+  getCurrentLoginPatientsResolvers,
+  getCurrentLoginPatientsTypeDefs,
+} from 'profiles-service/resolvers/getCurrentLoginPatients';
+import {
   getDigitizedOrderResolvers,
   getDigitizedOrderTypeDefs,
 } from 'profiles-service/resolvers/getDigitizedOrderDetails';
@@ -37,6 +41,10 @@ import {
   updatePatientResolvers,
   updatePatientTypeDefs,
 } from 'profiles-service/resolvers/updatePatient';
+import {
+  updateNewPatientResolvers,
+  updateNewPatientTypeDefs,
+} from 'profiles-service/resolvers/updateNewPatient';
 import {
   savePatientNotificationSettingsResolvers,
   savePatientNotificationSettingsTypeDefs,
@@ -164,8 +172,16 @@ import { format, differenceInMilliseconds } from 'date-fns';
         resolvers: getCurrentPatientsResolvers,
       },
       {
+        typeDefs: getCurrentLoginPatientsTypeDefs,
+        resolvers: getCurrentLoginPatientsResolvers,
+      },
+      {
         typeDefs: updatePatientTypeDefs,
         resolvers: updatePatientResolvers,
+      },
+      {
+        typeDefs: updateNewPatientTypeDefs,
+        resolvers: updateNewPatientResolvers,
       },
       {
         typeDefs: getPatientTypeDefs,
