@@ -9,10 +9,21 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentDocuments } from 'consults-service/entities';
+import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
+import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
 
 export const uploadChatDocumentTypeDefs = gql`
   type UploadChatDocumentResult {
     filePath: String
+  }
+
+  type UploadedDocumentDetails {
+    id: String
+    filePath: String
+  }
+
+  type ChatDocumentDeleteResult {
+    status: Boolean
   }
 
   extend type Mutation {
@@ -21,6 +32,9 @@ export const uploadChatDocumentTypeDefs = gql`
       fileType: String
       base64FileInput: String
     ): UploadChatDocumentResult!
+
+    addChatDocument(appointmentId: ID, documentPath: String): UploadedDocumentDetails
+    removeChatDocument(documentPathId: ID): ChatDocumentDeleteResult
   }
 `;
 type UploadChatDocumentResult = {
@@ -91,12 +105,70 @@ const uploadChatDocument: Resolver<
     documentPath: client.getBlobUrl(readmeBlob.name),
     appointment: appointmentDetails,
   };
-  await appointmentRepo.saveDocument(documentAttrs);
+  const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
+  await appointmentDocumentRepo.saveDocument(documentAttrs);
   return { filePath: client.getBlobUrl(readmeBlob.name) };
+};
+
+type UploadedDocumentDetails = {
+  id: string;
+  filePath: string;
+};
+
+const addChatDocument: Resolver<
+  null,
+  { appointmentId: string; documentPath: string },
+  ConsultServiceContext,
+  UploadedDocumentDetails
+> = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
+  //access check
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //check appointment id
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentData = await appointmentRepo.findById(args.appointmentId);
+  if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
+
+  if (args.documentPath.length == 0) throw new AphError(AphErrorMessages.INVALID_DOCUMENT_PATH);
+
+  const documentAttrs: Partial<AppointmentDocuments> = {
+    documentPath: args.documentPath,
+    appointment: appointmentData,
+  };
+  const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
+  const appointmentDocuments = await appointmentDocumentRepo.saveDocument(documentAttrs);
+  return { id: appointmentDocuments.id, filePath: appointmentDocuments.documentPath };
+};
+
+type ChatDocumentDeleteResult = {
+  status: boolean;
+};
+
+const removeChatDocument: Resolver<
+  null,
+  { documentPathId: string },
+  ConsultServiceContext,
+  ChatDocumentDeleteResult
+> = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
+  //access check
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //check for valid document id
+  const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
+  await appointmentDocumentRepo.getDocument(args.documentPathId);
+
+  await appointmentDocumentRepo.removeFromAppointmentDocument(args.documentPathId);
+  return { status: true };
 };
 
 export const uploadChatDocumentResolvers = {
   Mutation: {
     uploadChatDocument,
+    addChatDocument,
+    removeChatDocument,
   },
 };

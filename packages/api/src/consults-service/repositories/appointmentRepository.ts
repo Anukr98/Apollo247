@@ -722,16 +722,6 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.count({ where: { followUpParentId: id } });
   }
 
-  saveDocument(documentAttrs: Partial<AppointmentDocuments>) {
-    return AppointmentDocuments.create(documentAttrs)
-      .save()
-      .catch((createErrors) => {
-        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_DOCUMENT_ERROR, undefined, {
-          createErrors,
-        });
-      });
-  }
-
   async getDoctorBlockedSlots(doctorId: string, availableDate: Date, doctorsDb: Connection) {
     const bciRepo = doctorsDb.getCustomRepository(BlockedCalendarItemRepository);
     const blockedSlots = await bciRepo.getBlockedSlots(availableDate, doctorId);
