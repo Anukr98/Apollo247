@@ -44,12 +44,24 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
   const [selectedPrescription, setSelectedPrescription] = useState<{ [key: string]: boolean }>({});
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const DATE_FORMAT = 'DD MMM YYYY';
 
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    const pIds = props.selectedEprescriptionIds;
+    const selectedPrescr = {} as typeof selectedPrescription;
+    if (pIds) {
+      pIds!.forEach((id) => {
+        selectedPrescr[id] = true;
+      });
+      setSelectedPrescription(selectedPrescr);
+    }
+  }, [props.selectedEprescriptionIds]);
 
   const { data, loading, error } = useQuery<
     getPatientPastConsultsAndPrescriptions,
@@ -63,17 +75,6 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
     fetchPolicy: 'no-cache',
   });
   aphConsole.log({ data, loading, error });
-
-  useEffect(() => {
-    const pIds = props.selectedEprescriptionIds;
-    const selectedPrescr = {} as typeof selectedPrescription;
-    if (pIds) {
-      pIds!.forEach((id) => {
-        selectedPrescr[id] = true;
-      });
-      setSelectedPrescription(selectedPrescr);
-    }
-  }, [props.selectedEprescriptionIds]);
 
   const getMedicines = (
     medicines: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[]
@@ -105,9 +106,9 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
       (item) =>
         ({
           id: item!.id,
-          date: moment(item!.quoteDateTime).format('DD MMM YYYY'),
+          date: moment(item!.quoteDateTime).format(DATE_FORMAT),
           uploadedUrl: item!.prescriptionImageUrl,
-          doctorName: '', // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
+          doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) || ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
           forPatient: (currentPatient && currentPatient.firstName) || '',
           medicines: getMedicines(item!.medicineOrderLineItems! || []),
         } as EPrescription)
@@ -117,7 +118,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
         (item) =>
           ({
             id: item!.id,
-            date: moment(item!.appointmentDateTime).format('DD MMM YYYY'),
+            date: moment(item!.appointmentDateTime).format(DATE_FORMAT),
             uploadedUrl: getBlobUrl(
               (getCaseSheet(item!.caseSheet as any) || { blobName: '' }).blobName
             ),
@@ -132,12 +133,13 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           } as EPrescription)
       )
     )
+    .filter((item) => !!item.uploadedUrl)
     .sort(
       (a, b) =>
-        moment(b.date, 'DD MMM YYYY')
+        moment(b.date, DATE_FORMAT)
           .toDate()
           .getTime() -
-        moment(a.date, 'DD MMM YYYY')
+        moment(a.date, DATE_FORMAT)
           .toDate()
           .getTime()
     );
@@ -157,14 +159,10 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           marginBottom: arrayLength === i + 1 ? 16 : 4,
         }}
         onSelect={(isSelected) => {
-          if (!item.uploadedUrl) {
-            Alert.alert('Alert', 'This prescription has no uploaded documents.');
-          } else {
-            setSelectedPrescription({
-              ...selectedPrescription,
-              [item.id]: isSelected,
-            });
-          }
+          setSelectedPrescription({
+            ...selectedPrescription,
+            [item.id]: isSelected,
+          });
         }}
       />
     );
@@ -186,6 +184,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
 
   return (
     <Overlay
+      onRequestClose={() => props.onSubmit([])}
       overlayStyle={{
         padding: 0,
         margin: 0,

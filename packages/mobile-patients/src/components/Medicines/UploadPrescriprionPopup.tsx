@@ -10,6 +10,8 @@ import {
   PrescriptionIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
@@ -20,16 +22,10 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Platform,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ScrollView } from 'react-navigation';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import DocumentPicker from 'react-native-document-picker';
-import RNFetchBlob from 'react-native-fetch-blob';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -399,6 +395,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   return (
     <Overlay
+      onRequestClose={() => props.onClickClose()}
       isVisible={props.isVisible}
       windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
       containerStyle={{
