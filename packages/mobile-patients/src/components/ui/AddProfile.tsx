@@ -25,7 +25,7 @@ import { addNewProfile } from '../../graphql/types/addNewProfile';
 import { ADD_NEW_PROFILE } from '../../graphql/profiles';
 import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
 import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
-import { Spinner } from './Spinner';
+import { useUIElements } from '../UIElementsProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -134,10 +134,11 @@ export interface AddProfileProps {
 export const AddProfile: React.FC<AddProfileProps> = (props) => {
   const client = useApolloClient();
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
+  const { setLoading } = useUIElements();
+
   const { getPatientApiCall } = useAuth();
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
   const [date, setDate] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
@@ -158,7 +159,7 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
     gender;
 
   const newProfile = () => {
-    setLoading(true);
+    setLoading!(true);
     client
       .mutate<addNewProfile, any>({
         mutation: ADD_NEW_PROFILE,
@@ -185,7 +186,7 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
         Alert.alert('Alert', e.message);
       })
       .finally(() => {
-        setLoading(false);
+        setLoading!(false);
       });
   };
 
@@ -356,7 +357,6 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
           {renderButtons()}
         </View>
       </View>
-      {loading && <Spinner />}
     </View>
   );
 };

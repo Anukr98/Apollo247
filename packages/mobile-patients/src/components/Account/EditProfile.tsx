@@ -16,7 +16,7 @@ import {
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
 import { DeviceHelper } from '../../FunctionHelpers/DeviceHelper';
-import { ADD_NEW_PROFILE, DELETE_PROFILE, EDIT_PROFILE } from '../../graphql/profiles';
+import { ADD_NEW_PROFILE, DELETE_PROFILE, EDIT_PROFILE, UPLOAD_FILE } from '../../graphql/profiles';
 import { addNewProfile } from '../../graphql/types/addNewProfile';
 import { deleteProfile, deleteProfileVariables } from '../../graphql/types/deleteProfile';
 import { editProfile } from '../../graphql/types/editProfile';
@@ -32,6 +32,8 @@ import { MaterialMenu } from '../ui/MaterialMenu';
 import { Spinner } from '../ui/Spinner';
 import { StickyBottomComponent } from '../ui/StickyBottomComponent';
 import { TextInputComponent } from '../ui/TextInputComponent';
+import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '../../graphql/types/getPatientByMobileNumber';
+import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -120,6 +122,7 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
+    resizeMode: 'contain',
     ...Platform.select({
       ios: {
         borderRadius: 45,
@@ -225,7 +228,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const { width, height } = Dimensions.get('window');
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
-  const [profileData, setProfileData] = useState<profile>(props.navigation.getParam('profileData'));
+  const [profileData, setProfileData] = useState<
+    getPatientByMobileNumber_getPatientByMobileNumber_patients
+  >(props.navigation.getParam('profileData'));
   const [firstName, setFirstName] = useState<string>('');
   const [lastName, setLastName] = useState<string>('');
   const [photoUrl, setPhotoUrl] = useState<string>('');
@@ -263,13 +268,13 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       setFirstName(profileData.firstName || '');
       setLastName(profileData.lastName || '');
       setDate(new Date(profileData.dateOfBirth!));
-      setGender(profileData.gender);
+      setGender(profileData!.gender!);
       relationArray.map((relation) => {
         if (relation.key === profileData.relation) {
           setRelation(relation);
         }
       });
-      setEmail(profileData.email || '');
+      setEmail(profileData.emailAddress || '');
       setPhotoUrl(profileData.photoUrl || '');
     }
   }, []);
@@ -376,8 +381,23 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         onClickClose={() => {
           setUploadVisible(false);
         }}
-        onResponse={() => {
-          Alert.alert('onResponse');
+        onResponse={(type, response) => {
+          console.log('profile data', type, response);
+          response.map((item) =>
+            client
+              .mutate<uploadFile, uploadFileVariables>({
+                mutation: UPLOAD_FILE,
+                fetchPolicy: 'no-cache',
+                variables: {
+                  fileType: item.fileType,
+                  base64FileInput: item.base64,
+                },
+              })
+              .then((data) => {
+                console.log(data);
+                data!.data!.uploadFile && setPhotoUrl(data!.data!.uploadFile!.filePath!);
+              })
+          );
         }}
       />
     );

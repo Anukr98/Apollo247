@@ -144,7 +144,7 @@ type clinicHoursData = {
 
 type TimeArray = {
   label: string;
-  time: string[];
+  time: string;
 }[];
 
 type Profile = {
@@ -203,18 +203,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   ];
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
-  const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
+  const [displaySchedule, setDisplaySchedule] = useState<boolean>(true);
   const [date, setDate] = useState<Date>(new Date());
   const tabs = [
     { title: 'Home Visit', subtitle: 'Appointment Slot' },
     { title: 'Clinic Visit', subtitle: 'Clinic Hours' },
   ];
   const [timeArray, settimeArray] = useState<TimeArray>([
-    { label: 'Morning', time: [date.toString(), dateCalculator(1).toString()] },
-    { label: 'Afternoon', time: [dateCalculator(2).toString(), dateCalculator(3).toString()] },
-    { label: 'Evening', time: [dateCalculator(4).toString(), dateCalculator(5).toString()] },
-    { label: 'Night', time: [dateCalculator(6).toString(), dateCalculator(7).toString()] },
+    { label: 'slot1', time: '6:00 am - 6:45 am' },
+    { label: 'slot2', time: '6:45 am - 7:30 am' },
+    { label: 'slot3', time: '7:30 am - 8:15 am' },
+    { label: 'slot4', time: '8:15 am - 9:00 am' },
+    { label: 'slot5', time: '9:00 am - 9:45 am' },
+    { label: 'slot6', time: '9:45 am - 10:30 am' },
+    { label: 'slot7', time: '10:30 am - 11:15 am' },
+    { label: 'slot8', time: '11:15 am - 12:00 pm' },
   ]);
+
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
@@ -935,7 +940,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setdisplayoverlay={setDisplaySchedule}
           selectedTimeSlot={selectedTimeSlot}
           setselectedTimeSlot={(selected) => setselectedTimeSlot(selected)}
-          timeArray={timeArray}
+          isDropDown={true}
+          dropdownArray={timeArray}
           CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
         />
       )}
