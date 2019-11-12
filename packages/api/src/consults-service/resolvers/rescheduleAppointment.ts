@@ -6,6 +6,7 @@ import {
   TRANSFER_STATUS,
   TRANSFER_INITIATED_TYPE,
   STATUS,
+  REQUEST_ROLES,
 } from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
@@ -305,8 +306,9 @@ const bookRescheduleAppointment: Resolver<
     //cancel and book new appt
     appointmentRepo.cancelAppointment(
       bookRescheduleAppointmentInput.appointmentId,
-      TRANSFER_INITIATED_TYPE.PATIENT,
-      apptDetails.patientId
+      REQUEST_ROLES.PATIENT,
+      apptDetails.patientId,
+      ''
     );
 
     const appointmentAttrs = {

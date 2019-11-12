@@ -282,7 +282,10 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
           Don’t have a prescription? Don’t worry!
         </Text>
         <Text
-          onPress={() => props.navigation.navigate(AppRoutes.DoctorSearch)}
+          onPress={() => {
+            CommonLogEvent('MEDICINE_UPLOAD_PRESCRIPTION', 'Navigate to doctor search');
+            props.navigation.navigate(AppRoutes.DoctorSearch);
+          }}
           style={{
             ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24, 0),
           }}

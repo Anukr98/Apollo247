@@ -28,6 +28,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { NavigationScreenProps } from 'react-navigation';
 import { BottomPopUp } from './BottomPopUp';
 import { AppRoutes } from '../NavigatorContainer';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   showPopUp: {
@@ -307,6 +308,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
   const isInitialState = !(helpCategory || selectedQuery || comment);
   const onReset = () => {
     if (isInitialState) {
+      CommonLogEvent(AppRoutes.MobileHelp, 'Go back clicked');
       props.navigation.goBack();
       return;
     }
@@ -362,6 +364,7 @@ export const MobileHelp: React.FC<MobileHelpProps> = (props) => {
               }}
               onPress={() => {
                 setMobileFollowup(false);
+                CommonLogEvent(AppRoutes.MobileHelp, 'Submitted successfully');
                 props.navigation.replace(AppRoutes.TabBar);
               }}
             >

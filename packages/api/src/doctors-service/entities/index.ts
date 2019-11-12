@@ -102,6 +102,9 @@ export class BlockedCalendarItem extends BaseEntity {
 //consult Hours starts
 @Entity()
 export class ConsultHours extends BaseEntity {
+  @Column({ nullable: true, default: 15 })
+  consultDuration: number;
+
   @Column()
   consultMode: ConsultMode;
 

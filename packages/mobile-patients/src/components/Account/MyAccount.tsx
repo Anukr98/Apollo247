@@ -24,6 +24,13 @@ import {
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { getNetStatus } from '../../helpers/helperFunctions';
 import { NoInterNetPopup } from '../ui/NoInterNetPopup';
+import { useApolloClient } from 'react-apollo-hooks';
+import { DELETE_DEVICE_TOKEN } from '../../graphql/profiles';
+import {
+  deleteDeviceToken,
+  deleteDeviceTokenVariables,
+} from '../../graphql/types/deleteDeviceToken';
+import { ApolloLogo } from '../ApolloLogo';
 
 const { height, width } = Dimensions.get('window');
 
@@ -251,6 +258,22 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             </TouchableOpacity>
           }
         />
+        <View
+          style={{
+            zIndex: 3,
+            position: 'absolute',
+            top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 50 : 40) : 20,
+            left: 20,
+            right: 0,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+          >
+            <ApolloLogo />
+          </TouchableOpacity>
+        </View>
       </>
     );
   };

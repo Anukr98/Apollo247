@@ -21,7 +21,7 @@ import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 import { END_CALL_NOTIFICATION, REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
-import { TRANSFER_INITIATED_TYPE, STATUS, DoctorType } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, STATUS, DoctorType } from 'graphql/types/globalTypes';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import {
   RemoveFromConsultQueue,
@@ -1210,8 +1210,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           appointmentId: params.appointmentId,
           cancelReason: cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
           cancelledBy: isJuniorDoctor
-            ? TRANSFER_INITIATED_TYPE.DOCTOR
-            : TRANSFER_INITIATED_TYPE.PATIENT,
+            ? REQUEST_ROLES.JUNIOR
+            : REQUEST_ROLES.PATIENT,
           cancelledById: isJuniorDoctor ? jrDoctorId || '' : params.patientId,
         },
       },
@@ -1305,6 +1305,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                   stopInterval();
                   onStopConsult();
                   props.endConsultAction();
+                  if (showVideo) {
+                    stopAudioVideoCall();
+                  }
                   setDisableOnCancel(true);
                 }}
               >
