@@ -19,6 +19,7 @@ import {
   getNetStatus,
   nextAvailability,
   timeTo12HrFormat,
+  isIphone5s,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Moment from 'moment';
@@ -53,7 +54,7 @@ const styles = StyleSheet.create({
   },
   ctaTextStyle: {
     color: theme.colors.APP_GREEN,
-    ...theme.fonts.IBMPlexSansMedium(16),
+    ...theme.fonts.IBMPlexSansMedium(isIphone5s() ? 13 : 16),
     letterSpacing: -0.36,
   },
 });

@@ -177,6 +177,12 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   ).long_name;
                   let val = city.concat(', ').concat(state);
                   setstate(state || '');
+                  const pincode = (
+                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+                  ).long_name;
+
+                  setpincode(pincode || '');
+
                   //setcity(obj.data.results[0].formatted_address || '');
                   setcity(val);
                   console.log(obj.data.results[0].formatted_address, 'val obj');

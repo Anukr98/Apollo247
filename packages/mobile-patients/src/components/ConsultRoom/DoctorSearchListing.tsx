@@ -74,6 +74,8 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
   },
 });
+
+let latlng: locationType | null = null;
 const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 export type filterDataType = {
@@ -121,7 +123,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     { title: 'Online Consults' },
     { title: 'Clinic Visits' },
   ];
-  let latlng: locationType | null = null;
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
@@ -480,6 +481,14 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
         latlng = res.latlong;
         console.log(res, 'getUserCurrentPosition');
+        AsyncStorage.setItem(
+          'location',
+          JSON.stringify({
+            latlong: res.latlong,
+            name: res.name.toUpperCase(),
+            zipcode: res.zipcode,
+          })
+        );
       })
       .catch((error) => console.log(error, 'getUserCurrentPosition err'));
     // AsyncStorage.getItem('location').then((item) => {
