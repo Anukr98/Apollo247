@@ -157,7 +157,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   return (
     <Card style={{ width: '100%', height: 45 }}>
       <CardContent>
-        <Link to={`/consulttabs/${data.id}/${data.patientId}/0`}>
+        <Link to={`/consulttabs/${data.id}/${data.patientId}/0`} target="_blank">
           <Grid item xs={12} style={{ width: '100%' }}>
             <Grid item container spacing={2}>
               <Grid item lg={5} sm={5} xs={4} key={1} container>
