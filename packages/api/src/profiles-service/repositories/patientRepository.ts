@@ -79,7 +79,6 @@ export class PatientRepository extends Repository<Patient> {
         throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR);
       });
 
-    console.log('prism auth token response', authTokenResult);
     return authTokenResult !== null ? authTokenResult.response : null;
   }
 
@@ -100,7 +99,7 @@ export class PatientRepository extends Repository<Patient> {
         throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
       });
 
-    console.log('prism get users response', usersResult);
+    console.log('Prism Users List:', usersResult);
     return usersResult && usersResult.response ? usersResult.response.signUpUserData : [];
   }
 
@@ -110,7 +109,6 @@ export class PatientRepository extends Repository<Patient> {
         error,
       });
     });
-    console.log('patientData', patientData);
     if (!patientData) {
       throw new AphError(AphErrorMessages.GET_PROFILE_ERROR, undefined, {
         error: 'Invalid PatientId',
@@ -118,7 +116,6 @@ export class PatientRepository extends Repository<Patient> {
     }
 
     const matchedUser = prismUsersList.filter((user) => user.UHID == patientData.uhid);
-    console.log('mathchedUser', matchedUser);
     return matchedUser.length > 0 ? matchedUser[0].UHID : null;
   }
 
@@ -144,7 +141,7 @@ export class PatientRepository extends Repository<Patient> {
   }
 
   async uploadDocumentToPrism(uhid: string, prismAuthToken: string, docInput: UploadDocumentInput) {
-    console.log(uhid, prismAuthToken);
+    console.log('uhid:', uhid, 'authToken:', prismAuthToken);
 
     const currentTimeStamp = Math.floor(new Date().getTime() / 1000);
     const randomNumber = Math.floor(Math.random() * 10000);
@@ -173,29 +170,16 @@ export class PatientRepository extends Repository<Patient> {
       },
       formData: formData,
     };
-    console.log('==========================', options, '=================');
 
     const uploadResult = await requestPromise(options)
       .then((res) => {
-        console.log('in rseponseee', res);
-
         return JSON.parse(res);
       })
       .catch((err) => {
-        console.log(err);
+        console.log('Upload Prism Error: ', err);
         throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
       });
 
-    console.log(
-      'upload result ------->',
-      uploadResult,
-      uploadResult['errorCode'],
-      uploadResult['response'],
-      uploadResult != null,
-      uploadResult.response != null,
-      uploadResult !== null && uploadResult.response !== null,
-      uploadResult.response
-    );
     return uploadResult && uploadResult.response ? uploadResult.response : null;
   }
 }

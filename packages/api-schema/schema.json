@@ -14877,9 +14877,13 @@
             "name": "fileType",
             "description": null,
             "type": {
-              "kind": "ENUM",
-              "name": "UPLOAD_FILE_TYPES",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "UPLOAD_FILE_TYPES",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
@@ -14887,9 +14891,13 @@
             "name": "base64FileInput",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
@@ -14897,9 +14905,13 @@
             "name": "patientId",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
@@ -14907,9 +14919,13 @@
             "name": "category",
             "description": null,
             "type": {
-              "kind": "ENUM",
-              "name": "PRISM_DOCUMENT_CATEGORY",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "PRISM_DOCUMENT_CATEGORY",
+                "ofType": null
+              }
             },
             "defaultValue": null
           }
