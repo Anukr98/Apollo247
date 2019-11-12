@@ -31,4 +31,8 @@ export class DoctorNextAvaialbleSlotsRepository extends Repository<DoctorNextAva
         });
     }
   }
+
+  getDoctorSlot(doctorId: string) {
+    return this.findOne({ where: { doctorId } });
+  }
 }
