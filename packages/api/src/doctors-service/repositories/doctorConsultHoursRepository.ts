@@ -1,7 +1,7 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { ConsultHours, WeekDay } from 'doctors-service/entities';
 import { addMilliseconds, format } from 'date-fns';
-
+import { Doctor } from 'doctors-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
