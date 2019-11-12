@@ -69,6 +69,10 @@ const uploadDocument: Resolver<
   );
   console.log('PrismUploadResponse:', uploadResponse);
 
+  if (uploadDocumentInput.category === PRISM_DOCUMENT_CATEGORY.HealthChecks) {
+  } else {
+  }
+
   return { status: true };
 };
 
