@@ -198,6 +198,38 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     );
   };
 
+  const client = useApolloClient();
+
+  const deleteDeviceToken = async () => {
+    setshowSpinner(true);
+
+    const deviceToken = (await AsyncStorage.getItem('deviceToken')) || '';
+    const currentDeviceToken = deviceToken ? JSON.parse(deviceToken) : '';
+
+    const input = {
+      deviceToken: currentDeviceToken.deviceToken,
+      patientId: currentPatient ? currentPatient.id : '',
+    };
+    console.log('deleteDeviceTokenInput', input);
+
+    client
+      .mutate<deleteDeviceToken, deleteDeviceTokenVariables>({
+        mutation: DELETE_DEVICE_TOKEN,
+        variables: input,
+        fetchPolicy: 'no-cache',
+      })
+      .then((data: any) => {
+        console.log('data', data);
+        setshowSpinner(false);
+        onPressLogout();
+      })
+      .catch((e: string) => {
+        console.log('Error occured while adding Doctor', e);
+        setshowSpinner(false);
+        onPressLogout();
+      });
+  };
+
   const renderAnimatedHeader = () => {
     return (
       <>
@@ -253,7 +285,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             borderBottomWidth: 0,
           }}
           rightComponent={
-            <TouchableOpacity activeOpacity={1} onPress={onPressLogout}>
+            <TouchableOpacity activeOpacity={1} onPress={deleteDeviceToken}>
               <Text>Logout</Text>
             </TouchableOpacity>
           }
@@ -282,17 +314,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     return (
       <View>
         <ListCard
-          container={{ marginTop: 14 }}
-          title={'Manage Profiles'}
-          leftIcon={<NotificaitonAccounts />}
-          onPress={() =>
-            props.navigation.navigate(AppRoutes.ManageProfile, {
-              mobileNumber: profileDetails && profileDetails.mobileNumber,
-            })
-          }
-        />
-        <ListCard
-          container={{ marginTop: 4 }}
+          container={{ marginTop: 20 }}
           title={'Address Book'}
           leftIcon={<Location />}
           onPress={() => props.navigation.navigate(AppRoutes.AddressBook)}
