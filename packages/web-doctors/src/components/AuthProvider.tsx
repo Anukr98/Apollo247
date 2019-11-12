@@ -48,11 +48,15 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
 
   currentUserType: string | null;
   setCurrentUserType: ((p: string) => void) | null;
+  currentUserId: string | null;
+  setCurrentUserId: ((p: string) => void) | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
   currentUser: null,
   setCurrentUser: null,
+  currentUserId: null,
+  setCurrentUserId: null,
   //allCurrentPatients: null,
 
   sendOtp: null,
@@ -134,7 +138,7 @@ export const AuthProvider: React.FC = (props) => {
   >(false);
 
   const [currentUserType, setCurrentUserType] = useState<AuthContextProps['currentUserType']>(null);
-
+  const [currentUserId, setCurrentUserId] = useState<AuthContextProps['currentUserId']>(null);
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
       setVerifyOtpError(false);
@@ -274,6 +278,8 @@ export const AuthProvider: React.FC = (props) => {
           value={{
             currentUserType,
             setCurrentUserType,
+            currentUserId,
+            setCurrentUserId,
             currentUser,
             setCurrentUser,
             sendOtp,

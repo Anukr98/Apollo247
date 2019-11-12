@@ -1,12 +1,19 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, IconButton, Card, CardHeader, Avatar, CircularProgress } from '@material-ui/core';
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import Typography from '@material-ui/core/Typography';
 import Popover from '@material-ui/core/Popover';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import { AphButton } from '@aph/web-ui-components';
-
+import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { ApolloError } from 'apollo-client';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
+import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/profiles';
+import {
+  GetDoctorDetailsById,
+  GetDoctorDetailsByIdVariables,
+} from 'graphql/types/GetDoctorDetailsById';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
@@ -317,22 +324,17 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export interface StarDoctorCardProps {
+  currentDocId: string;
   doctor: GetDoctorDetails_getDoctorDetails_starTeam;
 }
 const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
-  const { doctor } = props;
+  const { doctor, currentDocId } = props;
   //const moreButttonRef = useRef(null);
   //const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const client = useApolloClient();
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
   const [currentDoctor, setCurrentDoctor] = React.useState('');
-  const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
-  const getDoctorDetailsData = data && data.getDoctorDetails ? data.getDoctorDetails : null;
 
-  if (loading) return <CircularProgress />;
-  if (error || !getDoctorDetailsData) return <div>error :(</div>;
-
-  const doctorProfile = getDoctorDetailsData;
   function handleClick(event: React.MouseEvent<HTMLButtonElement>, id: string) {
     setAnchorEl(event.currentTarget);
     setCurrentDoctor(id);
@@ -393,7 +395,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                         mutate({
                           variables: {
                             associatedDoctor: doctor!.associatedDoctor!.id,
-                            starDoctor: doctorProfile.id,
+                            starDoctor: currentDocId,
                           },
                         }).then(() => {
                           const existingData = client.readQuery<GetDoctorDetails>({
@@ -520,7 +522,7 @@ export interface StarDoctorsListProps {
 }
 
 const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
-  const { starDoctors } = props;
+  const { starDoctors, currentDocId } = props;
   const [showAddDoc, setShowAddDoc] = React.useState<boolean>();
   const client = useApolloClient();
   const starDoctorsCardList = starDoctors.filter((existingDoc) => existingDoc!.isActive) || [];
@@ -537,7 +539,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
               doctor!.isActive === true && (
                 <Grid item lg={4} sm={6} xs={12} key={index}>
                   <div className={classes.tabContentStarDoctor}>
-                    <StarDoctorCard doctor={doctor!} />
+                    <StarDoctorCard doctor={doctor!} currentDocId={currentDocId} />
                   </div>
                 </Grid>
               )
@@ -725,30 +727,81 @@ interface DoctorProfileTabProps {
 }
 export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
   const classes = useStyles();
-  const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
-  const getDoctorDetailsData = data && data.getDoctorDetails ? data.getDoctorDetails : null;
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const currentUserId = useAuthContext().currentUserId!;
+  const currentUserType = useAuthContext().currentUserType!;
+  const client = useApolloClient();
+  const [userDetails, setUserDetails] = React.useState();
+  const [starDoctors, setStarDoctor] = React.useState();
+  const getDoctorDetailsById = () => {
+    client
+      .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
+        query: GET_DOCTOR_DETAILS_BY_ID,
+        fetchPolicy: 'no-cache',
+        variables: { id: currentUserId ? currentUserId : localStorage.getItem('currentUserId') },
+      })
+      .then((data) => {
+        console.log(data.data.getDoctorDetailsById);
 
-  if (loading) return <CircularProgress />;
-  if (error || !getDoctorDetailsData) return <div>error :(</div>;
+        setUserDetails(data.data.getDoctorDetailsById);
+        setStarDoctor(
+          data.data.getDoctorDetailsById!.starTeam!.filter(
+            (existingDoc: any) => existingDoc!.isActive === true
+          ) || []
+        );
+      })
+      .catch((error: ApolloError) => {
+        console.log(error);
+      });
+  };
+  const getDoctorDetail = () => {
+    client
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
+      .then((_data) => {
+        setUserDetails(_data.data.getDoctorDetails);
+        setStarDoctor(
+          _data.data.getDoctorDetails!.starTeam!.filter(
+            (existingDoc: any) => existingDoc!.isActive === true
+          ) || []
+        );
 
-  const doctorProfile = getDoctorDetailsData;
-  const clinics = getDoctorDetailsData.doctorHospital || [];
-  const starDoctors =
-    getDoctorDetailsData!.starTeam!.filter((existingDoc) => existingDoc!.isActive === true) || [];
+        console.log('starDoctors ', starDoctors);
+      })
+      .catch((e) => {
+        console.log('Error occured while fetching Doctor', e);
+      });
+  };
 
-  const numStarDoctors = starDoctors.length;
+  console.log('currentUserType ', currentUserType);
+
+  useEffect(() => {
+    console.log('hello1', currentUserType, LoggedInUserType.SECRETARY);
+    if (currentUserType === LoggedInUserType.SECRETARY) {
+      console.log('hello');
+
+      getDoctorDetailsById();
+    } else {
+      if (!userDetails) {
+        getDoctorDetail();
+      }
+    }
+  }, []);
+
+  const doctorProfile = userDetails;
+  console.log('userDetails111 ', userDetails);
+
+  //const numStarDoctors = starDoctors.length;
   return (
     <div className={classes.ProfileContainer}>
-      <DoctorDetails doctor={doctorProfile} clinics={clinics} />
-
-      {doctorProfile.doctorType === 'STAR_APOLLO' && (
+      {doctorProfile && (
+        <DoctorDetails doctor={doctorProfile!} clinics={doctorProfile!.doctorHospital!} />
+      )}
+      {doctorProfile && doctorProfile!.doctorType === 'STAR_APOLLO' && (
         <div>
-          <Typography className={classes.starDoctorHeading}>
-            Your Star Doctors Team ({numStarDoctors})
-          </Typography>
+          <Typography className={classes.starDoctorHeading}>Your Star Doctors Team ({})</Typography>
           <StarDoctorsList
-            currentDocId={doctorProfile.id}
-            starDoctors={getDoctorDetailsData!.starTeam!}
+            currentDocId={doctorProfile!.id}
+            starDoctors={doctorProfile!.starTeam!}
           />
         </div>
       )}

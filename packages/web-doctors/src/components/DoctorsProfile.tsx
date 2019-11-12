@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Theme } from '@material-ui/core';
 import { makeStyles, withStyles } from '@material-ui/styles';
 import Typography from '@material-ui/core/Typography';
@@ -7,13 +7,23 @@ import AppBar from '@material-ui/core/AppBar';
 import { AphButton } from '@aph/web-ui-components';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { Header } from 'components/Header';
 import { DoctorProfileTab } from 'components/DoctorProfileTab';
 import { AvailabilityTab } from 'components/AvailabilityTab';
 import { FeesTab } from 'components/FeesTab';
+import { useApolloClient } from 'react-apollo-hooks';
 import { useQuery } from 'react-apollo-hooks';
 import Scrollbars from 'react-custom-scrollbars';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { ApolloError } from 'apollo-client';
+import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
+import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/profiles';
+import {
+  GetDoctorDetailsById,
+  GetDoctorDetailsByIdVariables,
+} from 'graphql/types/GetDoctorDetailsById';
 
 import { Link } from 'react-router-dom';
 
@@ -150,16 +160,14 @@ const useStyles = makeStyles((theme: Theme) => {
 export interface DoctorsProfileProps {}
 
 export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) => {
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { currentUserId, currentUserType } = useAuthContext();
+  const client = useApolloClient();
   const classes = useStyles();
+  const [userDetails, setUserDetails] = React.useState();
   const [selectedTabIndex, setselectedTabIndex] = React.useState(0);
-  const { data, error, loading } = useQuery(GET_DOCTOR_DETAILS);
-
-  if (loading) {
-    return <div>loading...</div>;
-  }
-
-  if (error) {
-    return <div>error</div>;
+  if (currentUserId) {
+    localStorage.setItem('currentUserId', currentUserId ? currentUserId : '');
   }
   const tabsArray = ['Profile', 'Availability', 'Fees', ''];
   const tabsHtml = tabsArray.map((item, index) => {
@@ -177,6 +185,49 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
       />
     );
   });
+
+  const getDoctorDetailsById = () => {
+    client
+      .query<GetDoctorDetailsById, GetDoctorDetailsByIdVariables>({
+        query: GET_DOCTOR_DETAILS_BY_ID,
+        fetchPolicy: 'no-cache',
+        variables: { id: currentUserId ? currentUserId : localStorage.getItem('currentUserId') },
+      })
+      .then((data) => {
+        console.log('current doctor ', data.data.getDoctorDetailsById);
+
+        setUserDetails(data.data.getDoctorDetailsById);
+      })
+      .catch((error: ApolloError) => {
+        console.log(error);
+      });
+  };
+  const getDoctorDetail = () => {
+    console.log(' inside 1');
+    client
+      .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
+      .then((_data) => {
+        console.log('_data ', _data);
+
+        setUserDetails(_data.data.getDoctorDetails);
+      })
+      .catch((e) => {
+        console.log('Error occured while fetching Doctor', e);
+      });
+  };
+
+  console.log('currentUserType ', currentUserType);
+
+  useEffect(() => {
+    if (currentUserType === LoggedInUserType.SECRETARY) {
+      getDoctorDetailsById();
+    } else {
+      if (!userDetails && currentUserType === LoggedInUserType.DOCTOR) {
+        getDoctorDetail();
+      }
+    }
+  }, []);
+
   const onNext = () => {
     setselectedTabIndex(selectedTabIndex + 1);
   };
@@ -190,33 +241,33 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
       </div>
       <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
         <div className={classes.container}>
-          {data && data.getDoctorDetails && (
+          {userDetails && (
             <div>
               <div className={classes.tabHeading}>
                 <Typography variant="h1">
                   {selectedTabIndex === 0 && (
-                    <span>{`hi ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()} !`}</span>
+                    <span>{`hi ${userDetails.salutation.toLowerCase()}. ${userDetails.lastName.toLowerCase()} !`}</span>
                   )}
                   {selectedTabIndex === 1 && (
                     <span>
-                      {` ok ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()}`}
+                      {` ok ${userDetails.salutation.toLowerCase()}. ${userDetails.lastName.toLowerCase()}`}
                       !
                     </span>
                   )}
                   {selectedTabIndex === 2 && (
                     <span>
-                      {`ok ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()}`}
+                      {`ok ${userDetails.salutation.toLowerCase()}. ${userDetails.lastName.toLowerCase()}`}
                       !
                     </span>
                   )}
                   {selectedTabIndex === 3 && (
-                    <span>{`thank you, ${data.getDoctorDetails.salutation.toLowerCase()}. ${data.getDoctorDetails.lastName.toLowerCase()} :)`}</span>
+                    <span>{`thank you, ${userDetails.salutation.toLowerCase()}. ${userDetails.lastName.toLowerCase()} :)`}</span>
                   )}
                 </Typography>
                 {selectedTabIndex === 0 && (
                   <p>
-                    It’s great to have you join us! <br /> Here’s what your patients see when they
-                    view your profile
+                    It’s great to have you join us! <br /> Here’s what your patients see when
+                    they view your profile
                   </p>
                 )}
                 {selectedTabIndex === 1 && (
@@ -256,20 +307,14 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
               )}
               {selectedTabIndex === 0 && (
                 <TabContainer>
-                  {!!data.getDoctorDetails && (
-                    <DoctorProfileTab
-                      //values={data.getDoctorDetails}
-                      onNext={() => onNext()}
-                      key={1}
-                    />
-                  )}
+                  {!!userDetails && <DoctorProfileTab onNext={() => onNext()} key={1} />}
                 </TabContainer>
               )}
               {selectedTabIndex === 1 && (
                 <TabContainer>
-                  {!!data.getDoctorDetails && (
+                  {!!userDetails && (
                     <AvailabilityTab
-                      values={data.getDoctorDetails}
+                      values={userDetails}
                       onNext={() => onNext()}
                       onBack={() => onBack()}
                       key={2}
@@ -279,9 +324,9 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
               )}
               {selectedTabIndex === 2 && (
                 <TabContainer>
-                  {!!data.getDoctorDetails && (
+                  {!!userDetails && (
                     <FeesTab
-                      values={data.getDoctorDetails}
+                      values={userDetails}
                       onNext={() => onNext()}
                       onBack={() => onBack()}
                       key={3}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Theme, Typography, Grid, Avatar, CircularProgress } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
@@ -9,8 +9,11 @@ import { GetDoctorDetails_getDoctorDetails } from 'graphql/types/GetDoctorDetail
 import { useAuth } from 'hooks/authHooks';
 import { LOGGED_IN_USER_DETAILS } from 'graphql/profiles';
 import Scrollbars from 'react-custom-scrollbars';
+import { Link } from 'react-router-dom';
 import { useQuery } from 'react-apollo-hooks';
 import { findLoggedinUserDetails } from 'graphql/types/findLoggedinUserDetails';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
+import { clientRoutes } from 'helpers/clientRoutes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -110,6 +113,8 @@ export const SecretaryDashboard: React.FC = (props) => {
   const [selectedDate] = useState<Date>(today);
   const [viewSelection] = useState<string>('day');
   const [monthSelected] = useState<string>(moment(today).format('MMMM'));
+
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const {
     currentPatient,
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
@@ -124,6 +129,8 @@ export const SecretaryDashboard: React.FC = (props) => {
   if (loading) return <CircularProgress />;
   if (!data) return <div>error :(</div>;
 
+  const setCurrentUserId = useAuthContext().setCurrentUserId!;
+
   return (
     <div className={classes.welcome}>
       <div className={classes.headerSticky}>
@@ -134,7 +141,15 @@ export const SecretaryDashboard: React.FC = (props) => {
           <div className={classes.contentGroup}>
             <div className={classes.tabHeading}>
               <Typography variant="h1">
-                {currentPatient && `hello dr. ${(currentPatient!.lastName || '').toLowerCase()} :)`}
+                {data &&
+                  data.findLoggedinUserDetails &&
+                  data.findLoggedinUserDetails.secretaryDetails &&
+                  `hello . ${(
+                    (data &&
+                      data.findLoggedinUserDetails &&
+                      data.findLoggedinUserDetails.secretaryDetails!.name) ||
+                    ''
+                  ).toLowerCase()} :)`}
               </Typography>
               {viewSelection === 'day' ? (
                 <p>
@@ -155,56 +170,63 @@ export const SecretaryDashboard: React.FC = (props) => {
                   secretaryList.map((item, index) => {
                     return (
                       <Grid item sm={4} key={index}>
-                        <div className={classes.doctorCard}>
-                          <div className={classes.doctoImage}>
-                            <Avatar
-                              alt=""
-                              src={
-                                item!.doctor!.photoUrl
-                                  ? item!.doctor!.photoUrl
-                                  : require('images/doctor_02.png')
-                              }
-                              className={classes.avatar}
-                            />
+                        <Link to={clientRoutes.calendar()}>
+                          <div
+                            className={classes.doctorCard}
+                            onClick={() => {
+                              setCurrentUserId(item!.doctor!.id!);
+                            }}
+                          >
+                            <div className={classes.doctoImage}>
+                              <Avatar
+                                alt=""
+                                src={
+                                  item!.doctor!.photoUrl
+                                    ? item!.doctor!.photoUrl
+                                    : require('images/doctor_02.png')
+                                }
+                                className={classes.avatar}
+                              />
+                            </div>
+                            <div className={classes.doctorInfo}>
+                              <div className={classes.doctorName}>
+                                {item!.doctor!.salutation &&
+                                  item!.doctor!.salutation!.charAt(0).toUpperCase()}
+                                {item!.doctor!.salutation!.slice(1).toLowerCase() + '.'}{' '}
+                                {`${item!.doctor!.firstName!.split(' ')[0]} ${item!.doctor!
+                                  .lastName!}`.length < 15
+                                  ? `${item!.doctor!.firstName!.split(' ')[0]} ${
+                                      item!.doctor!.lastName
+                                    }`
+                                  : `${
+                                      item!.doctor!.firstName!.split(' ')[0]
+                                    } ${item!.doctor!.lastName!.charAt(0)}.`}
+                              </div>
+                              <div className={classes.doctorType}>
+                                <span>
+                                  {item!.doctor!.specialty!.name.toUpperCase()} |{' '}
+                                  {item!.doctor!.experience} YRS
+                                </span>
+                              </div>
+                              <div className={classes.address}>
+                                {item!.doctor!.qualification}
+                                <br />
+                                {item!.doctor!.doctorHospital[0]!.facility!.streetLine1
+                                  ? item!.doctor!.doctorHospital[0]!.facility!.streetLine1 + ', '
+                                  : ''}
+                                {item!.doctor!.doctorHospital[0]!.facility!.streetLine2
+                                  ? item!.doctor!.doctorHospital[0]!.facility!.streetLine2 + ', '
+                                  : ''}
+                                {item!.doctor!.doctorHospital[0]!.facility!.streetLine3
+                                  ? item!.doctor!.doctorHospital[0]!.facility!.streetLine3 + ', '
+                                  : ''}
+                                {item!.doctor!.doctorHospital[0]!.facility!.city
+                                  ? item!.doctor!.doctorHospital[0]!.facility!.city
+                                  : ''}
+                              </div>
+                            </div>
                           </div>
-                          <div className={classes.doctorInfo}>
-                            <div className={classes.doctorName}>
-                              {item!.doctor!.salutation &&
-                                item!.doctor!.salutation!.charAt(0).toUpperCase()}
-                              {item!.doctor!.salutation!.slice(1).toLowerCase() + '.'}{' '}
-                              {`${item!.doctor!.firstName!.split(' ')[0]} ${item!.doctor!
-                                .lastName!}`.length < 15
-                                ? `${item!.doctor!.firstName!.split(' ')[0]} ${
-                                    item!.doctor!.lastName
-                                  }`
-                                : `${
-                                    item!.doctor!.firstName!.split(' ')[0]
-                                  } ${item!.doctor!.lastName!.charAt(0)}.`}
-                            </div>
-                            <div className={classes.doctorType}>
-                              <span>
-                                {item!.doctor!.specialty!.name.toUpperCase()} |{' '}
-                                {item!.doctor!.experience} YRS
-                              </span>
-                            </div>
-                            <div className={classes.address}>
-                              {item!.doctor!.qualification}
-                              <br />
-                              {item!.doctor!.doctorHospital[0]!.facility!.streetLine1
-                                ? item!.doctor!.doctorHospital[0]!.facility!.streetLine1 + ', '
-                                : ''}
-                              {item!.doctor!.doctorHospital[0]!.facility!.streetLine2
-                                ? item!.doctor!.doctorHospital[0]!.facility!.streetLine2 + ', '
-                                : ''}
-                              {item!.doctor!.doctorHospital[0]!.facility!.streetLine3
-                                ? item!.doctor!.doctorHospital[0]!.facility!.streetLine3 + ', '
-                                : ''}
-                              {item!.doctor!.doctorHospital[0]!.facility!.city
-                                ? item!.doctor!.doctorHospital[0]!.facility!.city
-                                : ''}
-                            </div>
-                          </div>
-                        </div>
+                        </Link>
                       </Grid>
                     );
                   })}

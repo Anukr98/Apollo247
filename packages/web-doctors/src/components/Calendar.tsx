@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Theme, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { Header } from 'components/Header';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import ToggleButton from '@material-ui/lab/ToggleButton';
 import moment from 'moment';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { Week as WeekView } from 'components/Calendar/Views/Week';
 import { Month as MonthView } from 'components/Calendar/Views/Month';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { GET_DOCTOR_APPOINTMENTS } from 'graphql/appointments';
 import { Appointment } from 'components/Appointments';
 import { getTime, startOfToday, addDays, startOfMonth, endOfMonth, isToday } from 'date-fns/esm';
@@ -200,7 +202,11 @@ export const Calendar: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [viewSelection, setViewSelection] = useState<string>('day');
   const [monthSelected, setMonthSelected] = useState<string>(moment(today).format('MMMM'));
-
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { currentUserId, currentUserType } = useAuthContext();
+  if (currentUserId) {
+    localStorage.setItem('currentUserId', currentUserId ? currentUserId : '');
+  }
   const pageRefreshTimeInSeconds = 30;
 
   //console.log(moment(today).format('MMMM'));
@@ -223,6 +229,12 @@ export const Calendar: React.FC = () => {
 
   const { data, loading } = useQuery(GET_DOCTOR_APPOINTMENTS, {
     variables: {
+      doctorId:
+        currentUserType === LoggedInUserType.SECRETARY
+          ? currentUserId
+            ? currentUserId
+            : localStorage.getItem('currentUserId')
+          : null,
       startDate: format(range.start as number | Date, 'yyyy-MM-dd'),
       endDate: format(range.end as number | Date, 'yyyy-MM-dd'),
     },
@@ -239,9 +251,7 @@ export const Calendar: React.FC = () => {
       <Scrollbars autoHide={true} style={{ height: 'calc(100vh - 65px)' }}>
         <div className={classes.container}>
           <div className={classes.tabHeading}>
-            <Typography variant="h1">
-              {currentPatient && `hello dr. ${(currentPatient!.lastName || '').toLowerCase()} :)`}
-            </Typography>
+            <Typography variant="h1">{`hello :)`}</Typography>
             {viewSelection === 'day' ? (
               <p>
                 {`Here’s your schedule for ${isToday(selectedDate) ? ' the day - ' : ''} ${format(
