@@ -56,10 +56,8 @@ const Configuration = {
   DELIVERY_CHARGES: 25,
   PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
-  PRO_PUBNUB_PUBLISH: 'pub-c-d32f262d-c014-471d-95fe-b45903651cfd',
-  PRO_PUBNUB_SUBSCRIBER: 'sub-c-015f75e4-daca-11e9-85e7-eae1db32c94a',
-  // PRO_PUBNUB_PUBLISH: 'pub-c-e3541ce5-f695-4fbd-bca5-a3a9d0f284d3',
-  // PRO_PUBNUB_SUBSCRIBER: 'sub-c-58d0cebc-8f49-11e9-8da6-aad0a85e15ac',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
   ...PharmaApiConfig.dev,
 };
@@ -76,8 +74,8 @@ const Configuration = {
 //   DELIVERY_CHARGES: 25,
 //   PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
 //   PRO_TOKBOX_KEY: '46429002',
-//   PRO_PUBNUB_PUBLISH: 'pub-c-d32f262d-c014-471d-95fe-b45903651cfd',
-//   PRO_PUBNUB_SUBSCRIBER: 'sub-c-015f75e4-daca-11e9-85e7-eae1db32c94a',
+//   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+//   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
 //   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
 //   ...PharmaApiConfig.prod,
 // };

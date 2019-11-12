@@ -531,7 +531,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Speciality clicked');
+                CommonLogEvent(AppRoutes.DoctorSearch, rowData.name);
                 onClickSearch(rowData.id, rowData.name);
                 const searchInput = {
                   type: SEARCH_TYPE.SPECIALTY,
