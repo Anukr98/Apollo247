@@ -581,7 +581,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <TouchableOpacity
           activeOpacity={1}
           style={{ marginLeft: 20 }}
-          onPress={() => setDisplayFilter(true)}
+          onPress={() => {
+            CommonLogEvent(AppRoutes.DoctorSearchListing, 'Filter view opened');
+            setDisplayFilter(true);
+          }}
         >
           <Filter />
         </TouchableOpacity>
@@ -762,6 +765,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 : ConsultMode.PHYSICAL;
             setfilterMode(selectedFilterMode);
             fetchSpecialityFilterData(selectedFilterMode);
+            CommonLogEvent(AppRoutes.DoctorSearchListing, selectedFilterMode);
           }}
           selectedTab={selectedTab}
         />
@@ -895,6 +899,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             getNetStatus().then((status) => {
               if (status) {
                 fetchSpecialityFilterData(filterMode, selecteddata);
+                CommonLogEvent(
+                  AppRoutes.DoctorSearchListing,
+                  `Filter selected data ${selecteddata}`
+                );
               } else {
                 setshowSpinner(false);
                 setshowOfflinePopup(true);

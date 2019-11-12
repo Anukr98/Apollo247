@@ -27,6 +27,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Text, View } from 'react-native';
 import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -366,7 +367,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               selectedCTA === onlineCTA[0] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
-              CommonLogEvent('CONSULT_ONLINE', 'Consult Now clicked');
+              CommonLogEvent(AppRoutes.DoctorDetails, 'Consult Now clicked');
               setselectedCTA(onlineCTA[0]);
               props.setisConsultOnline(true);
               // props.setselectedTimeSlot('');
@@ -388,7 +389,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
               selectedCTA === onlineCTA[1] ? styles.selectedButtonText : null,
             ]}
             onPress={() => {
-              CommonLogEvent('CONSULT_ONLINE', 'Schedule For Later clicked');
+              CommonLogEvent(AppRoutes.DoctorDetails, 'Schedule For Later clicked');
               fetchSlots();
               setselectedCTA(onlineCTA[1]);
               props.setisConsultOnline(false);

@@ -30,6 +30,7 @@ import {
 } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { theme } from '../../theme/theme';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -381,11 +382,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={styles.buttonView}
-                onPress={() =>
+                onPress={() => {
+                  CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
                   availableInMin && availableInMin < 60 && availableInMin > 0
                     ? navigateToDetails(rowData.id ? rowData.id : '', { showBookAppointment: true })
-                    : navigateToDetails(rowData.id ? rowData.id : '', { showBookAppointment: true })
-                }
+                    : navigateToDetails(rowData.id ? rowData.id : '', {
+                        showBookAppointment: true,
+                      });
+                }}
               >
                 <Text style={styles.buttonText}>
                   {availableInMin && availableInMin < 60 && availableInMin > 0

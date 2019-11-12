@@ -157,6 +157,7 @@ android {
 }
 
 dependencies {
+    implementation project(':@bugfender_rn-bugfender')
     implementation project(':react-native-set-soft-input-mode')
     implementation project(':react-native-image-crop-picker')
     implementation project(':react-native-keep-awake')
