@@ -44,6 +44,7 @@ import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
+import Axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
@@ -199,17 +200,39 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
     {} as MedicineProductDetails
   );
 
-  type MedDetailsList = {
-    index: number;
-    details: MedicineProductDetails[];
-    substitutes: MedicineProductDetails[][];
-  };
-
-  const medDetailsListRef = useRef<MedDetailsList>({
-    index: 0,
-    details: [],
-    substitutes: [],
-  });
+  useEffect(() => {
+    const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
+        Axios.get(url)
+          .then((obj) => {
+            try {
+              if (
+                obj.data.results.length > 0 &&
+                obj.data.results[0].address_components.length > 0
+              ) {
+                const address = obj.data.results[0].address_components[0].short_name;
+                console.log(address, 'address obj');
+                const addrComponents = obj.data.results[0].address_components || [];
+                const _pincode = (
+                  addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+                ).long_name;
+                Alert.alert(_pincode);
+                setpincode(_pincode || '');
+              }
+            } catch {}
+          })
+          .catch((error) => {
+            console.log(error, 'geocode error');
+          });
+      },
+      (error) => {
+        console.log(error.code, error.message, 'getCurrentPosition error');
+      },
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    );
+  }, []);
 
   const [apiError, setApiError] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
