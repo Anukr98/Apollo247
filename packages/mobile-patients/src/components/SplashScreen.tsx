@@ -110,7 +110,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     SplashScreenView.hide();
     Bugfender.init('dxeqKryYySc7rIzZ9SP8HatX28ExaVeC');
     Bugfender.enableUIEventLogging();
-    Bugfender.d(AppRoutes.SplashScreen, 'Splash screen loaded');
   }, [props.navigation]);
 
   // useEffect(() => {

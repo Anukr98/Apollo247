@@ -30,7 +30,7 @@ import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Header } from './ui/Header';
 import { fonts } from '../theme/fonts';
 import Hyperlink from 'react-native-hyperlink';
-import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent, CommonBugFender } from '../FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -112,10 +112,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
-
-  useEffect(() => {
-    firebase.analytics().setCurrentScreen(AppRoutes.OTPVerification, AppRoutes.OTPVerification);
-  });
 
   const handleBack = async () => {
     setonClickOpen(false);
@@ -333,6 +329,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             .catch((error) => {
               try {
                 console.log({ error });
+                CommonBugFender(AppRoutes.OTPVerification, error);
                 setTimeout(() => {
                   if (isAuthChanged) {
                     _removeFromStore();

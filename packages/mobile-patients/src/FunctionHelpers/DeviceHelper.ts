@@ -8,6 +8,7 @@ import { Dimensions, Platform, AsyncStorage } from 'react-native';
 import firebase from 'react-native-firebase';
 import { aphConsole } from '../helpers/helperFunctions';
 import { AppConfig } from '../strings/AppConfig';
+import Bugfender from '@bugfender/rn-bugfender';
 
 const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';
 
@@ -44,4 +45,14 @@ export const CommonScreenLog = (stringName: string, parameterName: string) => {
       aphConsole.log('CommonScreenLog error', error);
     }
   }
+};
+
+export const CommonBugFender = (stringName: string, errorValue: string) => {
+  // if (isReleaseOn) {
+  try {
+    Bugfender.d(stringName, errorValue);
+  } catch (error) {
+    aphConsole.log('CommonBugFender error', error);
+  }
+  // }
 };
