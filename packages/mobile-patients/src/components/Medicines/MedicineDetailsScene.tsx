@@ -15,36 +15,35 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getDeliveryTime,
-  getMedicineDetailsApi,
   getSubstitutes,
   MedicineProduct,
   MedicineProductDetails,
+  getMedicineDetailsApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole, isEmptyObject } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { isEmptyObject, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
   Dimensions,
+  Keyboard,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  BackHandler,
-  Keyboard,
 } from 'react-native';
 import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -97,10 +96,6 @@ const styles = StyleSheet.create({
   },
   noteText: {
     ...theme.viewStyles.text('M', 12, theme.colors.LIGHT_BLUE, 0.6, 20, 0.04),
-    // ...theme.fonts.IBMPlexSansMedium(12),
-    // color: theme.colors.LIGHT_BLUE,
-    // opacity: 0.6,
-    // letterSpacing: 0.04,
   },
   separatorStyle: {
     borderBottomWidth: 0.5,
@@ -120,11 +115,6 @@ const styles = StyleSheet.create({
   },
   bottomView: {
     flex: 1,
-    // shadowColor: theme.colors.WHITE,
-    // shadowOffset: { width: 0, height: -5 },
-    // shadowOpacity: 1,
-    // shadowRadius: 10,
-    // elevation: 2,
   },
   bottonButtonContainer: {
     flexDirection: 'row',
@@ -316,7 +306,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           .filter((i) => i.CaptionDesc) || [];
 
   const sku = props.navigation.getParam('sku'); // 'MED0017';
-  console.log(sku, 'skusku');
+  aphConsole.log('SKU\n', sku);
 
   const { addCartItem, cartItems, updateCartItem } = useShoppingCart();
   const isMedicineAddedToCart = cartItems.findIndex((item) => item.id == sku) != -1;
@@ -325,60 +315,25 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const scrollViewRef = React.useRef<KeyboardAwareScrollView>(null);
   const cartItemsCount = cartItems.length;
 
-  const handleBack = async () => {
-    const index = medDetailsListRef.current.index;
-    if (index > 1) {
-      setSubstitutes(medDetailsListRef.current.substitutes[index - 1]);
-      setmedicineDetails(medDetailsListRef.current.details[index - 1]);
-      medDetailsListRef.current = {
-        index: index - 1,
-        details: [...medDetailsListRef.current.details.slice(0, index)],
-        substitutes: [...medDetailsListRef.current.substitutes.slice(0, index)],
-      };
-
-      setTimeout(() => {
-        scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0);
-      }, 10);
-    } else {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-      props.navigation.goBack();
-    }
-    return false;
-  };
-
   useEffect(() => {
-    const setData = async () => {
-      const index = medDetailsListRef.current.index + 1;
-      medDetailsListRef.current = {
-        index,
-        details: [...medDetailsListRef.current.details, medicineDetails],
-        substitutes: [...medDetailsListRef.current.substitutes, Substitutes],
-      };
-    };
-
     setLoading(true);
-    setData().then(() => {
-      scrollViewRef.current && scrollViewRef.current.scrollToPosition(0, 0);
-      aphConsole.log('useEffect sku\n', { sku });
-
-      getMedicineDetailsApi(sku)
-        .then(({ data }) => {
-          aphConsole.log(data, 'getMedicineDetailsApi');
-          if (data && data.productdp) {
-            setmedicineDetails((data && data.productdp[0]) || {});
-          } else if (data && data.message) {
-            setMedicineError(data.message);
-          }
-          setLoading(false);
-        })
-        .catch((err) => {
-          aphConsole.log('MedicineDetailsScene err', err);
-          setApiError(!!err);
-          setLoading(false);
-        });
-      fetchSubstitutes();
-    });
-  }, [sku]);
+    getMedicineDetailsApi(sku)
+      .then(({ data }) => {
+        aphConsole.log('getMedicineDetailsApi\n', data);
+        if (data && data.productdp) {
+          setmedicineDetails((data && data.productdp[0]) || {});
+        } else if (data && data.message) {
+          setMedicineError(data.message);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        aphConsole.log('MedicineDetailsScene err\n', err);
+        setApiError(!!err);
+        setLoading(false);
+      });
+    fetchSubstitutes();
+  }, []);
 
   useEffect(() => {
     if (medicineOverview.length > 0) {
@@ -387,31 +342,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   }, [medicineOverview]);
 
   useEffect(() => {
-    console.log(deliveryTime, 'deliveryTimedeliveryTime', deliveryError, 'deliveryError');
+    console.log('useEffect deliveryTime\n', { deliveryTime, deliveryError });
     if (!!deliveryTime || !!deliveryError) {
-      console.log(deliveryTime, 'useEffect deliveryTime');
       // scrollViewRef.current && scrollViewRef.current.scrollToEnd({ animated: true });
-
       setTimeout(() => {
         scrollViewRef.current && scrollViewRef.current.scrollToEnd();
       }, 10);
     }
   }, [deliveryTime, deliveryError]);
-
-  useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      BackHandler.addEventListener('hardwareBackPress', handleBack);
-    });
-
-    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
-      BackHandler.removeEventListener('hardwareBackPress', handleBack);
-    });
-
-    return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-      _willBlurSubscription && _willBlurSubscription.remove();
-    };
-  }, []);
 
   const onAddCartItem = ({
     sku,
@@ -470,13 +408,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
           }
         } catch (error) {
           console.log(error);
-
-          // Alert.alert(error);
         }
         setshowDeliverySpinner(false);
       })
       .catch((err) => {
-        console.log(JSON.stringify(err), 'err');
+        aphConsole.log('fetchDeliveryTime err\n', { err });
         Alert.alert('Something went wrong');
         setshowDeliverySpinner(false);
       });
@@ -595,13 +531,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   onAddCartItem(medicineDetails);
                 }}
                 title={
-                  loading
-                    ? 'ADD TO CART'
-                    : isMedicineAddedToCart
-                    ? 'ADDED TO CART'
-                    : // : isOutOfStock
-                      // ? 'OUT OF STOCK'
-                      'ADD TO CART'
+                  loading ? 'ADD TO CART' : isMedicineAddedToCart ? 'ADDED TO CART' : 'ADD TO CART'
                 }
                 disabled={isMedicineAddedToCart || isOutOfStock}
                 disabledStyle={styles.bottomButtonStyle}
@@ -1150,24 +1080,17 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         <View>
           <ScrollView
             bounces={false}
-            // style={{ flex: 1 }}
-            // style={{ height: 'auto' }}
             contentContainerStyle={{
               paddingBottom: 16,
               paddingTop: 8,
             }}
           >
             <FlatList
-              // contentContainerStyle={{
-              //   marginTop: 20,
-              //   marginBottom: 8,
-              // }}
               bounces={false}
               data={Substitutes}
               onEndReachedThreshold={0.5}
               renderItem={({ item, index }) => (
                 <View
-                  // style={{ backgroundColor: 'red' }}
                   onLayout={(event) => {
                     const { height } = event.nativeEvent.layout;
                     setpopupHeight(height * Substitutes.length);
@@ -1180,7 +1103,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                         AppRoutes.MedicineDetailsScene,
                         'Navigate to Medicine Details scene with sku'
                       );
-                      props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
+                      props.navigation.push(AppRoutes.MedicineDetailsScene, {
                         sku: item.sku,
                         title: item.name,
                       });
@@ -1225,7 +1148,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
       <SafeAreaView style={theme.viewStyles.container}>
         <Header
           leftIcon="backArrow"
-          onPressLeftIcon={handleBack}
+          onPressLeftIcon={() => props.navigation.goBack()}
           title={'PRODUCT DETAIL'}
           titleStyle={{ marginHorizontal: 10 }}
           container={{ borderBottomWidth: 0, ...theme.viewStyles.shadowStyle }}
@@ -1259,31 +1182,11 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             ref={scrollViewRef}
             bounces={false}
             keyboardShouldPersistTaps="always"
-            // keyboardShouldPersistTaps={''}
-            // keyboardDismissMode={'on-drag'}
-            // removeClippedSubviews={false}
           >
             {renderTopView()}
             {medicineOverview.length > 0 && renderTabs()}
             {Substitutes.length ? renderSubstitutes() : null}
             {!isOutOfStock && renderDeliveryView()}
-            {/* <View style={styles.cardStyle}>
-            {renderNote()}
-            {Object.keys(medicineDetails).length == 0 && (
-              <Card
-                cardContainer={[
-                  styles.noDataCard,
-                  { marginTop: medicineDetails!.is_prescription_required == '1' ? -10 : 5 },
-                ]}
-                heading={'Uh oh! :('}
-                description={'Something went wrong.'}
-                descriptionTextStyle={{ fontSize: 14 }}
-                headingTextStyle={{ fontSize: 14 }}
-              />
-            )}
-            {renderBasicDetails()}
-            {renderTitleAndDescriptionList()}
-          </View> */}
             <View style={{ height: 130 }} />
           </KeyboardAwareScrollView>
         ) : (
