@@ -231,7 +231,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const [photoUrl, setPhotoUrl] = useState<string>('');
   const [date, setDate] = useState<Date>();
   const [gender, setGender] = useState<Gender>();
-  const [relation, setRelation] = useState<string>();
+  const [relation, setRelation] = useState<RelationArray>();
   const [email, setEmail] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -246,9 +246,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       : false;
 
   const isSatisfyingEmailRegex = (value: string) =>
-    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
-      value
-    );
+    /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);
+
   const isValidProfile =
     firstName &&
     isSatisfyingNameRegex(firstName) &&
@@ -267,7 +266,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       setGender(profileData.gender);
       relationArray.map((relation) => {
         if (relation.key === profileData.relation) {
-          setRelation(relation.title);
+          setRelation(relation);
         }
       });
       setEmail(profileData.email || '');
@@ -301,12 +300,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const updateUserProfile = () => {
     setLoading(true);
-    let relationValue = Relation.ME;
-    relationArray.map((i) => {
-      if (i.title === relation) {
-        relationValue = i.key;
-      }
-    });
     client
       .mutate<editProfile, any>({
         mutation: EDIT_PROFILE,
@@ -316,7 +309,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             photoUrl: photoUrl,
             firstName: firstName,
             lastName: lastName,
-            relation: relationValue,
+            relation: (relation && relation!.key) || Relation.ME,
             gender: gender,
             dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             emailAddress: email,
@@ -339,12 +332,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const newProfile = () => {
     setLoading(true);
-    let relationValue = Relation.ME;
-    relationArray.map((i) => {
-      if (i.title === relation) {
-        relationValue = i.key;
-      }
-    });
     client
       .mutate<addNewProfile, any>({
         mutation: ADD_NEW_PROFILE,
@@ -354,7 +341,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             lastName: lastName,
             dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             gender: gender,
-            relation: relationValue,
+            relation: (relation && relation!.key) || Relation.ME,
             emailAddress: email,
             photoUrl: photoUrl,
             mobileNumber: props.navigation.getParam('mobileNumber'),
@@ -521,12 +508,15 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   };
 
   const renderRelation = () => {
-    const relationsData = relationArray.map((i) => i.title);
+    const relationsData = relationArray.map((i) => {
+      return { key: i.key, value: i.title };
+    });
+
     return (
       <MaterialMenu
-        data={relationsData}
-        selectedText={relation}
-        menuContainer={{ alignItems: 'flex-end' }}
+        options={relationsData}
+        selectedText={relation && relation!.key.toString()}
+        menuContainerStyle={{ alignItems: 'flex-end', marginLeft: width / 2 - 95 }}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
         selectedTextStyle={{
@@ -535,7 +525,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         }}
         bottomPadding={{ paddingBottom: 20 }}
         onPress={(selectedRelation) => {
-          setRelation(selectedRelation.toString());
+          setRelation({
+            key: selectedRelation.key as Relation,
+            title: selectedRelation.value.toString(),
+          });
         }}
       >
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
@@ -547,7 +540,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 relation !== undefined ? null : styles.placeholderStyle,
               ]}
             >
-              {relation !== undefined ? relation : 'Select who are these tests for'}
+              {relation !== undefined ? relation.title : 'Select who are these tests for'}
             </Text>
             <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
               <DropdownGreen />

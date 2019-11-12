@@ -50,12 +50,12 @@ import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopB
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import { SearchByBrand } from '@aph/mobile-patients/src/components/Medicines/SearchByBrand';
 import { AsyncStorage } from 'react-native';
-import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
 import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
+import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
+import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -107,8 +107,8 @@ export enum AppRoutes {
   TestsCart = 'TestsCart',
   MedAndTestCart = 'MedAndTestCart',
   TestDetails = 'TestDetails',
-  ManageProfile = 'ManageProfile',
   EditProfile = 'EditProfile',
+  ManageProfile = 'ManageProfile',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -277,11 +277,11 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.TestDetails]: {
     screen: TestDetails,
   },
-  [AppRoutes.ManageProfile]: {
-    screen: ManageProfile,
-  },
   [AppRoutes.EditProfile]: {
     screen: EditProfile,
+  },
+  [AppRoutes.ManageProfile]: {
+    screen: ManageProfile,
   },
 };
 

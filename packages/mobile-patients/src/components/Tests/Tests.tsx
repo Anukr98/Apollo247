@@ -447,7 +447,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <ListCard
           onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene, { isTest: true })}
           container={{ marginBottom: 24, marginTop: 20 }}
-          title={'Your Orders'}
+          title={'Your Orders'}
           leftIcon={<TestsIcon />}
         />
       )) || <View style={{ height: 24 }} />
@@ -521,10 +521,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
       return (
         <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
-          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
+          <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
           {!!specialPrice && (
             <Text style={styles.discountedPriceText}>
-              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
+              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
             </Text>
           )}
         </View>
@@ -569,7 +569,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }}
             onPress={data.onAddOrRemoveCartItem}
           >
-            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
+            {data.isAddedToCart ? 'REMOVE' : 'ADD TO CART'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -627,7 +627,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderHotSellers = () => {
     return (
       <View>
-        <SectionHeader leftText={'HOT SELLERS'} />
+        <SectionHeader leftText={'HOT SELLERS'} />
         <FlatList
           bounces={false}
           keyExtractor={(_, index) => `${index}`}
@@ -725,7 +725,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   textAlign: 'center',
                 }}
               >
-                (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
+                (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
               </Text>
             )}
           </View>
@@ -838,7 +838,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   title: `${item.title || 'Products'}`.toUpperCase(),
                 }),
               {
-                // marginRight: 8,
+                // marginRight: 8,
                 marginHorizontal: 4,
                 marginTop: 16,
                 marginBottom: 20,
@@ -1113,7 +1113,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           searchText.length > 2 && (
             <FlatList
               keyboardShouldPersistTaps="always"
-              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
+              // contentContainerStyle={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}
               bounces={false}
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}

@@ -405,7 +405,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               isCardExpanded={true}
               isInStock={true}
               isTest={true}
-              originalPrice={test.originalprice!}
+              specialPrice={test.specialPrice!}
               isPrescriptionRequired={false}
               subscriptionStatus={'unsubscribed'}
               packOfCount={parseInt(test.mou || '0')}
@@ -600,7 +600,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       <View>
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Date</Text>
-          <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
+          <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
         </View>
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Time</Text>
@@ -903,11 +903,20 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderProfilePicker = () => {
+    const pickerData = profileArray.map((i) => {
+      return { key: i.pid, value: i.name };
+    });
+
     return (
       <MaterialMenu
-        dataObject={profileArray}
+        options={pickerData}
+        defaultOptions={[]}
         selectedText={profile.pid}
-        menuContainer={{ alignItems: 'flex-end' }}
+        menuContainerStyle={{
+          alignItems: 'flex-end',
+          marginTop: 16,
+          marginLeft: width / 2 - 95,
+        }}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
         selectedTextStyle={{
@@ -924,9 +933,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           alignItems: 'flex-end',
           justifyContent: 'flex-end',
         }}
-        onPressObject={(selectedUser) => {
-          if (selectedUser.pid === 'ADD NEW PROFILE') setDisplayAddProfile(true);
-          else setProfile(selectedUser);
+        onPress={(selectedUser) => {
+          if (selectedUser.key === 'ADD NEW PROFILE') setDisplayAddProfile(true);
+          else {
+            profileArray.map((i) => {
+              if (selectedUser.key === i.pid) {
+                setProfile(i);
+              }
+            });
+          }
         }}
       >
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>

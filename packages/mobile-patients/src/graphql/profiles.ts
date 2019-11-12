@@ -1302,10 +1302,10 @@ export const GET_CALL_DETAILS = gql`
   }
 `;
 
-export const DELETE_DEVICE_TOKEN = gql`
-  mutation deleteDeviceToken($deviceToken: String, $patientId: String) {
-    deleteDeviceToken(deviceToken: $deviceToken, patientId: $patientId) {
-      status
-    }
-  }
+export const DELETE_DEVICE_TOKEN = gql`	
+  mutation deleteDeviceToken($deviceToken: String, $patientId: String) {	
+    deleteDeviceToken(deviceToken: $deviceToken, patientId: $patientId) {	
+      status	
+    }	
+  }	
 `;
