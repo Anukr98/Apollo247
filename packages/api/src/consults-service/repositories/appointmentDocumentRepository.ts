@@ -17,7 +17,7 @@ export class AppointmentDocumentRepository extends Repository<AppointmentDocumen
 
   getDocument(id: string) {
     return this.findOne({ id }).catch((getApptError) => {
-      throw new AphError(AphErrorMessages.GET_APPOINTMENT_DOCUMNENT_ERROR, undefined, {
+      throw new AphError(AphErrorMessages.GET_APPOINTMENT_DOCUMENT_ERROR, undefined, {
         getApptError,
       });
     });
@@ -25,7 +25,7 @@ export class AppointmentDocumentRepository extends Repository<AppointmentDocumen
 
   removeFromAppointmentDocument(id: string) {
     return this.delete(id).catch((getApptError) => {
-      throw new AphError(AphErrorMessages.DELETE_APPOINTMENT_DOCUMNENT_ERROR, undefined, {
+      throw new AphError(AphErrorMessages.DELETE_APPOINTMENT_DOCUMENT_ERROR, undefined, {
         getApptError,
       });
     });

@@ -33,8 +33,8 @@ export const uploadChatDocumentTypeDefs = gql`
       base64FileInput: String
     ): UploadChatDocumentResult!
 
-    addChatDocument(appointmentId: ID, documentPath: String): UploadedDocumentDetails
-    removeChatDocument(documentPathId: ID): ChatDocumentDeleteResult
+    addChatDocument(appointmentId: ID!, documentPath: String!): UploadedDocumentDetails
+    removeChatDocument(documentPathId: ID!): ChatDocumentDeleteResult
   }
 `;
 type UploadChatDocumentResult = {
