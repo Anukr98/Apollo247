@@ -60,6 +60,8 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { ProfileList } from '../ui/ProfileList';
+import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -142,7 +144,7 @@ type clinicHoursData = {
 
 type TimeArray = {
   label: string;
-  time: string[];
+  time: string;
 }[];
 
 type Profile = {
@@ -199,7 +201,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       time: '10:00 AM - 3:30 PM',
     },
   ];
-  const [profile, setProfile] = useState<Profile>({ pid: '', name: '' });
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
@@ -208,29 +210,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     { title: 'Clinic Visit', subtitle: 'Clinic Hours' },
   ];
   const [timeArray, settimeArray] = useState<TimeArray>([
-    { label: 'Morning', time: [date.toString(), dateCalculator(1).toString()] },
-    { label: 'Afternoon', time: [dateCalculator(2).toString(), dateCalculator(3).toString()] },
-    { label: 'Evening', time: [dateCalculator(4).toString(), dateCalculator(5).toString()] },
-    { label: 'Night', time: [dateCalculator(6).toString(), dateCalculator(7).toString()] },
+    { label: 'slot1', time: '6:00 am - 6:45 am' },
+    { label: 'slot2', time: '6:45 am - 7:30 am' },
+    { label: 'slot3', time: '7:30 am - 8:15 am' },
+    { label: 'slot4', time: '8:15 am - 9:00 am' },
+    { label: 'slot5', time: '9:00 am - 9:45 am' },
+    { label: 'slot6', time: '9:45 am - 10:30 am' },
+    { label: 'slot7', time: '10:30 am - 11:15 am' },
+    { label: 'slot8', time: '11:15 am - 12:00 pm' },
   ]);
+
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
-  const [profileArray, setProfileArray] = useState<Profile[]>([]);
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
   const { showAphAlert, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
-
-  const addNewProfileText = (data: Profile[], newEntry?: Profile) => {
-    let pArray = data;
-    if (newEntry) {
-      pArray.pop();
-      pArray.push(newEntry);
-    }
-    pArray.push({ pid: 'ADD NEW PROFILE', name: 'ADD NEW PROFILE' });
-    return pArray;
-  };
 
   useEffect(() => {
     if (!currentPatient) {
@@ -261,10 +257,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         })) ||
       setLoading!(false);
   }, [currentPatientId]);
-
-  useEffect(() => {
-    setProfileArray(addNewProfileText(profileArray));
-  }, [profileArray]);
 
   /*  useEffect(() => {
       getCartInfo()
@@ -902,68 +894,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   };
 
-  const renderProfilePicker = () => {
-    const pickerData = profileArray.map((i) => {
-      return { key: i.pid, value: i.name };
-    });
-
-    return (
-      <MaterialMenu
-        options={pickerData}
-        defaultOptions={[]}
-        selectedText={profile.pid}
-        menuContainerStyle={{
-          alignItems: 'flex-end',
-          marginTop: 16,
-          marginLeft: width / 2 - 95,
-        }}
-        itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
-        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
-        selectedTextStyle={{
-          ...theme.viewStyles.text('M', 16, '#00b38e'),
-          alignSelf: 'flex-start',
-        }}
-        lastTextStyle={{
-          ...theme.viewStyles.text('B', 13, '#fc9916'),
-        }}
-        bottomPadding={{ paddingBottom: 20 }}
-        lastContainerStyle={{
-          height: 38,
-          borderBottomWidth: 0,
-          alignItems: 'flex-end',
-          justifyContent: 'flex-end',
-        }}
-        onPress={(selectedUser) => {
-          if (selectedUser.key === 'ADD NEW PROFILE') setDisplayAddProfile(true);
-          else {
-            profileArray.map((i) => {
-              if (selectedUser.key === i.pid) {
-                setProfile(i);
-              }
-            });
-          }
-        }}
-      >
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <View style={styles.placeholderViewStyle}>
-            <Text
-              style={[
-                styles.placeholderTextStyle,
-                ,
-                profile.pid !== '' ? null : styles.placeholderStyle,
-              ]}
-            >
-              {profile.pid !== '' ? profile.name : 'Select who are these tests for'}
-            </Text>
-            <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-              <DropdownGreen />
-            </View>
-          </View>
-        </View>
-      </MaterialMenu>
-    );
-  };
-
   const renderProfiles = () => {
     return (
       <View>
@@ -979,7 +909,13 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             paddingBottom: 16,
           }}
         >
-          {renderProfilePicker()}
+          {/* {renderProfilePicker()} */}
+          <ProfileList
+            defaultText={'Select who are these tests for'}
+            saveUserChange={false}
+            selectedProfile={profile}
+            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+          ></ProfileList>
           <Text
             style={{
               ...theme.fonts.IBMPlexSansMedium(16),
@@ -1004,7 +940,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setdisplayoverlay={setDisplaySchedule}
           selectedTimeSlot={selectedTimeSlot}
           setselectedTimeSlot={(selected) => setselectedTimeSlot(selected)}
-          timeArray={timeArray}
+          isDropDown={true}
+          dropdownArray={timeArray}
           CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
         />
       )}
@@ -1013,7 +950,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setdisplayoverlay={setDisplayAddProfile}
           setProfile={(profile) => {
             setProfile(profile);
-            setProfileArray(addNewProfileText(profileArray, profile));
           }}
         />
       )}

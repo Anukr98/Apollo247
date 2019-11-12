@@ -32,6 +32,7 @@ import { Gender, Relation } from '../../graphql/types/globalTypes';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { PatientDefaultImage } from '../ui/Icons';
 import { Spinner } from '../ui/Spinner';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   separatorStyle: {
@@ -53,6 +54,7 @@ const styles = StyleSheet.create({
   imageView: {
     marginRight: 16,
     overflow: 'hidden',
+    resizeMode: 'contain',
     width: 80,
     height: 80,
     borderRadius: 40,
@@ -77,11 +79,12 @@ export interface ManageProfileProps extends NavigationScreenProps {}
 
 export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   const client = useApolloClient();
+  const { setLoading } = useUIElements();
 
   const [profiles, setProfiles] = useState<
     (getPatientByMobileNumber_getPatientByMobileNumber_patients | null)[]
   >();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
@@ -90,7 +93,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   };
 
   useEffect(() => {
-    setLoading(true);
+    setLoading!(true);
+    setIsLoading(true);
     client
       .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
         query: GET_PATIENTS_MOBILE,
@@ -107,7 +111,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         Alert.alert('Alert', e.message);
       })
       .finally(() => {
-        setLoading(false);
+        setLoading!(false);
+        setIsLoading(false);
       });
   }, [currentPatient]);
 
@@ -234,7 +239,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 ...fonts.IBMPlexSansMedium(12),
               }}
             >
-              No Profiles avaliable
+              {isLoading ? '' : 'No Profiles avaliable'}
             </Text>
           </View>
         )}
@@ -271,7 +276,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         <View style={{ padding: 40 }} />
       </ScrollView>
       {renderBottomStickyComponent()}
-      {loading && <Spinner />}
+      {/* {loading && <Spinner />} */}
     </SafeAreaView>
   );
 };

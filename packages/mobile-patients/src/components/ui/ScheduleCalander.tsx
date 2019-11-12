@@ -11,6 +11,7 @@ import {
   MorningUnselected,
   Night,
   NightUnselected,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -27,6 +28,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { MaterialMenu } from './MaterialMenu';
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,7 +36,10 @@ type TimeArray = {
   label: string;
   time: string[];
 }[];
-
+type TimeOptionArray = {
+  label: string;
+  time: string;
+};
 const styles = StyleSheet.create({
   yellowTextStyle: {
     ...theme.viewStyles.yellowTextStyle,
@@ -56,6 +61,21 @@ const styles = StyleSheet.create({
     color: theme.colors.APP_GREEN,
     ...theme.fonts.IBMPlexSansMedium(15),
   },
+  placeholderViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    borderBottomWidth: 2,
+    paddingTop: 6,
+    paddingBottom: 3,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
+  placeholderTextStyle: {
+    ...theme.viewStyles.text('M', 16, '#01475b'),
+  },
 });
 
 export interface ScheduleCalanderProps {
@@ -64,7 +84,9 @@ export interface ScheduleCalanderProps {
   date: Date;
   selectedTimeSlot: string;
   setselectedTimeSlot: (args0: string) => void;
-  timeArray: TimeArray;
+  timeArray?: TimeArray;
+  isDropDown?: boolean;
+  dropdownArray?: TimeOptionArray[];
   CALENDAR_TYPE: CALENDAR_TYPE;
 }
 
@@ -96,9 +118,10 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
   const [type, setType] = useState<CALENDAR_TYPE>(props.CALENDAR_TYPE);
   const [date, setDate] = useState<Date>(props.date);
   const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
-  const [timeArray, settimeArray] = useState<TimeArray>(props.timeArray);
+  const [timeArray, settimeArray] = useState<TimeArray>(props!.timeArray!);
+  const [dropArray, setDropArray] = useState<TimeOptionArray[]>(props!.dropdownArray!);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>(props.selectedTimeSlot);
-
+  const [selectedDrop, setSelectedDrop] = useState<TimeOptionArray>();
   useEffect(() => {
     if (!!props.selectedTimeSlot) {
       timeArray &&
@@ -128,7 +151,50 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
       />
     );
   };
-
+  const renderDropTimings = () => {
+    const timeOptionsArray = dropArray.map((item) => {
+      return { key: item.label, value: item.time };
+    });
+    return (
+      <View>
+        <Text style={{ ...theme.viewStyles.text('M', 14, '#02475b'), marginTop: 16 }}>Slot</Text>
+        <View style={styles.optionsView}>
+          <MaterialMenu
+            options={timeOptionsArray}
+            selectedText={selectedDrop && selectedDrop!.label}
+            menuContainerStyle={{
+              alignItems: 'flex-end',
+              marginTop: 24,
+              marginLeft: width / 2 - 110,
+            }}
+            itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
+            selectedTextStyle={{ ...theme.viewStyles.text('M', 16, '#00b38e') }}
+            onPress={(item) => {
+              setselectedTimeSlot(item.value.toString());
+              setSelectedDrop({ label: item.key, time: item.value.toString() });
+            }}
+          >
+            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+              <View style={[styles.placeholderViewStyle]}>
+                <Text
+                  style={[
+                    styles.placeholderTextStyle,
+                    ,
+                    selectedDrop !== undefined ? null : styles.placeholderStyle,
+                  ]}
+                >
+                  {selectedDrop !== undefined ? selectedDrop.time : 'Select Time'}
+                </Text>
+                <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                  <DropdownGreen />
+                </View>
+              </View>
+            </View>
+          </MaterialMenu>
+        </View>
+      </View>
+    );
+  };
   const renderTimings = () => {
     return (
       <View>
@@ -281,7 +347,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
                 marginTop: 16,
               }}
             >
-              {renderTimings()}
+              {props.isDropDown ? renderDropTimings() : renderTimings()}
             </View>
             <View style={{ height: 96 }} />
           </ScrollView>
