@@ -203,7 +203,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   ];
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
-  const [displaySchedule, setDisplaySchedule] = useState<boolean>(true);
+  const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const tabs = [
     { title: 'Home Visit', subtitle: 'Appointment Slot' },
