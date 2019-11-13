@@ -307,7 +307,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalContent: {
       textAlign: 'center',
-      maxHeight: 'calc(100% - 212px)',
+      maxHeight: 'calc(100vh - 212px)',
       overflow: 'hidden',
       '& img': {
         maxWidth: '100%',

@@ -124,15 +124,25 @@ import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
 import { format, differenceInMilliseconds } from 'date-fns';
+import path from 'path';
 
 (async () => {
   await connect();
   //configure winston for profiles service
+  const logsDirPath = <string>process.env.ASSETS_DIRECTORY;
+  const logsDir = path.resolve(logsDirPath);
   winston.configure({
     transports: [
-      new winston.transports.File({ filename: 'access-logs/profiles-service.log', level: 'info' }),
-      new winston.transports.File({ filename: 'error-logs/profiles-service.log', level: 'error' }),
+      new winston.transports.File({
+        filename: logsDir + '/logs/access-logs/profiles-service.log',
+        level: 'info',
+      }),
+      new winston.transports.File({
+        filename: logsDir + '/logs/error-logs/profiles-service.log',
+        level: 'error',
+      }),
     ],
+    exitOnError: false, // do not exit on handled exceptions
   });
 
   const server = new ApolloServer({
@@ -305,7 +315,7 @@ import { format, differenceInMilliseconds } from 'date-fns';
       /* This plugin is defined in-line. */
       {
         serverWillStart() {
-          //winston.log('info', 'Server starting up!');
+          winston.log('info', 'Server starting up!');
           console.log('Server starting up!');
         },
         requestDidStart({ operationName, request }) {
@@ -316,16 +326,16 @@ import { format, differenceInMilliseconds } from 'date-fns';
           console.log(reqStartTimeFormatted);
           return {
             parsingDidStart(requestContext) {
-              // winston.log({
-              //   message: 'Request Starting',
-              //   time: reqStartTimeFormatted,
-              //   operation: requestContext.request.query,
-              //   level: 'info',
-              // });
+              winston.log({
+                message: 'Request Starting',
+                time: reqStartTimeFormatted,
+                operation: requestContext.request.query,
+                level: 'info',
+              });
             },
             didEncounterErrors(requestContext) {
               requestContext.errors.forEach((error) => {
-                //winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
+                winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
               });
             },
             willSendResponse({ response }) {
@@ -340,7 +350,7 @@ import { format, differenceInMilliseconds } from 'date-fns';
               };
               //remove response if there is no error
               if (errorCount === 0) delete responseLog.response;
-              //winston.log(responseLog);
+              winston.log(responseLog);
             },
           };
         },

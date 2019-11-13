@@ -661,7 +661,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         )}
         {showCancelPopup && (
           <BottomPopUp
-            title={'Hi, Surj :)'}
+            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={
               'Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!'
             }
