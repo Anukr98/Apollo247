@@ -287,6 +287,9 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
     },
     modalContent: {
+      textAlign: 'center',
+      maxHeight: 'calc(100vh - 212px)',
+      overflow: 'hidden',
       '& img': {
         maxWidth: '100%',
       },

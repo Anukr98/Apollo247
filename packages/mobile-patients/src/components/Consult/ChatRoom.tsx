@@ -822,7 +822,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else {
         minuteTimer && clearTimeout(minuteTimer);
       }
-    }, 60000);
+    }, 90000);
   }, []);
 
   const checkingAppointmentDates = () => {
@@ -1689,6 +1689,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={{
                   width: 32,
                   height: 32,
+                  borderRadius: 16
                 }}
               />
             ) : (
@@ -1903,6 +1904,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     style={{
                       width: 32,
                       height: 32,
+                      borderRadius: 16
                     }}
                   />
                 ) : (
@@ -2010,6 +2012,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     style={{
                       width: 32,
                       height: 32,
+                      borderRadius: 16
                     }}
                   />
                 ) : (
@@ -2313,7 +2316,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       color: '#01475b',
                       paddingHorizontal: 16,
                       paddingVertical: 12,
-                          textAlign: 'left',
+                      textAlign: 'left',
                       ...theme.fonts.IBMPlexSansMedium(16),
                     }}
                   >
@@ -3216,14 +3219,38 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           backgroundColor: 'black',
         }}
       >
-        <DoctorCall
+        {appointmentData.doctorInfo.photoUrl &&
+        appointmentData.doctorInfo.photoUrl.match(
+          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+        ) ? (
+          <Image
+            source={{ uri: appointmentData.doctorInfo.photoUrl }}
+            resizeMode={'contain'}
+            style={{
+              width: 155,
+              height: 205,
+              opacity: 0.8,
+              borderRadius: 30,
+            }}
+          />
+        ) : (
+          <DoctorPlaceholderImage
+            style={{
+              width: 155,
+              height: 205,
+              opacity: 0.8,
+              borderRadius: 30,
+            }}
+          />
+        )}
+        {/* <DoctorCall
           style={{
             width: 155,
             height: 205,
             opacity: 0.5,
             borderRadius: 30,
           }}
-        />
+        /> */}
         <Text
           style={{
             position: 'absolute',
@@ -3455,7 +3482,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'CHOOSE FROM\nGALLERY',
-          prescription: 'UPLOAD\nFROMPHR',
+          prescription: 'UPLOAD\nFROM PHR',
         }}
         hideTAndCs={false}
         onClickClose={() => setDropdownVisible(false)}
@@ -3716,7 +3743,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                 }}
                 onPress={async () => {
-                  console.log('isDropdownVisible', isDropdownVisible);
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >
