@@ -17,10 +17,10 @@ import {
 export interface DiagnosticsCartItem {
   id: string;
   name: string;
-  mou: string; // pack of how many units (eg. 10 tablets)
+  mou: string; // package of how many tests (eg. 10)
   price: number;
   thumbnail: string | null;
-  specialPrice: number;
+  specialPrice?: number;
 }
 
 export interface DiagnosticsCartContextProps {
@@ -136,8 +136,8 @@ const showGenericAlert = (message: string) => {
 };
 
 export const DiagnosticsCartProvider: React.FC = (props) => {
-  const { currentPatient } = useAllCurrentPatients();
-  const id = (currentPatient && currentPatient.id) || '';
+  // const { currentPatient } = useAllCurrentPatients();
+  const id = ''; //(currentPatient && currentPatient.id) || '';
   const AsyncStorageKeys = {
     cartItems: `diagnosticsCartItems${id}`,
     ePrescriptions: `diagnosticsEPrescriptions${id}`,

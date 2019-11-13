@@ -1309,3 +1309,22 @@ export const DELETE_DEVICE_TOKEN = gql`
     }
   }
 `;
+
+export const SEARCH_DIAGNOSTICS = gql`
+  query searchDiagnostics($city: String, $patientId: String, $searchText: String) {
+    searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+      }
+    }
+  }
+`;

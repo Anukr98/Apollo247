@@ -55,7 +55,11 @@ import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAnd
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
-import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import {
+  CommonScreenLog,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { SearchTestScene } from '@aph/mobile-patients/src/components/Medicines/SearchTestScene';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -79,6 +83,7 @@ export enum AppRoutes {
   AppointmentDetails = 'AppointmentDetails',
   StorPickupScene = 'StorPickupScene',
   SearchMedicineScene = 'SearchMedicineScene',
+  SearchTestScene = 'SearchTestScene',
   MedicineDetailsScene = 'MedicineDetailsScene',
   ApplyCouponScene = 'ApplyCouponScene',
   ChatRoom = 'ChatRoom',
@@ -189,6 +194,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SearchMedicineScene]: {
     screen: SearchMedicineScene,
+  },
+  [AppRoutes.SearchTestScene]: {
+    screen: SearchTestScene,
   },
   [AppRoutes.MedicineDetailsScene]: {
     screen: MedicineDetailsScene,

@@ -4,14 +4,10 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
   CartIcon,
-  InjectionIcon,
   LocationOff,
   LocationOn,
-  MedicineIcon,
-  MedicineRxIcon,
   NotificationIcon,
   SearchSendIcon,
-  SyrupBottleIcon,
   TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
@@ -19,15 +15,21 @@ import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHe
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { GET_MEDICINE_ORDERS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_MEDICINE_ORDERS_LIST,
+  SEARCH_DIAGNOSTICS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
 import {
-  Doseform,
+  searchDiagnostics,
+  searchDiagnosticsVariables,
+  searchDiagnostics_searchDiagnostics_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import {
   getMedicinePageProducts,
-  getMedicineSearchSuggestionsApi,
   getTestsPackages,
   MedicinePageAPiResponse,
   MedicineProduct,
@@ -43,9 +45,9 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import { default as axios, default as Axios } from 'axios';
+import { default as axios } from 'axios';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   AsyncStorage,
   Dimensions,
@@ -87,6 +89,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
+
 const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
 export type locationType = { lat: string; lng: string };
@@ -878,9 +881,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const [searchText, setSearchText] = useState<string>('');
-  const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
+  const [medicineList, setMedicineList] = useState<
+    searchDiagnostics_searchDiagnostics_diagnostics[]
+  >([]);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
+  const client = useApolloClient();
 
   const onSearchMedicine = (_searchText: string) => {
     setSearchText(_searchText);
@@ -889,28 +895,33 @@ export const Tests: React.FC<TestsProps> = (props) => {
       return;
     }
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
+    client
+      .query<searchDiagnostics, searchDiagnosticsVariables>({
+        query: SEARCH_DIAGNOSTICS,
+        variables: {
+          searchText: _searchText,
+          city: 'Hyderabad',
+          patientId: (currentPatient && currentPatient.id) || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
       .then(({ data }) => {
         // aphConsole.log({ data });
-        const products = data.products || [];
-        setMedicineList(products);
+        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
         setsearchSate('success');
       })
       .catch((e) => {
         // aphConsole.log({ e });
-        if (!Axios.isCancel(e)) {
-          setsearchSate('fail');
-        }
+        setsearchSate('fail');
       });
   };
 
   interface SuggestionType {
     name: string;
     price: number;
-    isOutOfStock: boolean;
-    type: Doseform;
+    type: 'TEST' | 'PACKAGE';
     imgUri?: string;
-    prescriptionRequired: boolean;
     onPress: () => void;
     showSeparator?: boolean;
     style?: ViewStyle;
@@ -944,15 +955,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
           >
             {data.name}
           </Text>
-          {data.isOutOfStock ? (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
-              {'Out Of Stock'}
-            </Text>
-          ) : (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
-              Rs. {data.price}
-            </Text>
-          )}
+          <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
+            Rs. {data.price}
+          </Text>
         </View>
       );
     };
@@ -967,14 +972,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
               style={{ height: 40, width: 40 }}
               resizeMode="contain"
             />
-          ) : data.type == 'SYRUP' ? (
-            <SyrupBottleIcon />
-          ) : data.type == 'INJECTION' ? (
-            <InjectionIcon />
-          ) : data.prescriptionRequired ? (
-            <MedicineRxIcon />
+          ) : data.type == 'PACKAGE' ? (
+            <TestsIcon />
           ) : (
-            <MedicineIcon />
+            <TestsIcon />
           )}
         </View>
       );
@@ -1026,9 +1027,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         disabled={!shouldEnableSearchSend}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.SearchMedicineScene, {
+          props.navigation.navigate(AppRoutes.SearchTestScene, {
             searchText: searchText,
-            isTest: true,
           });
           setSearchText('');
           setMedicineList([]);
@@ -1046,9 +1046,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <Input
           onSubmitEditing={() => {
             if (searchText.length > 2) {
-              props.navigation.navigate(AppRoutes.SearchMedicineScene, {
+              props.navigation.navigate(AppRoutes.SearchTestScene, {
                 searchText: searchText,
-                isTest: true,
               });
             }
           }}
@@ -1091,26 +1090,24 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderSearchSuggestionItemView = (data: ListRenderItemInfo<MedicineProduct>) => {
+  const renderSearchSuggestionItemView = (
+    data: ListRenderItemInfo<searchDiagnostics_searchDiagnostics_diagnostics>
+  ) => {
     const { index, item } = data;
-    const imgUri = item.thumbnail ? `${config.IMAGES_BASE_URL[0]}${item.thumbnail}` : '';
+    const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
     return renderSearchSuggestionItem({
       onPress: () => {
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-          sku: item.sku,
-        });
+        props.navigation.navigate(AppRoutes.TestDetails, {});
       },
-      name: item.name,
-      price: item.price,
-      isOutOfStock: !item.is_in_stock,
-      type: ((item.PharmaOverview || [])[0] || {}).Doseform,
+      name: item.itemName,
+      price: item.rate,
+      type: 'TEST',
       style: {
         marginHorizontal: 20,
         paddingBottom: index == medicineList.length - 1 ? 10 : 0,
       },
       showSeparator: !(index == medicineList.length - 1),
       imgUri,
-      prescriptionRequired: item.is_prescription_required == '1',
     });
   };
 

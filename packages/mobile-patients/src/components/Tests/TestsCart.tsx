@@ -746,8 +746,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             </View>
           )}
           <View style={styles.rowSpaceBetweenStyle}>
-            <Text style={styles.blueTextStyle}>Delivery Charges</Text>
-            <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges.toFixed(2)}</Text>
+            <Text style={styles.blueTextStyle}>Collection Charges</Text>
+            <Text style={styles.blueTextStyle}>Rs. {deliveryCharges.toFixed(2)}</Text>
           </View>
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View style={styles.rowSpaceBetweenStyle}>
