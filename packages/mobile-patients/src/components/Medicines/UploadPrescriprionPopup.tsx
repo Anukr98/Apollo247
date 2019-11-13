@@ -10,6 +10,8 @@ import {
   PrescriptionIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import {
@@ -20,16 +22,10 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  Platform,
 } from 'react-native';
 import { Overlay } from 'react-native-elements';
 import ImagePicker, { Image as ImageCropPickerResponse } from 'react-native-image-crop-picker';
 import { ScrollView } from 'react-navigation';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import DocumentPicker from 'react-native-document-picker';
-import RNFetchBlob from 'react-native-fetch-blob';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -85,12 +81,12 @@ const styles = StyleSheet.create({
 export interface UploadPrescriprionPopupProps {
   type?: 'cartOrMedicineFlow' | 'nonCartFlow';
   isVisible: boolean;
-  disabledOption: EPrescriptionDisableOption;
+  disabledOption?: EPrescriptionDisableOption;
   heading: string;
   optionTexts: {
-    camera: string;
-    gallery: string;
-    prescription: string;
+    camera?: string;
+    gallery?: string;
+    prescription?: string;
   };
   instructionHeading?: string;
   instructions?: string[];
@@ -306,36 +302,41 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
           marginHorizontal: 13,
         }}
       >
-        <TouchableOpacity
-          disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
-          activeOpacity={1}
-          style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
-          onPress={onClickTakePhoto}
-        >
-          <CameraIcon />
-          <Text style={styles.yelloTextStyle}>{props.optionTexts.camera}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
-          activeOpacity={1}
-          style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
-          onPress={onClickGallery}
-        >
-          <GalleryIcon />
-          <Text style={styles.yelloTextStyle}>{props.optionTexts.gallery}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          disabled={isOptionDisabled('E-PRESCRIPTION')}
-          activeOpacity={1}
-          style={[styles.cardContainer, getOptionStyle('E-PRESCRIPTION')]}
-          onPress={() => {
-            props.onResponse('E-PRESCRIPTION', []);
-          }}
-        >
-          <PrescriptionIcon />
-          <Text style={styles.yelloTextStyle}>{props.optionTexts.prescription}</Text>
-        </TouchableOpacity>
+        {!!props.optionTexts.camera && (
+          <TouchableOpacity
+            disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
+            activeOpacity={1}
+            style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
+            onPress={onClickTakePhoto}
+          >
+            <CameraIcon />
+            <Text style={styles.yelloTextStyle}>{props.optionTexts.camera}</Text>
+          </TouchableOpacity>
+        )}
+        {!!props.optionTexts.gallery && (
+          <TouchableOpacity
+            disabled={isOptionDisabled('CAMERA_AND_GALLERY')}
+            activeOpacity={1}
+            style={[styles.cardContainer, getOptionStyle('CAMERA_AND_GALLERY')]}
+            onPress={onClickGallery}
+          >
+            <GalleryIcon />
+            <Text style={styles.yelloTextStyle}>{props.optionTexts.gallery}</Text>
+          </TouchableOpacity>
+        )}
+        {!!props.optionTexts.prescription && (
+          <TouchableOpacity
+            disabled={isOptionDisabled('E-PRESCRIPTION')}
+            activeOpacity={1}
+            style={[styles.cardContainer, getOptionStyle('E-PRESCRIPTION')]}
+            onPress={() => {
+              props.onResponse('E-PRESCRIPTION', []);
+            }}
+          >
+            <PrescriptionIcon />
+            <Text style={styles.yelloTextStyle}>{props.optionTexts.prescription}</Text>
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
@@ -399,6 +400,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
   return (
     <Overlay
+      onRequestClose={() => props.onClickClose()}
       isVisible={props.isVisible}
       windowBackgroundColor={'rgba(0, 0, 0, 0.8)'}
       containerStyle={{

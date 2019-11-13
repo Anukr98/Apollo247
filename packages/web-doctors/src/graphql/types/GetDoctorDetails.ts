@@ -8,6 +8,17 @@ import { DoctorType, DOCTOR_ONLINE_STATUS, Salutation, ConsultMode, ConsultType,
 // GraphQL query operation: GetDoctorDetails
 // ====================================================
 
+export interface GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary {
+  __typename: "Secretary";
+  id: string;
+  name: string;
+}
+
+export interface GetDoctorDetails_getDoctorDetails_doctorSecretary {
+  __typename: "DoctorSecretaryDetails";
+  secretary: GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary | null;
+}
+
 export interface GetDoctorDetails_getDoctorDetails_consultHours {
   __typename: "ConsultHours";
   consultMode: ConsultMode;
@@ -130,6 +141,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   streetLine2: string | null;
   streetLine3: string | null;
   zip: string | null;
+  doctorSecretary: GetDoctorDetails_getDoctorDetails_doctorSecretary | null;
   consultHours: (GetDoctorDetails_getDoctorDetails_consultHours | null)[] | null;
   packages: (GetDoctorDetails_getDoctorDetails_packages | null)[] | null;
   bankAccount: (GetDoctorDetails_getDoctorDetails_bankAccount | null)[] | null;

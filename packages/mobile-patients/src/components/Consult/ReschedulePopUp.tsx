@@ -7,12 +7,13 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Platform, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { getNetStatus } from '../../helpers/helperFunctions';
 import { AppRoutes } from '../NavigatorContainer';
 import { NoInterNetPopup } from '../ui/NoInterNetPopup';
 import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { BottomPopUp } from '../ui/BottomPopUp';
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,6 +35,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [rescheduleCounting, setRescheduleCounting] = useState<number>(1);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
+  const [bottompopup, setBottompopup] = useState<boolean>(false);
   // console.log('rescheduleCount', props.rescheduleCount);
   // console.log(
   //   'reschduleDateTime',
@@ -42,6 +44,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   // console.log('isbelowthree', props.isbelowthree);
 
   useEffect(() => {
+    CommonScreenLog('ReschedulePopUp', 'ReschedulePopUp');
     try {
       let count = 4 - props.rescheduleCount;
 
@@ -271,7 +274,21 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     getNetStatus().then((status) => {
                       if (status) {
                         console.log('Network status', status);
-                        props.setdisplayoverlay();
+                        console.log('appointmentdate', moment(props.appadatetime));
+                        console.log('today', moment(new Date()));
+                        const dateIsAfter = moment(props.appadatetime).isAfter(moment(new Date()));
+                        console.log('changeslotbuttonconstion', dateIsAfter);
+                        if (dateIsAfter) {
+                          props.setdisplayoverlay();
+                        } else {
+                          setBottompopup(true);
+                          //props.setResheduleoverlay(false);
+                          // Alert.alert(
+                          //   'Appointment cannot be rescheduled once it is past the scheduled time'
+                          // );
+                        }
+                        //dateIsAfter ? props.setdisplayoverlay() : null;
+                        // props.setdisplayoverlay();
                       } else {
                         setNetworkStatus(true);
                         setshowSpinner(false);
@@ -285,15 +302,36 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                   style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
                   onPress={() => {
                     CommonLogEvent('RESCHDULE_POPUP', 'RESCHDULE_POPUP_CLICKED');
-                    try {
-                      props.reschduleDateTime &&
-                      props.reschduleDateTime.getDoctorNextAvailableSlot &&
-                      props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
-                      props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
-                        .availableSlot
-                        ? props.acceptChange()
-                        : null;
-                    } catch (error) {}
+                    console.log('appointmentdate', moment(props.appadatetime));
+                    console.log('today', moment(new Date()));
+                    const dateIsAfter = moment(props.appadatetime).isAfter(moment(new Date()));
+                    console.log('changeslotbuttonconstion', dateIsAfter);
+                    if (dateIsAfter) {
+                      try {
+                        props.reschduleDateTime &&
+                        props.reschduleDateTime.getDoctorNextAvailableSlot &&
+                        props.reschduleDateTime.getDoctorNextAvailableSlot
+                          .doctorAvailalbeSlots[0] &&
+                        props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                          .availableSlot
+                          ? props.acceptChange()
+                          : null;
+                      } catch (error) {}
+                    } else {
+                      // Alert.alert(
+                      //   'Appointment cannot be rescheduled once it is past the scheduled time'
+                      // );
+                      setBottompopup(true);
+                    }
+                    // try {
+                    //   props.reschduleDateTime &&
+                    //   props.reschduleDateTime.getDoctorNextAvailableSlot &&
+                    //   props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0] &&
+                    //   props.reschduleDateTime.getDoctorNextAvailableSlot.doctorAvailalbeSlots[0]
+                    //     .availableSlot
+                    //     ? props.acceptChange()
+                    //     : null;
+                    // } catch (error) {}
                     //props.acceptChange();
                   }}
                   titleTextStyle={{
@@ -314,6 +352,35 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
         </View>
       </View>
       {networkStatus && <NoInterNetPopup onClickClose={() => networkBack()} />}
+      {bottompopup && (
+        <BottomPopUp
+          title={'Hi:)'}
+          description="Appointment cannot be rescheduled once it is past the scheduled time"
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottompopup(false);
+                props.setResheduleoverlay(false);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
     </View>
   );
 };

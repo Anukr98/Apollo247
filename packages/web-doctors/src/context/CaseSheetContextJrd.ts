@@ -8,6 +8,7 @@ import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_healthVault,
+  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { createContext } from 'react';
 
@@ -81,6 +82,9 @@ export interface CaseSheetContextPropsJrd {
   healthVault:
     | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_healthVault[]
     | null;
+  appointmentDocuments:
+    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments[]
+    | null;
   pastAppointments: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments[] | null;
   setCasesheetNotes: (notes: string) => void;
   autoCloseCaseSheet: boolean;
@@ -119,6 +123,7 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   caseSheetEdit: false,
   patientDetails: null,
   appointmentInfo: null,
+  appointmentDocuments: null,
   caseSheetId: null,
   symptoms: null,
   setSymptoms: () => {},

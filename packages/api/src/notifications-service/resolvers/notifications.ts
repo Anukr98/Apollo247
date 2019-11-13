@@ -283,10 +283,7 @@ export async function sendNotification(
   let notificationBody: string = '';
   if (pushNotificationInput.notificationType == NotificationType.DOCTOR_CANCEL_APPOINTMENT) {
     notificationTitle = ApiConstants.CANCEL_APPT_TITLE;
-    notificationBody = ApiConstants.CANCEL_APPT_BODY.replace(
-      '{0}',
-      patientDetails.firstName
-    );
+    notificationBody = ApiConstants.CANCEL_APPT_BODY.replace('{0}', patientDetails.firstName);
     notificationBody = notificationBody.replace(
       '{1}',
       doctorDetails.firstName + ' ' + doctorDetails.lastName

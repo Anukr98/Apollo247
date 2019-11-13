@@ -2,7 +2,7 @@ import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/gl
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { GraphQLError } from 'graphql';
 import moment from 'moment';
-import { Alert, NetInfo, AsyncStorage } from 'react-native';
+import { Alert, NetInfo, AsyncStorage, Dimensions } from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
 
@@ -339,10 +339,12 @@ export const getUserCurrentPosition = async () => {
                 if (jsonData) {
                   const result = jsonData.results[0];
                   const addressComponent = result.address_components[1].long_name || '';
-                  console.log(jsonData, addressComponent, 'addressComponent');
+                  const pincode = result.address_components.slice(-1)[0].long_name || '';
+                  console.log(jsonData, addressComponent, 'addressComponent', pincode);
                   resolve({
                     latlong: result.geometry.location,
                     name: addressComponent,
+                    zipcode: pincode,
                   });
                 }
                 reject(null);
@@ -358,3 +360,7 @@ export const getUserCurrentPosition = async () => {
     });
   }
 };
+
+const { height } = Dimensions.get('window');
+
+export const isIphone5s = () => height === 568;

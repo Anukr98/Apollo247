@@ -63,10 +63,16 @@ export interface GetCaseSheet_getCaseSheet_patientDetails {
   healthVault: (GetCaseSheet_getCaseSheet_patientDetails_healthVault | null)[] | null;
 }
 
+export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments {
+  __typename: "AppointmentDocuments";
+  documentPath: string | null;
+}
+
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
   id: string;
   appointmentDateTime: any;
+  appointmentDocuments: (GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments | null)[] | null;
   status: STATUS;
   appointmentState: string | null;
   displayId: string;

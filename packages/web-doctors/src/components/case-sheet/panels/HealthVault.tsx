@@ -48,8 +48,8 @@ const useStyles = makeStyles(() => ({
     marginRight: '10px',
   },
   listContainer: {
-    display: 'flex',
-    flexFlow: 'row',
+    // display: 'flex',
+    // flexFlow: 'row',
     flowWrap: 'wrap',
     width: '100%',
   },
@@ -57,6 +57,12 @@ const useStyles = makeStyles(() => ({
     width: '49%',
     marginRight: '1%',
     padding: 0,
+    display: 'inline-flex',
+    overflow: 'hidden',
+    marginBottom: 15,
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    marginright: 20,
   },
   stepperHeading: {
     fontSize: '14px',
@@ -168,100 +174,102 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   return (
     <Card style={{ width: '100%', height: 45 }}>
       <CardContent>
-        <Grid item xs={12} style={{ width: '100%' }}>
-          <Grid item container spacing={2}>
-            <Grid item lg={5} sm={5} xs={4} key={1} container>
-              <Grid lg={12} sm={12} xs={12} key={6} item>
-                <div className={classes.body2}>
-                  <div>
-                    <div className={classes.circleDot}></div>
-                    {`${format(
-                      new Date(data.appointmentDateTime),
-                      'dd  MMMMMMMMMMMM yyyy, h:mm a'
-                    )}`}
+        <Link to={`/consulttabs/${data.id}/${data.patientId}/0`} target="_blank">
+          <Grid item xs={12} style={{ width: '100%' }}>
+            <Grid item container spacing={2}>
+              <Grid item lg={5} sm={5} xs={4} key={1} container>
+                <Grid lg={12} sm={12} xs={12} key={6} item>
+                  <div className={classes.body2}>
+                    <div>
+                      <div className={classes.circleDot}></div>
+                      {`${format(
+                        new Date(data.appointmentDateTime),
+                        'dd  MMMMMMMMMMMM yyyy, h:mm a'
+                      )}`}
+                    </div>
                   </div>
-                </div>
+                </Grid>
               </Grid>
+              {data &&
+              data.caseSheet &&
+              (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR')
+                ? data &&
+                  data.caseSheet &&
+                  data.caseSheet.length > 0 &&
+                  !!data.caseSheet[1]!.symptoms &&
+                  !!data.caseSheet[1]!.symptoms.length && (
+                    <Grid lg={6} sm={6} xs={5} key={2} item>
+                      <div className={classes.stepperHeading}>
+                        {(data.caseSheet[1]!.symptoms.length > 3
+                          ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                          : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
+                        ).join(', ')}
+                        {data.caseSheet[1]!.symptoms!.length > 3 && (
+                          <Typography gutterBottom variant="body1" component="span">
+                            {`, +${data.caseSheet[1]!.symptoms.length - 2}`}
+                          </Typography>
+                        )}
+                      </div>
+                    </Grid>
+                  )
+                : data &&
+                  data.caseSheet &&
+                  data.caseSheet.length > 0 &&
+                  !!data.caseSheet[0]!.symptoms &&
+                  !!data.caseSheet[0]!.symptoms.length && (
+                    <Grid lg={6} sm={6} xs={5} key={2} item>
+                      <div className={classes.stepperHeading}>
+                        {(data.caseSheet[0]!.symptoms.length > 3
+                          ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                          : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
+                        ).join(', ')}
+                        {data.caseSheet[0]!.symptoms!.length > 3 && (
+                          <Typography gutterBottom variant="body1" component="span">
+                            {`, +${data.caseSheet[0]!.symptoms.length - 2}`}
+                          </Typography>
+                        )}
+                      </div>
+                    </Grid>
+                  )}
+              {data &&
+              data.caseSheet &&
+              (data.caseSheet.length > 1 &&
+                data.caseSheet[1] &&
+                data.caseSheet[1]!.doctorType !== 'JUNIOR') ? (
+                <Grid lg={1} sm={1} xs={3} key={3} item>
+                  <div>
+                    <IconButton aria-label="Video call" className={classes.videoIcon}>
+                      {data &&
+                      data.caseSheet &&
+                      data.caseSheet.length > 1 &&
+                      data.caseSheet[1]!.consultType === 'ONLINE' ? (
+                        <img src={require('images/ic_video.svg')} alt="" />
+                      ) : (
+                        <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+                      )}
+                    </IconButton>
+                  </div>
+                </Grid>
+              ) : (
+                <Grid lg={1} sm={1} xs={3} key={3} item>
+                  <div>
+                    <IconButton aria-label="Video call" className={classes.videoIcon}>
+                      {data &&
+                      data.caseSheet &&
+                      data.caseSheet.length > 0 &&
+                      data.caseSheet[0] &&
+                      data.caseSheet[0]!.consultType === 'ONLINE' ? (
+                        <img src={require('images/ic_video.svg')} alt="" />
+                      ) : (
+                        <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+                      )}
+                    </IconButton>
+                  </div>
+                </Grid>
+              )}
             </Grid>
-            {data &&
-            data.caseSheet &&
-            (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR')
-              ? data &&
-                data.caseSheet &&
-                data.caseSheet.length > 0 &&
-                !!data.caseSheet[1]!.symptoms &&
-                !!data.caseSheet[1]!.symptoms.length && (
-                  <Grid lg={6} sm={6} xs={5} key={2} item>
-                    <div className={classes.stepperHeading}>
-                      {(data.caseSheet[1]!.symptoms.length > 3
-                        ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
-                        : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
-                      ).join(', ')}
-                      {data.caseSheet[1]!.symptoms!.length > 3 && (
-                        <Typography gutterBottom variant="body1" component="span">
-                          {`, +${data.caseSheet[1]!.symptoms.length - 2}`}
-                        </Typography>
-                      )}
-                    </div>
-                  </Grid>
-                )
-              : data &&
-                data.caseSheet &&
-                data.caseSheet.length > 0 &&
-                !!data.caseSheet[0]!.symptoms &&
-                !!data.caseSheet[0]!.symptoms.length && (
-                  <Grid lg={6} sm={6} xs={5} key={2} item>
-                    <div className={classes.stepperHeading}>
-                      {(data.caseSheet[0]!.symptoms.length > 3
-                        ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
-                        : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
-                      ).join(', ')}
-                      {data.caseSheet[0]!.symptoms!.length > 3 && (
-                        <Typography gutterBottom variant="body1" component="span">
-                          {`, +${data.caseSheet[0]!.symptoms.length - 2}`}
-                        </Typography>
-                      )}
-                    </div>
-                  </Grid>
-                )}
-            {data &&
-            data.caseSheet &&
-            (data.caseSheet.length > 1 &&
-              data.caseSheet[1] &&
-              data.caseSheet[1]!.doctorType !== 'JUNIOR') ? (
-              <Grid lg={1} sm={1} xs={3} key={3} item>
-                <div>
-                  <IconButton aria-label="Video call" className={classes.videoIcon}>
-                    {data &&
-                    data.caseSheet &&
-                    data.caseSheet.length > 1 &&
-                    data.caseSheet[1]!.consultType === 'ONLINE' ? (
-                      <img src={require('images/ic_video.svg')} alt="" />
-                    ) : (
-                      <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
-                    )}
-                  </IconButton>
-                </div>
-              </Grid>
-            ) : (
-              <Grid lg={1} sm={1} xs={3} key={3} item>
-                <div>
-                  <IconButton aria-label="Video call" className={classes.videoIcon}>
-                    {data &&
-                    data.caseSheet &&
-                    data.caseSheet.length > 0 &&
-                    data.caseSheet[0] &&
-                    data.caseSheet[0]!.consultType === 'ONLINE' ? (
-                      <img src={require('images/ic_video.svg')} alt="" />
-                    ) : (
-                      <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
-                    )}
-                  </IconButton>
-                </div>
-              </Grid>
-            )}
           </Grid>
-        </Grid>
+        </Link>
       </CardContent>
     </Card>
   );
@@ -269,7 +277,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
-  const { healthVault, pastAppointments } = useContext(CaseSheetContext);
+  const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContext);
 
   return (
     <ThemeProvider theme={theme}>
@@ -279,13 +287,13 @@ export const HealthVault: React.FC = () => {
             Photos uploaded by Patient
           </Typography>
           <List className={classes.listContainer}>
-            {healthVault && healthVault.length > 0 ? (
-              healthVault!.map((item, index) => (
+            {appointmentDocuments && appointmentDocuments.length > 0 ? (
+              appointmentDocuments!.map((item, index) => (
                 <ListItem key={index} className={classes.listItem}>
                   <ListItemAvatar>
                     <Avatar
-                      alt={(item.imageUrls as unknown) as string}
-                      src={(item.imageUrls as unknown) as string}
+                      alt={item.documentPath as string}
+                      src={item.documentPath as string}
                       className={classes.bigAvatar}
                     />
                   </ListItemAvatar>
@@ -293,7 +301,7 @@ export const HealthVault: React.FC = () => {
                     primary={
                       <Fragment>
                         <Typography component="h4" variant="h4" color="primary">
-                          {item.imageUrls!.substr(item.imageUrls!.lastIndexOf('/') + 1)}
+                          {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
                         </Typography>
                       </Fragment>
                     }
@@ -316,9 +324,9 @@ export const HealthVault: React.FC = () => {
           <Typography component="h5" variant="h5">
             Reports
           </Typography>
-          <List className={classes.listContainer}>
-            {healthVault && healthVault.length > 0 ? (
-              healthVault!.map((item, index) => (
+          {/* <List className={classes.listContainer}>
+            {appointmentDocuments && appointmentDocuments.length > 0 ? (
+              appointmentDocuments!.map((item, index) => (
                 <ListItem key={index} className={classes.listItem}>
                   <ListItemAvatar>
                     <Link to={(item.reportUrls as unknown) as string} target="_blank">
@@ -350,7 +358,7 @@ export const HealthVault: React.FC = () => {
             ) : (
               <span className={classes.nodataFound}>No data Found</span>
             )}
-          </List>
+          </List> */}
         </Typography>
         <Typography component="div">
           <Typography component="h5" variant="h5">

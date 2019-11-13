@@ -11,6 +11,7 @@ import {
   CircularProgress,
   FormControl,
   InputAdornment,
+  MenuItem,
   FormHelperText,
 } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
@@ -21,6 +22,8 @@ import { AphInput, AphButton } from '@aph/web-ui-components';
 import Typography from '@material-ui/core/Typography';
 import Popover from '@material-ui/core/Popover';
 
+import { GetSecretaryList } from 'graphql/types/GetSecretaryList';
+import { GET_SECRETARY_LIST } from 'graphql/profiles';
 import { StarDoctorSearch } from 'components/StarDoctorSearch';
 import {
   GetDoctorDetails_getDoctorDetails,
@@ -37,19 +40,24 @@ import {
   UpdateDelegateNumber,
   UpdateDelegateNumberVariables,
 } from 'graphql/types/UpdateDelegateNumber';
+import { AddSecretary, AddSecretaryVariables } from 'graphql/types/AddSecretary';
 import {
   REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
   GET_DOCTOR_DETAILS,
   MAKE_TEAM_DOCTOR_ACTIVE,
   UPDATE_DELEGATE_NUMBER,
   REMOVE_DELEGATE_NUMBER,
+  ADD_SECRETARY,
+  REMOVE_SECRETARY,
 } from 'graphql/profiles';
 import {
   MakeTeamDoctorActive,
   MakeTeamDoctorActiveVariables,
 } from 'graphql/types/MakeTeamDoctorActive';
+import { RemoveSecretaryVariables, RemoveSecretary } from 'graphql/types/RemoveSecretary';
 
 import { Mutation } from 'react-apollo';
+import { AphSelect, AphTextField } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -417,26 +425,110 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#fc9916',
       fontWeight: 700,
     },
+    menuPopover: {
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      marginLeft: -2,
+      marginTop: 45,
+      borderRadius: 10,
+      left: '270px',
+      width: '450px',
+      '& ul': {
+        padding: '10px 0px',
+        '& li': {
+          fontSize: 18,
+          width: 480,
+          fontWeight: 500,
+          color: '#02475b',
+          minHeight: 'auto',
+          paddingLeft: 10,
+          paddingRight: 10,
+          // borderBottom: '1px solid rgba(1,71,91,0.2)',
+          '&:last-child': {
+            borderBottom: 'none',
+          },
+          '&:hover': {
+            backgroundColor: '#f0f4f5',
+          },
+        },
+      },
+    },
+    menuSelected: {
+      backgroundColor: 'transparent !important',
+      color: '#00b38e !important',
+    },
+    secretaryGrid: {
+      marginBottom: 15,
+    },
+    ProfileContainer: {
+      padding: '10px 20px 0 20px',
+      [theme.breakpoints.down('xs')]: {
+        padding: '10px 0 0 0',
+      },
+      '& h2': {
+        fontSize: 16,
+        color: theme.palette.secondary.dark,
+        marginBottom: 15,
+      },
+      '& h3': {
+        lineHeight: '22px',
+        padding: '3px 5px 5px 0',
+        fontSize: 16,
+        fontWeight: theme.typography.fontWeightMedium,
+        color: '#02475b',
+      },
+      '& h4': {
+        padding: '5px 5px 5px 0',
+        marginLeft: 20,
+        fontSize: 20,
+        // borderBottom: 'solid 2px rgba(101,143,155,0.05)',
+        fontWeight: 600,
+        color: '#02475b',
+        margin: 0,
+      },
+      '& h5': {
+        padding: '5px 5px 3px 0',
+        color: '#658f9b',
+        fontWeight: 'normal',
+      },
+      '& h6': {
+        color: theme.palette.secondary.main,
+        padding: '5px 5px 5px 0',
+        letterSpacing: '0.3px',
+        marginLeft: 20,
+        fontSize: 12,
+        margin: 0,
+        fontWeight: 600,
+        '& span': {
+          padding: '0 2px',
+        },
+      },
+    },
+
+    qualificationMini: {
+      color: '#658f9b',
+      display: 'block',
+      overflow: 'hidden',
+      fontSize: 12,
+      maxWidth: 400,
+      whiteSpace: 'nowrap',
+      paddingRight: 20,
+      textOverflow: 'ellipsis',
+    },
   };
 });
 export interface StarDoctorCardProps {
+  currentDocId: string;
   doctor: GetDoctorDetails_getDoctorDetails_starTeam;
 }
 const invalidPhoneMessage = 'This seems like the wrong number';
 const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
-  const { doctor } = props;
+  const { doctor, currentDocId } = props;
   //const moreButttonRef = useRef(null);
   //const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const client = useApolloClient();
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
   const [currentDoctor, setCurrentDoctor] = React.useState('');
-  const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
-  const getDoctorDetailsData = data && data.getDoctorDetails ? data.getDoctorDetails : null;
 
-  if (loading) return <CircularProgress />;
-  if (error || !getDoctorDetailsData) return <div>error :(</div>;
-
-  const doctorProfile = getDoctorDetailsData;
   function handleClick(event: React.MouseEvent<HTMLButtonElement>, id: string) {
     setAnchorEl(event.currentTarget);
     setCurrentDoctor(id);
@@ -497,7 +589,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                         mutate({
                           variables: {
                             associatedDoctor: doctor!.associatedDoctor!.id,
-                            starDoctor: doctorProfile.id,
+                            starDoctor: currentDocId,
                           },
                         }).then(() => {
                           const existingData = client.readQuery<GetDoctorDetails>({
@@ -624,7 +716,7 @@ export interface StarDoctorsListProps {
 }
 
 const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
-  const { starDoctors } = props;
+  const { starDoctors, currentDocId } = props;
   const [showAddDoc, setShowAddDoc] = React.useState<boolean>();
   const client = useApolloClient();
   const starDoctorsCardList = starDoctors.filter((existingDoc) => existingDoc!.isActive) || [];
@@ -641,7 +733,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
               doctor!.isActive === true && (
                 <Grid item lg={6} sm={6} xs={12} key={index}>
                   <div className={classes.tabContentStarDoctor}>
-                    <StarDoctorCard doctor={doctor!} />
+                    <StarDoctorCard doctor={doctor!} currentDocId={currentDocId} />
                   </div>
                 </Grid>
               )
@@ -660,7 +752,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
                           associatedDoctor: starDoctor!.associatedDoctor!.id,
                           starDoctor: props.currentDocId,
                         },
-                      }).then(() => {
+                      }).then((res) => {
                         const existingData = client.readQuery<GetDoctorDetails>({
                           query: GET_DOCTOR_DETAILS,
                         });
@@ -720,9 +812,15 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const [phoneMessage, setPhoneMessage] = useState<string>('');
   const [delegateNumberStatus, setDelegateNumberStatus] = useState<string>('');
   const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
-
+  const [secretary, setSecretary] = useState<string>('');
+  const [popOver, setPopOver] = useState<boolean>(false);
+  const [secretaryName, setSecretaryName] = useState<string>('');
+  const [secretaryNum, setsecretaryNum] = useState<string>('');
   const classes = useStyles();
   const doctorProfile = doctor;
+  const [secretaryRemoved, setSecretaryRemoved] = useState<boolean>(false);
+  const client = useApolloClient();
+  const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
   useEffect(() => {
     const mobNumber = sessionStorage.getItem('mobileNumberSession')
       ? sessionStorage.getItem('mobileNumberSession')
@@ -736,6 +834,19 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
     }
   }, []);
 
+  const { data, error, loading } = useQuery<GetSecretaryList>(GET_SECRETARY_LIST);
+  if (loading) return <CircularProgress />;
+  if (error) return <div>Error loading patients :(</div>;
+
+  function handleClicks(event: React.MouseEvent<HTMLButtonElement>, id: string) {
+    setAnchorEl(event.currentTarget);
+    setPopOver(true);
+  }
+
+  function handleClose() {
+    setAnchorEl((null as unknown) as HTMLButtonElement);
+    setPopOver(false);
+  }
   return (
     <div>
       <h2>Your Profile</h2>
@@ -829,56 +940,195 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
         </Grid>
       </div>
 
-      <div>
-        <Typography className={classes.starDoctorHeading}>
-          {`Your Star Doctors Team (${
-            doctorProfile!.starTeam!.filter(
-              (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
-                existingDoc!.isActive === true
-            ).length
-          })`}
-        </Typography>
-        <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={doctorProfile!.starTeam!} />
-      </div>
-      {localStorage.getItem('loggedInMobileNumber') === doctorProfile.mobileNumber && (
+      {doctorProfile && (
         <div>
+          <Typography className={classes.starDoctorHeading}>
+            {`Your Star Doctors Team (${
+              doctorProfile!.starTeam!.filter(
+                (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
+                  existingDoc!.isActive === true
+              ).length
+            })`}
+          </Typography>
+          <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={doctorProfile!.starTeam!} />
+        </div>
+      )}
+      {localStorage.getItem('loggedInMobileNumber') === doctorProfile.mobileNumber && (
+        <div className={classes.ProfileContainer}>
           <h2>Secretary Login</h2>
+          <Grid container alignItems="flex-start" spacing={0}>
+            <Grid item lg={6} sm={6} xs={12} className={classes.secretaryGrid}>
+              {!secretaryRemoved &&
+                (secretaryName ||
+                  (doctorProfile &&
+                    doctorProfile.doctorSecretary &&
+                    doctorProfile.doctorSecretary.secretary)) && (
+                  <Card className={classes.card}>
+                    <div className={classes.details}>
+                      <CardHeader
+                        className={classes.cardHeader}
+                        avatar={
+                          <Avatar className={classes.profileAvatar}>
+                            <img src={require('images/no_photo.png')} />
+                          </Avatar>
+                        }
+                        action={
+                          <Mutation<RemoveSecretary, RemoveSecretaryVariables>
+                            mutation={REMOVE_SECRETARY}
+                          >
+                            {(mutate, { loading }) => (
+                              <>
+                                <IconButton
+                                  onClick={(e) => {
+                                    handleClicks(
+                                      e,
+                                      `${doctorProfile &&
+                                        doctorProfile.doctorSecretary &&
+                                        doctorProfile.doctorSecretary.secretary &&
+                                        doctorProfile.doctorSecretary.secretary.id}`
+                                    );
+                                  }}
+                                >
+                                  {loading ? <CircularProgress /> : <MoreVert />}
+                                </IconButton>
+                                <Popover
+                                  open={popOver}
+                                  anchorEl={anchorEl}
+                                  onClose={handleClose}
+                                  anchorOrigin={{
+                                    vertical: 'bottom',
+                                    horizontal: 'center',
+                                  }}
+                                  transformOrigin={{
+                                    vertical: 'top',
+                                    horizontal: 'right',
+                                  }}
+                                >
+                                  <Typography
+                                    className={classes.starDoctordelete}
+                                    onClick={(e) => {
+                                      setPopOver(false);
+
+                                      client
+                                        .mutate<RemoveSecretary, RemoveSecretaryVariables>({
+                                          mutation: REMOVE_SECRETARY,
+                                          variables: {
+                                            secretaryId: `${doctorProfile &&
+                                              doctorProfile.doctorSecretary &&
+                                              doctorProfile.doctorSecretary.secretary &&
+                                              doctorProfile.doctorSecretary.secretary.id}`,
+                                          },
+                                          fetchPolicy: 'no-cache',
+                                        })
+                                        .then((res: any) => {
+                                          setSecretaryName('');
+                                          setSecretaryRemoved(true);
+                                        })
+                                        .catch((e: any) => {
+                                          console.log(e);
+                                        });
+                                    }}
+                                  >
+                                    Remove
+                                  </Typography>
+                                </Popover>
+                              </>
+                            )}
+                          </Mutation>
+                        }
+                        title={
+                          <div>
+                            <h4 title={''}>
+                              {secretaryName
+                                ? secretaryName
+                                : doctorProfile &&
+                                  doctorProfile.doctorSecretary &&
+                                  doctorProfile.doctorSecretary.secretary &&
+                                  doctorProfile.doctorSecretary.secretary.name}
+                            </h4>
+                            <div>
+                              <h6>
+                                <span className={classes.qualificationMini}>
+                                  SECRETARY | 15 YRS
+                                </span>
+                              </h6>
+                            </div>
+                          </div>
+                        }
+                      />
+                      {}
+                    </div>
+                  </Card>
+                )}
+            </Grid>
+          </Grid>
+          }}
           <div className={`${classes.tabContent} ${classes.awardsSection}`}>
             <h3>Enter the mobile number you’d like to assign access of your account to</h3>
             <FormControl fullWidth>
-              <AphInput
-                className={classes.inputWidth}
-                inputProps={{ type: 'tel', maxLength: 10 }}
-                value={mobileNumber}
-                placeholder="Enter Here"
-                onPaste={(e) => {
-                  if (!isNumeric(e.clipboardData.getData('text'))) e.preventDefault();
-                }}
-                onChange={(event) => {
-                  setDelegateNumberStatus('');
-                  setMobileNumber(event.currentTarget.value);
-                  if (event.currentTarget.value !== '') {
-                    if (parseInt(event.currentTarget.value[0], 10) > 5) {
-                      setPhoneMessage('');
-                      setShowErrorMessage(false);
-                    } else {
-                      setPhoneMessage(invalidPhoneMessage);
-                      setShowErrorMessage(true);
-                    }
-                  }
-                }}
-                error={
-                  mobileNumber.trim() !== '' &&
-                  ((showErrorMessage && !isMobileNumberValid(mobileNumber)) ||
-                    (showErrorMessage && `+91${mobileNumber}` === doctorProfile.mobileNumber) ||
-                    delegateNumberStatus === `Secretary Number can't be same as Star Doctor Number`)
-                }
-                onKeyPress={(e) => {
-                  if (isNaN(parseInt(e.key, 10))) {
-                    e.preventDefault();
-                  }
-                }}
-              />
+              {
+                <Mutation<AddSecretary, AddSecretaryVariables> mutation={ADD_SECRETARY}>
+                  {(mutate, { loading }) => (
+                    <AphSelect
+                      value={secretary}
+                      MenuProps={{
+                        classes: { paper: classes.menuPopover },
+                        anchorOrigin: {
+                          vertical: 'top',
+                          horizontal: 'left',
+                        },
+                        transformOrigin: {
+                          vertical: 'top',
+                          horizontal: 'left',
+                        },
+                      }}
+                      onChange={(e: any) => {
+                        const secretary =
+                          data &&
+                          data.getSecretaryList &&
+                          data.getSecretaryList.map((item) => {
+                            return item && item.id;
+                          });
+                        client
+                          .mutate<AddSecretary, AddSecretaryVariables>({
+                            mutation: ADD_SECRETARY,
+                            variables: {
+                              secretaryId: `${secretary && secretary.length > 0 && secretary[0]}`,
+                            },
+                            fetchPolicy: 'no-cache',
+                          })
+                          .then((res: any) => {
+                            setSecretaryName(
+                              res &&
+                                res.data &&
+                                res.data.addSecretary &&
+                                res.data.addSecretary.secretary &&
+                                res.data.addSecretary.secretary.name
+                            );
+                            setSecretaryRemoved(false);
+                          })
+                          .catch((e: any) => {
+                            // Alert.alert('Error');
+                          });
+                      }}
+                    >
+                      {data &&
+                        data.getSecretaryList &&
+                        data.getSecretaryList.map((item: any) => {
+                          return (
+                            <MenuItem
+                              key={item.id}
+                              value={item.name}
+                              classes={{ selected: classes.menuSelected }}
+                            >
+                              {item && item.name}
+                            </MenuItem>
+                          );
+                        })}
+                    </AphSelect>
+                  )}
+                </Mutation>
+              }
               {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? (
                 <FormHelperText
                   component="div"
