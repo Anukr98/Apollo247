@@ -292,8 +292,8 @@ export const HealthVault: React.FC = () => {
                 <ListItem key={index} className={classes.listItem}>
                   <ListItemAvatar>
                     <Avatar
-                      alt={(item.documentPath as unknown) as string}
-                      src={(item.documentPath as unknown) as string}
+                      alt={item.documentPath as string}
+                      src={item.documentPath as string}
                       className={classes.bigAvatar}
                     />
                   </ListItemAvatar>

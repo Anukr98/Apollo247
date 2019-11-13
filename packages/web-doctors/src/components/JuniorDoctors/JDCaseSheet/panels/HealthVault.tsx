@@ -258,8 +258,8 @@ export const HealthVault: React.FC = () => {
             appointmentDocuments!.map((item, index) => (
               <div key={index} className={classes.listItem}>
                 <Avatar
-                  alt={(item.documentPath as unknown) as string}
-                  src={(item.documentPath as unknown) as string}
+                  alt={item.documentPath as string}
+                  src={item.documentPath as string}
                   className={classes.bigAvatar}
                 />
                 <div className={classes.listData}>
