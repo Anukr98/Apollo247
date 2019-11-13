@@ -297,6 +297,8 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 50 : 40) : 20,
             left: 20,
             right: 0,
+            width: 77,
+            height: 57,
           }}
         >
           <TouchableOpacity
