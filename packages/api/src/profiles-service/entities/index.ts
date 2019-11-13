@@ -62,7 +62,6 @@ export enum MEDICINE_ORDER_STATUS {
 }
 
 export enum UPLOAD_FILE_TYPES {
-  JPG = 'JPG',
   PNG = 'PNG',
   JPEG = 'JPEG',
   PDF = 'PDF',

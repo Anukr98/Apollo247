@@ -10,7 +10,8 @@ export const uploadDocumentTypeDefs = gql`
     OpSummary
   }
   type UploadPrismDocumentResult {
-    status: Boolean
+    status: Boolean!
+    fileId: String
   }
   input UploadDocumentInput {
     fileType: UPLOAD_FILE_TYPES!
@@ -25,6 +26,7 @@ export const uploadDocumentTypeDefs = gql`
 `;
 type UploadPrismDocumentResult = {
   status: Boolean;
+  fileId: string;
 };
 
 export type UploadDocumentInput = {
@@ -46,7 +48,7 @@ const uploadDocument: Resolver<
   //get authtoken for the logged in user mobile number
   const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
 
-  if (!prismAuthToken) return { status: false };
+  if (!prismAuthToken) return { status: false, fileId: '' };
 
   //get users list for the mobile number
   const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
@@ -56,24 +58,19 @@ const uploadDocument: Resolver<
   const uhid = await patientsRepo.validateAndGetUHID(uploadDocumentInput.patientId, prismUserList);
 
   if (!uhid) {
-    throw new Error('Patient UHID Error');
+    return { status: false, fileId: '' };
   }
 
   //just call get prism user details with the corresponding uhid
   await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
 
-  const uploadResponse = await patientsRepo.uploadDocumentToPrism(
+  const fileId = await patientsRepo.uploadDocumentToPrism(
     uhid,
     prismAuthToken,
     uploadDocumentInput
   );
-  console.log('PrismUploadResponse:', uploadResponse);
 
-  if (uploadDocumentInput.category === PRISM_DOCUMENT_CATEGORY.HealthChecks) {
-  } else {
-  }
-
-  return { status: true };
+  return fileId ? { status: true, fileId } : { status: false, fileId: '' };
 };
 
 export const uploadDocumentResolvers = {

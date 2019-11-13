@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Patient } from 'profiles-service/entities';
+import { Patient, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
 
@@ -155,7 +155,7 @@ export class PatientRepository extends Repository<Patient> {
       programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
       date: currentTimeStamp,
       uhid: uhid,
-      category: docInput.category,
+      category: PRISM_DOCUMENT_CATEGORY.OpSummary,
       filename: documentName,
     };
 
@@ -173,6 +173,7 @@ export class PatientRepository extends Repository<Patient> {
 
     const uploadResult = await requestPromise(options)
       .then((res) => {
+        console.log('uploadFileResponse:', res);
         return JSON.parse(res);
       })
       .catch((err) => {
