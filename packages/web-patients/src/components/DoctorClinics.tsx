@@ -76,6 +76,38 @@ const useStyles = makeStyles((theme: Theme) => {
         fontWeight: 600,
       },
     },
+    infoRow: {
+      display: 'flex',
+      paddingTop: 10,
+      [theme.breakpoints.down('xs')]: {
+        paddingTop: 0,
+      },
+    },
+    iconType: {
+      width: 25,
+      textAlign: 'center',
+      [theme.breakpoints.down('xs')]: {
+        display: 'none',
+      },
+    },
+    details: {
+      fontSize: 10,
+      fontWeight: 500,
+      color: '#02475b',
+      paddingLeft: 20,
+      lineHeight: 1.5,
+      [theme.breakpoints.down('xs')]: {
+        fontSize: 12,
+        paddingLeft: 0,
+        fontWeight: 600,
+      },
+      '& p': {
+        margin: 0,
+      },
+      '& span': {
+        paddingRight: 5,
+      },
+    },
     count: {
       marginLeft: 'auto',
     },
@@ -126,7 +158,7 @@ interface DoctorClinicsProps {
 }
 
 export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { doctorDetails } = props;
 
   if (doctorDetails && doctorDetails.getDoctorDetailsById) {
@@ -147,11 +179,27 @@ export const DoctorClinics: React.FC<DoctorClinicsProps> = (props) => {
         ? doctorDetails.getDoctorDetailsById.consultHours
         : [];
 
-    const firstName = doctorDetails.getDoctorDetailsById.firstName;
-    // const lastName = doctorDetails.getDoctorDetailsById.lastName;
+    const { firstName, qualification, awards } = doctorDetails.getDoctorDetailsById;
 
     return clinics.length > 0 ? (
       <>
+        <div className={classes.sectionGroup}>
+          <div className={classes.sectionHeader}>
+            <span>Basic Information</span>
+          </div>
+          <div className={classes.infoRow}>
+            <div className={classes.iconType}>
+              <img src={require('images/ic-edu.svg')} alt="" />
+            </div>
+            <div className={classes.details}>{qualification}</div>
+          </div>
+          <div className={classes.infoRow}>
+            <div className={classes.iconType}>
+              <img src={require('images/ic-awards.svg')} alt="" />
+            </div>
+            <div className={classes.details}>{awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}</div>
+          </div>
+        </div>
         <div className={classes.sectionGroup}>
           <div className={classes.sectionHeader}>
             <span>Dr. {firstName}'s Clinic</span>

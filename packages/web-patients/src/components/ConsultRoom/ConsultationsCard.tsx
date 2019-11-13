@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar } from '@material-ui/core';
-import React from 'react';
+import React, { useState } from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import {
   GetPatientAppointments,
@@ -190,23 +190,12 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   // filter appointments that are greater than current time.
   const filterAppointments = bookedAppointments.filter((appointmentDetails) => {
     const currentTime = new Date().getTime();
-    // const aptArray = appointmentDetails.appointmentDateTime.split('T');
-    // const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-    // const appointmentStatus = appointmentDetails.status;
-    if (
-      // appointmentTime > currentTime &&
-      // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-      // the above condition is commented as per demo feedback on 13/08/2019
-      // appointmentTime > currentTime &&
-      // appointmentStatus === STATUS.IN_PROGRESS
-      appointmentTime > currentTime
-    ) {
+
+    if (appointmentTime > currentTime) {
       return appointmentDetails;
     }
   });
-
-  // console.log('filter appointments......', filterAppointments);
 
   const otherDateMarkup = (appointmentTime: number) => {
     if (isToday(new Date(appointmentTime))) {
@@ -216,6 +205,18 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     } else {
       return format(new Date(appointmentTime), 'dd MMM yyyy, h:mm a');
     }
+  };
+
+  const [refreshTimer, setRefreshTimer] = useState<boolean>(false);
+
+  const shouldRefreshComponent = (diff: number) => {
+    let id: any;
+    id = setInterval(() => {
+      id && clearInterval(id);
+      if (diff <= 15 && diff >= 0) {
+        setRefreshTimer(!refreshTimer);
+      }
+    }, 60000);
   };
 
   return (
@@ -249,14 +250,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   : '';
               const currentTime = new Date().getTime();
               const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-              // const aptArray = appointmentDetails.appointmentDateTime.split('T');
-              // const appointmentTime = getIstTimestamp(
-              //   new Date(aptArray[0]),
-              //   aptArray[1].substring(0, 5)
-              // );
-              // console.log('....................', appointmentTime);
-              // console.log('difference is....', difference);
               const difference = Math.round((appointmentTime - currentTime) / 60000);
+              shouldRefreshComponent(difference);
               const doctorId =
                 appointmentDetails.doctorInfo && appointmentDetails.doctorId
                   ? appointmentDetails.doctorId

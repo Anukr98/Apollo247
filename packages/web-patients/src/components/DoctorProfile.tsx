@@ -181,7 +181,7 @@ interface DoctorProfileProps {
 }
 
 export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { doctorDetails, onBookConsult } = props;
 
   let availableSlot = 0,
@@ -282,22 +282,31 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
   if (doctorDetails && doctorDetails.getDoctorDetailsById) {
     let hospitalLocation = '';
 
-    const firstName = doctorDetails.getDoctorDetailsById.firstName;
-    const lastName = doctorDetails.getDoctorDetailsById.lastName;
+    // const firstName = doctorDetails.getDoctorDetailsById.firstName;
+    // const lastName = doctorDetails.getDoctorDetailsById.lastName;
+    // const experience = doctorDetails.getDoctorDetailsById.experience;
+    // const awards = doctorDetails.getDoctorDetailsById.awards;
+    // const languages = doctorDetails.getDoctorDetailsById.languages;
+    // const onlineConsultFees =
+    //   doctorDetails.getDoctorDetailsById.onlineConsultationFees;
+    // const physicalConsultationFees = doctorDetails.getDoctorDetailsById.physicalConsultationFees;
 
     let speciality;
     if (doctorDetails.getDoctorDetailsById.specialty) {
       speciality = doctorDetails.getDoctorDetailsById.specialty.name;
     }
 
-    const experience = doctorDetails.getDoctorDetailsById.experience;
-    const education = doctorDetails.getDoctorDetailsById.qualification;
-    const awards = doctorDetails.getDoctorDetailsById.awards;
-    const languages = doctorDetails.getDoctorDetailsById.languages;
+    // const education = doctorDetails.getDoctorDetailsById.qualification;
     const profileImage = doctorDetails.getDoctorDetailsById.photoUrl;
 
-    const onlineConsultFees = doctorDetails.getDoctorDetailsById.onlineConsultationFees;
-    // const physicalConsultationFees = doctorDetails.getDoctorDetailsById.physicalConsultationFees;
+    const {
+      // awards,
+      experience,
+      firstName,
+      languages,
+      lastName,
+      onlineConsultationFees,
+    } = doctorDetails.getDoctorDetailsById;
 
     _forEach(doctorDetails.getDoctorDetailsById.doctorHospital, (hospitalDetails) => {
       if (hospitalDetails.facility.facilityType === 'HOSPITAL') {
@@ -311,6 +320,8 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           <div className={classes.doctorImage}>
             <img
               src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}
+              width="330"
+              height="300"
               alt={firstName !== null ? firstName : ''}
             />
           </div>
@@ -325,22 +336,22 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
               </div>
             </div>
             <Scrollbars autoHeight autoHeightMax={'calc(100vh - 496px'}>
-              <div className={classes.doctorInfoGroup}>
+              {/* <div className={classes.doctorInfoGroup}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
-                    <img src={require('images/ic-edu.svg')} alt="" />
+                    <img src={require("images/ic-edu.svg")} alt="" />
                   </div>
                   <div className={classes.details}>{education}</div>
                 </div>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
-                    <img src={require('images/ic-awards.svg')} alt="" />
+                    <img src={require("images/ic-awards.svg")} alt="" />
                   </div>
                   <div className={classes.details}>
-                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
+                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, "")}
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
@@ -364,10 +375,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
                     </div>
                     <div className={classes.details}>
                       Online Consultation
-                      <div className={classes.doctorPriceIn}>Rs.{onlineConsultFees}</div>
+                      <div className={classes.doctorPriceIn}>Rs.{onlineConsultationFees}</div>
                       {availabilityMarkup()}
                     </div>
-                    <div className={classes.doctorPrice}>Rs.{onlineConsultFees}</div>
+                    <div className={classes.doctorPrice}>Rs.{onlineConsultationFees}</div>
                   </div>
                 </div>
                 {/* <div className={classes.consultGroup}>

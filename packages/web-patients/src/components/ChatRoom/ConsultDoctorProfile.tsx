@@ -294,7 +294,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const [showMore, setShowMore] = useState<boolean>(true);
   const [moreOrLessMessage, setMoreOrLessMessage] = useState<string>('MORE');
 
-  const patientId = (allCurrentPatients && allCurrentPatients[0].id) || '';
+  const { currentPatientId } = useAllCurrentPatients();
+  const patientId = currentPatientId || '';
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAppointments,
