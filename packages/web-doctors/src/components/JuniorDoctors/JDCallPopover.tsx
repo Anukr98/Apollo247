@@ -21,7 +21,7 @@ import { useApolloClient, useMutation } from 'react-apollo-hooks';
 import { useParams } from 'hooks/routerHooks';
 import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 import { END_CALL_NOTIFICATION, REMOVE_FROM_CONSULT_QUEUE } from 'graphql/consults';
-import { TRANSFER_INITIATED_TYPE, STATUS, DoctorType } from 'graphql/types/globalTypes';
+import { REQUEST_ROLES, STATUS, DoctorType } from 'graphql/types/globalTypes';
 import { CancelAppointment, CancelAppointmentVariables } from 'graphql/types/CancelAppointment';
 import {
   RemoveFromConsultQueue,
@@ -614,6 +614,7 @@ interface CallPopoverProps {
   assignedDoctorSalutation: string;
   assignedDoctorFirstName: string;
   assignedDoctorLastName: string;
+  assignedDoctorDisplayName: string;
   isAudioVideoCallEnded: (isAudioVideoCall: boolean) => void;
   callId: string;
 }
@@ -991,10 +992,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           patientDetails!.firstName +
           ' ' +
           patientDetails!.lastName +
-          '! Dr. ' +
-          props.assignedDoctorFirstName +
-          ' ' +
-          props.assignedDoctorLastName +
+          '! ' +
+          props.assignedDoctorDisplayName +
           ', will be with you at your booked consultation time.',
       };
       pubnub.publish(
@@ -1091,14 +1090,10 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         patientDetails!.firstName +
         ' ' +
         patientDetails!.lastName +
-        '! :) I am from Dr. ' +
-        props.assignedDoctorFirstName +
-        ' ' +
-        props.assignedDoctorLastName +
-        "'s team. Sorry that you aren’t in the best state. We'll do our best to make things better. Let's get a few quick questions out of the way before Dr. " +
-        props.assignedDoctorFirstName +
-        ' ' +
-        props!.assignedDoctorLastName +
+        '! :) I am from ' +
+        props.assignedDoctorDisplayName +
+        "'s team. Sorry that you aren’t in the best state. We'll do our best to make things better. Let's get a few quick questions out of the way before " +
+        props.assignedDoctorDisplayName +
         ' starts the consultation.',
     };
     subscribeBrowserButtonsListener();
@@ -1138,10 +1133,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         patientDetails!.firstName +
         ' ' +
         patientDetails!.lastName +
-        ', I have everything I need. I will share these details with Dr. ' +
-        props.assignedDoctorFirstName +
-        ' ' +
-        props.assignedDoctorLastName +
+        ', I have everything I need. I will share these details with ' +
+        props.assignedDoctorDisplayName +
         ', who will be here with you soon.',
     };
     unSubscribeBrowserButtonsListener();
@@ -1209,9 +1202,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         cancelAppointmentInput: {
           appointmentId: params.appointmentId,
           cancelReason: cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
-          cancelledBy: isJuniorDoctor
-            ? TRANSFER_INITIATED_TYPE.DOCTOR
-            : TRANSFER_INITIATED_TYPE.PATIENT,
+          cancelledBy: isJuniorDoctor ? REQUEST_ROLES.JUNIOR : REQUEST_ROLES.PATIENT,
           cancelledById: isJuniorDoctor ? jrDoctorId || '' : params.patientId,
         },
       },
@@ -1305,6 +1296,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
                   stopInterval();
                   onStopConsult();
                   props.endConsultAction();
+                  if (showVideo) {
+                    stopAudioVideoCall();
+                  }
                   setDisableOnCancel(true);
                 }}
               >

@@ -8,10 +8,16 @@ import { APPOINTMENT_TYPE, STATUS, DoctorType, MEDICINE_UNIT, MEDICINE_TIMINGS, 
 // GraphQL mutation operation: CreateJuniorDoctorCaseSheet
 // ====================================================
 
+export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_appointment_appointmentDocuments {
+  __typename: "AppointmentDocuments";
+  documentPath: string | null;
+}
+
 export interface CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_appointment {
   __typename: "Appointment";
   id: string;
   appointmentDateTime: any;
+  appointmentDocuments: (CreateJuniorDoctorCaseSheet_createJuniorDoctorCaseSheet_appointment_appointmentDocuments | null)[] | null;
   appointmentState: string | null;
   appointmentType: APPOINTMENT_TYPE;
   displayId: string;

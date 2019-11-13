@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Theme, Button, Avatar } from '@material-ui/core';
+import { Theme, Button, Avatar, Modal } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import { AphInput, AphButton, AphTextField } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { ApolloError } from 'apollo-client';
 
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import Dialog from '@material-ui/core/Dialog';
@@ -12,6 +13,9 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
+import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
+import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -47,10 +51,6 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 15,
       wordBreak: 'break-all',
     },
-    patientBubble: {
-      backgroundColor: theme.palette.common.white,
-      position: 'relative',
-    },
     patientAvatar: {
       position: 'absolute',
       left: -40,
@@ -74,6 +74,10 @@ const useStyles = makeStyles((theme: Theme) => {
       maxWidth: 236,
       textAlign: 'left',
       wordBreak: 'break-word',
+    },
+    patientBubble: {
+      backgroundColor: theme.palette.common.white,
+      position: 'relative',
     },
     chatImgBubble: {
       padding: 0,
@@ -229,8 +233,70 @@ const useStyles = makeStyles((theme: Theme) => {
     imageUpload: {
       overflow: 'hidden',
       borderRadius: 10,
-      width: 100,
-      height: 100,
+      width: 130,
+      cursor: 'pointer',
+    },
+    modalWindowWrap: {
+      display: 'table',
+      height: '100%',
+      width: '100%',
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    tableContent: {
+      display: 'table-cell',
+      verticalAlign: 'middle',
+      width: '100%',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    modalWindow: {
+      backgroundColor: theme.palette.common.black,
+      maxWidth: 600,
+      margin: 'auto',
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
+      outline: 'none',
+      '&:focus': {
+        outline: 'none',
+      },
+    },
+    modalHeader: {
+      minHeight: 56,
+      textAlign: 'center',
+      fontSize: 13,
+      fontWeight: 600,
+      letterSpacing: 0.5,
+      color: theme.palette.common.white,
+      padding: '16px 50px',
+      textTransform: 'uppercase',
+      position: 'relative',
+      wordBreak: 'break-word',
+    },
+    modalClose: {
+      position: 'absolute',
+      right: 16,
+      top: 16,
+      width: 24,
+      height: 24,
+      cursor: 'pointer',
+    },
+    modalFooter: {
+      height: 56,
+      textAlign: 'center',
+      padding: 16,
+      textTransform: 'uppercase',
+    },
+    modalContent: {
+      textAlign: 'center',
+      maxHeight: 'calc(100vh - 212px)',
+      overflow: 'hidden',
+      '& img': {
+        maxWidth: '100%',
+      },
     },
   };
 });
@@ -269,6 +335,10 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [imgPrevUrl, setImgPrevUrl] = React.useState();
+
+  const apolloClient = useApolloClient();
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
   // const covertVideoMsg = '^^convert`video^^';
@@ -411,7 +481,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
       (status, res) => {
         const newmessage: MessagesObjectProps[] = messages;
-        console.log(newmessage);
         res.messages.forEach((element, index) => {
           //newmessage[index] = element.entry;
           newmessage.push(element.entry);
@@ -443,6 +512,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         srollToBottomAction();
       }
     );
+  };
+
+  const uploadfile = (url: string) => {
+    console.log('ram');
+    apolloClient
+      .mutate<AddChatDocument, AddChatDocumentVariables>({
+        mutation: ADD_CHAT_DOCUMENT,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: props.appointmentId, documentPath: url },
+      })
+      .then((_data) => {
+        if (_data && _data.data) {
+          console.log('Document ', _data.data.addChatDocument);
+        }
+      })
+      .catch((error: ApolloError) => {
+        console.log(error);
+      });
   };
 
   const send = () => {
@@ -542,7 +629,16 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   </div>
                 )}
                 {rowData.message === documentUpload ? (
-                  <div>
+                  // <div>
+                  //   <img src={rowData.url} alt={rowData.url} />
+                  // </div>
+                  <div
+                    onClick={() => {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }}
+                    className={classes.imageUpload}
+                  >
                     <img src={rowData.url} alt={rowData.url} />
                   </div>
                 ) : (
@@ -571,19 +667,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rightComponent++;
       return (
         <div className={classes.patientChat}>
-          <div className={rowData.duration ? classes.callMsg : classes.petient}>
-            {rightComponent == 1 && !rowData.duration && (
-              <span className={classes.boldTxt}>
-                <img
-                  className={classes.patientIcon}
-                  src={
-                    patientDetails!.photoUrl
-                      ? patientDetails!.photoUrl
-                      : require('images/no_photo_icon_round.svg')
-                  }
-                />
-              </span>
-            )}
+          <div className={rowData.duration ? classes.callMsg : ''}>
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
@@ -598,21 +682,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
               </div>
             ) : (
-              // <div>
-              //   {rowData.message === documentUpload ? (
-              //     <div style={{ width: '200px', height: 'auto' }}>
-              //       <a href={rowData.url} target="_blank">
-              //         <img
-              //           style={{ width: '200px', height: 'auto' }}
-              //           src={rowData.url}
-              //           alt={rowData.url}
-              //         />
-              //       </a>
-              //     </div>
-              //   ) : (
-              //     <span>{getAutomatedMessage(rowData)}</span>
-              //   )}
-              // </div>
               <div
                 className={`${classes.chatBubble} ${classes.patientBubble} ${
                   rowData.message === documentUpload ? classes.chatImgBubble : ''
@@ -632,10 +701,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   </div>
                 )}
                 {rowData.message === documentUpload ? (
-                  <div className={classes.imageUpload}>
-                    <div>
-                      <img src={rowData.url} alt={rowData.url} />
-                    </div>
+                  <div
+                    onClick={() => {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }}
+                    className={classes.imageUpload}
+                  >
+                    <img src={rowData.url} alt={rowData.url} />
                   </div>
                 ) : (
                   <span>{getAutomatedMessage(rowData)}</span>
@@ -712,7 +785,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   </div>
                 )}
                 {rowData.message === documentUpload ? (
-                  <div>
+                  <div
+                    onClick={() => {
+                      setModalOpen(true);
+                      setImgPrevUrl(rowData.url);
+                    }}
+                    className={classes.imageUpload}
+                  >
                     <img src={rowData.url} alt={rowData.url} />
                   </div>
                 ) : (
@@ -933,7 +1012,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           fileExtension &&
                           (fileExtension.toLowerCase() === 'png' ||
                             fileExtension.toLowerCase() === 'jpg' ||
-                            fileExtension.toLowerCase() === 'pdf' ||
                             fileExtension.toLowerCase() === 'jpeg')
                         ) {
                           if (file) {
@@ -942,9 +1020,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                               .catch((error) => {
                                 throw error;
                               });
-                            console.log(aphBlob, 'aphBlob');
                             const url = client.getBlobUrl(aphBlob.name);
-                            console.log('url', url);
                             const uploadObject = {
                               id: doctorId,
                               fileType: `image`,
@@ -953,6 +1029,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                               isTyping: true,
                             };
                             console.log('aphBlob', aphBlob, url);
+                            uploadfile(url);
                             sendMsg(uploadObject, true);
                             setFileUploading(false);
                           }
@@ -1040,6 +1117,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             </Button>
           </DialogActions>
         </Dialog>
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+          <div className={classes.modalWindowWrap}>
+            <div className={classes.tableContent}>
+              <div className={classes.modalWindow}>
+                <div className={classes.modalHeader}>
+                  {/* IMAGE001.JPG */}
+                  <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
+                    <img src={require('images/ic_round_clear.svg')} alt="" />
+                  </div>
+                </div>
+                <div className={classes.modalContent}>
+                  <img src={imgPrevUrl} alt="" />
+                </div>
+                <div className={classes.modalFooter}></div>
+              </div>
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );

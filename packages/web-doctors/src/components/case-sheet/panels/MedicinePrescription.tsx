@@ -265,11 +265,13 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     popupHeadingCenter: {
+      padding: '20px 10px',
       '& h6': {
         fontSize: 13,
         color: '#01475b',
         fontWeight: 600,
         textAlign: 'center',
+        padding: '0 25px',
         marginTop: 5,
       },
     },
@@ -371,6 +373,32 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     selectDropdown: {
       paddingTop: 3,
+    },
+    menuPaper: {
+      width: 200,
+      borderRadius: 10,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.8)',
+      marginTop: 34,
+      '& ul': {
+        padding: 0,
+        '& li': {
+          minHeight: 'auto',
+          color: '#02475b',
+          fontSize: 16,
+          fontWeight: 500,
+          '&:hover': {
+            backgroundColor: '#fff',
+          },
+        },
+      },
+    },
+    menuSelected: {
+      backgroundColor: '#f0f4f5 !important',
+      color: '#02475b !important',
+      fontWeight: 'bold',
+    },
+    unitsSelect: {
+      marginTop: -7,
     },
   })
 );
@@ -783,7 +811,6 @@ export const MedicinePrescription: React.FC = () => {
         id: selectedId,
         medicineUnit: medicineUnit,
       };
-      console.log(selectedValue);
 
       const inputParams: any = {
         id: selectedId,
@@ -1028,32 +1055,44 @@ export const MedicinePrescription: React.FC = () => {
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
                         <h6>Units*</h6>
-                        <AphSelect
-                          style={{ paddingTop: 3 }}
-                          value={medicineUnit}
-                          MenuProps={{
-                            // classes: {
-                            //   paper: classes.menuPaper,
-                            // },
-                            anchorOrigin: {
-                              vertical: 'bottom',
-                              horizontal: 'right',
-                            },
-                            transformOrigin: {
-                              vertical: 'top',
-                              horizontal: 'right',
-                            },
-                          }}
-                          onChange={(e: any) => {
-                            setMedicineUnit(e.target.value as string);
-                          }}
-                        >
-                          <MenuItem value="TABLET">tablet</MenuItem>
-                          <MenuItem value="CAPSULE">capsule</MenuItem>
-                          <MenuItem value="ML">ml</MenuItem>
-                          <MenuItem value="DROPS">drops</MenuItem>
-                          <MenuItem value="NA">NA</MenuItem>
-                        </AphSelect>
+                        <div className={classes.unitsSelect}>
+                          <AphSelect
+                            style={{ paddingTop: 3 }}
+                            value={medicineUnit}
+                            MenuProps={{
+                              classes: {
+                                paper: classes.menuPaper,
+                              },
+                              anchorOrigin: {
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                              },
+                              transformOrigin: {
+                                vertical: 'top',
+                                horizontal: 'right',
+                              },
+                            }}
+                            onChange={(e: any) => {
+                              setMedicineUnit(e.target.value as string);
+                            }}
+                          >
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="TABLET">
+                              tablet
+                            </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="CAPSULE">
+                              capsule
+                            </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="ML">
+                              ml
+                            </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
+                              drops
+                            </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
+                              NA
+                            </MenuItem>
+                          </AphSelect>
+                        </div>
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
                         <h6>Duration of Consumption*</h6>

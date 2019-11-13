@@ -10,6 +10,7 @@ import {
   JuniorAppointmentSessions,
   AppointmentDocuments,
   AppointmentCallDetails,
+  DoctorNextAvaialbleSlots,
 } from 'consults-service/entities/';
 import {
   ConsultHours,
@@ -44,6 +45,7 @@ import {
   SearchHistory,
   MedicineOrderInvoice,
   PatientMedicalHistory,
+  Diagnostics,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -88,6 +90,7 @@ export const connect = async () => {
         JuniorAppointmentSessions,
         AppointmentDocuments,
         AppointmentCallDetails,
+        DoctorNextAvaialbleSlots,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -117,6 +120,7 @@ export const connect = async () => {
         MedicalRecordParameters,
         MedicineOrderInvoice,
         PatientMedicalHistory,
+        Diagnostics,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

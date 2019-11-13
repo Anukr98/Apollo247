@@ -197,7 +197,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
-    CommonScreenLog(AppRoutes.AppointmentOnlineDetails, AppRoutes.AppointmentOnlineDetails);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -461,17 +460,17 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             title="UPCOMING ONLINE VISIT"
             leftIcon="backArrow"
             rightComponent={
-              <TouchableOpacity
-                onPress={() => {
-                  CommonLogEvent(
-                    AppRoutes.AppointmentOnlineDetails,
-                    'UPCOMING ONLINE VISIT Clicked'
-                  );
-                  setCancelAppointment(true);
-                }}
-              >
-                <More />
-              </TouchableOpacity>
+              dateIsAfter ? (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
+                    setCancelAppointment(true);
+                  }}
+                >
+                  <More />
+                </TouchableOpacity>
+              ) : null
             }
             onPressLeftIcon={() => props.navigation.goBack()}
           />
@@ -529,6 +528,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   AppRoutes.AppointmentOnlineDetails,
                   'Reschdule_Appointment_Online_Details_Clicked'
                 );
+
                 try {
                   dateIsAfter ? NextAvailableSlotAPI() : null;
                 } catch (error) {}
@@ -616,7 +616,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         )}
         {showCancelPopup && (
           <BottomPopUp
-            title={'Hi, Surj :)'}
+            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={
               'Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!'
             }

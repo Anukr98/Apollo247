@@ -9,6 +9,7 @@ import {
   AppointmentDocuments,
   JuniorAppointmentSessions,
   AppointmentCallDetails,
+  DoctorNextAvaialbleSlots,
 } from 'consults-service/entities';
 import {
   ConsultHours,
@@ -44,6 +45,7 @@ import {
   MedicalRecordParameters,
   MedicineOrderInvoice,
   PatientMedicalHistory,
+  Diagnostics,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -59,6 +61,7 @@ export const connect = async () => {
         JuniorAppointmentSessions,
         AppointmentDocuments,
         AppointmentCallDetails,
+        DoctorNextAvaialbleSlots,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -112,6 +115,7 @@ export const connect = async () => {
         MedicalRecordParameters,
         MedicineOrderInvoice,
         PatientMedicalHistory,
+        Diagnostics,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

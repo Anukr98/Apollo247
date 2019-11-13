@@ -9,6 +9,7 @@ import {
   OnlineConsult,
   PhysicalConsult,
   DoctorPlaceholderImage,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GET_PATIENT_APPOINTMENTS } from '@aph/mobile-patients/src/graphql/profiles';
@@ -41,7 +42,10 @@ import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { STATUS, APPOINTMENT_STATE } from '../../graphql/types/globalTypes';
 import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-
+import { MaterialMenu } from '../ui/MaterialMenu';
+import { getDataFromTree } from 'react-apollo';
+import { AddProfile } from '../ui/AddProfile';
+import { ProfileList } from '../ui/ProfileList';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -55,6 +59,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 5,
+  },
+  nameTextStyle: {
+    marginLeft: 5,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  seperatorStyle: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    marginTop: 5,
+    marginHorizontal: 5,
   },
   hiTextStyle: {
     color: '#02475b',
@@ -172,9 +187,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const thingsToDo = string.consult_room.things_to_do.data;
   const articles = string.consult_room.articles.data;
   const [showMenu, setShowMenu] = useState<boolean>(false);
-  const [userName, setuserName] = useState<string>('');
+  const [userName, setuserName] = useState<string | number>('');
   const { analytics, getPatientApiCall } = useAuth();
-  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
+
   const [consultations, setconsultations] = useState<
     getPatinetAppointments_getPatinetAppointments_patinetAppointments[]
   >([]);
@@ -186,12 +201,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
   const [followupdone, setFollowupDone] = useState<boolean>(false);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
+  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
   useEffect(() => {
-    CommonScreenLog(AppRoutes.Consult, AppRoutes.Consult);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
+      currentPatient && setProfile(currentPatient!);
     }
   }, [currentPatient]);
 
@@ -212,9 +230,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
     };
-  }, []);
+  }, [currentPatient]);
 
   useEffect(() => {
+    const getDataFromTree = async () => {
+      const storeVallue = await AsyncStorage.getItem('selectUserId');
+      console.log('storeVallue', storeVallue);
+      setCurrentPatientId(storeVallue);
+    };
+
+    getDataFromTree();
     try {
       setNewAppointmentTime(
         props.navigation.getParam('Data')
@@ -234,13 +259,24 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    console.log('current', currentPatient!.id);
+
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
+    currentPatient && setProfile(currentPatient!);
     analytics.setAnalyticsCollectionEnabled(true);
     analytics.setCurrentScreen(AppRoutes.Consult, AppRoutes.Consult);
-  }, [currentPatient, analytics, userName, props.navigation.state.params]);
+  }, [currentPatient, analytics, props.navigation.state.params]);
+
+  useEffect(() => {
+    CommonScreenLog(AppRoutes.Consult, AppRoutes.Consult);
+    if (!currentPatient) {
+      console.log('No current patients available');
+      getPatientApiCall();
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     async function fetchData() {
@@ -266,12 +302,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         setshowOfflinePopup(true);
       }
     });
-  }, []);
+  }, [currentPatient]);
 
+  console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
   const inputData = {
     patientId: currentPatient ? currentPatient!.id : '',
     appointmentDate: moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'),
   };
+  console.log('inputdata', inputData);
 
   const fetchAppointments = () => {
     client
@@ -291,12 +329,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           consultations !== data.getPatinetAppointments.patinetAppointments
         ) {
           setconsultations(data.getPatinetAppointments.patinetAppointments);
-          setshowSpinner(false);
+        } else {
+          setconsultations([]);
         }
       })
       .catch((e: string) => {
-        setshowSpinner(false);
         console.log('Error occured', e);
+      })
+      .finally(() => {
+        setshowSpinner(false);
       });
   };
 
@@ -358,8 +399,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               </View>
             )
           )}
-        {/* 
-        <Text
+
+        {/* <Text
           style={{
             paddingTop: 20,
             paddingBottom: 4,
@@ -514,7 +555,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 activeOpacity={1}
                 style={[styles.doctorView]}
                 onPress={() => {
-                  CommonLogEvent(AppRoutes.Consult, 'Consult Online clicked');
+                  CommonLogEvent(AppRoutes.Consult, `Consult ${item.appointmentType} clicked`);
                   item.appointmentType === 'ONLINE'
                     ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
                         data: item,
@@ -573,10 +614,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     </View>
                     <View style={{ flex: 1, marginRight: 16 }}>
                       <Text style={styles.doctorNameStyles} numberOfLines={1}>
-                        Dr.{' '}
-                        {item.doctorInfo
-                          ? `${item.doctorInfo.firstName} ${item.doctorInfo.lastName}`
-                          : ''}
+                        {item.doctorInfo ? `${item.doctorInfo.displayName}` : ''}
                       </Text>
                       {item.isFollowUp == 'true' ? (
                         <Text
@@ -709,7 +747,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                         <TouchableOpacity
                           activeOpacity={1}
                           onPress={() => {
-                            CommonLogEvent(AppRoutes.Consult, 'Consult Online clicked');
+                            CommonLogEvent(AppRoutes.Consult, 'Consult RESCHEDULE clicked');
                             item.appointmentType === 'ONLINE'
                               ? props.navigation.navigate(AppRoutes.AppointmentOnlineDetails, {
                                   data: item,
@@ -747,7 +785,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                       <TouchableOpacity
                         activeOpacity={1}
                         onPress={() => {
-                          CommonLogEvent(AppRoutes.Consult, 'Chat Room Move clicked');
+                          CommonLogEvent(AppRoutes.Consult, 'Prepare for Consult clicked');
                           props.navigation.navigate(AppRoutes.ChatRoom, {
                             data: item,
                             callType: '',
@@ -776,6 +814,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                           >
                             You can chat with the doctor
                           </Text>
+
                           <Text
                             style={{
                               ...theme.fonts.IBMPlexSansSemiBold(12),
@@ -788,8 +827,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               paddingLeft: 3,
                             }}
                           >
-                            {day1.diff(day2, 'days')} more{' '}
-                            {day1.diff(day2, 'days') == 1 ? 'day' : 'days'}
+                            {day1.diff(day2, 'days') == 0
+                              ? 'today'
+                              : day1.diff(day2, 'days') +
+                                'more ' +
+                                (day1.diff(day2, 'days') == 1 ? 'day' : 'days')}
                           </Text>
                         </View>
                       </TouchableOpacity>
@@ -811,7 +853,16 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     return (
       <View style={{ width: '100%' }}>
         <View style={styles.viewName}>
-          <View style={{ alignItems: 'flex-end', marginTop: 20, height: 57 }}>
+          <View
+            style={{
+              justifyContent: 'space-between',
+              flexDirection: 'row',
+              paddingTop: 16,
+              paddingHorizontal: 0,
+              backgroundColor: theme.colors.WHITE,
+              marginTop: 4,
+            }}
+          >
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
@@ -819,7 +870,71 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               <ApolloLogo />
             </TouchableOpacity>
           </View>
-          <View
+          <View>
+            <ProfileList
+              saveUserChange={true}
+              childView={
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    paddingRight: 8,
+                    borderRightWidth: 0,
+                    borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                  }}
+                >
+                  <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+                  <View>
+                    <Text style={styles.nameTextStyle}>{userName}</Text>
+                    <View style={styles.seperatorStyle} />
+                  </View>
+                  <View style={{ paddingTop: 15 }}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              }
+              // selectedProfile={profile}
+              setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            ></ProfileList>
+            {/* <MaterialMenu
+              onPress={(item) => {
+                const val = (allCurrentPatients || []).find(
+                  (_item) => _item.firstName == item.value.toString()
+                );
+                setCurrentPatientId!(val!.id);
+                AsyncStorage.setItem('selectUserId', val!.id);
+              }}
+              options={
+                allCurrentPatients &&
+                allCurrentPatients!.map((item) => {
+                  return { key: item.id, value: item.firstName };
+                })
+              }
+              menuContainerStyle={{
+                alignItems: 'flex-end',
+                marginTop: 16,
+                marginLeft: width / 2 - 95,
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  paddingRight: 8,
+                  borderRightWidth: 0.5,
+                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                }}
+              >
+                <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+                <View>
+                  <Text style={styles.nameTextStyle}>{userName}</Text>
+                  <View style={styles.seperatorStyle} />
+                </View>
+                <View style={{ paddingTop: 15 }}>
+                  <DropdownGreen />
+                </View>
+              </View>
+            </MaterialMenu> */}
+          </View>
+          {/* <View
             // activeOpacity={1}
             // onPress={() => setShowMenu(true)}
             style={{
@@ -829,23 +944,21 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             }}
           >
             <View style={{ flexDirection: 'row' }}>
-              <Text style={styles.hiTextStyle}>
-                {string.home.hi} {userName}!
-              </Text>
-              {/* <View>
+              <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+              <View>
                 <View
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
                   }}
                 >
-                  <Text style={styles.nameTextStyle}>{userName}!</Text>
+                  <Text style={styles.nameTextStyle}> {userName}!</Text>
                   <DropdownGreen style={{ marginTop: 8 }} />
                 </View>
                 <View style={styles.seperatorStyle} />
-              </View> */}
+              </View>
             </View>
-          </View>
+          </View> */}
           <Text style={styles.descriptionTextStyle}>
             {consultations.length > 0
               ? 'Here are your recent and upcoming consultations'
@@ -1112,6 +1225,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         </BottomPopUp>
       )}
       {showSpinner && <Spinner />}
+      {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );

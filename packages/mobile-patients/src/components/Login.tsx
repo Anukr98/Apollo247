@@ -30,7 +30,7 @@ import firebase from 'react-native-firebase';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent, CommonBugFender } from '../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   container: {
@@ -241,7 +241,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 console.log(error.message, 'errormessage');
 
                 CommonLogEvent(AppRoutes.Login, error.message);
-
+                CommonBugFender(AppRoutes.Login, error.message);
                 Alert.alert(
                   'Error',
                   (error && error.message) || 'The interaction was cancelled by the user.'

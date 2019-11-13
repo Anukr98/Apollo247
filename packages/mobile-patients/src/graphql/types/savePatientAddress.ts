@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { PatientAddressInput } from "./globalTypes";
+import { PatientAddressInput, PATIENT_ADDRESS_TYPE } from "./globalTypes";
 
 // ====================================================
 // GraphQL mutation operation: savePatientAddress
@@ -19,6 +19,8 @@ export interface savePatientAddress_savePatientAddress_patientAddress {
   landmark: string | null;
   createdDate: any | null;
   updatedDate: any | null;
+  addressType: PATIENT_ADDRESS_TYPE | null;
+  otherAddressType: string | null;
 }
 
 export interface savePatientAddress_savePatientAddress {

@@ -482,6 +482,7 @@ export const JDConsultRoom: React.FC = () => {
   /* case sheet data*/
   let assignedDoctorFirstName = '',
     assignedDoctorLastName = '',
+    assignedDoctorDisplayName = '',
     assignedDoctorMobile = '',
     assignedDoctorSpecialty = '',
     assignedDoctorPhoto = '',
@@ -509,6 +510,11 @@ export const JDConsultRoom: React.FC = () => {
       (assignedDoctorDetailsData &&
         assignedDoctorDetailsData.getDoctorDetailsById &&
         assignedDoctorDetailsData.getDoctorDetailsById.lastName) ||
+      '';
+    assignedDoctorDisplayName =
+      (assignedDoctorDetailsData &&
+        assignedDoctorDetailsData.getDoctorDetailsById &&
+        assignedDoctorDetailsData.getDoctorDetailsById.firstName) ||
       '';
     assignedDoctorMobile =
       (assignedDoctorDetailsData &&
@@ -1081,10 +1087,11 @@ export const JDConsultRoom: React.FC = () => {
             followUpDate,
             setFollowUpDate,
             healthVault: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.healthVault,
+            appointmentDocuments: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDocuments,
             pastAppointments: casesheetInfo!.getJuniorDoctorCaseSheet!.pastAppointments,
             setCasesheetNotes,
             autoCloseCaseSheet,
-
             height,
             weight,
             bp,
@@ -1211,6 +1218,7 @@ export const JDConsultRoom: React.FC = () => {
                     assignedDoctorSalutation={assignedDoctorSalutation}
                     assignedDoctorFirstName={assignedDoctorFirstName}
                     assignedDoctorLastName={assignedDoctorLastName}
+                    assignedDoctorDisplayName={assignedDoctorDisplayName}
                     isAudioVideoCallEnded={(isAudioVideoCall: boolean) => {
                       setIsAuditoVideoCall(isAudioVideoCall);
                     }}

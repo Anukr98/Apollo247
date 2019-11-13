@@ -57,4 +57,7 @@ export enum ApiConstants {
   PATIENT_APPT_CC_EMAILID = 'raj@popcornapps.com,sumeeth.kumar@popcornapps.com',
   PATIENT_APPT_EMAILID_PRODUCTION = 'helpdesk@apollo247.com',
   PATIENT_APPT_CC_EMAILID_PRODUCTION = 'bharathrao@apollopharmacy.org,Vijayendra_Singh@external.mckinsey.com,prashant_sharma@apollohospitals.com,sumeeth.kumar@popcornapps.com,sriram.kanchan@popcornapps.com,raj@popcornapps.com',
+
+  CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
+  CANCEL_APPT_BODY = 'Hi {0}! :) Dr. {1} has cancelled your consultation.',
 }

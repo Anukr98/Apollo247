@@ -7,6 +7,10 @@
 import { Dimensions, Platform, AsyncStorage } from 'react-native';
 import firebase from 'react-native-firebase';
 import { aphConsole } from '../helpers/helperFunctions';
+import { AppConfig } from '../strings/AppConfig';
+import Bugfender from '@bugfender/rn-bugfender';
+
+const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';
 
 export const DeviceHelper = () => {
   const isIphoneX = () => {
@@ -20,21 +24,35 @@ export const DeviceHelper = () => {
 };
 
 export const CommonLogEvent = (stringName: string, parameterName: string) => {
-  try {
-    firebase.analytics().logEvent(stringName, {
-      Button_Action: parameterName,
-    });
-  } catch (error) {
-    aphConsole.log('CommonLogEvent error', error);
+  if (isReleaseOn) {
+    try {
+      firebase.analytics().logEvent(stringName, {
+        Button_Action: parameterName,
+      });
+    } catch (error) {
+      aphConsole.log('CommonLogEvent error', error);
+    }
   }
 };
 
 export const CommonScreenLog = (stringName: string, parameterName: string) => {
-  try {
-    AsyncStorage.setItem('setCurrentName', stringName);
+  if (isReleaseOn) {
+    try {
+      AsyncStorage.setItem('setCurrentName', stringName);
 
-    firebase.analytics().setCurrentScreen(stringName, parameterName);
-  } catch (error) {
-    aphConsole.log('CommonScreenLog error', error);
+      firebase.analytics().setCurrentScreen(stringName, parameterName);
+    } catch (error) {
+      aphConsole.log('CommonScreenLog error', error);
+    }
   }
+};
+
+export const CommonBugFender = (stringName: string, errorValue: string) => {
+  // if (isReleaseOn) {
+  try {
+    Platform.OS === 'ios' ? Bugfender.d(stringName, errorValue) : null;
+  } catch (error) {
+    aphConsole.log('CommonBugFender error', error);
+  }
+  // }
 };

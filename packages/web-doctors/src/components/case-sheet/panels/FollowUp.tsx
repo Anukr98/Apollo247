@@ -8,7 +8,6 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { fontWeight } from '@material-ui/system';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { addDays } from 'date-fns';
 
@@ -294,8 +293,7 @@ export const FollowUp: React.FC = () => {
     followUpConsultType: consultTypeData,
     setFollowUpConsultType: setConsultTypeData,
   } = useContext(CaseSheetContext);
-  console.log(followUpAfterInDays[0]);
-  const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(!!followUp[0]);
+  const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(followUp[0]);
   const [followUpDays, setFollowUpDays] = useState<number>(
     parseInt(followUpAfterInDays[0], 10) || 5
   );
@@ -317,12 +315,7 @@ export const FollowUp: React.FC = () => {
       setFollowUpConsultType('');
     }
   }, [shouldFollowUp]);
-  // useEffect(() => {
-  //   if (followUpDate) {
-  //     setFollowUpDays(9);
-  //     setDefaultValue(9);
-  //   }
-  // }, [setFollowUpDays, setDefaultValue, followUpDate, defaultValue]);
+
   useEffect(() => {
     consultTypeData[0] = followUpConsultType;
     setConsultTypeData(consultTypeData);
@@ -330,18 +323,12 @@ export const FollowUp: React.FC = () => {
       setFollowUpConsultType('ONLINE');
     }
 
-    followUp[0] = shouldFollowUp;
-    setFollowUp(followUp);
-
     followUpAfterInDays[0] = `${followUpDays}`;
     setFollowUpAfterInDays(followUpAfterInDays);
 
     followUpDate[0] = `${followUpDays === 9 ? selectedDate : addDays(new Date(), followUpDays)}`;
     setFollowUpDate(followUpDate);
   }, [followUpConsultType, shouldFollowUp, followUpDays, selectedDate]);
-  // console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
-  // console.log(followUpDays);
-  // console.log(followUp[0], followUpAfterInDays[0], followUpDate[0]);
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Typography component="div" className={classes.followUpContainer}>
@@ -351,7 +338,11 @@ export const FollowUp: React.FC = () => {
           </Typography>
           <AphToggleSwitch
             checked={shouldFollowUp}
-            onChange={(e) => setShouldFollowUp(e.target.checked)}
+            onChange={(e) => {
+              setShouldFollowUp(e.target.checked);
+              followUp[0] = shouldFollowUp;
+              setFollowUp(followUp);
+            }}
             value="followup"
             color="primary"
             className={classes.switchBtn}
@@ -418,7 +409,7 @@ export const FollowUp: React.FC = () => {
                       height="24"
                       viewBox="0 0 24 24"
                     >
-                      <g fill="none" fill-rule="evenodd">
+                      <g fill="none" fillRule="evenodd">
                         <path
                           fill="#00B38E"
                           fillRule="nonzero"
@@ -436,10 +427,10 @@ export const FollowUp: React.FC = () => {
                       height="18"
                       viewBox="0 0 18 18"
                     >
-                      <g fill="none" fill-rule="evenodd">
+                      <g fill="none" fillRule="evenodd">
                         <path
                           fill="#00B38E"
-                          fill-rule="nonzero"
+                          fillRule="nonzero"
                           d="M17 16h-1V2c0-.55-.45-1-1-1h-4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v15H1c-.55 0-1 .45-1 1s.45 1 1 1h9c.55 0 1-.45 1-1V3h3v14c0 .55.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zm-8-6H7V8h2v2z"
                         />
                       </g>

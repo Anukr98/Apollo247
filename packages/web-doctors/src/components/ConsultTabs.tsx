@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Theme, Button, Modal } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
@@ -9,7 +9,9 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { useApolloClient } from 'react-apollo-hooks';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import Dialog from '@material-ui/core/Dialog';
 // import DialogActions from '@material-ui/core/DialogActions';
@@ -313,7 +315,8 @@ export const ConsultTabs: React.FC = () => {
     return <Typography component="div">{props.children}</Typography>;
   };
   const client = useApolloClient();
-
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { currentUserType } = useAuthContext();
   /* case sheet data*/
   const [symptoms, setSymptoms] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
@@ -367,9 +370,8 @@ export const ConsultTabs: React.FC = () => {
   // const setCasesheetNotes = (notes: string) => {
   //   customNotes = notes; // this will be used in saving case sheet.
   // };
-
   useEffect(() => {
-    if (isSignedIn) {
+    if (isSignedIn || currentUserType === LoggedInUserType.SECRETARY) {
       client
         .query<GetCaseSheet>({
           query: GET_CASESHEET,
@@ -633,12 +635,11 @@ export const ConsultTabs: React.FC = () => {
         }
       })
       .catch((error: ApolloError) => {
-        console.log('Error in Call Notification', error.message);
         alert('An error occurred while sending notification to Client.');
       });
   };
 
-  const sendToPatientAction = (flag: boolean) => {
+  const sendToPatientAction = () => {
     client
       .mutate<UpdatePatientPrescriptionSentStatus, UpdatePatientPrescriptionSentStatusVariables>({
         mutation: UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS,
@@ -660,7 +661,7 @@ export const ConsultTabs: React.FC = () => {
       });
   };
 
-  const saveCasesheetAction = (flag: boolean) => {
+  const saveCasesheetAction = (flag: boolean, sendToPatientFlag: boolean) => {
     // followUp: followUp[0],
     // followUpDate: followUp[0] ? new Date(followUpDate[0]).toISOString() : '',
     // followUpAfterInDays:
@@ -759,13 +760,15 @@ export const ConsultTabs: React.FC = () => {
       .then((_data) => {
         if (_data && _data!.data!.modifyCaseSheet && _data!.data!.modifyCaseSheet!.blobName) {
           const url = storageClient.getBlobUrl(_data!.data!.modifyCaseSheet!.blobName);
-          console.log(url);
           setPrescriptionPdf(url);
           setSaving(false);
         }
         if (!flag) {
           // setIsPopoverOpen(true);
           setIsConfirmDialogOpen(true);
+        }
+        if (sendToPatientFlag) {
+          sendToPatientAction();
         }
       })
       .catch((e) => {
@@ -778,7 +781,7 @@ export const ConsultTabs: React.FC = () => {
   };
 
   const endConsultAction = () => {
-    saveCasesheetAction(false);
+    saveCasesheetAction(false, false);
   };
 
   const endConsultActionFinal = () => {
@@ -798,7 +801,6 @@ export const ConsultTabs: React.FC = () => {
         //setIsPdfPopoverOpen(true);
         //setIsEnded(true);
         setAppointmentStatus('COMPLETED');
-        console.log('_data', _data);
         setIsPdfPageOpen(true);
       })
       .catch((e) => {
@@ -895,6 +897,8 @@ export const ConsultTabs: React.FC = () => {
             followUpDate,
             setFollowUpDate,
             healthVault: casesheetInfo!.getCaseSheet!.patientDetails!.healthVault,
+            appointmentDocuments: casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment!
+              .appointmentDocuments,
             pastAppointments: casesheetInfo!.getCaseSheet!.pastAppointments,
             height,
             weight,
@@ -929,7 +933,9 @@ export const ConsultTabs: React.FC = () => {
               <CallPopover
                 setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                 createSessionAction={createSessionAction}
-                saveCasesheetAction={(flag: boolean) => saveCasesheetAction(flag)}
+                saveCasesheetAction={(flag: boolean, sendToPatientFlag: boolean) =>
+                  saveCasesheetAction(flag, sendToPatientFlag)
+                }
                 endConsultAction={endConsultAction}
                 appointmentId={appointmentId}
                 appointmentDateTime={appointmentDateTime}
@@ -945,7 +951,7 @@ export const ConsultTabs: React.FC = () => {
                 appointmentStatus={appointmentStatus}
                 sentToPatient={sentToPatient}
                 isAppointmentEnded={isAppointmentEnded}
-                sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
+                //sendToPatientAction={(flag: boolean) => sendToPatientAction(flag)}
                 setIsPdfPageOpen={(flag: boolean) => setIsPdfPageOpen(flag)}
                 callId={callId}
               />

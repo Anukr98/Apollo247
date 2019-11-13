@@ -5,6 +5,8 @@ import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
+import { ApolloError } from 'apollo-client';
+
 // import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
 // import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
 // import { useMutation } from 'react-apollo-hooks';
@@ -15,6 +17,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
+import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -306,6 +311,9 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
     },
     modalContent: {
+      textAlign: 'center',
+      maxHeight: 'calc(100vh - 212px)',
+      overflow: 'hidden',
       '& img': {
         maxWidth: '100%',
       },
@@ -354,11 +362,10 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [modalOpen, setModalOpen] = React.useState(false);
+  const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const apolloClient = useApolloClient();
 
   // this hook is used to send auto chat message when the consult is closed by system
-  useEffect(() => {
-    console.log('auto close case sheet action....', props.autoCloseCaseSheet);
-  }, [props.autoCloseCaseSheet]);
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -521,6 +528,24 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
+  const uploadfile = (url: string) => {
+    console.log('ram');
+    apolloClient
+      .mutate<AddChatDocument, AddChatDocumentVariables>({
+        mutation: ADD_CHAT_DOCUMENT,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: props.appointmentId, documentPath: url },
+      })
+      .then((_data) => {
+        if (_data && _data.data) {
+          console.log('Document ', _data.data.addChatDocument);
+        }
+      })
+      .catch((error: ApolloError) => {
+        console.log(error);
+      });
+  };
+
   const send = () => {
     const text = {
       id: doctorId,
@@ -615,7 +640,13 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <div className={classes.imageUpload} onClick={() => setModalOpen(true)}>
+                <div
+                  className={classes.imageUpload}
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(rowData.url);
+                  }}
+                >
                   <img src={rowData.url} alt={rowData.url} />
                 </div>
               ) : (
@@ -686,7 +717,13 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                 </div>
               )}
               {rowData.message === documentUpload ? (
-                <div onClick={() => setModalOpen(true)} className={classes.imageUpload}>
+                <div
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(rowData.url);
+                  }}
+                  className={classes.imageUpload}
+                >
                   <img src={rowData.url} alt={rowData.url} />
                 </div>
               ) : (
@@ -861,7 +898,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                         fileExtension &&
                         (fileExtension.toLowerCase() === 'png' ||
                           fileExtension.toLowerCase() === 'jpg' ||
-                          fileExtension.toLowerCase() === 'pdf' ||
                           fileExtension.toLowerCase() === 'jpeg')
                       ) {
                         if (file) {
@@ -878,6 +914,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                             url: url,
                             isTyping: true,
                           };
+                          uploadfile(url);
                           sendMsg(uploadObject, true);
                           setFileUploading(false);
                         }
@@ -971,13 +1008,13 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           <div className={classes.tableContent}>
             <div className={classes.modalWindow}>
               <div className={classes.modalHeader}>
-                IMAGE001.JPG
+                {/* IMAGE001.JPG */}
                 <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
                   <img src={require('images/ic_round_clear.svg')} alt="" />
                 </div>
               </div>
               <div className={classes.modalContent}>
-                <img src={require('images/patient_01.png')} alt="" />
+                <img src={imgPrevUrl} alt="" />
               </div>
               <div className={classes.modalFooter}></div>
             </div>

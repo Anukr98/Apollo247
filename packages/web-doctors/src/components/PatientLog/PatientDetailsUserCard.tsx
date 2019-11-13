@@ -89,7 +89,7 @@ export const PatientDetailsUserCard: React.FC<PatientDetailsProps> = (props) => 
   const photoUrl =
     patientDetails && patientDetails!.photoUrl && patientDetails!.photoUrl !== null
       ? patientDetails!.photoUrl
-      : require('images/ic_patientchat.png');
+      : require('images/no_person_icon.svg');
   return loading && !patientDetails ? (
     <CircularProgress className={classes.loading} />
   ) : (

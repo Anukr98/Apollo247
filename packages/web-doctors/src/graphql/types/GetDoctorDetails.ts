@@ -118,6 +118,7 @@ export interface GetDoctorDetails_getDoctorDetails {
   dateOfBirth: string | null;
   doctorType: DoctorType;
   delegateNumber: string | null;
+  displayName: string | null;
   emailAddress: string | null;
   experience: string | null;
   firebaseToken: string | null;

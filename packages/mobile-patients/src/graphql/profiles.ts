@@ -189,6 +189,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
           salutation
           firstName
           lastName
+          displayName
           experience
           onlineConsultationFees
           physicalConsultationFees
@@ -225,6 +226,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         salutation
         firstName
         lastName
+        displayName
         experience
         specialty {
           name
@@ -265,6 +267,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
           salutation
           firstName
           lastName
+          displayName
           experience
           specialty {
             name
@@ -306,6 +309,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
         salutation
         firstName
         lastName
+        displayName
         experience
         specialty {
           name
@@ -443,6 +447,7 @@ export const DOCTOR_SPECIALITY_BY_FILTERS = gql`
         salutation
         firstName
         lastName
+        displayName
         experience
         city
         photoUrl
@@ -535,6 +540,8 @@ export const SAVE_PATIENT_ADDRESS = gql`
         landmark
         createdDate
         updatedDate
+        addressType
+        otherAddressType
       }
     }
   }
@@ -552,6 +559,31 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         landmark
         createdDate
         updatedDate
+        addressType
+        otherAddressType
+      }
+    }
+  }
+`;
+export const DELETE_PATIENT_ADDRESS = gql`
+  mutation deletePatientAddress($id: String) {
+    deletePatientAddress(id: $id) {
+      status
+    }
+  }
+`;
+
+export const GET_PATIENTS_MOBILE = gql`
+  query getPatientByMobileNumber($mobileNumber: String) {
+    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+      patients {
+        id
+        firstName
+        dateOfBirth
+        gender
+        uhid
+        lastName
+        relation
       }
     }
   }
@@ -570,6 +602,8 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         landmark
         createdDate
         updatedDate
+        addressType
+        otherAddressType
       }
     }
   }
@@ -969,6 +1003,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
         displayId
         bookingDate
         caseSheet {
+          notes
           blobName
           consultType
           diagnosis {
@@ -1008,6 +1043,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
           salutation
           firstName
           lastName
+          displayName
           experience
           city
           onlineConsultationFees
@@ -1135,6 +1171,7 @@ export const GET_APPOINTMENT_DATA = gql`
           salutation
           firstName
           lastName
+          displayName
           experience
           onlineConsultationFees
           physicalConsultationFees

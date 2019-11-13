@@ -40,6 +40,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
 
 export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet {
   __typename: "CaseSheet";
+  notes: string | null;
   blobName: string | null;
   consultType: string | null;
   diagnosis: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_diagnosis | null)[] | null;
@@ -66,6 +67,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   salutation: Salutation | null;
   firstName: string;
   lastName: string;
+  displayName: string | null;
   experience: string | null;
   city: string | null;
   onlineConsultationFees: string;
