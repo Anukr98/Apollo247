@@ -119,6 +119,7 @@ import {
   saveMedicineOrderInvoiceTypeDefs,
   saveMedicineOrderInvoiceResolvers,
 } from 'profiles-service/resolvers/pharmaOrderInvoice';
+import { diagnosticsTypeDefs, diagnosticsResolvers } from 'profiles-service/resolvers/diagnostics';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -294,6 +295,10 @@ import { format, differenceInMilliseconds } from 'date-fns';
       {
         typeDefs: saveMedicineOrderInvoiceTypeDefs,
         resolvers: saveMedicineOrderInvoiceResolvers,
+      },
+      {
+        typeDefs: diagnosticsTypeDefs,
+        resolvers: diagnosticsResolvers,
       },
     ]),
     plugins: [
