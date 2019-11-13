@@ -273,7 +273,6 @@ export const ConsultTabs: React.FC = () => {
   const paramId = params.id;
 
   const { currentPatient, isSignedIn } = useAuth();
-  console.log('currentPatient ', currentPatient);
 
   const mutationCreateSrdCaseSheet = useMutation<
     CreateSeniorDoctorCaseSheet,
@@ -373,11 +372,6 @@ export const ConsultTabs: React.FC = () => {
   // };
   useEffect(() => {
     if (isSignedIn || currentUserType === LoggedInUserType.SECRETARY) {
-      console.log(
-        'currentUserType === LoggedInUserType.SECRETARY ',
-        currentUserType === LoggedInUserType.SECRETARY
-      );
-
       client
         .query<GetCaseSheet>({
           query: GET_CASESHEET,
@@ -385,7 +379,6 @@ export const ConsultTabs: React.FC = () => {
           variables: { appointmentId: appointmentId },
         })
         .then((_data) => {
-          console.log('_data in consult tab', _data);
           setCasesheetInfo(_data.data);
           setError('');
           _data!.data!.getCaseSheet!.caseSheetDetails &&
@@ -642,7 +635,6 @@ export const ConsultTabs: React.FC = () => {
         }
       })
       .catch((error: ApolloError) => {
-        console.log('Error in Call Notification', error.message);
         alert('An error occurred while sending notification to Client.');
       });
   };

@@ -317,17 +317,19 @@ export const Header: React.FC = (props) => {
                         src={require('images/ic_help.svg')}
                       />
                     </span>
-                    <span
-                      title="My Profile"
-                      className={`${selectedTab === 6 && classes.menuItemActive}`}
-                    >
-                      <Link to="/myaccount">
-                        <img
-                          onClick={() => setSelectedTab(6)}
-                          src={require('images/ic_profile.svg')}
-                        />
-                      </Link>
-                    </span>
+                    {!window.location.href.includes('/secretary') && (
+                      <span
+                        title="My Profile"
+                        className={`${selectedTab === 6 && classes.menuItemActive}`}
+                      >
+                        <Link to="/myaccount">
+                          <img
+                            onClick={() => setSelectedTab(6)}
+                            src={require('images/ic_profile.svg')}
+                          />
+                        </Link>
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

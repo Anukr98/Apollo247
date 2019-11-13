@@ -120,7 +120,7 @@ export const SecretaryDashboard: React.FC = (props) => {
   }: { currentPatient: GetDoctorDetails_getDoctorDetails | null } = useAuth();
 
   const { data, error, loading } = useQuery<findLoggedinUserDetails>(LOGGED_IN_USER_DETAILS);
-  console.log(data);
+
   const secretaryList =
     data &&
     data.findLoggedinUserDetails &&
@@ -153,10 +153,9 @@ export const SecretaryDashboard: React.FC = (props) => {
               </Typography>
               {viewSelection === 'day' ? (
                 <p>
-                  {`Here’s your schedule for ${isToday(selectedDate) ? ' the day - ' : ''} ${format(
-                    selectedDate,
-                    isToday(selectedDate) ? 'dd MMM,  yyyy' : 'MMM, dd'
-                  )}`}
+                  {`Here’s your schedule for ${
+                    isToday(selectedDate) ? ' the day - ' : ''
+                  } ${format(selectedDate, isToday(selectedDate) ? 'dd MMM,  yyyy' : 'MMM, dd')}`}
                 </p>
               ) : (
                 <p>

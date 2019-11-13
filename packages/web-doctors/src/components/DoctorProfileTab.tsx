@@ -741,8 +741,6 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
         variables: { id: currentUserId ? currentUserId : localStorage.getItem('currentUserId') },
       })
       .then((data) => {
-        console.log(data.data.getDoctorDetailsById);
-
         setUserDetails(data.data.getDoctorDetailsById);
         setStarDoctor(
           data.data.getDoctorDetailsById!.starTeam!.filter(
@@ -764,21 +762,14 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
             (existingDoc: any) => existingDoc!.isActive === true
           ) || []
         );
-
-        console.log('starDoctors ', starDoctors);
       })
       .catch((e) => {
         console.log('Error occured while fetching Doctor', e);
       });
   };
 
-  console.log('currentUserType ', currentUserType);
-
   useEffect(() => {
-    console.log('hello1', currentUserType, LoggedInUserType.SECRETARY);
     if (currentUserType === LoggedInUserType.SECRETARY) {
-      console.log('hello');
-
       getDoctorDetailsById();
     } else {
       if (!userDetails) {
@@ -788,7 +779,6 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
   }, []);
 
   const doctorProfile = userDetails;
-  console.log('userDetails111 ', userDetails);
 
   //const numStarDoctors = starDoctors.length;
   return (

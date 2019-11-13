@@ -254,8 +254,6 @@ export const MyAccount: React.FC = (props) => {
         variables: { id: currentUserId ? currentUserId : localStorage.getItem('currentUserId') },
       })
       .then((data) => {
-        console.log('current doctor ', data.data.getDoctorDetailsById);
-
         setUserDetails(data.data.getDoctorDetailsById);
       })
       .catch((error) => {
@@ -266,17 +264,12 @@ export const MyAccount: React.FC = (props) => {
     client
       .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
       .then((_data) => {
-        console.log('_data ', _data);
-
         setUserDetails(_data.data.getDoctorDetails);
       })
       .catch((e) => {
         console.log('Error occured while fetching Doctor', e);
       });
   };
-
-  console.log('currentUserType ', currentUserType);
-
   useEffect(() => {
     if (currentUserType === LoggedInUserType.SECRETARY) {
       getDoctorDetailsById();

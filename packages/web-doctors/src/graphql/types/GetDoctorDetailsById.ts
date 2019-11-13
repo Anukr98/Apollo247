@@ -110,6 +110,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById {
   emailAddress: string | null;
   experience: string | null;
   firebaseToken: string | null;
+  displayName: string | null;
   firstName: string;
   isActive: boolean;
   id: string;

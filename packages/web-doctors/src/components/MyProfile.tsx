@@ -826,7 +826,6 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
 
       {doctorProfile && (
         <div>
-          {console.log('doctorProfile!.starTeam! ', doctorProfile!.starTeam!)}
           <Typography className={classes.starDoctorHeading}>
             {`Your Star Doctors Team (${
               doctorProfile!.starTeam!.filter(

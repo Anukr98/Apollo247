@@ -194,8 +194,6 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
         variables: { id: currentUserId ? currentUserId : localStorage.getItem('currentUserId') },
       })
       .then((data) => {
-        console.log('current doctor ', data.data.getDoctorDetailsById);
-
         setUserDetails(data.data.getDoctorDetailsById);
       })
       .catch((error: ApolloError) => {
@@ -203,21 +201,15 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
       });
   };
   const getDoctorDetail = () => {
-    console.log(' inside 1');
     client
       .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
       .then((_data) => {
-        console.log('_data ', _data);
-
         setUserDetails(_data.data.getDoctorDetails);
       })
       .catch((e) => {
         console.log('Error occured while fetching Doctor', e);
       });
   };
-
-  console.log('currentUserType ', currentUserType);
-
   useEffect(() => {
     if (currentUserType === LoggedInUserType.SECRETARY) {
       getDoctorDetailsById();
