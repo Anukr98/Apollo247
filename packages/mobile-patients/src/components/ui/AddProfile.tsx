@@ -179,6 +179,7 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
       .then((data) => {
         props.setProfile(data.data!.addNewProfile
           .patient as GetCurrentPatients_getCurrentPatients_patients);
+        //  setCurrentPatientId!(data.data!.addNewProfile.patient!.id);
         getPatientApiCall();
         props.setdisplayoverlay(false);
       })
