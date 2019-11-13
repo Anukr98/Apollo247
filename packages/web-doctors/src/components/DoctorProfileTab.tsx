@@ -799,8 +799,8 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
             )
           </Typography>
           <StarDoctorsList
-            currentDocId={doctorProfile!.id}
-            starDoctors={doctorProfile!.starTeam!}
+            currentDocId={doctorProfile && doctorProfile.id}
+            starDoctors={doctorProfile && doctorProfile.starTeam!}
           />
         </div>
       )}
