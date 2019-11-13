@@ -148,9 +148,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems } = isTest
-    ? useDiagnosticsCart()
-    : useShoppingCart();
+  const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
@@ -265,6 +263,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
             ? parseInt(special_price)
             : special_price
           : price,
+        specialPrice: special_price as number,
         prescriptionRequired: is_prescription_required == '1',
         quantity: 1,
         thumbnail,

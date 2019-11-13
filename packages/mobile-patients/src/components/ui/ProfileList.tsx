@@ -40,6 +40,7 @@ export interface ProfileListProps {
   setDisplayAddProfile: (args0: boolean) => void;
   saveUserChange: boolean;
   defaultText?: string;
+  childView?: Element;
   placeholderViewStyle?: StyleProp<ViewStyle>;
   placeholderTextStyle?: StyleProp<TextStyle>;
 }
@@ -66,10 +67,21 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
 
+  const titleCase = (str: string) => {
+    var splitStr = str.toLowerCase().split(' ');
+    for (var i = 0; i < splitStr.length; i++) {
+      // You do not need to check if i is larger than splitStr length, as your for does that for you
+      // Assign it back to the array
+      splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+    }
+    // Directly return the joined string
+    return splitStr.join(' ');
+  };
+
   const pickerData =
     (profileArray &&
       profileArray!.map((i) => {
-        return { key: i.id, value: i.firstName || i.lastName || '' };
+        return { key: i.id, value: titleCase(i.firstName || i.lastName || '') };
       })) ||
     [];
 
@@ -84,20 +96,34 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, []);
 
   useEffect(() => {
+    setProfileArray(allCurrentPatients);
+  }, [allCurrentPatients]);
+
+  useEffect(() => {
     setProfileArray(addNewProfileText(profileArray!, selectedProfile));
     setProfile(selectedProfile);
   }, [profileArray!, selectedProfile]);
+
+  const isNewEntry = (
+    data: GetCurrentPatients_getCurrentPatients_patients[],
+    val: GetCurrentPatients_getCurrentPatients_patients
+  ) => {
+    return data && data.find((item) => item.id.includes(val.id)) === undefined;
+  };
 
   const addNewProfileText = (
     data: GetCurrentPatients_getCurrentPatients_patients[],
     newEntry?: GetCurrentPatients_getCurrentPatients_patients
   ) => {
-    let pArray = data;
-    if (newEntry) {
+    let pArray = data || [];
+    if (pArray === []) {
+      getPatientApiCall();
+    }
+    if (newEntry && isNewEntry(pArray, newEntry)) {
       pArray.pop();
       pArray.push(newEntry);
     }
-    if (data.find((item) => item.id.includes(addString)) === undefined) {
+    if (pArray.find((item) => item.id.includes(addString)) === undefined) {
       pArray.push({
         __typename: 'Patient',
         id: addString,
@@ -120,11 +146,13 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         options={pickerData}
         defaultOptions={[]}
         selectedText={profile && profile!.id}
-        menuContainerStyle={{
-          alignItems: 'flex-end',
-          marginTop: 16,
-          marginLeft: width / 2 - 95,
-        }}
+        menuContainerStyle={[
+          {
+            alignItems: 'flex-end',
+            marginTop: 16,
+            marginLeft: width / 2 - 95,
+          },
+        ]}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}
         selectedTextStyle={{
@@ -142,8 +170,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           justifyContent: 'flex-end',
         }}
         onPress={(selectedUser) => {
-          if (selectedUser.key === 'ADD NEW PROFILE') setDisplayAddProfile(true);
-          else {
+          if (selectedUser.key === addString) {
+            setDisplayAddProfile(true);
+          } else {
             profileArray &&
               profileArray!.map((i) => {
                 if (selectedUser.key === i.id) {
@@ -152,27 +181,32 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               });
           }
           saveUserChange &&
+            selectedUser.key !== addString &&
             (setCurrentPatientId!(selectedUser!.key),
             AsyncStorage.setItem('selectUserId', selectedUser!.key));
         }}
       >
-        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
-          <View style={[styles.placeholderViewStyle, placeholderViewStyle]}>
-            <Text
-              style={[
-                styles.placeholderTextStyle,
-                placeholderTextStyle,
-                ,
-                profile !== undefined ? null : styles.placeholderStyle,
-              ]}
-            >
-              {profile !== undefined ? profile.firstName : defaultText || 'Select User'}
-            </Text>
-            <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
-              <DropdownGreen />
+        {props.childView ? (
+          props.childView
+        ) : (
+          <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+            <View style={[styles.placeholderViewStyle, placeholderViewStyle]}>
+              <Text
+                style={[
+                  styles.placeholderTextStyle,
+                  placeholderTextStyle,
+                  ,
+                  profile !== undefined ? null : styles.placeholderStyle,
+                ]}
+              >
+                {profile !== undefined ? profile.firstName : defaultText || 'Select User'}
+              </Text>
+              <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                <DropdownGreen />
+              </View>
             </View>
           </View>
-        </View>
+        )}
       </MaterialMenu>
     );
   };
