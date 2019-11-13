@@ -274,6 +274,9 @@ export const generateRxPdfDocument = (rxPdfData: RxPdfData): typeof PDFDocument 
   };
 
   const renderSectionHeader = (headerText: string, y?: number) => {
+    if (doc.y > doc.page.height - 150) {
+      pageBreak();
+    }
     return doc
       .moveTo(margin, doc.y)
       .lineTo(doc.page.width - margin, doc.y)
