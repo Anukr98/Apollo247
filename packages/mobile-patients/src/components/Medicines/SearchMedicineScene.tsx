@@ -44,6 +44,7 @@ import {
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { MedicineFilter, FilterRange, SortByOptions } from './MedicineFilter';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -148,6 +149,25 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
+
+  const getSpecialPrice = (special_price?: string | number) =>
+    special_price
+      ? typeof special_price == 'string'
+        ? parseInt(special_price)
+        : special_price
+      : undefined;
+
+  const filteredMedicineList = medicineList
+    .filter((item) => item.price >= 100 && item.price <= 200)
+    .filter((item) => {
+      if (!item.special_price) return false;
+      const specialPrice = getSpecialPrice(item.price);
+      const discountPercentage = ((item.price - specialPrice!) / item.price) * 100;
+      return discountPercentage >= 5 && discountPercentage <= 90 ? true : false;
+    })
+    .sort((med1, med2) => {
+      return getSpecialPrice(med2.special_price)! - getSpecialPrice(med1.special_price)!;
+    });
 
   useEffect(() => {
     if (!currentPatient) {
@@ -381,6 +401,47 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const [filterVisible, setFilterVisible] = useState(false);
+  const [discount, setdiscount] = useState<FilterRange>({
+    from: 0,
+    to: 100,
+  });
+  const [price, setprice] = useState<FilterRange>({
+    from: 0,
+    to: 10000,
+  });
+  const [sortBy, setSortBy] = useState<SortByOptions | undefined>();
+
+  const renderFilterView = () => {
+    return (
+      filterVisible && (
+        <View
+          style={{
+            elevation: 100,
+            zIndex: 20,
+            backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        >
+          <MedicineFilter
+            isVisible={filterVisible}
+            priceRange={price}
+            discountRange={discount}
+            sortBy={sortBy!}
+            onClose={() => setFilterVisible(false)}
+            onApplyFilter={(discountRange, priceRange, sortBy) => {
+              setdiscount(discountRange);
+              setprice(priceRange);
+              setSortBy(sortBy);
+            }}
+          />
+        </View>
+      )
+    );
+  };
 
   const renderHeader = () => {
     const cartItemsCount = cartItems.length;
@@ -393,7 +454,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
-              // style={{ marginRight: 24 }}
+              style={{ marginRight: 24 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
                 props.navigation.navigate(AppRoutes.YourCart);
@@ -402,9 +463,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            {/* <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
+            <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
               <Filter />
-            </TouchableOpacity> */}
+            </TouchableOpacity>
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -661,6 +722,21 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       </View>
       {/* {renderDeliveryPinCode()} */}
       {showMatchingMedicines ? renderMatchingMedicines() : renderPastSearches()}
+      {filterVisible && (
+        <View
+          style={{
+            zIndex: 20,
+            backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+          }}
+        >
+          <ScrollView bounces={false}>{renderFilterView()}</ScrollView>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
