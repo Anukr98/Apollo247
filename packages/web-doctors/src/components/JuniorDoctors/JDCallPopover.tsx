@@ -992,7 +992,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           patientDetails!.firstName +
           ' ' +
           patientDetails!.lastName +
-          '! ' + props.assignedDoctorDisplayName +
+          '! ' +
+          props.assignedDoctorDisplayName +
           ', will be with you at your booked consultation time.',
       };
       pubnub.publish(
