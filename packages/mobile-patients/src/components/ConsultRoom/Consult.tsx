@@ -394,8 +394,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               </View>
             )
           )}
-        {/* 
-        <Text
+
+        {/* <Text
           style={{
             paddingTop: 20,
             paddingBottom: 4,
@@ -865,31 +865,30 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               <ApolloLogo />
             </TouchableOpacity>
           </View>
-          <View
-            style={
-              {
-                //flex: 1,
-              }
-            }
-          >
+          <View>
             <MaterialMenu
               onPress={(item) => {
-                console.log(item);
-                setshowSpinner(true);
-                const val = (allCurrentPatients || []).find((_item) => _item.firstName == item);
-                console.log('val', val!.id);
-
+                const val = (allCurrentPatients || []).find(
+                  (_item) => _item.firstName == item.value.toString()
+                );
                 setCurrentPatientId!(val!.id);
                 AsyncStorage.setItem('selectUserId', val!.id);
-                // setuserName(userName);
-                // AsyncStorage.setItem('Profile', userName);
               }}
-              data={(allCurrentPatients || []).map((item) => item.firstName)}
+              options={
+                allCurrentPatients &&
+                allCurrentPatients!.map((item) => {
+                  return { key: item.id, value: item.firstName };
+                })
+              }
+              menuContainerStyle={{
+                alignItems: 'flex-end',
+                marginTop: 16,
+                marginLeft: width / 2 - 95,
+              }}
             >
               <View
                 style={{
                   flexDirection: 'row',
-                  //justifyContent: 'space-between',
                   paddingRight: 8,
                   borderRightWidth: 0.5,
                   borderRightColor: 'rgba(2, 71, 91, 0.2)',
@@ -900,7 +899,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   <Text style={styles.nameTextStyle}>{userName}</Text>
                   <View style={styles.seperatorStyle} />
                 </View>
-                <DropdownGreen style={{ marginTop: 8 }} />
+                <View style={{ paddingTop: 15 }}>
+                  <DropdownGreen />
+                </View>
               </View>
             </MaterialMenu>
           </View>

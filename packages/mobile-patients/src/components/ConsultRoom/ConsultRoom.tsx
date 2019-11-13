@@ -51,7 +51,6 @@ import { NotificationListener } from '../NotificationListener';
 import { MaterialMenu } from '../ui/MaterialMenu';
 
 const { width, height } = Dimensions.get('window');
-console.log(useAllCurrentPatients, 'useAllCurrentPatients');
 
 const styles = StyleSheet.create({
   viewName: {
@@ -202,7 +201,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       console.log('storeVallue', storeVallue);
       setCurrentPatientId(storeVallue);
     };
-
     getDataFromTree();
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
@@ -639,18 +637,27 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <View>
                 <MaterialMenu
                   onPress={(item) => {
-                    console.log(item);
-                    const val = (allCurrentPatients || []).find((_item) => _item.firstName == item);
-                    console.log('val', val!.id);
+                    const val = (allCurrentPatients || []).find(
+                      (_item) => _item.firstName == item.value.toString()
+                    );
                     setCurrentPatientId!(val!.id);
                     AsyncStorage.setItem('selectUserId', val!.id);
                   }}
-                  data={(allCurrentPatients || []).map((item) => item.firstName)}
+                  options={
+                    allCurrentPatients &&
+                    allCurrentPatients!.map((item) => {
+                      return { key: item.id, value: item.firstName };
+                    })
+                  }
+                  menuContainerStyle={{
+                    alignItems: 'flex-end',
+                    marginTop: 16,
+                    marginLeft: width / 2 - 95,
+                  }}
                 >
                   <View
                     style={{
                       flexDirection: 'row',
-                      //justifyContent: 'space-between',
                       paddingRight: 8,
                       borderRightWidth: 0.5,
                       borderRightColor: 'rgba(2, 71, 91, 0.2)',
@@ -661,7 +668,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       <Text style={styles.nameTextStyle}>{userName}</Text>
                       <View style={styles.seperatorStyle} />
                     </View>
-                    <DropdownGreen style={{ marginTop: 8 }} />
+                    <View style={{ paddingTop: 15 }}>
+                      <DropdownGreen />
+                    </View>
                   </View>
                 </MaterialMenu>
               </View>

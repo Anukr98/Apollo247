@@ -51,7 +51,7 @@ import {
 } from '../../graphql/types/updatePatientAddress';
 import { fonts } from '../../theme/fonts';
 import { AppRoutes } from '../NavigatorContainer';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent, DeviceHelper } from '../../FunctionHelpers/DeviceHelper';
 import { Remove, RemoveIcon, More } from '../ui/Icons';
 import { MaterialMenu } from '../ui/MaterialMenu';
 import { colors } from '../../theme/colors';
@@ -61,6 +61,8 @@ import {
 } from '../../graphql/types/deletePatientAddress';
 const { height, width } = Dimensions.get('window');
 const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+const { isIphoneX } = DeviceHelper();
+
 const styles = StyleSheet.create({
   placeholderTextStyle: {
     color: '#01475b',
@@ -220,7 +222,6 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                       (item: any) => item.types.indexOf('administrative_area_level_1') > -1
                     ) || {}
                   ).long_name;
-                  let val = city.concat(', ').concat(state);
                   setstate(state || '');
                   const pincode = (
                     addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
@@ -228,6 +229,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
 
                   setpincode(pincode || '');
 
+                  let val = city.concat(', ').concat(state);
+
+                  setpincode(pincode || '');
                   //setcity(obj.data.results[0].formatted_address || '');
                   setcity(val);
                   console.log(obj.data.results[0].formatted_address, 'val obj');
@@ -290,6 +294,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         zipcode: pincode,
         landmark: landMark,
         mobileNumber: phoneNumber,
+        addressType: addressType,
+        otherAddressType: optionalAddress,
       };
       console.log(updateaddressInput, 'updateaddressInput');
       setshowSpinner(true);
@@ -660,7 +666,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
           placeholder={'Enter area / locality name'}
           multiline={true}
         />
-        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14) }}>Address Type </Text>
+        <Text style={{ color: '#02475b', ...fonts.IBMPlexSansMedium(14), marginBottom: 8 }}>
+          Address Type{' '}
+        </Text>
         {renderAddressOption()}
         {addressType === PATIENT_ADDRESS_TYPE.OTHER && (
           <TextInputComponent
@@ -757,7 +765,14 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                   width: 145,
                   height: 45,
                   marginLeft: width - 165,
-                  marginTop: 64,
+                  ...Platform.select({
+                    ios: {
+                      marginTop: isIphoneX ? height * 0.1 : height * 0.08,
+                    },
+                    android: {
+                      marginTop: height * 0.05,
+                    },
+                  }),
                   borderRadius: 10,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -771,7 +786,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
                     textAlign: 'center',
                   }}
                 >
-                  Delete Profile
+                  Delete Address
                 </Text>
               </View>
             </TouchableOpacity>
@@ -817,7 +832,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             }}
           >
             <Button
-              title={addOnly ? 'SAVE' : 'SAVE & USE'}
+              title={props.navigation.getParam('KeyName') == 'Update' ? 'SAVE' : 'SAVE & USE'}
               style={{ marginHorizontal: 40, width: '70%' }}
               onPress={onSavePress}
               disabled={!isAddressValid}

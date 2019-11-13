@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigatorSDK, $Generator } from 'praktice-navigator-react-native-sdk';
 // import { Generator } from 'praktice-navigator-react-native-sdk';
 import { NavigationScreenProps, NavigationActions } from 'react-navigation';
-import { SafeAreaView, View, Text, BackHandler } from 'react-native';
+import { SafeAreaView, View, Text, BackHandler, AsyncStorage, Dimensions } from 'react-native';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
@@ -12,11 +12,14 @@ import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { StackActions } from 'react-navigation';
 import { AppConfig } from '../strings/AppConfig';
 import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import { DropdownGreen } from './ui/Icons';
+import { MaterialMenu } from './ui/MaterialMenu';
 
 export interface CustomComponentProps extends NavigationScreenProps {}
 
 export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   const Consult = props.navigation.state.params ? props.navigation.state.params.Consult : '';
+
   console.log(Consult, 'Consultval');
   const onSubmitClick = async () => {
     CommonLogEvent(AppRoutes.SymptomChecker, 'Show doctors clicked');
@@ -57,10 +60,10 @@ export interface SymptomCheckerProps extends NavigationScreenProps {
 }
 
 export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
-  const { currentPatient } = useAllCurrentPatients();
   const [userName, setuserName] = useState<string>('');
   const { getPatientApiCall } = useAuth();
-
+  const { width, height } = Dimensions.get('window');
+  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -131,6 +134,44 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
             ),
             CommonLogEvent(AppRoutes.SymptomChecker, 'Go back clicked')
           )}
+          titleStyle={{ marginLeft: 60 }}
+          rightComponent={
+            <View>
+              <MaterialMenu
+                onPress={(item) => {
+                  const val = ((allCurrentPatients && allCurrentPatients) || []).find(
+                    (_item: any) => _item.firstName == item.value.toString()
+                  );
+                  setCurrentPatientId!(val!.id);
+                  AsyncStorage.setItem('selectUserId', val!.id);
+                }}
+                options={
+                  allCurrentPatients &&
+                  allCurrentPatients!.map((item) => {
+                    return { key: item.id, value: item.firstName };
+                  })
+                }
+                menuContainerStyle={{
+                  alignItems: 'flex-end',
+                  marginTop: 16,
+                  //marginLeft: width / 2 - 95,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    paddingRight: 8,
+                    borderRightWidth: 0.5,
+                    borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                  }}
+                >
+                  <View style={{ marginRight: 60 }}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              </MaterialMenu>
+            </View>
+          }
         />
         <NavigatorSDK
           clientId={AppConfig.Configuration.PRAKTISE_API_KEY}

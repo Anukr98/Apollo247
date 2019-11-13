@@ -109,6 +109,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
   const cartItemsCount = cartItems.length;
 
+  const { width, height } = Dimensions.get('window');
+
   const { showAphAlert } = useUIElements();
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
   useEffect(() => {
@@ -1120,22 +1122,26 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <View
-            style={{
-              marginBottom: 5,
-            }}
-          >
+          <View>
             <MaterialMenu
               onPress={(item) => {
-                console.log(item);
-
-                const val = (allCurrentPatients || []).find((_item) => _item.firstName == item);
-                console.log('val', val!.id);
-
+                const val = (allCurrentPatients || []).find(
+                  (_item) => _item.firstName == item.value.toString()
+                );
                 setCurrentPatientId!(val!.id);
                 AsyncStorage.setItem('selectUserId', val!.id);
               }}
-              data={(allCurrentPatients || []).map((item) => item.firstName)}
+              options={
+                allCurrentPatients &&
+                allCurrentPatients!.map((item) => {
+                  return { key: item.id, value: item.firstName };
+                })
+              }
+              menuContainerStyle={{
+                alignItems: 'flex-end',
+                marginTop: 16,
+                marginLeft: width / 2 - 95,
+              }}
             >
               <View
                 style={{
@@ -1150,7 +1156,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   <Text style={styles.nameTextStyle}>{userName}</Text>
                   <View style={styles.seperatorStyle} />
                 </View>
-                <DropdownGreen style={{ marginTop: 8 }} />
+                <View style={{ paddingTop: 15 }}>
+                  <DropdownGreen />
+                </View>
               </View>
             </MaterialMenu>
           </View>

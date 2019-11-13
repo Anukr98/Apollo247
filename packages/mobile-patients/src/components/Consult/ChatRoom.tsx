@@ -1737,7 +1737,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={{
                   width: 32,
                   height: 32,
-                  borderRadius: 16
+                  borderRadius: 16,
                 }}
               />
             ) : (
@@ -1952,7 +1952,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     style={{
                       width: 32,
                       height: 32,
-                      borderRadius: 16
+                      borderRadius: 16,
                     }}
                   />
                 ) : (
@@ -2060,7 +2060,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     style={{
                       width: 32,
                       height: 32,
-                      borderRadius: 16
+                      borderRadius: 16,
                     }}
                   />
                 ) : (
