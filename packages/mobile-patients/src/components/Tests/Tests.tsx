@@ -1,27 +1,23 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import {
   CartIcon,
   InjectionIcon,
+  LocationOff,
+  LocationOn,
   MedicineIcon,
   MedicineRxIcon,
   NotificationIcon,
   SearchSendIcon,
   SyrupBottleIcon,
   TestsIcon,
-  LocationOn,
-  LocationOff,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  getNetStatus,
-  getUserCurrentPosition,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-import axios from 'axios';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { GET_MEDICINE_ORDERS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import {
@@ -32,21 +28,31 @@ import {
   Doseform,
   getMedicinePageProducts,
   getMedicineSearchSuggestionsApi,
+  getTestsPackages,
   MedicinePageAPiResponse,
   MedicineProduct,
+  TestPackage,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  g,
+  getNetStatus,
+  getUserCurrentPosition,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import Axios from 'axios';
+import { default as axios, default as Axios } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import {
+  AsyncStorage,
   Dimensions,
   Keyboard,
   ListRenderItemInfo,
+  PermissionsAndroid,
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleProp,
@@ -55,14 +61,9 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  PermissionsAndroid,
-  Platform,
-  AsyncStorage,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -99,6 +100,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { showAphAlert } = useUIElements();
 
+  const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
+
   useEffect(() => {
     getMedicinePageProducts()
       .then((d) => {
@@ -112,6 +115,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
           title: 'Uh oh! :(',
           description: "We're unable to fetch products, try later.",
         });
+      });
+  }, []);
+
+  useEffect(() => {
+    getTestsPackages(0, 0)
+      .then(({ data }) => {
+        aphConsole.log('getTestsPackages\n', { data });
+        setTestPackages(g(data, 'data') || []);
+      })
+      .catch((e) => {
+        aphConsole.log('getTestsPackages Error\n', { e });
       });
   }, []);
 
@@ -577,22 +591,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderHotSellerItem = (data: ListRenderItemInfo<MedicineProduct>) => {
-    const {
-      sku,
-      is_prescription_required,
-      name,
-      mou,
-      special_price,
-      price,
-      image,
-      thumbnail,
-    } = data.item;
+    const { sku, name, mou, special_price, price, image, thumbnail } = data.item;
     const addToCart = () =>
       addCartItem!({
         id: sku,
         mou: mou,
         name: name,
-        price: specialPrice,
+        price: price,
+        specialPrice: specialPrice,
         thumbnail,
       });
     const removeFromCart = () => removeCartItem!(sku);
@@ -678,8 +684,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     subtitle: string,
     desc: string,
     price: number,
-    specialPrice: number,
-    style: ViewStyle
+    specialPrice: number | undefined,
+    style: ViewStyle,
+    onPress: () => void
   ) => {
     return (
       <TouchableOpacity
@@ -692,11 +699,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
           },
           style,
         ]}
+        onPress={onPress}
       >
         <View style={{ flex: 1, flexDirection: 'row' }}>
           <View style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
             <View style={{ width: Dimensions.get('window').width * 0.4 }}>
-              <Text style={theme.viewStyles.text('SB', 16, '#02475b', 1, 24)}>{title}</Text>
+              <Text style={theme.viewStyles.text('SB', 16, '#02475b', 1, 24)} numberOfLines={2}>
+                {title}
+              </Text>
               <View style={{ height: 8 }} />
               <Text style={theme.viewStyles.text('M', 10, '#02475b', 1, undefined, 0.25)}>
                 {subtitle}
@@ -717,7 +727,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <View style={{ flexDirection: 'row', flex: 1 }}>
           <View style={{ flexGrow: 1, flexDirection: 'row' }}>
             <Text style={{ marginRight: 8, ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24) }}>
-              Rs. {specialPrice}
+              Rs. {specialPrice || price}
             </Text>
             {!!specialPrice && (
               <Text
@@ -738,44 +748,46 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const packages = [
-    ...Array.from({ length: 10 }).map(() => ({
-      title: 'Basic Diabetic Screening Checkup',
-      subtitle: '66 TESTS INCLUDED',
-      desc: 'Ideal for individuals between 20-40 years.',
-      specialPrice: 1599,
-      price: 2000,
-    })),
-  ];
-
   const renderTestPackages = () => {
-    return (
-      <View>
-        <SectionHeader leftText={'BROWSE PACKAGES'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={packages}
-          renderItem={({ item, index }) => {
-            return renderPackageCard(
-              item.title,
-              item.subtitle,
-              item.desc,
-              item.price,
-              item.specialPrice,
-              {
-                marginHorizontal: 4,
-                marginTop: 16,
-                marginBottom: 20,
-                ...(index == 0 ? { marginLeft: 20 } : {}),
-              }
-            );
-          }}
-        />
-      </View>
-    );
+    if (testPackages.length > 0) {
+      return (
+        <View>
+          <SectionHeader leftText={'BROWSE PACKAGES'} />
+          <FlatList
+            bounces={false}
+            keyExtractor={(_, index) => `${index}`}
+            showsHorizontalScrollIndicator={false}
+            horizontal
+            data={testPackages}
+            renderItem={({ item, index }) => {
+              const inclusionCount = (item.PackageInClussion || []).length;
+              const desc = inclusionCount
+                ? `${inclusionCount} TEST${inclusionCount == 1 ? '' : 'S'} INCLUDED`
+                : '';
+              const applicableAge = `Ideal for individuals between ${(
+                item.FromAgeInDays / 365
+              ).toFixed(0)}-${(item.ToAgeInDays / 365).toFixed(0)} years.`;
+              return renderPackageCard(
+                item.ItemName,
+                desc,
+                applicableAge,
+                parseInt(item.Rate.toFixed(0)),
+                0,
+                {
+                  marginHorizontal: 4,
+                  marginTop: 16,
+                  marginBottom: 20,
+                  ...(index == 0 ? { marginLeft: 20 } : {}),
+                },
+                () => {
+                  props.navigation.navigate(AppRoutes.TestDetails, { testDetails: item });
+                }
+              );
+            }}
+          />
+        </View>
+      );
+    }
   };
 
   const preventiveTestCard = (name: string, price: number, style: ViewStyle) => {

@@ -7,6 +7,7 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import {
   getMedicineDetailsApi,
   MedicineProductDetails,
+  TestPackage,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -136,8 +137,7 @@ const tabsdescription = [
 ];
 export interface TestDetailsProps
   extends NavigationScreenProps<{
-    sku: string;
-    title: string;
+    testDetails: TestPackage;
   }> {}
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
@@ -147,6 +147,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const sku = 'ICA0005'; //props.navigation.getParam('sku');
   const [apiError, setApiError] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+  const testDetails = props.navigation.getParam('testDetails');
+
+  console.log({ testDetails });
 
   useEffect(() => {
     getMedicineDetailsApi(sku)

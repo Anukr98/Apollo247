@@ -145,6 +145,34 @@ export interface MedicinePageAPiResponse {
   hot_sellers?: { products: MedicineProduct[] };
 }
 
+export interface PackageInclusion {
+  TestInclusion: string;
+  SampleRemarks: string;
+  SampleTypeName: string;
+  TestParameters: string;
+}
+
+export interface TestPackage {
+  ItemID: string;
+  ItemCode: string;
+  ItemName: string;
+  ItemAliasName: string;
+  Rate: number;
+  LabName: string;
+  LabCode: string;
+  Panel_ID: number;
+  FromAgeInDays: number;
+  ToAgeInDays: number;
+  Gender: string;
+  PackageInClussion: PackageInclusion[];
+}
+
+export interface TestsPackageResponse {
+  status: boolean;
+  message: string;
+  data: TestPackage[];
+}
+
 /*
 type CityOptions =
   | 'hyderabad'
@@ -518,4 +546,29 @@ export const getAllBrands = (): Promise<AxiosResponse<BrandsResponse>> => {
       Authorization: config.ALL_BRANDS[1],
     },
   });
+};
+
+const TestApiCredentials = {
+  UserName: 'ASKAPOLLO',
+  Password: '3HAQbAb9wrsykr8TMLnV',
+  InterfaceClient: 'ASKAPOLLO',
+};
+
+export const getTestsPackages = (
+  StateID: number,
+  CityID: number
+): Promise<AxiosResponse<TestsPackageResponse>> => {
+  return Axios.post(
+    config.GET_TEST_PACKAGES[0],
+    {
+      UserName: TestApiCredentials.UserName,
+      Password: TestApiCredentials.Password,
+      InterfaceClient: TestApiCredentials.InterfaceClient,
+      StateID: '1', //need to make dynamic here
+      CityID: '9', //need to make dynamic here
+    },
+    {
+      headers: {},
+    }
+  );
 };
