@@ -28,7 +28,11 @@ import {
   InitiateRescheduleAppointment,
   InitiateRescheduleAppointmentVariables,
 } from 'graphql/types/InitiateRescheduleAppointment';
-import { INITIATE_RESCHDULE_APPONITMENT } from 'graphql/profiles';
+import {
+  EndAppointmentSession,
+  EndAppointmentSessionVariables,
+} from 'graphql/types/EndAppointmentSession';
+import { INITIATE_RESCHDULE_APPONITMENT, END_APPOINTMENT_SESSION } from 'graphql/profiles';
 import {
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
@@ -569,6 +573,7 @@ let timerIntervalId: any;
 let stoppedConsulTimer: number;
 let intervalcallId: any;
 let stoppedTimerCall: number;
+let patientMsgs: any = [];
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -584,7 +589,6 @@ const unSubscribeBrowserButtonsListener = () => {
 };
 
 type Params = { id: string; patientId: string };
-
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const params = useParams<Params>();
@@ -627,25 +631,45 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
 
   // timer for miss called
   const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
-  // const minutesCall = Math.floor(remainingCallTime / 60);
-  // const secondsCall = remainingCallTime - minutesCall * 60;
-
   const callIntervalTimer = (timer: number) => {
-    console.log(timer);
-
     intervalcallId = setInterval(() => {
       timer = timer - 1;
       stoppedTimerCall = timer;
       setRemainingCallTime(timer);
-      // console.log(remainingCallTime, minutesCall, secondsCall);
-
-      if (timer === 0) {
+      if (timer < 1) {
         setRemainingCallTime(0);
         clearInterval(intervalcallId);
+        if (patientMsgs.length === 0) {
+          noShowAction();
+        }
       }
     }, 1000);
   };
 
+  const noShowAction = () => {
+    client
+      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+        mutation: END_APPOINTMENT_SESSION,
+        variables: {
+          endAppointmentSessionInput: {
+            appointmentId: props.appointmentId,
+            status: STATUS.NO_SHOW,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        unSubscribeBrowserButtonsListener();
+        alert('Patient not responding.')
+        window.location.href = clientRoutes.calendar()
+      })
+      .catch((e) => {
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
+        alert(errorMessage);
+      });
+  }
   // timer for audio/video call end
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -731,7 +755,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       message: `${isVideoCall ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       //duration: `10:00`,
       isTyping: true,
     };
@@ -823,7 +847,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           channel: channel,
           storeInHistory: false,
         },
-        (status, response) => {}
+        (status, response) => { }
       );
     }, 10);
   };
@@ -984,7 +1008,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       withPresence: true,
     });
     pubnub.addListener({
-      status: (statusEvent) => {},
+      status: (statusEvent) => { },
       message: (message) => {
         console.log(message.message);
         if (
@@ -1004,6 +1028,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           setIsNewMsg(true);
         } else {
           setIsNewMsg(false);
+        }
+        //console.log(!props.startAppointment, message.message.id, params.patientId);
+        //console.log(!props.startAppointment && message.message.id === params.patientId)
+        if (!props.startAppointment && message.message.id === params.patientId) {
+          patientMsgs.push(message.message.message);
+          //console.log(555555);
         }
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
@@ -1034,7 +1064,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => {}
+      (status, response) => { }
     );
   };
   const onStopConsult = () => {
@@ -1050,12 +1080,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         channel: channel,
         storeInHistory: true,
       },
-      (status, response) => {}
+      (status, response) => { }
     );
 
     let folloupDateTime = new Date(
       new Date(props.appointmentDateTime).getTime() +
-        parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
+      parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
     ).toISOString();
     if (
       followUp[0] &&
@@ -1092,7 +1122,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             channel: channel,
             storeInHistory: true,
           },
-          (status, response) => {}
+          (status, response) => { }
         );
       }, 100);
     }
@@ -1182,7 +1212,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         })
         .then((_data) => {
           //setIsLoading(false);
-          console.log('data', _data);
+          //console.log('data', _data);
           const reschduleObject: any = {
             appointmentId: props.appointmentId,
             transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
@@ -1191,7 +1221,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
             reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
           };
-          console.log('reschduleObject', reschduleObject);
+          //console.log('reschduleObject', reschduleObject);
           pubnub.publish(
             {
               message: {
@@ -1202,14 +1232,13 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               channel: channel, //chanel
               storeInHistory: true,
             },
-            (status, response) => {}
+            (status, response) => { }
           );
           setIsPopoverOpen(false);
           setDisableOnCancel(true);
         })
         .catch((e) => {
           //setIsLoading(false);
-          console.log('Error occured while searching for Initiate reschdule apppointment', e);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log(
@@ -1233,15 +1262,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       if (diff.hours() <= 0) {
         return `| Time to consult ${
           diff.minutes().toString().length < 2 ? '0' + diff.minutes() : diff.minutes()
-        } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
+          } : ${diff.seconds().toString().length < 2 ? '0' + diff.seconds() : diff.seconds()}`;
       }
     return '';
   };
   const showCallMoreBtns =
     props.appointmentStatus === 'COMPLETED' &&
-    props.sentToPatient === false &&
-    (isClickedOnPriview || props.sentToPatient === false) &&
-    !isClickedOnEdit
+      props.sentToPatient === false &&
+      (isClickedOnPriview || props.sentToPatient === false) &&
+      !isClickedOnEdit
       ? true
       : false;
   return (
@@ -1262,8 +1291,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         <span className={classes.timeLeft}>
           {props.startAppointment
             ? `| Time Left ${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
-                seconds.toString().length < 2 ? '0' + seconds : seconds
-              }`
+            seconds.toString().length < 2 ? '0' + seconds : seconds
+            }`
             : getTimerText()}
         </span>
         <div className={classes.consultButtonContainer}>
@@ -1274,58 +1303,58 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 {/* <Button className={classes.backButton}>PRESCRIPTION SENT</Button> */}
               </span>
             ) : (
-              props.appointmentStatus === 'COMPLETED' &&
-              props.sentToPatient === false && (
-                <span>
-                  {(isClickedOnPriview || props.sentToPatient === false) && !isClickedOnEdit && (
-                    <Fragment>
-                      <Button
-                        className={classes.backButton}
-                        onClick={() => {
-                          setIsClickedOnEdit(true);
-                          setIsClickedOnPriview(false);
-                          setCaseSheetEdit(true);
-                          props.setIsPdfPageOpen(false);
-                        }}
-                      >
-                        Edit Case Sheet
+                props.appointmentStatus === 'COMPLETED' &&
+                props.sentToPatient === false && (
+                  <span>
+                    {(isClickedOnPriview || props.sentToPatient === false) && !isClickedOnEdit && (
+                      <Fragment>
+                        <Button
+                          className={classes.backButton}
+                          onClick={() => {
+                            setIsClickedOnEdit(true);
+                            setIsClickedOnPriview(false);
+                            setCaseSheetEdit(true);
+                            props.setIsPdfPageOpen(false);
+                          }}
+                        >
+                          Edit Case Sheet
                       </Button>
-                      <Button
-                        className={classes.endconsultButton}
-                        disabled={props.saving}
-                        onClick={() => {
-                          //props.sendToPatientAction(true);
-                          props.saveCasesheetAction(true, true);
-                        }}
-                      >
-                        Send To Patient
+                        <Button
+                          className={classes.endconsultButton}
+                          disabled={props.saving}
+                          onClick={() => {
+                            //props.sendToPatientAction(true);
+                            props.saveCasesheetAction(true, true);
+                          }}
+                        >
+                          Send To Patient
                       </Button>
-                    </Fragment>
-                  )}
-                  {isClickedOnEdit && (
-                    <Fragment>
-                      <Button
-                        className={classes.backButton}
-                        onClick={() => props.saveCasesheetAction(true, false)}
-                      >
-                        Save
+                      </Fragment>
+                    )}
+                    {isClickedOnEdit && (
+                      <Fragment>
+                        <Button
+                          className={classes.backButton}
+                          onClick={() => props.saveCasesheetAction(true, false)}
+                        >
+                          Save
                       </Button>
-                      <Button
-                        className={classes.endconsultButton}
-                        disabled={props.saving}
-                        onClick={() => {
-                          setIsClickedOnEdit(false);
-                          setIsClickedOnPriview(true);
-                          props.setIsPdfPageOpen(true);
-                        }}
-                      >
-                        Preview Prescription
+                        <Button
+                          className={classes.endconsultButton}
+                          disabled={props.saving}
+                          onClick={() => {
+                            setIsClickedOnEdit(false);
+                            setIsClickedOnPriview(true);
+                            props.setIsPdfPageOpen(true);
+                          }}
+                        >
+                          Preview Prescription
                       </Button>
-                    </Fragment>
-                  )}
-                </span>
-              )
-            )}
+                      </Fragment>
+                    )}
+                  </span>
+                )
+              )}
             {props.appointmentStatus !== 'COMPLETED' &&
               (props.startAppointment ? (
                 <span>
@@ -1370,37 +1399,37 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                   {props.saving && <CircularProgress className={classes.loading} />}
                 </span>
               ) : (
-                <Button
-                  className={classes.consultButton}
-                  disabled={
-                    startAppointmentButton ||
-                    disableOnCancel ||
-                    (appointmentInfo!.appointmentState !== 'NEW' &&
-                      appointmentInfo!.appointmentState !== 'TRANSFER' &&
-                      appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
-                    (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
-                      appointmentInfo!.status !== STATUS.PENDING)
-                  }
-                  onClick={() => {
-                    !props.startAppointment ? onStartConsult() : onStopConsult();
-                    !props.startAppointment ? startInterval(900) : stopInterval();
-                    props.startAppointmentClick(!props.startAppointment);
-                    props.createSessionAction();
-                    setCaseSheetEdit(true);
-                    callIntervalTimer(180);
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
+                  <Button
+                    className={classes.consultButton}
+                    disabled={
+                      startAppointmentButton ||
+                      disableOnCancel ||
+                      (appointmentInfo!.appointmentState !== 'NEW' &&
+                        appointmentInfo!.appointmentState !== 'TRANSFER' &&
+                        appointmentInfo!.appointmentState !== 'RESCHEDULE') ||
+                      (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
+                        appointmentInfo!.status !== STATUS.PENDING)
+                    }
+                    onClick={() => {
+                      !props.startAppointment ? onStartConsult() : onStopConsult();
+                      !props.startAppointment ? startInterval(900) : stopInterval();
+                      props.startAppointmentClick(!props.startAppointment);
+                      props.createSessionAction();
+                      setCaseSheetEdit(true);
+                      callIntervalTimer(180);
+                    }}
                   >
-                    <path fill="#fff" d="M8 5v14l11-7z" />
-                  </svg>
-                  Start Consult
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                    >
+                      <path fill="#fff" d="M8 5v14l11-7z" />
+                    </svg>
+                    Start Consult
                 </Button>
-              ))}
+                ))}
             {!showCallMoreBtns && (
               <Button
                 className={classes.consultIcon}
@@ -1532,15 +1561,15 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                         appointmentInfo!.status !== STATUS.PENDING)
                     ) ||
                     (!props.startAppointment && appointmentInfo!.status === STATUS.PENDING)) && (
-                    <li
-                      onClick={() => {
-                        handleCloseThreeDots();
-                        setIsPopoverOpen(true);
-                      }}
-                    >
-                      Reschedule Consult
+                      <li
+                        onClick={() => {
+                          handleCloseThreeDots();
+                          setIsPopoverOpen(true);
+                        }}
+                      >
+                        Reschedule Consult
                     </li>
-                  )}
+                    )}
                 </ul>
               </div>
             </Popover>
