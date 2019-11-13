@@ -48,8 +48,8 @@ const useStyles = makeStyles(() => ({
     marginRight: '10px',
   },
   listContainer: {
-    display: 'flex',
-    flexFlow: 'row',
+    // display: 'flex',
+    // flexFlow: 'row',
     flowWrap: 'wrap',
     width: '100%',
   },
@@ -57,6 +57,12 @@ const useStyles = makeStyles(() => ({
     width: '49%',
     marginRight: '1%',
     padding: 0,
+    display: 'inline-flex',
+    overflow: 'hidden',
+    marginBottom: 15,
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    marginright: 20,
   },
   stepperHeading: {
     fontSize: '14px',
