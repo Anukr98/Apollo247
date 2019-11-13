@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 });
+let timeout: NodeJS.Timeout;
 
 // let doctorIds: (string | undefined)[] = [];
 export interface DoctorSearchProps extends NavigationScreenProps {}
@@ -156,9 +157,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-
   useEffect(() => {
-    CommonScreenLog(AppRoutes.DoctorSearch, AppRoutes.DoctorSearch);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -216,6 +215,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
                 : null;
             if (searchData) {
               if (searchData.doctors) {
+                console.log(searchData.doctors, 'searchData.doctors', searchTextString);
                 // doctorIds = getIds(searchData.doctors);
                 setdoctorsList(searchData.doctors);
                 setdoctorAvailalbeSlots(searchData.doctorsNextAvailability);
@@ -278,7 +278,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
       .then(({ data }) => {
         try {
           if (data && data.getPatientPastSearches) {
-            //console.log('data', data.getPatientPastSearches);
+            // console.log('fetchPastSearches', data.getPatientPastSearches);
             setPastSearches(data.getPatientPastSearches);
           }
         } catch {}
@@ -301,7 +301,9 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         setshowOfflinePopup(true);
       }
     });
+  }, []);
 
+  useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
       !!searchText && fetchSearchData();
@@ -323,6 +325,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     // if (movedata == 'MoveDoctor') {
     //   props.navigation.push(AppRoutes.SymptomChecker);
     // } else {
+    CommonLogEvent(AppRoutes.DoctorSearch, 'Go back clicked');
     props.navigation.goBack();
     // }
     return false;
@@ -369,6 +372,11 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             underlineColorAndroid="transparent"
             onChangeText={(value) => {
               setSearchText(value);
+              console.log(timeout, 'timeout');
+              if (timeout) clearTimeout(timeout);
+              timeout = setTimeout(() => {
+                fetchSearchData(value);
+              }, 300);
               if (value.length > 2) {
                 // fetchSearchData(value);
                 // setDoctorName(true);
@@ -523,7 +531,7 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                CommonLogEvent(AppRoutes.DoctorSearch, 'Doctor Search Speciality clicked');
+                CommonLogEvent(AppRoutes.DoctorSearch, rowData.name);
                 onClickSearch(rowData.id, rowData.name);
                 const searchInput = {
                   type: SEARCH_TYPE.SPECIALTY,

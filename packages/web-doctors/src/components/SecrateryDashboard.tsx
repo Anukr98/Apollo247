@@ -122,7 +122,7 @@ export const SecrateryDashboard: React.FC = () => {
           <div className={classes.contentGroup}>
             <div className={classes.tabHeading}>
               <Typography variant="h1">
-                {currentPatient && `hello dr. ${(currentPatient!.lastName || '').toLowerCase()} :)`}
+                {currentPatient && `hello  ${(currentPatient!.displayName || '').toLowerCase()} :)`}
               </Typography>
               {viewSelection === 'day' ? (
                 <p>

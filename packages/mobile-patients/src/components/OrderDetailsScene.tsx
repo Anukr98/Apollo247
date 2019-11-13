@@ -131,7 +131,9 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
   const orderDetails = ((!loading && order) ||
     {}) as GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails;
-  const orderStatusList = (!loading && order && order.medicineOrdersStatus) || [];
+  const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
+    (item) => item!.orderStatus != MEDICINE_ORDER_STATUS.QUOTE
+  );
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);

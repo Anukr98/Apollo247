@@ -19,7 +19,7 @@ export const CustomComponent: React.FC<CustomComponentProps> = (props) => {
   const Consult = props.navigation.state.params ? props.navigation.state.params.Consult : '';
   console.log(Consult, 'Consultval');
   const onSubmitClick = async () => {
-    CommonLogEvent(AppRoutes.SymptomChecker, 'onSubmitClick clicked');
+    CommonLogEvent(AppRoutes.SymptomChecker, 'Show doctors clicked');
 
     const ss = await $Generator({ type: 'showSpeciality' });
 
@@ -100,8 +100,6 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
     if (currentPatient && currentPatient.firstName) {
       setuserName(currentPatient.firstName);
     }
-
-    CommonScreenLog(AppRoutes.SymptomChecker, AppRoutes.SymptomChecker);
   }, [currentPatient, userName, props.navigation.state.params]);
 
   const patientAge =

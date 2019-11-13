@@ -160,7 +160,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
-    CommonScreenLog(AppRoutes.AppointmentDetails, AppRoutes.AppointmentDetails);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -428,15 +427,17 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             title="UPCOMING CLINIC VISIT"
             leftIcon="backArrow"
             rightComponent={
-              <TouchableOpacity
-                activeOpacity={1}
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
-                  setCancelAppointment(true);
-                }}
-              >
-                <More />
-              </TouchableOpacity>
+              dateIsAfter ? (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() => {
+                    CommonLogEvent(AppRoutes.AppointmentDetails, 'UPCOMING CLINIC VISIT Clicked');
+                    setCancelAppointment(true);
+                  }}
+                >
+                  <More />
+                </TouchableOpacity>
+              ) : null
             }
             onPressLeftIcon={() => props.navigation.goBack()}
           />
@@ -660,7 +661,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         )}
         {showCancelPopup && (
           <BottomPopUp
-            title={'Hi, Surj :)'}
+            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
             description={
               'Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!'
             }

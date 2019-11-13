@@ -261,6 +261,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const imageconsult = '^^#DocumentUpload';
   const startConsultjr = '^^#startconsultJr';
   const consultPatientStartedMsg = '^^#PatientConsultStarted';
+  const firstMessage = '^^#firstMessage';
+  const secondMessage = '^^#secondMessage';
+  const languageQue = '^^#languageQue';
+  const jdThankyou = '^^#jdThankyou';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -268,6 +272,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   let intervalId: NodeJS.Timeout;
   let stoppedTimer: number;
+  let thirtySecondTimer: any;
+  let minuteTimer: any;
 
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient } = useAllCurrentPatients();
@@ -540,11 +546,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
     getHistory(0);
 
-    console.log('appointmentData.isConsultStarted', appointmentData.isConsultStarted);
-
-    if (!appointmentData.isConsultStarted) {
-      automatedTextFromPatient();
-    }
     // registerForPushNotification();
 
     pubnub.addListener({
@@ -577,6 +578,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       keyboardDidHideListener.remove();
       KeepAwake.deactivate();
       Platform.OS === 'android' && SoftInputMode.set(SoftInputMode.ADJUST_PAN);
+      minuteTimer && clearTimeout(minuteTimer);
+      thirtySecondTimer && clearTimeout(thirtySecondTimer);
     };
   }, []);
 
@@ -666,9 +669,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               getHistory(end);
             }
 
+            checkAutomatedPatientText();
+
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
             }, 1000);
+          } else {
+            checkAutomatedPatientText();
           }
         } catch (error) {
           setLoading(false);
@@ -678,15 +685,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const checkAutomatedPatientText = () => {
+    const result = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === consultPatientStartedMsg;
+    });
+    if (result.length === 0) {
+      console.log('result.length ', result);
+      automatedTextFromPatient();
+    }
+  };
+
   const successSteps = [
-    'Hello! Let’s get you feeling better in 4 simple steps.\nWe will:\n',
     'Let’s get you feeling better in 5 simple steps :)\n',
     '1. Answer some quick questions\n',
     '2. Connect with your doctor\n',
     '3. Get a prescription and meds, if necessary\n',
     '4. Avail 1 free follow-up*\n',
-    '5. Chat with your doctor*\n',
-    '* 7 days after your first consultation.',
+    '5. Chat with your doctor**\n',
+    '* 7 days after your first consultation.\n\n',
+    `A doctor from ${appointmentData.doctorInfo.displayName}’s team will join you shortly to collect your medical details. These details are essential for ${appointmentData.doctorInfo.displayName} to help you and will take around 3-5 minutes.`,
   ];
 
   const automatedTextFromPatient = () => {
@@ -705,6 +723,107 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       (status, response) => {}
     );
   };
+
+  useEffect(() => {
+    thirtySecondTimer = setTimeout(function() {
+      if (jrDoctorJoined == false) {
+        // console.log('Alert Shows After 30000 Seconds of Delay.');
+
+        const result = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === firstMessage;
+        });
+
+        const startConsultResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === startConsultMsg;
+        });
+
+        const startConsultjrResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === startConsultjr;
+        });
+
+        if (
+          result.length === 0 &&
+          startConsultResult.length === 0 &&
+          startConsultjrResult.length === 0
+        ) {
+          // console.log('result.length ', result);
+          pubnub.publish(
+            {
+              channel: channel,
+              message: {
+                message: firstMessage,
+                automatedText: `Hi ${currentPatient &&
+                  currentPatient.firstName}, sorry to keep you waiting. ${
+                  appointmentData.doctorInfo.displayName
+                }’s team is with another patient right now. Your consultation prep will start soon.`,
+                id: doctorId,
+                isTyping: true,
+              },
+              storeInHistory: true,
+              sendByPost: true,
+            },
+            (status, response) => {}
+          );
+        } else {
+          thirtySecondTimer && clearTimeout(thirtySecondTimer);
+        }
+      } else {
+        thirtySecondTimer && clearTimeout(thirtySecondTimer);
+      }
+    }, 30000);
+  }, []);
+
+  useEffect(() => {
+    minuteTimer = setTimeout(function() {
+      if (jrDoctorJoined == false) {
+        // console.log('Alert Shows After 60000 Seconds of Delay.');
+
+        const result = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === secondMessage;
+        });
+
+        const startConsultResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === startConsultMsg;
+        });
+
+        const startConsultjrResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === startConsultjr;
+        });
+
+        if (
+          result.length === 0 &&
+          startConsultResult.length === 0 &&
+          startConsultjrResult.length === 0
+        ) {
+          // console.log('result.length ', result);
+          pubnub.publish(
+            {
+              channel: channel,
+              message: {
+                message: secondMessage,
+                automatedText: `Sorry, but all the members in ${appointmentData.doctorInfo.displayName}’s team are busy right now. We will send you a notification as soon as they are available for collecting your details`,
+                id: doctorId,
+                isTyping: true,
+              },
+              storeInHistory: true,
+              sendByPost: true,
+            },
+            (status, response) => {}
+          );
+        } else {
+          minuteTimer && clearTimeout(minuteTimer);
+        }
+      } else {
+        minuteTimer && clearTimeout(minuteTimer);
+      }
+    }, 90000);
+  }, []);
 
   const checkingAppointmentDates = () => {
     try {
@@ -789,6 +908,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === consultPatientStartedMsg) {
         console.log('consultPatientStartedMsg');
+        addMessages(message);
+      } else if (message.message.message === firstMessage) {
+        console.log('firstMessage');
+        addMessages(message);
+      } else if (message.message.message === secondMessage) {
+        console.log('secondMessage');
         addMessages(message);
       }
     } else {
@@ -988,7 +1113,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   >
                     <Text
                       style={{
-                        textAlign: 'right',
+                        textAlign: 'left',
                         color: '#fc9916',
                         ...theme.fonts.IBMPlexSansBold(13),
                         lineHeight: 24,
@@ -1361,7 +1486,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const reschduleLoadView = (rowData: any, index: number, type: string) => {
-    console.log('reschduleLoadView', appointmentData.doctorInfo.firstName);
+    console.log('reschduleLoadView', appointmentData.doctorInfo.displayName);
     return (
       <>
         <View
@@ -1385,7 +1510,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           >
             {newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
               ? 'We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.'
-              : `Since you hace already rescheduled 3 times with Dr. ${appointmentData.doctorInfo.firstName}, we will consider this a new paid appointment.`}
+              : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`}
           </Text>
         </View>
         <View
@@ -1408,7 +1533,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               marginTop: 12,
             }}
           >
-            Next slot for Dr. {appointmentData.doctorInfo.firstName} is available on —
+            Next slot for {appointmentData.doctorInfo.displayName} is available on —
             {/* Next slot for Dr. {rowData.transferInfo.doctorInfo.firstName} is available on — */}
           </Text>
           <View
@@ -1967,6 +2092,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const doctorAutomatedMessage = (rowData: any, index: number) => {
+    return (
+      <View
+        style={{
+          backgroundColor: '#0087ba',
+          marginLeft: 38,
+          borderRadius: 10,
+          marginBottom: 4,
+          width: 244,
+        }}
+      >
+        {rowData.automatedText ? (
+          <Text
+            style={{
+              color: '#ffffff',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              ...theme.fonts.IBMPlexSansMedium(15),
+              textAlign: 'left',
+            }}
+          >
+            {rowData.automatedText}
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
   const renderChatRow = (
     rowData: { id: string; message: string; duration: string; transferInfo: any; url: any },
     index: number
@@ -2007,6 +2160,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <>
                   {rowData.message === consultPatientStartedMsg ? (
                     <>{patientAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === firstMessage ? (
+                    <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === secondMessage ? (
+                    <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === languageQue ? (
+                    <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === jdThankyou ? (
+                    <>{doctorAutomatedMessage(rowData, index)}</>
                   ) : (
                     <>{messageView(rowData, index)}</>
                   )}
@@ -2045,7 +2206,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginLeft: 12,
-                    textAlign: 'right',
+                    textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(14),
                   }}
                 >
@@ -2055,7 +2216,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   style={{
                     color: '#01475b',
                     marginTop: 2,
-                    textAlign: 'right',
+                    textAlign: 'left',
                     ...theme.fonts.IBMPlexSansMedium(10),
                   }}
                 >
@@ -2152,7 +2313,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       color: '#01475b',
                       paddingHorizontal: 16,
                       paddingVertical: 12,
-                      textAlign: 'right',
+                      textAlign: 'left',
                       ...theme.fonts.IBMPlexSansMedium(16),
                     }}
                   >
@@ -2422,7 +2583,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     textAlign: 'center',
                   }}
                 >
-                  {appointmentData.doctorInfo.firstName}
+                  {appointmentData.doctorInfo.displayName}
                 </Text>
               </>
             )}
@@ -2643,7 +2804,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             textAlign: 'center',
           }}
         >
-          {appointmentData.doctorInfo.firstName}
+          {appointmentData.doctorInfo.displayName}
         </Text>
         <View
           style={{
@@ -3101,6 +3262,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             changeVideoStyles();
             setDropdownVisible(false);
 
+            // InCallManager.setSpeakerphoneOn(true)
+            // InCallManager.chooseAudioRoute('EARPIECE')
             if (token) {
               PublishAudioVideo();
             } else {
@@ -3292,7 +3455,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'CHOOSE FROM\nGALLERY',
-          prescription: 'UPLOAD\nFROMPHR',
+          prescription: 'UPLOAD\nFROM PHR',
         }}
         hideTAndCs={false}
         onClickClose={() => setDropdownVisible(false)}
@@ -3528,8 +3691,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
             >
               {jrDoctorJoined
-                ? `Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName}'s team doctor has joined`
-                : `Dr. ${appointmentData.doctorInfo.firstName} ${appointmentData.doctorInfo.lastName} has joined!`}
+                ? `${appointmentData.doctorInfo.displayName}'s team doctor has joined`
+                : `${appointmentData.doctorInfo.displayName} has joined!`}
             </Text>
           </View>
         ) : null}
@@ -3553,7 +3716,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                 }}
                 onPress={async () => {
-                  console.log('isDropdownVisible', isDropdownVisible);
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >

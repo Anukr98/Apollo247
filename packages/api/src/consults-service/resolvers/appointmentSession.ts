@@ -4,11 +4,19 @@ import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import openTok, { TokenOptions } from 'opentok';
 import { AppointmentsSessionRepository } from 'consults-service/repositories/appointmentsSessionRepository';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
-import { STATUS, REQUEST_ROLES } from 'consults-service/entities';
+import {
+  STATUS,
+  REQUEST_ROLES,
+  TRANSFER_INITIATED_TYPE,
+  RescheduleAppointmentDetails,
+  TRANSFER_STATUS,
+  APPOINTMENT_STATE,
+} from 'consults-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { JuniorAppointmentsSessionRepository } from 'consults-service/repositories/juniorAppointmentsSessionRepository';
 import { NotificationType, sendNotification } from 'notifications-service/resolvers/notifications';
+import { RescheduleAppointmentRepository } from 'consults-service/repositories/rescheduleAppointmentRepository';
 
 export const createAppointmentSessionTypeDefs = gql`
   enum REQUEST_ROLES {
@@ -354,11 +362,13 @@ const endAppointmentSession: Resolver<
   endAppointmentSessionInputArgs,
   ConsultServiceContext,
   Boolean
-> = async (parent, { endAppointmentSessionInput }, { consultsDb }) => {
+> = async (parent, { endAppointmentSessionInput }, { consultsDb, patientsDb, doctorsDb }) => {
   const apptRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const apptDetails = await apptRepo.findById(endAppointmentSessionInput.appointmentId);
+  if (apptDetails == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
   await apptRepo.updateAppointmentStatus(
     endAppointmentSessionInput.appointmentId,
-    STATUS.COMPLETED
+    endAppointmentSessionInput.status
   );
   const apptSessionRepo = consultsDb.getCustomRepository(AppointmentsSessionRepository);
   const apptSession = await apptSessionRepo.getAppointmentSession(
@@ -366,6 +376,32 @@ const endAppointmentSession: Resolver<
   );
   if (apptSession) {
     await apptSessionRepo.endAppointmentSession(apptSession.id, new Date());
+  }
+
+  if (endAppointmentSessionInput.status == STATUS.NO_SHOW) {
+    const rescheduleRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+    const rescheduleAppointmentAttrs: Partial<RescheduleAppointmentDetails> = {
+      rescheduleReason: '',
+      rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.PATIENT,
+      rescheduleInitiatedId: apptDetails.doctorId,
+      rescheduledDateTime: new Date(),
+      rescheduleStatus: TRANSFER_STATUS.INITIATED,
+      appointment: apptDetails,
+    };
+    await rescheduleRepo.saveReschedule(rescheduleAppointmentAttrs);
+    await apptRepo.updateTransferState(apptDetails.id, APPOINTMENT_STATE.AWAITING_RESCHEDULE);
+    // send notification
+    const pushNotificationInput = {
+      appointmentId: apptDetails.id,
+      notificationType: NotificationType.INITIATE_RESCHEDULE,
+    };
+    const notificationResult = sendNotification(
+      pushNotificationInput,
+      patientsDb,
+      consultsDb,
+      doctorsDb
+    );
+    console.log(notificationResult, 'notificationResult');
   }
 
   return true;

@@ -582,7 +582,7 @@ const modifyCaseSheet: Resolver<
   }
 
   const patientRepo = patientsDb.getCustomRepository(PatientRepository);
-  const patientData = await patientRepo.findById(getCaseSheetData.patientId);
+  const patientData = await patientRepo.getPatientDetails(getCaseSheetData.patientId);
   if (patientData == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
   //familyHistory upsert starts

@@ -30,6 +30,7 @@ import {
 } from '../../graphql/types/getDoctorsBySpecialtyAndFilters';
 import { SearchDoctorAndSpecialtyByName_SearchDoctorAndSpecialtyByName_possibleMatches_doctors } from '../../graphql/types/SearchDoctorAndSpecialtyByName';
 import { theme } from '../../theme/theme';
+import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   doctorView: {
@@ -57,6 +58,9 @@ const styles = StyleSheet.create({
   imageView: {
     margin: 16,
     width: 80,
+    height: 80,
+    borderRadius: 40,
+    overflow: 'hidden',
   },
   doctorNameStyles: {
     paddingTop: 32,
@@ -339,7 +343,11 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               {rowData.thumbnailUrl &&
               rowData.thumbnailUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
                 <Image
-                  style={{ height: 80, borderRadius: 40, width: 80 }}
+                  style={{
+                    height: 80,
+                    borderRadius: 40,
+                    width: 80,
+                  }}
                   source={{
                     uri: rowData.thumbnailUrl,
                   }}
@@ -354,9 +362,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
             ) : null} */}
             </View>
             <View style={{ flex: 1, paddingRight: 16, marginBottom: 16 }}>
-              <Text style={styles.doctorNameStyles}>
-                Dr. {rowData.firstName} {rowData.lastName}
-              </Text>
+              <Text style={styles.doctorNameStyles}>{rowData.displayName}</Text>
               <Text style={styles.doctorSpecializationStyles}>
                 {rowData.specialty && rowData.specialty.name ? rowData.specialty.name : ''} |{' '}
                 {rowData.experience} YR
@@ -376,11 +382,14 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
               <TouchableOpacity
                 activeOpacity={1}
                 style={styles.buttonView}
-                onPress={() =>
+                onPress={() => {
+                  CommonLogEvent(AppRoutes.DoctorSearchListing, 'Consult now clicked');
                   availableInMin && availableInMin < 60 && availableInMin > 0
                     ? navigateToDetails(rowData.id ? rowData.id : '', { showBookAppointment: true })
-                    : navigateToDetails(rowData.id ? rowData.id : '', { showBookAppointment: true })
-                }
+                    : navigateToDetails(rowData.id ? rowData.id : '', {
+                        showBookAppointment: true,
+                      });
+                }}
               >
                 <Text style={styles.buttonText}>
                   {availableInMin && availableInMin < 60 && availableInMin > 0
