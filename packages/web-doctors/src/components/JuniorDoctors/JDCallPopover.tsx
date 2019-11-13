@@ -614,6 +614,7 @@ interface CallPopoverProps {
   assignedDoctorSalutation: string;
   assignedDoctorFirstName: string;
   assignedDoctorLastName: string;
+  assignedDoctorDisplayName: string;
   isAudioVideoCallEnded: (isAudioVideoCall: boolean) => void;
   callId: string;
 }
@@ -991,10 +992,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           patientDetails!.firstName +
           ' ' +
           patientDetails!.lastName +
-          '! Dr. ' +
-          props.assignedDoctorFirstName +
-          ' ' +
-          props.assignedDoctorLastName +
+          '! ' + props.assignedDoctorDisplayName +
           ', will be with you at your booked consultation time.',
       };
       pubnub.publish(
@@ -1091,14 +1089,10 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         patientDetails!.firstName +
         ' ' +
         patientDetails!.lastName +
-        '! :) I am from Dr. ' +
-        props.assignedDoctorFirstName +
-        ' ' +
-        props.assignedDoctorLastName +
-        "'s team. Sorry that you aren’t in the best state. We'll do our best to make things better. Let's get a few quick questions out of the way before Dr. " +
-        props.assignedDoctorFirstName +
-        ' ' +
-        props!.assignedDoctorLastName +
+        '! :) I am from ' +
+        props.assignedDoctorDisplayName +
+        "'s team. Sorry that you aren’t in the best state. We'll do our best to make things better. Let's get a few quick questions out of the way before " +
+        props.assignedDoctorDisplayName +
         ' starts the consultation.',
     };
     subscribeBrowserButtonsListener();
@@ -1138,10 +1132,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         patientDetails!.firstName +
         ' ' +
         patientDetails!.lastName +
-        ', I have everything I need. I will share these details with Dr. ' +
-        props.assignedDoctorFirstName +
-        ' ' +
-        props.assignedDoctorLastName +
+        ', I have everything I need. I will share these details with ' +
+        props.assignedDoctorDisplayName +
         ', who will be here with you soon.',
     };
     unSubscribeBrowserButtonsListener();
