@@ -567,6 +567,8 @@ let transferObject: any = {
 };
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
+let intervalcallId: any;
+let stoppedTimerCall: number;
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -622,6 +624,28 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       setStartingTime(timer);
     }, 1000);
   };
+
+  // timer for miss called
+  const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
+  // const minutesCall = Math.floor(remainingCallTime / 60);
+  // const secondsCall = remainingCallTime - minutesCall * 60;
+
+  const callIntervalTimer = (timer: number) => {
+    console.log(timer);
+
+    intervalcallId = setInterval(() => {
+      timer = timer - 1;
+      stoppedTimerCall = timer;
+      setRemainingCallTime(timer);
+      // console.log(remainingCallTime, minutesCall, secondsCall);
+
+      if (timer === 0) {
+        setRemainingCallTime(0);
+        clearInterval(intervalcallId);
+      }
+    }, 1000);
+  };
+
   // timer for audio/video call end
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [remainingTime, setRemainingTime] = useState<number>(900);
@@ -669,6 +693,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+  useEffect(() => {
+    if (remainingCallTime === 0) {
+      clearInterval(intervalcallId);
+    }
+  });
   const stopIntervalTimer = () => {
     setStartingTime(0);
     timerIntervalId && clearInterval(timerIntervalId);
@@ -1358,6 +1387,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.startAppointmentClick(!props.startAppointment);
                     props.createSessionAction();
                     setCaseSheetEdit(true);
+                    callIntervalTimer(180);
                   }}
                 >
                   <svg
