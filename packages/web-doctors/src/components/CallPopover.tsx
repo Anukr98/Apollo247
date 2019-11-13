@@ -1050,12 +1050,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: startConsult,
       isTyping: true,
-      automatedText:
-        'Dr. ' +
-        currentPatient!.firstName +
-        ' ' +
-        currentPatient!.lastName +
-        ' has joined your chat!',
+      automatedText: currentPatient!.displayName + ' has joined your chat!',
     };
     subscribeBrowserButtonsListener();
     pubnub.publish(
