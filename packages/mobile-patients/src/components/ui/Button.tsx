@@ -9,6 +9,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import { theme } from '../../theme/theme';
+import { isIphone5s } from '../../helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   containerStyles: {
@@ -29,8 +30,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.BUTTON_DISABLED_BG,
   },
   titleTextStyle: {
-    ...theme.fonts.IBMPlexSansBold(14),
-    color: theme.colors.BUTTON_TEXT,
+    ...theme.viewStyles.text('B', isIphone5s() ? 12 : 14, theme.colors.BUTTON_TEXT),
     textAlign: 'center',
   },
 });

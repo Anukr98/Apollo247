@@ -105,7 +105,7 @@ android {
         applicationId "com.apollo.patientapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 14
+        versionCode 48
         versionName "1.0"
         multiDexEnabled true
         ndk {
@@ -157,6 +157,7 @@ android {
 }
 
 dependencies {
+    implementation project(':@bugfender_rn-bugfender')
     implementation project(':react-native-set-soft-input-mode')
     implementation project(':react-native-image-crop-picker')
     implementation project(':react-native-keep-awake')

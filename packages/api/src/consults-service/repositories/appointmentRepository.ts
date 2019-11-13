@@ -8,6 +8,7 @@ import {
   Not,
   Connection,
   In,
+  getCustomRepository,
 } from 'typeorm';
 import {
   Appointment,
@@ -29,6 +30,7 @@ import { format, addMinutes, differenceInMinutes, addDays, subDays } from 'date-
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -569,6 +571,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           foundFlag = 1;
         }
       });
+      const doctorSlotRepo = getCustomRepository(DoctorNextAvaialbleSlotsRepository);
+      doctorSlotRepo.updateSlot(doctorId, appointmentType, new Date(finalSlot));
       return finalSlot;
     } else {
       return '';
@@ -716,16 +720,6 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
-  }
-
-  saveDocument(documentAttrs: Partial<AppointmentDocuments>) {
-    return AppointmentDocuments.create(documentAttrs)
-      .save()
-      .catch((createErrors) => {
-        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_DOCUMENT_ERROR, undefined, {
-          createErrors,
-        });
-      });
   }
 
   async getDoctorBlockedSlots(doctorId: string, availableDate: Date, doctorsDb: Connection) {

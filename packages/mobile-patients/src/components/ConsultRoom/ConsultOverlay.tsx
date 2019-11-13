@@ -110,7 +110,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const onSubmitBookAppointment = () => {
-    CommonLogEvent('CONSULT_OVERLAY', 'ConsultOverlay onSubmitBookAppointment clicked');
+    CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
     setshowSpinner(true);
     const timeSlot =
       tabs[0].title === selectedTab &&
@@ -157,7 +157,15 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   };
 
   const onPressPay = () => {
-    CommonLogEvent('CONSULT_OVERLAY', 'ConsultOverlay onPressPay clicked');
+    CommonLogEvent(AppRoutes.DoctorDetails, 'Book Appointment clicked');
+    CommonLogEvent(
+      AppRoutes.DoctorDetails,
+      `PAY Rs. ${
+        tabs[0].title === selectedTab
+          ? props.doctor!.onlineConsultationFees
+          : props.doctor!.physicalConsultationFees
+      }`
+    );
     getNetStatus().then((status) => {
       setdisablePay(true);
       if (status) {
@@ -376,10 +384,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               activeOpacity={1}
               style={styles.gotItStyles}
               onPress={() => {
-                CommonLogEvent(
-                  'CONSULT_OVERLAY',
-                  'ConsultOverlay Appointment Confirmation clicked'
-                );
+                CommonLogEvent(AppRoutes.DoctorDetails, 'Navigate to consult room');
                 setshowSuccessPopUp(false);
                 props.navigation.dispatch(
                   StackActions.reset({

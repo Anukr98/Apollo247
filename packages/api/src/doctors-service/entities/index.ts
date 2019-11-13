@@ -231,6 +231,9 @@ export class Doctor extends BaseEntity {
   @Validate(MobileNumberValidator)
   mobileNumber: string;
 
+  @Column({ nullable: true, type: 'timestamp' })
+  nextAvailableSlot: Date;
+
   @Column({ type: 'float8' })
   onlineConsultationFees: Number;
 

@@ -822,7 +822,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else {
         minuteTimer && clearTimeout(minuteTimer);
       }
-    }, 60000);
+    }, 90000);
   }, []);
 
   const checkingAppointmentDates = () => {
@@ -2313,7 +2313,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       color: '#01475b',
                       paddingHorizontal: 16,
                       paddingVertical: 12,
-                          textAlign: 'left',
+                      textAlign: 'left',
                       ...theme.fonts.IBMPlexSansMedium(16),
                     }}
                   >
@@ -3455,7 +3455,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'CHOOSE FROM\nGALLERY',
-          prescription: 'UPLOAD\nFROMPHR',
+          prescription: 'UPLOAD\nFROM PHR',
         }}
         hideTAndCs={false}
         onClickClose={() => setDropdownVisible(false)}
@@ -3716,7 +3716,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                 }}
                 onPress={async () => {
-                  console.log('isDropdownVisible', isDropdownVisible);
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >

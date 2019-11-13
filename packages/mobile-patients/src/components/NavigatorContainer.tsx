@@ -315,7 +315,7 @@ const stackConfig: StackNavigatorConfig = {
       AsyncStorage.setItem('setCurrentName', sceneProps.scene.route.routeName);
       CommonScreenLog(sceneProps.scene.route.routeName, sceneProps.scene.route.routeName);
       logTabEvents(sceneProps.scene.route);
-      console.log('sceneProps success', sceneProps.scene.route);
+      // console.log('sceneProps success', sceneProps.scene.route);
     } catch (error) {
       console.log('sceneProps error', error);
     }

@@ -13,6 +13,7 @@ export interface EPrescriptionCardProps {
   medicines?: string;
   actionType: 'selection' | 'removal';
   isSelected?: boolean;
+  isDisabled?: boolean;
   onRemove?: () => void;
   onSelect?: (isSelected: boolean) => void;
 }
@@ -27,6 +28,7 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
     onSelect,
     actionType,
     isSelected,
+    isDisabled,
   } = props;
   return (
     <View>
@@ -39,15 +41,18 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
             paddingLeft: 11,
             paddingBottom: 8,
             marginHorizontal: 20,
-            backgroundColor: theme.colors.WHITE,
+            backgroundColor: isDisabled
+              ? theme.colors.DEFAULT_BACKGROUND_COLOR
+              : theme.colors.WHITE,
           },
           props.style,
         ]}
       >
-        <View style={{ flexDirection: 'row' }}>
+        <View style={{ flexDirection: 'row', flex: 1 }}>
           <PrescriptionIcon />
           <Text
             style={{
+              flex: 1,
               color: theme.colors.LIGHT_BLUE,
               lineHeight: 24,
               textAlign: 'left',
@@ -57,14 +62,22 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
           >
             {doctorName}
           </Text>
-          <TouchableOpacity
-            onPress={() => {
-              actionType == 'removal' ? onRemove!() : onSelect!(!!!isSelected);
-            }}
-            style={{ flex: 1, alignItems: 'flex-end' }}
-          >
-            {actionType == 'removal' ? <CrossYellow /> : isSelected ? <CheckedIcon /> : <UnCheck />}
-          </TouchableOpacity>
+          {!isDisabled && (
+            <TouchableOpacity
+              onPress={() => {
+                actionType == 'removal' ? onRemove!() : onSelect!(!!!isSelected);
+              }}
+              style={{ flex: 1, alignItems: 'flex-end' }}
+            >
+              {actionType == 'removal' ? (
+                <CrossYellow />
+              ) : isSelected ? (
+                <CheckedIcon />
+              ) : (
+                <UnCheck />
+              )}
+            </TouchableOpacity>
+          )}
         </View>
         <View style={{ marginLeft: 43 }}>
           <View
@@ -111,22 +124,26 @@ export const EPrescriptionCard: React.FC<EPrescriptionCardProps> = (props) => {
             </Text>
           </View>
 
-          <View
-            style={{
-              borderBottomWidth: 0.5,
-              borderBottomColor: 'rgba(2, 71, 91, 0.2)',
-            }}
-          />
-          <Text
-            style={{
-              marginTop: 7.5,
-              color: theme.colors.SKY_BLUE,
-              textAlign: 'left',
-              ...theme.fonts.IBMPlexSansMedium(12),
-            }}
-          >
-            {medicines}
-          </Text>
+          {!!medicines && (
+            <>
+              <View
+                style={{
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+                }}
+              />
+              <Text
+                style={{
+                  marginTop: 7.5,
+                  color: theme.colors.SKY_BLUE,
+                  textAlign: 'left',
+                  ...theme.fonts.IBMPlexSansMedium(12),
+                }}
+              >
+                {medicines}
+              </Text>
+            </>
+          )}
         </View>
       </View>
     </View>

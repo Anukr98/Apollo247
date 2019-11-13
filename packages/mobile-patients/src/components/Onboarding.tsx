@@ -6,7 +6,7 @@ import {
   ArrowStep3,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -134,6 +134,7 @@ const slides: Slide[] = [
 export interface OnboardingProps extends NavigationScreenProps {}
 export const Onboarding: React.FC<OnboardingProps> = (props) => {
   const appIntroSliderRef = React.useRef<any>(null);
+  const [currentIndex, setcurrentIndex] = useState<number>(0);
 
   useEffect(() => {
     firebase.analytics().setAnalyticsCollectionEnabled(true);
@@ -148,6 +149,9 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
             ref={appIntroSliderRef}
             hidePagination
             slides={slides}
+            onSlideChange={(index: number) => {
+              setcurrentIndex(index);
+            }}
             renderItem={(item: Slide) => (
               <View style={styles.itemContainer}>
                 <Image source={item.image} style={styles.imageStyle} resizeMode="cover" />
@@ -174,17 +178,19 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
         </View>
       </View>
 
-      <View style={styles.skipView}>
-        <Text
-          style={styles.skipTextStyle}
-          onPress={() => {
-            AsyncStorage.setItem('onboarding', 'true');
-            props.navigation.replace(AppRoutes.Login);
-          }}
-        >
-          SKIP
-        </Text>
-      </View>
+      {currentIndex !== 3 && (
+        <View style={styles.skipView}>
+          <Text
+            style={styles.skipTextStyle}
+            onPress={() => {
+              AsyncStorage.setItem('onboarding', 'true');
+              props.navigation.replace(AppRoutes.Login);
+            }}
+          >
+            SKIP
+          </Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 };

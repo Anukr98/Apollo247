@@ -21,7 +21,7 @@ import {
   BackHandler,
 } from 'react-native';
 // import SmsListener from 'react-native-android-sms-listener';
-import { NavigationScreenProps } from 'react-navigation';
+import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
 import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
 import { OTPTextView } from './ui/OTPTextView';
 import firebase from 'react-native-firebase';
@@ -30,7 +30,7 @@ import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { Header } from './ui/Header';
 import { fonts } from '../theme/fonts';
 import Hyperlink from 'react-native-hyperlink';
-import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent, CommonBugFender } from '../FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 
@@ -112,10 +112,6 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const [isAuthChanged, setAuthChanged] = useState<boolean>(false);
-
-  useEffect(() => {
-    firebase.analytics().setCurrentScreen(AppRoutes.OTPVerification, AppRoutes.OTPVerification);
-  });
 
   const handleBack = async () => {
     setonClickOpen(false);
@@ -261,22 +257,35 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     }
   };
 
+  const navigateTo = (routeName: AppRoutes) => {
+    props.navigation.dispatch(
+      StackActions.reset({
+        index: 0,
+        key: null,
+        actions: [NavigationActions.navigate({ routeName: routeName })],
+      })
+    );
+    // props.navigation.replace(AppRoutes.ConsultRoom);
+  };
+
   useEffect(() => {
     if (onOtpClick) {
       if (currentPatient) {
         if (currentPatient && currentPatient.uhid && currentPatient.uhid !== '') {
           if (currentPatient.relation == null) {
-            props.navigation.replace(AppRoutes.MultiSignup);
+            navigateTo(AppRoutes.MultiSignup);
+            // props.navigation.replace(AppRoutes.MultiSignup);
           } else {
             AsyncStorage.setItem('userLoggedIn', 'true');
-            props.navigation.replace(AppRoutes.ConsultRoom);
+            navigateTo(AppRoutes.ConsultRoom);
           }
         } else {
           if (currentPatient.firstName == '') {
-            props.navigation.replace(AppRoutes.SignUp);
+            navigateTo(AppRoutes.SignUp);
+            // props.navigation.replace(AppRoutes.SignUp);
           } else {
             AsyncStorage.setItem('userLoggedIn', 'true');
-            props.navigation.replace(AppRoutes.ConsultRoom);
+            navigateTo(AppRoutes.ConsultRoom);
           }
         }
       }
@@ -320,6 +329,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             .catch((error) => {
               try {
                 console.log({ error });
+                CommonBugFender(AppRoutes.OTPVerification, error);
                 setTimeout(() => {
                   if (isAuthChanged) {
                     _removeFromStore();
