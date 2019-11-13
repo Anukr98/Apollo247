@@ -11,6 +11,7 @@ import {
   PrismSignUpUserData,
 } from 'types/prism';
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
+import { DownloadDocumentInput } from 'profiles-service/resolvers/downloadDocumentFromPrism';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -157,6 +158,45 @@ export class PatientRepository extends Repository<Patient> {
       uhid: uhid,
       category: PRISM_DOCUMENT_CATEGORY.OpSummary,
       filename: documentName,
+    };
+
+    const options = {
+      method: 'POST',
+      url: `${process.env.PRISM_UPLOAD_RECORDS_API}`,
+      headers: {
+        Connection: 'keep-alive',
+        'Accept-Encoding': 'gzip, deflate',
+        Host: 'blue.phrdemo.com',
+        Accept: '*/*',
+      },
+      formData: formData,
+    };
+
+    const uploadResult = await requestPromise(options)
+      .then((res) => {
+        console.log('uploadFileResponse:', res);
+        return JSON.parse(res);
+      })
+      .catch((err) => {
+        console.log('Upload Prism Error: ', err);
+        throw new AphError(AphErrorMessages.FILE_SAVE_ERROR);
+      });
+
+    return uploadResult && uploadResult.response ? uploadResult.response : null;
+  }
+
+  async downloadDocumentFromPrism(
+    uhid: string,
+    prismAuthToken: string,
+    docInput: DownloadDocumentInput
+  ) {
+    console.log('uhid:', uhid, 'authToken:', prismAuthToken);
+
+    const formData = {
+      authtoken: prismAuthToken,
+      programe: ApiConstants.PRISM_UPLOAD_DOCUMENT_PROGRAME,
+      uhid: uhid,
+      category: PRISM_DOCUMENT_CATEGORY.OpSummary,
     };
 
     const options = {
