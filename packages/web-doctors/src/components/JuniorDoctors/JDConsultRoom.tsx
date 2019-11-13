@@ -514,7 +514,7 @@ export const JDConsultRoom: React.FC = () => {
     assignedDoctorDisplayName =
       (assignedDoctorDetailsData &&
         assignedDoctorDetailsData.getDoctorDetailsById &&
-        assignedDoctorDetailsData.getDoctorDetailsById.firstName) ||
+        assignedDoctorDetailsData.getDoctorDetailsById.displayName) ||
       '';
     assignedDoctorMobile =
       (assignedDoctorDetailsData &&
