@@ -260,8 +260,8 @@ export const DoctorsProfile: React.FC<DoctorsProfileProps> = (DoctorsProfileProp
                 </Typography>
                 {selectedTabIndex === 0 && (
                   <p>
-                    It’s great to have you join us! <br /> Here’s what your patients see when
-                    they view your profile
+                    It’s great to have you join us! <br /> Here’s what your patients see when they
+                    view your profile
                   </p>
                 )}
                 {selectedTabIndex === 1 && (
