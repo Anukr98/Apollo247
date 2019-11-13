@@ -47,6 +47,7 @@
     "@aph/mobile-ui-components": "file:../mobile-ui-components",
     "@aph/shared-ui-components": "file:../shared-ui-components",
     "@aph/universal": "file:../universal",
+    "@bugfender/rn-bugfender": "^1.1.0",
     "@react-native-community/async-storage": "^1.6.1",
     "@types/pubnub": "^4.0.6",
     "@types/react-native-calendars": "^1.20.7",
@@ -84,6 +85,7 @@
     "react-native-elements": "^1.1.0",
     "react-native-fetch-blob": "^0.10.8",
     "react-native-firebase": "^5.5.4",
+    "react-native-geocoding": "^0.4.0",
     "react-native-gesture-handler": "^1.2.1",
     "react-native-hyperlink": "0.0.16",
     "react-native-image-crop-picker": "^0.24.1",
@@ -104,8 +106,7 @@
     "react-native-vector-icons": "^6.5.0",
     "react-navigation": "^3.11.0",
     "resize-base64": "^1.0.12",
-    "string-strip-html": "^4.3.5",
-    "react-native-geocoding": "^0.4.0"
+    "string-strip-html": "^4.3.5"
   },
   "jest": {
     "preset": "react-native"
