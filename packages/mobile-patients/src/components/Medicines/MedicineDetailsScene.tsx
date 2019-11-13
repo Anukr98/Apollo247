@@ -218,7 +218,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 const _pincode = (
                   addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
                 ).long_name;
-                Alert.alert(_pincode);
                 setpincode(_pincode || '');
               }
             } catch {}
