@@ -36,6 +36,7 @@ import { format, differenceInMilliseconds } from 'date-fns';
         level: 'error',
       }),
     ],
+    exitOnError: false, // do not exit on handled exceptions
   });
 
   const server = new ApolloServer({
