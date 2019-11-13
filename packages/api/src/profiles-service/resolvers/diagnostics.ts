@@ -10,7 +10,7 @@ export const diagnosticsTypeDefs = gql`
     PACKAGE
   }
 
-  type searchDiagnosticsResult {
+  type SearchDiagnosticsResult {
     diagnostics: [Diagnostics]
   }
 
@@ -27,11 +27,11 @@ export const diagnosticsTypeDefs = gql`
   }
 
   extend type Query {
-    searchDiagnostics(city: String, patinetId: String, searchText: String): searchDiagnosticsResult!
+    searchDiagnostics(city: String, patientId: String, searchText: String): SearchDiagnosticsResult!
   }
 `;
 
-type searchDiagnosticsResult = {
+type SearchDiagnosticsResult = {
   diagnostics: Diagnostics[];
 };
 
@@ -51,7 +51,7 @@ const searchDiagnostics: Resolver<
   null,
   { city: string; patientId: string; searchText: string },
   ProfilesServiceContext,
-  searchDiagnosticsResult
+  SearchDiagnosticsResult
 > = async (parent, args, { profilesDb }) => {
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
   const diagnostics = await diagnosticsRepo.searchDiagnostics(args.searchText, args.city);

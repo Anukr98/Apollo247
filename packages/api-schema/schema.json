@@ -450,7 +450,7 @@
                 "defaultValue": null
               },
               {
-                "name": "patinetId",
+                "name": "patientId",
                 "description": null,
                 "type": {
                   "kind": "SCALAR",
@@ -475,7 +475,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "searchDiagnosticsResult",
+                "name": "SearchDiagnosticsResult",
                 "ofType": null
               }
             },
@@ -3994,7 +3994,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "searchDiagnosticsResult",
+        "name": "SearchDiagnosticsResult",
         "description": null,
         "fields": [
           {
