@@ -168,7 +168,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() =>
-              props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true })
+              props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
             }
             style={{ right: 20 }}
           >
