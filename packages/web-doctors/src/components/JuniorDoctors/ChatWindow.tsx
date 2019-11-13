@@ -366,9 +366,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const apolloClient = useApolloClient();
 
   // this hook is used to send auto chat message when the consult is closed by system
-  useEffect(() => {
-    console.log('auto close case sheet action....', props.autoCloseCaseSheet);
-  }, [props.autoCloseCaseSheet]);
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
