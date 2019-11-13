@@ -122,4 +122,14 @@ export class RescheduleAppointmentRepository extends Repository<RescheduleAppoin
       },
     });
   }
+
+  getDoctorRescheduleDetailsByAppointment(appointment: string) {
+    return this.find({
+      where: {
+        appointment,
+        rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+        rescheduleStatus: TRANSFER_STATUS.INITIATED,
+      },
+    });
+  }
 }
