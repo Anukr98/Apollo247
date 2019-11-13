@@ -76,6 +76,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
       salutation
       firstName
       lastName
+      displayName
       mobileNumber
       experience
       specialization

@@ -95,6 +95,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById {
   salutation: Salutation | null;
   firstName: string;
   lastName: string;
+  displayName: string | null;
   mobileNumber: string;
   experience: string | null;
   specialization: string | null;

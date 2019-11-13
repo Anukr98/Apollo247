@@ -50,7 +50,7 @@ export const CommonScreenLog = (stringName: string, parameterName: string) => {
 export const CommonBugFender = (stringName: string, errorValue: string) => {
   // if (isReleaseOn) {
   try {
-    Bugfender.d(stringName, errorValue);
+    Platform.OS === 'ios' ? Bugfender.d(stringName, errorValue) : null;
   } catch (error) {
     aphConsole.log('CommonBugFender error', error);
   }

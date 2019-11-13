@@ -2,6 +2,8 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
+import { PATIENT_ADDRESS_TYPE } from "./globalTypes";
+
 // ====================================================
 // GraphQL query operation: getPatientAddressList
 // ====================================================
@@ -17,6 +19,8 @@ export interface getPatientAddressList_getPatientAddressList_addressList {
   landmark: string | null;
   createdDate: any | null;
   updatedDate: any | null;
+  addressType: PATIENT_ADDRESS_TYPE | null;
+  otherAddressType: string | null;
 }
 
 export interface getPatientAddressList_getPatientAddressList {
