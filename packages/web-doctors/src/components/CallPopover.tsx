@@ -42,6 +42,8 @@ import {
   EndCallNotificationVariables,
 } from 'graphql/types/EndCallNotification';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -586,7 +588,8 @@ type Params = { id: string; patientId: string };
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const params = useParams<Params>();
-
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { currentUserType } = useAuthContext();
   const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
     CaseSheetContext
   );
@@ -882,7 +885,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (
       disablecurrent >= minusTime &&
       disableaddedTime >= disablecurrent &&
-      localStorage.getItem('loggedInMobileNumber') !== currentPatient!.delegateNumber
+      currentUserType !== LoggedInUserType.SECRETARY
     ) {
       setStartAppointmentButton(false);
     } else {
@@ -1153,7 +1156,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         })
         .then((_data) => {
           //setIsLoading(false);
-          console.log('data', _data);
           const reschduleObject: any = {
             appointmentId: props.appointmentId,
             transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
@@ -1344,6 +1346,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <Button
                   className={classes.consultButton}
                   disabled={
+                    currentUserType === LoggedInUserType.SECRETARY ||
                     startAppointmentButton ||
                     disableOnCancel ||
                     (appointmentInfo!.appointmentState !== 'NEW' &&
@@ -1475,7 +1478,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <div>
                 <ul className={classes.popOverUL}>
                   {/* <li>Share Case Sheet</li> */}
-                  {!isPastAppointment() && (
+                  {!isPastAppointment() && currentUserType !== LoggedInUserType.SECRETARY && (
                     <li
                       onClick={() => {
                         if (

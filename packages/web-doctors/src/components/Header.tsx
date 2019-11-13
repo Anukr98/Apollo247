@@ -321,7 +321,7 @@ export const Header: React.FC = (props) => {
                       title="My Profile"
                       className={`${selectedTab === 6 && classes.menuItemActive}`}
                     >
-                      <Link to={clientRoutes.secretaryProfile()}>
+                      <Link to="/myaccount">
                         <img
                           onClick={() => setSelectedTab(6)}
                           src={require('images/ic_profile.svg')}

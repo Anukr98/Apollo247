@@ -798,7 +798,16 @@ export const DoctorProfileTab: React.FC<DoctorProfileTabProps> = (props) => {
       )}
       {doctorProfile && doctorProfile!.doctorType === 'STAR_APOLLO' && (
         <div>
-          <Typography className={classes.starDoctorHeading}>Your Star Doctors Team ({})</Typography>
+          <Typography className={classes.starDoctorHeading}>
+            Your Star Doctors Team (
+            {
+              doctorProfile!.starTeam!.filter(
+                (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
+                  existingDoc!.isActive === true
+              ).length
+            }
+            )
+          </Typography>
           <StarDoctorsList
             currentDocId={doctorProfile!.id}
             starDoctors={doctorProfile!.starTeam!}

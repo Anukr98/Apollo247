@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Theme, Button, Modal } from '@material-ui/core';
 import { useParams } from 'hooks/routerHooks';
 import { makeStyles } from '@material-ui/styles';
@@ -9,7 +9,9 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
 import { ConsultRoom } from 'components/ConsultRoom';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { useApolloClient } from 'react-apollo-hooks';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 // import Dialog from '@material-ui/core/Dialog';
 // import DialogActions from '@material-ui/core/DialogActions';
@@ -271,6 +273,7 @@ export const ConsultTabs: React.FC = () => {
   const paramId = params.id;
 
   const { currentPatient, isSignedIn } = useAuth();
+  console.log('currentPatient ', currentPatient);
 
   const mutationCreateSrdCaseSheet = useMutation<
     CreateSeniorDoctorCaseSheet,
@@ -313,7 +316,8 @@ export const ConsultTabs: React.FC = () => {
     return <Typography component="div">{props.children}</Typography>;
   };
   const client = useApolloClient();
-
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { currentUserType } = useAuthContext();
   /* case sheet data*/
   const [symptoms, setSymptoms] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
@@ -367,9 +371,13 @@ export const ConsultTabs: React.FC = () => {
   // const setCasesheetNotes = (notes: string) => {
   //   customNotes = notes; // this will be used in saving case sheet.
   // };
-
   useEffect(() => {
-    if (isSignedIn) {
+    if (isSignedIn || currentUserType === LoggedInUserType.SECRETARY) {
+      console.log(
+        'currentUserType === LoggedInUserType.SECRETARY ',
+        currentUserType === LoggedInUserType.SECRETARY
+      );
+
       client
         .query<GetCaseSheet>({
           query: GET_CASESHEET,
@@ -377,6 +385,7 @@ export const ConsultTabs: React.FC = () => {
           variables: { appointmentId: appointmentId },
         })
         .then((_data) => {
+          console.log('_data in consult tab', _data);
           setCasesheetInfo(_data.data);
           setError('');
           _data!.data!.getCaseSheet!.caseSheetDetails &&
@@ -800,7 +809,6 @@ export const ConsultTabs: React.FC = () => {
         //setIsPdfPopoverOpen(true);
         //setIsEnded(true);
         setAppointmentStatus('COMPLETED');
-        console.log('_data', _data);
         setIsPdfPageOpen(true);
       })
       .catch((e) => {
