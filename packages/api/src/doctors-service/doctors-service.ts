@@ -58,6 +58,7 @@ import { format, differenceInMilliseconds } from 'date-fns';
       new winston.transports.File({ filename: 'access-logs/doctors-service.log', level: 'info' }),
       new winston.transports.File({ filename: 'error-logs/doctors-service.log', level: 'error' }),
     ],
+    exitOnError: false, // do not exit on handled exceptions
   });
 
   const server = new ApolloServer({
