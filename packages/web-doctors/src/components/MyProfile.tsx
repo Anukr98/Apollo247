@@ -529,8 +529,6 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
   const [currentDoctor, setCurrentDoctor] = React.useState('');
 
-  const doctorProfile = getDoctorDetailsData;
-
   function handleClick(event: React.MouseEvent<HTMLButtonElement>, id: string) {
     setAnchorEl(event.currentTarget);
     setCurrentDoctor(id);
