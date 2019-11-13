@@ -40,7 +40,6 @@ import { NavigationScreenProps } from 'react-navigation';
 import {
   TRANSFER_INITIATED_TYPE,
   APPOINTMENT_STATE,
-  STATUS,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   bookRescheduleAppointment,

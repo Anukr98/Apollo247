@@ -100,21 +100,6 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
-  useEffect(() => {
-    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      setshowSpinner(true);
-      getNetStatus().then((status) => {
-        if (status) {
-          getPatientApiCall();
-        } else {
-          setshowSpinner(false);
-        }
-      });
-    });
-    return () => {
-      didFocusSubscription && didFocusSubscription.remove();
-    };
-  }, [currentPatient]);
 
   const headMov = scrollY.interpolate({
     inputRange: [0, 180, 181],
@@ -226,7 +211,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
     const input = {
       deviceToken: currentDeviceToken.deviceToken,
-      patientId: currentPatient ? currentPatient && currentPatient.id : '',
+      patientId: currentPatient ? currentPatient.id : '',
     };
     console.log('deleteDeviceTokenInput', input);
 
