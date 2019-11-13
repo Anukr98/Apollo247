@@ -57,6 +57,9 @@ import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked
 import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { MaterialMenu } from '../ui/MaterialMenu';
+import { AddProfile } from '../ui/AddProfile';
+import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
+import { ProfileList } from '../ui/ProfileList';
 
 const { width, height } = Dimensions.get('window');
 
@@ -127,6 +130,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [isfollowcount, setIsfollowucount] = useState<number>(0);
   const [userName, setuserName] = useState<string | number>('');
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+
   useEffect(() => {
     const getDataFromTree = async () => {
       const storeVallue = await AsyncStorage.getItem('selectUserId');
@@ -139,6 +145,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
+    currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       getPatientApiCall();
     }
@@ -306,7 +313,31 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           </View>
         </View>
         <View>
-          <MaterialMenu
+          <ProfileList
+            saveUserChange={true}
+            childView={
+              <View
+                style={{
+                  flexDirection: 'row',
+                  paddingRight: 8,
+                  borderRightWidth: 0,
+                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                }}
+              >
+                <Text style={styles.hiTextStyle}>hi</Text>
+                <View>
+                  <Text style={styles.nameTextStyle}>{userName}</Text>
+                  <View style={styles.seperatorStyle} />
+                </View>
+                <View style={{ paddingTop: 15 }}>
+                  <DropdownGreen />
+                </View>
+              </View>
+            }
+            // selectedProfile={profile}
+            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+          ></ProfileList>
+          {/* <MaterialMenu
             onPress={(item) => {
               const val = (allCurrentPatients || []).find(
                 (_item) => _item.firstName == item.value.toString()
@@ -343,7 +374,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 <DropdownGreen />
               </View>
             </View>
-          </MaterialMenu>
+          </MaterialMenu> */}
         </View>
         {/* <View
           style={{
@@ -576,6 +607,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         />
       )}
       {loading && <Spinner />}
+      {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )}
     </View>
   );
 };

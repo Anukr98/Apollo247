@@ -44,7 +44,8 @@ import { STATUS, APPOINTMENT_STATE } from '../../graphql/types/globalTypes';
 import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { MaterialMenu } from '../ui/MaterialMenu';
 import { getDataFromTree } from 'react-apollo';
-
+import { AddProfile } from '../ui/AddProfile';
+import { ProfileList } from '../ui/ProfileList';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -200,12 +201,15 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [transferfollowup, setTransferfollowup] = useState<boolean>(false);
   const [followupdone, setFollowupDone] = useState<boolean>(false);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
+      currentPatient && setProfile(currentPatient!);
     }
   }, [currentPatient]);
 
@@ -261,6 +265,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
+    currentPatient && setProfile(currentPatient!);
     analytics.setAnalyticsCollectionEnabled(true);
     analytics.setCurrentScreen(AppRoutes.Consult, AppRoutes.Consult);
   }, [currentPatient, analytics, props.navigation.state.params]);
@@ -866,7 +871,31 @@ export const Consult: React.FC<ConsultProps> = (props) => {
             </TouchableOpacity>
           </View>
           <View>
-            <MaterialMenu
+            <ProfileList
+              saveUserChange={true}
+              childView={
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    paddingRight: 8,
+                    borderRightWidth: 0,
+                    borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                  }}
+                >
+                  <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+                  <View>
+                    <Text style={styles.nameTextStyle}>{userName}</Text>
+                    <View style={styles.seperatorStyle} />
+                  </View>
+                  <View style={{ paddingTop: 15 }}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              }
+              // selectedProfile={profile}
+              setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            ></ProfileList>
+            {/* <MaterialMenu
               onPress={(item) => {
                 const val = (allCurrentPatients || []).find(
                   (_item) => _item.firstName == item.value.toString()
@@ -903,7 +932,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   <DropdownGreen />
                 </View>
               </View>
-            </MaterialMenu>
+            </MaterialMenu> */}
           </View>
           {/* <View
             // activeOpacity={1}
@@ -1196,6 +1225,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         </BottomPopUp>
       )}
       {showSpinner && <Spinner />}
+      {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );

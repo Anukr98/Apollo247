@@ -59,6 +59,9 @@ import { useUIElements } from '../UIElementsProvider';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { MaterialMenu } from '../ui/MaterialMenu';
 import { string } from '../../strings/string';
+import { AddProfile } from '../ui/AddProfile';
+import { ProfileList } from '../ui/ProfileList';
+import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -94,8 +97,9 @@ const styles = StyleSheet.create({
   seperatorStyle: {
     height: 2,
     backgroundColor: '#00b38e',
-    marginTop: 5,
-    marginHorizontal: 5,
+    marginTop: 2,
+    //marginHorizontal: 5,
+    marginBottom: 5,
   },
 });
 
@@ -108,6 +112,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
   const cartItemsCount = cartItems.length;
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   const { width, height } = Dimensions.get('window');
 
@@ -125,6 +131,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
+    currentPatient && setProfile(currentPatient!);
     getMedicinePageProducts()
       .then((d) => {
         setData(d.data);
@@ -1123,44 +1130,30 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           ]}
         >
           <View>
-            <MaterialMenu
-              onPress={(item) => {
-                const val = (allCurrentPatients || []).find(
-                  (_item) => _item.firstName == item.value.toString()
-                );
-                setCurrentPatientId!(val!.id);
-                AsyncStorage.setItem('selectUserId', val!.id);
-              }}
-              options={
-                allCurrentPatients &&
-                allCurrentPatients!.map((item) => {
-                  return { key: item.id, value: item.firstName };
-                })
+            <ProfileList
+              saveUserChange={true}
+              childView={
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    paddingRight: 8,
+                    borderRightWidth: 0,
+                    borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                  }}
+                >
+                  <Text style={styles.hiTextStyle}>hi</Text>
+                  <View>
+                    <Text style={styles.nameTextStyle}>{userName}</Text>
+                    <View style={styles.seperatorStyle} />
+                  </View>
+                  <View style={{ paddingTop: 15 }}>
+                    <DropdownGreen />
+                  </View>
+                </View>
               }
-              menuContainerStyle={{
-                alignItems: 'flex-end',
-                marginTop: 16,
-                marginLeft: width / 2 - 95,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: 'row',
-                  paddingRight: 8,
-                  borderRightWidth: 0.5,
-                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                }}
-              >
-                <Text style={styles.hiTextStyle}>hi</Text>
-                <View>
-                  <Text style={styles.nameTextStyle}>{userName}</Text>
-                  <View style={styles.seperatorStyle} />
-                </View>
-                <View style={{ paddingTop: 15 }}>
-                  <DropdownGreen />
-                </View>
-              </View>
-            </MaterialMenu>
+              // selectedProfile={profile}
+              setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            ></ProfileList>
           </View>
           {/* <Text
             style={{
@@ -1186,6 +1179,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
+      {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )}
       {renderEPrescriptionModal()}
       {renderUploadPrescriprionPopup()}
     </View>

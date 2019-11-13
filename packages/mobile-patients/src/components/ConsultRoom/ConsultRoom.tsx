@@ -8,6 +8,7 @@ import {
   MyHealth,
   Person,
   ShoppingCart,
+  MedicineIcon,
   DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -48,7 +49,9 @@ import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
 import { NotificationListener } from '../NotificationListener';
-import { MaterialMenu } from '../ui/MaterialMenu';
+import { AddProfile } from '../ui/AddProfile';
+import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
+import { ProfileList } from '../ui/ProfileList';
 
 const { width, height } = Dimensions.get('window');
 
@@ -122,6 +125,22 @@ const styles = StyleSheet.create({
     borderColor: '#dddddd',
     marginHorizontal: 16,
   },
+  placeholderViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    borderBottomWidth: 2,
+    paddingTop: 6,
+    paddingBottom: 3,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
+  placeholderTextStyle: {
+    color: '#01475b',
+    ...theme.fonts.IBMPlexSansMedium(18),
+  },
 });
 
 type ArrayTest = {
@@ -189,25 +208,22 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(true);
   const [showMenu, setShowMenu] = useState<boolean>(false);
-  const [userName, setuserName] = useState<string | number>('');
+  const [userName, setuserName] = useState<string>('');
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+
   const { analytics, getPatientApiCall } = useAuth();
-  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
+  const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
   useEffect(() => {
-    const getDataFromTree = async () => {
-      const storeVallue = await AsyncStorage.getItem('selectUserId');
-      console.log('storeVallue', storeVallue);
-      setCurrentPatientId(storeVallue);
-    };
-    getDataFromTree();
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
     setuserName(userName);
     currentPatient && setshowSpinner(false);
-
+    currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
@@ -589,8 +605,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     );
   };
 
-  console.log({ allCurrentPatients, setCurrentPatientId, currentPatient });
-
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
@@ -634,47 +648,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   <ApolloLogo />
                 </TouchableOpacity>
               </View>
-              <View>
-                <MaterialMenu
-                  onPress={(item) => {
-                    const val = (allCurrentPatients || []).find(
-                      (_item) => _item.firstName == item.value.toString()
-                    );
-                    setCurrentPatientId!(val!.id);
-                    AsyncStorage.setItem('selectUserId', val!.id);
-                  }}
-                  options={
-                    allCurrentPatients &&
-                    allCurrentPatients!.map((item) => {
-                      return { key: item.id, value: item.firstName };
-                    })
-                  }
-                  menuContainerStyle={{
-                    alignItems: 'flex-end',
-                    marginTop: 16,
-                    marginLeft: width / 2 - 95,
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      paddingRight: 8,
-                      borderRightWidth: 0.5,
-                      borderRightColor: 'rgba(2, 71, 91, 0.2)',
-                    }}
-                  >
-                    <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
-                    <View>
-                      <Text style={styles.nameTextStyle}>{userName}</Text>
-                      <View style={styles.seperatorStyle} />
-                    </View>
-                    <View style={{ paddingTop: 15 }}>
-                      <DropdownGreen />
-                    </View>
-                  </View>
-                </MaterialMenu>
-              </View>
-              {/* <View
+              <View
                 // activeOpacity={1}
                 // onPress={() => setShowMenu(true)}
                 style={{
@@ -684,21 +658,47 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
-                  <View>
+                  <ProfileList
+                    saveUserChange={true}
+                    childView={
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          paddingRight: 8,
+                          borderRightWidth: 0,
+                          borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                        }}
+                      >
+                        <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+                        <View>
+                          <Text style={styles.nameTextStyle}>{userName}</Text>
+                          <View style={styles.seperatorStyle} />
+                        </View>
+                        <View style={{ paddingTop: 15 }}>
+                          <DropdownGreen />
+                        </View>
+                      </View>
+                    }
+                    selectedProfile={profile}
+                    setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+                  ></ProfileList>
+                  {/* <Text style={styles.hiTextStyle}>
+                    {string.home.hi} {userName}!
+                  </Text> */}
+                  {/* <View>
                     <View
                       style={{
                         flexDirection: 'row',
                         alignItems: 'center',
                       }}
                     >
-                      <Text style={styles.nameTextStyle}> {userName}!</Text>
+                      <Text style={styles.nameTextStyle}>{userName}!</Text>
                       <DropdownGreen style={{ marginTop: 8 }} />
                     </View>
                     <View style={styles.seperatorStyle} />
-                  </View>
+                  </View> */}
                 </View>
-              </View> */}
+              </View>
               <Text style={styles.descriptionTextStyle}>{string.home.description}</Text>
             </View>
           </View>
@@ -810,6 +810,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </View>
       </BottomPopUp> */}
       {showSpinner && <Spinner />}
+      {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )}
       <NotificationListener navigation={props.navigation} />
     </View>
   );
