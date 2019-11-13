@@ -275,7 +275,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         {renderProfilesDetails()}
         <View style={{ padding: 40 }} />
       </ScrollView>
-      {renderBottomStickyComponent()}
+      {!isLoading && renderBottomStickyComponent()}
       {/* {loading && <Spinner />} */}
     </SafeAreaView>
   );

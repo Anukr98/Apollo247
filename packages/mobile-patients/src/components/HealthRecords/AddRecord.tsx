@@ -433,14 +433,30 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       </View>
     );
   };
+  const isValid = () => {
+    const valid = medicalRecordParameters.map((item) => {
+      return (
+        (item.maximum || item.minimum || item.result || item.parameterName) &&
+        item.maximum! > item.minimum! &&
+        item.result <= item.maximum! &&
+        item.result >= item.minimum!
+      );
+    });
+    return valid.find((i) => i === false) !== undefined;
+  };
 
   const setParametersData = (key: string, value: string, i: number, isNumber?: boolean) => {
     const dataCopy = [...medicalRecordParameters];
     dataCopy[i] = {
       ...dataCopy[i],
-      [key]: isNumber ? Number(value) : value,
+      [key]: isNumber ? formatNumber(value) : value,
     };
     setmedicalRecordParameters(dataCopy);
+  };
+
+  const formatNumber = (value: string) => {
+    let number = value.indexOf('.') === value.length - 1 ? value : parseFloat(value);
+    return number;
   };
 
   const renderReportDetails = () => {
@@ -490,7 +506,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                       <TextInputComponent
                         label={'Result'}
                         placeholder={'Enter value'}
-                        value={item.result.toString()}
+                        value={(item.result || '').toString()}
                         onChangeText={(value) => setParametersData('result', value, i, true)}
                       />
                     </View>
@@ -613,6 +629,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           title="ADD RECORD"
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={onSavePress}
+          disabled={isValid()}
         />
       </StickyBottomComponent>
     );
