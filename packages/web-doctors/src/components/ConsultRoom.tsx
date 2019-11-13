@@ -475,7 +475,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       },
       (status, res) => {
         const newmessage: MessagesObjectProps[] = messages;
-        console.log(newmessage);
         res.messages.forEach((element, index) => {
           //newmessage[index] = element.entry;
           newmessage.push(element.entry);
@@ -998,9 +997,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                               .catch((error) => {
                                 throw error;
                               });
-                            console.log(aphBlob, 'aphBlob');
                             const url = client.getBlobUrl(aphBlob.name);
-                            console.log('url', url);
                             const uploadObject = {
                               id: doctorId,
                               fileType: `image`,

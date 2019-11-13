@@ -811,7 +811,6 @@ export const MedicinePrescription: React.FC = () => {
         id: selectedId,
         medicineUnit: medicineUnit,
       };
-      console.log(selectedValue);
 
       const inputParams: any = {
         id: selectedId,
