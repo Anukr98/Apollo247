@@ -28,7 +28,11 @@ import {
   InitiateRescheduleAppointment,
   InitiateRescheduleAppointmentVariables,
 } from 'graphql/types/InitiateRescheduleAppointment';
-import { INITIATE_RESCHDULE_APPONITMENT } from 'graphql/profiles';
+import {
+  EndAppointmentSession,
+  EndAppointmentSessionVariables,
+} from 'graphql/types/EndAppointmentSession';
+import { INITIATE_RESCHDULE_APPONITMENT, END_APPOINTMENT_SESSION } from 'graphql/profiles';
 import {
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
@@ -569,6 +573,9 @@ let transferObject: any = {
 };
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
+let intervalcallId: any;
+let stoppedTimerCall: number;
+let patientMsgs: any = [];
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -584,7 +591,6 @@ const unSubscribeBrowserButtonsListener = () => {
 };
 
 type Params = { id: string; patientId: string };
-
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const params = useParams<Params>();
@@ -624,6 +630,48 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       stoppedConsulTimer = timer;
       setStartingTime(timer);
     }, 1000);
+  };
+
+  // timer for miss called
+  const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
+  const callIntervalTimer = (timer: number) => {
+    intervalcallId = setInterval(() => {
+      timer = timer - 1;
+      stoppedTimerCall = timer;
+      setRemainingCallTime(timer);
+      if (timer < 1) {
+        setRemainingCallTime(0);
+        clearInterval(intervalcallId);
+        if (patientMsgs.length === 0) {
+          noShowAction();
+        }
+      }
+    }, 1000);
+  };
+
+  const noShowAction = () => {
+    client
+      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+        mutation: END_APPOINTMENT_SESSION,
+        variables: {
+          endAppointmentSessionInput: {
+            appointmentId: props.appointmentId,
+            status: STATUS.NO_SHOW,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        unSubscribeBrowserButtonsListener();
+        alert('Patient not responding.');
+        window.location.href = clientRoutes.calendar();
+      })
+      .catch((e) => {
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
+        alert(errorMessage);
+      });
   };
   // timer for audio/video call end
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -672,6 +720,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+  useEffect(() => {
+    if (remainingCallTime === 0) {
+      clearInterval(intervalcallId);
+    }
+  });
   const stopIntervalTimer = () => {
     setStartingTime(0);
     timerIntervalId && clearInterval(timerIntervalId);
@@ -979,6 +1032,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         } else {
           setIsNewMsg(false);
         }
+        //console.log(!props.startAppointment, message.message.id, params.patientId);
+        //console.log(!props.startAppointment && message.message.id === params.patientId)
+        if (!props.startAppointment && message.message.id === params.patientId) {
+          patientMsgs.push(message.message.message);
+          //console.log(555555);
+        }
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
         }
@@ -994,12 +1053,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: startConsult,
       isTyping: true,
-      automatedText:
-        'Dr. ' +
-        currentPatient!.firstName +
-        ' ' +
-        currentPatient!.lastName +
-        ' has joined your chat!',
+      automatedText: currentPatient!.displayName + ' has joined your chat!',
     };
     subscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1156,6 +1210,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         })
         .then((_data) => {
           //setIsLoading(false);
+          //console.log('data', _data);
           const reschduleObject: any = {
             appointmentId: props.appointmentId,
             transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
@@ -1164,7 +1219,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
             reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
           };
-          console.log('reschduleObject', reschduleObject);
+          //console.log('reschduleObject', reschduleObject);
           pubnub.publish(
             {
               message: {
@@ -1182,7 +1237,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         })
         .catch((e) => {
           //setIsLoading(false);
-          console.log('Error occured while searching for Initiate reschdule apppointment', e);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log(
@@ -1361,6 +1415,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.startAppointmentClick(!props.startAppointment);
                     props.createSessionAction();
                     setCaseSheetEdit(true);
+                    callIntervalTimer(180);
                   }}
                 >
                   <svg

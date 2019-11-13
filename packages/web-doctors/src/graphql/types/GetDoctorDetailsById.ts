@@ -116,6 +116,7 @@ export interface GetDoctorDetailsById_getDoctorDetailsById {
   id: string;
   languages: string | null;
   lastName: string;
+  displayName: string | null;
   mobileNumber: string;
   onlineConsultationFees: string;
   onlineStatus: DOCTOR_ONLINE_STATUS;

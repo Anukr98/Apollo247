@@ -224,7 +224,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
       const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
       const destination = selectedClinic
-        ? `${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}` // `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}`
+        ? `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}` //`${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}`
         : '';
       const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
       Axios.get(distanceUrl)
