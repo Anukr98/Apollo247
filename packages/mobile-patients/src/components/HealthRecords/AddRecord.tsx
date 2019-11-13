@@ -190,7 +190,17 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       )
     );
   };
-
+  const isValid = () => {
+    const valid = medicalRecordParameters.map((item) => {
+      return (
+        item.parameterName &&
+        item.maximum! > item.minimum! &&
+        item.result <= item.maximum! &&
+        item.result >= item.minimum!
+      );
+    });
+    return valid.find((i) => i === false) !== undefined;
+  };
   const onSavePress = () => {
     setshowSpinner(true);
     let uploadedUrls = [];
@@ -616,7 +626,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           title="ADD RECORD"
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={onSavePress}
-          // disabled={showReportDetails}
+          disabled={isValid()}
         />
       </StickyBottomComponent>
     );

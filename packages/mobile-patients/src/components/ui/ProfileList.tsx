@@ -69,10 +69,18 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
 
+  const titleCase = (str: string) => {
+    var splitStr = str.toLowerCase().split(' ');
+    for (var i = 0; i < splitStr.length; i++) {
+      splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+    }
+    return splitStr.join(' ');
+  };
+
   const pickerData =
     (profileArray &&
       profileArray!.map((i) => {
-        return { key: i.id, value: i.firstName || i.lastName || '' };
+        return { key: i.id, value: titleCase(i.firstName || i.lastName || '') };
       })) ||
     [];
 
@@ -162,8 +170,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           justifyContent: 'flex-end',
         }}
         onPress={(selectedUser) => {
-          if (selectedUser.key === 'ADD NEW PROFILE') setDisplayAddProfile(true);
-          else {
+          if (selectedUser.key === 'ADD NEW PROFILE') {
+            setDisplayAddProfile(true);
+          } else {
             profileArray &&
               profileArray!.map((i) => {
                 if (selectedUser.key === i.id) {
@@ -172,6 +181,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               });
           }
           saveUserChange &&
+            selectedUser.key !== addString &&
             (setCurrentPatientId!(selectedUser!.key),
             AsyncStorage.setItem('selectUserId', selectedUser!.key));
         }}
