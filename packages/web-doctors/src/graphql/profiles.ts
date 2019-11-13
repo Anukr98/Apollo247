@@ -50,6 +50,49 @@ export const LOGGED_IN_USER_DETAILS = gql`
   query findLoggedinUserDetails {
     findLoggedinUserDetails {
       loggedInUserType
+      secretaryDetails {
+        name
+        doctorSecretary {
+          doctor {
+            city
+            country
+            doctorType
+            delegateNumber
+            emailAddress
+            experience
+            firstName
+            id
+            lastName
+            mobileNumber
+            onlineConsultationFees
+            onlineStatus
+            photoUrl
+            physicalConsultationFees
+            qualification
+            registrationNumber
+            salutation
+            state
+            streetLine1
+            streetLine2
+            streetLine3
+            zip
+            specialty {
+              name
+            }
+            doctorHospital {
+              facility {
+                name
+                streetLine1
+                streetLine2
+                streetLine3
+                city
+              }
+            }
+          }
+        }
+        mobileNumber
+        isActive
+      }
     }
   }
 `;
@@ -190,6 +233,9 @@ export const CREATE_CASESHEET_FOR_JRD = gql`
       appointment {
         id
         appointmentDateTime
+        appointmentDocuments {
+          documentPath
+        }
         appointmentState
         appointmentType
         displayId
@@ -301,6 +347,105 @@ export const CREATE_CASESHEET_FOR_SRD = gql`
     }
   }
 `;
+export const GET_DOCTOR_DETAILS_BY_ID = gql`
+  query GetDoctorDetailsById($id: String) {
+    getDoctorDetailsById(id: $id) {
+      awards
+      city
+      country
+      dateOfBirth
+      doctorType
+      delegateNumber
+      emailAddress
+      experience
+      firebaseToken
+      displayName
+      firstName
+      isActive
+      id
+      languages
+      lastName
+      mobileNumber
+      onlineConsultationFees
+      onlineStatus
+      photoUrl
+      physicalConsultationFees
+      qualification
+      registrationNumber
+      salutation
+      specialization
+      state
+      streetLine1
+      streetLine2
+      streetLine3
+      zip
+      consultHours {
+        consultMode
+        startTime
+        endTime
+        consultType
+        weekDay
+      }
+      packages {
+        name
+        fees
+      }
+      bankAccount {
+        accountNumber
+        state
+        IFSCcode
+        accountType
+        bankName
+        accountHolderName
+      }
+      specialty {
+        name
+      }
+      doctorHospital {
+        facility {
+          name
+          streetLine1
+          streetLine2
+          streetLine3
+          city
+        }
+      }
+      starTeam {
+        isActive
+        associatedDoctor {
+          country
+          doctorType
+          delegateNumber
+          emailAddress
+          experience
+          firstName
+          id
+          lastName
+          mobileNumber
+          photoUrl
+          qualification
+          salutation
+          state
+          streetLine1
+          streetLine2
+          streetLine3
+          zip
+          doctorHospital {
+            facility {
+              streetLine1
+              streetLine2
+              streetLine3
+              city
+            }
+          }
+          specialty {
+            name
+          }
+        }
+      }
+    }
+  }
+`;
 
 export const GET_CASESHEET_JRD = gql`
   query GetJuniorDoctorCaseSheet($appointmentId: String) {
@@ -311,6 +456,9 @@ export const GET_CASESHEET_JRD = gql`
         appointment {
           id
           appointmentDateTime
+          appointmentDocuments {
+            documentPath
+          }
           status
           appointmentState
           displayId
@@ -499,6 +647,9 @@ export const GET_CASESHEET = gql`
         appointment {
           id
           appointmentDateTime
+          appointmentDocuments {
+            documentPath
+          }
           status
           appointmentState
           displayId
@@ -805,6 +956,15 @@ export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
   mutation UpdatePatientPrescriptionSentStatus($caseSheetId: ID!, $sentToPatient: Boolean!) {
     updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
       success
+    }
+  }
+`;
+
+export const ADD_CHAT_DOCUMENT = gql`
+  mutation AddChatDocument($appointmentId: ID!, $documentPath: String!) {
+    addChatDocument(appointmentId: $appointmentId, documentPath: $documentPath) {
+      id
+      filePath
     }
   }
 `;

@@ -281,6 +281,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
@@ -1689,7 +1690,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={{
                   width: 32,
                   height: 32,
-                  borderRadius: 16
+                  borderRadius: 16,
                 }}
               />
             ) : (
@@ -1904,7 +1905,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     style={{
                       width: 32,
                       height: 32,
-                      borderRadius: 16
+                      borderRadius: 16,
                     }}
                   />
                 ) : (
@@ -2012,7 +2013,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     style={{
                       width: 32,
                       height: 32,
-                      borderRadius: 16
+                      borderRadius: 16,
                     }}
                   />
                 ) : (

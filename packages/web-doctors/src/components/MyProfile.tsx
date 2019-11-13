@@ -420,23 +420,18 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 export interface StarDoctorCardProps {
+  currentDocId: string;
   doctor: GetDoctorDetails_getDoctorDetails_starTeam;
 }
 const invalidPhoneMessage = 'This seems like the wrong number';
 const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
-  const { doctor } = props;
+  const { doctor, currentDocId } = props;
   //const moreButttonRef = useRef(null);
   //const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const client = useApolloClient();
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
   const [currentDoctor, setCurrentDoctor] = React.useState('');
-  const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
-  const getDoctorDetailsData = data && data.getDoctorDetails ? data.getDoctorDetails : null;
 
-  if (loading) return <CircularProgress />;
-  if (error || !getDoctorDetailsData) return <div>error :(</div>;
-
-  const doctorProfile = getDoctorDetailsData;
   function handleClick(event: React.MouseEvent<HTMLButtonElement>, id: string) {
     setAnchorEl(event.currentTarget);
     setCurrentDoctor(id);
@@ -497,7 +492,7 @@ const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
                         mutate({
                           variables: {
                             associatedDoctor: doctor!.associatedDoctor!.id,
-                            starDoctor: doctorProfile.id,
+                            starDoctor: currentDocId,
                           },
                         }).then(() => {
                           const existingData = client.readQuery<GetDoctorDetails>({
@@ -624,7 +619,7 @@ export interface StarDoctorsListProps {
 }
 
 const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
-  const { starDoctors } = props;
+  const { starDoctors, currentDocId } = props;
   const [showAddDoc, setShowAddDoc] = React.useState<boolean>();
   const client = useApolloClient();
   const starDoctorsCardList = starDoctors.filter((existingDoc) => existingDoc!.isActive) || [];
@@ -641,7 +636,7 @@ const StarDoctorsList: React.FC<StarDoctorsListProps> = (props) => {
               doctor!.isActive === true && (
                 <Grid item lg={6} sm={6} xs={12} key={index}>
                   <div className={classes.tabContentStarDoctor}>
-                    <StarDoctorCard doctor={doctor!} />
+                    <StarDoctorCard doctor={doctor!} currentDocId={currentDocId} />
                   </div>
                 </Grid>
               )
@@ -829,17 +824,19 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
         </Grid>
       </div>
 
-      <div>
-        <Typography className={classes.starDoctorHeading}>
-          {`Your Star Doctors Team (${
-            doctorProfile!.starTeam!.filter(
-              (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
-                existingDoc!.isActive === true
-            ).length
-          })`}
-        </Typography>
-        <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={doctorProfile!.starTeam!} />
-      </div>
+      {doctorProfile && (
+        <div>
+          <Typography className={classes.starDoctorHeading}>
+            {`Your Star Doctors Team (${
+              doctorProfile!.starTeam!.filter(
+                (existingDoc: GetDoctorDetails_getDoctorDetails_starTeam | null) =>
+                  existingDoc!.isActive === true
+              ).length
+            })`}
+          </Typography>
+          <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={doctorProfile!.starTeam!} />
+        </div>
+      )}
       {localStorage.getItem('loggedInMobileNumber') === doctorProfile.mobileNumber && (
         <div>
           <h2>Secretary Login</h2>
