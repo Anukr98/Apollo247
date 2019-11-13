@@ -9,6 +9,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile,
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails_healthVault,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments,
 } from 'graphql/types/GetCaseSheet';
 import { createContext } from 'react';
 
@@ -71,6 +72,9 @@ export interface CaseSheetContextProps {
   setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   healthVault: GetCaseSheet_getCaseSheet_patientDetails_healthVault[] | null;
   pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
+  appointmentDocuments:
+    | GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments[]
+    | null;
   height: string;
   weight: string;
   temperature: string;
@@ -108,6 +112,7 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   caseSheetEdit: false,
   patientDetails: null,
   appointmentInfo: null,
+  appointmentDocuments: null,
   createdDoctorProfile: null,
   caseSheetId: null,
   symptoms: null,

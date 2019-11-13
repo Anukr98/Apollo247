@@ -5,6 +5,8 @@ import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
+import { ApolloError } from 'apollo-client';
+
 // import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
 // import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
 // import { useMutation } from 'react-apollo-hooks';
@@ -15,6 +17,9 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
+import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -358,11 +363,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const apolloClient = useApolloClient();
 
   // this hook is used to send auto chat message when the consult is closed by system
-  useEffect(() => {
-    console.log('auto close case sheet action....', props.autoCloseCaseSheet);
-  }, [props.autoCloseCaseSheet]);
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -462,7 +465,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
     getHistory(0);
 
     pubnub.addListener({
-      status: (statusEvent) => { },
+      status: (statusEvent) => {},
       message: (message) => {
         console.log(message.message);
         insertText[insertText.length] = message.message;
@@ -523,6 +526,24 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         resetMessagesAction();
       }
     );
+  };
+
+  const uploadfile = (url: string) => {
+    console.log('ram');
+    apolloClient
+      .mutate<AddChatDocument, AddChatDocumentVariables>({
+        mutation: ADD_CHAT_DOCUMENT,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: props.appointmentId, documentPath: url },
+      })
+      .then((_data) => {
+        if (_data && _data.data) {
+          console.log('Document ', _data.data.addChatDocument);
+        }
+      })
+      .catch((error: ApolloError) => {
+        console.log(error);
+      });
   };
 
   const send = () => {
@@ -600,39 +621,39 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
-                <div
-                  className={`${classes.chatBubble} ${
-                    rowData.message === documentUpload ? classes.chatImgBubble : ''
-                    }`}
-                >
-                  {leftComponent == 1 && !rowData.duration && (
-                    <div className={classes.patientAvatar}>
-                      <Avatar
-                        className={classes.avatar}
-                        src={
-                          patientDetails && patientDetails.photoUrl
-                            ? patientDetails!.photoUrl
-                            : require('images/no_photo_icon_round.svg')
-                        }
-                        alt=""
-                      />
-                    </div>
-                  )}
-                  {rowData.message === documentUpload ? (
-                    <div
-                      className={classes.imageUpload}
-                      onClick={() => {
-                        setModalOpen(true);
-                        setImgPrevUrl(rowData.url);
-                      }}
-                    >
-                      <img src={rowData.url} alt={rowData.url} />
-                    </div>
-                  ) : (
-                      <span>{getAutomatedMessage(rowData)}</span>
-                    )}
+            <div
+              className={`${classes.chatBubble} ${
+                rowData.message === documentUpload ? classes.chatImgBubble : ''
+              }`}
+            >
+              {leftComponent == 1 && !rowData.duration && (
+                <div className={classes.patientAvatar}>
+                  <Avatar
+                    className={classes.avatar}
+                    src={
+                      patientDetails && patientDetails.photoUrl
+                        ? patientDetails!.photoUrl
+                        : require('images/no_photo_icon_round.svg')
+                    }
+                    alt=""
+                  />
                 </div>
               )}
+              {rowData.message === documentUpload ? (
+                <div
+                  className={classes.imageUpload}
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(rowData.url);
+                  }}
+                >
+                  <img src={rowData.url} alt={rowData.url} />
+                </div>
+              ) : (
+                <span>{getAutomatedMessage(rowData)}</span>
+              )}
+            </div>
+          )}
         </div>
       );
     }
@@ -677,39 +698,39 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
               <div className={classes.callDuration}>Duration- {rowData.duration}</div>
             </div>
           ) : (
-                <div
-                  className={`${classes.chatBubble} ${classes.patientBubble} ${
-                    rowData.message === documentUpload ? classes.chatImgBubble : ''
-                    }`}
-                >
-                  {rightComponent == 1 && !rowData.duration && (
-                    <div className={classes.patientAvatar}>
-                      <Avatar
-                        className={classes.avatar}
-                        src={
-                          patientDetails && patientDetails.photoUrl
-                            ? patientDetails!.photoUrl
-                            : require('images/no_photo_icon_round.svg')
-                        }
-                        alt=""
-                      />
-                    </div>
-                  )}
-                  {rowData.message === documentUpload ? (
-                    <div
-                      onClick={() => {
-                        setModalOpen(true);
-                        setImgPrevUrl(rowData.url);
-                      }}
-                      className={classes.imageUpload}
-                    >
-                      <img src={rowData.url} alt={rowData.url} />
-                    </div>
-                  ) : (
-                      <span>{getAutomatedMessage(rowData)}</span>
-                    )}
+            <div
+              className={`${classes.chatBubble} ${classes.patientBubble} ${
+                rowData.message === documentUpload ? classes.chatImgBubble : ''
+              }`}
+            >
+              {rightComponent == 1 && !rowData.duration && (
+                <div className={classes.patientAvatar}>
+                  <Avatar
+                    className={classes.avatar}
+                    src={
+                      patientDetails && patientDetails.photoUrl
+                        ? patientDetails!.photoUrl
+                        : require('images/no_photo_icon_round.svg')
+                    }
+                    alt=""
+                  />
                 </div>
               )}
+              {rowData.message === documentUpload ? (
+                <div
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(rowData.url);
+                  }}
+                  className={classes.imageUpload}
+                >
+                  <img src={rowData.url} alt={rowData.url} />
+                </div>
+              ) : (
+                <span>{getAutomatedMessage(rowData)}</span>
+              )}
+            </div>
+          )}
         </div>
       );
     }
@@ -721,8 +742,8 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const messagessHtml =
     messages && messages.length > 0
       ? messages.map((item: MessagesObjectProps, index: number) => {
-        return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
-      })
+          return <div key={index.toString()}>{renderChatRow(item, index)}</div>;
+        })
       : '';
 
   const toggelChatVideo = () => {
@@ -767,7 +788,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       message: `${props.startConsult === 'videocall' ? 'Video' : 'Audio'} call ended`,
       duration: `${
         timerLastMinuts.toString().length < 2 ? '0' + timerLastMinuts : timerLastMinuts
-        } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
+      } : ${timerLastSeconds.toString().length < 2 ? '0' + timerLastSeconds : timerLastSeconds}`,
       isTyping: true,
     };
     sendMsg(stoptext, true);
@@ -877,7 +898,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                         fileExtension &&
                         (fileExtension.toLowerCase() === 'png' ||
                           fileExtension.toLowerCase() === 'jpg' ||
-                          fileExtension.toLowerCase() === 'pdf' ||
                           fileExtension.toLowerCase() === 'jpeg')
                       ) {
                         if (file) {
@@ -894,6 +914,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                             url: url,
                             isTyping: true,
                           };
+                          uploadfile(url);
                           sendMsg(uploadObject, true);
                           setFileUploading(false);
                         }

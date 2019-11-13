@@ -8,10 +8,16 @@ import { STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, Gender, 
 // GraphQL query operation: GetJuniorDoctorCaseSheet
 // ====================================================
 
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments {
+  __typename: "AppointmentDocuments";
+  documentPath: string | null;
+}
+
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
   id: string;
   appointmentDateTime: any;
+  appointmentDocuments: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments | null)[] | null;
   status: STATUS;
   appointmentState: string | null;
   displayId: string;

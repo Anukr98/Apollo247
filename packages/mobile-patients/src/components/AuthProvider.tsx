@@ -164,6 +164,7 @@ export const AuthProvider: React.FC = (props) => {
       AsyncStorage.setItem('userLoggedIn', 'false');
       AsyncStorage.removeItem('currentPatient');
       AsyncStorage.removeItem('deviceToken');
+      AsyncStorage.removeItem('selectUserId');
       console.log('authprovider signOut');
     } catch (error) {
       console.log('signOut error', error);
@@ -229,7 +230,6 @@ export const AuthProvider: React.FC = (props) => {
         const retrievedItem: any = await AsyncStorage.getItem('currentPatient');
         const item = JSON.parse(retrievedItem);
         setAllPatients(item);
-
         setSignInError(true);
         console.log('getPatientApiCallerror', error);
       });

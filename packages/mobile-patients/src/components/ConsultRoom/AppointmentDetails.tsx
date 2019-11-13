@@ -544,6 +544,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   AppRoutes.AppointmentDetails,
                   'RESCHEDULE APPOINTMENT DETAILS CLICKED'
                 );
+
                 try {
                   dateIsAfter ? NextAvailableSlotAPI() : null;
                 } catch (error) {}

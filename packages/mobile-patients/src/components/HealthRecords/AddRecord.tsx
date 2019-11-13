@@ -220,6 +220,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
           documentURLs: uploadedUrls.join(','),
         };
+        console.log('in', inputData);
 
         if (currentPatient && currentPatient.id)
           client
@@ -440,6 +441,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       ...dataCopy[i],
       [key]: isNumber ? Number(value) : value,
     };
+    console.log('da', dataCopy);
+
     setmedicalRecordParameters(dataCopy);
   };
 
@@ -580,7 +583,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                 />
                 <TextInputComponent
                   label={'Additional Notes'}
-                  placeholder={'Enter name'}
+                  placeholder={'Enter notes'}
                   value={additionalNotes}
                   onChangeText={(additionalNotes) => setadditionalNotes(additionalNotes)}
                 />
@@ -613,6 +616,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           title="ADD RECORD"
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={onSavePress}
+          // disabled={showReportDetails}
         />
       </StickyBottomComponent>
     );
