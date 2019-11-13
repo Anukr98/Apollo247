@@ -44,6 +44,7 @@ import {
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -147,7 +148,9 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
+  const { addCartItem, removeCartItem, updateCartItem, cartItems } = isTest
+    ? useDiagnosticsCart()
+    : useShoppingCart();
   const { showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
 
@@ -398,7 +401,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               // style={{ marginRight: 24 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
-                props.navigation.navigate(AppRoutes.YourCart);
+                props.navigation.navigate(isTest ? AppRoutes.TestsCart : AppRoutes.YourCart);
               }}
             >
               <CartIcon />

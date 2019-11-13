@@ -658,6 +658,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
                   title: `${item.title || 'Products'}`.toUpperCase(),
+                  isTest: true,
                 }),
               {
                 marginHorizontal: 4,
@@ -836,6 +837,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 props.navigation.navigate(AppRoutes.SearchByBrand, {
                   category_id: item.category_id,
                   title: `${item.title || 'Products'}`.toUpperCase(),
+                  isTest: true,
                 }),
               {
                 // marginRight: 8,

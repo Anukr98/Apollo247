@@ -43,6 +43,7 @@ import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { AppConfig } from '../../strings/AppConfig';
 import { ImagePlaceholderView, Spearator } from '../ui/BasicComponents';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -89,12 +90,13 @@ export interface SearchByBrandProps
   extends NavigationScreenProps<{
     title: string;
     category_id: string;
+    isTest?: boolean;
   }> {}
 
 export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const category_id = props.navigation.getParam('category_id');
   const pageTitle = props.navigation.getParam('title');
-
+  const isTest = props.navigation.getParam('isTest');
   const [searchText, setSearchText] = useState<string>('');
   const [productsList, setProductsList] = useState<MedicineProduct[]>([]);
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
@@ -103,7 +105,9 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
+  const { addCartItem, removeCartItem, updateCartItem, cartItems } = isTest
+    ? useDiagnosticsCart()
+    : useShoppingCart();
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -197,7 +201,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               activeOpacity={1}
               // style={{ marginRight: 24 }}
               onPress={() => {
-                props.navigation.navigate(AppRoutes.YourCart);
+                props.navigation.navigate(AppRoutes.MedAndTestCart);
               }}
             >
               <CartIcon />

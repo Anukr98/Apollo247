@@ -179,7 +179,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           leftIcon="backArrow"
           onPressLeftIcon={() => backDataFunctionality()}
           rightComponent={
-            <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.YourCart)}>
+            <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}>
               <CartIcon style={{}} />
             </TouchableOpacity>
           }
