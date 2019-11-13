@@ -1209,9 +1209,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
         cancelAppointmentInput: {
           appointmentId: params.appointmentId,
           cancelReason: cancelReason === 'Other' ? otherTextCancelValue : cancelReason,
-          cancelledBy: isJuniorDoctor
-            ? REQUEST_ROLES.JUNIOR
-            : REQUEST_ROLES.PATIENT,
+          cancelledBy: isJuniorDoctor ? REQUEST_ROLES.JUNIOR : REQUEST_ROLES.PATIENT,
           cancelledById: isJuniorDoctor ? jrDoctorId || '' : params.patientId,
         },
       },

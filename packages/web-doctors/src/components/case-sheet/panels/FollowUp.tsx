@@ -409,7 +409,7 @@ export const FollowUp: React.FC = () => {
                       height="24"
                       viewBox="0 0 24 24"
                     >
-                      <g fill="none" fill-rule="evenodd">
+                      <g fill="none" fillRule="evenodd">
                         <path
                           fill="#00B38E"
                           fillRule="nonzero"
@@ -427,10 +427,10 @@ export const FollowUp: React.FC = () => {
                       height="18"
                       viewBox="0 0 18 18"
                     >
-                      <g fill="none" fill-rule="evenodd">
+                      <g fill="none" fillRule="evenodd">
                         <path
                           fill="#00B38E"
-                          fill-rule="nonzero"
+                          fillRule="nonzero"
                           d="M17 16h-1V2c0-.55-.45-1-1-1h-4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v15H1c-.55 0-1 .45-1 1s.45 1 1 1h9c.55 0 1-.45 1-1V3h3v14c0 .55.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zm-8-6H7V8h2v2z"
                         />
                       </g>
