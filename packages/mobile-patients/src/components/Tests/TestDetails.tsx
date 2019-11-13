@@ -66,12 +66,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 5,
+    paddingVertical: 20,
   },
   descriptionTextStyles: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.SKY_BLUE,
     textAlign: 'left',
-    paddingVertical: 20,
     lineHeight: 22,
   },
   priceText: {
@@ -103,68 +103,28 @@ const styles = StyleSheet.create({
 
 const tabs = [
   {
-    title: 'Overview',
-    description: '',
-  },
-  {
-    title: 'Tests Included',
-    description: '',
-  },
-  {
-    title: 'Preparation',
-    description: '',
-  },
-];
-
-const tabsdescription = [
-  {
     id: '1',
-    title: 'Overview',
-    description:
-      'The test is performed to detect the presence of Nicotine and Cotinine in urine. This helps determine whether the patient has used tobacco recently or not. Nicotine has a half-life of 40 minutes and its presence means that the patient has used tobacco recently.',
+    title: 'Tests Included',
   },
   {
     id: '2',
-    title: 'Overview',
-    description: '',
-  },
-  {
-    id: '3',
-    title: 'Overview',
-    description:
-      ' Nicotine has a half-life of 40 minutes and its presence means that the patient has used tobacco recently.',
+    title: 'Preparation',
   },
 ];
 export interface TestDetailsProps
   extends NavigationScreenProps<{
+    sku: string;
+    title: string;
     testDetails: TestPackage;
   }> {}
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
-  const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
-    {} as MedicineProductDetails
-  );
-  const [selectedTab, settabsdescription] = useState<string>(tabs[0].title);
+  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
   const sku = 'ICA0005'; //props.navigation.getParam('sku');
-  const [apiError, setApiError] = useState<boolean>(false);
-  const [loading, setLoading] = useState(true);
   const testDetails = props.navigation.getParam('testDetails');
 
   console.log({ testDetails });
 
-  useEffect(() => {
-    getMedicineDetailsApi(sku)
-      .then(({ data }) => {
-        console.log(data);
-        setmedicineDetails((data && data.productdp && data.productdp[0]) || {});
-        setLoading(false);
-      })
-      .catch((err) => {
-        aphConsole.log('error:' + err);
-        setApiError(!!err);
-        setLoading(false);
-      });
-  }, []);
-
+  const TestDetailsDiscription = testDetails.PackageInClussion;
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     props.navigation.goBack();
@@ -191,40 +151,39 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
-  const renderTestDetails = (
-    rowData = {
-      offPercent: '30 % Off',
-      testName: 'Urine Cotinine (Nicotine) Test',
-      ageGroup: 'BELOW 7 YEARS',
-      actualCost: ' Rs. 165',
-      price: 'Rs. 6,500',
-      gender: 'FOR BOYS AND GIRLS',
-      test: '8',
-      address: 'Apollo Hospitals, Jubilee Hills',
-      status: 'REMOVE FROM CART',
-      SampleType: 'URINE',
-      CollectionMethod: 'HOME VISIT OR CLINIC VISIT',
-    }
-  ) => {
+  const renderTestDetails = () => {
     return (
       <View style={{ overflow: 'hidden', padding: 20 }}>
         <View>
-          <Text style={styles.testNameStyles}>{rowData.testName}</Text>
+          <Text style={styles.testNameStyles}>{testDetails.ItemName}</Text>
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Age Group</Text>
-            <Text style={styles.personDetailStyles}> {rowData.ageGroup}</Text>
+            <Text style={styles.personDetailStyles}>
+              {(testDetails.FromAgeInDays / 365).toFixed(0)} TO
+              {(testDetails.ToAgeInDays / 365).toFixed(0)} YEARS
+            </Text>
           </View>
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Gender</Text>
-            <Text style={styles.personDetailStyles}> {rowData.gender}</Text>
+            <Text style={styles.personDetailStyles}>
+              FOR{' '}
+              {testDetails.Gender == 'B'
+                ? 'BOYS AND GIRLS'
+                : testDetails.Gender == 'M'
+                ? 'BOYS'
+                : 'GIRLS'}
+            </Text>
           </View>
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
-            <Text style={styles.personDetailStyles}> {rowData.SampleType}</Text>
+            <Text style={styles.personDetailStyles}>
+              {' '}
+              {testDetails.PackageInClussion[0].SampleTypeName}
+            </Text>
           </View>
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Collection Method</Text>
-            <Text style={styles.personDetailStyles}> {rowData.CollectionMethod}</Text>
+            <Text style={styles.personDetailStyles}> HOME VISIT OR CLINIC VISIT</Text>
           </View>
         </View>
       </View>
@@ -233,7 +192,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderTabsData = () => {
-    console.log(tabsdescription);
+    console.log(tabs);
     return (
       <View>
         <TabsComponent
@@ -242,19 +201,40 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           }}
           height={44}
           data={tabs}
-          onChange={(selectedTab: string) => settabsdescription(selectedTab)}
+          onChange={(selectedTab: string) => setSelectedTab(selectedTab)}
           selectedTab={selectedTab}
           selectedTitleStyle={theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE)}
           titleStyle={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE)}
         />
-        <View style={styles.descriptionStyles}>
-          <Text style={styles.descriptionTextStyles}>
-            The test is performed to detect the presence of Nicotine and Cotinine in urine. This
-            helps determine whether the patient has used tobacco recently or not. Nicotine has a
-            half-life of 40 minutes and its presence means that the patient has used tobacco
-            recently.
-          </Text>
-        </View>
+      </View>
+    );
+  };
+
+  const renderTestsIncludedData = () => {
+    return (
+      <View style={styles.descriptionStyles}>
+        {TestDetailsDiscription.map((item, i) => (
+          <View key={i}>
+            <Text style={styles.descriptionTextStyles}>
+              {i + 1}. {item.TestInclusion}
+            </Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+  const renderPreparation = () => {
+    return (
+      <View style={styles.descriptionStyles}>
+        {/* {TestDetailsDiscription.map((item, i) => (
+          <View key={i}> */}
+        <Text style={styles.descriptionTextStyles}>
+          {/* {i + 1}. {item.TestParameters} */}
+          No Data
+        </Text>
+        {/* </View> */}
+        {/* ))} */}
       </View>
     );
   };
@@ -269,10 +249,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <ScrollView bounces={false} keyboardDismissMode="on-drag">
         <View>{renderTestDetails()}</View>
         {renderTabsData()}
+        {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
       </ScrollView>
       <StickyBottomComponent defaultBG style={styles.container}>
         <View style={{ marginBottom: 11, alignItems: 'flex-end' }}>
-          <Text style={styles.priceText}>Rs. 6,500</Text>
+          <Text style={styles.priceText}>Rs. {testDetails.Rate}</Text>
         </View>
 
         <View style={styles.SeparatorStyle}></View>
