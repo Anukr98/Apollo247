@@ -48,8 +48,8 @@ const useStyles = makeStyles(() => ({
     marginRight: '10px',
   },
   listContainer: {
-    display: 'flex',
-    flexFlow: 'row',
+    // display: 'flex',
+    // flexFlow: 'row',
     flowWrap: 'wrap',
     width: '100%',
   },
@@ -57,6 +57,12 @@ const useStyles = makeStyles(() => ({
     width: '49%',
     marginRight: '1%',
     padding: 0,
+    display: 'inline-flex',
+    overflow: 'hidden',
+    marginBottom: 15,
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    marginright: 20,
   },
   stepperHeading: {
     fontSize: '14px',
@@ -271,7 +277,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
-  const { healthVault, pastAppointments } = useContext(CaseSheetContext);
+  const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContext);
 
   return (
     <ThemeProvider theme={theme}>
@@ -281,13 +287,13 @@ export const HealthVault: React.FC = () => {
             Photos uploaded by Patient
           </Typography>
           <List className={classes.listContainer}>
-            {healthVault && healthVault.length > 0 ? (
-              healthVault!.map((item, index) => (
+            {appointmentDocuments && appointmentDocuments.length > 0 ? (
+              appointmentDocuments!.map((item, index) => (
                 <ListItem key={index} className={classes.listItem}>
                   <ListItemAvatar>
                     <Avatar
-                      alt={(item.imageUrls as unknown) as string}
-                      src={(item.imageUrls as unknown) as string}
+                      alt={item.documentPath as string}
+                      src={item.documentPath as string}
                       className={classes.bigAvatar}
                     />
                   </ListItemAvatar>
@@ -295,7 +301,7 @@ export const HealthVault: React.FC = () => {
                     primary={
                       <Fragment>
                         <Typography component="h4" variant="h4" color="primary">
-                          {item.imageUrls!.substr(item.imageUrls!.lastIndexOf('/') + 1)}
+                          {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
                         </Typography>
                       </Fragment>
                     }
@@ -318,9 +324,9 @@ export const HealthVault: React.FC = () => {
           <Typography component="h5" variant="h5">
             Reports
           </Typography>
-          <List className={classes.listContainer}>
-            {healthVault && healthVault.length > 0 ? (
-              healthVault!.map((item, index) => (
+          {/* <List className={classes.listContainer}>
+            {appointmentDocuments && appointmentDocuments.length > 0 ? (
+              appointmentDocuments!.map((item, index) => (
                 <ListItem key={index} className={classes.listItem}>
                   <ListItemAvatar>
                     <Link to={(item.reportUrls as unknown) as string} target="_blank">
@@ -352,7 +358,7 @@ export const HealthVault: React.FC = () => {
             ) : (
               <span className={classes.nodataFound}>No data Found</span>
             )}
-          </List>
+          </List> */}
         </Typography>
         <Typography component="div">
           <Typography component="h5" variant="h5">

@@ -233,6 +233,9 @@ export const CREATE_CASESHEET_FOR_JRD = gql`
       appointment {
         id
         appointmentDateTime
+        appointmentDocuments {
+          documentPath
+        }
         appointmentState
         appointmentType
         displayId
@@ -453,6 +456,9 @@ export const GET_CASESHEET_JRD = gql`
         appointment {
           id
           appointmentDateTime
+          appointmentDocuments {
+            documentPath
+          }
           status
           appointmentState
           displayId
@@ -641,6 +647,9 @@ export const GET_CASESHEET = gql`
         appointment {
           id
           appointmentDateTime
+          appointmentDocuments {
+            documentPath
+          }
           status
           appointmentState
           displayId
@@ -947,6 +956,15 @@ export const UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS = gql`
   mutation UpdatePatientPrescriptionSentStatus($caseSheetId: ID!, $sentToPatient: Boolean!) {
     updatePatientPrescriptionSentStatus(caseSheetId: $caseSheetId, sentToPatient: $sentToPatient) {
       success
+    }
+  }
+`;
+
+export const ADD_CHAT_DOCUMENT = gql`
+  mutation AddChatDocument($appointmentId: ID!, $documentPath: String!) {
+    addChatDocument(appointmentId: $appointmentId, documentPath: $documentPath) {
+      id
+      filePath
     }
   }
 `;

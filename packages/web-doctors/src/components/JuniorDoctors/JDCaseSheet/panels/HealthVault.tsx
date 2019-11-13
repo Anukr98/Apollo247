@@ -27,6 +27,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   listItem: {
     display: 'flex',
     alignItems: 'center',
+    width: '90%',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    overFlow: 'hidden',
+    textOverflow: 'ellipsis',
+    marginBottom: 10,
   },
   bigAvatar: {
     width: 60,
@@ -241,24 +247,25 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
-  const { healthVault, pastAppointments } = useContext(CaseSheetContextJrd);
+  const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContextJrd);
 
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
         <div className={classes.sectionTitle}>Photos uploaded by Patient</div>
         <div className={classes.listContainer}>
-          {healthVault && healthVault.length > 0 ? (
-            healthVault!.map((item, index) => (
+          {appointmentDocuments && appointmentDocuments.length > 0 ? (
+            appointmentDocuments!.map((item, index) => (
               <div key={index} className={classes.listItem}>
                 <Avatar
-                  alt={(item.imageUrls as unknown) as string}
-                  src={(item.imageUrls as unknown) as string}
+                  alt={item.documentPath as string}
+                  src={item.documentPath as string}
                   className={classes.bigAvatar}
                 />
                 <div className={classes.listData}>
                   <span className={classes.fileName}>
-                    bloodtest.pdf{item.imageUrls!.substr(item.imageUrls!.lastIndexOf('/') + 1)}
+                    bloodtest.pdf
+                    {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
                   </span>
                   <span>5 MB | 5 Aug 2019, 11.05 AM {/* {'5MB'} | {'2019-01-01T11:30'} */}</span>
                 </div>
@@ -271,9 +278,9 @@ export const HealthVault: React.FC = () => {
       </div>
       <div className={classes.sectionGroup}>
         <div className={classes.sectionTitle}>Reports</div>
-        <div className={classes.listContainer}>
-          {healthVault && healthVault.length > 0 ? (
-            healthVault!.map((item, index) => (
+        {/* <div className={classes.listContainer}>
+          {appointmentDocuments && appointmentDocuments.length > 0 ? (
+            appointmentDocuments!.map((item, index) => (
               <div key={index} className={classes.listItem}>
                 <Link to={(item.reportUrls as unknown) as string} target="_blank">
                   <Avatar
@@ -288,7 +295,7 @@ export const HealthVault: React.FC = () => {
           ) : (
             <div className={classes.noDataFound}>No data Found</div>
           )}
-        </div>
+        </div> */}
       </div>
       <div className={classes.sectionGroup}>
         <div className={classes.sectionTitle}>Past Consultations</div>

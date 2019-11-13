@@ -897,6 +897,8 @@ export const ConsultTabs: React.FC = () => {
             followUpDate,
             setFollowUpDate,
             healthVault: casesheetInfo!.getCaseSheet!.patientDetails!.healthVault,
+            appointmentDocuments: casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment!
+              .appointmentDocuments,
             pastAppointments: casesheetInfo!.getCaseSheet!.pastAppointments,
             height,
             weight,

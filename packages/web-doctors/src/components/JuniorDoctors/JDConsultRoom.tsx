@@ -1087,10 +1087,11 @@ export const JDConsultRoom: React.FC = () => {
             followUpDate,
             setFollowUpDate,
             healthVault: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.healthVault,
+            appointmentDocuments: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDocuments,
             pastAppointments: casesheetInfo!.getJuniorDoctorCaseSheet!.pastAppointments,
             setCasesheetNotes,
             autoCloseCaseSheet,
-
             height,
             weight,
             bp,

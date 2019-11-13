@@ -5,6 +5,7 @@ import { AphInput, AphButton, AphTextField } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { ApolloError } from 'apollo-client';
 
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import Dialog from '@material-ui/core/Dialog';
@@ -12,6 +13,9 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
+import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
+import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -333,6 +337,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
+
+  const apolloClient = useApolloClient();
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
   // const covertVideoMsg = '^^convert`video^^';
@@ -506,6 +512,24 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         srollToBottomAction();
       }
     );
+  };
+
+  const uploadfile = (url: string) => {
+    console.log('ram');
+    apolloClient
+      .mutate<AddChatDocument, AddChatDocumentVariables>({
+        mutation: ADD_CHAT_DOCUMENT,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: props.appointmentId, documentPath: url },
+      })
+      .then((_data) => {
+        if (_data && _data.data) {
+          console.log('Document ', _data.data.addChatDocument);
+        }
+      })
+      .catch((error: ApolloError) => {
+        console.log(error);
+      });
   };
 
   const send = () => {
@@ -988,7 +1012,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           fileExtension &&
                           (fileExtension.toLowerCase() === 'png' ||
                             fileExtension.toLowerCase() === 'jpg' ||
-                            fileExtension.toLowerCase() === 'pdf' ||
                             fileExtension.toLowerCase() === 'jpeg')
                         ) {
                           if (file) {
@@ -1006,6 +1029,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                               isTyping: true,
                             };
                             console.log('aphBlob', aphBlob, url);
+                            uploadfile(url);
                             sendMsg(uploadObject, true);
                             setFileUploading(false);
                           }
