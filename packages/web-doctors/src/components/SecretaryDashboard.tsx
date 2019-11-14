@@ -153,9 +153,10 @@ export const SecretaryDashboard: React.FC = (props) => {
               </Typography>
               {viewSelection === 'day' ? (
                 <p>
-                  {`Here’s your schedule for ${
-                    isToday(selectedDate) ? ' the day - ' : ''
-                  } ${format(selectedDate, isToday(selectedDate) ? 'dd MMM,  yyyy' : 'MMM, dd')}`}
+                  {`Here’s your schedule for ${isToday(selectedDate) ? ' the day - ' : ''} ${format(
+                    selectedDate,
+                    isToday(selectedDate) ? 'dd MMM,  yyyy' : 'MMM, dd'
+                  )}`}
                 </p>
               ) : (
                 <p>
