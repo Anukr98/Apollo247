@@ -15,26 +15,40 @@ import {
 } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
-import { DeviceHelper } from '../../FunctionHelpers/DeviceHelper';
-import { ADD_NEW_PROFILE, DELETE_PROFILE, EDIT_PROFILE, UPLOAD_FILE } from '../../graphql/profiles';
-import { addNewProfile } from '../../graphql/types/addNewProfile';
-import { deleteProfile, deleteProfileVariables } from '../../graphql/types/deleteProfile';
-import { editProfile } from '../../graphql/types/editProfile';
-import { Gender, Relation } from '../../graphql/types/globalTypes';
-import { theme } from '../../theme/theme';
-import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
-import { AppRoutes } from '../NavigatorContainer';
-import { Button } from '../ui/Button';
-import { DatePicker } from '../ui/DatePicker';
-import { Header } from '../ui/Header';
-import { DropdownGreen, More, PatientDefaultImage, Plus } from '../ui/Icons';
-import { MaterialMenu } from '../ui/MaterialMenu';
-import { Spinner } from '../ui/Spinner';
-import { StickyBottomComponent } from '../ui/StickyBottomComponent';
-import { TextInputComponent } from '../ui/TextInputComponent';
-import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '../../graphql/types/getPatientByMobileNumber';
-import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  ADD_NEW_PROFILE,
+  DELETE_PROFILE,
+  EDIT_PROFILE,
+  UPLOAD_FILE,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { addNewProfile } from '@aph/mobile-patients/src/graphql/types/addNewProfile';
+import {
+  deleteProfile,
+  deleteProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/deleteProfile';
+import { editProfile } from '@aph/mobile-patients/src/graphql/types/editProfile';
+import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import {
+  DropdownGreen,
+  More,
+  PatientDefaultImage,
+  Plus,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { BottomPopUp } from '../ui/BottomPopUp';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -244,6 +258,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const [email, setEmail] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [bottomPopUp, setBottomPopUp] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
   const client = useApolloClient();
 
@@ -541,20 +556,14 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         return item.relation === Relation.ME;
       });
     const isValid = isSelfRelation!.find((i) => i === true) === undefined;
-    console.log('relation profioe', isSelfRelation, isValid);
 
-    if (isValid) {
+    if (isValid || selected.key !== Relation.ME) {
       setRelation({
         key: selected.key as Relation,
         title: selected.value.toString(),
       });
     } else {
-      relation === undefined
-        ? setRelation({
-            key: Relation.OTHER,
-            title: 'Other',
-          })
-        : null;
+      setBottomPopUp(true);
     }
   };
 
@@ -749,6 +758,31 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       </SafeAreaView>
       {deleteProfile && isEdit && renderDeleteButton()}
       {loading && <Spinner />}
+      {bottomPopUp && (
+        <BottomPopUp title="Apollo" description="Me is already choosen for another profile.">
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottomPopUp(false);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
     </View>
   );
 };
