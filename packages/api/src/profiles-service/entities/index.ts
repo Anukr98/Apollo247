@@ -13,11 +13,6 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 
-export enum DIAGNOSTICS_TYPE {
-  TEST = 'TEST',
-  PACKAGE = 'PACKAGE',
-}
-
 export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
@@ -120,81 +115,6 @@ export enum MedicalRecordType {
   PHYSICAL_EXAMINATION = 'PHYSICAL_EXAMINATION',
   OPERATIVE_REPORT = 'OPERATIVE_REPORT',
   PATHOLOGY_REPORT = 'PATHOLOGY_REPORT',
-}
-// Diagnostics
-@Entity()
-export class Diagnostics extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ nullable: true, default: 0 })
-  itemId: number;
-
-  @Column({ nullable: true })
-  itemName: string;
-
-  @Column({ nullable: true })
-  itemCode: string;
-
-  @Column({ nullable: true })
-  itemAliasName: string;
-
-  @Column({ nullable: true })
-  fromAgeInDays: number;
-
-  @Column({ nullable: true })
-  toAgeInDays: number;
-
-  @Column({ nullable: true })
-  gender: string;
-
-  @Column({ nullable: true })
-  labName: string;
-
-  @Column({ nullable: true })
-  labCode: string;
-
-  @Column({ nullable: true })
-  labID: number;
-
-  @Column('decimal', { precision: 10, scale: 2 })
-  rate: number;
-
-  @Column('decimal', { precision: 10, scale: 2 })
-  scheduleRate: number;
-
-  @Column({ nullable: true, type: 'timestamp' })
-  fromDate: Date;
-
-  @Column({ nullable: true, type: 'timestamp' })
-  toDate: Date;
-
-  @Column({ nullable: true })
-  itemType: DIAGNOSTICS_TYPE;
-
-  @Column({ nullable: true })
-  testInPackage: number;
-
-  @Column({ nullable: true })
-  NABL_CAP: string;
-
-  @Column({ nullable: true })
-  itemRemarks: string;
-
-  @Column({ nullable: true })
-  discounted: string;
-
-  @Column({ nullable: true })
-  state: string;
-
-  @Column({ nullable: true })
-  city: string;
-
-  @Column({ nullable: true })
-  stateId: number;
-
-  @Column({ nullable: true })
-  cityId: number;
 }
 
 //medicine orders starts
@@ -1102,4 +1022,10 @@ export class Diagnostics extends BaseEntity {
 
   @Column({ nullable: true })
   city: string;
+
+  @Column({ nullable: true })
+  stateId: number;
+
+  @Column({ nullable: true })
+  cityId: number;
 }
