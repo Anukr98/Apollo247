@@ -353,7 +353,7 @@ export const HealthVault: React.FC = () => {
           </Typography>
           <List className={classes.listContainer}>
             {appointmentDocuments && appointmentDocuments.length > 0 ? (
-              appointmentDocuments!.map((item, index) => (
+              appointmentDocuments.map((item, index) => (
                 <ListItem
                   key={index}
                   className={classes.listItem}
