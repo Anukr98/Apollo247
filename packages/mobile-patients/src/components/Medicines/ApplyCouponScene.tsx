@@ -11,13 +11,16 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { GET_COUPONS } from '../../graphql/profiles';
-import { getCoupons, getCoupons_getCoupons_coupons } from '../../graphql/types/getCoupons';
-import { g, handleGraphQlError } from '../../helpers/helperFunctions';
-import { Spinner } from '../ui/Spinner';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '../NavigatorContainer';
-import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { GET_COUPONS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getCoupons,
+  getCoupons_getCoupons_coupons,
+} from '@aph/mobile-patients/src/graphql/types/getCoupons';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
