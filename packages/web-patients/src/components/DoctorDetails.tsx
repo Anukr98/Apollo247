@@ -365,6 +365,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             {tabValue === 0 && availableForVirtualConsultation && (
               <TabContainer>
                 <OnlineConsult
+                  setIsPopoverOpen={setIsPopoverOpen}
                   doctorDetails={doctorDetails}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                 />
