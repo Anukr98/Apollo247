@@ -210,8 +210,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const [refreshTimer, setRefreshTimer] = useState<boolean>(false);
 
   const shouldRefreshComponent = (diff: number) => {
-    let id = null;
-    id = setInterval(() => {
+    const id = setInterval(() => {
       id && clearInterval(id);
       if (diff <= 15 && diff >= -1) {
         setRefreshTimer(!refreshTimer);
