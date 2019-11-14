@@ -940,6 +940,7 @@ export const INITIATE_RESCHDULE_APPONITMENT = gql`
         rescheduledDateTime
       }
       rescheduleCount
+      cancelled
     }
   }
 `;
