@@ -4,6 +4,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { LoggedInUserType } from 'graphql/types/globalTypes';
 import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 import { AphButton } from '@aph/web-ui-components';
+import { ApolloError } from 'apollo-client';
 import {
   Theme,
   IconButton,
@@ -817,7 +818,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const getSecretary = () => {
     setLoading(true);
     client
-      .query<GetSecretaryList>({ query: GET_SECRETARY_LIST, fetchPolicy: 'no-cache' })
+      .query<GetSecretaryList>({ query: GET_SECRETARY_LIST })
       .then((_data) => {
         setSecretaryList(_data.data);
       })
@@ -828,8 +829,6 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
         setLoading(false);
       });
   };
-
-  console.log('doctorSecretary 222', doctorSecretary);
 
   useEffect(() => {
     if (doctorSecretary === null && doctor && doctor.doctorSecretary) {
@@ -1009,8 +1008,6 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                                   className={classes.starDoctordelete}
                                   onClick={(e) => {
                                     setPopOver(false);
-                                    console.log('doctorSecretary11 ', doctorSecretary);
-
                                     client
                                       .mutate<RemoveSecretary, RemoveSecretaryVariables>({
                                         mutation: REMOVE_SECRETARY,
@@ -1024,7 +1021,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
 
                                         addDoctorSecretary(null);
                                       })
-                                      .catch((e: any) => {
+                                      .catch((e: ApolloError) => {
                                         console.log(e);
                                       });
                                   }}
@@ -1081,8 +1078,6 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                           },
                         }}
                         onChange={(e: any) => {
-                          console.log('eeeeeeeee', e);
-
                           const secretaryId =
                             secretaryList &&
                             secretaryList.getSecretaryList &&
@@ -1117,8 +1112,9 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                                   res.data.addSecretary.secretary
                               );
                             })
-                            .catch((e: any) => {
+                            .catch((e: ApolloError) => {
                               // Alert.alert('Error');
+                              console.log(e);
                             });
                         }}
                       >
