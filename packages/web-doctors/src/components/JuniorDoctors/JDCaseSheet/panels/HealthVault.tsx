@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -250,14 +251,11 @@ export const HealthVault: React.FC = () => {
   const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContextJrd);
   const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
   useEffect(() => {
-    if (documentArray && documentArray!.filePath) {
-      console.log('234567890', documentArray);
-
+    if (documentArray && documentArray.filePath) {
       const data = {
-        __typename: 'AppointmentDocuments' as any,
-        documentPath: documentArray!.filePath! || '',
+        documentPath: documentArray.filePath || '',
       };
-      appointmentDocuments!.push(data);
+      appointmentDocuments!.push(data as appointmentDocumentType);
       setDocumentArray(null);
     }
   });
@@ -277,7 +275,6 @@ export const HealthVault: React.FC = () => {
                 />
                 <div className={classes.listData}>
                   <span className={classes.fileName}>
-                    bloodtest.pdf
                     {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
                   </span>
                   <span>5 MB | 5 Aug 2019, 11.05 AM {/* {'5MB'} | {'2019-01-01T11:30'} */}</span>

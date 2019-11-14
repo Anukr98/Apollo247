@@ -17,6 +17,7 @@ import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -280,12 +281,11 @@ export const HealthVault: React.FC = () => {
   const ischild: boolean = false;
   const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContext);
   useEffect(() => {
-    if (documentArray && documentArray!.filePath) {
+    if (documentArray && documentArray.filePath) {
       const data = {
-        __typename: 'AppointmentDocuments' as any,
-        documentPath: documentArray!.filePath!,
+        documentPath: documentArray.filePath,
       };
-      appointmentDocuments!.push(data);
+      appointmentDocuments!.push(data as appointmentDocumentType);
       setDocumentArray(null);
     }
   });
