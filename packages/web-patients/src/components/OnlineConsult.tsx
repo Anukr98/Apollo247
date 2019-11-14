@@ -163,6 +163,7 @@ const getYyMmDd = (ddmmyyyy: string) => {
 // };
 
 interface OnlineConsultProps {
+  setIsPopoverOpen: (openPopup: boolean) => void;
   doctorDetails: DoctorDetails;
   onBookConsult: (popover: boolean) => void;
 }
@@ -182,7 +183,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   // const currentTime = new Date().getTime();
   // const autoSlot = getAutoSlot();
 
-  const { doctorDetails } = props;
+  const { doctorDetails, setIsPopoverOpen } = props;
 
   let slotAvailableNext = '';
   let autoSlot = '';
@@ -424,15 +425,6 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             bookAppointment: {
               patientId: currentPatient ? currentPatient.id : '',
               doctorId: doctorId,
-              // appointmentDateTime: consultNowAvailable
-              //   ? autoSlot
-              //   : new Date(
-              //       `${apiDateFormat} ${
-              //         timeSelected !== ""
-              //           ? timeSelected.padStart(5, "0")
-              //           : slotAvailableNext.padStart(5, "0")
-              //       }:00`
-              //     ).toISOString(),
               appointmentDateTime:
                 consultNow && !scheduleLater
                   ? autoSlot
@@ -511,6 +503,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             color="primary"
             onClick={() => {
               setIsDialogOpen(false);
+              setIsPopoverOpen(false);
               window.location.href = clientRoutes.consultRoom();
             }}
             autoFocus

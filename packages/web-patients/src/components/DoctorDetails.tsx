@@ -329,21 +329,30 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </div>
             <Tabs
               value={tabValue}
-              classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+              classes={{
+                root: classes.tabsRoot,
+                indicator: classes.tabsIndicator,
+              }}
               onChange={(e, newValue) => {
                 setTabValue(newValue);
               }}
             >
               {availableForVirtualConsultation && (
                 <Tab
-                  classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
                   label="Consult Online"
                 />
               )}
 
               {availableForPhysicalConsultation && !isPayrollDoctor && (
                 <Tab
-                  classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
                   label="Visit Clinic"
                 />
               )}
@@ -351,6 +360,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             {tabValue === 0 && availableForVirtualConsultation && (
               <TabContainer>
                 <OnlineConsult
+                  setIsPopoverOpen={setIsPopoverOpen}
                   doctorDetails={doctorDetails}
                   onBookConsult={(popover: boolean) => setIsPopoverOpen(popover)}
                 />
