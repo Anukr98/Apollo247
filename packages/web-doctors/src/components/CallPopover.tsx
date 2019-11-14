@@ -1221,6 +1221,26 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
             _data.data.initiateRescheduleAppointment.cancelled
               ? true
               : false;
+          const rescheduledDateTime =
+            (_data &&
+              _data.data &&
+              _data.data.initiateRescheduleAppointment &&
+              _data.data.initiateRescheduleAppointment.rescheduleAppointment &&
+              _data.data.initiateRescheduleAppointment.rescheduleAppointment.rescheduledDateTime) ||
+            '';
+          const rescheduleCount =
+            (_data &&
+              _data.data &&
+              _data.data.initiateRescheduleAppointment &&
+              _data.data.initiateRescheduleAppointment.rescheduleCount) ||
+            0;
+          const reschduleId =
+            (_data &&
+              _data.data &&
+              _data.data.initiateRescheduleAppointment &&
+              _data.data.initiateRescheduleAppointment.rescheduleAppointment &&
+              _data.data.initiateRescheduleAppointment.rescheduleAppointment.id) ||
+            '';
 
           if (isCancelled) {
             alert('Your appointment is cancelled');
@@ -1229,11 +1249,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           } else {
             const reschduleObject: any = {
               appointmentId: props.appointmentId,
-              transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
-                .rescheduledDateTime,
+              transferDateTime: rescheduledDateTime,
               doctorId: props.doctorId,
-              reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
-              reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
+              reschduleCount: rescheduleCount,
+              reschduleId: reschduleId,
             };
 
             pubnub.publish(
