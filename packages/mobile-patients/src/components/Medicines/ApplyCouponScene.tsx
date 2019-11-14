@@ -17,6 +17,7 @@ import { g, handleGraphQlError } from '../../helpers/helperFunctions';
 import { Spinner } from '../ui/Spinner';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '../NavigatorContainer';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -85,9 +86,12 @@ const styles = StyleSheet.create({
 export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 
 export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
+  const isTest = props.navigation.getParam('isTest');
   const [couponText, setCouponText] = useState<string>('');
   const [isValidCoupon, setValidCoupon] = useState<boolean>(false);
-  const { setCoupon, coupon: cartCoupon, cartTotal } = useShoppingCart();
+  const { setCoupon, coupon: cartCoupon, cartTotal } = isTest
+    ? useDiagnosticsCart()
+    : useShoppingCart();
   const [couponList, setCouponList] = useState<(getCoupons_getCoupons_coupons | null)[]>([]);
   const client = useApolloClient();
   const [loading, setLoading] = useState<boolean>(true);

@@ -43,6 +43,9 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
+  searchClinicApi,
+  Clinic,
+  getPlaceInfoByPincode,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -227,6 +230,14 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const client = useApolloClient();
   const { showAphAlert, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
+
+  useEffect(() => {
+    fetchStorePickup();
+    if (clinicId) {
+      filterClinics(clinicId, true);
+    }
+  }, []);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -504,44 +515,80 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
-  const fetchStorePickup = (pincode: string) => {
-    if (isValidPinCode(pincode)) {
-      setPinCode && setPinCode(pincode);
-      if (pincode.length == 6) {
-        setStorePickUpLoading(true);
-        searchPickupStoresApi(pincode)
-          .then(({ data: { Stores, stores_count } }) => {
-            setStorePickUpLoading(false);
-            setClinics && setClinics(stores_count > 0 ? Stores : []);
-          })
-          .catch((e) => {
-            setStorePickUpLoading(false);
-          });
-      } else {
-        setClinics && setClinics([]);
-        setClinicId && setClinicId('');
+  const fetchStorePickup = () => {
+    setStorePickUpLoading(true);
+    searchClinicApi()
+      .then((data) => {
+        setStorePickUpLoading(false);
+        console.log('clinic response', data.data.data, data);
+        setClinics && setClinics(data.data.data);
+      })
+      .catch((e) => {
+        setStorePickUpLoading(false);
+      });
+  };
+
+  const filterClinics = (key: string, isId?: boolean) => {
+    if (isId) {
+      const data = clinics.filter((item) => item.CentreCode === key);
+      console.log('iid filer=', data);
+      setPinCode && setPinCode(pinCode);
+      setClinicDetails(data);
+    } else {
+      if (isValidPinCode(key)) {
+        setPinCode && setPinCode(key);
+        if (key.length == 6) {
+          setStorePickUpLoading(true);
+          getPlaceInfoByPincode(key)
+            .then((data) => {
+              console.log('locaion data', data);
+              const city = (
+                (data.data.results[0].address_components || []).find(
+                  (item: any) => item.types.indexOf('locality') > -1
+                ) || {}
+              ).long_name;
+              console.log('cityName', city);
+              let filterArray;
+              city &&
+                (filterArray = clinics.filter((item) =>
+                  item.City.toLowerCase().includes(city.toLowerCase())
+                ));
+              console.log('cityName data', filterArray);
+
+              setClinicDetails(filterArray || []);
+            })
+            .catch(() => {
+              setClinicDetails([]);
+            })
+            .finally(() => {
+              setStorePickUpLoading(false);
+            });
+        }
       }
     }
   };
 
   const renderStorePickup = () => {
-    const selectedStoreIndex = clinics.findIndex(({ storeid }) => storeid == clinicId);
-    const storesLength = clinics.length;
+    const selectedStoreIndex =
+      clinicDetails && clinicDetails.findIndex(({ CentreCode }) => CentreCode == clinicId);
+    const storesLength = clinicDetails && clinicDetails.length;
     const spliceStartIndex =
-      selectedStoreIndex == storesLength - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
+      selectedStoreIndex == storesLength! - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
     const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-    const slicedStoreList = [...clinics].slice(startIndex, startIndex + 2);
+    const slicedStoreList = [...clinicDetails!].slice(startIndex, startIndex! + 2);
 
     return (
       <View style={{ margin: 16, marginTop: 20 }}>
         <TextInputComponent
           value={`${pinCode}`}
           maxLength={6}
-          onChangeText={(pincode) => fetchStorePickup(pincode)}
+          onChangeText={(pincode) => {
+            filterClinics(pincode);
+          }}
           placeholder={'Enter Pincode'}
         />
         {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
-        {!storePickUpLoading && pinCode.length == 6 && clinics.length == 0 && (
+        {!storePickUpLoading && pinCode.length == 6 && clinicDetails!.length == 0 && (
           <Text
             style={{
               paddingTop: 10,
@@ -555,21 +602,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           </Text>
         )}
 
-        {slicedStoreList.map((store, index, array) => (
+        {slicedStoreList.map((item, index) => (
           <RadioSelectionItem
-            key={store.storeid}
-            title={`${store.storename}\n${store.address}`}
-            isSelected={clinicId === store.storeid}
+            key={item.CentreCode}
+            title={`${item.CentreName}\n${item.Locality},${item.City},${item.State}`}
+            isSelected={clinicId === item.CentreCode}
             onPress={() => {
               CommonLogEvent(AppRoutes.YourCart, 'Set store id');
-              setClinicId && setClinicId(store.storeid);
+              setClinicId && setClinicId(item.CentreCode);
             }}
             containerStyle={{ marginTop: 16 }}
-            hideSeparator={index == array.length - 1}
+            hideSeparator={index == clinicDetails!.length - 1}
           />
         ))}
         <View>
-          {clinics.length > 2 && (
+          {clinicDetails!.length > 2 && (
             <Text
               style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
               onPress={() =>
@@ -709,7 +756,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             paddingHorizontal: 16,
             alignItems: 'center',
           }}
-          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene)}
+          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene, { isTest: true })}
         >
           <CouponIcon />
           <Text

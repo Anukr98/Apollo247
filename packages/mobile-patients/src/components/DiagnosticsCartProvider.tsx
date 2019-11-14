@@ -4,7 +4,7 @@ import {
   MEDICINE_DELIVERY_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Clinic } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert, AsyncStorage } from 'react-native';
@@ -69,8 +69,8 @@ export interface DiagnosticsCartContextProps {
   clinicId: string;
   setClinicId: ((id: string) => void) | null;
 
-  clinics: Store[];
-  setClinics: ((store: Store[]) => void) | null;
+  clinics: Clinic[];
+  setClinics: ((clinic: Clinic[]) => void) | null;
 
   pinCode: string;
   setPinCode: ((pinCode: string) => void) | null;
@@ -153,7 +153,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const [coupon, setCoupon] = useState<DiagnosticsCartContextProps['coupon']>(null);
 
-  const [clinics, setClinics] = useState<Store[]>([]);
+  const [clinics, setClinics] = useState<Clinic[]>([]);
   const [addresses, setAddresses] = useState<
     savePatientAddress_savePatientAddress_patientAddress[]
   >([]);

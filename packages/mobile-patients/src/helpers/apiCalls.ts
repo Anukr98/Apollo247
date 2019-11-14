@@ -72,6 +72,26 @@ export interface Store {
   message: string;
 }
 
+export interface Clinic {
+  CentreType: string;
+  CentreCode: string;
+  CentreName: string;
+  MobileNo: string;
+  BusinessZone: string;
+  State: string;
+  City: string;
+  Zone: string;
+  Locality: string;
+  IsNabl: boolean;
+  IsCap: boolean;
+}
+
+export interface ClinicDetailsResponse {
+  Message: string;
+  Status: boolean;
+  data: Clinic[];
+}
+
 export interface GetDeliveryTimeResponse {
   tat: {
     artCode: string;
@@ -422,6 +442,18 @@ export const searchPickupStoresApi = async (
       headers: {
         Authorization: config.STORES_LIST[1],
       },
+    }
+  );
+};
+
+export const searchClinicApi = async (): Promise<AxiosResponse<ClinicDetailsResponse>> => {
+  return Axios.post(
+    AppConfig.Configuration.GET_CLINICS[0],
+    {
+      ...TestApiCredentials,
+    },
+    {
+      headers: {},
     }
   );
 };
