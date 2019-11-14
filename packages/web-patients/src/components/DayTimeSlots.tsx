@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Tabs, Tab, Typography } from '@material-ui/core';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import _uniqueId from 'lodash/uniqueId';
 
@@ -89,8 +89,7 @@ const TabContainer: React.FC = (props) => {
 };
 
 export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
-  const classes = useStyles();
-  const [tabValue, setTabValue] = useState<number>(0);
+  const classes = useStyles({});
   const [selectedTime, setTimeSelected] = useState<string>('');
 
   const {
@@ -102,6 +101,20 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
     timeSelected,
   } = props;
 
+  const getTabValue = () => {
+    if (morningSlots.length === 0) {
+      if (afternoonSlots.length > 0) {
+        return 1;
+      }
+      if (eveningSlots.length > 0) {
+        return 2;
+      }
+      return 3;
+    }
+    return 0;
+  };
+
+  const [tabValue, setTabValue] = useState<number>(getTabValue() || 0);
   const today = new Date();
 
   const noSlotsMessage = (slotName: string) => {
@@ -110,6 +123,75 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
         Oops! No {slotName} slots available with Dr. {doctorName} :(
       </div>
     );
+  };
+
+  const tabs = [
+    {
+      label: <img src={require('images/ic_morning.svg')} alt="" />,
+      tabValue: 0,
+      slots: morningSlots,
+      message: 'morning',
+      key: 'morning_',
+    },
+    {
+      label: <img src={require('images/ic_afternoon.svg')} alt="" />,
+      tabValue: 1,
+      slots: afternoonSlots,
+      message: 'afternoon',
+      key: 'afternoon_',
+    },
+    {
+      label: <img src={require('images/ic_evening.svg')} alt="" />,
+      tabValue: 2,
+      slots: eveningSlots,
+      message: 'evening',
+      key: 'evening_',
+    },
+    {
+      label: <img src={require('images/ic_night.svg')} alt="" />,
+      tabValue: 3,
+      slots: latenightSlots,
+      message: 'late night',
+      key: 'latenight_',
+    },
+  ];
+
+  const getTwelveHour = (key: string, timeStringArray: Array<string>) => {
+    const twelveHourHour =
+      parseInt(timeStringArray[0], 10) > 12
+        ? parseInt(timeStringArray[0], 10) - 12
+        : timeStringArray[0];
+    const formattedHour =
+      twelveHourHour && twelveHourHour < 10 ? `${twelveHourHour}` : twelveHourHour;
+
+    switch (key) {
+      case 'late night':
+        return parseInt(timeStringArray[0], 10) > 12
+          ? `${parseInt(timeStringArray[0], 10) - 12}:${timeStringArray[1]} pm`
+          : '';
+      default:
+        return formattedHour;
+    }
+  };
+
+  const showTime = (key: string, formattedHour: string | number, timeString: string) => {
+    switch (key) {
+      case 'morning':
+        return (
+          <>
+            {formattedHour}:{timeString}
+            {formattedHour >= 12 ? ' pm' : ' am'}
+          </>
+        );
+      case 'late night':
+        return formattedHour;
+      default:
+        return (
+          <>
+            {formattedHour}:{timeString}&nbsp;pm
+          </>
+        );
+    }
   };
 
   return (
@@ -121,149 +203,43 @@ export const DayTimeSlots: React.FC<DayTimeSlotsProps> = (props) => {
           setTabValue(newValue);
         }}
       >
-        <Tab
-          classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-          label={<img src={require('images/ic_morning.svg')} alt="" />}
-        />
-        <Tab
-          classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-          label={<img src={require('images/ic_afternoon.svg')} alt="" />}
-        />
-        <Tab
-          classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-          label={<img src={require('images/ic_evening.svg')} alt="" />}
-        />
-        <Tab
-          classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
-          label={<img src={require('images/ic_night.svg')} alt="" />}
-        />
+        {tabs.map((tab) => (
+          <Tab
+            classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+            label={tab.label}
+          />
+        ))}
       </Tabs>
-      {tabValue === 0 && (
-        <TabContainer>
-          <div className={classes.timeSlotActions}>
-            {morningSlots.length > 0
-              ? morningSlots.map((slotTime: number) => {
-                  const timeString = getTimeFromTimestamp(today, slotTime);
-                  const timeStringArray = timeString.split(':');
-                  const twelveHourHour =
-                    parseInt(timeStringArray[0], 10) > 12
-                      ? parseInt(timeStringArray[0], 10) - 12
-                      : timeStringArray[0];
-                  const formattedHour = twelveHourHour < 10 ? `${twelveHourHour}` : twelveHourHour;
-                  return (
-                    <AphButton
-                      color="secondary"
-                      value={timeString}
-                      className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
-                      onClick={(e) => {
-                        setTimeSelected(e.currentTarget.value);
-                        timeSelected(e.currentTarget.value);
-                      }}
-                      key={_uniqueId('morning_')}
-                    >
-                      {formattedHour}:{timeStringArray[1]}
-                      {formattedHour >= 12 ? ' pm' : ' am'}
-                    </AphButton>
-                  );
-                })
-              : noSlotsMessage('morning')}
-          </div>
-        </TabContainer>
-      )}
-      {tabValue === 1 && (
-        <TabContainer>
-          <div className={classes.timeSlotActions}>
-            {afternoonSlots.length > 0
-              ? afternoonSlots.map((slotTime: number) => {
-                  const timeString = getTimeFromTimestamp(today, slotTime);
-                  const timeStringArray = timeString.split(':');
-                  const twelveHourHour =
-                    parseInt(timeStringArray[0], 10) > 12
-                      ? parseInt(timeStringArray[0], 10) - 12
-                      : timeStringArray[0];
-                  const formattedHour = twelveHourHour < 10 ? `${twelveHourHour}` : twelveHourHour;
-                  return (
-                    <AphButton
-                      color="secondary"
-                      value={timeString}
-                      className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
-                      onClick={(e) => {
-                        setTimeSelected(e.currentTarget.value);
-                        timeSelected(e.currentTarget.value);
-                      }}
-                      key={_uniqueId('afternoon_')}
-                    >
-                      {formattedHour}:{timeStringArray[1]}&nbsp;pm
-                    </AphButton>
-                  );
-                })
-              : noSlotsMessage('afternoon')}
-          </div>
-        </TabContainer>
-      )}
-      {tabValue === 2 && (
-        <TabContainer>
-          <div className={classes.timeSlotActions}>
-            {eveningSlots.length > 0
-              ? eveningSlots.map((slotTime: number) => {
-                  const timeString = getTimeFromTimestamp(today, slotTime);
-                  const timeStringArray = timeString.split(':');
-                  const twelveHourHour =
-                    parseInt(timeStringArray[0], 10) > 12
-                      ? parseInt(timeStringArray[0], 10) - 12
-                      : timeStringArray[0];
-                  const formattedHour = twelveHourHour < 10 ? `${twelveHourHour}` : twelveHourHour;
-                  return (
-                    <AphButton
-                      color="secondary"
-                      value={timeString}
-                      className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
-                      onClick={(e) => {
-                        setTimeSelected(e.currentTarget.value);
-                        timeSelected(e.currentTarget.value);
-                      }}
-                      key={_uniqueId('evening_')}
-                    >
-                      {formattedHour}:{timeStringArray[1]}&nbsp;pm
-                    </AphButton>
-                  );
-                })
-              : noSlotsMessage('evening')}
-          </div>
-        </TabContainer>
-      )}
-      {tabValue === 3 && (
-        <TabContainer>
-          <div className={classes.timeSlotActions}>
-            {latenightSlots.length > 0
-              ? latenightSlots.map((slotTime: number) => {
-                  const timeString = getTimeFromTimestamp(today, slotTime);
-                  const timeStringArray = timeString.split(':');
-                  const twelveHourHour =
-                    parseInt(timeStringArray[0], 10) > 12
-                      ? `${parseInt(timeStringArray[0], 10) - 12}:${timeStringArray[1]} pm`
-                      : '';
-                  // : `${timeStringArray[0]}:${timeStringArray[1]} am`;
-                  if (twelveHourHour !== '') {
-                    return (
-                      <AphButton
-                        color="secondary"
-                        value={timeString}
-                        className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
-                        onClick={(e) => {
-                          setTimeSelected(e.currentTarget.value);
-                          timeSelected(e.currentTarget.value);
-                        }}
-                        key={_uniqueId('latenight_')}
-                      >
-                        {twelveHourHour}
-                      </AphButton>
-                    );
-                  }
-                })
-              : noSlotsMessage('late night')}
-          </div>
-        </TabContainer>
+      {tabs.map((tab) =>
+        tab.tabValue === tabValue ? (
+          <TabContainer>
+            <div className={classes.timeSlotActions}>
+              {tab.slots.length > 0
+                ? tab.slots.map((slotTime: number) => {
+                    const timeString = getTimeFromTimestamp(today, slotTime);
+                    const timeStringArray = timeString.split(':');
+                    const formattedHour = getTwelveHour(tab.message, timeStringArray);
+                    if (formattedHour !== '') {
+                      return (
+                        <AphButton
+                          color="secondary"
+                          value={timeString}
+                          className={selectedTime === timeString ? `${classes.buttonActive}` : ''}
+                          onClick={(e) => {
+                            setTimeSelected(e.currentTarget.value);
+                            timeSelected(e.currentTarget.value);
+                          }}
+                          key={_uniqueId(tab.key)}
+                        >
+                          {showTime(tab.message, formattedHour, timeStringArray[1])}
+                        </AphButton>
+                      );
+                    }
+                  })
+                : noSlotsMessage(tab.message)}
+            </div>
+          </TabContainer>
+        ) : null
       )}
     </div>
   );
