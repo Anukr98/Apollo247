@@ -818,7 +818,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const getSecretary = () => {
     setLoading(true);
     client
-      .query<GetSecretaryList>({ query: GET_SECRETARY_LIST })
+      .query<GetSecretaryList>({ query: GET_SECRETARY_LIST, fetchPolicy: 'no-cache' })
       .then((_data) => {
         setSecretaryList(_data.data);
       })
@@ -960,8 +960,8 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
       {doctorProfile && currentUserType !== LoggedInUserType.SECRETARY && (
         <div className={classes.ProfileContainer}>
           <h2>Secretary Login</h2>
-          <Grid container alignItems="flex-start" spacing={0}>
-            {doctorSecretary && (
+          {doctorSecretary && (
+            <Grid container alignItems="flex-start" spacing={0}>
               <Grid item lg={6} sm={6} xs={12} className={classes.secretaryGrid}>
                 <Card className={classes.card}>
                   <div className={classes.details}>
@@ -1035,14 +1035,7 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                       }
                       title={
                         <div>
-                          <h4 title={''}>
-                            {secretaryName
-                              ? secretaryName
-                              : doctorProfile &&
-                                doctorProfile.doctorSecretary &&
-                                doctorProfile.doctorSecretary.secretary &&
-                                doctorProfile.doctorSecretary.secretary.name}
-                          </h4>
+                          <h4 title={''}>{doctorSecretary.name}</h4>
                           <div>
                             <h6>
                               <span className={classes.qualificationMini}>SECRETARY | 15 YRS</span>
@@ -1055,8 +1048,8 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
                   </div>
                 </Card>
               </Grid>
-            )}
-          </Grid>
+            </Grid>
+          )}
           {doctorSecretary === null && (
             <div className={`${classes.tabContent} ${classes.awardsSection}`}>
               <h3>Please select the secretary</h3>
