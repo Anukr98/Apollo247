@@ -104,8 +104,8 @@ export interface CaseSheetContextProps {
 
   jrdName: string;
   jrdSubmitDate: string;
-  documentArray: any;
-  setDocumentArray: (documentArray: any) => void;
+  documentArray: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments;
+  setDocumentArray: () => void;
 }
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({

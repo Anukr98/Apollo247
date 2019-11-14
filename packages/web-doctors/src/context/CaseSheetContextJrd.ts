@@ -115,8 +115,8 @@ export interface CaseSheetContextPropsJrd {
 
   gender: string;
   setGender: (gender: string) => void;
-  documentArray: any;
-  setDocumentArray: (documentArray: any) => void;
+  documentArray: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments;
+  setDocumentArray: () => void;
 }
 
 export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
