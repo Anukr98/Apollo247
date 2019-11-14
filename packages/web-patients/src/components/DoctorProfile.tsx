@@ -319,10 +319,10 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
         <div className={classes.doctorProfile}>
           <div className={classes.doctorImage}>
             <img
-              src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}
+              src={profileImage || 'https://via.placeholder.com/328x138'}
               width="330"
               height="300"
-              alt={firstName !== null ? firstName : ''}
+              alt={firstName || ''}
             />
           </div>
           <div className={classes.doctorInfo}>

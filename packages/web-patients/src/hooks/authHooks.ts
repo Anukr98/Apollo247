@@ -70,7 +70,6 @@ export const useAllCurrentPatients = () => {
     allCurrentPatients,
     currentPatient,
     setCurrentPatientId,
-    currentPatientId,
   };
 };
 
