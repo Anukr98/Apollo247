@@ -215,7 +215,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       if (diff <= 15 && diff >= -1) {
         setRefreshTimer(!refreshTimer);
       }
-    }, 30000);
+    }, 60000);
   };
 
   return (
