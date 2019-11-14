@@ -1,4 +1,4 @@
-import React, { Fragment, useContext } from 'react';
+import React, { Fragment, useContext, useEffect } from 'react';
 import {
   Typography,
   List,
@@ -275,9 +275,20 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   );
 };
 export const HealthVault: React.FC = () => {
+  const { documentArray, setDocumentArray } = useContext(CaseSheetContext);
   const classes = useStyles();
   const ischild: boolean = false;
   const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContext);
+  useEffect(() => {
+    if (documentArray && documentArray!.filePath) {
+      const data = {
+        __typename: 'AppointmentDocuments' as any,
+        documentPath: documentArray!.filePath!,
+      };
+      appointmentDocuments!.push(data);
+      setDocumentArray(null);
+    }
+  });
 
   return (
     <ThemeProvider theme={theme}>

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { List, ListItem, Avatar, IconButton, Theme } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
@@ -248,6 +248,19 @@ export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
   const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContextJrd);
+  const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
+  useEffect(() => {
+    if (documentArray && documentArray!.filePath) {
+      console.log('234567890', documentArray);
+
+      const data = {
+        __typename: 'AppointmentDocuments' as any,
+        documentPath: documentArray!.filePath! || '',
+      };
+      appointmentDocuments!.push(data);
+      setDocumentArray(null);
+    }
+  });
 
   return (
     <div className={classes.root}>

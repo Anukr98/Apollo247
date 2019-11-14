@@ -104,6 +104,8 @@ export interface CaseSheetContextProps {
 
   jrdName: string;
   jrdSubmitDate: string;
+  documentArray: any;
+  setDocumentArray: (documentArray: any) => void;
 }
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
@@ -122,6 +124,8 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   juniorDoctorNotes: null,
   diagnosis: null,
   setDiagnosis: () => {},
+  documentArray: null,
+  setDocumentArray: () => {},
   otherInstructions: null,
   setOtherInstructions: () => {},
   diagnosticPrescription: null,

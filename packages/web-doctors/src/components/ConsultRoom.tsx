@@ -337,6 +337,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const { documentArray, setDocumentArray } = useContext(CaseSheetContext);
 
   const apolloClient = useApolloClient();
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
@@ -525,6 +526,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       .then((_data) => {
         if (_data && _data.data) {
           console.log('Document ', _data.data.addChatDocument);
+          setDocumentArray(_data.data.addChatDocument);
         }
       })
       .catch((error: ApolloError) => {
