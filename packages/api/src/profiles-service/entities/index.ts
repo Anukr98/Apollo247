@@ -13,11 +13,6 @@ import {
 import { Validate, IsOptional } from 'class-validator';
 import { NameValidator, MobileNumberValidator } from 'validators/entityValidators';
 
-export enum DIAGNOSTICS_TYPE {
-  TEST = 'TEST',
-  PACKAGE = 'PACKAGE',
-}
-
 export enum Gender {
   MALE = 'MALE',
   FEMALE = 'FEMALE',
@@ -71,6 +66,11 @@ export enum UPLOAD_FILE_TYPES {
   PNG = 'PNG',
   JPEG = 'JPEG',
   PDF = 'PDF',
+}
+
+export enum DIAGNOSTICS_TYPE {
+  TEST = 'TEST',
+  PACKAGE = 'PACKAGE',
 }
 
 export enum MEDICINE_DELIVERY_TYPE {
@@ -1022,4 +1022,10 @@ export class Diagnostics extends BaseEntity {
 
   @Column({ nullable: true })
   city: string;
+
+  @Column({ nullable: true })
+  stateId: number;
+
+  @Column({ nullable: true })
+  cityId: number;
 }
