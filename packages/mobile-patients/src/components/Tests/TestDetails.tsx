@@ -4,12 +4,8 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import {
-  getMedicineDetailsApi,
-  MedicineProductDetails,
-  TestPackage,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getPackageData, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
@@ -21,8 +17,12 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ListRenderItemInfo,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -99,6 +99,21 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
+  labelView: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#ff748e',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
+  },
 });
 
 const tabs = [
@@ -113,23 +128,42 @@ const tabs = [
 ];
 export interface TestDetailsProps
   extends NavigationScreenProps<{
-    sku: string;
-    title: string;
     testDetails: TestPackage;
+    itemid: string;
   }> {}
+
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
   const sku = 'ICA0005'; //props.navigation.getParam('sku');
   const testDetails = props.navigation.getParam('testDetails');
-
   console.log({ testDetails });
-
   const TestDetailsDiscription = testDetails.PackageInClussion;
-  const backDataFunctionality = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    props.navigation.goBack();
-    return false;
+  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
+  const cartItemsCount = cartItems.length;
+
+  const [PackageData, setPackageData] = useState<TestPackage>({} as any);
+  const currentItemId = props.navigation.getParam('itemid');
+
+  useEffect(() => {
+    getPackageData(currentItemId)
+      .then(({ data }) => {
+        aphConsole.log('getPackageData \n', { data });
+        const _data = g(data, 'data') || [];
+        setPackageData({ PackageInClussion: _data, ItemID: currentItemId } as TestPackage);
+      })
+      .catch((e) => {
+        aphConsole.log('getPackageData Error \n', { e });
+      });
+  }, []);
+
+  const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
+    return (
+      <View style={[styles.labelView, containerStyle]}>
+        <Text style={styles.labelText}>{count}</Text>
+      </View>
+    );
   };
+
   const renderHeader = () => {
     return (
       <View>
@@ -140,10 +174,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           }}
           title={'TEST DETAIL'}
           leftIcon="backArrow"
-          onPressLeftIcon={() => backDataFunctionality()}
+          onPressLeftIcon={() => props.navigation.goBack()}
           rightComponent={
             <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}>
               <CartIcon style={{}} />
+              {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
           }
         />
@@ -156,31 +191,41 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <View style={{ overflow: 'hidden', padding: 20 }}>
         <View>
           <Text style={styles.testNameStyles}>{testDetails.ItemName}</Text>
-          <View style={styles.personDetailsView}>
-            <Text style={styles.personDetailLabelStyles}>Age Group</Text>
-            <Text style={styles.personDetailStyles}>
-              {(testDetails.FromAgeInDays / 365).toFixed(0)} TO
-              {(testDetails.ToAgeInDays / 365).toFixed(0)} YEARS
-            </Text>
-          </View>
-          <View style={styles.personDetailsView}>
-            <Text style={styles.personDetailLabelStyles}>Gender</Text>
-            <Text style={styles.personDetailStyles}>
-              FOR{' '}
-              {testDetails.Gender == 'B'
-                ? 'BOYS AND GIRLS'
-                : testDetails.Gender == 'M'
-                ? 'BOYS'
-                : 'GIRLS'}
-            </Text>
-          </View>
-          <View style={styles.personDetailsView}>
-            <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
-            <Text style={styles.personDetailStyles}>
-              {' '}
-              {testDetails.PackageInClussion[0].SampleTypeName}
-            </Text>
-          </View>
+          {!!testDetails.FromAgeInDays && (
+            <View style={styles.personDetailsView}>
+              <Text style={styles.personDetailLabelStyles}>Age Group</Text>
+              <Text style={styles.personDetailStyles}>
+                {(testDetails.FromAgeInDays / 365).toFixed(0)} TO
+                {(testDetails.ToAgeInDays / 365).toFixed(0)} YEARS
+              </Text>
+            </View>
+          )}
+
+          {!!testDetails.Gender && (
+            <View style={styles.personDetailsView}>
+              <Text style={styles.personDetailLabelStyles}>Gender</Text>
+              <Text style={styles.personDetailStyles}>
+                FOR{' '}
+                {testDetails.Gender == 'B'
+                  ? 'BOYS AND GIRLS'
+                  : testDetails.Gender == 'M'
+                  ? 'BOYS'
+                  : 'GIRLS'}
+              </Text>
+            </View>
+          )}
+          {!!testDetails.PackageInClussion && (
+            <View style={styles.personDetailsView}>
+              <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
+              <Text style={styles.personDetailStyles}>
+                {TestDetailsDiscription.map((item) => item.SampleTypeName)
+                  .filter((i) => i)
+                  .filter((i, idx, array) => array.indexOf(i) >= idx)
+                  .join(', ')}
+              </Text>
+            </View>
+          )}
+
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Collection Method</Text>
             <Text style={styles.personDetailStyles}> HOME VISIT OR CLINIC VISIT</Text>
@@ -239,6 +284,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
+  const isAddedToCart = !!cartItems.find((item) => item.id == testDetails.ItemID);
+  console.log('isAddedToCart' + isAddedToCart);
+
   return (
     <SafeAreaView
       style={{
@@ -260,9 +308,19 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
         <View style={{ flex: 1, alignItems: 'center', marginHorizontal: 60 }}>
           <Button
-            title="ADD TO CART"
+            title={!isAddedToCart ? 'ADD TO CART' : 'ADDED TO CART'}
+            disabled={!isAddedToCart ? false : true}
             style={{ flex: 1, marginBottom: 16 }}
-            onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
+            onPress={() =>
+              addCartItem!({
+                id: testDetails.ItemID,
+                name: testDetails.ItemName,
+                mou: `${testDetails.PackageInClussion.length}`,
+                price: testDetails.Rate,
+                thumbnail: '',
+                specialPrice: undefined,
+              })
+            }
           />
         </View>
       </StickyBottomComponent>
