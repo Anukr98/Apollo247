@@ -289,6 +289,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
                       paddingRight: 8,
                       borderRightWidth: 0,
                       borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                      backgroundColor: theme.colors.WHITE,
                     }}
                   >
                     <View style={{ marginRight: 60 }}>

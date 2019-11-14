@@ -880,6 +880,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     paddingRight: 8,
                     borderRightWidth: 0,
                     borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                    backgroundColor: theme.colors.WHITE,
                   }}
                 >
                   <Text style={styles.hiTextStyle}>{string.home.hi}</Text>

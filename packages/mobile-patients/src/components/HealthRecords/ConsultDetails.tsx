@@ -121,6 +121,8 @@ type rescheduleType = {
 
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const data = props.navigation.state.params!.DoctorInfo;
+  console.log('phr', data);
+
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
@@ -163,7 +165,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       .then((_data) => {
         setLoading(false);
         props.navigation.state.params!.DisplayId = _data.data.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
-
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
       })
       .catch((error) => {

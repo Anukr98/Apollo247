@@ -95,7 +95,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    setProfileArray(allCurrentPatients);
+    setProfileArray(addNewProfileText(allCurrentPatients!));
   }, [allCurrentPatients]);
 
   useEffect(() => {

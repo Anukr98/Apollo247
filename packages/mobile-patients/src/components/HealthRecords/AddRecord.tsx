@@ -4,7 +4,11 @@ import { AddFilePopup } from '@aph/mobile-patients/src/components/HealthRecords/
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossYellow, PrescriptionThumbnail } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossYellow,
+  PrescriptionThumbnail,
+  DropdownGreen,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   InputDropdown,
   InputDropdownMenu,
@@ -38,10 +42,12 @@ import {
   TouchableOpacity,
   View,
   Image,
+  Dimensions,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { MaterialMenu } from '../ui/MaterialMenu';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -82,24 +88,24 @@ const styles = StyleSheet.create({
 });
 
 type RecordTypeType = {
-  name: string;
+  key: string;
   value: string;
 };
 type PickerImage = any;
 
 const RecordType: RecordTypeType[] = [
-  { name: MedicalRecordType.EHR.toLowerCase().replace('_', ' '), value: MedicalRecordType.EHR },
+  { value: MedicalRecordType.EHR.toLowerCase().replace('_', ' '), key: MedicalRecordType.EHR },
   {
-    name: MedicalRecordType.OPERATIVE_REPORT.toLowerCase().replace('_', ' '),
-    value: MedicalRecordType.OPERATIVE_REPORT,
+    value: MedicalRecordType.OPERATIVE_REPORT.toLowerCase().replace('_', ' '),
+    key: MedicalRecordType.OPERATIVE_REPORT,
   },
   {
-    name: MedicalRecordType.PATHOLOGY_REPORT.toLowerCase().replace('_', ' '),
-    value: MedicalRecordType.PATHOLOGY_REPORT,
+    value: MedicalRecordType.PATHOLOGY_REPORT.toLowerCase().replace('_', ' '),
+    key: MedicalRecordType.PATHOLOGY_REPORT,
   },
   {
-    name: MedicalRecordType.PHYSICAL_EXAMINATION.toLowerCase().replace('_', ' '),
-    value: MedicalRecordType.PHYSICAL_EXAMINATION,
+    value: MedicalRecordType.PHYSICAL_EXAMINATION.toLowerCase().replace('_', ' '),
+    key: MedicalRecordType.PHYSICAL_EXAMINATION,
   },
 ];
 
@@ -118,14 +124,14 @@ const replaceStringWithChar = (str: string) => {
 };
 
 const MedicalTest: RecordTypeType[] = [
-  { name: 'gm', value: MedicalTestUnit.GM },
+  { value: 'gm', key: MedicalTestUnit.GM },
   {
-    name: 'gm/dl',
-    value: MedicalTestUnit.GM_SLASH_DL,
+    value: 'gm/dl',
+    key: MedicalTestUnit.GM_SLASH_DL,
   },
   {
-    name: '%', //replaceStringWithChar(MedicalTestUnit._PERCENT_),
-    value: MedicalTestUnit._PERCENT_,
+    value: '%', //replaceStringWithChar(MedicalTestUnit._PERCENT_),
+    key: MedicalTestUnit._PERCENT_,
   },
 ];
 
@@ -141,6 +147,7 @@ export interface AddRecordProps extends NavigationScreenProps {}
 
 export const AddRecord: React.FC<AddRecordProps> = (props) => {
   var fin = '';
+  const { width, height } = Dimensions.get('window');
   const [showImages, setshowImages] = useState<boolean>(true);
   const [showRecordDetails, setshowRecordDetails] = useState<boolean>(true);
   const [showReportDetails, setshowReportDetails] = useState<boolean>(false);
@@ -193,7 +200,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const isValid = () => {
     const valid = medicalRecordParameters.map((item) => {
       return (
-        item.parameterName &&
+        (item.maximum || item.minimum || item.result || item.parameterName) &&
         item.maximum! > item.minimum! &&
         item.result <= item.maximum! &&
         item.result >= item.minimum!
@@ -201,6 +208,21 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     });
     return valid.find((i) => i === false) !== undefined;
   };
+
+  const setParametersData = (key: string, value: string, i: number, isNumber?: boolean) => {
+    const dataCopy = [...medicalRecordParameters];
+    dataCopy[i] = {
+      ...dataCopy[i],
+      [key]: isNumber ? formatNumber(value) : value,
+    };
+    setmedicalRecordParameters(dataCopy);
+  };
+
+  const formatNumber = (value: string) => {
+    let number = value.indexOf('.') === value.length - 1 ? value : parseFloat(value);
+    return number;
+  };
+
   const onSavePress = () => {
     setshowSpinner(true);
     let uploadedUrls = [];
@@ -378,21 +400,62 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
               value={typeofRecord}
               onChangeText={(typeofRecord) => settypeofRecord(typeofRecord)}
             /> */}
-            <TextInputComponent
-              label={'Type Of Record'}
-              noInput={true}
-              conatinerstyles={{
-                paddingBottom: 0,
+            <MaterialMenu
+              menuContainerStyle={[
+                {
+                  alignItems: 'flex-end',
+                  marginTop: 16,
+                  marginLeft: width / 2 - 95,
+                },
+              ]}
+              options={RecordType}
+              selectedText={typeofRecord}
+              onPress={(data) => {
+                setshowRecordTypePopup(false);
+                settypeofRecord(data.key as MedicalRecordType);
               }}
-            />
-            <InputDropdown
-              setShowPopup={(showpopup) => setshowRecordTypePopup(showpopup)}
-              label={typeofRecord ? typeofRecord.toLowerCase().replace('_', ' ') : ''}
-              containerStyle={{
-                paddingBottom: 10,
-              }}
-              placeholder={'Select type of record'}
-            />
+              // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
+            >
+              <TextInputComponent
+                label={'Type Of Record'}
+                noInput={true}
+                conatinerstyles={{
+                  paddingBottom: 0,
+                }}
+              />
+              <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                <View style={[styles.placeholderViewStyle]}>
+                  <Text
+                    style={[
+                      styles.placeholderTextStyle,
+                      typeofRecord !== undefined ? null : styles.placeholderStyle,
+                    ]}
+                  >
+                    {typeofRecord !== undefined
+                      ? RecordType.find((item) => item.key === typeofRecord)!.value
+                      : 'Select type of record'}
+                  </Text>
+                  <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              </View>
+              {/* <TextInputComponent
+                label={'Type Of Record'}
+                noInput={true}
+                conatinerstyles={{
+                  paddingBottom: 0,
+                }}
+              />
+              <InputDropdown
+                setShowPopup={(showpopup) => setshowRecordTypePopup(showpopup)}
+                label={typeofRecord ? typeofRecord.toLowerCase().replace('_', ' ') : ''}
+                containerStyle={{
+                  paddingBottom: 10,
+                }}
+                placeholder={'Select type of record'}
+              /> */}
+            </MaterialMenu>
             <TextInputComponent
               label={'Name Of Test'}
               value={testName}
@@ -445,16 +508,16 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     );
   };
 
-  const setParametersData = (key: string, value: string, i: number, isNumber?: boolean) => {
-    const dataCopy = [...medicalRecordParameters];
-    dataCopy[i] = {
-      ...dataCopy[i],
-      [key]: isNumber ? Number(value) : value,
-    };
-    console.log('da', dataCopy);
+  // const setParametersData = (key: string, value: string, i: number, isNumber?: boolean) => {
+  //   const dataCopy = [...medicalRecordParameters];
+  //   dataCopy[i] = {
+  //     ...dataCopy[i],
+  //     [key]: isNumber ? Number(value) : value,
+  //   };
+  //   console.log('da', dataCopy);
 
-    setmedicalRecordParameters(dataCopy);
-  };
+  //   setmedicalRecordParameters(dataCopy);
+  // };
 
   const renderReportDetails = () => {
     return (
@@ -503,7 +566,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                       <TextInputComponent
                         label={'Result'}
                         placeholder={'Enter value'}
-                        value={item.result.toString()}
+                        value={(item.result || '').toString()}
                         onChangeText={(value) => setParametersData('result', value, i, true)}
                       />
                     </View>
@@ -514,24 +577,64 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                         value={(item.unit || '').toString()}
                         onChangeText={(value) => setParametersData('unit', value, i)}
                       /> */}
-                      <TextInputComponent
-                        label={'Unit'}
-                        noInput={true}
-                        conatinerstyles={{
-                          paddingBottom: 0,
-                        }}
-                      />
-                      <InputDropdown
-                        setShowPopup={(showpopup) => {
-                          setshowUnitPopup(showpopup);
+                      <MaterialMenu
+                        options={MedicalTest}
+                        selectedText={typeofRecord}
+                        onPress={(data) => {
+                          setParametersData('unit', data.key as MedicalTestUnit, i);
                           setselectedUnitIndex(i);
                         }}
-                        containerStyle={{
-                          paddingBottom: 10,
-                        }}
-                        label={(item.unit || '').toString()}
-                        placeholder={'Select unit'}
-                      />
+                        // setShowPopup={(showpopup) => setshowUnitPopup(showpopup)}
+                        // setSelectedOption={(value: MedicalTestUnit) => {
+                        //   console.log(value, 'value', selectedUnitIndex);
+                        //   selectedUnitIndex !== undefined && setParametersData('unit', value, selectedUnitIndex);
+                        // }}
+                      >
+                        <TextInputComponent
+                          label={'Unit'}
+                          noInput={true}
+                          conatinerstyles={{
+                            paddingBottom: 3,
+                          }}
+                        />
+                        <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+                          <View style={[styles.placeholderViewStyle]}>
+                            <Text
+                              style={[
+                                styles.placeholderTextStyle,
+                                item.unit !== null && item.unit !== undefined
+                                  ? null
+                                  : styles.placeholderStyle,
+                              ]}
+                            >
+                              {item.unit !== null && item.unit !== undefined
+                                ? MedicalTest.find((itm) => itm.key === item.unit)!.value
+                                : 'Select unit'}
+                            </Text>
+                            <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
+                              <DropdownGreen />
+                            </View>
+                          </View>
+                        </View>
+                        {/* <TextInputComponent
+                          label={'Unit'}
+                          noInput={true}
+                          conatinerstyles={{
+                            paddingBottom: 0,
+                          }}
+                        />
+                        <InputDropdown
+                          setShowPopup={(showpopup) => {
+                            setshowUnitPopup(showpopup);
+                            setselectedUnitIndex(i);
+                          }}
+                          containerStyle={{
+                            paddingBottom: 10,
+                          }}
+                          label={(item.unit || '').toString()}
+                          placeholder={'Select unit'}
+                        /> */}
+                      </MaterialMenu>
                     </View>
                   </View>
                   <View style={{ flexDirection: 'row' }}>
@@ -665,16 +768,20 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
           }}
         />
       )}
-      {showRecordTypePopup && (
-        <InputDropdownMenu
-          width={200}
-          Options={RecordType}
-          setShowPopup={(showpopup) => setshowRecordTypePopup(showpopup)}
-          setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
+      {/* {showRecordTypePopup && (
+        <MaterialMenu
+          // width={200}
+          options={RecordType}
+          selectedText={typeofRecord}
+          onPress={(data) => {
+            setshowRecordTypePopup(false);
+            settypeofRecord(data.key as MedicalRecordType);
+          }}
+          // setSelectedOption={(value: MedicalRecordType) => settypeofRecord(value)}
         />
-      )}
-      {showUnitPopup && (
-        <InputDropdownMenu
+      )} */}
+      {/* {showUnitPopup && (
+        <MaterialMenu
           Options={MedicalTest}
           setShowPopup={(showpopup) => setshowUnitPopup(showpopup)}
           setSelectedOption={(value: MedicalTestUnit) => {
@@ -682,7 +789,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             selectedUnitIndex !== undefined && setParametersData('unit', value, selectedUnitIndex);
           }}
         />
-      )}
+      )} */}
       {showSpinner && <Spinner />}
     </View>
   );

@@ -196,7 +196,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           flexDirection: 'row',
           paddingTop: 16,
           paddingHorizontal: 20,
-          //backgroundColor: theme.colors.WHITE,
+          backgroundColor: theme.colors.WHITE,
         }}
       >
         <TouchableOpacity
@@ -1129,7 +1129,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <View>
+          <View style={{ backgroundColor: theme.colors.WHITE }}>
             <ProfileList
               saveUserChange={true}
               childView={
@@ -1139,6 +1139,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     paddingRight: 8,
                     borderRightWidth: 0,
                     borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                    backgroundColor: theme.colors.WHITE,
                   }}
                 >
                   <Text style={styles.hiTextStyle}>hi</Text>
