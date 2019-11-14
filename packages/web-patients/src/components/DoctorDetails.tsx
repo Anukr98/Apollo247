@@ -208,7 +208,7 @@ const TabContainer: React.FC = (props) => {
 };
 
 export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const params = useParams<Params>();
   const doctorId = params.id;
   const [isPopoverOpen, setIsPopoverOpen] = useState<boolean>(false);
@@ -306,7 +306,12 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 avaOnline={availableForVirtualConsultation}
               />
               <div className={classes.searchSection}>
-                <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 195px'}>
+                <Scrollbars
+                  style={{ height: '100%' }}
+                  autoHide={true}
+                  autoHeight
+                  autoHeightMax={'calc(100vh - 195px'}
+                >
                   <div className={classes.customScroll}>
                     <DoctorClinics doctorDetails={doctorDetails} />
                     {isStarDoctor && <StarDoctorTeam doctorDetails={doctorDetails} />}
@@ -329,21 +334,30 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             </div>
             <Tabs
               value={tabValue}
-              classes={{ root: classes.tabsRoot, indicator: classes.tabsIndicator }}
+              classes={{
+                root: classes.tabsRoot,
+                indicator: classes.tabsIndicator,
+              }}
               onChange={(e, newValue) => {
                 setTabValue(newValue);
               }}
             >
               {availableForVirtualConsultation && (
                 <Tab
-                  classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
                   label="Consult Online"
                 />
               )}
 
               {availableForPhysicalConsultation && !isPayrollDoctor && (
                 <Tab
-                  classes={{ root: classes.tabRoot, selected: classes.tabSelected }}
+                  classes={{
+                    root: classes.tabRoot,
+                    selected: classes.tabSelected,
+                  }}
                   label="Visit Clinic"
                 />
               )}
