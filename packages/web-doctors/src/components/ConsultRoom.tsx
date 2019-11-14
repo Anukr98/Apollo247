@@ -615,13 +615,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   rowData.message === documentUpload ? classes.chatImgBubble : ''
                 }`}
               >
-                {leftComponent == 1 && !rowData.duration && (
+                {leftComponent == 1 && rowData.duration && (
                   <div className={classes.patientAvatar}>
                     <Avatar
                       className={classes.avatar}
                       src={
                         patientDetails && patientDetails.photoUrl
-                          ? patientDetails!.photoUrl
+                          ? patientDetails.photoUrl
                           : require('images/no_photo_icon_round.svg')
                       }
                       alt=""
