@@ -14,6 +14,16 @@ export const diagnosticsTypeDefs = gql`
     diagnostics: [Diagnostics]
   }
 
+  type GetAllCitiesResult {
+    diagnosticsCities: [DiagnosticCities]
+  }
+
+  type DiagnosticCities {
+    cityname: String!
+    statename: String!
+    cityid: Int!
+    stateid: Int!
+  }
   type Diagnostics {
     id: ID!
     itemId: Int!
@@ -28,6 +38,7 @@ export const diagnosticsTypeDefs = gql`
 
   extend type Query {
     searchDiagnostics(city: String, patientId: String, searchText: String): SearchDiagnosticsResult!
+    getDiagnosticsCites(patientId: String, cityName: String): GetAllCitiesResult!
   }
 `;
 
@@ -35,6 +46,15 @@ type SearchDiagnosticsResult = {
   diagnostics: Diagnostics[];
 };
 
+type GetAllCitiesResult = {
+  diagnosticsCities: DiagnosticCities[];
+};
+type DiagnosticCities = {
+  cityname: string;
+  statename: string;
+  cityid: number;
+  stateid: number;
+};
 type Diagnostics = {
   id: string;
   itemId: number;
@@ -54,12 +74,29 @@ const searchDiagnostics: Resolver<
   SearchDiagnosticsResult
 > = async (parent, args, { profilesDb }) => {
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
-  const diagnostics = await diagnosticsRepo.searchDiagnostics(args.searchText, args.city);
+  const diagnostics = await diagnosticsRepo.searchDiagnostics(
+    args.searchText.toUpperCase(),
+    args.city
+  );
   return { diagnostics };
+};
+
+const getDiagnosticsCites: Resolver<
+  null,
+  { patientId: String; cityName: string },
+  ProfilesServiceContext,
+  GetAllCitiesResult
+> = async (patent, args, { profilesDb }) => {
+  const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
+  const diagnosticsCities = await diagnosticsRepo.getDiagnosticsCites(args.cityName);
+  console.log('diagnosticsCities', diagnosticsCities);
+
+  return { diagnosticsCities };
 };
 
 export const diagnosticsResolvers = {
   Query: {
     searchDiagnostics,
+    getDiagnosticsCites,
   },
 };
