@@ -17,7 +17,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { CaseSheetContext } from 'context/CaseSheetContext';
-import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
 import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
@@ -410,7 +409,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
   const { patientDetails } = useContext(CaseSheetContext);
-  const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
 
   const startIntervalTimer = (timer: number) => {
     // setstartTimerAppoinmentt(true);
@@ -531,7 +529,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const uploadfile = (url: string) => {
-    // console.log('ram');
+    console.log('ram');
     apolloClient
       .mutate<AddChatDocument, AddChatDocumentVariables>({
         mutation: ADD_CHAT_DOCUMENT,
@@ -540,12 +538,11 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       })
       .then((_data) => {
         if (_data && _data.data) {
-          // console.log('Document ', _data.data.addChatDocument);
-          setDocumentArray(_data.data.addChatDocument);
+          console.log('Document ', _data.data.addChatDocument);
         }
       })
       .catch((error: ApolloError) => {
-        // console.log(error);
+        console.log(error);
       });
   };
 

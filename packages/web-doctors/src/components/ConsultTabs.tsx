@@ -321,7 +321,6 @@ export const ConsultTabs: React.FC = () => {
   const [symptoms, setSymptoms] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
   >(null);
-  const [documentArray, setDocumentArray] = useState();
   const [diagnosis, setDiagnosis] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
   >(null);
@@ -876,8 +875,6 @@ export const ConsultTabs: React.FC = () => {
             setFollowUpConsultType,
             symptoms,
             setSymptoms,
-            documentArray,
-            setDocumentArray,
             notes,
             setSRDNotes,
             juniorDoctorNotes,

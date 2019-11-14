@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useEffect } from 'react';
+import React, { Fragment, useContext } from 'react';
 import {
   Typography,
   List,
@@ -18,7 +18,6 @@ import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
-import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -339,19 +338,9 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   );
 };
 export const HealthVault: React.FC = () => {
-  const { documentArray, setDocumentArray } = useContext(CaseSheetContext);
   const classes = useStyles();
   const ischild: boolean = false;
   const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContext);
-  useEffect(() => {
-    if (documentArray && documentArray.filePath) {
-      const data = {
-        documentPath: documentArray.filePath,
-      };
-      appointmentDocuments!.push(data as appointmentDocumentType);
-      setDocumentArray(null);
-    }
-  });
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
 
