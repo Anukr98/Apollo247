@@ -1,7 +1,9 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   CartIcon,
   LocationOff,
@@ -31,16 +33,18 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import {
   getMedicinePageProducts,
+  getPlaceInfoByPlaceId,
   getTestsPackages,
+  GooglePlacesType,
   MedicinePageAPiResponse,
   MedicineProduct,
   TestPackage,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
   aphConsole,
+  doRequestAndAccessLocation,
   g,
   getNetStatus,
-  getUserCurrentPosition,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -50,12 +54,9 @@ import { default as axios } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
-  AsyncStorage,
   Dimensions,
   Keyboard,
   ListRenderItemInfo,
-  PermissionsAndroid,
-  Platform,
   SafeAreaView,
   ScrollView,
   StyleProp,
@@ -112,8 +113,6 @@ const styles = StyleSheet.create({
 
 const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
-export type locationType = { lat: string; lng: string };
-
 export interface TestsProps extends NavigationScreenProps {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
@@ -121,58 +120,99 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length;
   const { currentPatient } = useAllCurrentPatients();
-  const { getPatientApiCall } = useAuth();
 
-  const { showAphAlert } = useUIElements();
+  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
+  const { locationDetails, setLocationDetails } = useAppCommonData();
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
+  const [locationError, setLocationError] = useState(false);
 
   useEffect(() => {
-    getMedicinePageProducts()
-      .then((d) => {
-        setData(d.data);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setError(e);
-        setLoading(false);
-        showAphAlert!({
-          title: 'Uh oh! :(',
-          description: "We're unable to fetch products, try later.",
+    locationDetails && setcurrentLocation(locationDetails.city);
+  }, [locationDetails]);
+
+  useEffect(() => {
+    !locationDetails &&
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Hi! :)',
+        description:
+          'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
+        children: (
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginVertical: 18,
+            }}
+          >
+            <Button
+              style={{ flex: 1, marginRight: 16 }}
+              title={'ENTER MANUALY'}
+              onPress={() => {
+                hideAphAlert!();
+                setshowLocationpopup(true);
+              }}
+            />
+            <Button
+              style={{ flex: 1 }}
+              title={'ALLOW AUTO DETECT'}
+              onPress={() => {
+                hideAphAlert!();
+                setLoadingContext!(true);
+                doRequestAndAccessLocation()
+                  .then((response) => {
+                    console.log('response', { response });
+                    setLocationDetails!(response);
+                  })
+                  .catch((e) => {
+                    setLocationError(true);
+                  })
+                  .finally(() => {
+                    setLoadingContext!(false);
+                  });
+              }}
+            />
+          </View>
+        ),
+      });
+  }, []);
+
+  useEffect(() => {
+    // Code to delete location for test purpose
+    // setTimeout(() => {
+    //   setLocationDetails!(null);
+    // }, 1000);
+    locationDetails &&
+      getMedicinePageProducts()
+        .then((d) => {
+          setData(d.data);
+          setLoading(false);
+        })
+        .catch((e) => {
+          setError(e);
+          setLoading(false);
+          showAphAlert!({
+            title: 'Uh oh! :(',
+            description: "We're unable to fetch products, try later.",
+          });
         });
-      });
-  }, []);
+  }, [locationDetails]);
 
   useEffect(() => {
-    getTestsPackages(0, 0)
-      .then(({ data }) => {
-        aphConsole.log('getTestsPackages\n', { data });
-        setTestPackages(g(data, 'data') || []);
-      })
-      .catch((e) => {
-        aphConsole.log('getTestsPackages Error\n', { e });
-      });
-  }, []);
-
-  useEffect(() => {
-    Platform.OS === 'android' && requestLocationPermission();
-    getNetStatus().then((status) => {
-      if (status) {
-        fetchCurrentLocation();
-        // fetchSpecialityFilterData(filterMode, FilterData);
-      } else {
-        setLoading(false);
-        setError(true);
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
-    }
-    setProfile(currentPatient!);
-  }, [currentPatient]);
+    (locationDetails &&
+      getTestsPackages(0, 0)
+        .then(({ data }) => {
+          aphConsole.log('getTestsPackages\n', { data });
+          setTestPackages(g(data, 'data') || []);
+        })
+        .catch((e) => {
+          aphConsole.log('getTestsPackages Error\n', { e });
+        })) ||
+      setTestPackages([]);
+  }, [locationDetails]);
 
   const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
@@ -191,7 +231,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const offerBannerImage = ''; //g(offerBanner, 'image');
   const shopByCategory = g(data, 'shop_by_category') || [];
   const hotSellers = g(data, 'hot_sellers', 'products') || [];
-  let latlng: locationType | null = null;
 
   const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
     GetMedicineOrdersList,
@@ -203,33 +242,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const _orders =
     (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
-
-  const requestLocationPermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('You can use the location');
-        fetchCurrentLocation();
-      } else {
-        console.log('location permission denied');
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const fetchCurrentLocation = () => {
-    getUserCurrentPosition()
-      .then((res: any) => {
-        res.name && setcurrentLocation(res.name.toUpperCase());
-        // fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
-        latlng = res.latlong;
-        console.log(res, 'getUserCurrentPosition');
-      })
-      .catch((error) => console.log(error, 'getUserCurrentPosition err'));
-  };
 
   // Common Views
 
@@ -276,34 +288,52 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
   };
 
+  const findAddrComponents = (
+    proptoFind: GooglePlacesType,
+    addrComponents: {
+      long_name: string;
+      short_name: string;
+      types: GooglePlacesType[];
+    }[]
+  ) => {
+    return (
+      (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || {}).long_name || ''
+    );
+  };
+
   const saveLatlong = (item: { name: string; placeId: string }) => {
-    getNetStatus().then((status) => {
-      if (status) {
-        axios
-          .get(
-            `https://maps.googleapis.com/maps/api/place/details/json?placeid=${item.placeId}&key=${key}`
-          )
-          .then((obj) => {
-            try {
-              if (obj.data.result.geometry && obj.data.result.geometry.location) {
-                AsyncStorage.setItem(
-                  'location',
-                  JSON.stringify({ latlong: obj.data.result.geometry.location, name: item.name })
-                );
-                // setlatlng(obj.data.result.geometry.location);
-                latlng = obj.data.result.geometry.location;
-                // setLoading(true);
-                // fetchSpecialityFilterData(filterMode, FilterData, latlng);
-              }
-            } catch (error) {
-              console.log(error);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
+    console.log('placeId\n', { placeId: item.placeId });
+    // update address to context here
+    getPlaceInfoByPlaceId(item.placeId)
+      .then((response) => {
+        const addrComponents =
+          g(response, 'data', 'results', '0' as any, 'address_components') || [];
+        const { lat, lng } =
+          g(response, 'data', 'results', '0' as any, 'geometry', 'location')! || {};
+        if (addrComponents.length > 0) {
+          setLocationDetails!({
+            latitude: lat,
+            longitude: lng,
+            area: [
+              findAddrComponents('route', addrComponents),
+              findAddrComponents('sublocality_level_2', addrComponents),
+              findAddrComponents('sublocality_level_1', addrComponents),
+            ]
+              .filter((i) => i)
+              .join(', '),
+            city:
+              findAddrComponents('locality', addrComponents) ||
+              findAddrComponents('administrative_area_level_2', addrComponents),
+            state: findAddrComponents('administrative_area_level_1', addrComponents),
+            country: findAddrComponents('country', addrComponents),
+            pincode: findAddrComponents('postal_code', addrComponents),
+            lastUpdated: new Date().getTime(),
           });
-      }
-    });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const renderPopup = () => {
@@ -377,8 +407,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     }}
                     onPress={() => {
                       setcurrentLocation(item.name);
-                      saveLatlong(item);
                       setshowLocationpopup(false);
+                      saveLatlong(item);
+                      setLocationDetails!({ city: item.name } as any);
                     }}
                   >
                     {item.name}
@@ -395,14 +426,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderLocation = () => {
     return (
       <View style={{ flexDirection: 'row', right: 35 }}>
-        {currentLocation === '' ? (
+        {!locationDetails ? (
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
               getNetStatus().then((status) => {
                 if (status) {
                   setshowLocationpopup(true);
-                  fetchCurrentLocation();
+                  // fetchCurrentLocation();
                 } else {
                   setError(true);
                 }
@@ -421,7 +452,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 alignItems: 'center',
               }}
             >
-              {currentLocation ? (
+              {locationDetails ? (
                 <Text
                   style={{
                     color: theme.colors.SHERPA_BLUE,
@@ -429,7 +460,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     textTransform: 'uppercase',
                   }}
                 >
-                  {currentLocation}
+                  {locationDetails.city}
                 </Text>
               ) : null}
               <LocationOn />
@@ -723,7 +754,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     price: number,
     specialPrice: number | undefined,
     style: ViewStyle,
-    onPress: () => void
+    isAddedToCart: boolean,
+    onPress: () => void,
+    onPressBookNow: () => void
   ) => {
     return (
       <TouchableOpacity
@@ -778,7 +811,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
             )}
           </View>
           <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
-            <Text style={theme.viewStyles.text('B', 13, '#fc9916', 1, 24)}>{'BOOK NOW'}</Text>
+            <Text style={theme.viewStyles.text('B', 13, '#fc9916', 1, 24)} onPress={onPressBookNow}>
+              {isAddedToCart ? 'ADDED TO CART' : 'BOOK NOW'}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -816,9 +851,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   marginBottom: 20,
                   ...(index == 0 ? { marginLeft: 20 } : {}),
                 },
-                () => {
-                  props.navigation.navigate(AppRoutes.TestDetails, { testDetails: item });
-                }
+                !!cartItems.find((_item) => _item.id == item.ItemID),
+                () => props.navigation.navigate(AppRoutes.TestDetails, { testDetails: item }),
+                () =>
+                  addCartItem!({
+                    id: item.ItemID,
+                    name: item.ItemName,
+                    mou: `${item.PackageInClussion.length}`,
+                    price: item.Rate,
+                    thumbnail: '',
+                    specialPrice: undefined,
+                  })
               );
             }}
           />
@@ -1086,6 +1129,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
           }}
           value={searchText}
+          editable={!!locationDetails}
           autoCapitalize="none"
           spellCheck={false}
           onFocus={() => setSearchFocused(true)}
@@ -1220,10 +1264,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
           ? renderSectionLoader()
           : !error && (
               <>
-                {renderHotSellers()}
-                {renderBrowseByCondition()}
+                {/* {renderHotSellers()} */}
+                {/* {renderBrowseByCondition()} */}
                 {renderTestPackages()}
-                {renderTestsByOrgan()}
+                {/* {renderTestsByOrgan()} */}
                 {renderPreventiveTests()}
               </>
             )}

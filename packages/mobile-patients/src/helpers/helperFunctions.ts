@@ -5,6 +5,8 @@ import moment from 'moment';
 import { Alert, NetInfo, AsyncStorage, Dimensions } from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { getPlaceInfoByLatLng, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const googleApiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 
@@ -309,6 +311,65 @@ export const nextAvailability = (nextSlot: string) => {
 
 export const isEmptyObject = (object: Object) => {
   return Object.keys(object).length === 0;
+};
+
+const findAddrComponents = (
+  proptoFind: GooglePlacesType,
+  addrComponents: {
+    long_name: string;
+    short_name: string;
+    types: GooglePlacesType[];
+  }[]
+) => {
+  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || {}).long_name || '';
+};
+
+export const doRequestAndAccessLocation = (): Promise<LocationData> => {
+  return new Promise((resolve, reject) => {
+    Permissions.request('location')
+      .then((response) => {
+        if (response === 'authorized') {
+          navigator.geolocation.getCurrentPosition((position) => {
+            const { latitude, longitude } = position.coords;
+            getPlaceInfoByLatLng(latitude, longitude)
+              .then((response) => {
+                const addrComponents =
+                  g(response, 'data', 'results', '0' as any, 'address_components') || [];
+                if (addrComponents.length == 0) {
+                  reject('Unable to get location.');
+                } else {
+                  resolve({
+                    latitude,
+                    longitude,
+                    area: [
+                      findAddrComponents('route', addrComponents),
+                      findAddrComponents('sublocality_level_2', addrComponents),
+                      findAddrComponents('sublocality_level_1', addrComponents),
+                    ]
+                      .filter((i) => i)
+                      .join(', '),
+                    city:
+                      findAddrComponents('locality', addrComponents) ||
+                      findAddrComponents('administrative_area_level_2', addrComponents),
+                    state: findAddrComponents('administrative_area_level_1', addrComponents),
+                    country: findAddrComponents('country', addrComponents),
+                    pincode: findAddrComponents('postal_code', addrComponents),
+                    lastUpdated: new Date().getTime(),
+                  });
+                }
+              })
+              .catch(() => {
+                reject('Unable to get location.');
+              });
+          });
+        } else {
+          reject('Unable to get location.');
+        }
+      })
+      .catch((_) => {
+        reject('Unable to get location.');
+      });
+  });
 };
 
 export const getUserCurrentPosition = async () => {

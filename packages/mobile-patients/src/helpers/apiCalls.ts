@@ -96,7 +96,10 @@ interface InventoryCheckApiResponse {
   };
 }
 
-type GooglePlacesType =
+export type GooglePlacesType =
+  | 'route'
+  | 'sublocality_level_2'
+  | 'sublocality_level_1'
   | 'postal_code'
   | 'locality'
   | 'administrative_area_level_2'
@@ -107,13 +110,30 @@ export enum ProductCategory {
   HOT_SELLERS = '1174',
 }
 
-interface PlacesApiResponse {
+export interface PlacesApiResponse {
   results: {
     address_components: {
       long_name: string;
       short_name: string;
       types: GooglePlacesType[];
     }[];
+    formatted_address: string;
+    geometry: {
+      location: {
+        lat: number;
+        lng: number;
+      };
+      viewport: {
+        northeast: {
+          lat: number;
+          lng: number;
+        };
+        southwest: {
+          lat: number;
+          lng: number;
+        };
+      };
+    };
   }[];
 }
 
@@ -506,11 +526,27 @@ export const getMedicinePageProducts = (): Promise<AxiosResponse<MedicinePageAPi
   );
 };
 
+const googlePlacesApiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+
 export const getPlaceInfoByPincode = (
   pincode: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
-  const apiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${apiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${googlePlacesApiKey}`;
+  return Axios.get(url);
+};
+
+export const getPlaceInfoByLatLng = (
+  lat: number,
+  lng: number
+): Promise<AxiosResponse<PlacesApiResponse>> => {
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${googlePlacesApiKey}`;
+  return Axios.get(url);
+};
+
+export const getPlaceInfoByPlaceId = (
+  placeId: string
+): Promise<AxiosResponse<PlacesApiResponse>> => {
+  const url = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${googlePlacesApiKey}`;
   return Axios.get(url);
 };
 
