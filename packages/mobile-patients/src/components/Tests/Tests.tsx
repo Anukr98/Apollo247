@@ -9,6 +9,7 @@ import {
   NotificationIcon,
   SearchSendIcon,
   TestsIcon,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -41,7 +42,7 @@ import {
   getNetStatus,
   getUserCurrentPosition,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
@@ -66,6 +67,9 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -88,6 +92,22 @@ const styles = StyleSheet.create({
     opacity: 0.5,
     borderRadius: 5,
   },
+  hiTextStyle: {
+    marginLeft: 20,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  nameTextStyle: {
+    marginLeft: 5,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  seperatorStyle: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    marginTop: 5,
+    marginHorizontal: 5,
+  },
 });
 
 const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
@@ -101,6 +121,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length;
   const { currentPatient } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
   const { showAphAlert } = useUIElements();
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
@@ -144,6 +166,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (!currentPatient) {
+      getPatientApiCall();
+    }
+    setProfile(currentPatient!);
+  }, [currentPatient]);
+
   const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
@@ -151,6 +181,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
+  );
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
+    currentPatient!
   );
 
   const offerBanner = (g(data, 'mainbanners') || [])[0];
@@ -1212,20 +1246,33 @@ export const Tests: React.FC<TestsProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <Text
-            style={{
-              height: isSearchFocused ? 0 : 'auto',
-              ...theme.viewStyles.text('SB', 36, '#02475b', 1),
-              paddingTop: 20,
-              backgroundColor: '#fff',
-              paddingHorizontal: 20,
-            }}
-          >
-            {(currentPatient &&
-              currentPatient.firstName &&
-              `hi ${currentPatient.firstName.toLowerCase()}!`) ||
-              ''}
-          </Text>
+          <ProfileList
+            saveUserChange={true}
+            childView={
+              <View
+                style={{
+                  flexDirection: 'row',
+                  paddingRight: 8,
+                  borderRightWidth: 0,
+                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                  backgroundColor: theme.colors.WHITE,
+                }}
+              >
+                <Text style={styles.hiTextStyle}>{'hi'}</Text>
+                <View>
+                  <Text style={styles.nameTextStyle}>
+                    {currentPatient!.firstName!.toLowerCase() || ''}
+                  </Text>
+                  <View style={styles.seperatorStyle} />
+                </View>
+                <View style={{ paddingTop: 15 }}>
+                  <DropdownGreen />
+                </View>
+              </View>
+            }
+            selectedProfile={profile}
+            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+          ></ProfileList>
 
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>
             <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
@@ -1237,6 +1284,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
         </ScrollView>
       </SafeAreaView>
       {renderPopup()}
+      {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )}
     </View>
   );
 };
