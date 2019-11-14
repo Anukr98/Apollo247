@@ -1063,93 +1063,95 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
             </Grid>
           </Grid>
           }}
-          <div className={`${classes.tabContent} ${classes.awardsSection}`}>
-            <h3>Enter the mobile number you’d like to assign access of your account to</h3>
-            <FormControl fullWidth>
-              {
-                <Mutation<AddSecretary, AddSecretaryVariables> mutation={ADD_SECRETARY}>
-                  {(mutate, { loading }) => (
-                    <AphSelect
-                      value={secretary}
-                      MenuProps={{
-                        classes: { paper: classes.menuPopover },
-                        anchorOrigin: {
-                          vertical: 'top',
-                          horizontal: 'left',
-                        },
-                        transformOrigin: {
-                          vertical: 'top',
-                          horizontal: 'left',
-                        },
-                      }}
-                      onChange={(e: any) => {
-                        const secretary =
-                          data &&
+          {secretaryRemoved && (
+            <div className={`${classes.tabContent} ${classes.awardsSection}`}>
+              <h3>Enter the mobile number you’d like to assign access of your account to</h3>
+              <FormControl fullWidth>
+                {
+                  <Mutation<AddSecretary, AddSecretaryVariables> mutation={ADD_SECRETARY}>
+                    {(mutate, { loading }) => (
+                      <AphSelect
+                        value={secretary}
+                        MenuProps={{
+                          classes: { paper: classes.menuPopover },
+                          anchorOrigin: {
+                            vertical: 'top',
+                            horizontal: 'left',
+                          },
+                          transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'left',
+                          },
+                        }}
+                        onChange={(e: any) => {
+                          const secretary =
+                            data &&
+                            data.getSecretaryList &&
+                            data.getSecretaryList.map((item) => {
+                              return item && item.id;
+                            });
+                          client
+                            .mutate<AddSecretary, AddSecretaryVariables>({
+                              mutation: ADD_SECRETARY,
+                              variables: {
+                                secretaryId: `${secretary && secretary.length > 0 && secretary[0]}`,
+                              },
+                              fetchPolicy: 'no-cache',
+                            })
+                            .then((res: any) => {
+                              setSecretaryName(
+                                res &&
+                                  res.data &&
+                                  res.data.addSecretary &&
+                                  res.data.addSecretary.secretary &&
+                                  res.data.addSecretary.secretary.name
+                              );
+                              setSecretaryRemoved(false);
+                            })
+                            .catch((e: any) => {
+                              // Alert.alert('Error');
+                            });
+                        }}
+                      >
+                        {data &&
                           data.getSecretaryList &&
-                          data.getSecretaryList.map((item) => {
-                            return item && item.id;
-                          });
-                        client
-                          .mutate<AddSecretary, AddSecretaryVariables>({
-                            mutation: ADD_SECRETARY,
-                            variables: {
-                              secretaryId: `${secretary && secretary.length > 0 && secretary[0]}`,
-                            },
-                            fetchPolicy: 'no-cache',
-                          })
-                          .then((res: any) => {
-                            setSecretaryName(
-                              res &&
-                                res.data &&
-                                res.data.addSecretary &&
-                                res.data.addSecretary.secretary &&
-                                res.data.addSecretary.secretary.name
+                          data.getSecretaryList.map((item: any) => {
+                            return (
+                              <MenuItem
+                                key={item.id}
+                                value={item.name}
+                                classes={{ selected: classes.menuSelected }}
+                              >
+                                {item && item.name}
+                              </MenuItem>
                             );
-                            setSecretaryRemoved(false);
-                          })
-                          .catch((e: any) => {
-                            // Alert.alert('Error');
-                          });
-                      }}
-                    >
-                      {data &&
-                        data.getSecretaryList &&
-                        data.getSecretaryList.map((item: any) => {
-                          return (
-                            <MenuItem
-                              key={item.id}
-                              value={item.name}
-                              classes={{ selected: classes.menuSelected }}
-                            >
-                              {item && item.name}
-                            </MenuItem>
-                          );
-                        })}
-                    </AphSelect>
-                  )}
-                </Mutation>
-              }
-              {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? (
-                <FormHelperText
-                  component="div"
-                  className={classes.helpText}
-                  error={showErrorMessage}
-                >
-                  {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0
-                    ? phoneMessage
-                    : ''}
-                </FormHelperText>
-              ) : (
-                <FormHelperText
-                  component="div"
-                  className={classes.statusText}
-                  error={showErrorMessage}
-                >
-                  {delegateNumberStatus.length > 0 ? delegateNumberStatus : ''}
-                </FormHelperText>
-              )}
-            </FormControl>
-          </div>
+                          })}
+                      </AphSelect>
+                    )}
+                  </Mutation>
+                }
+                {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? (
+                  <FormHelperText
+                    component="div"
+                    className={classes.helpText}
+                    error={showErrorMessage}
+                  >
+                    {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0
+                      ? phoneMessage
+                      : ''}
+                  </FormHelperText>
+                ) : (
+                  <FormHelperText
+                    component="div"
+                    className={classes.statusText}
+                    error={showErrorMessage}
+                  >
+                    {delegateNumberStatus.length > 0 ? delegateNumberStatus : ''}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </div>
+          )}
         </div>
       )}
       <div className={classes.helpTxt}>
