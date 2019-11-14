@@ -159,7 +159,9 @@ const removeChatDocument: Resolver<
 
   //check for valid document id
   const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
-  await appointmentDocumentRepo.getDocument(args.documentPathId);
+  const appointmentDocuments = await appointmentDocumentRepo.getDocument(args.documentPathId);
+  if (appointmentDocuments == null)
+    throw new AphError(AphErrorMessages.GET_APPOINTMENT_DOCUMENT_ERROR);
 
   await appointmentDocumentRepo.removeFromAppointmentDocument(args.documentPathId);
   return { status: true };

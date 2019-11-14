@@ -1,4 +1,4 @@
-import React, { Fragment, useContext } from 'react';
+import React, { Fragment, useContext, useEffect } from 'react';
 import {
   Typography,
   List,
@@ -11,12 +11,14 @@ import {
   IconButton,
   Card,
   CardContent,
+  Modal,
 } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -40,6 +42,68 @@ const useStyles = makeStyles(() => ({
       color: 'rgba(2,71,91,0.6)',
       marginTop: 6,
     },
+  },
+  modalWindowWrap: {
+    display: 'table',
+    height: '100%',
+    width: '100%',
+    outline: 'none',
+    '&:focus': {
+      outline: 'none',
+    },
+  },
+  modalWindow: {
+    backgroundColor: theme.palette.common.black,
+    maxWidth: 600,
+    margin: 'auto',
+    borderRadius: 10,
+    boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
+    outline: 'none',
+    '&:focus': {
+      outline: 'none',
+    },
+  },
+  tableContent: {
+    display: 'table-cell',
+    verticalAlign: 'middle',
+    width: '100%',
+    '&:focus': {
+      outline: 'none',
+    },
+  },
+  modalContent: {
+    textAlign: 'center',
+    maxHeight: 'calc(100vh - 212px)',
+    overflow: 'hidden',
+    '& img': {
+      maxWidth: '100%',
+    },
+  },
+  modalHeader: {
+    minHeight: 56,
+    textAlign: 'center',
+    fontSize: 13,
+    fontWeight: 600,
+    letterSpacing: 0.5,
+    color: theme.palette.common.white,
+    padding: '16px 50px',
+    textTransform: 'uppercase',
+    position: 'relative',
+    wordBreak: 'break-word',
+  },
+  modalClose: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    width: 24,
+    height: 24,
+    cursor: 'pointer',
+  },
+  modalFooter: {
+    height: 56,
+    textAlign: 'center',
+    padding: 16,
+    textTransform: 'uppercase',
   },
   bigAvatar: {
     width: '60px',
@@ -275,9 +339,21 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   );
 };
 export const HealthVault: React.FC = () => {
+  const { documentArray, setDocumentArray } = useContext(CaseSheetContext);
   const classes = useStyles();
   const ischild: boolean = false;
   const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContext);
+  useEffect(() => {
+    if (documentArray && documentArray.filePath) {
+      const data = {
+        documentPath: documentArray.filePath,
+      };
+      appointmentDocuments!.push(data as appointmentDocumentType);
+      setDocumentArray(null);
+    }
+  });
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [imgPrevUrl, setImgPrevUrl] = React.useState();
 
   return (
     <ThemeProvider theme={theme}>
@@ -288,8 +364,15 @@ export const HealthVault: React.FC = () => {
           </Typography>
           <List className={classes.listContainer}>
             {appointmentDocuments && appointmentDocuments.length > 0 ? (
-              appointmentDocuments!.map((item, index) => (
-                <ListItem key={index} className={classes.listItem}>
+              appointmentDocuments.map((item, index) => (
+                <ListItem
+                  key={index}
+                  className={classes.listItem}
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(item.documentPath as string);
+                  }}
+                >
                   <ListItemAvatar>
                     <Avatar
                       alt={item.documentPath as string}
@@ -318,6 +401,26 @@ export const HealthVault: React.FC = () => {
             ) : (
               <span className={classes.nodataFound}>No data Found</span>
             )}
+            {
+              <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+                <div className={classes.modalWindowWrap}>
+                  <div className={classes.tableContent}>
+                    <div className={classes.modalWindow}>
+                      <div className={classes.modalHeader}>
+                        {/* IMAGE001.JPG */}
+                        <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
+                          <img src={require('images/ic_round_clear.svg')} alt="" />
+                        </div>
+                      </div>
+                      <div className={classes.modalContent}>
+                        <img src={imgPrevUrl} alt="" />
+                      </div>
+                      <div className={classes.modalFooter}></div>
+                    </div>
+                  </div>
+                </div>
+              </Modal>
+            }
           </List>
         </Typography>
         <Typography component="div">

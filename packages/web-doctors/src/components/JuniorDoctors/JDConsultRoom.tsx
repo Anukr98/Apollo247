@@ -478,6 +478,7 @@ export const JDConsultRoom: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [callId, setcallId] = useState<string>('');
+  const [documentArray, setDocumentArray] = useState();
 
   /* case sheet data*/
   let assignedDoctorFirstName = '',
@@ -1067,6 +1068,8 @@ export const JDConsultRoom: React.FC = () => {
             setSymptoms,
             notes,
             setNotes,
+            documentArray,
+            setDocumentArray,
             juniorDoctorNotes,
             diagnosis,
             setDiagnosis,

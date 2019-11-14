@@ -285,7 +285,7 @@ interface ConsultDoctorProfileProps {
 }
 
 export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const { doctorDetails, appointmentId, hasDoctorJoined } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
@@ -294,7 +294,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const [showMore, setShowMore] = useState<boolean>(true);
   const [moreOrLessMessage, setMoreOrLessMessage] = useState<string>('MORE');
 
-  const patientId = (allCurrentPatients && allCurrentPatients[0].id) || '';
+  const { currentPatient } = useAllCurrentPatients();
+  const patientId = currentPatient ? currentPatient.id : '';
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAppointments,

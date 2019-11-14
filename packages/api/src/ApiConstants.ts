@@ -61,4 +61,7 @@ export enum ApiConstants {
 
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
   CANCEL_APPT_BODY = 'Hi {0}! :) Dr. {1} has cancelled your consultation.',
+
+  APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
+  APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
 }
