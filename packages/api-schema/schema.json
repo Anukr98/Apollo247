@@ -21267,7 +21267,7 @@
             "deprecationReason": null
           },
           {
-            "name": "filePath",
+            "name": "documentPath",
             "description": null,
             "args": [],
             "type": {
