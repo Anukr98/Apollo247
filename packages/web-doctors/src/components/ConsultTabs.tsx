@@ -824,6 +824,7 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .then((_data: any) => {
+        setAppointmentStatus(STATUS.IN_PROGRESS);
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
         //setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
