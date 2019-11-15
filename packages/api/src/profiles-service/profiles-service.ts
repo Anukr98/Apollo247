@@ -120,6 +120,10 @@ import {
   saveMedicineOrderInvoiceResolvers,
 } from 'profiles-service/resolvers/pharmaOrderInvoice';
 import { diagnosticsTypeDefs, diagnosticsResolvers } from 'profiles-service/resolvers/diagnostics';
+import {
+  saveDiagnosticOrderTypeDefs,
+  saveDiagnosticOrderResolvers,
+} from 'profiles-service/resolvers/saveDiagnosticOrders';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
@@ -309,6 +313,10 @@ import path from 'path';
       {
         typeDefs: diagnosticsTypeDefs,
         resolvers: diagnosticsResolvers,
+      },
+      {
+        typeDefs: saveDiagnosticOrderTypeDefs,
+        resolvers: saveDiagnosticOrderResolvers,
       },
     ]),
     plugins: [
