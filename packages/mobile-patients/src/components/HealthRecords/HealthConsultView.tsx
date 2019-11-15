@@ -142,6 +142,10 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   const { setCartItems, cartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
+  console.log(
+    'PastData',
+    props.PastData && props.PastData.doctorInfo && props.PastData.doctorInfo.photoUrl
+  );
 
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
     return (
@@ -260,9 +264,16 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                 <View style={{ flexDirection: 'row' }}>
                   <View style={styles.imageView}>
                     {/* {data.image} */}
-                    {data.photoUrl &&
-                      data.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
-                        <Image style={styles.profileImageStyle} source={{ uri: data.photoUrl }} />
+                    {props.PastData &&
+                      props.PastData.doctorInfo &&
+                      props.PastData.doctorInfo.photoUrl &&
+                      props.PastData.doctorInfo.photoUrl.match(
+                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
+                      ) && (
+                        <Image
+                          style={styles.profileImageStyle}
+                          source={{ uri: props.PastData.doctorInfo.photoUrl }}
+                        />
                       )}
                   </View>
                   <View style={{ flex: 1 }}>

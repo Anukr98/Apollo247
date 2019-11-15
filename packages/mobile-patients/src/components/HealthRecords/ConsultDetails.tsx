@@ -200,9 +200,22 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 {props.navigation.state.params!.DoctorInfo &&
                   'Dr.' + props.navigation.state.params!.DoctorInfo.firstName}
               </Text>
-              <Text style={styles.timeStyle}>
-                {props.navigation.state.params!.appointmentType} CONSULT
-              </Text>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.timeStyle}>
+                  {caseSheetDetails &&
+                    moment(caseSheetDetails!.appointment!.appointmentDateTime).format(
+                      'DD MMM YYYY'
+                    )}
+                </Text>
+                <Text style={styles.timeStyle}>{','}</Text>
+
+                <Text style={styles.timeStyle}>
+                  {props.navigation.state.params!.appointmentType == 'ONLINE'
+                    ? 'Online'
+                    : 'Physical'}{' '}
+                  Consult
+                </Text>
+              </View>
               <View style={theme.viewStyles.lightSeparatorStyle} />
             </View>
             <View style={styles.imageView}>
@@ -630,7 +643,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         <View>
           {renderSymptoms()}
           {renderPrescriptions()}
-          {renderTestNotes()}
           {renderDiagnosis()}
           {renderGenerealAdvice()}
           {renderTestNotes()}
@@ -648,7 +660,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       >
         <SafeAreaView style={{ flex: 1 }}>
           <Header
-            title="PRESCRIPTION"
+            title="PRESCRIPTION DETAILS"
             leftIcon="backArrow"
             onPressLeftIcon={() => props.navigation.goBack()}
             rightComponent={

@@ -293,6 +293,8 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                   activeOpacity={1}
                   onPress={() => {
                     const urls = data.documentURLs.split(',');
+                    console.log('test', urls);
+
                     if (!data.documentURLs || data.documentURLs === '[object Object]') {
                       Alert.alert('No Image');
                       CommonLogEvent('RECORD_DETAILS', 'No Image');
@@ -304,33 +306,42 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                             Alert.alert('Download Completed');
                             CommonLogEvent('RECORD_DETAILS', 'Download complete for prescription');
                           } catch {}
+                        } else {
+                          Linking.openURL(urls[i]).catch((err) =>
+                            console.error('An error occurred', err)
+                          );
                         }
-                        let dirs = RNFetchBlob.fs.dirs;
-                        setLoading(true);
-                        RNFetchBlob.config({
-                          fileCache: true,
-                          addAndroidDownloads: {
-                            useDownloadManager: true,
-                            notification: false,
-                            mime: 'application/pdf',
-                            path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
-                            description: 'File downloaded by download manager.',
-                          },
-                        })
-                          .fetch('GET', urls[i], {
-                            //some headers ..
-                          })
-                          .then((res) => {
-                            setLoading(false);
-                            Platform.OS === 'ios'
-                              ? RNFetchBlob.ios.previewDocument(res.path())
-                              : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                          })
-                          .catch((err) => {
-                            console.log('error ', err);
-                            setLoading(false);
-                            // ...
-                          });
+                        // let dirs = RNFetchBlob.fs.dirs;
+                        // setLoading(true);
+                        // RNFetchBlob.config({
+                        //   fileCache: true,
+                        //   addAndroidDownloads: {
+                        //     useDownloadManager: true,
+                        //     notification: false,
+                        //     mime: 'application/pdf',
+                        //     path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+                        //     description: 'File downloaded by download manager.',
+                        //   },
+                        // })
+                        //   .fetch('GET', urls[i], {
+                        //     //some headers ..
+                        //   })
+                        //   .then((res) => {
+                        //     console.log(res, 'res');
+
+                        //     setLoading(false);
+                        //     if (Platform.OS === 'android') {
+                        //       Alert.alert('Download Complete');
+                        //     }
+                        //     Platform.OS === 'ios'
+                        //       ? RNFetchBlob.ios.previewDocument(res.path())
+                        //       : RNFetchBlob.android.actionViewIntent(res.path(), '/');
+                        //   })
+                        //   .catch((err) => {
+                        //     console.log('error ', err);
+                        //     setLoading(false);
+                        //     // ...
+                        //   });
                       }
                     }
                   }}

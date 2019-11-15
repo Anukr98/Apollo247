@@ -78,6 +78,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  BackHandler,
   WebView,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
@@ -288,7 +289,27 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+  useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
+    });
 
+    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    });
+
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+      willBlurSubscription && willBlurSubscription.remove();
+    };
+  }, []);
+
+  const backDataFunctionality = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    CommonLogEvent(AppRoutes.TabBar, 'Go back clicked');
+    props.navigation.replace(AppRoutes.TabBar);
+    return false;
+  };
   useEffect(() => {
     const userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
@@ -915,6 +936,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === secondMessage) {
         console.log('secondMessage');
+        addMessages(message);
+      } else if (message.message.message === languageQue) {
+        console.log('languageQue');
         addMessages(message);
       }
     } else {

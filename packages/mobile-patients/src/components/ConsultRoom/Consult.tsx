@@ -233,13 +233,13 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    const getDataFromTree = async () => {
-      const storeVallue = await AsyncStorage.getItem('selectUserId');
-      console.log('storeVallue', storeVallue);
-      setCurrentPatientId(storeVallue);
-    };
+    // const getDataFromTree = async () => {
+    //   const storeVallue = await AsyncStorage.getItem('selectUserId');
+    //   console.log('storeVallue', storeVallue);
+    //   setCurrentPatientId(storeVallue);
+    // };
 
-    getDataFromTree();
+    // getDataFromTree();
     try {
       setNewAppointmentTime(
         props.navigation.getParam('Data')
@@ -256,11 +256,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     } catch (error) {
       setNewRescheduleCount(1);
     }
-  }, []);
+  }, [currentPatient]);
 
   useEffect(() => {
     console.log('current', currentPatient!.id);
-
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
@@ -276,6 +275,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       console.log('No current patients available');
       getPatientApiCall();
     }
+    fetchAppointments();
   }, [currentPatient]);
 
   useEffect(() => {
@@ -309,9 +309,10 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     patientId: currentPatient ? currentPatient!.id : '',
     appointmentDate: moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD'),
   };
-  console.log('inputdata', inputData);
+  // console.log('inputdata', inputData);
 
   const fetchAppointments = () => {
+    console.log('inputdata', inputData);
     client
       .query<getPatinetAppointments>({
         query: GET_PATIENT_APPOINTMENTS,
