@@ -4,6 +4,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 import { DIAGNOSTICS_TYPE } from 'profiles-service/entities';
 import { DiagnosticsRepository } from 'profiles-service/repositories/diagnosticsRepository';
 import fetch from 'node-fetch';
+import { format } from 'date-fns';
 
 export const diagnosticsTypeDefs = gql`
   enum DIAGNOSTICS_TYPE {
@@ -140,8 +141,11 @@ const getDiagnosticSlots: Resolver<
   ProfilesServiceContext,
   DiagnosticSlotsResult
 > = async (patent, args, { profilesDb }) => {
+  console.log(args.hubCode, 'hub code');
+  const selDate = format(args.selectedDate, 'yyyy-MM-dd');
+  const diagnosticSlotsUrl = process.env.DIAGNOSTIC_SLOTS_URL;
   const diagnosticSlot = await fetch(
-    `https://staging.fareye.co/api/v1/schedule_slot_detail?api_key=W6aVbicpzy1NCfn35u3GwqCkNAVM3NZp&jobType=home_collection&hubCode=HYD_HUB1&date=2019-11-13`
+    `${diagnosticSlotsUrl}&jobType=home_collection&hubCode=${args.hubCode}&date=${selDate}`
   )
     .then((res) => res.json())
     .catch((error) => {
