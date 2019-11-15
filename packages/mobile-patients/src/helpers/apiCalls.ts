@@ -190,6 +190,7 @@ export interface PackageInclusion {
   SampleRemarks: string;
   SampleTypeName: string;
   TestParameters: string;
+  TestName?: string; // getting TestInclusion value in TestName from API
 }
 
 export interface TestPackage {
@@ -211,6 +212,12 @@ export interface TestsPackageResponse {
   status: boolean;
   message: string;
   data: TestPackage[];
+}
+
+export interface GetPackageDataResponse {
+  status: boolean;
+  message: string;
+  data: PackageInclusion[];
 }
 
 /*
@@ -629,9 +636,7 @@ export const getTestsPackages = (
   return Axios.post(
     config.GET_TEST_PACKAGES[0],
     {
-      UserName: TestApiCredentials.UserName,
-      Password: TestApiCredentials.Password,
-      InterfaceClient: TestApiCredentials.InterfaceClient,
+      ...TestApiCredentials,
       StateID: '1', //need to make dynamic here
       CityID: '9', //need to make dynamic here
     },
@@ -639,4 +644,13 @@ export const getTestsPackages = (
       headers: {},
     }
   );
+};
+
+export const getPackageData = (
+  currentItemId: string
+): Promise<AxiosResponse<GetPackageDataResponse>> => {
+  return Axios.post(config.GET_PACKAGE_DATA[0], {
+    ...TestApiCredentials,
+    ItemID: currentItemId,
+  });
 };
