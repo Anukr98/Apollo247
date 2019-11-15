@@ -1,6 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { Diagnostics } from 'profiles-service/entities';
-import { selectionSetFromFieldSet } from '@apollo/gateway/dist/FieldSet';
 
 @EntityRepository(Diagnostics)
 export class DiagnosticsRepository extends Repository<Diagnostics> {

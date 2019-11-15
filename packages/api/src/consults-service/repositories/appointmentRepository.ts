@@ -536,7 +536,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         if (lastMins < docConsultHr.consultDuration) {
           availableSlots.pop();
         }
-        //console.log(availableSlotsReturn);
+        console.log(availableSlotsReturn);
       });
       if (doctorAppointments && doctorAppointments.length > 0) {
         doctorAppointments.map((doctorAppointment) => {

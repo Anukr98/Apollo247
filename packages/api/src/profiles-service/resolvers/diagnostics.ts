@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { DIAGNOSTICS_TYPE } from 'profiles-service/entities';
+import { DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from 'profiles-service/entities';
 import { DiagnosticsRepository } from 'profiles-service/repositories/diagnosticsRepository';
 import fetch from 'node-fetch';
 import { format } from 'date-fns';
@@ -10,6 +10,11 @@ export const diagnosticsTypeDefs = gql`
   enum DIAGNOSTICS_TYPE {
     TEST
     PACKAGE
+  }
+
+  enum TEST_COLLECTION_TYPE {
+    HC
+    CENTER
   }
 
   type SearchDiagnosticsResult {
@@ -36,6 +41,8 @@ export const diagnosticsTypeDefs = gql`
     city: String!
     state: String!
     itemType: DIAGNOSTICS_TYPE
+    fromAgeInDays: Int!
+    collectionType: TEST_COLLECTION_TYPE
   }
 
   type DiagnosticSlotsResult {
@@ -89,6 +96,8 @@ type Diagnostics = {
   city: string;
   state: string;
   itemType: DIAGNOSTICS_TYPE;
+  fromAgeInDays: number;
+  collectionType: TEST_COLLECTION_TYPE;
 };
 
 type DiagnosticSlotsResult = {
