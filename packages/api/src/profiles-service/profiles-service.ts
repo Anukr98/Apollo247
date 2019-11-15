@@ -133,20 +133,21 @@ import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
 import { format, differenceInMilliseconds } from 'date-fns';
 import path from 'path';
+import { ApiConstants } from 'ApiConstants';
 
 (async () => {
   await connect();
   //configure winston for profiles service
-  const logsDirPath = <string>process.env.ASSETS_DIRECTORY;
+  const logsDirPath = <string>process.env.API_LOGS_DIRECTORY;
   const logsDir = path.resolve(logsDirPath);
   winston.configure({
     transports: [
       new winston.transports.File({
-        filename: logsDir + '/logs/access-logs/profiles-service.log',
+        filename: logsDir + ApiConstants.PROFILES_SERVICE_ACCESS_LOG_FILE,
         level: 'info',
       }),
       new winston.transports.File({
-        filename: logsDir + '/logs/error-logs/profiles-service.log',
+        filename: logsDir + ApiConstants.PROFILES_SERVICE_ERROR_LOG_FILE,
         level: 'error',
       }),
     ],
@@ -332,7 +333,6 @@ import path from 'path';
       {
         serverWillStart() {
           winston.log('info', 'Server starting up!');
-          console.log('Server starting up!');
         },
         requestDidStart({ operationName, request }) {
           /* Within this returned object, define functions that respond
