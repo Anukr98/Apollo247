@@ -152,7 +152,7 @@ export const SecretaryDashboard: React.FC = (props) => {
                   ).toLowerCase()} :)`}
               </Typography>
               {viewSelection === 'day' ? (
-                <p>{`Please select doctor`}</p>
+                <p>{`choose which doctor’s portal you’d like to access`}</p>
               ) : (
                 <p>
                   here’s your schedule for {monthSelected} {selectedDate.getFullYear()}
@@ -161,8 +161,7 @@ export const SecretaryDashboard: React.FC = (props) => {
             </div>
             <div className={classes.doctorsGroup}>
               <Grid spacing={2} container>
-                {secretaryList &&
-                  secretaryList.length > 0 &&
+                {secretaryList && secretaryList.length > 0 ? (
                   secretaryList.map((item, index) => {
                     return (
                       <Grid item sm={4} key={index}>
@@ -225,7 +224,10 @@ export const SecretaryDashboard: React.FC = (props) => {
                         </Link>
                       </Grid>
                     );
-                  })}
+                  })
+                ) : (
+                  <div className={classes.doctorName}>No Doctor found</div>
+                )}
               </Grid>
             </div>
           </div>
