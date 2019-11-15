@@ -37,6 +37,7 @@ export enum ApiConstants {
   PHARMA_TOKEN = '9f15bdd0fcd5423190c2e877ba0228A24',
 
   PRISM_TIMEOUT = 10000,
+  PRISM_UPLOAD_DOCUMENT_PROGRAME = 'prog2',
 
   GENERAL_PHYSICIAN = 'General Physician/ Internal Medicine',
 

@@ -8,7 +8,6 @@ import path from 'path';
 
 export const uploadFileTypeDefs = gql`
   enum UPLOAD_FILE_TYPES {
-    JPG
     PNG
     JPEG
     PDF
