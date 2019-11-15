@@ -12,6 +12,11 @@ export const diagnosticsTypeDefs = gql`
     PACKAGE
   }
 
+  enum TEST_COLLECTION_TYPE {
+    HC
+    CENTER
+  }
+
   type SearchDiagnosticsResult {
     diagnostics: [Diagnostics]
   }
