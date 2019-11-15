@@ -9,7 +9,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile,
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails_healthVault,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument,
 } from 'graphql/types/GetCaseSheet';
 import { createContext } from 'react';
 
@@ -72,9 +72,7 @@ export interface CaseSheetContextProps {
   setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   healthVault: GetCaseSheet_getCaseSheet_patientDetails_healthVault[] | null;
   pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
-  appointmentDocuments:
-    | GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments[]
-    | null;
+  appointmentDocuments: appointmentDocument[] | null;
   height: string;
   weight: string;
   temperature: string;
@@ -104,6 +102,8 @@ export interface CaseSheetContextProps {
 
   jrdName: string;
   jrdSubmitDate: string;
+  documentArray: appointmentDocument | null;
+  setDocumentArray: (documentArray: appointmentDocument) => void;
 }
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
@@ -140,6 +140,8 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setFollowUpDate: () => {},
   healthVault: null,
   pastAppointments: null,
+  documentArray: null,
+  setDocumentArray: (documentArray: appointmentDocument) => {},
   height: '',
   weight: '',
   bp: '',

@@ -1,10 +1,11 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { List, ListItem, Avatar, IconButton, Theme, Modal } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -312,11 +313,21 @@ export const HealthVault: React.FC = () => {
   const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContextJrd);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
+  useEffect(() => {
+    if (documentArray && documentArray.documentPath) {
+      const data = {
+        documentPath: documentArray.documentPath || '',
+      };
+      appointmentDocuments!.push(data as appointmentDocumentType);
+      setDocumentArray((null as unknown) as appointmentDocumentType);
+    }
+  });
 
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
-        <div className={classes.sectionTitle}>Photos uploaded by Patient</div>
+        <div className={classes.sectionTitle}>Photos uploaded </div>
         <div className={classes.listContainer}>
           {appointmentDocuments && appointmentDocuments.length > 0 ? (
             appointmentDocuments!.map((item, index) => (
