@@ -141,7 +141,6 @@ const getDiagnosticSlots: Resolver<
   ProfilesServiceContext,
   DiagnosticSlotsResult
 > = async (patent, args, { profilesDb }) => {
-  console.log(args.hubCode, 'hub code');
   const selDate = format(args.selectedDate, 'yyyy-MM-dd');
   const diagnosticSlotsUrl = process.env.DIAGNOSTIC_SLOTS_URL;
   const diagnosticSlot = await fetch(
@@ -151,7 +150,6 @@ const getDiagnosticSlots: Resolver<
     .catch((error) => {
       console.log('diagnostic slot error', error);
     });
-  console.log(diagnosticSlot);
   return { diagnosticSlot };
 };
 
