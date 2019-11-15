@@ -73,6 +73,11 @@ export enum DIAGNOSTICS_TYPE {
   PACKAGE = 'PACKAGE',
 }
 
+export enum TEST_COLLECTION_TYPE {
+  HC = 'HC',
+  CENTER = 'CENTER',
+}
+
 export enum MEDICINE_DELIVERY_TYPE {
   HOME_DELIVERY = 'HOME_DELIVERY',
   STORE_PICKUP = 'STORE_PICKUP',
@@ -1031,6 +1036,9 @@ export class Diagnostics extends BaseEntity {
 
   @Column({ nullable: true })
   cityId: number;
+
+  @Column({ default: TEST_COLLECTION_TYPE.HC })
+  collectionType: TEST_COLLECTION_TYPE;
 }
 
 // Diagnostic orders
@@ -1071,6 +1079,12 @@ export class DiagnosticOrders extends BaseEntity {
 
   @Column({ nullable: true })
   orderStatus: string;
+
+  @Column({ nullable: true })
+  prescriptionUrl: string;
+
+  @Column('decimal', { precision: 5, scale: 2, default: 0.0 })
+  collectionCharges: number;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdDate: Date;

@@ -17,7 +17,8 @@ export const saveDiagnosticOrderTypeDefs = gql`
     employeeSlotId: Int!
     diagnosticEmployeeCode: String!
     diagnosticBranchCode: String!
-    totalPrice: Float
+    totalPrice: Float!
+    prescriptionUrl: String!
     items: [DiagnosticLineItem]
   }
 
@@ -47,6 +48,7 @@ type DiagnosticOrderInput = {
   diagnosticEmployeeCode: string;
   diagnosticBranchCode: string;
   totalPrice: number;
+  prescriptionUrl: string;
   items: [DiagnosticLineItem];
 };
 
@@ -103,6 +105,7 @@ const SaveDiagnosticOrder: Resolver<
     diagnosticBranchCode: diagnosticOrderInput.diagnosticBranchCode,
     diagnosticEmployeeCode: diagnosticOrderInput.diagnosticEmployeeCode,
     city: diagnosticOrderInput.city,
+    prescriptionUrl: diagnosticOrderInput.prescriptionUrl,
   };
 
   const diagnosticOrdersRepo = profilesDb.getCustomRepository(DiagnosticOrdersRepository);

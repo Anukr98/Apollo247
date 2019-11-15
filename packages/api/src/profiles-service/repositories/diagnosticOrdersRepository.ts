@@ -19,7 +19,7 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
     return DiagnosticOrderLineItems.create(lineItemAttrs)
       .save()
       .catch((diagnosticOrderError) => {
-        throw new AphError(AphErrorMessages.SAVE_DIANOSTIC_ORDER_LINE_ERROR, undefined, {
+        throw new AphError(AphErrorMessages.SAVE_DIAGNOSTIC_ORDER_LINE_ERROR, undefined, {
           diagnosticOrderError,
         });
       });
