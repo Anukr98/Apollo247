@@ -18,6 +18,20 @@ export interface PrismGetUsersError {
   response: null;
 }
 
+export interface PrismSignUpUserData {
+  userName: string;
+  UHID: string;
+  hospital: string;
+  activeStatus: string;
+  siteKey: string;
+  setActiveStatus: boolean;
+  setSiteKey: boolean;
+  setUHID: boolean;
+  setHospital: boolean;
+  uhid: string;
+  setUserName: boolean;
+}
+
 export interface PrismGetUsersResponse {
   errorCode: null;
   errorMsg: null;

@@ -1,7 +1,10 @@
 import { makeStyles } from '@material-ui/styles';
 import { MoreVert } from '@material-ui/icons';
-import React, { useState, useEffect } from 'react';
-import isNumeric from 'validator/lib/isNumeric';
+import React, { useState, useContext, useEffect } from 'react';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
+import { AphButton } from '@aph/web-ui-components';
+import { ApolloError } from 'apollo-client';
 import {
   Theme,
   IconButton,
@@ -10,15 +13,11 @@ import {
   Avatar,
   CircularProgress,
   FormControl,
-  InputAdornment,
   MenuItem,
-  FormHelperText,
 } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
-import { isMobileNumberValid } from '@aph/universal/dist/aphValidators';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
-import { AphInput, AphButton } from '@aph/web-ui-components';
+import { useApolloClient } from 'react-apollo-hooks';
 import Typography from '@material-ui/core/Typography';
 import Popover from '@material-ui/core/Popover';
 
@@ -36,17 +35,11 @@ import {
   RemoveTeamDoctorFromStarTeamVariables,
 } from 'graphql/types/RemoveTeamDoctorFromStarTeam';
 
-import {
-  UpdateDelegateNumber,
-  UpdateDelegateNumberVariables,
-} from 'graphql/types/UpdateDelegateNumber';
 import { AddSecretary, AddSecretaryVariables } from 'graphql/types/AddSecretary';
 import {
   REMOVE_TEAM_DOCTOR_FROM_STAR_TEAM,
   GET_DOCTOR_DETAILS,
   MAKE_TEAM_DOCTOR_ACTIVE,
-  UPDATE_DELEGATE_NUMBER,
-  REMOVE_DELEGATE_NUMBER,
   ADD_SECRETARY,
   REMOVE_SECRETARY,
 } from 'graphql/profiles';
@@ -57,7 +50,7 @@ import {
 import { RemoveSecretaryVariables, RemoveSecretary } from 'graphql/types/RemoveSecretary';
 
 import { Mutation } from 'react-apollo';
-import { AphSelect, AphTextField } from '@aph/web-ui-components';
+import { AphSelect } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -520,7 +513,7 @@ export interface StarDoctorCardProps {
   currentDocId: string;
   doctor: GetDoctorDetails_getDoctorDetails_starTeam;
 }
-const invalidPhoneMessage = 'This seems like the wrong number';
+
 const StarDoctorCard: React.FC<StarDoctorCardProps> = (props) => {
   const { doctor, currentDocId } = props;
   //const moreButttonRef = useRef(null);
@@ -806,139 +799,150 @@ interface DoctorDetailsProps {
 }
 export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
   const { doctor, clinics } = props;
-  const [mobileNumber, setMobileNumber] = useState<string>(
-    doctor.delegateNumber ? doctor.delegateNumber.substring(3) : ''
-  );
-  const [phoneMessage, setPhoneMessage] = useState<string>('');
-  const [delegateNumberStatus, setDelegateNumberStatus] = useState<string>('');
-  const [showErrorMessage, setShowErrorMessage] = useState<boolean>(false);
-  const [secretary, setSecretary] = useState<string>('');
+
   const [popOver, setPopOver] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [secretaryName, setSecretaryName] = useState<string>('');
-  const [secretaryNum, setsecretaryNum] = useState<string>('');
+  const [secretaryList, setSecretaryList] = useState<GetSecretaryList>();
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { currentUserType, doctorSecretary } = useAuthContext();
+  const addDoctorSecretary = useAuthContext().addDoctorSecretary!;
   const classes = useStyles();
-  const doctorProfile = doctor;
-  const [secretaryRemoved, setSecretaryRemoved] = useState<boolean>(false);
+  const [secretary, setSecretary] = useState<string>('');
+
+  const [userDetails, setUserDetails] = React.useState(doctor);
+
   const client = useApolloClient();
   const [anchorEl, setAnchorEl] = React.useState((null as unknown) as HTMLButtonElement);
+
+  const getSecretary = () => {
+    setLoading(true);
+    client
+      .query<GetSecretaryList>({ query: GET_SECRETARY_LIST, fetchPolicy: 'no-cache' })
+      .then((_data) => {
+        setSecretaryList(_data.data);
+      })
+      .catch((e) => {
+        console.log('Error occured while fetching secretary', e);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
   useEffect(() => {
-    const mobNumber = sessionStorage.getItem('mobileNumberSession')
-      ? sessionStorage.getItem('mobileNumberSession')
-      : doctor.delegateNumber && doctor.delegateNumber!.includes('+91')
-      ? doctor.delegateNumber!.slice(3)
-      : doctor.delegateNumber;
-    if (mobNumber) {
-      setMobileNumber(mobNumber);
-    } else if (mobNumber == null || (mobNumber && mobNumber.length == 0)) {
-      setMobileNumber('');
+    if (doctorSecretary === null && doctor && doctor.doctorSecretary) {
+      addDoctorSecretary(userDetails!.doctorSecretary!.secretary);
+    }
+    if (currentUserType !== LoggedInUserType.SECRETARY) {
+      getSecretary();
     }
   }, []);
 
-  const { data, error, loading } = useQuery<GetSecretaryList>(GET_SECRETARY_LIST);
-  if (loading) return <CircularProgress />;
-  if (error) return <div>Error loading patients :(</div>;
-
+  const doctorProfile = doctor;
   function handleClicks(event: React.MouseEvent<HTMLButtonElement>, id: string) {
     setAnchorEl(event.currentTarget);
     setPopOver(true);
   }
-
   function handleClose() {
     setAnchorEl((null as unknown) as HTMLButtonElement);
     setPopOver(false);
   }
   return (
     <div>
+      {loading && <CircularProgress />}
       <h2>Your Profile</h2>
-      <div className={`${classes.tabContent} ${classes.awardsSection}`}>
-        <Typography variant="h4">
-          {`${doctorProfile!.salutation &&
-            doctorProfile!.salutation!.charAt(0).toUpperCase()}${doctorProfile
-            .salutation!.slice(1)
-            .toLowerCase() + '.'} ${doctorProfile.firstName} ${doctorProfile.lastName}`}{' '}
-        </Typography>
-        <Typography variant="h6">
-          <span>
-            {doctorProfile!.specialty!.name.toUpperCase()} | {doctorProfile!.experience} YRS
-          </span>
-        </Typography>
-        <Grid container spacing={0} className={classes.gridContainer}>
-          {doctorProfile.qualification && doctorProfile.qualification.length > 0 && (
-            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-              <Paper className={classes.serviceItem}>
-                <Typography variant="h5">Education</Typography>
-                <Typography variant="h3">{doctorProfile.qualification}</Typography>
-              </Paper>
-            </Grid>
-          )}
-          {doctorProfile.awards && doctorProfile.awards.length > 0 && (
-            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-              <Paper className={classes.serviceItem}>
-                <Typography variant="h5">Awards</Typography>
-                <Typography variant="h3" style={{ whiteSpace: 'pre-line' }}>
-                  {doctorProfile.awards
-                    .replace('&amp;', '&')
-                    .replace(/<\/?[^>]+>/gi, '')
-                    .trim()}
-                </Typography>
-              </Paper>
-            </Grid>
-          )}
-
-          {doctorProfile.specialty &&
-            doctorProfile.specialty.name &&
-            doctorProfile.specialty.name.length > 0 && (
+      {doctorProfile && (
+        <div className={`${classes.tabContent} ${classes.awardsSection}`}>
+          <Typography variant="h4">
+            {`${doctorProfile!.salutation &&
+              doctorProfile!.salutation!.charAt(0).toUpperCase()}${doctorProfile
+              .salutation!.slice(1)
+              .toLowerCase() + '.'} ${doctorProfile.firstName} ${doctorProfile.lastName}`}{' '}
+          </Typography>
+          <Typography variant="h6">
+            <span>
+              {doctorProfile!.specialty!.name.toUpperCase()} | {doctorProfile!.experience} YRS
+            </span>
+          </Typography>
+          <Grid container spacing={0} className={classes.gridContainer}>
+            {doctorProfile.qualification && doctorProfile.qualification.length > 0 && (
               <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
                 <Paper className={classes.serviceItem}>
-                  <Typography variant="h5">Speciality</Typography>
-                  <Typography variant="h3">{doctorProfile.specialty.name}</Typography>
+                  <Typography variant="h5">Education</Typography>
+                  <Typography variant="h3">{doctorProfile.qualification}</Typography>
+                </Paper>
+              </Grid>
+            )}
+            {doctorProfile.awards && doctorProfile.awards.length > 0 && (
+              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+                <Paper className={classes.serviceItem}>
+                  <Typography variant="h5">Awards</Typography>
+                  <Typography variant="h3" style={{ whiteSpace: 'pre-line' }}>
+                    {doctorProfile.awards
+                      .replace('&amp;', '&')
+                      .replace(/<\/?[^>]+>/gi, '')
+                      .trim()}
+                  </Typography>
                 </Paper>
               </Grid>
             )}
 
-          {doctorProfile.languages && doctorProfile.languages.length > 0 && (
-            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-              <Paper className={classes.serviceItem}>
-                <Typography variant="h5">Speaks</Typography>
-                <Typography variant="h3">{doctorProfile.languages}</Typography>
-              </Paper>
-            </Grid>
-          )}
+            {doctorProfile.specialty &&
+              doctorProfile.specialty.name &&
+              doctorProfile.specialty.name.length > 0 && (
+                <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+                  <Paper className={classes.serviceItem}>
+                    <Typography variant="h5">Speciality</Typography>
+                    <Typography variant="h3">{doctorProfile.specialty.name}</Typography>
+                  </Paper>
+                </Grid>
+              )}
 
-          {doctorProfile.specialization && doctorProfile.specialization.length > 0 && (
-            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-              <Paper className={classes.serviceItem}>
-                <Typography variant="h5">Services</Typography>
-                <Typography variant="h3">{doctorProfile.specialization}</Typography>
-              </Paper>
-            </Grid>
-          )}
+            {doctorProfile.languages && doctorProfile.languages.length > 0 && (
+              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+                <Paper className={classes.serviceItem}>
+                  <Typography variant="h5">Speaks</Typography>
+                  <Typography variant="h3">{doctorProfile.languages}</Typography>
+                </Paper>
+              </Grid>
+            )}
 
-          {doctorProfile.registrationNumber && doctorProfile.registrationNumber.length > 0 && (
-            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-              <Paper className={classes.serviceItem}>
-                <Typography variant="h5">MCI Number</Typography>
-                <Typography variant="h3">{doctorProfile.registrationNumber}</Typography>
-              </Paper>
-            </Grid>
-          )}
+            {doctorProfile.specialization && doctorProfile.specialization.length > 0 && (
+              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+                <Paper className={classes.serviceItem}>
+                  <Typography variant="h5">Services</Typography>
+                  <Typography variant="h3">{doctorProfile.specialization}</Typography>
+                </Paper>
+              </Grid>
+            )}
 
-          {doctorProfile.doctorType !== 'PAYROLL' && (
-            <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
-              <Paper className={classes.serviceItem}>
-                <Typography variant="h5">In-person Consult Location</Typography>
-                {clinics.map((clinic, index) => (
-                  <Typography variant="h3" key={index} className={index > 0 ? classes.none : ''}>
-                    {clinic.facility.name}, {clinic.facility.streetLine1}
-                    {clinic.facility.streetLine2}
-                    {clinic.facility.streetLine3}, {clinic.facility.city}
-                  </Typography>
-                ))}
-              </Paper>
-            </Grid>
-          )}
-        </Grid>
-      </div>
+            {doctorProfile.registrationNumber && doctorProfile.registrationNumber.length > 0 && (
+              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+                <Paper className={classes.serviceItem}>
+                  <Typography variant="h5">MCI Number</Typography>
+                  <Typography variant="h3">{doctorProfile.registrationNumber}</Typography>
+                </Paper>
+              </Grid>
+            )}
+
+            {doctorProfile.doctorType !== 'PAYROLL' && (
+              <Grid item lg={6} sm={12} xs={12} className={classes.columnContent}>
+                <Paper className={classes.serviceItem}>
+                  <Typography variant="h5">In-person Consult Location</Typography>
+                  {clinics.map((clinic, index) => (
+                    <Typography variant="h3" key={index} className={index > 0 ? classes.none : ''}>
+                      {clinic.facility.name}, {clinic.facility.streetLine1}
+                      {clinic.facility.streetLine2}
+                      {clinic.facility.streetLine3}, {clinic.facility.city}
+                    </Typography>
+                  ))}
+                </Paper>
+              </Grid>
+            )}
+          </Grid>
+        </div>
+      )}
 
       {doctorProfile && (
         <div>
@@ -953,294 +957,186 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
           <StarDoctorsList currentDocId={doctorProfile.id} starDoctors={doctorProfile!.starTeam!} />
         </div>
       )}
-      {localStorage.getItem('loggedInMobileNumber') === doctorProfile.mobileNumber && (
+      {doctorProfile && currentUserType !== LoggedInUserType.SECRETARY && (
         <div className={classes.ProfileContainer}>
           <h2>Secretary Login</h2>
-          <Grid container alignItems="flex-start" spacing={0}>
-            <Grid item lg={6} sm={6} xs={12} className={classes.secretaryGrid}>
-              {!secretaryRemoved &&
-                (secretaryName ||
-                  (doctorProfile &&
-                    doctorProfile.doctorSecretary &&
-                    doctorProfile.doctorSecretary.secretary)) && (
-                  <Card className={classes.card}>
-                    <div className={classes.details}>
-                      <CardHeader
-                        className={classes.cardHeader}
-                        avatar={
-                          <Avatar className={classes.profileAvatar}>
-                            <img src={require('images/no_photo.png')} />
-                          </Avatar>
-                        }
-                        action={
-                          <Mutation<RemoveSecretary, RemoveSecretaryVariables>
-                            mutation={REMOVE_SECRETARY}
-                          >
-                            {(mutate, { loading }) => (
-                              <>
-                                <IconButton
+          {doctorSecretary && (
+            <Grid container alignItems="flex-start" spacing={0}>
+              <Grid item lg={6} sm={6} xs={12} className={classes.secretaryGrid}>
+                <Card className={classes.card}>
+                  <div className={classes.details}>
+                    <CardHeader
+                      className={classes.cardHeader}
+                      avatar={
+                        <Avatar className={classes.profileAvatar}>
+                          <img src={require('images/no_photo.png')} />
+                        </Avatar>
+                      }
+                      action={
+                        <Mutation<RemoveSecretary, RemoveSecretaryVariables>
+                          mutation={REMOVE_SECRETARY}
+                        >
+                          {(mutate, { loading }) => (
+                            <>
+                              <IconButton
+                                onClick={(e) => {
+                                  handleClicks(
+                                    e,
+                                    `${doctorProfile &&
+                                      doctorProfile.doctorSecretary &&
+                                      doctorProfile.doctorSecretary.secretary &&
+                                      doctorProfile.doctorSecretary.secretary.id}`
+                                  );
+                                }}
+                              >
+                                {loading ? <CircularProgress /> : <MoreVert />}
+                              </IconButton>
+                              <Popover
+                                open={popOver}
+                                anchorEl={anchorEl}
+                                onClose={handleClose}
+                                anchorOrigin={{
+                                  vertical: 'bottom',
+                                  horizontal: 'center',
+                                }}
+                                transformOrigin={{
+                                  vertical: 'top',
+                                  horizontal: 'right',
+                                }}
+                              >
+                                <Typography
+                                  className={classes.starDoctordelete}
                                   onClick={(e) => {
-                                    handleClicks(
-                                      e,
-                                      `${doctorProfile &&
-                                        doctorProfile.doctorSecretary &&
-                                        doctorProfile.doctorSecretary.secretary &&
-                                        doctorProfile.doctorSecretary.secretary.id}`
-                                    );
-                                  }}
-                                >
-                                  {loading ? <CircularProgress /> : <MoreVert />}
-                                </IconButton>
-                                <Popover
-                                  open={popOver}
-                                  anchorEl={anchorEl}
-                                  onClose={handleClose}
-                                  anchorOrigin={{
-                                    vertical: 'bottom',
-                                    horizontal: 'center',
-                                  }}
-                                  transformOrigin={{
-                                    vertical: 'top',
-                                    horizontal: 'right',
-                                  }}
-                                >
-                                  <Typography
-                                    className={classes.starDoctordelete}
-                                    onClick={(e) => {
-                                      setPopOver(false);
+                                    setPopOver(false);
+                                    client
+                                      .mutate<RemoveSecretary, RemoveSecretaryVariables>({
+                                        mutation: REMOVE_SECRETARY,
+                                        variables: {
+                                          secretaryId: `${doctorSecretary!.id!}`,
+                                        },
+                                        fetchPolicy: 'no-cache',
+                                      })
+                                      .then((res: any) => {
+                                        setSecretaryName('');
 
-                                      client
-                                        .mutate<RemoveSecretary, RemoveSecretaryVariables>({
-                                          mutation: REMOVE_SECRETARY,
-                                          variables: {
-                                            secretaryId: `${doctorProfile &&
-                                              doctorProfile.doctorSecretary &&
-                                              doctorProfile.doctorSecretary.secretary &&
-                                              doctorProfile.doctorSecretary.secretary.id}`,
-                                          },
-                                          fetchPolicy: 'no-cache',
-                                        })
-                                        .then((res: any) => {
-                                          setSecretaryName('');
-                                          setSecretaryRemoved(true);
-                                        })
-                                        .catch((e: any) => {
-                                          console.log(e);
-                                        });
-                                    }}
-                                  >
-                                    Remove
-                                  </Typography>
-                                </Popover>
-                              </>
-                            )}
-                          </Mutation>
-                        }
-                        title={
+                                        addDoctorSecretary(null);
+                                      })
+                                      .catch((e: ApolloError) => {
+                                        console.log(e);
+                                      });
+                                  }}
+                                >
+                                  Remove
+                                </Typography>
+                              </Popover>
+                            </>
+                          )}
+                        </Mutation>
+                      }
+                      title={
+                        <div>
+                          <h4 title={''}>{doctorSecretary.name}</h4>
                           <div>
-                            <h4 title={''}>
-                              {secretaryName
-                                ? secretaryName
-                                : doctorProfile &&
-                                  doctorProfile.doctorSecretary &&
-                                  doctorProfile.doctorSecretary.secretary &&
-                                  doctorProfile.doctorSecretary.secretary.name}
-                            </h4>
-                            <div>
-                              <h6>
-                                <span className={classes.qualificationMini}>
-                                  SECRETARY | 15 YRS
-                                </span>
-                              </h6>
-                            </div>
+                            <h6>
+                              <span className={classes.qualificationMini}>SECRETARY | 15 YRS</span>
+                            </h6>
                           </div>
-                        }
-                      />
-                      {}
-                    </div>
-                  </Card>
-                )}
+                        </div>
+                      }
+                    />
+                    {}
+                  </div>
+                </Card>
+              </Grid>
             </Grid>
-          </Grid>
-          }}
-          <div className={`${classes.tabContent} ${classes.awardsSection}`}>
-            <h3>Enter the mobile number you’d like to assign access of your account to</h3>
-            <FormControl fullWidth>
-              {
-                <Mutation<AddSecretary, AddSecretaryVariables> mutation={ADD_SECRETARY}>
-                  {(mutate, { loading }) => (
-                    <AphSelect
-                      value={secretary}
-                      MenuProps={{
-                        classes: { paper: classes.menuPopover },
-                        anchorOrigin: {
-                          vertical: 'top',
-                          horizontal: 'left',
-                        },
-                        transformOrigin: {
-                          vertical: 'top',
-                          horizontal: 'left',
-                        },
-                      }}
-                      onChange={(e: any) => {
-                        const secretary =
-                          data &&
-                          data.getSecretaryList &&
-                          data.getSecretaryList.map((item) => {
-                            return item && item.id;
-                          });
-                        client
-                          .mutate<AddSecretary, AddSecretaryVariables>({
-                            mutation: ADD_SECRETARY,
-                            variables: {
-                              secretaryId: `${secretary && secretary.length > 0 && secretary[0]}`,
-                            },
-                            fetchPolicy: 'no-cache',
-                          })
-                          .then((res: any) => {
-                            setSecretaryName(
-                              res &&
-                                res.data &&
-                                res.data.addSecretary &&
-                                res.data.addSecretary.secretary &&
-                                res.data.addSecretary.secretary.name
+          )}
+          {doctorSecretary === null && (
+            <div className={`${classes.tabContent} ${classes.awardsSection}`}>
+              <h3>Please select the secretary</h3>
+              <FormControl fullWidth>
+                {
+                  <Mutation<AddSecretary, AddSecretaryVariables> mutation={ADD_SECRETARY}>
+                    {(mutate, { loading }) => (
+                      <AphSelect
+                        value={secretary}
+                        MenuProps={{
+                          classes: { paper: classes.menuPopover },
+                          anchorOrigin: {
+                            vertical: 'top',
+                            horizontal: 'left',
+                          },
+                          transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'left',
+                          },
+                        }}
+                        onChange={(e: any) => {
+                          const secretaryId =
+                            secretaryList &&
+                            secretaryList.getSecretaryList &&
+                            secretaryList.getSecretaryList.map((item) => {
+                              if (item!.name === e.target.value) {
+                                return item!.id;
+                              }
+                              return null;
+                            });
+                          client
+                            .mutate<AddSecretary, AddSecretaryVariables>({
+                              mutation: ADD_SECRETARY,
+                              variables: {
+                                secretaryId: `${secretaryId &&
+                                  secretaryId.length > 0 &&
+                                  secretaryId[0]}`,
+                              },
+                              fetchPolicy: 'no-cache',
+                            })
+                            .then((res: any) => {
+                              setSecretaryName(
+                                res &&
+                                  res.data &&
+                                  res.data.addSecretary &&
+                                  res.data.addSecretary.secretary &&
+                                  res.data.addSecretary.secretary.name
+                              );
+                              addDoctorSecretary(
+                                res &&
+                                  res.data &&
+                                  res.data.addSecretary &&
+                                  res.data.addSecretary.secretary
+                              );
+                            })
+                            .catch((e: ApolloError) => {
+                              // Alert.alert('Error');
+                              console.log(e);
+                            });
+                        }}
+                      >
+                        {secretaryList &&
+                          secretaryList.getSecretaryList &&
+                          secretaryList.getSecretaryList.map((item: any) => {
+                            return (
+                              <MenuItem
+                                key={item.id}
+                                value={item.name}
+                                classes={{ selected: classes.menuSelected }}
+                              >
+                                {item && item.name}
+                              </MenuItem>
                             );
-                            setSecretaryRemoved(false);
-                          })
-                          .catch((e: any) => {
-                            // Alert.alert('Error');
-                          });
-                      }}
-                    >
-                      {data &&
-                        data.getSecretaryList &&
-                        data.getSecretaryList.map((item: any) => {
-                          return (
-                            <MenuItem
-                              key={item.id}
-                              value={item.name}
-                              classes={{ selected: classes.menuSelected }}
-                            >
-                              {item && item.name}
-                            </MenuItem>
-                          );
-                        })}
-                    </AphSelect>
-                  )}
-                </Mutation>
-              }
-              {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0 ? (
-                <FormHelperText
-                  component="div"
-                  className={classes.helpText}
-                  error={showErrorMessage}
-                >
-                  {mobileNumber && mobileNumber !== '' && phoneMessage.length > 0
-                    ? phoneMessage
-                    : ''}
-                </FormHelperText>
-              ) : (
-                <FormHelperText
-                  component="div"
-                  className={classes.statusText}
-                  error={showErrorMessage}
-                >
-                  {delegateNumberStatus.length > 0 ? delegateNumberStatus : ''}
-                </FormHelperText>
-              )}
-            </FormControl>
-          </div>
+                          })}
+                      </AphSelect>
+                    )}
+                  </Mutation>
+                }
+              </FormControl>
+            </div>
+          )}
         </div>
       )}
       <div className={classes.helpTxt}>
         <img alt="" src={require('images/ic_info.svg')} className={classes.navLeftIcon} />
         Call <span className={classes.orange}>1800 - 3455 - 3455 </span>to make any changes
       </div>
-      <Grid container alignItems="flex-start" spacing={0} className={classes.btnContainer}>
-        <Grid item lg={12} sm={12} xs={12}>
-          <AphButton
-            variant="contained"
-            color="primary"
-            classes={{ root: classes.backButton }}
-            onClick={() => setMobileNumber('')}
-          >
-            CANCEL
-          </AphButton>
-          {mobileNumber === '' ? (
-            <Mutation<UpdateDelegateNumber, UpdateDelegateNumberVariables>
-              mutation={REMOVE_DELEGATE_NUMBER}
-            >
-              {(mutate, { loading }) => (
-                <AphButton
-                  variant="contained"
-                  color="primary"
-                  classes={{ root: classes.saveButton }}
-                  onClick={(e) => {
-                    mutate({});
-                    setShowErrorMessage(false);
-                    setDelegateNumberStatus('Secretary Number has deleted successfully');
-                    sessionStorage.setItem('mobileNumberSession', mobileNumber);
-                  }}
-                >
-                  SAVE
-                </AphButton>
-              )}
-            </Mutation>
-          ) : (
-            <Mutation<UpdateDelegateNumber, UpdateDelegateNumberVariables>
-              mutation={UPDATE_DELEGATE_NUMBER}
-            >
-              {(mutate, { loading }) => (
-                <AphButton
-                  variant="contained"
-                  color="primary"
-                  disabled={mobileNumber!.length !== 10 || phoneMessage.length > 0}
-                  classes={{ root: classes.saveButton }}
-                  onClick={(e) => {
-                    if (`+91${mobileNumber}` !== doctorProfile.mobileNumber) {
-                      if (`+91${mobileNumber}` !== doctorProfile.delegateNumber) {
-                        mutate({
-                          variables: {
-                            delegateNumber: `+91${mobileNumber}`,
-                          },
-                        })
-                          .then((result) => {
-                            setShowErrorMessage(false);
-                            setDelegateNumberStatus('Secretary Number has updated successfully');
-                            sessionStorage.setItem('mobileNumberSession', mobileNumber);
-                          })
-                          .catch((error) => {
-                            if (error.toString().includes('INVALID_ENTITY')) {
-                              setPhoneMessage('');
-                              setShowErrorMessage(true);
-                              setDelegateNumberStatus(
-                                `Secretary Number can't be same as Star Doctor Number`
-                              );
-                            } else {
-                              setShowErrorMessage(false);
-                              setDelegateNumberStatus('Secretary Number has updated successfully');
-                              sessionStorage.setItem('mobileNumberSession', mobileNumber);
-                            }
-                          });
-                      } else {
-                        setShowErrorMessage(false);
-                        setDelegateNumberStatus('Secretary Number has updated successfully');
-                        sessionStorage.setItem('mobileNumberSession', mobileNumber);
-                      }
-                    } else {
-                      setPhoneMessage('');
-                      setShowErrorMessage(true);
-                      setDelegateNumberStatus(`Secretary Number can't be same as Doctor Number`);
-                    }
-                  }}
-                >
-                  SAVE
-                </AphButton>
-              )}
-            </Mutation>
-          )}
-        </Grid>
-      </Grid>
     </div>
   );
 };
