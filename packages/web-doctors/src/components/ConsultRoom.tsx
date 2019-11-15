@@ -341,8 +341,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const apolloClient = useApolloClient();
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
-  // const covertVideoMsg = '^^convert`video^^';
-  // const covertAudioMsg = '^^convert`audio^^';
+  const covertVideoMsg = '^^convert`video^^';
+  const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
@@ -451,7 +451,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== followupconsult &&
           message.message.message !== patientConsultStarted &&
           message.message.message !== firstMessage &&
-          message.message.message !== secondMessage
+          message.message.message !== secondMessage &&
+          message.message.message !== covertVideoMsg &&
+          message.message.message !== covertAudioMsg
         ) {
           setIsNewMsg(true);
         } else {
@@ -584,7 +586,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -660,7 +664,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -728,7 +734,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       jrDrComponent++;
       leftComponent = 0;

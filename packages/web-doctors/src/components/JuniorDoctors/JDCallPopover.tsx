@@ -1063,7 +1063,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = (props) => {
           message.message.message !== followupconsult &&
           message.message.message !== patientConsultStarted &&
           message.message.message !== firstMessage &&
-          message.message.message !== secondMessage
+          message.message.message !== secondMessage &&
+          message.message.message !== covertVideoMsg &&
+          message.message.message !== covertAudioMsg
         ) {
           setIsNewMsg(true);
         } else {
