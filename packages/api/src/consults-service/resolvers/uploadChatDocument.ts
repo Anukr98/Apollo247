@@ -56,7 +56,9 @@ const uploadChatDocument: Resolver<
   if (process.env.NODE_ENV != 'local') {
     assetsDir = path.resolve(<string>process.env.ASSETS_DIRECTORY);
   }
-  const fileName = format(new Date(), 'ddmmyyyy-HHmmss') + '.' + args.fileType.toLowerCase();
+  const randomNumber = Math.floor(Math.random() * 10000);
+  const fileName =
+    format(new Date(), 'ddmmyyyy-HHmmss') + '_' + randomNumber + '.' + args.fileType.toLowerCase();
   const uploadPath = assetsDir + '/' + fileName;
   fs.writeFile(uploadPath, args.base64FileInput, { encoding: 'base64' }, (err) => {
     console.log(err);
