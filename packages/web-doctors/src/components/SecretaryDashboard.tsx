@@ -144,7 +144,7 @@ export const SecretaryDashboard: React.FC = (props) => {
                 {data &&
                   data.findLoggedinUserDetails &&
                   data.findLoggedinUserDetails.secretaryDetails &&
-                  `hello . ${(
+                  `hello ${(
                     (data &&
                       data.findLoggedinUserDetails &&
                       data.findLoggedinUserDetails.secretaryDetails!.name) ||
@@ -152,12 +152,7 @@ export const SecretaryDashboard: React.FC = (props) => {
                   ).toLowerCase()} :)`}
               </Typography>
               {viewSelection === 'day' ? (
-                <p>
-                  {`Here’s your schedule for ${isToday(selectedDate) ? ' the day - ' : ''} ${format(
-                    selectedDate,
-                    isToday(selectedDate) ? 'dd MMM,  yyyy' : 'MMM, dd'
-                  )}`}
-                </p>
+                <p>{`Please select doctor`}</p>
               ) : (
                 <p>
                   here’s your schedule for {monthSelected} {selectedDate.getFullYear()}
