@@ -483,7 +483,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== followupconsult &&
           message.message.message !== patientConsultStarted &&
           message.message.message !== firstMessage &&
-          message.message.message !== secondMessage
+          message.message.message !== secondMessage &&
+          message.message.message !== covertVideoMsg &&
+          message.message.message !== covertAudioMsg
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -591,7 +593,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -668,7 +672,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       leftComponent = 0;
       rightComponent++;
