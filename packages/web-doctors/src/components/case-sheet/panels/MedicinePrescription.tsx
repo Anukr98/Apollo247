@@ -33,7 +33,7 @@ interface OptionType {
 let suggestions: OptionType[] = [];
 
 function renderInputComponent(inputProps: any) {
-  const { classes, inputRef = () => { }, ref, ...other } = inputProps;
+  const { classes, inputRef = () => {}, ref, ...other } = inputProps;
 
   return (
     <AphTextField
@@ -672,8 +672,8 @@ export const MedicinePrescription: React.FC = () => {
     const whenString =
       medicine.medicineToBeTaken.length > 0
         ? toBeTaken(medicine.medicineToBeTaken)
-          .join(', ')
-          .toLowerCase()
+            .join(', ')
+            .toLowerCase()
         : '';
     const unitHtml =
       medicine!.medicineUnit && medicine!.medicineUnit !== 'NA'
@@ -811,7 +811,6 @@ export const MedicinePrescription: React.FC = () => {
         id: selectedId,
         medicineUnit: medicineUnit,
       };
-      console.log(selectedValue);
 
       const inputParams: any = {
         id: selectedId,
@@ -1031,157 +1030,167 @@ export const MedicinePrescription: React.FC = () => {
                 </div>
               </div>
             ) : (
+              <div>
                 <div>
-                  <div>
-                    <div className={classes.dialogContent}>
-                      <Grid container spacing={2}>
-                        <Grid item lg={6} md={6} xs={12}>
-                          <h6>Dosage*</h6>
+                  <div className={classes.dialogContent}>
+                    <Grid container spacing={2}>
+                      <Grid item lg={6} md={6} xs={12}>
+                        <h6>Dosage*</h6>
+                        <AphTextField
+                          inputProps={{ maxLength: 6 }}
+                          value={tabletsCount}
+                          onChange={(event: any) => {
+                            setTabletsCount(event.target.value);
+                          }}
+                        />
+                        {errorState.dosageErr && (
+                          <FormHelperText
+                            className={classes.helpText}
+                            component="div"
+                            error={errorState.durationErr}
+                          >
+                            Please Enter Dosage(Number only)
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item lg={6} md={6} xs={12}>
+                        <h6>Units*</h6>
+                        <div className={classes.unitsSelect}>
+                          <AphSelect
+                            style={{ paddingTop: 3 }}
+                            value={medicineUnit}
+                            MenuProps={{
+                              classes: {
+                                paper: classes.menuPaper,
+                              },
+                              anchorOrigin: {
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                              },
+                              transformOrigin: {
+                                vertical: 'top',
+                                horizontal: 'right',
+                              },
+                            }}
+                            onChange={(e: any) => {
+                              setMedicineUnit(e.target.value as string);
+                            }}
+                          >
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="TABLET">
+                              tablet
+                            </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="CAPSULE">
+                              capsule
+                            </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="ML">
+                              ml
+                            </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
+                              drops
+                            </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
+                              NA
+                            </MenuItem>
+                          </AphSelect>
+                        </div>
+                      </Grid>
+                      <Grid item lg={6} md={6} xs={12}>
+                        <h6>Duration of Consumption*</h6>
+                        <div className={classes.numberTablets}>
                           <AphTextField
+                            placeholder=""
                             inputProps={{ maxLength: 6 }}
-                            value={tabletsCount}
+                            value={consumptionDuration}
                             onChange={(event: any) => {
-                              setTabletsCount(event.target.value);
+                              setConsumptionDuration(event.target.value);
+                            }}
+                            error={errorState.durationErr}
+                          />
+                          {errorState.durationErr && (
+                            <FormHelperText
+                              className={classes.helpText}
+                              component="div"
+                              error={errorState.durationErr}
+                            >
+                              Please Enter Duration in days(Number only)
+                            </FormHelperText>
+                          )}
+                        </div>
+                      </Grid>
+                      <Grid item lg={6} md={6} xs={12}>
+                        <h6>To be taken</h6>
+                        <div className={classes.numberTablets}>{tobeTakenHtml}</div>
+                        {errorState.tobeTakenErr && (
+                          <FormHelperText
+                            className={classes.helpText}
+                            component="div"
+                            error={errorState.tobeTakenErr}
+                          >
+                            Please select to be taken.
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item lg={12} xs={12}>
+                        <h6>Time of the Day*</h6>
+                        <div className={classes.numberTablets}>{daySlotsHtml}</div>
+                        {errorState.daySlotErr && (
+                          <FormHelperText
+                            className={classes.helpText}
+                            component="div"
+                            error={errorState.daySlotErr}
+                          >
+                            Please select time of the day.
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item lg={12} xs={12}>
+                        <h6>Instructions (if any)</h6>
+                        <div className={classes.numberTablets}>
+                          <AphTextField
+                            value={medicineInstruction}
+                            onChange={(event: any) => {
+                              setMedicineInstruction(event.target.value);
                             }}
                           />
-                          {errorState.dosageErr && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.durationErr}
-                            >
-                              Please Enter Dosage(Number only)
-                          </FormHelperText>
-                          )}
-                        </Grid>
-                        <Grid item lg={6} md={6} xs={12}>
-                          <h6>Units*</h6>
-                          <div className={classes.unitsSelect}>
-                            <AphSelect
-                              style={{ paddingTop: 3 }}
-                              value={medicineUnit}
-                              MenuProps={{
-                                classes: {
-                                  paper: classes.menuPaper,
-                                },
-                                anchorOrigin: {
-                                  vertical: 'bottom',
-                                  horizontal: 'right',
-                                },
-                                transformOrigin: {
-                                  vertical: 'top',
-                                  horizontal: 'right',
-                                },
-                              }}
-                              onChange={(e: any) => {
-                                setMedicineUnit(e.target.value as string);
-                              }}
-                            >
-                              <MenuItem classes={{ selected: classes.menuSelected }} value="TABLET">tablet</MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }} value="CAPSULE">capsule</MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }} value="ML">ml</MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">drops</MenuItem>
-                              <MenuItem classes={{ selected: classes.menuSelected }} value="NA">NA</MenuItem>
-                            </AphSelect>
-                          </div>
-                        </Grid>
-                        <Grid item lg={6} md={6} xs={12}>
-                          <h6>Duration of Consumption*</h6>
-                          <div className={classes.numberTablets}>
-                            <AphTextField
-                              placeholder=""
-                              inputProps={{ maxLength: 6 }}
-                              value={consumptionDuration}
-                              onChange={(event: any) => {
-                                setConsumptionDuration(event.target.value);
-                              }}
-                              error={errorState.durationErr}
-                            />
-                            {errorState.durationErr && (
-                              <FormHelperText
-                                className={classes.helpText}
-                                component="div"
-                                error={errorState.durationErr}
-                              >
-                                Please Enter Duration in days(Number only)
-                            </FormHelperText>
-                            )}
-                          </div>
-                        </Grid>
-                        <Grid item lg={6} md={6} xs={12}>
-                          <h6>To be taken</h6>
-                          <div className={classes.numberTablets}>{tobeTakenHtml}</div>
-                          {errorState.tobeTakenErr && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.tobeTakenErr}
-                            >
-                              Please select to be taken.
-                          </FormHelperText>
-                          )}
-                        </Grid>
-                        <Grid item lg={12} xs={12}>
-                          <h6>Time of the Day*</h6>
-                          <div className={classes.numberTablets}>{daySlotsHtml}</div>
-                          {errorState.daySlotErr && (
-                            <FormHelperText
-                              className={classes.helpText}
-                              component="div"
-                              error={errorState.daySlotErr}
-                            >
-                              Please select time of the day.
-                          </FormHelperText>
-                          )}
-                        </Grid>
-                        <Grid item lg={12} xs={12}>
-                          <h6>Instructions (if any)</h6>
-                          <div className={classes.numberTablets}>
-                            <AphTextField
-                              value={medicineInstruction}
-                              onChange={(event: any) => {
-                                setMedicineInstruction(event.target.value);
-                              }}
-                            />
-                          </div>
-                        </Grid>
+                        </div>
                       </Grid>
-                    </div>
-                  </div>
-                  <div className={classes.dialogActions}>
-                    <AphButton
-                      className={classes.cancelBtn}
-                      color="primary"
-                      onClick={() => {
-                        setIsDialogOpen(false);
-                        setShowDosage(false);
-                      }}
-                    >
-                      Cancel
-                  </AphButton>
-                    {isUpdate ? (
-                      <AphButton
-                        color="primary"
-                        onClick={() => {
-                          addUpdateMedicines();
-                        }}
-                      >
-                        Update Medicine
-                    </AphButton>
-                    ) : (
-                        <AphButton
-                          color="primary"
-                          className={classes.updateBtn}
-                          onClick={() => {
-                            addUpdateMedicines();
-                          }}
-                        >
-                          Add Medicine
-                    </AphButton>
-                      )}
+                    </Grid>
                   </div>
                 </div>
-              )}
+                <div className={classes.dialogActions}>
+                  <AphButton
+                    className={classes.cancelBtn}
+                    color="primary"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      setShowDosage(false);
+                    }}
+                  >
+                    Cancel
+                  </AphButton>
+                  {isUpdate ? (
+                    <AphButton
+                      color="primary"
+                      onClick={() => {
+                        addUpdateMedicines();
+                      }}
+                    >
+                      Update Medicine
+                    </AphButton>
+                  ) : (
+                    <AphButton
+                      color="primary"
+                      className={classes.updateBtn}
+                      onClick={() => {
+                        addUpdateMedicines();
+                      }}
+                    >
+                      Add Medicine
+                    </AphButton>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </Paper>
       </Modal>

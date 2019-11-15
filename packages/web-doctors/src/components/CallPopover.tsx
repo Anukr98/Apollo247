@@ -28,7 +28,11 @@ import {
   InitiateRescheduleAppointment,
   InitiateRescheduleAppointmentVariables,
 } from 'graphql/types/InitiateRescheduleAppointment';
-import { INITIATE_RESCHDULE_APPONITMENT } from 'graphql/profiles';
+import {
+  EndAppointmentSession,
+  EndAppointmentSessionVariables,
+} from 'graphql/types/EndAppointmentSession';
+import { INITIATE_RESCHDULE_APPONITMENT, END_APPOINTMENT_SESSION } from 'graphql/profiles';
 import {
   REQUEST_ROLES,
   TRANSFER_INITIATED_TYPE,
@@ -42,6 +46,8 @@ import {
   EndCallNotificationVariables,
 } from 'graphql/types/EndCallNotification';
 import { clientRoutes } from 'helpers/clientRoutes';
+import { LoggedInUserType } from 'graphql/types/globalTypes';
+import { AuthContext, AuthContextProps } from 'components/AuthProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -567,6 +573,9 @@ let transferObject: any = {
 };
 let timerIntervalId: any;
 let stoppedConsulTimer: number;
+let intervalcallId: any;
+let stoppedTimerCall: number;
+let patientMsgs: any = [];
 
 const handleBrowserUnload = (event: BeforeUnloadEvent) => {
   event.preventDefault();
@@ -582,11 +591,11 @@ const unSubscribeBrowserButtonsListener = () => {
 };
 
 type Params = { id: string; patientId: string };
-
 export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const classes = useStyles();
   const params = useParams<Params>();
-
+  const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
+  const { currentUserType } = useAuthContext();
   const { appointmentInfo, followUpDate, followUpAfterInDays, followUp } = useContext(
     CaseSheetContext
   );
@@ -621,6 +630,48 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       stoppedConsulTimer = timer;
       setStartingTime(timer);
     }, 1000);
+  };
+
+  // timer for miss called
+  const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
+  const callIntervalTimer = (timer: number) => {
+    intervalcallId = setInterval(() => {
+      timer = timer - 1;
+      stoppedTimerCall = timer;
+      setRemainingCallTime(timer);
+      if (timer < 1) {
+        setRemainingCallTime(0);
+        clearInterval(intervalcallId);
+        if (patientMsgs.length === 0) {
+          noShowAction();
+        }
+      }
+    }, 1000);
+  };
+
+  const noShowAction = () => {
+    client
+      .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
+        mutation: END_APPOINTMENT_SESSION,
+        variables: {
+          endAppointmentSessionInput: {
+            appointmentId: props.appointmentId,
+            status: STATUS.NO_SHOW,
+          },
+        },
+        fetchPolicy: 'no-cache',
+      })
+      .then((_data) => {
+        unSubscribeBrowserButtonsListener();
+        alert('Patient not responding.');
+        window.location.href = clientRoutes.calendar();
+      })
+      .catch((e) => {
+        const error = JSON.parse(JSON.stringify(e));
+        const errorMessage = error && error.message;
+        console.log('Error occured while END_APPOINTMENT_SESSION', errorMessage, error);
+        alert(errorMessage);
+      });
   };
   // timer for audio/video call end
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -669,6 +720,11 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       startIntervalTimer(0);
     }
   }, [isCallAccepted]);
+  useEffect(() => {
+    if (remainingCallTime === 0) {
+      clearInterval(intervalcallId);
+    }
+  });
   const stopIntervalTimer = () => {
     setStartingTime(0);
     timerIntervalId && clearInterval(timerIntervalId);
@@ -882,7 +938,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     if (
       disablecurrent >= minusTime &&
       disableaddedTime >= disablecurrent &&
-      localStorage.getItem('loggedInMobileNumber') !== currentPatient!.delegateNumber
+      currentUserType !== LoggedInUserType.SECRETARY
     ) {
       setStartAppointmentButton(false);
     } else {
@@ -976,6 +1032,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         } else {
           setIsNewMsg(false);
         }
+        //console.log(!props.startAppointment, message.message.id, params.patientId);
+        //console.log(!props.startAppointment && message.message.id === params.patientId)
+        if (!props.startAppointment && message.message.id === params.patientId) {
+          patientMsgs.push(message.message.message);
+          //console.log(555555);
+        }
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
         }
@@ -991,12 +1053,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       id: props.doctorId,
       message: startConsult,
       isTyping: true,
-      automatedText:
-        'Dr. ' +
-        currentPatient!.firstName +
-        ' ' +
-        currentPatient!.lastName +
-        ' has joined your chat!',
+      automatedText: currentPatient!.displayName + ' has joined your chat!',
     };
     subscribeBrowserButtonsListener();
     pubnub.publish(
@@ -1137,6 +1194,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
         ...errorStateReshedule,
         otherError: false,
       });
+      const today = moment();
       client
         .mutate<InitiateRescheduleAppointment, InitiateRescheduleAppointmentVariables>({
           mutation: INITIATE_RESCHDULE_APPONITMENT,
@@ -1146,41 +1204,75 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               rescheduleReason: reason === 'Other' ? otherTextValue : reason,
               rescheduleInitiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
               rescheduleInitiatedId: props.doctorId,
-              rescheduledDateTime: '2019-09-09T09:00:00.000Z',
+              //rescheduledDateTime: '2019-09-09T09:00:00.000Z',
+              rescheduledDateTime: moment(today)
+                .add(1, 'days')
+                .toISOString(),
               autoSelectSlot: 0,
             },
           },
         })
         .then((_data) => {
           //setIsLoading(false);
-          console.log('data', _data);
-          const reschduleObject: any = {
-            appointmentId: props.appointmentId,
-            transferDateTime: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!
-              .rescheduledDateTime,
-            doctorId: props.doctorId,
-            reschduleCount: _data!.data!.initiateRescheduleAppointment!.rescheduleCount,
-            reschduleId: _data!.data!.initiateRescheduleAppointment!.rescheduleAppointment!.id,
-          };
-          console.log('reschduleObject', reschduleObject);
-          pubnub.publish(
-            {
-              message: {
-                id: props.doctorId,
-                message: rescheduleconsult,
-                transferInfo: reschduleObject,
+          const isCancelled =
+            _data &&
+            _data.data &&
+            _data.data.initiateRescheduleAppointment &&
+            _data.data.initiateRescheduleAppointment.cancelled
+              ? true
+              : false;
+          const rescheduledDateTime =
+            (_data &&
+              _data.data &&
+              _data.data.initiateRescheduleAppointment &&
+              _data.data.initiateRescheduleAppointment.rescheduleAppointment &&
+              _data.data.initiateRescheduleAppointment.rescheduleAppointment.rescheduledDateTime) ||
+            '';
+          const rescheduleCount =
+            (_data &&
+              _data.data &&
+              _data.data.initiateRescheduleAppointment &&
+              _data.data.initiateRescheduleAppointment.rescheduleCount) ||
+            0;
+          const reschduleId =
+            (_data &&
+              _data.data &&
+              _data.data.initiateRescheduleAppointment &&
+              _data.data.initiateRescheduleAppointment.rescheduleAppointment &&
+              _data.data.initiateRescheduleAppointment.rescheduleAppointment.id) ||
+            '';
+
+          if (isCancelled) {
+            alert('Your appointment is cancelled');
+            setIsPopoverOpen(false);
+            setDisableOnCancel(true);
+          } else {
+            const reschduleObject: any = {
+              appointmentId: props.appointmentId,
+              transferDateTime: rescheduledDateTime,
+              doctorId: props.doctorId,
+              reschduleCount: rescheduleCount,
+              reschduleId: reschduleId,
+            };
+
+            pubnub.publish(
+              {
+                message: {
+                  id: props.doctorId,
+                  message: rescheduleconsult,
+                  transferInfo: reschduleObject,
+                },
+                channel: channel, //chanel
+                storeInHistory: true,
               },
-              channel: channel, //chanel
-              storeInHistory: true,
-            },
-            (status, response) => {}
-          );
-          setIsPopoverOpen(false);
-          setDisableOnCancel(true);
+              (status, response) => {}
+            );
+            setIsPopoverOpen(false);
+            setDisableOnCancel(true);
+          }
         })
         .catch((e) => {
           //setIsLoading(false);
-          console.log('Error occured while searching for Initiate reschdule apppointment', e);
           const error = JSON.parse(JSON.stringify(e));
           const errorMessage = error && error.message;
           console.log(
@@ -1344,6 +1436,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                 <Button
                   className={classes.consultButton}
                   disabled={
+                    currentUserType === LoggedInUserType.SECRETARY ||
                     startAppointmentButton ||
                     disableOnCancel ||
                     (appointmentInfo!.appointmentState !== 'NEW' &&
@@ -1358,6 +1451,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                     props.startAppointmentClick(!props.startAppointment);
                     props.createSessionAction();
                     setCaseSheetEdit(true);
+                    callIntervalTimer(180);
                   }}
                 >
                   <svg
@@ -1475,7 +1569,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               <div>
                 <ul className={classes.popOverUL}>
                   {/* <li>Share Case Sheet</li> */}
-                  {!isPastAppointment() && (
+                  {!isPastAppointment() && currentUserType !== LoggedInUserType.SECRETARY && (
                     <li
                       onClick={() => {
                         if (

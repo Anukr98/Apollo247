@@ -632,6 +632,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
           {renderTestNotes()}
           {renderDiagnosis()}
           {renderGenerealAdvice()}
+          {renderTestNotes()}
           {renderFollowUp()}
         </View>
       );

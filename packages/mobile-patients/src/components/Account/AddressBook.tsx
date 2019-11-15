@@ -17,6 +17,8 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Remove, AddIcon } from '../ui/Icons';
+import { PATIENT_ADDRESS_TYPE } from '../../graphql/types/globalTypes';
+import { CapsuleView } from '../ui/CapsuleView';
 
 const styles = StyleSheet.create({
   addressContainer: {
@@ -103,6 +105,30 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
               address.city ? `${address.city}, ` : ''
             }${address.state ? `${address.state}- ` : ''}${address.zipcode}`}</Text>
           </TouchableOpacity>
+          <CapsuleView
+            title={
+              address.addressType === PATIENT_ADDRESS_TYPE.OTHER
+                ? address.otherAddressType
+                : address.addressType
+            }
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              backgroundColor: '#0087ba',
+              opacity: 0.4,
+              width: 116,
+              height: 24,
+            }}
+            titleTextStyle={{
+              ...theme.fonts.IBMPlexSansBold(9),
+              color: '#02475b',
+              paddingHorizontal: 10,
+              letterSpacing: 0.5,
+              opacity: 1,
+            }}
+            isActive={false}
+          ></CapsuleView>
           {/* <View style={{ padding: 3 }}>
             <TouchableOpacity onPress={() => updateDataAddres('Update', address)}>
               <View style={{ alignItems: 'flex-end' }}>

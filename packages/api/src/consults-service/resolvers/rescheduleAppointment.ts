@@ -63,6 +63,7 @@ export const rescheduleAppointmentTypeDefs = gql`
   type RescheduleAppointmentResult {
     rescheduleAppointment: RescheduleAppointment
     rescheduleCount: Int
+    cancelled: Boolean
   }
 
   type BookRescheduleAppointmentResult {
@@ -97,6 +98,7 @@ export const rescheduleAppointmentTypeDefs = gql`
 type RescheduleAppointmentResult = {
   rescheduleAppointment: RescheduleAppointment;
   rescheduleCount: number;
+  cancelled: boolean;
 };
 
 type RescheduleAppointment = {
@@ -217,21 +219,47 @@ const initiateRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
+  if (RescheduleAppointmentInput.rescheduledDateTime < new Date())
+    throw new AphError(AphErrorMessages.INVALID_DATES);
+
   if (RescheduleAppointmentInput.autoSelectSlot == 1) {
     RescheduleAppointmentInput.rescheduledDateTime = new Date();
   }
 
-  const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const rescheduleAppointmentAttrs: Omit<RescheduleAppointment, 'id'> = {
     ...RescheduleAppointmentInput,
     rescheduleStatus: TRANSFER_STATUS.INITIATED,
     appointment,
   };
 
+  const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+  const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
+  await appointmentRepo.updateTransferState(
+    RescheduleAppointmentInput.appointmentId,
+    APPOINTMENT_STATE.AWAITING_RESCHEDULE
+  );
+
+  const doctorRescheduleCount = await rescheduleApptRepo.getDoctorRescheduleDetailsByAppointment(
+    appointment.id
+  );
+  let cancelled = false;
+  let notificationType = NotificationType.INITIATE_RESCHEDULE;
+
+  if (doctorRescheduleCount.length > ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR) {
+    await appointmentRepo.cancelAppointment(
+      appointment.id,
+      REQUEST_ROLES.DOCTOR,
+      appointment.doctorId,
+      'Reschedule Limit exceed'
+    );
+    cancelled = true;
+    notificationType = NotificationType.DOCTOR_CANCEL_APPOINTMENT;
+  }
+
   // send notification
   const pushNotificationInput = {
     appointmentId: appointment.id,
-    notificationType: NotificationType.INITIATE_RESCHEDULE,
+    notificationType,
   };
   const notificationResult = sendNotification(
     pushNotificationInput,
@@ -241,14 +269,10 @@ const initiateRescheduleAppointment: Resolver<
   );
   console.log(notificationResult, 'notificationResult');
 
-  const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
-  await appointmentRepo.updateTransferState(
-    RescheduleAppointmentInput.appointmentId,
-    APPOINTMENT_STATE.AWAITING_RESCHEDULE
-  );
   return {
     rescheduleAppointment,
     rescheduleCount: appointment.rescheduleCount,
+    cancelled,
   };
 };
 
@@ -301,7 +325,7 @@ const bookRescheduleAppointment: Resolver<
 
   if (
     bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT &&
-    apptDetails.rescheduleCount == 3
+    apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT
   ) {
     //cancel and book new appt
     appointmentRepo.cancelAppointment(

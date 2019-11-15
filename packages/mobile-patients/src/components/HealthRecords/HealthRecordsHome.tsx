@@ -12,6 +12,7 @@ import {
   Filter,
   NotificationIcon,
   NoData,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -37,6 +38,8 @@ import {
   View,
   Alert,
   Platform,
+  AsyncStorage,
+  Dimensions,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
@@ -53,6 +56,12 @@ import {
 import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
 import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { MaterialMenu } from '../ui/MaterialMenu';
+import { AddProfile } from '../ui/AddProfile';
+import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
+import { ProfileList } from '../ui/ProfileList';
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -63,6 +72,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  hiTextStyle: {
+    marginLeft: 20,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  nameTextStyle: {
+    marginLeft: 5,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  seperatorStyle: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    //marginTop: 5,
+    marginHorizontal: 5,
+    marginBottom: 6,
   },
 });
 
@@ -96,15 +122,30 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const { currentPatient } = useAllCurrentPatients();
   const [pastarrya, setPastarrya] = useState<[]>([]);
   const [arrayValues, setarrayValues] = useState<any>();
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [isfollowcount, setIsfollowucount] = useState<number>(0);
+  const [userName, setuserName] = useState<string | number>('');
+  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   useEffect(() => {
+    const getDataFromTree = async () => {
+      const storeVallue = await AsyncStorage.getItem('selectUserId');
+      console.log('storeVallue', storeVallue);
+      setCurrentPatientId(storeVallue);
+    };
+
+    getDataFromTree();
+    let userName =
+      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
+    userName = userName.toLowerCase();
+    setuserName(userName);
+    currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       getPatientApiCall();
     }
@@ -207,7 +248,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   useEffect(() => {
     fetchPastData();
     fetchData();
-  }, []);
+  }, [currentPatient]);
 
   // useEffect(() => {
   //   fetchData();
@@ -222,7 +263,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
     };
-  }, [props.navigation]);
+  }, [props.navigation, currentPatient]);
 
   const renderDeleteMedicalOrder = (MedicaId: string) => {
     client
@@ -246,12 +287,96 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     return (
       <View
         style={{
-          height: 250,
+          //height: 250,
           // justifyContent: 'space-between',
-          ...theme.viewStyles.shadowStyle,
+          //...theme.viewStyles.shadowStyle,
+          backgroundColor: 'white',
         }}
       >
         <View
+          style={{
+            justifyContent: 'space-between',
+            flexDirection: 'row',
+            paddingTop: 16,
+            paddingHorizontal: 20,
+            backgroundColor: theme.colors.WHITE,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+          >
+            <ApolloLogo />
+          </TouchableOpacity>
+          <View style={{ flexDirection: 'row' }}>
+            <NotificationIcon />
+          </View>
+        </View>
+        <View>
+          <ProfileList
+            saveUserChange={true}
+            childView={
+              <View
+                style={{
+                  flexDirection: 'row',
+                  paddingRight: 8,
+                  borderRightWidth: 0,
+                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                }}
+              >
+                <Text style={styles.hiTextStyle}>hi</Text>
+                <View>
+                  <Text style={styles.nameTextStyle}>{userName}</Text>
+                  <View style={styles.seperatorStyle} />
+                </View>
+                <View style={{ paddingTop: 15 }}>
+                  <DropdownGreen />
+                </View>
+              </View>
+            }
+            // selectedProfile={profile}
+            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+          ></ProfileList>
+          {/* <MaterialMenu
+            onPress={(item) => {
+              const val = (allCurrentPatients || []).find(
+                (_item) => _item.firstName == item.value.toString()
+              );
+              setCurrentPatientId!(val!.id);
+              AsyncStorage.setItem('selectUserId', val!.id);
+            }}
+            options={
+              allCurrentPatients &&
+              allCurrentPatients!.map((item) => {
+                return { key: item.id, value: item.firstName };
+              })
+            }
+            menuContainerStyle={{
+              alignItems: 'flex-end',
+              marginTop: 16,
+              marginLeft: width / 2 - 95,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                paddingRight: 8,
+                borderRightWidth: 0.5,
+                borderRightColor: 'rgba(2, 71, 91, 0.2)',
+              }}
+            >
+              <Text style={styles.hiTextStyle}>hi</Text>
+              <View>
+                <Text style={styles.nameTextStyle}>{userName}</Text>
+                <View style={styles.seperatorStyle} />
+              </View>
+              <View style={{ paddingTop: 15 }}>
+                <DropdownGreen />
+              </View>
+            </View>
+          </MaterialMenu> */}
+        </View>
+        {/* <View
           style={{
             position: 'absolute',
             top: 0,
@@ -288,10 +413,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               </View>
             </View>
           </UserIntro>
-        </View>
+        </View> */}
         <TabsComponent
           style={{
-            marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
+            //marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
             backgroundColor: theme.colors.CARD_BG,
           }}
           height={44}
@@ -482,6 +607,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         />
       )}
       {loading && <Spinner />}
+      {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )}
     </View>
   );
 };
