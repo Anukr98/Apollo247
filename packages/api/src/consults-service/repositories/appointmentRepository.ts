@@ -20,7 +20,6 @@ import {
   APPOINTMENT_STATE,
   APPOINTMENT_TYPE,
   CONSULTS_RX_SEARCH_FILTER,
-  AppointmentDocuments,
   REQUEST_ROLES,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';

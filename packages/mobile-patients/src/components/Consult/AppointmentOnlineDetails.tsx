@@ -528,6 +528,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   AppRoutes.AppointmentOnlineDetails,
                   'Reschdule_Appointment_Online_Details_Clicked'
                 );
+
                 try {
                   dateIsAfter ? NextAvailableSlotAPI() : null;
                 } catch (error) {}

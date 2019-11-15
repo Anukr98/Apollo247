@@ -11,6 +11,7 @@ import {
   IconButton,
   Card,
   CardContent,
+  Modal,
 } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { makeStyles, ThemeProvider } from '@material-ui/styles';
@@ -41,6 +42,68 @@ const useStyles = makeStyles(() => ({
       marginTop: 6,
     },
   },
+  modalWindowWrap: {
+    display: 'table',
+    height: '100%',
+    width: '100%',
+    outline: 'none',
+    '&:focus': {
+      outline: 'none',
+    },
+  },
+  modalWindow: {
+    backgroundColor: theme.palette.common.black,
+    maxWidth: 600,
+    margin: 'auto',
+    borderRadius: 10,
+    boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
+    outline: 'none',
+    '&:focus': {
+      outline: 'none',
+    },
+  },
+  tableContent: {
+    display: 'table-cell',
+    verticalAlign: 'middle',
+    width: '100%',
+    '&:focus': {
+      outline: 'none',
+    },
+  },
+  modalContent: {
+    textAlign: 'center',
+    maxHeight: 'calc(100vh - 212px)',
+    overflow: 'hidden',
+    '& img': {
+      maxWidth: '100%',
+    },
+  },
+  modalHeader: {
+    minHeight: 56,
+    textAlign: 'center',
+    fontSize: 13,
+    fontWeight: 600,
+    letterSpacing: 0.5,
+    color: theme.palette.common.white,
+    padding: '16px 50px',
+    textTransform: 'uppercase',
+    position: 'relative',
+    wordBreak: 'break-word',
+  },
+  modalClose: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    width: 24,
+    height: 24,
+    cursor: 'pointer',
+  },
+  modalFooter: {
+    height: 56,
+    textAlign: 'center',
+    padding: 16,
+    textTransform: 'uppercase',
+  },
   bigAvatar: {
     width: '60px',
     height: '60px',
@@ -48,8 +111,8 @@ const useStyles = makeStyles(() => ({
     marginRight: '10px',
   },
   listContainer: {
-    display: 'flex',
-    flexFlow: 'row',
+    // display: 'flex',
+    // flexFlow: 'row',
     flowWrap: 'wrap',
     width: '100%',
   },
@@ -57,6 +120,12 @@ const useStyles = makeStyles(() => ({
     width: '49%',
     marginRight: '1%',
     padding: 0,
+    display: 'inline-flex',
+    overflow: 'hidden',
+    marginBottom: 15,
+    whiteSpace: 'nowrap',
+    textOverflow: 'ellipsis',
+    marginright: 20,
   },
   stepperHeading: {
     fontSize: '14px',
@@ -271,7 +340,9 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
-  const { healthVault, pastAppointments } = useContext(CaseSheetContext);
+  const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContext);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [imgPrevUrl, setImgPrevUrl] = React.useState();
 
   return (
     <ThemeProvider theme={theme}>
@@ -281,13 +352,20 @@ export const HealthVault: React.FC = () => {
             Photos uploaded by Patient
           </Typography>
           <List className={classes.listContainer}>
-            {healthVault && healthVault.length > 0 ? (
-              healthVault!.map((item, index) => (
-                <ListItem key={index} className={classes.listItem}>
+            {appointmentDocuments && appointmentDocuments.length > 0 ? (
+              appointmentDocuments.map((item, index) => (
+                <ListItem
+                  key={index}
+                  className={classes.listItem}
+                  onClick={() => {
+                    setModalOpen(true);
+                    setImgPrevUrl(item.documentPath as string);
+                  }}
+                >
                   <ListItemAvatar>
                     <Avatar
-                      alt={(item.imageUrls as unknown) as string}
-                      src={(item.imageUrls as unknown) as string}
+                      alt={item.documentPath as string}
+                      src={item.documentPath as string}
                       className={classes.bigAvatar}
                     />
                   </ListItemAvatar>
@@ -295,7 +373,7 @@ export const HealthVault: React.FC = () => {
                     primary={
                       <Fragment>
                         <Typography component="h4" variant="h4" color="primary">
-                          {item.imageUrls!.substr(item.imageUrls!.lastIndexOf('/') + 1)}
+                          {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
                         </Typography>
                       </Fragment>
                     }
@@ -312,15 +390,35 @@ export const HealthVault: React.FC = () => {
             ) : (
               <span className={classes.nodataFound}>No data Found</span>
             )}
+            {
+              <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+                <div className={classes.modalWindowWrap}>
+                  <div className={classes.tableContent}>
+                    <div className={classes.modalWindow}>
+                      <div className={classes.modalHeader}>
+                        {/* IMAGE001.JPG */}
+                        <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
+                          <img src={require('images/ic_round_clear.svg')} alt="" />
+                        </div>
+                      </div>
+                      <div className={classes.modalContent}>
+                        <img src={imgPrevUrl} alt="" />
+                      </div>
+                      <div className={classes.modalFooter}></div>
+                    </div>
+                  </div>
+                </div>
+              </Modal>
+            }
           </List>
         </Typography>
         <Typography component="div">
           <Typography component="h5" variant="h5">
             Reports
           </Typography>
-          <List className={classes.listContainer}>
-            {healthVault && healthVault.length > 0 ? (
-              healthVault!.map((item, index) => (
+          {/* <List className={classes.listContainer}>
+            {appointmentDocuments && appointmentDocuments.length > 0 ? (
+              appointmentDocuments!.map((item, index) => (
                 <ListItem key={index} className={classes.listItem}>
                   <ListItemAvatar>
                     <Link to={(item.reportUrls as unknown) as string} target="_blank">
@@ -352,7 +450,7 @@ export const HealthVault: React.FC = () => {
             ) : (
               <span className={classes.nodataFound}>No data Found</span>
             )}
-          </List>
+          </List> */}
         </Typography>
         <Typography component="div">
           <Typography component="h5" variant="h5">

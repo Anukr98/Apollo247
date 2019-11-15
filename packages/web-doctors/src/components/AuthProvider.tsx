@@ -5,10 +5,12 @@ import { ErrorResponse, onError } from 'apollo-link-error';
 import { createHttpLink } from 'apollo-link-http';
 import * as firebase from 'firebase/app';
 import 'firebase/auth';
+
 import { GET_DOCTOR_DETAILS, LOGGED_IN_USER_DETAILS } from 'graphql/profiles';
 import {
   GetDoctorDetails,
   GetDoctorDetails_getDoctorDetails,
+  GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary,
 } from 'graphql/types/GetDoctorDetails';
 import {
   findLoggedinUserDetails,
@@ -48,11 +50,19 @@ export interface AuthContextProps<Doctor = GetDoctorDetails_getDoctorDetails> {
 
   currentUserType: string | null;
   setCurrentUserType: ((p: string) => void) | null;
+  currentUserId: string | null;
+  setCurrentUserId: ((p: string) => void) | null;
+  doctorSecretary: GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary | null;
+  addDoctorSecretary:
+    | ((p: GetDoctorDetails_getDoctorDetails_doctorSecretary_secretary | null) => void)
+    | null;
 }
 
 export const AuthContext = React.createContext<AuthContextProps>({
   currentUser: null,
   setCurrentUser: null,
+  currentUserId: null,
+  setCurrentUserId: null,
   //allCurrentPatients: null,
 
   sendOtp: null,
@@ -72,6 +82,8 @@ export const AuthContext = React.createContext<AuthContextProps>({
 
   currentUserType: null,
   setCurrentUserType: null,
+  doctorSecretary: null,
+  addDoctorSecretary: null,
 });
 const isLocal = process.env.NODE_ENV === 'local';
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -134,7 +146,9 @@ export const AuthProvider: React.FC = (props) => {
   >(false);
 
   const [currentUserType, setCurrentUserType] = useState<AuthContextProps['currentUserType']>(null);
+  const [doctorSecretary, addDoctorSecretary] = useState<AuthContextProps['doctorSecretary']>(null);
 
+  const [currentUserId, setCurrentUserId] = useState<AuthContextProps['currentUserId']>(null);
   const sendOtp = (phoneNumber: string, captchaPlacement: HTMLElement | null) => {
     return new Promise((resolve, reject) => {
       setVerifyOtpError(false);
@@ -166,6 +180,7 @@ export const AuthProvider: React.FC = (props) => {
             reject();
             return;
           }
+          TrackJS.track(`phoneNumber: ${phoneNumber}`);
           TrackJS.track(phoneAuthResult);
           otpVerifier = phoneAuthResult;
           setSendOtpError(false);
@@ -191,6 +206,7 @@ export const AuthProvider: React.FC = (props) => {
     }
     setIsVerifyingOtp(true);
     const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
+    TrackJS.track(otpError);
     setVerifyOtpError(Boolean(otpError || !otpAuthResult.user));
     setIsVerifyingOtp(false);
   };
@@ -243,7 +259,8 @@ export const AuthProvider: React.FC = (props) => {
           res.data &&
           res.data.findLoggedinUserDetails &&
           res.data.findLoggedinUserDetails.loggedInUserType &&
-          res.data.findLoggedinUserDetails.loggedInUserType !== LoggedInUserType.JDADMIN
+          res.data.findLoggedinUserDetails.loggedInUserType !== LoggedInUserType.JDADMIN &&
+          res.data.findLoggedinUserDetails.loggedInUserType !== LoggedInUserType.SECRETARY
         ) {
           const [signInResult, signInError] = await wait(
             apolloClient.mutate<GetDoctorDetails, GetDoctorDetails>({
@@ -273,6 +290,8 @@ export const AuthProvider: React.FC = (props) => {
           value={{
             currentUserType,
             setCurrentUserType,
+            currentUserId,
+            setCurrentUserId,
             currentUser,
             setCurrentUser,
             sendOtp,
@@ -286,6 +305,8 @@ export const AuthProvider: React.FC = (props) => {
             signOut,
             isLoginPopupVisible,
             setIsLoginPopupVisible,
+            doctorSecretary,
+            addDoctorSecretary,
           }}
         >
           {props.children}

@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { List, ListItem, Avatar, IconButton, Theme } from '@material-ui/core';
+import { List, ListItem, Avatar, IconButton, Theme, Modal } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { format } from 'date-fns';
@@ -27,6 +27,74 @@ const useStyles = makeStyles((theme: Theme) => ({
   listItem: {
     display: 'flex',
     alignItems: 'center',
+    width: '90%',
+    overflow: 'hidden',
+    whiteSpace: 'nowrap',
+    overFlow: 'hidden',
+    textOverflow: 'ellipsis',
+    marginBottom: 10,
+  },
+  modalWindowWrap: {
+    display: 'table',
+    height: '100%',
+    width: '100%',
+    outline: 'none',
+    '&:focus': {
+      outline: 'none',
+    },
+  },
+  modalWindow: {
+    backgroundColor: theme.palette.common.black,
+    maxWidth: 600,
+    margin: 'auto',
+    borderRadius: 10,
+    boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.2)',
+    outline: 'none',
+    '&:focus': {
+      outline: 'none',
+    },
+  },
+  tableContent: {
+    display: 'table-cell',
+    verticalAlign: 'middle',
+    width: '100%',
+    '&:focus': {
+      outline: 'none',
+    },
+  },
+  modalContent: {
+    textAlign: 'center',
+    maxHeight: 'calc(100vh - 212px)',
+    overflow: 'hidden',
+    '& img': {
+      maxWidth: '100%',
+    },
+  },
+  modalHeader: {
+    minHeight: 56,
+    textAlign: 'center',
+    fontSize: 13,
+    fontWeight: 600,
+    letterSpacing: 0.5,
+    color: theme.palette.common.white,
+    padding: '16px 50px',
+    textTransform: 'uppercase',
+    position: 'relative',
+    wordBreak: 'break-word',
+  },
+  modalClose: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    width: 24,
+    height: 24,
+    cursor: 'pointer',
+  },
+  modalFooter: {
+    height: 56,
+    textAlign: 'center',
+    padding: 16,
+    textTransform: 'uppercase',
   },
   bigAvatar: {
     width: 60,
@@ -241,24 +309,34 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
 export const HealthVault: React.FC = () => {
   const classes = useStyles();
   const ischild: boolean = false;
-  const { healthVault, pastAppointments } = useContext(CaseSheetContextJrd);
+  const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContextJrd);
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [imgPrevUrl, setImgPrevUrl] = React.useState();
 
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
         <div className={classes.sectionTitle}>Photos uploaded by Patient</div>
         <div className={classes.listContainer}>
-          {healthVault && healthVault.length > 0 ? (
-            healthVault!.map((item, index) => (
-              <div key={index} className={classes.listItem}>
+          {appointmentDocuments && appointmentDocuments.length > 0 ? (
+            appointmentDocuments!.map((item, index) => (
+              <div
+                key={index}
+                className={classes.listItem}
+                onClick={() => {
+                  setModalOpen(true);
+                  setImgPrevUrl(item.documentPath as string);
+                }}
+              >
                 <Avatar
-                  alt={(item.imageUrls as unknown) as string}
-                  src={(item.imageUrls as unknown) as string}
+                  alt={item.documentPath as string}
+                  src={item.documentPath as string}
                   className={classes.bigAvatar}
                 />
                 <div className={classes.listData}>
                   <span className={classes.fileName}>
-                    bloodtest.pdf{item.imageUrls!.substr(item.imageUrls!.lastIndexOf('/') + 1)}
+                    bloodtest.pdf
+                    {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
                   </span>
                   <span>5 MB | 5 Aug 2019, 11.05 AM {/* {'5MB'} | {'2019-01-01T11:30'} */}</span>
                 </div>
@@ -271,9 +349,9 @@ export const HealthVault: React.FC = () => {
       </div>
       <div className={classes.sectionGroup}>
         <div className={classes.sectionTitle}>Reports</div>
-        <div className={classes.listContainer}>
-          {healthVault && healthVault.length > 0 ? (
-            healthVault!.map((item, index) => (
+        {/* <div className={classes.listContainer}>
+          {appointmentDocuments && appointmentDocuments.length > 0 ? (
+            appointmentDocuments!.map((item, index) => (
               <div key={index} className={classes.listItem}>
                 <Link to={(item.reportUrls as unknown) as string} target="_blank">
                   <Avatar
@@ -288,8 +366,28 @@ export const HealthVault: React.FC = () => {
           ) : (
             <div className={classes.noDataFound}>No data Found</div>
           )}
-        </div>
+        </div> */}
       </div>
+      {
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+          <div className={classes.modalWindowWrap}>
+            <div className={classes.tableContent}>
+              <div className={classes.modalWindow}>
+                <div className={classes.modalHeader}>
+                  {/* IMAGE001.JPG */}
+                  <div className={classes.modalClose} onClick={() => setModalOpen(false)}>
+                    <img src={require('images/ic_round_clear.svg')} alt="" />
+                  </div>
+                </div>
+                <div className={classes.modalContent}>
+                  <img src={imgPrevUrl} alt="" />
+                </div>
+                <div className={classes.modalFooter}></div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      }
       <div className={classes.sectionGroup}>
         <div className={classes.sectionTitle}>Past Consultations</div>
         <PastAppointment data={pastAppointments} isChild={ischild} />

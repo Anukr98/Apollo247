@@ -287,7 +287,6 @@ export const Symptoms: React.FC = (props) => {
   };
   const [idxValue, setIdxValue] = React.useState();
   const addUpdateSymptom = () => {
-    console.log(symptoms);
     let duplicate = false;
     if (symptoms && symptom.length > 0) {
       symptoms.forEach((val: any, index: any) => {
