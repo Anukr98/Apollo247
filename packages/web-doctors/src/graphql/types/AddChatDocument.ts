@@ -9,7 +9,7 @@
 export interface AddChatDocument_addChatDocument {
   __typename: "UploadedDocumentDetails";
   id: string | null;
-  filePath: string | null;
+  documentPath: string | null;
 }
 
 export interface AddChatDocument {
