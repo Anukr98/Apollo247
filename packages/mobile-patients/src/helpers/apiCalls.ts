@@ -190,6 +190,7 @@ export interface PackageInclusion {
   SampleRemarks: string;
   SampleTypeName: string;
   TestParameters: string;
+  TestName?: string; // getting TestInclusion value in TestName from API
 }
 
 export interface TestPackage {

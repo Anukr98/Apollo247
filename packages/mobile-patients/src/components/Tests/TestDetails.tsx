@@ -134,26 +134,35 @@ export interface TestDetailsProps
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
-  const sku = 'ICA0005'; //props.navigation.getParam('sku');
   const testDetails = props.navigation.getParam('testDetails');
   console.log({ testDetails });
-  const TestDetailsDiscription = testDetails.PackageInClussion;
+
+  const [testInfo, setTestInfo] = useState<TestPackage>(testDetails);
+
+  const TestDetailsDiscription = testInfo.PackageInClussion;
+  aphConsole.log('....' + TestDetailsDiscription);
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length;
 
   const [PackageData, setPackageData] = useState<TestPackage>({} as any);
-  const currentItemId = props.navigation.getParam('itemid');
+  const currentItemId = testInfo.ItemID;
+  aphConsole.log('currentItemId : ' + currentItemId);
 
   useEffect(() => {
-    getPackageData(currentItemId)
-      .then(({ data }) => {
-        aphConsole.log('getPackageData \n', { data });
-        const _data = g(data, 'data') || [];
-        setPackageData({ PackageInClussion: _data, ItemID: currentItemId } as TestPackage);
-      })
-      .catch((e) => {
-        aphConsole.log('getPackageData Error \n', { e });
-      });
+    !TestDetailsDiscription &&
+      getPackageData(currentItemId)
+        .then(({ data }) => {
+          aphConsole.log('getPackageData \n', { data });
+          // const _data = g(data, 'data') || [];
+          aphConsole.log(JSON.stringify(data.data));
+          setTestInfo({ ...testInfo, PackageInClussion: data.data || [] });
+
+          aphConsole.log('TestDetailsDiscription :....');
+          // setPackageData({ PackageInClussion: _data, ItemID: currentItemId } as TestPackage);
+        })
+        .catch((e) => {
+          aphConsole.log('getPackageData Error \n', { e });
+        });
   }, []);
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -190,25 +199,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     return (
       <View style={{ overflow: 'hidden', padding: 20 }}>
         <View>
-          <Text style={styles.testNameStyles}>{testDetails.ItemName}</Text>
-          {!!testDetails.FromAgeInDays && (
+          <Text style={styles.testNameStyles}>{testInfo.ItemName}</Text>
+          {!!testInfo.FromAgeInDays && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Age Group</Text>
               <Text style={styles.personDetailStyles}>
-                {(testDetails.FromAgeInDays / 365).toFixed(0)} TO
-                {(testDetails.ToAgeInDays / 365).toFixed(0)} YEARS
+                {(testInfo.FromAgeInDays / 365).toFixed(0)} TO
+                {(testInfo.ToAgeInDays / 365).toFixed(0)} YEARS
               </Text>
             </View>
           )}
 
-          {!!testDetails.Gender && (
+          {!!testInfo.Gender && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Gender</Text>
               <Text style={styles.personDetailStyles}>
                 FOR{' '}
-                {testDetails.Gender == 'B'
+                {testInfo.Gender == 'B'
                   ? 'BOYS AND GIRLS'
-                  : testDetails.Gender == 'M'
+                  : testInfo.Gender == 'M'
                   ? 'BOYS'
                   : 'GIRLS'}
               </Text>
@@ -218,7 +227,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
               <Text style={styles.personDetailStyles}>
-                {TestDetailsDiscription.map((item) => item.SampleTypeName)
+                {testInfo.PackageInClussion.map((item) => item.SampleTypeName)
                   .filter((i) => i)
                   .filter((i, idx, array) => array.indexOf(i) >= idx)
                   .join(', ')}
@@ -258,10 +267,10 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderTestsIncludedData = () => {
     return (
       <View style={styles.descriptionStyles}>
-        {TestDetailsDiscription.map((item, i) => (
+        {testInfo.PackageInClussion.map((item, i) => (
           <View key={i}>
             <Text style={styles.descriptionTextStyles}>
-              {i + 1}. {item.TestInclusion}
+              {i + 1}. {item.TestInclusion || item.TestName}
             </Text>
           </View>
         ))}
@@ -284,46 +293,50 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
-  const isAddedToCart = !!cartItems.find((item) => item.id == testDetails.ItemID);
+  const isAddedToCart = !!cartItems.find((item) => item.id == testInfo.ItemID);
   console.log('isAddedToCart' + isAddedToCart);
 
-  return (
-    <SafeAreaView
-      style={{
-        ...theme.viewStyles.container,
-      }}
-    >
-      {renderHeader()}
-      <ScrollView bounces={false} keyboardDismissMode="on-drag">
-        <View>{renderTestDetails()}</View>
-        {renderTabsData()}
-        {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
-      </ScrollView>
-      <StickyBottomComponent defaultBG style={styles.container}>
-        <View style={{ marginBottom: 11, alignItems: 'flex-end' }}>
-          <Text style={styles.priceText}>Rs. {testDetails.Rate}</Text>
-        </View>
+  if (!TestDetailsDiscription) {
+    return null;
+  } else {
+    return (
+      <SafeAreaView
+        style={{
+          ...theme.viewStyles.container,
+        }}
+      >
+        {renderHeader()}
+        <ScrollView bounces={false} keyboardDismissMode="on-drag">
+          <View>{renderTestDetails()}</View>
+          {renderTabsData()}
+          {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
+        </ScrollView>
+        <StickyBottomComponent defaultBG style={styles.container}>
+          <View style={{ marginBottom: 11, alignItems: 'flex-end' }}>
+            <Text style={styles.priceText}>Rs. {testInfo.Rate}</Text>
+          </View>
 
-        <View style={styles.SeparatorStyle}></View>
+          <View style={styles.SeparatorStyle}></View>
 
-        <View style={{ flex: 1, alignItems: 'center', marginHorizontal: 60 }}>
-          <Button
-            title={!isAddedToCart ? 'ADD TO CART' : 'ADDED TO CART'}
-            disabled={!isAddedToCart ? false : true}
-            style={{ flex: 1, marginBottom: 16 }}
-            onPress={() =>
-              addCartItem!({
-                id: testDetails.ItemID,
-                name: testDetails.ItemName,
-                mou: `${testDetails.PackageInClussion.length}`,
-                price: testDetails.Rate,
-                thumbnail: '',
-                specialPrice: undefined,
-              })
-            }
-          />
-        </View>
-      </StickyBottomComponent>
-    </SafeAreaView>
-  );
+          <View style={{ flex: 1, alignItems: 'center', marginHorizontal: 60 }}>
+            <Button
+              title={!isAddedToCart ? 'ADD TO CART' : 'ADDED TO CART'}
+              disabled={!isAddedToCart ? false : true}
+              style={{ flex: 1, marginBottom: 16 }}
+              onPress={() =>
+                addCartItem!({
+                  id: testInfo.ItemID,
+                  name: testInfo.ItemName,
+                  mou: `${testInfo.PackageInClussion.length}`,
+                  price: testInfo.Rate,
+                  thumbnail: '',
+                  specialPrice: undefined,
+                })
+              }
+            />
+          </View>
+        </StickyBottomComponent>
+      </SafeAreaView>
+    );
+  }
 };
