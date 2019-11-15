@@ -180,6 +180,7 @@ export const AuthProvider: React.FC = (props) => {
             reject();
             return;
           }
+          TrackJS.track(`phoneNumber: ${phoneNumber}`);
           TrackJS.track(phoneAuthResult);
           otpVerifier = phoneAuthResult;
           setSendOtpError(false);
@@ -205,6 +206,7 @@ export const AuthProvider: React.FC = (props) => {
     }
     setIsVerifyingOtp(true);
     const [otpAuthResult, otpError] = await wait(otpVerifier.confirm(otp));
+    TrackJS.track(otpError);
     setVerifyOtpError(Boolean(otpError || !otpAuthResult.user));
     setIsVerifyingOtp(false);
   };

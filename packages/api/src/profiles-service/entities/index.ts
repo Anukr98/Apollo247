@@ -62,10 +62,14 @@ export enum MEDICINE_ORDER_STATUS {
 }
 
 export enum UPLOAD_FILE_TYPES {
-  JPG = 'JPG',
   PNG = 'PNG',
   JPEG = 'JPEG',
   PDF = 'PDF',
+}
+
+export enum PRISM_DOCUMENT_CATEGORY {
+  HealthChecks = 'HealthChecks',
+  OpSummary = 'OpSummary',
 }
 
 export enum DIAGNOSTICS_TYPE {

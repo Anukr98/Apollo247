@@ -832,7 +832,18 @@ export const MyProfile: React.FC<DoctorDetailsProps> = (props) => {
 
   useEffect(() => {
     if (doctorSecretary === null && doctor && doctor.doctorSecretary) {
-      addDoctorSecretary(userDetails!.doctorSecretary!.secretary);
+      client
+        .query<GetDoctorDetails>({ query: GET_DOCTOR_DETAILS, fetchPolicy: 'no-cache' })
+        .then((_data) => {
+          addDoctorSecretary(
+            _data.data.getDoctorDetails!.doctorSecretary
+              ? _data.data.getDoctorDetails!.doctorSecretary!.secretary
+              : null
+          );
+        })
+        .catch((e) => {
+          console.log('Error occured while fetching Doctor', e);
+        });
     }
     if (currentUserType !== LoggedInUserType.SECRETARY) {
       getSecretary();

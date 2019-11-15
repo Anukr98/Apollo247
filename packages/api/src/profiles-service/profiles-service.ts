@@ -71,6 +71,14 @@ import {
 } from 'profiles-service/resolvers/getMedicineOrdersList';
 import { uploadFileTypeDefs, uploadFileResolvers } from 'profiles-service/resolvers/uploadFile';
 import {
+  uploadDocumentTypeDefs,
+  uploadDocumentResolvers,
+} from 'profiles-service/resolvers/uploadDocumentToPrism';
+import {
+  downloadDocumentsTypeDefs,
+  downloadDocumentsResolvers,
+} from 'profiles-service/resolvers/downloadDocumentsFromPrism';
+import {
   addPatientMedicalRecordTypeDefs,
   addPatientMedicalRecordResolvers,
 } from 'profiles-service/resolvers/addMedicalRecord';
@@ -255,6 +263,14 @@ import path from 'path';
         resolvers: uploadFileResolvers,
       },
       {
+        typeDefs: uploadDocumentTypeDefs,
+        resolvers: uploadDocumentResolvers,
+      },
+      {
+        typeDefs: downloadDocumentsTypeDefs,
+        resolvers: downloadDocumentsResolvers,
+      },
+      {
         typeDefs: addPatientMedicalRecordTypeDefs,
         resolvers: addPatientMedicalRecordResolvers,
       },
@@ -331,7 +347,6 @@ import path from 'path';
              to request-specific lifecycle events. */
           const reqStartTime = new Date();
           const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
-          console.log(reqStartTimeFormatted);
           return {
             parsingDidStart(requestContext) {
               winston.log({

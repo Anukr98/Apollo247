@@ -363,6 +363,13 @@ export const ConsultTabs: React.FC = () => {
   const [jrdName, setJrdName] = useState<string>('');
   const [jrdSubmitDate, setJrdSubmitDate] = useState<string>('');
 
+  useEffect(() => {
+    if (startAppointment) {
+      followUp[0] = startAppointment;
+      setFollowUp(followUp);
+    }
+  }, [startAppointment]);
+
   /* case sheet data*/
 
   /* need to be worked later */

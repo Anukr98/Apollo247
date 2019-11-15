@@ -208,12 +208,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
     { key: 'followup', value: 'Follow up', state: followUpPanel, component: <FollowUp /> },
   ];
 
-  const { notes, setSRDNotes, followUp, setFollowUp } = useContext(CaseSheetContext);
-
-  useEffect(() => {
-    followUp[0] = props.startAppointment;
-    setFollowUp(followUp);
-  }, [props.startAppointment]);
+  const { notes, setSRDNotes } = useContext(CaseSheetContext);
 
   const handlePanelExpansion = (expansionKey: string) => (
     e: React.ChangeEvent<{}>,
