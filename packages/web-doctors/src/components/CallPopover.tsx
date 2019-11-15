@@ -633,18 +633,17 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   };
 
   // timer for miss called
-  const [remainingCallTime, setRemainingCallTime] = useState<number>(61);
+  const [remainingCallTime, setRemainingCallTime] = useState<number>(180);
   const callIntervalTimer = (timer: number) => {
     intervalcallId = setInterval(() => {
       timer = timer - 1;
       stoppedTimerCall = timer;
       setRemainingCallTime(timer);
-      console.log(timer);
       if (timer < 1) {
         setRemainingCallTime(0);
         clearInterval(intervalcallId);
         if (patientMsgs.length === 0 || props.appointmentStatus === STATUS.IN_PROGRESS) {
-          //console.log(props.appointmentStatus)
+          console.log(props.appointmentStatus, patientMsgs.length);
           noShowAction();
         }
       }
@@ -1005,6 +1004,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
     clearError();
   }, [cancelReason]);
+  useEffect(() => {
+    if (props.appointmentStatus === STATUS.COMPLETED) {
+      setRemainingCallTime(0);
+      clearInterval(intervalcallId);
+    }
+  }, [props.appointmentStatus]);
   const pubnub = new Pubnub(config);
 
   useEffect(() => {
@@ -1455,7 +1460,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
                       props.startAppointmentClick(!props.startAppointment);
                       props.createSessionAction();
                       setCaseSheetEdit(true);
-                      callIntervalTimer(61);
+                      callIntervalTimer(180);
                     }}
                   >
                     <svg
