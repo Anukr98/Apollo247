@@ -19,7 +19,7 @@ export const uploadChatDocumentTypeDefs = gql`
 
   type UploadedDocumentDetails {
     id: String
-    filePath: String
+    documentPath: String
   }
 
   type ChatDocumentDeleteResult {
@@ -112,7 +112,7 @@ const uploadChatDocument: Resolver<
 
 type UploadedDocumentDetails = {
   id: string;
-  filePath: string;
+  documentPath: string;
 };
 
 const addChatDocument: Resolver<
@@ -139,7 +139,7 @@ const addChatDocument: Resolver<
   };
   const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
   const appointmentDocuments = await appointmentDocumentRepo.saveDocument(documentAttrs);
-  return { id: appointmentDocuments.id, filePath: appointmentDocuments.documentPath };
+  return { id: appointmentDocuments.id, documentPath: appointmentDocuments.documentPath };
 };
 
 type ChatDocumentDeleteResult = {
