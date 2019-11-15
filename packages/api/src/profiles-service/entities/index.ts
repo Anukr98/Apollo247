@@ -487,6 +487,9 @@ export class Patient extends BaseEntity {
   @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
   medicineOrders: MedicineOrders[];
 
+  // @OneToMany((type) => DiagnosticOrders, (diagnosticOrders) => diagnosticOrders.patient)
+  // diagnosticOrders: DiagnosticOrders[];
+
   @OneToMany((type) => MedicalRecords, (medicalRecords) => medicalRecords.patient)
   medicalRecords: MedicalRecords[];
 

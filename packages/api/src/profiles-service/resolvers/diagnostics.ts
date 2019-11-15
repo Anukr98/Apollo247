@@ -3,6 +3,8 @@ import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { DIAGNOSTICS_TYPE } from 'profiles-service/entities';
 import { DiagnosticsRepository } from 'profiles-service/repositories/diagnosticsRepository';
+import fetch from 'node-fetch';
+import { format } from 'date-fns';
 
 export const diagnosticsTypeDefs = gql`
   enum DIAGNOSTICS_TYPE {
@@ -36,9 +38,31 @@ export const diagnosticsTypeDefs = gql`
     itemType: DIAGNOSTICS_TYPE
   }
 
+  type DiagnosticSlotsResult {
+    diagnosticSlot: [EmployeeSlots]
+  }
+
+  type EmployeeSlots {
+    employeeCode: String
+    employeeName: String
+    slotInfo: [SlotInfo]
+  }
+
+  type SlotInfo {
+    slot: Int
+    startTime: String
+    endTime: String
+    status: String
+  }
+
   extend type Query {
     searchDiagnostics(city: String, patientId: String, searchText: String): SearchDiagnosticsResult!
     getDiagnosticsCites(patientId: String, cityName: String): GetAllCitiesResult!
+    getDiagnosticSlots(
+      patientId: String
+      hubCode: String
+      selectedDate: Date
+    ): DiagnosticSlotsResult!
   }
 `;
 
@@ -65,6 +89,23 @@ type Diagnostics = {
   city: string;
   state: string;
   itemType: DIAGNOSTICS_TYPE;
+};
+
+type DiagnosticSlotsResult = {
+  diagnosticSlot: EmployeeSlots[];
+};
+
+type EmployeeSlots = {
+  employeeCode: string;
+  employeeName: string;
+  slotInfo: SlotInfo[];
+};
+
+type SlotInfo = {
+  slot: number;
+  startTime: string;
+  endTime: string;
+  status: string;
 };
 
 const searchDiagnostics: Resolver<
@@ -94,9 +135,28 @@ const getDiagnosticsCites: Resolver<
   return { diagnosticsCities };
 };
 
+const getDiagnosticSlots: Resolver<
+  null,
+  { patientId: String; hubCode: string; selectedDate: Date },
+  ProfilesServiceContext,
+  DiagnosticSlotsResult
+> = async (patent, args, { profilesDb }) => {
+  const selDate = format(args.selectedDate, 'yyyy-MM-dd');
+  const diagnosticSlotsUrl = process.env.DIAGNOSTIC_SLOTS_URL;
+  const diagnosticSlot = await fetch(
+    `${diagnosticSlotsUrl}&jobType=home_collection&hubCode=${args.hubCode}&date=${selDate}`
+  )
+    .then((res) => res.json())
+    .catch((error) => {
+      console.log('diagnostic slot error', error);
+    });
+  return { diagnosticSlot };
+};
+
 export const diagnosticsResolvers = {
   Query: {
     searchDiagnostics,
     getDiagnosticsCites,
+    getDiagnosticSlots,
   },
 };
