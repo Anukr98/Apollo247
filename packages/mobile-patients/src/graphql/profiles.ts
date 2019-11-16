@@ -1371,3 +1371,13 @@ export const GET_DIAGNOSTICS_CITES = gql`
     }
   }
 `;
+
+export const SAVE_DIAGNOSTIC_ORDER = gql`
+  mutation SaveDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
+    SaveDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      errorCode
+      errorMessage
+      orderId
+    }
+  }
+`;

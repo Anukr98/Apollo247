@@ -23,6 +23,19 @@ export interface DiagnosticsCartItem {
   collectionMethod: 'H/C' | 'C' | 'H'; // Home or Clinic (most probably `H` will not be an option)
 }
 
+export interface DiagnosticClinic extends Clinic {
+  date: number; // timestamp
+}
+
+export interface DiagnosticSlot {
+  employeeSlotId: number;
+  diagnosticEmployeeCode: string;
+  slotStartTime: string;
+  slotEndTime: string;
+  city: string;
+  date: number; // timestamp
+}
+
 export interface DiagnosticsCartContextProps {
   forPatientId: string;
   setPatientId: ((id: string) => void) | null;
@@ -80,6 +93,12 @@ export interface DiagnosticsCartContextProps {
 
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
   clearCartInfo: (() => void) | null;
+
+  diagnosticSlot: DiagnosticSlot | null;
+  setDiagnosticSlot: ((item: DiagnosticSlot) => void) | null;
+
+  diagnosticClinic: DiagnosticClinic | null;
+  setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -129,6 +148,11 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setPinCode: null,
 
   clearCartInfo: null,
+
+  diagnosticClinic: null,
+  diagnosticSlot: null,
+  setDiagnosticClinic: null,
+  setDiagnosticSlot: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -176,6 +200,14 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [ePrescriptions, _setEPrescriptions] = useState<
     DiagnosticsCartContextProps['ePrescriptions']
   >([]);
+
+  const [diagnosticClinic, setDiagnosticClinic] = useState<
+    DiagnosticsCartContextProps['diagnosticClinic']
+  >(null);
+
+  const [diagnosticSlot, setDiagnosticSlot] = useState<
+    DiagnosticsCartContextProps['diagnosticSlot']
+  >(null);
 
   const setEPrescriptions: DiagnosticsCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
@@ -406,6 +438,11 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setPinCode,
 
         clearCartInfo,
+
+        diagnosticClinic,
+        setDiagnosticClinic,
+        diagnosticSlot,
+        setDiagnosticSlot,
       }}
     >
       {props.children}

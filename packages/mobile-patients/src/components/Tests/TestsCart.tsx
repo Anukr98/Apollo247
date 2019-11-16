@@ -591,8 +591,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               color: '#0087ba',
             }}
           >
-            Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
-            from a nearby clinic, or change the pincode.
+            {(currentPatient && currentPatient.firstName) || 'Hi'}, our diagnostic services are only
+            available in Chennai and Hyderabad for now. Kindly enter a prin code for Chennai or
+            Hyderabad to proceed.
           </Text>
         )}
 

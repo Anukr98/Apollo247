@@ -13,6 +13,8 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import {
   MedicineCartItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
+  DiagnosticOrderInput,
+  DiagnosticLineItem,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveMedicineOrder,
@@ -46,6 +48,11 @@ import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp'
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import {
+  SaveDiagnosticOrder,
+  SaveDiagnosticOrderVariables,
+} from '../graphql/types/SaveDiagnosticOrder';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -184,6 +191,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     clearCartInfo,
     physicalPrescriptions,
     ePrescriptions,
+
+    diagnosticSlot,
+    diagnosticClinic,
   } = useDiagnosticsCart();
 
   const { currentPatient } = useAllCurrentPatients();
@@ -199,10 +209,10 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const MAX_SLIDER_VALUE = grandTotal;
   const client = useApolloClient();
 
-  const saveOrder = (orderInfo: SaveMedicineOrderVariables) =>
-    client.mutate<SaveMedicineOrder, SaveMedicineOrderVariables>({
+  const saveOrder = (orderInfo: DiagnosticOrderInput) =>
+    client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
       mutation: SAVE_MEDICINE_ORDER,
-      variables: orderInfo,
+      variables: { diagnosticOrderInput: orderInfo },
     });
 
   const savePayment = (paymentInfo: SaveMedicineOrderPaymentVariables) =>
@@ -211,25 +221,113 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       variables: paymentInfo,
     });
 
-  const placeOrder = (orderId: string, orderAutoId: number) => {
-    savePayment({
-      medicinePaymentInput: {
-        orderId: orderId,
-        orderAutoId: orderAutoId,
-        amountPaid: grandTotal,
-        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
-        paymentStatus: 'success',
-        responseCode: '',
-        responseMessage: '',
-      },
-    })
-      .then(({ data }) => {
-        const { errorCode, errorMessage } = ((data &&
-          data.SaveMedicineOrder &&
-          data.SaveMedicineOrder) ||
-          {}) as SaveMedicineOrder_SaveMedicineOrder;
+  // const placeOrder = (orderId: string, orderAutoId: number) => {
+  //   savePayment({
+  //     medicinePaymentInput: {
+  //       orderId: orderId,
+  //       orderAutoId: orderAutoId,
+  //       amountPaid: grandTotal,
+  //       paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+  //       paymentStatus: 'success',
+  //       responseCode: '',
+  //       responseMessage: '',
+  //     },
+  //   })
+  //     .then(({ data }) => {
+  //       const { errorCode, errorMessage } = ((data &&
+  //         data.SaveMedicineOrder &&
+  //         data.SaveMedicineOrder) ||
+  //         {}) as SaveMedicineOrder_SaveMedicineOrder;
 
-        console.log({ errorCode, errorMessage });
+  //       console.log({ errorCode, errorMessage });
+  //       setShowSpinner(false);
+  //       if (errorCode || errorMessage) {
+  //         showAphAlert!({
+  //           title: `Uh oh.. :(`,
+  //           description: `Order failed, ${errorMessage}.`,
+  //         });
+  //         // Order-failed
+  //       } else {
+  //         // Order-Success
+  //         // Show popup here & clear info
+  //         clearCartInfo && clearCartInfo();
+  //         setOrderInfo({
+  //           orderId: orderId,
+  //           orderAutoId: orderAutoId,
+  //           pickupStoreAddress: '',
+  //           pickupStoreName: '',
+  //         });
+  //         setShowOrderPopup(true);
+  //       }
+  //     })
+  //     .catch((e) => {
+  //       setShowSpinner(false);
+  //       aphConsole.log({ e });
+  //       showAphAlert!({
+  //         title: `Uh oh.. :(`,
+  //         description: `Something went wrong, unable to place order.`,
+  //       });
+  //     });
+  // };
+
+  const redirectToPaymentGateway = async (orderId: string, orderAutoId: number) => {
+    const token = await firebase.auth().currentUser!.getIdToken();
+    console.log({ token });
+    props.navigation.navigate(AppRoutes.PaymentScene, {
+      orderId,
+      orderAutoId,
+      token,
+      amount: grandTotal,
+    });
+  };
+
+  const initiateOrder = async () => {
+    const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
+    const { slotStartTime, slotEndTime, employeeSlotId, date, diagnosticEmployeeCode, city } =
+      diagnosticSlot || {};
+    setShowSpinner(true);
+    const orderInfo: DiagnosticOrderInput = {
+      // for home collection order
+      diagnosticBranchCode: 'HYD_HUB1',
+      diagnosticEmployeeCode: diagnosticEmployeeCode || '',
+      employeeSlotId: employeeSlotId!,
+      slotTimings: slotStartTime && slotEndTime ? `${slotStartTime} - ${slotEndTime}` : '',
+      diagnosticDate: moment(date).format('YYYY-MM-DD'),
+      patientAddressId: deliveryAddressId!,
+      city: city || '',
+      // for clinic order
+      centerName: CentreName || '',
+      centerCode: CentreCode || '',
+      centerCity: City || '',
+      centerState: State || '',
+      centerLocality: Locality || '',
+
+      totalPrice: grandTotal,
+      patientId: (currentPatient && currentPatient.id) || '',
+      prescriptionUrl: [
+        ...physicalPrescriptions.map((item) => item.uploadedUrl),
+        ...ePrescriptions.map((item) => item.uploadedUrl),
+      ].join(','),
+      items: cartItems.map(
+        (item) =>
+          ({
+            itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
+            price: (item.specialPrice as number) || item.price,
+            quantity: 1,
+          } as DiagnosticLineItem)
+      ),
+    };
+
+    console.log(JSON.stringify(orderInfo));
+    saveOrder(orderInfo)
+      .then(({ data }) => {
+        console.log('\nOrder-Success\n', { data });
+        const { orderId, orderAutoId, errorCode, errorMessage } = ((data &&
+          data.SaveDiagnosticOrder &&
+          data.SaveDiagnosticOrder) ||
+          {}) as SaveMedicineOrder_SaveMedicineOrder;
+        // if (isCashOnDelivery) {
+        // only CashOnDelivery supported as of now
         setShowSpinner(false);
         if (errorCode || errorMessage) {
           showAphAlert!({
@@ -248,76 +346,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
             pickupStoreName: '',
           });
           setShowOrderPopup(true);
-        }
-      })
-      .catch((e) => {
-        setShowSpinner(false);
-        aphConsole.log({ e });
-        showAphAlert!({
-          title: `Uh oh.. :(`,
-          description: `Something went wrong, unable to place order.`,
-        });
-      });
-  };
-
-  const redirectToPaymentGateway = async (orderId: string, orderAutoId: number) => {
-    const token = await firebase.auth().currentUser!.getIdToken();
-    console.log({ token });
-    props.navigation.navigate(AppRoutes.PaymentScene, {
-      orderId,
-      orderAutoId,
-      token,
-      amount: grandTotal,
-    });
-  };
-
-  const initiateOrder = async () => {
-    setShowSpinner(true);
-    const orderInfo: SaveMedicineOrderVariables = {
-      MedicineCartInput: {
-        quoteId: null,
-        patientId: (currentPatient && currentPatient.id) || '',
-        shopId: clinicId || null,
-        patientAddressId: deliveryAddressId!,
-        medicineDeliveryType: deliveryType!,
-        devliveryCharges: deliveryCharges,
-        estimatedAmount: grandTotal,
-        prescriptionImageUrl: [
-          ...physicalPrescriptions.map((item) => item.uploadedUrl),
-          ...ePrescriptions.map((item) => item.uploadedUrl),
-        ].join(','),
-        items: cartItems.map(
-          (item) =>
-            ({
-              medicineSKU: item.id,
-              price: item.price,
-              medicineName: item.name,
-              quantity: 1,
-              mrp: item.price,
-              // isPrescriptionNeeded: item.prescriptionRequired,
-              prescriptionImageUrl: null,
-              mou: parseInt(item.mou),
-              isMedicine: null,
-            } as MedicineCartItem)
-        ),
-      },
-    };
-
-    console.log(JSON.stringify(orderInfo));
-    saveOrder(orderInfo)
-      .then(({ data }) => {
-        const { orderId, orderAutoId } = ((data &&
-          data.SaveMedicineOrder &&
-          data.SaveMedicineOrder) ||
-          {}) as SaveMedicineOrder_SaveMedicineOrder;
-        console.log({ orderAutoId, orderId });
-        if (isCashOnDelivery) {
-          placeOrder(orderId, orderAutoId);
-        } else {
-          console.log('redirectToPaymentGateway');
-          redirectToPaymentGateway(orderId, orderAutoId).finally(() => {
-            setShowSpinner(false);
-          });
         }
       })
       .catch((error) => {
