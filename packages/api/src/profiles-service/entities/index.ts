@@ -1239,3 +1239,30 @@ export class DiagnosticHotSellers extends BaseEntity {
   @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticHotSellers)
   diagnostics: Diagnostics;
 }
+
+@Entity()
+export class DiagnosticPincodeHubs extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  route: string;
+
+  @Column({ nullable: true })
+  city: string;
+
+  @Column({ nullable: true })
+  pincode: number;
+
+  @Column({ nullable: true })
+  pincodeAreaname: string;
+
+  @Column({ nullable: true })
+  pccDropPoint: string;
+
+  @Column({ nullable: true })
+  pccEmail: string;
+
+  @Column({ nullable: true })
+  areaName: string;
+}

@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Diagnostics } from 'profiles-service/entities';
+import { Diagnostics, DiagnosticPincodeHubs } from 'profiles-service/entities';
 
 @EntityRepository(Diagnostics)
 export class DiagnosticsRepository extends Repository<Diagnostics> {
@@ -23,5 +23,9 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
       ])
       .groupBy('city')
       .getRawMany();
+  }
+
+  findHubByZipCode(pincode: string) {
+    return DiagnosticPincodeHubs.findOne({ where: { pincode } });
   }
 }

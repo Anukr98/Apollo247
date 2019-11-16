@@ -11,6 +11,8 @@ import { DiagnosticsRepository } from 'profiles-service/repositories/diagnostics
 import { DiagnosticOrgansRepository } from 'profiles-service/repositories/diagnosticOrgansRepository';
 import fetch from 'node-fetch';
 import { format } from 'date-fns';
+import { AphError } from 'AphError';
+import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
 export const diagnosticsTypeDefs = gql`
   enum DIAGNOSTICS_TYPE {
@@ -183,10 +185,13 @@ const getDiagnosticSlots: Resolver<
   ProfilesServiceContext,
   DiagnosticSlotsResult
 > = async (patent, args, { profilesDb }) => {
+  const diagnosticRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
+  const hubDetails = await diagnosticRepo.findHubByZipCode(args.zipCode.toString());
+  if (hubDetails == null) throw new AphError(AphErrorMessages.INVALID_ZIPCODE, undefined, {});
   const selDate = format(args.selectedDate, 'yyyy-MM-dd');
   const diagnosticSlotsUrl = process.env.DIAGNOSTIC_SLOTS_URL;
   const diagnosticSlot = await fetch(
-    `${diagnosticSlotsUrl}&jobType=home_collection&hubCode=${args.hubCode}&date=${selDate}`
+    `${diagnosticSlotsUrl}&jobType=home_collection&hubCode=${hubDetails.route}&date=${selDate}`
   )
     .then((res) => res.json())
     .catch((error) => {
