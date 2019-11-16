@@ -37,6 +37,11 @@ export enum DEVICE_TYPE {
   IOS = "IOS",
 }
 
+export enum DIAGNOSTICS_TYPE {
+  PACKAGE = "PACKAGE",
+  TEST = "TEST",
+}
+
 export enum DiscountType {
   AMOUNT = "AMOUNT",
   PERCENT = "PERCENT",
@@ -128,6 +133,12 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum REQUEST_ROLES {
+  DOCTOR = "DOCTOR",
+  JUNIOR = "JUNIOR",
+  PATIENT = "PATIENT",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -167,6 +178,11 @@ export enum SpecialtySearchType {
   NAME = "NAME",
 }
 
+export enum TEST_COLLECTION_TYPE {
+  CENTER = "CENTER",
+  HC = "HC",
+}
+
 export enum TRANSFER_INITIATED_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
@@ -196,9 +212,9 @@ export interface AddMedicalRecordInput {
 }
 
 export interface AddMedicalRecordParametersInput {
-  parameterName: string;
+  parameterName?: string | null;
   unit?: MedicalTestUnit | null;
-  result: number;
+  result?: number | null;
   minimum?: number | null;
   maximum?: number | null;
 }
@@ -246,13 +262,38 @@ export interface BookTransferAppointmentInput {
 export interface CancelAppointmentInput {
   appointmentId: string;
   cancelReason?: string | null;
-  cancelledBy: TRANSFER_INITIATED_TYPE;
+  cancelledBy: REQUEST_ROLES;
   cancelledById: string;
 }
 
 export interface ChooseDoctorInput {
   slotDateTime: any;
   specialityId: string;
+}
+
+export interface DiagnosticLineItem {
+  itemId?: number | null;
+  price?: number | null;
+  quantity?: number | null;
+}
+
+export interface DiagnosticOrderInput {
+  patientId: string;
+  patientAddressId: string;
+  city: string;
+  slotTimings: string;
+  employeeSlotId: number;
+  diagnosticEmployeeCode: string;
+  diagnosticBranchCode: string;
+  totalPrice: number;
+  prescriptionUrl: string;
+  diagnosticDate: any;
+  centerName: string;
+  centerCode: string;
+  centerCity: string;
+  centerState: string;
+  centerLocality: string;
+  items?: (DiagnosticLineItem | null)[] | null;
 }
 
 export interface DoctorAvailabilityInput {

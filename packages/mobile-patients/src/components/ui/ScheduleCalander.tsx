@@ -19,6 +19,7 @@ import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHel
 import { timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
+import moment from 'moment';
 import {
   Dimensions,
   Platform,
@@ -29,6 +30,14 @@ import {
   View,
 } from 'react-native';
 import { MaterialMenu } from './MaterialMenu';
+import {
+  getDiagnosticSlots,
+  getDiagnosticSlotsVariables,
+} from '../../graphql/types/getDiagnosticSlots';
+import { useAllCurrentPatients } from '../../hooks/authHooks';
+import { GET_DIAGNOSTIC_SLOTS } from '../../graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Spinner } from './Spinner';
 
 const { width, height } = Dimensions.get('window');
 
@@ -122,6 +131,9 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
   const [dropArray, setDropArray] = useState<TimeOptionArray[]>(props!.dropdownArray!);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>(props.selectedTimeSlot);
   const [selectedDrop, setSelectedDrop] = useState<TimeOptionArray>();
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   useEffect(() => {
     if (!!props.selectedTimeSlot) {
       timeArray &&
@@ -141,7 +153,43 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
       <CalendarView
         date={date}
         onPressDate={(selectedDate) => {
+          console.log(moment(selectedDate).format('YYYY-MM-DD'), 'selectedDate');
           setDate(selectedDate);
+          setshowSpinner(true);
+          client
+            .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+              query: GET_DIAGNOSTIC_SLOTS,
+              fetchPolicy: 'no-cache',
+              variables: {
+                patientId: currentPatient!.id,
+                hubCode: 'HYD_HUB1',
+                selectedDate: moment(selectedDate).format('YYYY-MM-DD'),
+                zipCode: 500033,
+              },
+            })
+            .then(({ data }) => {
+              console.log(data, 'GET_DIAGNOSTIC_SLOTScal');
+              setshowSpinner(false);
+              var finalaray =
+                data &&
+                data.getDiagnosticSlots! &&
+                data.getDiagnosticSlots!.diagnosticSlot![0] &&
+                data.getDiagnosticSlots!.diagnosticSlot![0].slotInfo;
+
+              var t = finalaray!.map((item) => {
+                return {
+                  label: (item!.slot || '').toString(),
+                  time: `${item!.startTime} - ${item!.endTime}`,
+                };
+              });
+              console.log(t, 'finalaray');
+              settimeArray(t);
+            })
+            .catch((e: string) => {
+              setshowSpinner(false);
+              console.log('Error occured', e);
+            })
+            .finally(() => {});
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {
@@ -352,6 +400,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             <View style={{ height: 96 }} />
           </ScrollView>
           {renderTimeSelectButton()}
+          {showSpinner && <Spinner />}
         </View>
       </View>
     </View>

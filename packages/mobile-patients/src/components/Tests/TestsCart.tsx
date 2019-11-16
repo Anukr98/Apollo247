@@ -28,7 +28,11 @@ import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsCompon
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { GET_PATIENT_ADDRESS_LIST, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_PATIENT_ADDRESS_LIST,
+  UPLOAD_FILE,
+  GET_DIAGNOSTIC_SLOTS,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   getPatientAddressList,
@@ -46,7 +50,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
+
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -56,6 +60,13 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  getDiagnosticSlots,
+  getDiagnosticSlotsVariables,
+} from '../../graphql/types/getDiagnosticSlots';
+import { array } from 'prop-types';
+import { Spinner } from '../ui/Spinner';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -195,16 +206,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     { title: 'Home Visit', subtitle: 'Appointment Slot' },
     { title: 'Clinic Visit', subtitle: 'Clinic Hours' },
   ];
-  const [timeArray, settimeArray] = useState<TimeArray>([
-    { label: 'slot1', time: '6:00 am - 6:45 am' },
-    { label: 'slot2', time: '6:45 am - 7:30 am' },
-    { label: 'slot3', time: '7:30 am - 8:15 am' },
-    { label: 'slot4', time: '8:15 am - 9:00 am' },
-    { label: 'slot5', time: '9:00 am - 9:45 am' },
-    { label: 'slot6', time: '9:45 am - 10:30 am' },
-    { label: 'slot7', time: '10:30 am - 11:15 am' },
-    { label: 'slot8', time: '11:15 am - 12:00 pm' },
-  ]);
+  const [timeArray, settimeArray] = useState<TimeArray>([]);
 
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
   const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
@@ -221,6 +223,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
 
   useEffect(() => {
     setPatientId!(currentPatientId!);
@@ -645,7 +648,44 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <Text
           style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
           onPress={() => {
-            setDisplaySchedule(true);
+            var date = moment(new Date()).format('YYYY-MM-DD');
+            console.log(date, 'calenderdate');
+            setshowSpinner(true);
+            client
+              .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+                query: GET_DIAGNOSTIC_SLOTS,
+                fetchPolicy: 'no-cache',
+                variables: {
+                  patientId: currentPatient!.id,
+                  hubCode: 'HYD_HUB1',
+                  selectedDate: date,
+                  zipCode: 500033,
+                },
+              })
+              .then(({ data }) => {
+                console.log(data, 'GET_DIAGNOSTIC_SLOTS');
+                setshowSpinner(false);
+                var finalaray =
+                  data &&
+                  data.getDiagnosticSlots! &&
+                  data.getDiagnosticSlots!.diagnosticSlot![0] &&
+                  data.getDiagnosticSlots!.diagnosticSlot![0].slotInfo;
+
+                var t = finalaray!.map((item) => {
+                  return {
+                    label: (item!.slot || '').toString(),
+                    time: `${item!.startTime} - ${item!.endTime}`,
+                  };
+                });
+                console.log(t, 'finalaray');
+                settimeArray(t);
+                setDisplaySchedule(true);
+              })
+              .catch((e: string) => {
+                setshowSpinner(false);
+                console.log('Error occured', e);
+              })
+              .finally(() => {});
           }}
         >
           PICK ANOTHER SLOT
@@ -1017,6 +1057,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>
+        {showSpinner && <Spinner />}
       </SafeAreaView>
     </View>
   );
