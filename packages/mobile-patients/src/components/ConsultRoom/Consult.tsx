@@ -896,6 +896,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               }
               // selectedProfile={profile}
               setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+              navigation={props.navigation}
             ></ProfileList>
             {/* <MaterialMenu
               onPress={(item) => {
@@ -1227,14 +1228,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         </BottomPopUp>
       )}
       {showSpinner && <Spinner />}
-      {displayAddProfile && (
+      {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
           setProfile={(profile) => {
             setProfile(profile);
           }}
         />
-      )}
+      )} */}
       {showOfflinePopup && <NoInterNetPopup onClickClose={() => setshowOfflinePopup(false)} />}
     </View>
   );

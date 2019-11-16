@@ -176,12 +176,14 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     //   }
 
     ImagePicker.openPicker({
-      cropping: false,
+      cropping: true,
       includeBase64: true,
       multiple: true,
       compressImageQuality: 0.1,
     })
       .then((response) => {
+        console.log('res', response);
+
         setshowSpinner(false);
         props.onResponse(
           'CAMERA_AND_GALLERY',

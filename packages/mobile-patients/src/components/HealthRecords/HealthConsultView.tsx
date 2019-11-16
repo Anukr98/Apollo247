@@ -111,26 +111,7 @@ type rowData = {
   status: string;
   desease: string;
 };
-const data: rowData = {
-  id: 'id',
-  salutation: 'Dr',
-  firstName: 'Mamatha',
-  lastName: 'V',
-  qualification: 'MBBS',
-  mobileNumber: '2345678909',
-  experience: '2',
-  languages: 'English,Telugu',
-  city: 'Hyderabad',
-  awards: '',
-  photoUrl:
-    'https://image.shutterstock.com/image-photo/smiling-doctor-posing-arms-crossed-600w-519507367.jpg',
-  specialty: undefined,
-  registrationNumber: '',
-  onlineConsultationFees: '',
-  physicalConsultationFees: '',
-  status: 'Follow-up to 20 Apr 2019',
-  desease: 'Cold, Cough, Fever, Nausea',
-};
+
 export interface HealthConsultViewProps extends NavigationScreenProps {
   PastData?: any; //getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults;
   onPressOrder?: () => void;
@@ -142,10 +123,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
   const { setCartItems, cartItems, setEPrescriptions, ePrescriptions } = useShoppingCart();
   const [loading, setLoading] = useState<boolean>(true);
   const { currentPatient } = useAllCurrentPatients();
-  console.log(
-    'PastData',
-    props.PastData && props.PastData.doctorInfo && props.PastData.doctorInfo.photoUrl
-  );
 
   let item = (g(props, 'PastData', 'caseSheet') || []).find((obj: any) => {
     return (
@@ -154,7 +131,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       obj!.doctorType === 'PAYROLL'
     );
   });
-  // console.log('pharama', item);
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();

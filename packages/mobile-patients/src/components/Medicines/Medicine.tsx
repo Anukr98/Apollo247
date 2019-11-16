@@ -1154,6 +1154,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               }
               // selectedProfile={profile}
               setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+              navigation={props.navigation}
             ></ProfileList>
           </View>
           {/* <Text
@@ -1180,14 +1181,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
-      {displayAddProfile && (
+      {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
           setProfile={(profile) => {
             setProfile(profile);
           }}
         />
-      )}
+      )} */}
       {renderEPrescriptionModal()}
       {renderUploadPrescriprionPopup()}
     </View>

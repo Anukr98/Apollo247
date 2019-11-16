@@ -47,7 +47,7 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { BottomPopUp } from '../ui/BottomPopUp';
 
 const styles = StyleSheet.create({
@@ -235,14 +235,17 @@ const relationArray: RelationArray[] = [
 
 export interface EditProfileProps extends NavigationScreenProps {
   isEdit: boolean;
+  isPoptype?: boolean;
 }
 {
 }
 
 export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const isEdit = props.navigation.getParam('isEdit');
+  const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
   const { allCurrentPatients } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
 
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
@@ -265,12 +268,29 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
       ? false
-      : value == '' || /^[a-zA-Z]+(([' ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+      : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
       ? true
       : false;
 
   const isSatisfyingEmailRegex = (value: string) =>
-    /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+      value
+    );
+
+  const _setFirstName = (value: string) => {
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
+      setFirstName(value);
+    } else {
+      return false;
+    }
+  };
+  const _setLastName = (value: string) => {
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
+      setLastName(value);
+    } else {
+      return false;
+    }
+  };
 
   const isValidProfile =
     firstName &&
@@ -342,10 +362,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         },
       })
       .then((data) => {
-        props.navigation.pop(2);
-        props.navigation.push(AppRoutes.ManageProfile, {
-          mobileNumber: props.navigation.getParam('mobileNumber'),
-        });
+        getPatientApiCall();
+        props.navigation.goBack();
+        // props.navigation.pop(2);
+        // props.navigation.push(AppRoutes.ManageProfile, {
+        //   mobileNumber: props.navigation.getParam('mobileNumber'),
+        // });
       })
       .catch((e) => {
         Alert.alert('Alert', e.message);
@@ -374,10 +396,14 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         },
       })
       .then((data) => {
-        props.navigation.pop(2);
-        props.navigation.push(AppRoutes.ManageProfile, {
-          mobileNumber: props.navigation.getParam('mobileNumber'),
-        });
+        getPatientApiCall();
+        props.navigation.goBack();
+        // isPoptype
+        //   ? (props.navigation.goBack(), getPatientApiCall())
+        //   : (props.navigation.pop(2),
+        //     props.navigation.push(AppRoutes.ManageProfile, {
+        //       mobileNumber: props.navigation.getParam('mobileNumber'),
+        //     }));
       })
       .catch((e) => {
         Alert.alert('Alert', e.message);
@@ -620,12 +646,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         <TextInputComponent
           label={'Full Name'}
           value={`${firstName}`}
-          onChangeText={(fname) => setFirstName(fname)}
+          onChangeText={(fname) => _setFirstName(fname)}
           placeholder={'First Name'}
         />
         <TextInputComponent
           value={`${lastName}`}
-          onChangeText={(lname) => setLastName(lname)}
+          onChangeText={(lname) => _setLastName(lname)}
           placeholder={'Last Name'}
         />
         <TextInputComponent label={'Date Of Birth'} noInput={true} />
@@ -658,12 +684,39 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           <View style={styles.bottomButtonStyle}>
             <Button
               onPress={() => {
-                setFirstName(firstName.trim());
-                setLastName(lastName.trim());
-                setEmail(email.trim());
-                isEdit ? updateUserProfile() : newProfile();
+                // setFirstName(firstName.trim());
+                // setLastName(lastName.trim());
+                // setEmail(email.trim());
+                // console.log(
+                //   firstName.length,
+                //   firstName,
+                //   'fname',
+                //   isSatisfyingNameRegex(firstName),
+                //   !firstName && isSatisfyingNameRegex(firstName),
+                //   firstName && isSatisfyingNameRegex(firstName),
+                //   !firstName && !isSatisfyingNameRegex(firstName)
+                // );
+
+                let validationMessage = '';
+                if (!(firstName && isSatisfyingNameRegex(firstName))) {
+                  validationMessage = 'Enter valid first name';
+                } else if (!(lastName && isSatisfyingNameRegex(lastName))) {
+                  validationMessage = 'Enter valid last name';
+                } else if (!date) {
+                  validationMessage = 'Enter valid date of birth';
+                } else if (!gender) {
+                  validationMessage = 'Select a geder';
+                } else if (!relation) {
+                  validationMessage = 'Select a vaild relation';
+                } else if (!(email === '' || (email && isSatisfyingEmailRegex(email)))) {
+                  validationMessage = 'Enter valid email';
+                }
+                if (validationMessage) {
+                  Alert.alert('Error', validationMessage);
+                } else {
+                  isEdit ? updateUserProfile() : newProfile();
+                }
               }}
-              disabled={!isValidProfile}
               title={'SAVE'}
               style={styles.bottomButtonStyle}
             />
@@ -759,7 +812,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       {/* {deleteProfile && isEdit && renderDeleteButton()} */}
       {loading && <Spinner />}
       {bottomPopUp && (
-        <BottomPopUp title="Apollo" description="Me is already choosen for another profile.">
+        <BottomPopUp title="Apollo" description="'Self' is already choosen for another profile.">
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               style={{

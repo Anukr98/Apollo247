@@ -763,6 +763,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             setdisplayOrderPopup(false);
           }}
           getData={(data: (PickerImage | PickerImage[])[]) => {
+            console.log('dataimage', data);
+
             setImages([...(Images as PickerImage[]), ...(data as PickerImage[])]);
             setdisplayOrderPopup(false);
           }}

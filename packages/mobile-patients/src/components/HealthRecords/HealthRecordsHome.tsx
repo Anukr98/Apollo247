@@ -145,8 +145,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   }, [currentPatient]);
 
   const fetchPastData = (filters: filterDataType[] = []) => {
-    console.log('fetcgpasd', currentPatient && currentPatient.id);
-
     const filterArray = [];
     const selectedOptions =
       filters.length > 0 && filters[0].selectedOptions ? filters[0].selectedOptions : [];
@@ -203,7 +201,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 .getTime()
           );
 
-        console.log('sort', array);
+        // console.log('sort', array);
         setarrayValues(array);
         //setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
 
@@ -219,7 +217,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const fetchData = useCallback(
     (loading: boolean = false) => {
-      console.log('fetchData', currentPatient && currentPatient.id);
       loading && setLoading(true);
       client
         .query<getPatientMedicalRecords>({
@@ -332,6 +329,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             }
             selectedProfile={profile}
             setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            navigation={props.navigation}
           ></ProfileList>
           {/* <MaterialMenu
             onPress={(item) => {
@@ -606,14 +604,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         />
       )}
       {loading && <Spinner />}
-      {displayAddProfile && (
+      {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
           setProfile={(profile) => {
             setProfile(profile);
           }}
         />
-      )}
+      )} */}
     </View>
   );
 };
