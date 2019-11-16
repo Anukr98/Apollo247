@@ -471,7 +471,9 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     const minutes = Math.floor(timer / 60);
     const seconds = timer - minutes * 60;
 
-    return `${minutes} : ${seconds}`;
+    return `${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
+      seconds.toString().length < 2 ? '0' + seconds : seconds
+    }`;
   };
   // console.log(isSigningIn, currentPatient, isVerifyingOtp);
   return (

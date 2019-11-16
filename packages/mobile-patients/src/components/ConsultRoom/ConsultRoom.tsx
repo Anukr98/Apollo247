@@ -667,6 +667,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           paddingRight: 8,
                           borderRightWidth: 0,
                           borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                          backgroundColor: theme.colors.WHITE,
                         }}
                       >
                         <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
@@ -681,6 +682,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     }
                     selectedProfile={profile}
                     setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+                    navigation={props.navigation}
                   ></ProfileList>
                   {/* <Text style={styles.hiTextStyle}>
                     {string.home.hi} {userName}!
@@ -810,14 +812,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </View>
       </BottomPopUp> */}
       {showSpinner && <Spinner />}
-      {displayAddProfile && (
+      {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
           setProfile={(profile) => {
             setProfile(profile);
           }}
         />
-      )}
+      )} */}
       <NotificationListener navigation={props.navigation} />
     </View>
   );

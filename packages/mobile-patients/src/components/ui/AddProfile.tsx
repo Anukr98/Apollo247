@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
   },
   buttonViewStyle: {
     width: '30%',
+    marginRight: 16,
     backgroundColor: 'white',
   },
   selectedButtonViewStyle: {
@@ -120,10 +121,10 @@ const GenderOptions: genderOptions[] = [
     name: Gender.FEMALE,
     title: 'Female',
   },
-  {
-    name: Gender.OTHER,
-    title: 'Other',
-  },
+  // {
+  //   name: Gender.OTHER,
+  //   title: 'Other',
+  // },
 ];
 
 export interface AddProfileProps {
@@ -146,9 +147,29 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
       ? false
-      : value == '' || /^[a-zA-Z]+(([' ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+      : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
       ? true
       : false;
+
+  const isSatisfyingEmailRegex = (value: string) =>
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+      value
+    );
+
+  const _setFirstName = (value: string) => {
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
+      setFirstName(value);
+    } else {
+      return false;
+    }
+  };
+  const _setLastName = (value: string) => {
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
+      setLastName(value);
+    } else {
+      return false;
+    }
+  };
 
   const isValidProfile =
     firstName &&
@@ -218,9 +239,23 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
           <View style={styles.buttonSeperatorStyle} />
           <Button
             onPress={() => {
-              newProfile();
+              let validationMessage = '';
+              if (!(firstName && isSatisfyingNameRegex(firstName))) {
+                validationMessage = 'Enter valid first name';
+              } else if (!(lastName && isSatisfyingNameRegex(lastName))) {
+                validationMessage = 'Enter valid last name';
+              } else if (!date) {
+                validationMessage = 'Enter valid date of birth';
+              } else if (!gender) {
+                validationMessage = 'Select a geder';
+              }
+              if (validationMessage) {
+                Alert.alert('Error', validationMessage);
+              } else {
+                newProfile();
+              }
             }}
-            disabled={!isValidProfile}
+            // disabled={!isValidProfile}
             title={'SAVE & USE'}
             style={styles.bottomButtonStyle}
           />
@@ -282,12 +317,12 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
             <TextInputComponent
               label={'Full Name'}
               value={`${firstName}`}
-              onChangeText={(fname) => setFirstName(fname)}
+              onChangeText={(fname) => _setFirstName(fname)}
               placeholder={'First Name'}
             />
             <TextInputComponent
               value={`${lastName}`}
-              onChangeText={(lname) => setLastName(lname)}
+              onChangeText={(lname) => _setLastName(lname)}
               placeholder={'Last Name'}
             />
             <TextInputComponent label={'Date Of Birth'} noInput={true} />
@@ -330,7 +365,7 @@ export const AddProfile: React.FC<AddProfileProps> = (props) => {
             <View
               style={{
                 flexDirection: 'row',
-                justifyContent: 'space-between',
+                justifyContent: 'flex-start',
                 marginBottom: 10,
                 paddingHorizontal: 2,
               }}

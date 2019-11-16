@@ -289,6 +289,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
                       paddingRight: 8,
                       borderRightWidth: 0,
                       borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                      backgroundColor: theme.colors.WHITE,
                     }}
                   >
                     <View style={{ marginRight: 60 }}>
@@ -298,6 +299,7 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
                 }
                 selectedProfile={profile}
                 setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+                navigation={props.navigation}
               ></ProfileList>
             </View>
           }
@@ -309,14 +311,14 @@ export const SymptomChecker: React.FC<SymptomCheckerProps> = (props) => {
           {...patientAge}
         />
       </SafeAreaView>
-      {displayAddProfile && (
+      {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
           setProfile={(profile) => {
             setProfile(profile);
           }}
         />
-      )}
+      )} */}
     </View>
   );
 };

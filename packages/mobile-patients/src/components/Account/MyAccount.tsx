@@ -211,7 +211,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
     const input = {
       deviceToken: currentDeviceToken.deviceToken,
-      patientId: currentPatient ? currentPatient.id : '',
+      patientId: currentPatient ? currentPatient && currentPatient.id : '',
     };
     console.log('deleteDeviceTokenInput', input);
 
@@ -295,7 +295,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             </TouchableOpacity>
           }
         />
-        <View
+        {/* <View
           style={{
             zIndex: 3,
             position: 'absolute',
@@ -312,7 +312,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           >
             <ApolloLogo />
           </TouchableOpacity>
-        </View>
+        </View> */}
       </>
     );
   };
@@ -321,7 +321,17 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     return (
       <View>
         <ListCard
-          container={{ marginTop: 20 }}
+          container={{ marginTop: 14 }}
+          title={'Manage Profiles'}
+          leftIcon={<NotificaitonAccounts />}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.ManageProfile, {
+              mobileNumber: profileDetails && profileDetails.mobileNumber,
+            })
+          }
+        />
+        <ListCard
+          container={{ marginTop: 4 }}
           title={'Address Book'}
           leftIcon={<Location />}
           onPress={() => props.navigation.navigate(AppRoutes.AddressBook)}
@@ -373,7 +383,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              DEV V 1.0(48)
+              DEV V 1.0(51)
             </Text>
           </View>
         </Animated.ScrollView>

@@ -156,7 +156,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
-
+  const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -400,13 +400,14 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         .then((data: any) => {
           setshowSpinner(false);
           console.log(data, 'data');
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-            })
-          );
+          setSucessPopup(true);
+          // props.navigation.dispatch(
+          //   StackActions.reset({
+          //     index: 0,
+          //     key: null,
+          //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+          //   })
+          // );
         })
         .catch((e: string) => {
           setshowSpinner(false);
@@ -700,6 +701,41 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   }}
                 >
                   <Text style={styles.gotItTextStyles}>{'CANCEL CONSULT'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </BottomPopUp>
+        )}
+        {sucesspopup && (
+          <BottomPopUp
+            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
+            description={'Appointment sucessfully cancelled'}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                marginHorizontal: 20,
+                //justifyContent: 'space-between',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <View style={{ height: 60 }}>
+                <TouchableOpacity
+                  style={styles.gotItStyles}
+                  onPress={() => {
+                    setShowCancelPopup(false);
+                    setSucessPopup(false);
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                      })
+                    );
+                  }}
+                >
+                  <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
                 </TouchableOpacity>
               </View>
             </View>
