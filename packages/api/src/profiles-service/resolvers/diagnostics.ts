@@ -195,6 +195,7 @@ const getDiagnosticSlots: Resolver<
   )
     .then((res) => res.json())
     .catch((error) => {
+      throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, {});
       console.log('diagnostic slot error', error);
     });
   return { diagnosticSlot };
