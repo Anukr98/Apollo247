@@ -61,6 +61,9 @@ import {
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SearchTestScene } from '@aph/mobile-patients/src/components/Medicines/SearchTestScene';
 import { TestsCheckoutScene } from '@aph/mobile-patients/src/components/TestsCheckoutScene';
+import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/YourOrdersTests';
+import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/TestOrderDetails';
+import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -116,6 +119,9 @@ export enum AppRoutes {
   TestDetails = 'TestDetails',
   EditProfile = 'EditProfile',
   ManageProfile = 'ManageProfile',
+  YourOrdersTest = 'YourOrdersTest',
+  TestOrderDetails = 'TestOrderDetails',
+  ClinicSelection = 'ClinicSelection',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -295,6 +301,15 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.ManageProfile]: {
     screen: ManageProfile,
+  },
+  [AppRoutes.YourOrdersTest]: {
+    screen: YourOrdersTest,
+  },
+  [AppRoutes.TestOrderDetails]: {
+    screen: TestOrderDetails,
+  },
+  [AppRoutes.ClinicSelection]: {
+    screen: ClinicSelection,
   },
 };
 

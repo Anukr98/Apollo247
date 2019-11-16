@@ -16,7 +16,7 @@ import {
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { timeTo12HrFormat, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import moment from 'moment';
@@ -33,11 +33,13 @@ import { MaterialMenu } from './MaterialMenu';
 import {
   getDiagnosticSlots,
   getDiagnosticSlotsVariables,
+  getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot,
 } from '../../graphql/types/getDiagnosticSlots';
 import { useAllCurrentPatients } from '../../hooks/authHooks';
 import { GET_DIAGNOSTIC_SLOTS } from '../../graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Spinner } from './Spinner';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -124,6 +126,14 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
   ];
   const { isIphoneX } = DeviceHelper();
 
+  const {
+    diagnosticSlot,
+    setDiagnosticSlot,
+    addresses,
+    deliveryAddressId,
+    setDiagnosticClinic,
+  } = useDiagnosticsCart();
+
   const [type, setType] = useState<CALENDAR_TYPE>(props.CALENDAR_TYPE);
   const [date, setDate] = useState<Date>(props.date);
   const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
@@ -156,6 +166,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
           console.log(moment(selectedDate).format('YYYY-MM-DD'), 'selectedDate');
           setDate(selectedDate);
           setshowSpinner(true);
+          setDropArray([]);
           client
             .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
               query: GET_DIAGNOSTIC_SLOTS,
@@ -170,20 +181,32 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             .then(({ data }) => {
               console.log(data, 'GET_DIAGNOSTIC_SLOTScal');
               setshowSpinner(false);
-              var finalaray =
-                data &&
-                data.getDiagnosticSlots! &&
-                data.getDiagnosticSlots!.diagnosticSlot![0] &&
-                data.getDiagnosticSlots!.diagnosticSlot![0].slotInfo;
+              var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+              // data &&
+              // data.getDiagnosticSlots! &&
+              // data.getDiagnosticSlots!.diagnosticSlot![0] &&
+              // data.getDiagnosticSlots!.diagnosticSlot![0].slotInfo;
+              // data.getDiagnosticSlots!.diagnosticSlot![0] &&
+              //   data.getDiagnosticSlots!.diagnosticSlot![0].
+              const selectedAddress = addresses.find((item) => deliveryAddressId == item.id);
+              setDiagnosticSlot &&
+                setDiagnosticSlot({
+                  employeeSlotId: 0,
+                  diagnosticEmployeeCode: finalaray!.employeeCode || '',
+                  slotStartTime: '',
+                  slotEndTime: '',
+                  city: selectedAddress!.city || '',
+                  date: date.getTime(),
+                });
 
-              var t = finalaray!.map((item) => {
+              var t = finalaray!.slotInfo!.map((item) => {
                 return {
                   label: (item!.slot || '').toString(),
                   time: `${item!.startTime} - ${item!.endTime}`,
                 };
               });
               console.log(t, 'finalaray');
-              settimeArray(t);
+              setDropArray(t);
             })
             .catch((e: string) => {
               setshowSpinner(false);
@@ -328,9 +351,16 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         <Button
           title={`Done`}
           onPress={() => {
+            setDiagnosticSlot &&
+              setDiagnosticSlot({
+                ...diagnosticSlot!,
+                slotStartTime: selectedDrop!.time.split('-')[0],
+                slotEndTime: selectedDrop!.time.split('-')[1],
+                date: date.getTime(),
+              });
             props.setDate(date);
             props.setdisplayoverlay(false);
-            props.setselectedTimeSlot(selectedTimeSlot);
+            props.setselectedTimeSlot(selectedDrop!.time);
           }}
         />
       </StickyBottomComponent>

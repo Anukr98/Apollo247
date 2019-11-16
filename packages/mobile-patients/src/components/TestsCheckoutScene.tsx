@@ -40,6 +40,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import {
   SAVE_MEDICINE_ORDER,
   SAVE_MEDICINE_ORDER_PAYMENT,
+  SAVE_DIAGNOSTIC_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { SaveMedicineOrderPaymentVariables } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPayment';
 import { handleGraphQlError, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -211,7 +212,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const saveOrder = (orderInfo: DiagnosticOrderInput) =>
     client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
-      mutation: SAVE_MEDICINE_ORDER,
+      mutation: SAVE_DIAGNOSTIC_ORDER,
       variables: { diagnosticOrderInput: orderInfo },
     });
 
@@ -288,9 +289,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     setShowSpinner(true);
     const orderInfo: DiagnosticOrderInput = {
       // for home collection order
-      diagnosticBranchCode: 'HYD_HUB1',
+      diagnosticBranchCode: CentreCode ? 'HYD_HUB1' : '',
       diagnosticEmployeeCode: diagnosticEmployeeCode || '',
-      employeeSlotId: employeeSlotId!,
+      employeeSlotId: employeeSlotId! || 0,
       slotTimings: slotStartTime && slotEndTime ? `${slotStartTime} - ${slotEndTime}` : '',
       diagnosticDate: moment(date).format('YYYY-MM-DD'),
       patientAddressId: deliveryAddressId!,
@@ -322,10 +323,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     saveOrder(orderInfo)
       .then(({ data }) => {
         console.log('\nOrder-Success\n', { data });
-        const { orderId, orderAutoId, errorCode, errorMessage } = ((data &&
-          data.SaveDiagnosticOrder &&
-          data.SaveDiagnosticOrder) ||
-          {}) as SaveMedicineOrder_SaveMedicineOrder;
+        const { orderId, errorCode, errorMessage } =
+          (data && data.SaveDiagnosticOrder && data.SaveDiagnosticOrder) || {};
         // if (isCashOnDelivery) {
         // only CashOnDelivery supported as of now
         setShowSpinner(false);
@@ -341,7 +340,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           clearCartInfo && clearCartInfo();
           setOrderInfo({
             orderId: orderId,
-            orderAutoId: orderAutoId,
+            orderAutoId: '',
             pickupStoreAddress: '',
             pickupStoreName: '',
           });
