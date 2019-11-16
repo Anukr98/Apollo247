@@ -26,6 +26,10 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
   }
 
   getListOfOrders(patient: string) {
-    return this.find({ where: { patient } });
+    return this.find({ where: { patient }, relations: ['diagnosticOrderLineItems'] });
+  }
+
+  getOrderDetails(id: string) {
+    return this.findOne({ where: { id }, relations: ['diagnosticOrderLineItems'] });
   }
 }
