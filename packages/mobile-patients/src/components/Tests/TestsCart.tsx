@@ -190,6 +190,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     ePrescriptions,
     forPatientId,
     setPatientId,
+    diagnosticClinic,
+    diagnosticSlot,
+    setDiagnosticClinic,
+    setDiagnosticSlot,
   } = useDiagnosticsCart();
 
   const clinicHours: clinicHoursData[] = [
@@ -480,7 +484,21 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.YourCart, 'Check service availability');
-                checkServicability(item);
+                const tests = cartItems.filter((item) => item.collectionMethod == 'C');
+
+                if (tests.length) {
+                  showAphAlert!({
+                    title: 'Uh oh! :(',
+                    description: `${(currentPatient && currentPatient.firstName) ||
+                      'Hi'}, since your cart includes tests (${tests
+                      .map((item) => item.name)
+                      .join(
+                        ', '
+                      )}), that can only be done at the centre, we request you to get all tests in your cart done at the centre of your convenience. Please proceed to select.`,
+                  });
+                } else {
+                  checkServicability(item);
+                }
               }}
               containerStyle={{ marginTop: 16 }}
               hideSeparator={index + 1 === array.length}
@@ -498,7 +516,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             {addresses.length > 2 && (
               <Text
                 style={styles.yellowTextStyle}
-                onPress={() => props.navigation.navigate(AppRoutes.SelectDeliveryAddress)}
+                onPress={() =>
+                  props.navigation.navigate(AppRoutes.SelectDeliveryAddress, { isTest: true })
+                }
               >
                 VIEW ALL
               </Text>
@@ -607,6 +627,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             isSelected={clinicId === item.CentreCode}
             onPress={() => {
               CommonLogEvent(AppRoutes.YourCart, 'Set store id');
+              setDiagnosticClinic!({ ...item, date: date.getTime() });
               setClinicId && setClinicId(item.CentreCode);
             }}
             containerStyle={{ marginTop: 16 }}
@@ -618,9 +639,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             <Text
               style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
               onPress={() =>
-                props.navigation.navigate(AppRoutes.StorPickupScene, {
+                props.navigation.navigate(AppRoutes.ClinicSelection, {
                   pincode: pinCode,
-                  stores: clinics,
+                  clinics: clinicDetails,
                 })
               }
             >
@@ -641,9 +662,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         </View>
         <View style={styles.rowSpaceBetweenStyle}>
           <Text style={styles.dateTextStyle}>Time</Text>
-          <Text style={styles.dateTextStyle}>
-            {selectedTimeSlot ? timeTo12HrFormat(selectedTimeSlot) : ''}
-          </Text>
+          <Text style={styles.dateTextStyle}>{selectedTimeSlot ? selectedTimeSlot : ''}</Text>
         </View>
         <Text
           style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}

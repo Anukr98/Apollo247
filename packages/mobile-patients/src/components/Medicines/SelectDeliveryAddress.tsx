@@ -11,6 +11,7 @@ import { Spinner } from '../ui/Spinner';
 import { pinCodeServiceabilityApi } from '../../helpers/apiCalls';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '../NavigatorContainer';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -24,11 +25,13 @@ const styles = StyleSheet.create({
 export interface SelectDeliveryAddressProps extends NavigationScreenProps {}
 
 export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (props) => {
+  const isTest = props.navigation.getParam('isTest');
+
   const {
     addresses: addressList,
     deliveryAddressId: selectedAddressId,
     setDeliveryAddressId: setSelectedAddressId,
-  } = useShoppingCart();
+  } = isTest ? useDiagnosticsCart() : useShoppingCart();
   const [selectedId, setselectedId] = useState<string>(selectedAddressId);
   const [selectedPinCode, setselectedPinCode] = useState<string>(selectedAddressId);
   const [loading, setLoading] = useState<boolean>(false);
