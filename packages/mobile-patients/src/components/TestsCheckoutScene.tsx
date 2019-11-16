@@ -562,10 +562,10 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const renderOrderInfoPopup = () => {
     const navigateOnSuccess = (showOrderSummaryTab: boolean) => {
-      props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+      props.navigation.navigate(AppRoutes.TestOrderDetails, {
         goToHomeOnBack: true,
         showOrderSummaryTab,
-        orderAutoId: orderInfo.orderAutoId,
+        orderId: orderInfo.orderId,
       });
     };
 
