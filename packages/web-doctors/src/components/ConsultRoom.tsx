@@ -16,6 +16,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
 import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
+import { GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetCaseSheet';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
@@ -337,12 +338,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploadErrorMessage, setFileUploadErrorMessage] = React.useState<string>('');
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const { documentArray, setDocumentArray } = useContext(CaseSheetContext);
 
   const apolloClient = useApolloClient();
   // const [convertVideo, setConvertVideo] = useState<boolean>(false);
 
-  // const covertVideoMsg = '^^convert`video^^';
-  // const covertAudioMsg = '^^convert`audio^^';
+  const covertVideoMsg = '^^convert`video^^';
+  const covertAudioMsg = '^^convert`audio^^';
   const videoCallMsg = '^^callme`video^^';
   const audioCallMsg = '^^callme`audio^^';
   const stopcallMsg = '^^callme`stop^^';
@@ -451,7 +453,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== followupconsult &&
           message.message.message !== patientConsultStarted &&
           message.message.message !== firstMessage &&
-          message.message.message !== secondMessage
+          message.message.message !== secondMessage &&
+          message.message.message !== covertVideoMsg &&
+          message.message.message !== covertAudioMsg
         ) {
           setIsNewMsg(true);
         } else {
@@ -515,7 +519,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const uploadfile = (url: string) => {
-    console.log('ram');
+    // console.log('ram');
     apolloClient
       .mutate<AddChatDocument, AddChatDocumentVariables>({
         mutation: ADD_CHAT_DOCUMENT,
@@ -523,12 +527,13 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         variables: { appointmentId: props.appointmentId, documentPath: url },
       })
       .then((_data) => {
-        if (_data && _data.data) {
-          console.log('Document ', _data.data.addChatDocument);
+        if (_data && _data.data && _data.data.addChatDocument) {
+          // console.log('Document ', _data.data.addChatDocument);
+          setDocumentArray((_data.data.addChatDocument as unknown) as appointmentDocument);
         }
       })
       .catch((error: ApolloError) => {
-        console.log(error);
+        // console.log(error);
       });
   };
 
@@ -584,7 +589,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -660,7 +667,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       leftComponent = 0;
       jrDrComponent = 0;
@@ -728,7 +737,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       jrDrComponent++;
       leftComponent = 0;

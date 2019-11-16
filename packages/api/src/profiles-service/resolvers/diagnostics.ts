@@ -1,13 +1,26 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { DIAGNOSTICS_TYPE } from 'profiles-service/entities';
+import {
+  DIAGNOSTICS_TYPE,
+  TEST_COLLECTION_TYPE,
+  DiagnosticOrgans,
+  DiagnosticHotSellers,
+} from 'profiles-service/entities';
 import { DiagnosticsRepository } from 'profiles-service/repositories/diagnosticsRepository';
+import { DiagnosticOrgansRepository } from 'profiles-service/repositories/diagnosticOrgansRepository';
+import fetch from 'node-fetch';
+import { format } from 'date-fns';
 
 export const diagnosticsTypeDefs = gql`
   enum DIAGNOSTICS_TYPE {
     TEST
     PACKAGE
+  }
+
+  enum TEST_COLLECTION_TYPE {
+    HC
+    CENTER
   }
 
   type SearchDiagnosticsResult {
@@ -34,11 +47,57 @@ export const diagnosticsTypeDefs = gql`
     city: String!
     state: String!
     itemType: DIAGNOSTICS_TYPE
+    fromAgeInDays: Int!
+    collectionType: TEST_COLLECTION_TYPE
+  }
+
+  type DiagnosticSlotsResult {
+    diagnosticSlot: [EmployeeSlots]
+  }
+
+  type EmployeeSlots {
+    employeeCode: String
+    employeeName: String
+    slotInfo: [SlotInfo]
+  }
+
+  type SlotInfo {
+    slot: Int
+    startTime: String
+    endTime: String
+    status: String
+  }
+
+  type DiagnosticOrgans {
+    id: ID!
+    organName: String
+    organImage: String
+    diagnostics: Diagnostics
+  }
+
+  type DiagnosticHotSellers {
+    id: ID!
+    packageName: String
+    price: Float
+    packageImage: String
+    diagnostics: Diagnostics
+  }
+
+  type DiagnosticsData {
+    diagnosticOrgans: [DiagnosticOrgans]
+    diagnosticHotSellers: [DiagnosticHotSellers]
   }
 
   extend type Query {
     searchDiagnostics(city: String, patientId: String, searchText: String): SearchDiagnosticsResult!
     getDiagnosticsCites(patientId: String, cityName: String): GetAllCitiesResult!
+    getDiagnosticSlots(
+      patientId: String
+      hubCode: String
+      selectedDate: Date
+      zipCode: Int
+    ): DiagnosticSlotsResult!
+    getDiagnosticsData: DiagnosticsData!
   }
 `;
 
@@ -65,6 +124,30 @@ type Diagnostics = {
   city: string;
   state: string;
   itemType: DIAGNOSTICS_TYPE;
+  fromAgeInDays: number;
+  collectionType: TEST_COLLECTION_TYPE;
+};
+
+type DiagnosticSlotsResult = {
+  diagnosticSlot: EmployeeSlots[];
+};
+
+type EmployeeSlots = {
+  employeeCode: string;
+  employeeName: string;
+  slotInfo: SlotInfo[];
+};
+
+type SlotInfo = {
+  slot: number;
+  startTime: string;
+  endTime: string;
+  status: string;
+};
+
+type DiagnosticsData = {
+  diagnosticOrgans: DiagnosticOrgans[];
+  diagnosticHotSellers: DiagnosticHotSellers[];
 };
 
 const searchDiagnostics: Resolver<
@@ -94,9 +177,40 @@ const getDiagnosticsCites: Resolver<
   return { diagnosticsCities };
 };
 
+const getDiagnosticSlots: Resolver<
+  null,
+  { patientId: String; hubCode: string; selectedDate: Date; zipCode: number },
+  ProfilesServiceContext,
+  DiagnosticSlotsResult
+> = async (patent, args, { profilesDb }) => {
+  const selDate = format(args.selectedDate, 'yyyy-MM-dd');
+  const diagnosticSlotsUrl = process.env.DIAGNOSTIC_SLOTS_URL;
+  const diagnosticSlot = await fetch(
+    `${diagnosticSlotsUrl}&jobType=home_collection&hubCode=${args.hubCode}&date=${selDate}`
+  )
+    .then((res) => res.json())
+    .catch((error) => {
+      console.log('diagnostic slot error', error);
+    });
+  return { diagnosticSlot };
+};
+
+const getDiagnosticsData: Resolver<null, {}, ProfilesServiceContext, DiagnosticsData> = async (
+  patent,
+  args,
+  { profilesDb }
+) => {
+  const organRepo = profilesDb.getCustomRepository(DiagnosticOrgansRepository);
+  const diagnosticOrgans = await organRepo.getDiagnosticOrgansList();
+  const diagnosticHotSellers = await organRepo.getHotSellersList();
+  return { diagnosticOrgans, diagnosticHotSellers };
+};
+
 export const diagnosticsResolvers = {
   Query: {
     searchDiagnostics,
     getDiagnosticsCites,
+    getDiagnosticSlots,
+    getDiagnosticsData,
   },
 };

@@ -77,6 +77,11 @@ export enum DIAGNOSTICS_TYPE {
   PACKAGE = 'PACKAGE',
 }
 
+export enum TEST_COLLECTION_TYPE {
+  HC = 'HC',
+  CENTER = 'CENTER',
+}
+
 export enum MEDICINE_DELIVERY_TYPE {
   HOME_DELIVERY = 'HOME_DELIVERY',
   STORE_PICKUP = 'STORE_PICKUP',
@@ -119,6 +124,11 @@ export enum MedicalRecordType {
   PHYSICAL_EXAMINATION = 'PHYSICAL_EXAMINATION',
   OPERATIVE_REPORT = 'OPERATIVE_REPORT',
   PATHOLOGY_REPORT = 'PATHOLOGY_REPORT',
+}
+
+export enum DIAGNOSTIC_ORDER_STATUS {
+  PICKUP_REQUESTED = 'PICKUP_REQUESTED',
+  PICKUP_CONFIRMED = 'PICKUP_CONFIRMED',
 }
 
 //medicine orders starts
@@ -486,6 +496,9 @@ export class Patient extends BaseEntity {
 
   @OneToMany((type) => MedicineOrders, (medicineOrders) => medicineOrders.patient)
   medicineOrders: MedicineOrders[];
+
+  @OneToMany((type) => DiagnosticOrders, (diagnosticOrders) => diagnosticOrders.patient)
+  diagnosticOrders: DiagnosticOrders[];
 
   @OneToMany((type) => MedicalRecords, (medicalRecords) => medicalRecords.patient)
   medicalRecords: MedicalRecords[];
@@ -1032,4 +1045,197 @@ export class Diagnostics extends BaseEntity {
 
   @Column({ nullable: true })
   cityId: number;
+
+  @Column({ default: TEST_COLLECTION_TYPE.HC })
+  collectionType: TEST_COLLECTION_TYPE;
+
+  @OneToMany((type) => DiagnosticOrgans, (diagnosticOrgans) => diagnosticOrgans.diagnostics)
+  diagnosticOrgans: DiagnosticOrgans[];
+
+  @OneToMany(
+    (type) => DiagnosticHotSellers,
+    (diagnosticHotSellers) => diagnosticHotSellers.diagnostics
+  )
+  diagnosticHotSellers: DiagnosticHotSellers[];
+}
+
+// Diagnostic orders
+@Entity()
+export class DiagnosticOrders extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  patientAddressId: string;
+
+  @Column()
+  city: string;
+
+  @Column()
+  diagnosticBranchCode: string;
+
+  @Column()
+  diagnosticDate: Date;
+
+  @Column()
+  diagnosticEmployeeCode: string;
+
+  @Column()
+  employeeSlotId: number;
+
+  @Column()
+  slotTimings: string;
+
+  @Column({ nullable: true })
+  fareyeId: string;
+
+  @Column({ nullable: true })
+  preBookingId: string;
+
+  @Column({ default: TEST_COLLECTION_TYPE.HC })
+  orderType: TEST_COLLECTION_TYPE;
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  totalPrice: number;
+
+  @Column({ default: DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED })
+  orderStatus: DIAGNOSTIC_ORDER_STATUS;
+
+  @Column({ generated: 'increment' })
+  displayId: number;
+
+  @Column({ nullable: true })
+  prescriptionUrl: string;
+
+  @Column('decimal', { precision: 5, scale: 2, default: 0.0 })
+  collectionCharges: number;
+
+  @Column({ nullable: true })
+  centerCode: string;
+
+  @Column({ nullable: true })
+  centerName: string;
+
+  @Column({ nullable: true })
+  centerCity: string;
+
+  @Column({ nullable: true })
+  centerLocality: string;
+
+  @Column({ nullable: true })
+  centerState: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+
+  @ManyToOne((type) => Patient, (patient) => patient.diagnosticOrders)
+  patient: Patient;
+
+  @OneToMany(
+    (type) => DiagnosticOrderLineItems,
+    (diagnosticOrderLineItems) => diagnosticOrderLineItems.diagnosticOrders
+  )
+  diagnosticOrderLineItems: DiagnosticOrderLineItems[];
+}
+
+//diagnostic orders  line items start
+@Entity()
+export class DiagnosticOrderLineItems extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @ManyToOne(
+    (type) => DiagnosticOrders,
+    (diagnosticOrders) => diagnosticOrders.diagnosticOrderLineItems
+  )
+  diagnosticOrders: DiagnosticOrders;
+
+  @Column()
+  itemId: number;
+
+  @Column()
+  quantity: number;
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  price: number;
+
+  @Column({ type: 'timestamp', nullable: true })
+  updatedDate: Date;
+
+  @BeforeInsert()
+  updateDateCreation() {
+    this.createdDate = new Date();
+  }
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+
+@Entity()
+export class DiagnosticOrgans extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  organName: string;
+
+  @Column({ nullable: true })
+  organImage: string;
+
+  @Column()
+  itemId: number;
+
+  @Column({ default: true })
+  isActive: Boolean;
+
+  @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticOrgans)
+  diagnostics: Diagnostics;
+}
+
+@Entity()
+export class DiagnosticHotSellers extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  packageName: string;
+
+  @Column({ nullable: true })
+  packageImage: string;
+
+  @Column({ default: true })
+  isActive: Boolean;
+
+  @Column('decimal', { precision: 10, scale: 2 })
+  price: number;
+
+  @Column()
+  itemId: number;
+
+  @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticHotSellers)
+  diagnostics: Diagnostics;
 }

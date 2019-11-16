@@ -1,4 +1,4 @@
-import React, { Fragment, useContext } from 'react';
+import React, { Fragment, useContext, useEffect } from 'react';
 import {
   Typography,
   List,
@@ -18,6 +18,7 @@ import { makeStyles, ThemeProvider } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 import { GetCaseSheet_getCaseSheet_pastAppointments } from 'graphql/types/GetCaseSheet';
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles(() => ({
   vaultContainer: {
@@ -343,13 +344,22 @@ export const HealthVault: React.FC = () => {
   const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContext);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
-
+  const { documentArray, setDocumentArray } = useContext(CaseSheetContext);
+  useEffect(() => {
+    if (documentArray && documentArray.documentPath) {
+      const data = {
+        documentPath: documentArray.documentPath,
+      };
+      appointmentDocuments && appointmentDocuments.push(data as appointmentDocumentType);
+      setDocumentArray((null as unknown) as appointmentDocumentType);
+    }
+  });
   return (
     <ThemeProvider theme={theme}>
       <Typography component="div" className={classes.vaultContainer}>
         <Typography component="div">
           <Typography component="h5" variant="h5">
-            Photos uploaded by Patient
+            Photos uploaded
           </Typography>
           <List className={classes.listContainer}>
             {appointmentDocuments && appointmentDocuments.length > 0 ? (

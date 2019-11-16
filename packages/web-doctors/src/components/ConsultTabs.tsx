@@ -321,6 +321,7 @@ export const ConsultTabs: React.FC = () => {
   const [symptoms, setSymptoms] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
   >(null);
+  const [documentArray, setDocumentArray] = useState();
   const [diagnosis, setDiagnosis] = useState<
     GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
   >(null);
@@ -362,6 +363,13 @@ export const ConsultTabs: React.FC = () => {
   const [isAppointmentEnded, setIsAppointmentEnded] = useState<boolean>(false);
   const [jrdName, setJrdName] = useState<string>('');
   const [jrdSubmitDate, setJrdSubmitDate] = useState<string>('');
+
+  useEffect(() => {
+    if (startAppointment) {
+      followUp[0] = startAppointment;
+      setFollowUp(followUp);
+    }
+  }, [startAppointment]);
 
   /* case sheet data*/
 
@@ -824,6 +832,7 @@ export const ConsultTabs: React.FC = () => {
         },
       })
       .then((_data: any) => {
+        setAppointmentStatus(STATUS.IN_PROGRESS);
         setsessionId(_data.data.createAppointmentSession.sessionId);
         settoken(_data.data.createAppointmentSession.appointmentToken);
         //setCaseSheetId(_data.data.createAppointmentSession.caseSheetId);
@@ -867,6 +876,8 @@ export const ConsultTabs: React.FC = () => {
           value={{
             loading: !loaded,
             caseSheetId: appointmentId,
+            documentArray,
+            setDocumentArray,
             patientDetails: casesheetInfo!.getCaseSheet!.patientDetails,
             appointmentInfo: casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment,
             createdDoctorProfile: casesheetInfo!.getCaseSheet!.caseSheetDetails!

@@ -20,12 +20,13 @@ import { CaseSheetContext } from 'context/CaseSheetContext';
 import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
 import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
-
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetJuniorDoctorCaseSheet';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -409,7 +410,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
   const { patientDetails } = useContext(CaseSheetContext);
-
+  const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
   const startIntervalTimer = (timer: number) => {
     // setstartTimerAppoinmentt(true);
     setInterval(() => {
@@ -483,7 +484,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== followupconsult &&
           message.message.message !== patientConsultStarted &&
           message.message.message !== firstMessage &&
-          message.message.message !== secondMessage
+          message.message.message !== secondMessage &&
+          message.message.message !== covertVideoMsg &&
+          message.message.message !== covertAudioMsg
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -529,7 +532,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   };
 
   const uploadfile = (url: string) => {
-    console.log('ram');
+    // console.log('ram');
     apolloClient
       .mutate<AddChatDocument, AddChatDocumentVariables>({
         mutation: ADD_CHAT_DOCUMENT,
@@ -537,12 +540,13 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         variables: { appointmentId: props.appointmentId, documentPath: url },
       })
       .then((_data) => {
-        if (_data && _data.data) {
-          console.log('Document ', _data.data.addChatDocument);
+        if (_data && _data.data && _data.data.addChatDocument) {
+          // console.log('Document ', _data.data.addChatDocument);
+          setDocumentArray((_data.data.addChatDocument as unknown) as appointmentDocument);
         }
       })
       .catch((error: ApolloError) => {
-        console.log(error);
+        // console.log(error);
       });
   };
 
@@ -591,7 +595,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -668,7 +674,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       leftComponent = 0;
       rightComponent++;
