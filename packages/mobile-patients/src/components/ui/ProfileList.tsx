@@ -15,6 +15,8 @@ import { theme } from '../../theme/theme';
 import { DropdownGreen } from './Icons';
 import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
 import { Relation, Gender } from '../../graphql/types/globalTypes';
+import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -43,6 +45,9 @@ export interface ProfileListProps {
   childView?: Element;
   placeholderViewStyle?: StyleProp<ViewStyle>;
   placeholderTextStyle?: StyleProp<TextStyle>;
+  listContainerStyle?: StyleProp<ViewStyle>;
+  addStringValue?: string;
+  navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
 }
 
 export const ProfileList: React.FC<ProfileListProps> = (props) => {
@@ -54,7 +59,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     selectedProfile,
     setDisplayAddProfile,
   } = props;
-  const addString = 'ADD NEW PROFILE';
+  const addString = 'ADD MEMBER';
   const { getPatientApiCall } = useAuth();
 
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
@@ -96,7 +101,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    setProfileArray(allCurrentPatients);
+    setProfileArray(addNewProfileText(allCurrentPatients!));
   }, [allCurrentPatients]);
 
   useEffect(() => {
@@ -130,7 +135,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         mobileNumber: addString,
         firstName: addString,
         lastName: addString,
-        relation: Relation.ME,
+        relation: Relation.OTHER,
         uhid: addString,
         gender: Gender.OTHER,
         dateOfBirth: addString,
@@ -160,6 +165,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           alignSelf: 'flex-start',
         }}
         lastTextStyle={{
+          alignSelf: 'flex-end',
+          paddingBottom: 5,
+          textTransform: 'uppercase',
           ...theme.viewStyles.text('B', 13, '#fc9916'),
         }}
         bottomPadding={{ paddingBottom: 20 }}
@@ -171,6 +179,11 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         }}
         onPress={(selectedUser) => {
           if (selectedUser.key === addString) {
+            props.navigation.navigate(AppRoutes.EditProfile, {
+              isEdit: false,
+              isPoptype: true,
+              mobileNumber: currentPatient && currentPatient!.mobileNumber,
+            });
             setDisplayAddProfile(true);
           } else {
             profileArray &&

@@ -36,6 +36,7 @@ import {
   StyleSheet,
   Text,
   View,
+  TouchableOpacity,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '../NavigatorContainer';
@@ -662,49 +663,63 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
             }}
             data={arrayHistory}
             renderItem={({ item }) => (
-              <View
-                style={{
-                  ...theme.viewStyles.cardViewStyle,
-                  marginHorizontal: 20,
-                  marginVertical: 8,
-                  padding: 16,
-                  shadowRadius: 2,
+              <TouchableOpacity
+                onPress={() => {
+                  console.log('itemdoc', item, doctorDetails);
+                  props.navigation.navigate(AppRoutes.ConsultDetails, {
+                    CaseSheet: item.id,
+                    DoctorInfo: doctorDetails,
+                    FollowUp: '',
+                    appointmentType: item.appointmentType,
+                    DisplayId: '',
+                    BlobName: '',
+                  });
                 }}
               >
-                <CapsuleView
-                  isActive={false}
-                  style={{ position: 'absolute', top: 0, right: 0, width: 112 }}
-                  title={
-                    item.appointmentType === 'ONLINE'
-                      ? item.appointmentType + ' CONSULT'
-                      : 'CLINIC VISIT'
-                  }
-                />
-                <Text
+                <View
                   style={{
-                    paddingTop: 16,
-                    paddingBottom: 4,
-                    ...theme.fonts.IBMPlexSansMedium(18),
-                    color: theme.colors.SEARCH_DOCTOR_NAME,
+                    ...theme.viewStyles.cardViewStyle,
+                    marginHorizontal: 20,
+                    marginVertical: 8,
+                    padding: 16,
+                    shadowRadius: 2,
                   }}
                 >
-                  {Moment.utc(item.appointmentDateTime)
-                    .local()
-                    .format('DD MMMM, hh:mm a')}
-                </Text>
-                <View style={styles.separatorStyle} />
-                <View style={{ flexDirection: 'row' }}>
-                  {Appointments[0].symptoms.map((name, index) => (
-                    <CapsuleView
-                      key={index}
-                      title={name}
-                      isActive={false}
-                      style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
-                      titleTextStyle={{ color: theme.colors.SKY_BLUE }}
-                    />
-                  ))}
+                  <CapsuleView
+                    isActive={false}
+                    style={{ position: 'absolute', top: 0, right: 0, width: 112 }}
+                    title={
+                      item.appointmentType === 'ONLINE'
+                        ? item.appointmentType + ' CONSULT'
+                        : 'CLINIC VISIT'
+                    }
+                  />
+                  <Text
+                    style={{
+                      paddingTop: 16,
+                      paddingBottom: 4,
+                      ...theme.fonts.IBMPlexSansMedium(18),
+                      color: theme.colors.SEARCH_DOCTOR_NAME,
+                    }}
+                  >
+                    {Moment.utc(item.appointmentDateTime)
+                      .local()
+                      .format('DD MMMM, hh:mm a')}
+                  </Text>
+                  <View style={styles.separatorStyle} />
+                  <View style={{ flexDirection: 'row' }}>
+                    {Appointments[0].symptoms.map((name, index) => (
+                      <CapsuleView
+                        key={index}
+                        title={name}
+                        isActive={false}
+                        style={{ width: 'auto', marginRight: 4, marginTop: 11 }}
+                        titleTextStyle={{ color: theme.colors.SKY_BLUE }}
+                      />
+                    ))}
+                  </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             )}
           />
         </View>

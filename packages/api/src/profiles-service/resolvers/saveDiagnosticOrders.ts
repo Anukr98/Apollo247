@@ -220,7 +220,8 @@ const getDiagnosticOrderDetails: Resolver<
 > = async (parent, args, { profilesDb }) => {
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticOrdersRepository);
   const ordersList = await diagnosticsRepo.getOrderDetails(args.diagnosticOrderId);
-  if (ordersList == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  if (ordersList == null)
+    throw new AphError(AphErrorMessages.INVALID_DIAGNOSTIC_ORDER_ID, undefined, {});
   return { ordersList };
 };
 

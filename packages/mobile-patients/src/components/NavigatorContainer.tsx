@@ -53,17 +53,15 @@ import { AsyncStorage } from 'react-native';
 import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
 import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
 import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
-import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
-import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
-import {
-  CommonScreenLog,
-  CommonLogEvent,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+
 import { SearchTestScene } from '@aph/mobile-patients/src/components/Medicines/SearchTestScene';
 import { TestsCheckoutScene } from '@aph/mobile-patients/src/components/TestsCheckoutScene';
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/YourOrdersTests';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/TestOrderDetails';
 import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
+import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
+import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',

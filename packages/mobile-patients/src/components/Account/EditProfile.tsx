@@ -15,25 +15,40 @@ import {
 } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
-import { DeviceHelper } from '../../FunctionHelpers/DeviceHelper';
-import { ADD_NEW_PROFILE, DELETE_PROFILE, EDIT_PROFILE, UPLOAD_FILE } from '../../graphql/profiles';
-import { addNewProfile } from '../../graphql/types/addNewProfile';
-import { deleteProfile, deleteProfileVariables } from '../../graphql/types/deleteProfile';
-import { editProfile } from '../../graphql/types/editProfile';
-import { Gender, Relation } from '../../graphql/types/globalTypes';
-import { theme } from '../../theme/theme';
-import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
-import { AppRoutes } from '../NavigatorContainer';
-import { Button } from '../ui/Button';
-import { DatePicker } from '../ui/DatePicker';
-import { Header } from '../ui/Header';
-import { DropdownGreen, More, PatientDefaultImage, Plus } from '../ui/Icons';
-import { MaterialMenu } from '../ui/MaterialMenu';
-import { Spinner } from '../ui/Spinner';
-import { StickyBottomComponent } from '../ui/StickyBottomComponent';
-import { TextInputComponent } from '../ui/TextInputComponent';
-import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '../../graphql/types/getPatientByMobileNumber';
-import { uploadFile, uploadFileVariables } from '../../graphql/types/uploadFile';
+import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  ADD_NEW_PROFILE,
+  DELETE_PROFILE,
+  EDIT_PROFILE,
+  UPLOAD_FILE,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { addNewProfile } from '@aph/mobile-patients/src/graphql/types/addNewProfile';
+import {
+  deleteProfile,
+  deleteProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/deleteProfile';
+import { editProfile } from '@aph/mobile-patients/src/graphql/types/editProfile';
+import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import {
+  DropdownGreen,
+  More,
+  PatientDefaultImage,
+  Plus,
+} from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { BottomPopUp } from '../ui/BottomPopUp';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -81,6 +96,7 @@ const styles = StyleSheet.create({
   },
   buttonViewStyle: {
     width: '30%',
+    marginRight: 16,
     backgroundColor: 'white',
   },
   selectedButtonViewStyle: {
@@ -170,10 +186,10 @@ const GenderOptions: genderOptions[] = [
     name: Gender.FEMALE,
     title: 'Female',
   },
-  {
-    name: Gender.OTHER,
-    title: 'Other',
-  },
+  // {
+  //   name: Gender.OTHER,
+  //   title: 'Other',
+  // },
 ];
 
 type RelationArray = {
@@ -219,13 +235,18 @@ const relationArray: RelationArray[] = [
 
 export interface EditProfileProps extends NavigationScreenProps {
   isEdit: boolean;
+  isPoptype?: boolean;
 }
 {
 }
 
 export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const isEdit = props.navigation.getParam('isEdit');
+  const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
+  const { allCurrentPatients } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
+
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
   const [profileData, setProfileData] = useState<
@@ -240,18 +261,36 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const [email, setEmail] = useState<string>('');
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [bottomPopUp, setBottomPopUp] = useState<boolean>(false);
   const { isIphoneX } = DeviceHelper();
   const client = useApolloClient();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
       ? false
-      : value == '' || /^[a-zA-Z]+(([' ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+      : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
       ? true
       : false;
 
   const isSatisfyingEmailRegex = (value: string) =>
-    /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+      value
+    );
+
+  const _setFirstName = (value: string) => {
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
+      setFirstName(value);
+    } else {
+      return false;
+    }
+  };
+  const _setLastName = (value: string) => {
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
+      setLastName(value);
+    } else {
+      return false;
+    }
+  };
 
   const isValidProfile =
     firstName &&
@@ -305,6 +344,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const updateUserProfile = () => {
     setLoading(true);
+    allCurrentPatients!.length > 0 && relation;
     client
       .mutate<editProfile, any>({
         mutation: EDIT_PROFILE,
@@ -322,10 +362,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         },
       })
       .then((data) => {
-        props.navigation.pop(2);
-        props.navigation.push(AppRoutes.ManageProfile, {
-          mobileNumber: props.navigation.getParam('mobileNumber'),
-        });
+        getPatientApiCall();
+        props.navigation.goBack();
+        // props.navigation.pop(2);
+        // props.navigation.push(AppRoutes.ManageProfile, {
+        //   mobileNumber: props.navigation.getParam('mobileNumber'),
+        // });
       })
       .catch((e) => {
         Alert.alert('Alert', e.message);
@@ -354,10 +396,14 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         },
       })
       .then((data) => {
-        props.navigation.pop(2);
-        props.navigation.push(AppRoutes.ManageProfile, {
-          mobileNumber: props.navigation.getParam('mobileNumber'),
-        });
+        getPatientApiCall();
+        props.navigation.goBack();
+        // isPoptype
+        //   ? (props.navigation.goBack(), getPatientApiCall())
+        //   : (props.navigation.pop(2),
+        //     props.navigation.push(AppRoutes.ManageProfile, {
+        //       mobileNumber: props.navigation.getParam('mobileNumber'),
+        //     }));
       })
       .catch((e) => {
         Alert.alert('Alert', e.message);
@@ -396,8 +442,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               .then((data) => {
                 console.log(data);
                 data!.data!.uploadFile && setPhotoUrl(data!.data!.uploadFile!.filePath!);
+                setUploadVisible(false);
               })
           );
+          setUploadVisible(false);
         }}
       />
     );
@@ -504,7 +552,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       <View
         style={{
           flexDirection: 'row',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-start',
           marginBottom: 10,
           paddingHorizontal: 2,
         }}
@@ -527,6 +575,24 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     );
   };
 
+  const onRelationSelect = (selected: { key: string; value: string | number }) => {
+    const isSelfRelation =
+      allCurrentPatients &&
+      allCurrentPatients!.map((item) => {
+        return item.relation === Relation.ME;
+      });
+    const isValid = isSelfRelation!.find((i) => i === true) === undefined;
+
+    if (isValid || selected.key !== Relation.ME) {
+      setRelation({
+        key: selected.key as Relation,
+        title: selected.value.toString(),
+      });
+    } else {
+      setBottomPopUp(true);
+    }
+  };
+
   const renderRelation = () => {
     const relationsData = relationArray.map((i) => {
       return { key: i.key, value: i.title };
@@ -544,12 +610,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           alignSelf: 'flex-start',
         }}
         bottomPadding={{ paddingBottom: 20 }}
-        onPress={(selectedRelation) => {
-          setRelation({
-            key: selectedRelation.key as Relation,
-            title: selectedRelation.value.toString(),
-          });
-        }}
+        onPress={(selectedRelation) => onRelationSelect(selectedRelation)}
       >
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
           <View style={styles.placeholderViewStyle}>
@@ -560,7 +621,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 relation !== undefined ? null : styles.placeholderStyle,
               ]}
             >
-              {relation !== undefined ? relation.title : 'Select who are these tests for'}
+              {relation !== undefined ? relation.title : 'Who is this to you?'}
             </Text>
             <View style={[{ flex: 1, alignItems: 'flex-end' }]}>
               <DropdownGreen />
@@ -585,12 +646,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         <TextInputComponent
           label={'Full Name'}
           value={`${firstName}`}
-          onChangeText={(fname) => setFirstName(fname)}
+          onChangeText={(fname) => _setFirstName(fname)}
           placeholder={'First Name'}
         />
         <TextInputComponent
           value={`${lastName}`}
-          onChangeText={(lname) => setLastName(lname)}
+          onChangeText={(lname) => _setLastName(lname)}
           placeholder={'Last Name'}
         />
         <TextInputComponent label={'Date Of Birth'} noInput={true} />
@@ -614,9 +675,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomStyle} defaultBG>
         <View style={styles.bottonButtonContainer}>
           <Button
-            onPress={() => {
-              () => props.navigation.goBack();
-            }}
+            onPress={() => props.navigation.goBack()}
             title={'CANCEL'}
             style={styles.bottomWhiteButtonStyle}
             titleTextStyle={styles.bottomWhiteButtonTextStyle}
@@ -625,12 +684,39 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           <View style={styles.bottomButtonStyle}>
             <Button
               onPress={() => {
-                setFirstName(firstName.trim());
-                setLastName(lastName.trim());
-                setEmail(email.trim());
-                isEdit ? updateUserProfile() : newProfile();
+                // setFirstName(firstName.trim());
+                // setLastName(lastName.trim());
+                // setEmail(email.trim());
+                // console.log(
+                //   firstName.length,
+                //   firstName,
+                //   'fname',
+                //   isSatisfyingNameRegex(firstName),
+                //   !firstName && isSatisfyingNameRegex(firstName),
+                //   firstName && isSatisfyingNameRegex(firstName),
+                //   !firstName && !isSatisfyingNameRegex(firstName)
+                // );
+
+                let validationMessage = '';
+                if (!(firstName && isSatisfyingNameRegex(firstName))) {
+                  validationMessage = 'Enter valid first name';
+                } else if (!(lastName && isSatisfyingNameRegex(lastName))) {
+                  validationMessage = 'Enter valid last name';
+                } else if (!date) {
+                  validationMessage = 'Enter valid date of birth';
+                } else if (!gender) {
+                  validationMessage = 'Select a geder';
+                } else if (!relation) {
+                  validationMessage = 'Select a vaild relation';
+                } else if (!(email === '' || (email && isSatisfyingEmailRegex(email)))) {
+                  validationMessage = 'Enter valid email';
+                }
+                if (validationMessage) {
+                  Alert.alert('Error', validationMessage);
+                } else {
+                  isEdit ? updateUserProfile() : newProfile();
+                }
               }}
-              disabled={!isValidProfile}
               title={'SAVE'}
               style={styles.bottomButtonStyle}
             />
@@ -672,7 +758,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 setDeleteProfile(false);
-                // deleteUserProfile();
+                deleteUserProfile();
               }}
             >
               <View
@@ -723,8 +809,33 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         </ScrollView>
         {renderButtons()}
       </SafeAreaView>
-      {deleteProfile && isEdit && renderDeleteButton()}
+      {/* {deleteProfile && isEdit && renderDeleteButton()} */}
       {loading && <Spinner />}
+      {bottomPopUp && (
+        <BottomPopUp title="Apollo" description="'Self' is already choosen for another profile.">
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottomPopUp(false);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
     </View>
   );
 };
