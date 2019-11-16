@@ -63,7 +63,6 @@ export const rescheduleAppointmentTypeDefs = gql`
   type RescheduleAppointmentResult {
     rescheduleAppointment: RescheduleAppointment
     rescheduleCount: Int
-    cancelled: Boolean
   }
 
   type BookRescheduleAppointmentResult {
@@ -98,7 +97,6 @@ export const rescheduleAppointmentTypeDefs = gql`
 type RescheduleAppointmentResult = {
   rescheduleAppointment: RescheduleAppointment;
   rescheduleCount: number;
-  cancelled: boolean;
 };
 
 type RescheduleAppointment = {
@@ -239,22 +237,7 @@ const initiateRescheduleAppointment: Resolver<
     APPOINTMENT_STATE.AWAITING_RESCHEDULE
   );
 
-  const doctorRescheduleCount = await rescheduleApptRepo.getDoctorRescheduleDetailsByAppointment(
-    appointment.id
-  );
-  let cancelled = false;
-  let notificationType = NotificationType.INITIATE_RESCHEDULE;
-
-  if (doctorRescheduleCount.length > ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR) {
-    await appointmentRepo.cancelAppointment(
-      appointment.id,
-      REQUEST_ROLES.DOCTOR,
-      appointment.doctorId,
-      'Reschedule Limit exceed'
-    );
-    cancelled = true;
-    notificationType = NotificationType.DOCTOR_CANCEL_APPOINTMENT;
-  }
+  const notificationType = NotificationType.INITIATE_RESCHEDULE;
 
   // send notification
   const pushNotificationInput = {
@@ -272,7 +255,6 @@ const initiateRescheduleAppointment: Resolver<
   return {
     rescheduleAppointment,
     rescheduleCount: appointment.rescheduleCount,
-    cancelled,
   };
 };
 
@@ -334,21 +316,6 @@ const bookRescheduleAppointment: Resolver<
       apptDetails.patientId,
       ''
     );
-
-    const appointmentAttrs = {
-      patientId: apptDetails.patientId,
-      doctorId: apptDetails.doctorId,
-      status: STATUS.PENDING,
-      patientName: apptDetails.patientName,
-      appointmentDateTime: new Date(bookRescheduleAppointmentInput.newDateTimeslot.toISOString()),
-      appointmentState: APPOINTMENT_STATE.NEW,
-      isFollowUp: apptDetails.isFollowUp,
-      isFollowPaid: apptDetails.isFollowPaid,
-      followUpParentId: apptDetails.followUpParentId,
-      appointmentType: apptDetails.appointmentType,
-    };
-    const appointment = await appointmentRepo.saveAppointment(appointmentAttrs);
-    finalAppointmentId = appointment.id;
   } else {
     await appointmentRepo.rescheduleAppointment(
       bookRescheduleAppointmentInput.appointmentId,
