@@ -1,8 +1,14 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
-import { DIAGNOSTICS_TYPE, TEST_COLLECTION_TYPE } from 'profiles-service/entities';
+import {
+  DIAGNOSTICS_TYPE,
+  TEST_COLLECTION_TYPE,
+  DiagnosticOrgans,
+  DiagnosticHotSellers,
+} from 'profiles-service/entities';
 import { DiagnosticsRepository } from 'profiles-service/repositories/diagnosticsRepository';
+import { DiagnosticOrgansRepository } from 'profiles-service/repositories/diagnosticOrgansRepository';
 import fetch from 'node-fetch';
 import { format } from 'date-fns';
 
@@ -62,6 +68,26 @@ export const diagnosticsTypeDefs = gql`
     status: String
   }
 
+  type DiagnosticOrgans {
+    id: ID!
+    organName: String
+    organImage: String
+    diagnostics: Diagnostics
+  }
+
+  type DiagnosticHotSellers {
+    id: ID!
+    packageName: String
+    price: Float
+    packageImage: String
+    diagnostics: Diagnostics
+  }
+
+  type DiagnosticsData {
+    diagnosticOrgans: [DiagnosticOrgans]
+    diagnosticHotSellers: [DiagnosticHotSellers]
+  }
+
   extend type Query {
     searchDiagnostics(city: String, patientId: String, searchText: String): SearchDiagnosticsResult!
     getDiagnosticsCites(patientId: String, cityName: String): GetAllCitiesResult!
@@ -69,7 +95,9 @@ export const diagnosticsTypeDefs = gql`
       patientId: String
       hubCode: String
       selectedDate: Date
+      zipCode: Int
     ): DiagnosticSlotsResult!
+    getDiagnosticsData: DiagnosticsData!
   }
 `;
 
@@ -117,6 +145,11 @@ type SlotInfo = {
   status: string;
 };
 
+type DiagnosticsData = {
+  diagnosticOrgans: DiagnosticOrgans[];
+  diagnosticHotSellers: DiagnosticHotSellers[];
+};
+
 const searchDiagnostics: Resolver<
   null,
   { city: string; patientId: string; searchText: string },
@@ -146,7 +179,7 @@ const getDiagnosticsCites: Resolver<
 
 const getDiagnosticSlots: Resolver<
   null,
-  { patientId: String; hubCode: string; selectedDate: Date },
+  { patientId: String; hubCode: string; selectedDate: Date; zipCode: number },
   ProfilesServiceContext,
   DiagnosticSlotsResult
 > = async (patent, args, { profilesDb }) => {
@@ -162,10 +195,22 @@ const getDiagnosticSlots: Resolver<
   return { diagnosticSlot };
 };
 
+const getDiagnosticsData: Resolver<null, {}, ProfilesServiceContext, DiagnosticsData> = async (
+  patent,
+  args,
+  { profilesDb }
+) => {
+  const organRepo = profilesDb.getCustomRepository(DiagnosticOrgansRepository);
+  const diagnosticOrgans = await organRepo.getDiagnosticOrgansList();
+  const diagnosticHotSellers = await organRepo.getHotSellersList();
+  return { diagnosticOrgans, diagnosticHotSellers };
+};
+
 export const diagnosticsResolvers = {
   Query: {
     searchDiagnostics,
     getDiagnosticsCites,
     getDiagnosticSlots,
+    getDiagnosticsData,
   },
 };

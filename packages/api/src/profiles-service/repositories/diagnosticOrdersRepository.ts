@@ -24,4 +24,8 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
         });
       });
   }
+
+  getListOfOrders(patient: string) {
+    return this.find({ where: { patient } });
+  }
 }
