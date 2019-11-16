@@ -412,7 +412,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               specialPrice={test.specialPrice!}
               isPrescriptionRequired={false}
               subscriptionStatus={'unsubscribed'}
-              packOfCount={parseInt(test.mou || '0')}
+              packOfCount={test.mou}
               onChangeSubscription={() => {}}
               onEditPress={() => {}}
               onAddSubscriptionPress={() => {}}
@@ -1076,8 +1076,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>
-        {showSpinner && <Spinner />}
       </SafeAreaView>
+      {showSpinner && <Spinner />}
     </View>
   );
 };

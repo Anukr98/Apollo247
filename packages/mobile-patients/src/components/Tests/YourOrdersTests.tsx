@@ -208,13 +208,13 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           title={string.orders.urOrders}
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
-          rightComponent={
-            isTest && (
-              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-                <More />
-              </TouchableOpacity>
-            )
-          }
+          //   rightComponent={
+          //     isTest && (
+          //       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          //         <More />
+          //       </TouchableOpacity>
+          //     )
+          //   }
         />
         <ScrollView bounces={false}>
           {renderOrders()}

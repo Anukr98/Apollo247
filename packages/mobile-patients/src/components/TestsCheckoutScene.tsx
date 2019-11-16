@@ -340,7 +340,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           clearCartInfo && clearCartInfo();
           setOrderInfo({
             orderId: orderId,
-            orderAutoId: '',
+            orderAutoId: orderId,
             pickupStoreAddress: '',
             pickupStoreName: '',
           });

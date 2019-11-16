@@ -1582,6 +1582,7 @@ export const SEARCH_DIAGNOSTICS = gql`
         itemRemarks
         city
         state
+        collectionType
       }
     }
   }

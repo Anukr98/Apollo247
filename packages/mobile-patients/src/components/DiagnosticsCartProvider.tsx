@@ -2,6 +2,7 @@ import { getCoupons_getCoupons_coupons } from '@aph/mobile-patients/src/graphql/
 import {
   DiscountType,
   MEDICINE_DELIVERY_TYPE,
+  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import { Clinic } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -16,11 +17,11 @@ import {
 export interface DiagnosticsCartItem {
   id: string;
   name: string;
-  mou: string; // package of how many tests (eg. 10)
+  mou: number; // package of how many tests (eg. 10)
   price: number;
   thumbnail: string | null;
   specialPrice?: number;
-  collectionMethod: 'H/C' | 'C' | 'H'; // Home or Clinic (most probably `H` will not be an option)
+  collectionMethod: TEST_COLLECTION_TYPE; // Home or Clinic (most probably `H` will not be an option)
 }
 
 export interface DiagnosticClinic extends Clinic {
@@ -201,13 +202,23 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
     DiagnosticsCartContextProps['ePrescriptions']
   >([]);
 
-  const [diagnosticClinic, setDiagnosticClinic] = useState<
+  const [diagnosticClinic, _setDiagnosticClinic] = useState<
     DiagnosticsCartContextProps['diagnosticClinic']
   >(null);
 
-  const [diagnosticSlot, setDiagnosticSlot] = useState<
+  const [diagnosticSlot, _setDiagnosticSlot] = useState<
     DiagnosticsCartContextProps['diagnosticSlot']
   >(null);
+
+  const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
+    _setDiagnosticClinic(item);
+    _setDiagnosticSlot(null);
+  };
+
+  const setDiagnosticSlot: DiagnosticsCartContextProps['setDiagnosticSlot'] = (item) => {
+    _setDiagnosticSlot(item);
+    _setDiagnosticClinic(null);
+  };
 
   const setEPrescriptions: DiagnosticsCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);

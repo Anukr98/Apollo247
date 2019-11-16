@@ -62,6 +62,7 @@ import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/Clini
 import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
+import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -112,6 +113,7 @@ export enum AppRoutes {
   ShopByBrand = 'ShopByBrand',
   ImageSliderScreen = 'ImageSliderScreen',
   SearchByBrand = 'SearchByBrand',
+  TestsByCategory = 'TestsByCategory',
   TestsCart = 'TestsCart',
   MedAndTestCart = 'MedAndTestCart',
   TestDetails = 'TestDetails',
@@ -284,6 +286,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.SearchByBrand]: {
     screen: SearchByBrand,
+  },
+  [AppRoutes.TestsByCategory]: {
+    screen: TestsByCategory,
   },
   [AppRoutes.TestsCart]: {
     screen: TestsCart,

@@ -77,15 +77,15 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => backDataFunctionality()}
-          rightComponent={
-            <TouchableOpacity
-            // onPress={() => {
-            //     setCancelAppointment(true);
-            // }}
-            >
-              <More />
-            </TouchableOpacity>
-          }
+          // rightComponent={
+          //   <TouchableOpacity
+          //   // onPress={() => {
+          //   //     setCancelAppointment(true);
+          //   // }}
+          //   >
+          //     <More />
+          //   </TouchableOpacity>
+          // }
         />
       </View>
     );

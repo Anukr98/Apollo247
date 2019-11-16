@@ -1,28 +1,29 @@
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getPackageData, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
-  BackHandler,
   Dimensions,
   SafeAreaView,
   ScrollView,
+  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ListRenderItemInfo,
-  StyleProp,
   ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { Spinner } from '../ui/Spinner';
+import { Card } from '../ui/Card';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -126,9 +127,14 @@ const tabs = [
     title: 'Preparation',
   },
 ];
+
+export interface TestPackageForDetails extends TestPackage {
+  collectionType: TEST_COLLECTION_TYPE;
+}
+
 export interface TestDetailsProps
   extends NavigationScreenProps<{
-    testDetails: TestPackage;
+    testDetails: TestPackageForDetails;
     itemid: string;
   }> {}
 
@@ -137,31 +143,25 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const testDetails = props.navigation.getParam('testDetails');
   console.log({ testDetails });
 
-  const [testInfo, setTestInfo] = useState<TestPackage>(testDetails);
-
+  const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
   const TestDetailsDiscription = testInfo.PackageInClussion;
-  aphConsole.log('....' + TestDetailsDiscription);
-  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
+  const { cartItems, addCartItem } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length;
-
-  const [PackageData, setPackageData] = useState<TestPackage>({} as any);
   const currentItemId = testInfo.ItemID;
   aphConsole.log('currentItemId : ' + currentItemId);
+  const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
 
   useEffect(() => {
     !TestDetailsDiscription &&
       getPackageData(currentItemId)
         .then(({ data }) => {
+          setsearchSate('success');
           aphConsole.log('getPackageData \n', { data });
-          // const _data = g(data, 'data') || [];
-          aphConsole.log(JSON.stringify(data.data));
           setTestInfo({ ...testInfo, PackageInClussion: data.data || [] });
-
-          aphConsole.log('TestDetailsDiscription :....');
-          // setPackageData({ PackageInClussion: _data, ItemID: currentItemId } as TestPackage);
         })
         .catch((e) => {
           aphConsole.log('getPackageData Error \n', { e });
+          setsearchSate('fail');
         });
   }, []);
 
@@ -237,7 +237,14 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
 
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Collection Method</Text>
-            <Text style={styles.personDetailStyles}> HOME VISIT OR CLINIC VISIT</Text>
+            <Text style={styles.personDetailStyles}>
+              {' '}
+              {testInfo.collectionType
+                ? TEST_COLLECTION_TYPE.HC
+                  ? 'HOME VISIT OR CLINIC VISIT'
+                  : 'CLINIC VISIT'
+                : null}
+            </Text>
           </View>
         </View>
       </View>
@@ -285,7 +292,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           <View key={i}> */}
         <Text style={styles.descriptionTextStyles}>
           {/* {i + 1}. {item.TestParameters} */}
-          No Data
+          Not available
         </Text>
         {/* </View> */}
         {/* ))} */}
@@ -296,8 +303,20 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const isAddedToCart = !!cartItems.find((item) => item.id == testInfo.ItemID);
   console.log('isAddedToCart' + isAddedToCart);
 
-  if (!TestDetailsDiscription) {
-    return null;
+  if (!TestDetailsDiscription && searchSate != 'fail') {
+    return <Spinner />;
+  } else if (searchSate == 'fail') {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <Card
+          cardContainer={{ marginTop: 0 }}
+          heading={'Uh oh! :('}
+          description={'Test Details Not Available!'}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      </View>
+    );
   } else {
     return (
       <SafeAreaView
@@ -327,11 +346,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                 addCartItem!({
                   id: testInfo.ItemID,
                   name: testInfo.ItemName,
-                  mou: `${testInfo.PackageInClussion.length}`,
+                  mou: testInfo.PackageInClussion.length,
                   price: testInfo.Rate,
                   thumbnail: '',
                   specialPrice: undefined,
-                  collectionMethod: 'H/C',
+                  collectionMethod: testInfo.collectionType,
                 })
               }
             />

@@ -21,7 +21,7 @@ export interface AppCommonDataContextProps {
   setDiagnosticsCities:
     | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
     | null;
-  locationForDiagnostics: { cityId: string; stateId: string } | null;
+  locationForDiagnostics: { cityId: string; stateId: string; city: string; state: string } | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
@@ -54,6 +54,16 @@ export const AppCommonDataProvider: React.FC = (props) => {
         (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
       ) || {}
     ).cityid || '') as string,
+    city: ((
+      diagnosticsCities.find(
+        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
+      ) || {}
+    ).cityname || '') as string,
+    state: ((
+      diagnosticsCities.find(
+        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
+      ) || {}
+    ).statename || '') as string,
     stateId: ((
       diagnosticsCities.find(
         (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()

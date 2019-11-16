@@ -18,7 +18,10 @@ import {
   getPatientPastMedicineSearchesVariables,
   getPatientPastMedicineSearches_getPatientPastMedicineSearches,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
-import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  SEARCH_TYPE,
+  TEST_COLLECTION_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   searchDiagnostics,
   searchDiagnosticsVariables,
@@ -44,6 +47,8 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
+import { TestPackage } from '../../helpers/apiCalls';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -143,6 +148,8 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
   >([]);
 
+  const { locationForDiagnostics } = useAppCommonData();
+
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useDiagnosticsCart();
@@ -199,7 +206,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         query: SEARCH_DIAGNOSTICS,
         variables: {
           searchText: _searchText,
-          city: 'Hyderabad',
+          city: locationForDiagnostics && locationForDiagnostics.city,
           patientId: (currentPatient && currentPatient.id) || '',
         },
         fetchPolicy: 'no-cache',
@@ -240,9 +247,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       id,
       name: stripHtml(itemName),
       price: rate,
-      mou: '1',
+      mou: 1,
       thumbnail: '',
-      collectionMethod: 'H/C',
+      collectionMethod: TEST_COLLECTION_TYPE.HC,
     });
   };
 
@@ -381,9 +388,14 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
         isTest={true}
         containerStyle={[productCardContainerStyle, {}]}
         onPress={() => {
-          savePastSeacrh(product.id, product.itemName).catch((e) => {});
+          // savePastSeacrh(product.id, product.itemName).catch((e) => {});
           props.navigation.navigate(AppRoutes.TestDetails, {
-            testDetails: {},
+            testDetails: {
+              Rate: price,
+              Gender: product.gender,
+              ItemID: `${product.itemId}`,
+              ItemName: product.itemName,
+            } as TestPackage,
           });
         }}
         medicineName={stripHtml(product.itemName)}

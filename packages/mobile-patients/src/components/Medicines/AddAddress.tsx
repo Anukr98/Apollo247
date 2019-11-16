@@ -59,6 +59,7 @@ import {
   deletePatientAddress,
   deletePatientAddressVariables,
 } from '../../graphql/types/deletePatientAddress';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 const { height, width } = Dimensions.get('window');
 const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
 const { isIphoneX } = DeviceHelper();
@@ -174,6 +175,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
+  const { addAddress: addA, setDeliveryAddressId: setD } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
@@ -341,12 +343,16 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
         const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
         addAddress && addAddress(address);
+        addA!(address);
 
         if (pinAvailabilityResult.data.Availability || addOnly) {
           setDeliveryAddressId && setDeliveryAddressId(address.id || '');
+          setD!(address.id || '');
           props.navigation.goBack();
         } else {
           setDeliveryAddressId && setDeliveryAddressId('');
+          setD!(address.id || '');
+
           showAphAlert!({
             title: 'Uh oh.. :(',
             description:

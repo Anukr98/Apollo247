@@ -22,6 +22,7 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   GET_DIAGNOSTICS_CITES,
+  GET_DIAGNOSTIC_DATA,
   GET_MEDICINE_ORDERS_LIST,
   SEARCH_DIAGNOSTICS,
 } from '@aph/mobile-patients/src/graphql/profiles';
@@ -45,7 +46,6 @@ import {
   getPlaceInfoByPlaceId,
   getTestsPackages,
   GooglePlacesType,
-  MedicineProduct,
   TestPackage,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
@@ -75,6 +75,13 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import {
+  getDiagnosticsData,
+  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
+  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
+} from '../../graphql/types/getDiagnosticsData';
+import { TEST_COLLECTION_TYPE } from '../../graphql/types/globalTypes';
+import { TestPackageForDetails } from './TestDetails';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -246,7 +253,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   useEffect(() => {
     if (locationForDiagnostics) {
       console.log('locationForDiagnostics\n', { locationForDiagnostics });
-
+      setLoading(true);
       getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
         .then(({ data }) => {
           aphConsole.log('getTestsPackages\n', { data });
@@ -264,7 +271,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationForDiagnostics]);
 
   // const [data, setData] = useState<MedicinePageAPiResponse>();
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
@@ -276,10 +283,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
     currentPatient!
   );
 
+  const { data: diagnosticsData, error: hError, loading: hLoading } = useQuery<getDiagnosticsData>(
+    GET_DIAGNOSTIC_DATA,
+    {
+      variables: {},
+      fetchPolicy: 'no-cache',
+    }
+  );
+
+  console.log('\ndiagnosticsData\n', { diagnosticsData });
+
   // const offerBanner = (g(data, 'mainbanners') || [])[0];
   // const offerBannerImage = ''; //g(offerBanner, 'image');
-  // const shopByCategory = g(data, 'shop_by_category') || [];
-  // const hotSellers = g(data, 'hot_sellers', 'products') || [];
+  const hotSellers = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticHotSellers') ||
+    []) as getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers[];
+
+  const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticOrgans') ||
+    []) as getDiagnosticsData_getDiagnosticsData_diagnosticOrgans[];
 
   const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
     GetMedicineOrdersList,
@@ -508,7 +528,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     textTransform: 'uppercase',
                   }}
                 >
-                  {locationDetails.city}
+                  {locationDetails.city && locationDetails.city.substring(0, 15)}
                 </Text>
               ) : null}
               <LocationOn />
@@ -706,38 +726,46 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderHotSellerItem = (data: ListRenderItemInfo<MedicineProduct>) => {
-    const { sku, name, mou, special_price, price, image, thumbnail } = data.item;
+  const renderHotSellerItem = (
+    data: ListRenderItemInfo<getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers>
+  ) => {
+    const { id, packageImage, packageName, diagnostics } = data.item;
+    const foundMedicineInCart = !!cartItems.find((item) => item.id == `${diagnostics!.itemId}`);
+    const specialPrice = undefined;
     const addToCart = () =>
       addCartItem!({
-        id: sku,
-        mou: mou,
-        name: name,
-        price: price,
+        id: `${diagnostics!.itemId!}`,
+        mou: 1,
+        name: packageName!,
+        price: diagnostics!.rate,
         specialPrice: specialPrice,
-        thumbnail,
-        collectionMethod: 'H/C',
+        thumbnail: packageImage,
+        collectionMethod: diagnostics!.collectionType!,
       });
-    const removeFromCart = () => removeCartItem!(sku);
-    const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
-    const specialPrice = special_price
-      ? typeof special_price == 'string'
-        ? parseInt(special_price)
-        : special_price
-      : price;
+    const removeFromCart = () => removeCartItem!(`${diagnostics!.itemId}`);
+    // const specialPrice = special_price
+    //   ? typeof special_price == 'string'
+    //     ? parseInt(special_price)
+    //     : special_price
+    //   : price;
 
     return hotSellerCard({
-      name,
-      imgUrl: `${config.IMAGES_BASE_URL[0]}${image}`,
-      price,
-      specialPrice: special_price
-        ? typeof special_price == 'string'
-          ? parseInt(special_price)
-          : special_price
-        : undefined,
+      name: packageName!,
+      imgUrl: packageImage!,
+      price: diagnostics!.rate,
+      specialPrice: undefined,
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
-      onPress: () => props.navigation.navigate(AppRoutes.TestDetails, { sku }),
+      onPress: () =>
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          testDetails: {
+            Rate: diagnostics!.rate,
+            Gender: diagnostics!.gender,
+            ItemID: `${diagnostics!.itemId}`,
+            ItemName: packageName,
+            collectionType: diagnostics!.collectionType,
+          } as TestPackageForDetails,
+        }),
       style: {
         marginHorizontal: 4,
         marginTop: 16,
@@ -747,21 +775,22 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
   };
 
-  // const renderHotSellers = () => {
-  //   return (
-  //     <View>
-  //       <SectionHeader leftText={'HOT SELLERS'} />
-  //       <FlatList
-  //         bounces={false}
-  //         keyExtractor={(_, index) => `${index}`}
-  //         showsHorizontalScrollIndicator={false}
-  //         horizontal
-  //         data={hotSellers}
-  //         renderItem={renderHotSellerItem}
-  //       />
-  //     </View>
-  //   );
-  // };
+  const renderHotSellers = () => {
+    if (hotSellers.length == 0) return null;
+    return (
+      <View>
+        <SectionHeader leftText={'HOT SELLERS'} />
+        <FlatList
+          bounces={false}
+          keyExtractor={(_, index) => `${index}`}
+          showsHorizontalScrollIndicator={false}
+          horizontal
+          data={hotSellers}
+          renderItem={renderHotSellerItem}
+        />
+      </View>
+    );
+  };
 
   // const renderBrowseByCondition = () => {
   //   return (
@@ -772,7 +801,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   //         keyExtractor={(_, index) => `${index}`}
   //         showsHorizontalScrollIndicator={false}
   //         horizontal
-  //         data={shopByCategory}
+  //         data={shopByOrgans}
   //         renderItem={({ item, index }) => {
   //           return renderCatalogCard(
   //             item.title,
@@ -834,10 +863,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               <Text style={theme.viewStyles.text('M', 14, '#0087ba', 1, 22)}>{desc}</Text>
             </View>
             <View style={{}}>
-              <Image
-                source={{ uri: 'https://via.placeholder.com/120', height: 120, width: 120 }}
-                style={{ borderRadius: 5 }}
-              />
+              <Image source={{ uri: '', height: 120, width: 120 }} style={{ borderRadius: 5 }} />
             </View>
           </View>
         </View>
@@ -906,11 +932,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   addCartItem!({
                     id: item.ItemID,
                     name: item.ItemName,
-                    mou: `${item.PackageInClussion.length}`,
+                    mou: item.PackageInClussion.length,
                     price: item.Rate,
                     thumbnail: '',
                     specialPrice: undefined,
-                    collectionMethod: 'H/C',
+                    collectionMethod: TEST_COLLECTION_TYPE.HC, // hardcoding here
                   })
               );
             }}
@@ -961,39 +987,41 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  // const renderTestsByOrgan = () => {
-  //   return (
-  //     <View>
-  //       <SectionHeader leftText={'BROWSE TESTS BY ORGANS'} />
-  //       <FlatList
-  //         bounces={false}
-  //         keyExtractor={(_, index) => `${index}`}
-  //         showsHorizontalScrollIndicator={false}
-  //         horizontal
-  //         data={shopByCategory}
-  //         renderItem={({ item, index }) => {
-  //           return renderCatalogCard(
-  //             item.title,
-  //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
-  //             () =>
-  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
-  //                 category_id: item.category_id,
-  //                 title: `${item.title || 'Products'}`.toUpperCase(),
-  //                 isTest: true,
-  //               }),
-  //             {
-  //               // marginRight: 8,
-  //               marginHorizontal: 4,
-  //               marginTop: 16,
-  //               marginBottom: 20,
-  //               ...(index == 0 ? { marginLeft: 20 } : {}),
-  //             }
-  //           );
-  //         }}
-  //       />
-  //     </View>
-  //   );
-  // };
+  const renderTestsByOrgan = () => {
+    if (shopByOrgans.length == 0) return null;
+    return (
+      <View>
+        <SectionHeader leftText={'BROWSE TESTS BY ORGANS'} />
+        <FlatList
+          bounces={false}
+          keyExtractor={(_, index) => `${index}`}
+          showsHorizontalScrollIndicator={false}
+          horizontal
+          data={shopByOrgans}
+          renderItem={({ item, index }) => {
+            return renderCatalogCard(
+              item.organName!,
+              item.organImage!,
+              () =>
+                props.navigation.navigate(AppRoutes.TestsByCategory, {
+                  // category_id: item.category_id,
+                  title: `${item.organName || 'Products'}`.toUpperCase(),
+                  isTest: true,
+                  products: [item.diagnostics],
+                }),
+              {
+                // marginRight: 8,
+                marginHorizontal: 4,
+                marginTop: 16,
+                marginBottom: 20,
+                ...(index == 0 ? { marginLeft: 20 } : {}),
+              }
+            );
+          }}
+        />
+      </View>
+    );
+  };
 
   const renderNeedHelp = () => {
     return (
@@ -1027,7 +1055,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         query: SEARCH_DIAGNOSTICS,
         variables: {
           searchText: _searchText,
-          city: 'Hyderabad',
+          city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
           patientId: (currentPatient && currentPatient.id) || '',
         },
         fetchPolicy: 'no-cache',
@@ -1223,7 +1251,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   ) => {
     const { index, item } = data;
     const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
-    const { rate, gender, itemId, itemName } = item;
+    const { rate, gender, itemId, itemName, collectionType } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
         props.navigation.navigate(AppRoutes.TestDetails, {
@@ -1232,7 +1260,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
             Gender: gender,
             ItemID: `${itemId}`,
             ItemName: itemName,
-          } as TestPackage,
+            collectionType: collectionType,
+          } as TestPackageForDetails,
         });
       },
       name: item.itemName,
@@ -1318,17 +1347,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         {/* {renderOfferBanner()} */}
         {renderYourOrders()}
-        {loading
-          ? renderSectionLoader()
-          : !error && (
-              <>
-                {/* {renderHotSellers()} */}
-                {/* {renderBrowseByCondition()} */}
-                {renderTestPackages()}
-                {/* {renderTestsByOrgan()} */}
-                {/* {renderPreventiveTests()} */}
-              </>
-            )}
+        {(!!(locationForDiagnostics && locationForDiagnostics.cityId) && (
+          <>
+            {renderHotSellers()}
+            {/* {renderBrowseByCondition()} */}
+            {renderTestPackages()}
+            {renderTestsByOrgan()}
+            {/* {renderPreventiveTests()} */}
+          </>
+        )) || (
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, '#0087ba', 1, 24),
+              marginBottom: 20,
+              textAlign: 'center',
+            }}
+          >{`${currentPatient &&
+            currentPatient.firstName}, our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`}</Text>
+        )}
+
         {renderNeedHelp()}
       </TouchableOpacity>
     );
@@ -1349,6 +1386,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           ]}
         >
           <ProfileList
+            navigation={props.navigation}
             saveUserChange={true}
             childView={
               <View
