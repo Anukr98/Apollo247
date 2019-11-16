@@ -835,6 +835,77 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
   }
 `;
 
+export const GET_DIAGNOSTIC_SLOTS = gql`
+  query getDiagnosticSlots(
+    $patientId: String
+    $hubCode: String
+    $selectedDate: Date
+    $zipCode: Int
+  ) {
+    getDiagnosticSlots(
+      patientId: $patientId
+      hubCode: $hubCode
+      selectedDate: $selectedDate
+      zipCode: $zipCode
+    ) {
+      diagnosticSlot {
+        employeeCode
+        employeeName
+        slotInfo {
+          endTime
+          status
+          startTime
+          slot
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_DATA = gql`
+  query getDiagnosticsData {
+    getDiagnosticsData {
+      diagnosticOrgans {
+        id
+        organName
+        organImage
+        diagnostics {
+          id
+          itemId
+          itemName
+          gender
+          rate
+          itemRemarks
+          city
+          state
+          itemType
+          fromAgeInDays
+          collectionType
+        }
+      }
+      diagnosticHotSellers {
+        id
+        packageName
+        price
+        packageImage
+        diagnostics {
+          id
+          itemId
+          itemName
+          gender
+          rate
+          itemRemarks
+          city
+          state
+          itemType
+          fromAgeInDays
+          collectionType
+        }
+      }
+    }
+  }
+`;
+
 export const GET_MEDICINE_ORDER_DETAILS = gql`
   query GetMedicineOrderDetails($patientId: String, $orderAutoId: Int) {
     getMedicineOrderDetails(patientId: $patientId, orderAutoId: $orderAutoId) {
