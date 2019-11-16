@@ -570,8 +570,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           foundFlag = 1;
         }
       });
-      const doctorSlotRepo = getCustomRepository(DoctorNextAvaialbleSlotsRepository);
-      doctorSlotRepo.updateSlot(doctorId, appointmentType, new Date(finalSlot));
+      //const doctorSlotRepo = getCustomRepository(DoctorNextAvaialbleSlotsRepository);
+      //doctorSlotRepo.updateSlot(doctorId, appointmentType, new Date(finalSlot));
       return finalSlot;
     } else {
       return '';
