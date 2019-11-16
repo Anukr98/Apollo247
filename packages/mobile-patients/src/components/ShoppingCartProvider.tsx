@@ -17,7 +17,7 @@ export interface ShoppingCartItem {
   price: number;
   prescriptionRequired: boolean;
   thumbnail: string | null;
-  specialPrice: number;
+  specialPrice?: number;
 }
 
 export interface PhysicalPrescription {

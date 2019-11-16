@@ -253,21 +253,19 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
     });
-    addCartItem &&
-      addCartItem({
-        id: sku,
-        mou,
-        name: stripHtml(name),
-        price: special_price
-          ? typeof special_price == 'string'
-            ? parseInt(special_price)
-            : special_price
-          : price,
-        specialPrice: special_price as number,
-        prescriptionRequired: is_prescription_required == '1',
-        quantity: 1,
-        thumbnail,
-      });
+    addCartItem!({
+      id: sku,
+      mou,
+      name: stripHtml(name),
+      price: special_price
+        ? typeof special_price == 'string'
+          ? parseInt(special_price)
+          : special_price
+        : price,
+      prescriptionRequired: is_prescription_required == '1',
+      quantity: 1,
+      thumbnail,
+    });
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {

@@ -2,26 +2,35 @@ import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   CartIcon,
+  DropdownGreen,
   LocationOff,
   LocationOn,
   NotificationIcon,
   SearchSendIcon,
   TestsIcon,
-  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
+  GET_DIAGNOSTICS_CITES,
   GET_MEDICINE_ORDERS_LIST,
   SEARCH_DIAGNOSTICS,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import {
+  getDiagnosticsCites,
+  getDiagnosticsCitesVariables,
+  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
 import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
@@ -32,11 +41,10 @@ import {
   searchDiagnostics_searchDiagnostics_diagnostics,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import {
-  getMedicinePageProducts,
+  autoCompletePlaceSearch,
   getPlaceInfoByPlaceId,
   getTestsPackages,
   GooglePlacesType,
-  MedicinePageAPiResponse,
   MedicineProduct,
   TestPackage,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -46,11 +54,10 @@ import {
   g,
   getNetStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import { default as axios } from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
@@ -68,9 +75,6 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
-import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -111,8 +115,6 @@ const styles = StyleSheet.create({
   },
 });
 
-const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
-
 export interface TestsProps extends NavigationScreenProps {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
@@ -122,13 +124,53 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
 
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
-  const { locationDetails, setLocationDetails } = useAppCommonData();
+  const {
+    locationDetails,
+    setLocationDetails,
+    setDiagnosticsCities,
+    locationForDiagnostics,
+  } = useAppCommonData();
+
+  aphConsole.log('****INFO****\n', { locationDetails, locationForDiagnostics });
 
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
 
   useEffect(() => {
+    //   // Code to delete location for test purpose
+    //   // setTimeout(() => {
+    //   //   setLocationDetails!(null);
+    //   // }, 1000);
+
     locationDetails && setcurrentLocation(locationDetails.city);
+  }, [locationDetails]);
+
+  useEffect(() => {
+    locationDetails &&
+      locationDetails.city &&
+      client
+        .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
+          query: GET_DIAGNOSTICS_CITES,
+          variables: {
+            cityName: locationDetails.city,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+        })
+        .then(({ data }) => {
+          aphConsole.log('getDiagnosticsCites\n', { data });
+          const cities = g(data, 'getDiagnosticsCites', 'diagnosticsCities') || [];
+          setDiagnosticsCities!(
+            cities as getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]
+          );
+        })
+        .catch((e) => {
+          aphConsole.log('getDiagnosticsCites Error\n', { e });
+          showAphAlert!({
+            unDismissable: true,
+            title: 'Uh oh! :(',
+            description: 'Something went wrong.',
+          });
+        });
   }, [locationDetails]);
 
   useEffect(() => {
@@ -168,6 +210,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     setLocationDetails!(response);
                   })
                   .catch((e) => {
+                    showAphAlert!({
+                      title: 'Uh oh! :(',
+                      description: 'Unable to access location.',
+                    });
                     setLocationError(true);
                   })
                   .finally(() => {
@@ -180,41 +226,44 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
   }, []);
 
-  useEffect(() => {
-    // Code to delete location for test purpose
-    // setTimeout(() => {
-    //   setLocationDetails!(null);
-    // }, 1000);
-    locationDetails &&
-      getMedicinePageProducts()
-        .then((d) => {
-          setData(d.data);
-          setLoading(false);
-        })
-        .catch((e) => {
-          setError(e);
-          setLoading(false);
-          showAphAlert!({
-            title: 'Uh oh! :(',
-            description: "We're unable to fetch products, try later.",
-          });
-        });
-  }, [locationDetails]);
+  // useEffect(() => {
+  //   locationDetails &&
+  //     getMedicinePageProducts()
+  //       .then((d) => {
+  //         setData(d.data);
+  //         setLoading(false);
+  //       })
+  //       .catch((e) => {
+  //         setError(e);
+  //         setLoading(false);
+  //         showAphAlert!({
+  //           title: 'Uh oh! :(',
+  //           description: "We're unable to fetch products, try later.",
+  //         });
+  //       });
+  // }, [locationDetails]);
 
   useEffect(() => {
-    (locationDetails &&
-      getTestsPackages(0, 0)
+    if (locationForDiagnostics) {
+      console.log('locationForDiagnostics\n', { locationForDiagnostics });
+
+      getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
         .then(({ data }) => {
           aphConsole.log('getTestsPackages\n', { data });
           setTestPackages(g(data, 'data') || []);
         })
         .catch((e) => {
           aphConsole.log('getTestsPackages Error\n', { e });
-        })) ||
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
       setTestPackages([]);
-  }, [locationDetails]);
+    }
+  }, [locationForDiagnostics]);
 
-  const [data, setData] = useState<MedicinePageAPiResponse>();
+  // const [data, setData] = useState<MedicinePageAPiResponse>();
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
@@ -227,10 +276,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
     currentPatient!
   );
 
-  const offerBanner = (g(data, 'mainbanners') || [])[0];
-  const offerBannerImage = ''; //g(offerBanner, 'image');
-  const shopByCategory = g(data, 'shop_by_category') || [];
-  const hotSellers = g(data, 'hot_sellers', 'products') || [];
+  // const offerBanner = (g(data, 'mainbanners') || [])[0];
+  // const offerBannerImage = ''; //g(offerBanner, 'image');
+  // const shopByCategory = g(data, 'shop_by_category') || [];
+  // const hotSellers = g(data, 'hot_sellers', 'products') || [];
 
   const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
     GetMedicineOrdersList,
@@ -260,11 +309,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const autoSearch = (searchText: string) => {
     getNetStatus().then((status) => {
       if (status) {
-        axios
-          .get(
-            `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${key}`
-          )
+        autoCompletePlaceSearch(searchText)
           .then((obj) => {
+            console.log({});
+
             try {
               if (obj.data.predictions) {
                 const address = obj.data.predictions.map(
@@ -506,22 +554,22 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const [imgHeight, setImgHeight] = useState(120);
-  const { width: winWidth } = Dimensions.get('window');
-  const renderOfferBanner = () => {
-    if (offerBannerImage)
-      return (
-        <Image
-          placeholderStyle={styles.imagePlaceholderStyle}
-          onLoad={(value) => {
-            const { height, width } = value.nativeEvent.source;
-            setImgHeight(height * (winWidth / width));
-          }}
-          style={{ width: '100%', minHeight: imgHeight }}
-          source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
-        />
-      );
-  };
+  // const [imgHeight, setImgHeight] = useState(120);
+  // const { width: winWidth } = Dimensions.get('window');
+  // const renderOfferBanner = () => {
+  //   if (offerBannerImage)
+  //     return (
+  //       <Image
+  //         placeholderStyle={styles.imagePlaceholderStyle}
+  //         onLoad={(value) => {
+  //           const { height, width } = value.nativeEvent.source;
+  //           setImgHeight(height * (winWidth / width));
+  //         }}
+  //         style={{ width: '100%', minHeight: imgHeight }}
+  //         source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
+  //       />
+  //     );
+  // };
 
   const renderYourOrders = () => {
     return (
@@ -668,6 +716,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         price: price,
         specialPrice: specialPrice,
         thumbnail,
+        collectionMethod: 'H/C',
       });
     const removeFromCart = () => removeCartItem!(sku);
     const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
@@ -698,54 +747,54 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
   };
 
-  const renderHotSellers = () => {
-    return (
-      <View>
-        <SectionHeader leftText={'HOT SELLERS'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={hotSellers}
-          renderItem={renderHotSellerItem}
-        />
-      </View>
-    );
-  };
+  // const renderHotSellers = () => {
+  //   return (
+  //     <View>
+  //       <SectionHeader leftText={'HOT SELLERS'} />
+  //       <FlatList
+  //         bounces={false}
+  //         keyExtractor={(_, index) => `${index}`}
+  //         showsHorizontalScrollIndicator={false}
+  //         horizontal
+  //         data={hotSellers}
+  //         renderItem={renderHotSellerItem}
+  //       />
+  //     </View>
+  //   );
+  // };
 
-  const renderBrowseByCondition = () => {
-    return (
-      <View>
-        <SectionHeader leftText={'BROWSE BY CONDITION'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={shopByCategory}
-          renderItem={({ item, index }) => {
-            return renderCatalogCard(
-              item.title,
-              `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
-              () =>
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
-                  category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
-                  isTest: true,
-                }),
-              {
-                marginHorizontal: 4,
-                marginTop: 16,
-                marginBottom: 20,
-                ...(index == 0 ? { marginLeft: 20 } : {}),
-              }
-            );
-          }}
-        />
-      </View>
-    );
-  };
+  // const renderBrowseByCondition = () => {
+  //   return (
+  //     <View>
+  //       <SectionHeader leftText={'BROWSE BY CONDITION'} />
+  //       <FlatList
+  //         bounces={false}
+  //         keyExtractor={(_, index) => `${index}`}
+  //         showsHorizontalScrollIndicator={false}
+  //         horizontal
+  //         data={shopByCategory}
+  //         renderItem={({ item, index }) => {
+  //           return renderCatalogCard(
+  //             item.title,
+  //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
+  //             () =>
+  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
+  //                 category_id: item.category_id,
+  //                 title: `${item.title || 'Products'}`.toUpperCase(),
+  //                 isTest: true,
+  //               }),
+  //             {
+  //               marginHorizontal: 4,
+  //               marginTop: 16,
+  //               marginBottom: 20,
+  //               ...(index == 0 ? { marginLeft: 20 } : {}),
+  //             }
+  //           );
+  //         }}
+  //       />
+  //     </View>
+  //   );
+  // };
 
   const renderPackageCard = (
     title: string,
@@ -861,6 +910,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     price: item.Rate,
                     thumbnail: '',
                     specialPrice: undefined,
+                    collectionMethod: 'H/C',
                   })
               );
             }}
@@ -911,39 +961,39 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderTestsByOrgan = () => {
-    return (
-      <View>
-        <SectionHeader leftText={'BROWSE TESTS BY ORGANS'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={shopByCategory}
-          renderItem={({ item, index }) => {
-            return renderCatalogCard(
-              item.title,
-              `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
-              () =>
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
-                  category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
-                  isTest: true,
-                }),
-              {
-                // marginRight: 8,
-                marginHorizontal: 4,
-                marginTop: 16,
-                marginBottom: 20,
-                ...(index == 0 ? { marginLeft: 20 } : {}),
-              }
-            );
-          }}
-        />
-      </View>
-    );
-  };
+  // const renderTestsByOrgan = () => {
+  //   return (
+  //     <View>
+  //       <SectionHeader leftText={'BROWSE TESTS BY ORGANS'} />
+  //       <FlatList
+  //         bounces={false}
+  //         keyExtractor={(_, index) => `${index}`}
+  //         showsHorizontalScrollIndicator={false}
+  //         horizontal
+  //         data={shopByCategory}
+  //         renderItem={({ item, index }) => {
+  //           return renderCatalogCard(
+  //             item.title,
+  //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
+  //             () =>
+  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
+  //                 category_id: item.category_id,
+  //                 title: `${item.title || 'Products'}`.toUpperCase(),
+  //                 isTest: true,
+  //               }),
+  //             {
+  //               // marginRight: 8,
+  //               marginHorizontal: 4,
+  //               marginTop: 16,
+  //               marginBottom: 20,
+  //               ...(index == 0 ? { marginLeft: 20 } : {}),
+  //             }
+  //           );
+  //         }}
+  //       />
+  //     </View>
+  //   );
+  // };
 
   const renderNeedHelp = () => {
     return (
@@ -1173,9 +1223,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
   ) => {
     const { index, item } = data;
     const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
+    const { rate, gender, itemId, itemName } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
-        props.navigation.navigate(AppRoutes.TestDetails, {});
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          testDetails: {
+            Rate: rate,
+            Gender: gender,
+            ItemID: `${itemId}`,
+            ItemName: itemName,
+          } as TestPackage,
+        });
       },
       name: item.itemName,
       price: item.rate,
@@ -1258,7 +1316,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
-        {renderOfferBanner()}
+        {/* {renderOfferBanner()} */}
         {renderYourOrders()}
         {loading
           ? renderSectionLoader()
@@ -1268,7 +1326,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 {/* {renderBrowseByCondition()} */}
                 {renderTestPackages()}
                 {/* {renderTestsByOrgan()} */}
-                {renderPreventiveTests()}
+                {/* {renderPreventiveTests()} */}
               </>
             )}
         {renderNeedHelp()}

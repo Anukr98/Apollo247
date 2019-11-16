@@ -90,7 +90,7 @@ export interface SearchByBrandProps
   extends NavigationScreenProps<{
     title: string;
     category_id: string;
-    isTest?: boolean;
+    isTest?: boolean; // Ignoring for now
   }> {}
 
 export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
@@ -105,9 +105,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  const { addCartItem, removeCartItem, updateCartItem, cartItems } = isTest
-    ? useDiagnosticsCart()
-    : useShoppingCart();
+  const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -154,20 +152,19 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     is_prescription_required,
     thumbnail,
   }: MedicineProduct) => {
-    addCartItem &&
-      addCartItem({
-        id: sku,
-        mou,
-        name,
-        price: special_price
-          ? typeof special_price == 'string'
-            ? parseInt(special_price)
-            : special_price
-          : price,
-        prescriptionRequired: is_prescription_required == '1',
-        quantity: 1,
-        thumbnail,
-      });
+    addCartItem!({
+      id: sku,
+      mou,
+      name,
+      price: special_price
+        ? typeof special_price == 'string'
+          ? parseInt(special_price)
+          : special_price
+        : price,
+      prescriptionRequired: is_prescription_required == '1',
+      quantity: 1,
+      thumbnail,
+    });
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {

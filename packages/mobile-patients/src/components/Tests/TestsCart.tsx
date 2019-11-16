@@ -19,15 +19,9 @@ import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import {
-  ArrowRight,
-  CalendarShow,
-  CouponIcon,
-  DropdownGreen,
-  TestsIcon,
-} from '@aph/mobile-patients/src/components/ui/Icons';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { CalendarShow, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { ScheduleCalander } from '@aph/mobile-patients/src/components/ui/ScheduleCalander';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -35,17 +29,17 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { GET_PATIENT_ADDRESS_LIST, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
-  pinCodeServiceabilityApi,
-  searchPickupStoresApi,
-  searchClinicApi,
   Clinic,
   getPlaceInfoByPincode,
+  pinCodeServiceabilityApi,
+  searchClinicApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -55,7 +49,6 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
-  Dimensions,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -63,8 +56,6 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -186,14 +177,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     clinics,
     setClinics,
     ePrescriptions,
+    forPatientId,
+    setPatientId,
   } = useDiagnosticsCart();
 
-  const dateCalculator = (val: number) => {
-    var today = new Date();
-    today.setHours(today.getHours() + val);
-    return today;
-  };
-  const { width, height } = Dimensions.get('window');
   const clinicHours: clinicHoursData[] = [
     {
       week: 'Mon - Fri',
@@ -204,10 +191,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       time: '10:00 AM - 3:30 PM',
     },
   ];
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
-  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
-  const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
-  const [date, setDate] = useState<Date>(new Date());
   const tabs = [
     { title: 'Home Visit', subtitle: 'Appointment Slot' },
     { title: 'Clinic Visit', subtitle: 'Clinic Hours' },
@@ -231,6 +214,17 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const { showAphAlert, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
+
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>({
+    ...((currentPatient || {}) as any),
+  });
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
+  const [date, setDate] = useState<Date>(new Date());
+
+  useEffect(() => {
+    setPatientId!(currentPatientId!);
+  }, [currentPatientId]);
 
   useEffect(() => {
     fetchStorePickup();
@@ -744,7 +738,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           activeOpacity={1}
           style={{
             ...theme.viewStyles.cardViewStyle,
@@ -772,7 +766,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           <View style={{ flex: 1, alignItems: 'flex-end' }}>
             <ArrowRight />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
@@ -792,10 +786,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
             </View>
           )}
-          <View style={styles.rowSpaceBetweenStyle}>
+          {/* <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>Collection Charges</Text>
             <Text style={styles.blueTextStyle}>Rs. {deliveryCharges.toFixed(2)}</Text>
-          </View>
+          </View> */}
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>To Pay </Text>
@@ -883,6 +877,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const disableProceedToPay = !(
     cartItems.length > 0 &&
+    forPatientId &&
     !!(deliveryAddressId || clinicId) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
@@ -907,7 +902,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const onPressProceedToPay = () => {
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0) {
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else {
       setLoading!(true);
       const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
@@ -928,7 +923,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               ...prescriptions.filter((item) => item.uploadedUrl),
             ]);
           setLoading!(false);
-          props.navigation.navigate(AppRoutes.CheckoutScene);
+          props.navigation.navigate(AppRoutes.TestsCheckoutScene);
         })
         .catch((e) => {
           aphConsole.log({ e });
@@ -959,7 +954,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           {/* {renderProfilePicker()} */}
           <ProfileList
             defaultText={'Select who are these tests for'}
-            saveUserChange={false}
+            saveUserChange={true}
             selectedProfile={profile}
             setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
           ></ProfileList>
@@ -1009,7 +1004,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             <MedicineUploadPrescriptionView isTest={true} navigation={props.navigation} />
             {renderDelivery()}
             {renderTotalCharges()}
-            {renderMedicineSuggestions()}
+            {/* {renderMedicineSuggestions()} */}
           </View>
           <View style={{ height: 70 }} />
         </ScrollView>

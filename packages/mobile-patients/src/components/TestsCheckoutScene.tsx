@@ -1,4 +1,4 @@
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -160,10 +160,10 @@ const styles = StyleSheet.create({
 
 export interface CheckoutSceneProps extends NavigationScreenProps {}
 
-export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
+export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const [isOneApolloPayment, setOneApolloPayment] = useState(false);
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
-  const [isCashOnDelivery, setCashOnDelivery] = useState(false);
+  const [isCashOnDelivery, setCashOnDelivery] = useState(true);
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [orderInfo, setOrderInfo] = useState({
@@ -176,7 +176,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const { showAphAlert } = useUIElements();
   const {
     deliveryAddressId,
-    storeId,
+    clinicId,
     grandTotal,
     deliveryCharges,
     cartItems,
@@ -184,7 +184,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     clearCartInfo,
     physicalPrescriptions,
     ePrescriptions,
-  } = useShoppingCart();
+  } = useDiagnosticsCart();
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -277,7 +277,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       MedicineCartInput: {
         quoteId: null,
         patientId: (currentPatient && currentPatient.id) || '',
-        shopId: storeId || null,
+        shopId: clinicId || null,
         patientAddressId: deliveryAddressId!,
         medicineDeliveryType: deliveryType!,
         devliveryCharges: deliveryCharges,
@@ -292,7 +292,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
               medicineSKU: item.id,
               price: item.price,
               medicineName: item.name,
-              quantity: item.quantity,
+              quantity: 1,
               mrp: item.price,
               // isPrescriptionNeeded: item.prescriptionRequired,
               prescriptionImageUrl: null,
@@ -333,7 +333,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         leftIcon={'backArrow'}
         title={'CHECKOUT'}
         onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.CheckoutScene, 'Go back clicked');
+          CommonLogEvent(AppRoutes.TestsCheckoutScene, 'Go back clicked');
           props.navigation.goBack();
         }}
       />
@@ -462,7 +462,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          CommonLogEvent(AppRoutes.CheckoutScene, 'Pay online');
+          CommonLogEvent(AppRoutes.TestsCheckoutScene, 'Pay online');
           setCashOnDelivery(!isCashOnDelivery);
         }}
       >
@@ -479,8 +479,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          CommonLogEvent(AppRoutes.CheckoutScene, 'Cash on delivery');
-          setCashOnDelivery(!isCashOnDelivery);
+          CommonLogEvent(AppRoutes.TestsCheckoutScene, 'Cash on delivery');
+          // setCashOnDelivery(!isCashOnDelivery);
+          setCashOnDelivery(true);
         }}
       >
         <View style={[styles.paymentModeRowStyle]}>
@@ -492,7 +493,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
     const content = (
       <View>
-        {payUsingPaytmOption}
+        {/* {payUsingPaytmOption} */}
         {cashOnDeliveryOption}
       </View>
     );
@@ -522,7 +523,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           title={`PAY RS. ${grandTotal.toFixed(2)}`}
           onPress={() => {
             try {
-              CommonLogEvent(AppRoutes.CheckoutScene, `PAY RS. ${grandTotal.toFixed(2)}`);
+              CommonLogEvent(AppRoutes.TestsCheckoutScene, `PAY RS. ${grandTotal.toFixed(2)}`);
             } catch (error) {}
             initiateOrder();
           }}

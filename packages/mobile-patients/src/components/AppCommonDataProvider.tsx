@@ -1,3 +1,5 @@
+import { getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AsyncStorage } from 'react-native';
 
@@ -15,11 +17,19 @@ export interface LocationData {
 export interface AppCommonDataContextProps {
   locationDetails: LocationData | null;
   setLocationDetails: ((items: LocationData) => void) | null;
+  diagnosticsCities: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[];
+  setDiagnosticsCities:
+    | ((items: getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]) => void)
+    | null;
+  locationForDiagnostics: { cityId: string; stateId: string } | null;
 }
 
 export const AppCommonDataContext = createContext<AppCommonDataContextProps>({
   locationDetails: null,
   setLocationDetails: null,
+  diagnosticsCities: [],
+  setDiagnosticsCities: null,
+  locationForDiagnostics: null,
 });
 
 export const AppCommonDataProvider: React.FC = (props) => {
@@ -27,11 +37,28 @@ export const AppCommonDataProvider: React.FC = (props) => {
     AppCommonDataContextProps['locationDetails']
   >(null);
 
+  const [diagnosticsCities, setDiagnosticsCities] = useState<
+    AppCommonDataContextProps['diagnosticsCities']
+  >([]);
+
   const setLocationDetails: AppCommonDataContextProps['setLocationDetails'] = (locationDetails) => {
     _setLocationDetails(locationDetails);
     AsyncStorage.setItem('locationDetails', JSON.stringify(locationDetails)).catch(() => {
       console.log('Failed to save location in local storage.');
     });
+  };
+
+  const locationForDiagnostics: AppCommonDataContextProps['locationForDiagnostics'] = {
+    cityId: ((
+      diagnosticsCities.find(
+        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
+      ) || {}
+    ).cityid || '') as string,
+    stateId: ((
+      diagnosticsCities.find(
+        (item) => item!.cityname.toLowerCase() == (g(locationDetails, 'city') || '').toLowerCase()
+      ) || {}
+    ).stateid || '') as string,
   };
 
   useEffect(() => {
@@ -53,6 +80,9 @@ export const AppCommonDataProvider: React.FC = (props) => {
       value={{
         locationDetails,
         setLocationDetails,
+        diagnosticsCities,
+        setDiagnosticsCities,
+        locationForDiagnostics,
       }}
     >
       {props.children}

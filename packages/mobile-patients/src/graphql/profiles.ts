@@ -665,21 +665,21 @@ export const DELETE_PATIENT_ADDRESS = gql`
   }
 `;
 
-export const GET_PATIENTS_MOBILE = gql`
-  query getPatientByMobileNumber($mobileNumber: String) {
-    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
-      patients {
-        id
-        firstName
-        dateOfBirth
-        gender
-        uhid
-        lastName
-        relation
-      }
-    }
-  }
-`;
+// export const GET_PATIENTS_MOBILE = gql`
+//   query getPatientByMobileNumber($mobileNumber: String) {
+//     getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+//       patients {
+//         id
+//         firstName
+//         dateOfBirth
+//         gender
+//         uhid
+//         lastName
+//         relation
+//       }
+//     }
+//   }
+// `;
 
 export const GET_PATIENT_ADDRESS_LIST = gql`
   query getPatientAddressList($patientId: String) {
@@ -1354,6 +1354,19 @@ export const SEARCH_DIAGNOSTICS = gql`
         itemRemarks
         city
         state
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_CITES = gql`
+  query getDiagnosticsCites($patientId: String, $cityName: String) {
+    getDiagnosticsCites(patientId: $patientId, cityName: $cityName) {
+      diagnosticsCities {
+        cityname
+        statename
+        cityid
+        stateid
       }
     }
   }

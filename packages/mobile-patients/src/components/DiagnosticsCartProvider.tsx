@@ -8,7 +8,6 @@ import { Clinic } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert, AsyncStorage } from 'react-native';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   EPrescription,
   PhysicalPrescription,
@@ -21,6 +20,7 @@ export interface DiagnosticsCartItem {
   price: number;
   thumbnail: string | null;
   specialPrice?: number;
+  collectionMethod: 'H/C' | 'C' | 'H'; // Home or Clinic (most probably `H` will not be an option)
 }
 
 export interface DiagnosticsCartContextProps {

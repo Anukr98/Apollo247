@@ -589,6 +589,11 @@ export const getPlaceInfoByPlaceId = (
   return Axios.get(url);
 };
 
+export const autoCompletePlaceSearch = (searchText: string): Promise<AxiosResponse<any>> => {
+  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${googlePlacesApiKey}`;
+  return Axios.get(url);
+};
+
 export const getDeliveryTime = (params: {
   postalcode: string;
   ordertype: string;
@@ -630,15 +635,15 @@ const TestApiCredentials = {
 };
 
 export const getTestsPackages = (
-  StateID: number,
-  CityID: number
+  CityID: string,
+  StateID: string
 ): Promise<AxiosResponse<TestsPackageResponse>> => {
   return Axios.post(
     config.GET_TEST_PACKAGES[0],
     {
       ...TestApiCredentials,
-      StateID: '1', //need to make dynamic here
-      CityID: '9', //need to make dynamic here
+      StateID,
+      CityID,
     },
     {
       headers: {},

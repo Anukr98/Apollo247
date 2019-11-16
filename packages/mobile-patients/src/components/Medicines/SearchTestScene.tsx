@@ -242,6 +242,7 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
       price: rate,
       mou: '1',
       thumbnail: '',
+      collectionMethod: 'H/C',
     });
   };
 

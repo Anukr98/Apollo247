@@ -223,7 +223,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
               </Text>
             </View>
           )}
-          {!!testDetails.PackageInClussion && (
+          {!!testInfo.PackageInClussion && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
               <Text style={styles.personDetailStyles}>
@@ -331,6 +331,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
                   price: testInfo.Rate,
                   thumbnail: '',
                   specialPrice: undefined,
+                  collectionMethod: 'H/C',
                 })
               }
             />

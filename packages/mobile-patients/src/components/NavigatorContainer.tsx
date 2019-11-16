@@ -60,6 +60,7 @@ import {
   CommonLogEvent,
 } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { SearchTestScene } from '@aph/mobile-patients/src/components/Medicines/SearchTestScene';
+import { TestsCheckoutScene } from '@aph/mobile-patients/src/components/TestsCheckoutScene';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -91,6 +92,7 @@ export enum AppRoutes {
   OrderDetailsScene = 'OrderDetailsScene',
   YourCart = 'YourCart',
   CheckoutScene = 'CheckoutScene',
+  TestsCheckoutScene = 'TestsCheckoutScene',
   PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
   UploadPrescription = 'UploadPrescription',
@@ -215,6 +217,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CheckoutScene]: {
     screen: CheckoutScene,
+  },
+  [AppRoutes.TestsCheckoutScene]: {
+    screen: TestsCheckoutScene,
   },
   [AppRoutes.PaymentScene]: {
     screen: PaymentScene,

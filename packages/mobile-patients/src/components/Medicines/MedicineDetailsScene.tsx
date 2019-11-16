@@ -23,6 +23,7 @@ import {
   MedicineProduct,
   MedicineProductDetails,
   getMedicineDetailsApi,
+  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { isEmptyObject, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -201,11 +202,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   );
 
   useEffect(() => {
-    const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
-        Axios.get(url)
+        const { latitude, longitude } = position.coords;
+        getPlaceInfoByLatLng(latitude, longitude)
           .then((obj) => {
             try {
               if (

@@ -168,7 +168,6 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         source={{
                           uri: profile!.photoUrl,
                         }}
-                        resizeMode={'contain'}
                       />
                     ) : (
                       <PatientDefaultImage style={styles.profileImageStyle} />
