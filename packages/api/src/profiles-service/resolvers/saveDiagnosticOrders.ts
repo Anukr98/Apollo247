@@ -2,11 +2,7 @@ import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { DiagnosticOrdersRepository } from 'profiles-service/repositories/diagnosticOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import {
-  DiagnosticOrders,
-  DiagnosticOrderLineItems,
-  DIAGNOSTIC_ORDER_STATUS,
-} from 'profiles-service/entities';
+import { DiagnosticOrders, DiagnosticOrderLineItems } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
@@ -53,6 +49,10 @@ export const saveDiagnosticOrderTypeDefs = gql`
     ordersList: [DiagnosticOrders]
   }
 
+  type DiagnosticOrderResult {
+    ordersList: DiagnosticOrders
+  }
+
   type DiagnosticOrders {
     id: ID!
     patientId: ID!
@@ -73,10 +73,10 @@ export const saveDiagnosticOrderTypeDefs = gql`
     orderStatus: DIAGNOSTIC_ORDER_STATUS!
     orderType: String!
     displayId: Int!
-    diagnosticOrderLineItems: [DiagnosticLineItems]
+    diagnosticOrderLineItems: [DiagnosticOrderLineItems]
   }
 
-  type DiagnosticLineItems {
+  type DiagnosticOrderLineItems {
     id: ID!
     itemId: Int
     price: Float
@@ -88,6 +88,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
   }
   extend type Query {
     getDiagnosticOrdersList(patientId: String): DiagnosticOrdersResult!
+    getDiagnosticOrderDetails(diagnosticOrderId: String): DiagnosticOrderResult!
   }
 `;
 
@@ -124,6 +125,10 @@ type SaveDiagnosticOrderResult = {
 
 type DiagnosticOrdersResult = {
   ordersList: DiagnosticOrders[];
+};
+
+type DiagnosticOrderResult = {
+  ordersList: DiagnosticOrders;
 };
 
 type DiagnosticOrderInputInputArgs = { diagnosticOrderInput: DiagnosticOrderInput };
@@ -207,11 +212,24 @@ const getDiagnosticOrdersList: Resolver<
   return { ordersList };
 };
 
+const getDiagnosticOrderDetails: Resolver<
+  null,
+  { diagnosticOrderId: string },
+  ProfilesServiceContext,
+  DiagnosticOrderResult
+> = async (parent, args, { profilesDb }) => {
+  const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticOrdersRepository);
+  const ordersList = await diagnosticsRepo.getOrderDetails(args.diagnosticOrderId);
+  if (ordersList == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
+  return { ordersList };
+};
+
 export const saveDiagnosticOrderResolvers = {
   Mutation: {
     SaveDiagnosticOrder,
   },
   Query: {
     getDiagnosticOrdersList,
+    getDiagnosticOrderDetails,
   },
 };
