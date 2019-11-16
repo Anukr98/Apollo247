@@ -647,6 +647,33 @@
             "deprecationReason": null
           },
           {
+            "name": "getDiagnosticOrderDetails",
+            "description": null,
+            "args": [
+              {
+                "name": "diagnosticOrderId",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "DiagnosticOrderResult",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "getSecretaryList",
             "description": null,
             "args": [],
@@ -5251,7 +5278,7 @@
               "name": null,
               "ofType": {
                 "kind": "OBJECT",
-                "name": "DiagnosticLineItems",
+                "name": "DiagnosticOrderLineItems",
                 "ofType": null
               }
             },
@@ -5289,7 +5316,7 @@
       },
       {
         "kind": "OBJECT",
-        "name": "DiagnosticLineItems",
+        "name": "DiagnosticOrderLineItems",
         "description": null,
         "fields": [
           {
@@ -5339,6 +5366,29 @@
             "type": {
               "kind": "SCALAR",
               "name": "Int",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "DiagnosticOrderResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "ordersList",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "OBJECT",
+              "name": "DiagnosticOrders",
               "ofType": null
             },
             "isDeprecated": false,
