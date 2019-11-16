@@ -12,6 +12,8 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import {
   GET_MEDICINE_ORDER_DETAILS,
   SAVE_ORDER_CANCEL_STATUS,
+  GET_DIAGNOSTIC_ORDER_LIST,
+  GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrderDetails,
@@ -58,6 +60,11 @@ import {
 } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import {
+  getDiagnosticOrderDetailsVariables,
+  getDiagnosticOrderDetails,
+  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
+} from '../../graphql/types/getDiagnosticOrderDetails';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -94,7 +101,7 @@ const cancelOptions: [string, string][] = [
 ];
 
 export interface TestOrderDetailsProps extends NavigationScreenProps {
-  orderAutoId: string;
+  orderId: string;
   showOrderSummaryTab: boolean;
   goToHomeOnBack: boolean;
 }
@@ -102,7 +109,7 @@ export interface TestOrderDetailsProps extends NavigationScreenProps {
 }
 
 export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
-  const orderAutoId = props.navigation.getParam('orderAutoId');
+  const orderId = props.navigation.getParam('orderId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
 
@@ -125,19 +132,16 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   }, [currentPatient]);
 
   const { data, loading, refetch } = useQuery<
-    GetMedicineOrderDetails,
-    GetMedicineOrderDetailsVariables
-  >(GET_MEDICINE_ORDER_DETAILS, {
-    variables: { patientId: currentPatient && currentPatient.id, orderAutoId: orderAutoId },
+    getDiagnosticOrderDetails,
+    getDiagnosticOrderDetailsVariables
+  >(GET_DIAGNOSTIC_ORDER_LIST_DETAILS, {
+    variables: { diagnosticOrderId: orderId },
   });
-  const order = g(data, 'getMedicineOrderDetails', 'MedicineOrderDetails');
+  const order = g(data, 'getDiagnosticOrderDetails', 'ordersList');
   console.log({ order });
 
   const orderDetails = ((!loading && order) ||
-    {}) as GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails;
-  const orderStatusList = ((!loading && order && order.medicineOrdersStatus) || []).filter(
-    (item) => item!.orderStatus != MEDICINE_ORDER_STATUS.QUOTE
-  );
+    {}) as getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList;
 
   const handleBack = async () => {
     BackHandler.removeEventListener('hardwareBackPress', handleBack);
@@ -177,7 +181,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   const getFormattedTime = (time: string) => {
     return moment(time).format('hh:mm a');
   };
-
+  /*
   const reOrder = () => {
     setLoading!(true);
     const items = (orderDetails!.medicineOrderLineItems || [])
@@ -254,37 +258,26 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         });
       });
   };
-
+*/
   const renderOrderHistory = () => {
-    const isDelivered = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
-    );
+    // const isDelivered = orderStatusList.find(
+    //   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+    // );
 
     return (
       <View>
         <View style={{ margin: 20 }}>
-          {orderStatusList.map((order, index, array) => {
-            return (
-              <OrderProgressCard
-                style={index < array.length - 1 ? { marginBottom: 8 } : {}}
-                key={index}
-                description={''}
-                status={getOrderStatusText(order!.orderStatus!)}
-                date={getFormattedDate(order!.statusDate)}
-                time={getFormattedTime(order!.statusDate)}
-                isStatusDone={true}
-                nextItemStatus={index == array.length - 1 ? 'NOT_EXIST' : 'DONE'}
-              />
-            );
-          })}
-        </View>
-        {isDelivered ? (
-          <Button
-            style={{ flex: 1, width: '80%', alignSelf: 'center' }}
-            onPress={() => reOrder()}
-            title={'RE-ORDER'}
+          <OrderProgressCard
+            style={{ marginBottom: 8 }}
+            // key={index}
+            description={''}
+            status={orderDetails.orderStatus}
+            date={getFormattedDate(orderDetails.diagnosticDate)}
+            time={getFormattedTime(orderDetails.diagnosticDate)}
+            isStatusDone={true}
+            nextItemStatus={'NOT_EXIST'}
           />
-        ) : null}
+        </View>
         <NeedHelpAssistant
           containerStyle={{ marginTop: 20, marginBottom: 30 }}
           navigation={props.navigation}
@@ -457,7 +450,23 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderSummary = () => {
-    return <OrderSummary orderDetails={orderDetails as any} />;
+    return (
+      <OrderSummary
+        orderDetails={
+          {
+            orderAutoId: orderDetails.displayId,
+            id: `${orderDetails.displayId}`,
+            estimatedAmount: orderDetails.totalPrice,
+            medicineOrderLineItems: (orderDetails.diagnosticOrderLineItems || []).map((item) => ({
+              medicineName: `${item!.itemId || ''}`,
+              price: item!.price,
+              quantity: item!.quantity,
+            })) as any,
+          } as any
+        }
+        isTest={true}
+      />
+    );
   };
 
   const onPressConfirmCancelOrder = () => {
@@ -467,7 +476,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         mutation: SAVE_ORDER_CANCEL_STATUS,
         variables: {
           orderCancelInput: {
-            orderNo: orderAutoId,
+            orderNo: orderId,
             remarksCode: cancelOptions.find((item) => item[1] == selectedReason)![0]!,
           },
         },
@@ -502,6 +511,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       });
   };
 
+  /*
   const onPressCancelOrder = () => {
     setMenuOpen(false);
     const isDelivered = orderStatusList.find(
@@ -519,9 +529,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       setCancelVisible(true);
     }
   };
-
+*/
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
+  /*
   const renderMenuOptions = () => {
     if (isMenuOpen) {
       return (
@@ -538,7 +549,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
       );
     }
   };
-
+*/
   return (
     <View style={{ flex: 1 }}>
       {renderReturnOrderOverlay()}
@@ -546,7 +557,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         <View style={styles.headerShadowContainer}>
           <Header
             leftIcon="backArrow"
-            title={`ORDER #${orderAutoId}`}
+            title={`ORDER #${orderDetails.displayId}`}
+            titleStyle={{ marginHorizontal: 10 }}
             container={{ borderBottomWidth: 0 }}
             // rightComponent={
             //   <TouchableOpacity
@@ -562,7 +574,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
               handleBack();
             }}
           />
-          {renderMenuOptions()}
+          {/* {renderMenuOptions()} */}
         </View>
 
         <TabsComponent

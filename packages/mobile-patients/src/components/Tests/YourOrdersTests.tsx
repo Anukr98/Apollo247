@@ -67,7 +67,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     (item) =>
       !(
         (item!.orderStatus || []).length == 1 &&
-        (item!.orderStatus || []).find(
+        ((item!.orderStatus || []) as any).find(
           (item: any) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
         )
       )
@@ -149,8 +149,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               orderId={`#${order!.displayId}`}
               onPress={() => {
                 props.navigation.navigate(AppRoutes.TestOrderDetails, {
-                  orderAutoId: order!.displayId,
-                  orderDetails: order!.orderStatus,
+                  orderId: order!.id,
                 });
               }}
               title={'Test'}
