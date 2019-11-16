@@ -2,13 +2,22 @@ import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { DiagnosticOrdersRepository } from 'profiles-service/repositories/diagnosticOrdersRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-import { DiagnosticOrders, DiagnosticOrderLineItems } from 'profiles-service/entities';
+import {
+  DiagnosticOrders,
+  DiagnosticOrderLineItems,
+  DIAGNOSTIC_ORDER_STATUS,
+} from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { PatientAddressRepository } from 'profiles-service/repositories/patientAddressRepository';
 
 export const saveDiagnosticOrderTypeDefs = gql`
+  enum DIAGNOSTIC_ORDER_STATUS {
+    PICKUP_REQUESTED
+    PICKUP_CONFIRMED
+  }
+
   input DiagnosticOrderInput {
     patientId: ID!
     patientAddressId: ID!
@@ -19,6 +28,12 @@ export const saveDiagnosticOrderTypeDefs = gql`
     diagnosticBranchCode: String!
     totalPrice: Float!
     prescriptionUrl: String!
+    diagnosticDate: Date!
+    centerName: String!
+    centerCode: String!
+    centerCity: String!
+    centerState: String!
+    centerLocality: String!
     items: [DiagnosticLineItem]
   }
 
@@ -34,8 +49,45 @@ export const saveDiagnosticOrderTypeDefs = gql`
     orderId: String
   }
 
+  type DiagnosticOrdersResult {
+    ordersList: [DiagnosticOrders]
+  }
+
+  type DiagnosticOrders {
+    id: ID!
+    patientId: ID!
+    patientAddressId: ID!
+    city: String!
+    slotTimings: String!
+    employeeSlotId: Int!
+    diagnosticEmployeeCode: String!
+    diagnosticBranchCode: String!
+    totalPrice: Float!
+    prescriptionUrl: String!
+    diagnosticDate: Date!
+    centerName: String!
+    centerCode: String!
+    centerCity: String!
+    centerState: String!
+    centerLocality: String!
+    orderStatus: DIAGNOSTIC_ORDER_STATUS!
+    orderType: String!
+    displayId: Int!
+    diagnosticOrderLineItems: [DiagnosticLineItems]
+  }
+
+  type DiagnosticLineItems {
+    id: ID!
+    itemId: Int
+    price: Float
+    quantity: Int
+  }
+
   extend type Mutation {
     SaveDiagnosticOrder(diagnosticOrderInput: DiagnosticOrderInput): SaveDiagnosticOrderResult!
+  }
+  extend type Query {
+    getDiagnosticOrdersList(patientId: String): DiagnosticOrdersResult!
   }
 `;
 
@@ -49,6 +101,12 @@ type DiagnosticOrderInput = {
   diagnosticBranchCode: string;
   totalPrice: number;
   prescriptionUrl: string;
+  diagnosticDate: Date;
+  centerName: string;
+  centerCode: string;
+  centerCity: string;
+  centerState: string;
+  centerLocality: string;
   items: [DiagnosticLineItem];
 };
 
@@ -62,6 +120,10 @@ type SaveDiagnosticOrderResult = {
   errorCode: number;
   errorMessage: string;
   orderId: string;
+};
+
+type DiagnosticOrdersResult = {
+  ordersList: DiagnosticOrders[];
 };
 
 type DiagnosticOrderInputInputArgs = { diagnosticOrderInput: DiagnosticOrderInput };
@@ -106,6 +168,12 @@ const SaveDiagnosticOrder: Resolver<
     diagnosticEmployeeCode: diagnosticOrderInput.diagnosticEmployeeCode,
     city: diagnosticOrderInput.city,
     prescriptionUrl: diagnosticOrderInput.prescriptionUrl,
+    diagnosticDate: diagnosticOrderInput.diagnosticDate,
+    centerCity: diagnosticOrderInput.centerCity,
+    centerCode: diagnosticOrderInput.centerCode,
+    centerName: diagnosticOrderInput.centerName,
+    centerLocality: diagnosticOrderInput.centerLocality,
+    centerState: diagnosticOrderInput.centerState,
   };
 
   const diagnosticOrdersRepo = profilesDb.getCustomRepository(DiagnosticOrdersRepository);
@@ -128,8 +196,22 @@ const SaveDiagnosticOrder: Resolver<
   };
 };
 
+const getDiagnosticOrdersList: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  DiagnosticOrdersResult
+> = async (parent, args, { profilesDb }) => {
+  const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticOrdersRepository);
+  const ordersList = await diagnosticsRepo.getListOfOrders(args.patientId);
+  return { ordersList };
+};
+
 export const saveDiagnosticOrderResolvers = {
   Mutation: {
     SaveDiagnosticOrder,
+  },
+  Query: {
+    getDiagnosticOrdersList,
   },
 };

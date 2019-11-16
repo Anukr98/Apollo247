@@ -48,6 +48,8 @@ import {
   Diagnostics,
   DiagnosticOrderLineItems,
   DiagnosticOrders,
+  DiagnosticHotSellers,
+  DiagnosticOrgans,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -125,6 +127,8 @@ export const connect = async () => {
         Diagnostics,
         DiagnosticOrderLineItems,
         DiagnosticOrders,
+        DiagnosticHotSellers,
+        DiagnosticOrgans,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
