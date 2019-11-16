@@ -8,7 +8,6 @@ import {
   Not,
   Connection,
   In,
-  getCustomRepository,
 } from 'typeorm';
 import {
   Appointment,
@@ -29,7 +28,7 @@ import { format, addMinutes, differenceInMinutes, addDays, subDays } from 'date-
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
-import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
+//import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
