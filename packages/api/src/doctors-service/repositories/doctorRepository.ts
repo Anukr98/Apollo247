@@ -15,9 +15,9 @@ import { format, differenceInMinutes, addMinutes, addDays } from 'date-fns';
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
-//import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
-import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
+//import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
@@ -211,8 +211,8 @@ export class DoctorRepository extends Repository<Doctor> {
     doctorsDb: Connection,
     consultsDb: Connection
   ) {
-    //const appts = consultsDb.getCustomRepository(AppointmentRepository);
-    const nextSlotRepo = consultsDb.getCustomRepository(DoctorNextAvaialbleSlotsRepository);
+    const appts = consultsDb.getCustomRepository(AppointmentRepository);
+    //const nextSlotRepo = consultsDb.getCustomRepository(DoctorNextAvaialbleSlotsRepository);
     const doctorAvailalbeSlots: DoctorSlotAvailability[] = [];
 
     function slots(doctorId: string) {
@@ -227,23 +227,23 @@ export class DoctorRepository extends Repository<Doctor> {
         );
         if (consultHrsOnline > 0) {
           //if the slot is empty check for next day
-          //let nextDate = new Date();
-          const doctorNextSlotDetails = await nextSlotRepo.getDoctorSlot(doctorId);
-          console.log(doctorNextSlotDetails, 'doctorNextSlotDetails');
-          if (doctorNextSlotDetails) {
-            console.log(doctorNextSlotDetails.onlineSlot.toString(), 'online slot', doctorId);
-            if (doctorNextSlotDetails.onlineSlot != null)
-              onlineSlot =
-                format(doctorNextSlotDetails.onlineSlot, 'yyyy-MM-dd') +
-                'T' +
-                format(doctorNextSlotDetails.onlineSlot, 'HH:mm');
-            if (doctorNextSlotDetails.physicalSlot != null)
-              physicalSlot =
-                format(doctorNextSlotDetails.physicalSlot, 'yyyy-MM-dd') +
-                'T' +
-                format(doctorNextSlotDetails.physicalSlot, 'HH:mm');
-          }
-          /*while (true) {
+          let nextDate = new Date();
+          // const doctorNextSlotDetails = await nextSlotRepo.getDoctorSlot(doctorId);
+          // console.log(doctorNextSlotDetails, 'doctorNextSlotDetails');
+          // if (doctorNextSlotDetails) {
+          //   console.log(doctorNextSlotDetails.onlineSlot.toString(), 'online slot', doctorId);
+          //   if (doctorNextSlotDetails.onlineSlot != null)
+          //     onlineSlot =
+          //       format(doctorNextSlotDetails.onlineSlot, 'yyyy-MM-dd') +
+          //       'T' +
+          //       format(doctorNextSlotDetails.onlineSlot, 'HH:mm');
+          //   if (doctorNextSlotDetails.physicalSlot != null)
+          //     physicalSlot =
+          //       format(doctorNextSlotDetails.physicalSlot, 'yyyy-MM-dd') +
+          //       'T' +
+          //       format(doctorNextSlotDetails.physicalSlot, 'HH:mm');
+          // }
+          while (true) {
             const nextSlot = await appts.getDoctorNextSlotDate(
               doctorId,
               nextDate,
@@ -255,10 +255,10 @@ export class DoctorRepository extends Repository<Doctor> {
               break;
             }
             nextDate = addDays(nextDate, 1);
-          }*/
+          }
         }
 
-        /*const consultHrsPhysical = await consultHrsRepo.checkByDoctorAndConsultMode(
+        const consultHrsPhysical = await consultHrsRepo.checkByDoctorAndConsultMode(
           doctorId,
           'PHYSICAL'
         );
@@ -278,7 +278,7 @@ export class DoctorRepository extends Repository<Doctor> {
             }
             nextDate = addDays(nextDate, 1);
           }
-        }*/
+        }
 
         let referenceSlot;
         if (consultModeFilter == ConsultMode.ONLINE) {

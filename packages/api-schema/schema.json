@@ -17364,6 +17364,12 @@
         "interfaces": null,
         "enumValues": [
           {
+            "name": "JPG",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "PNG",
             "description": null,
             "isDeprecated": false,
