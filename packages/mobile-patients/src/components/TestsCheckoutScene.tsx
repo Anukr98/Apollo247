@@ -178,7 +178,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     pickupStoreName: '',
     pickupStoreAddress: '',
     orderId: '',
-    orderAutoId: 0,
   });
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
   const { showAphAlert } = useUIElements();
@@ -339,8 +338,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           // Show popup here & clear info
           clearCartInfo && clearCartInfo();
           setOrderInfo({
-            orderId: orderId,
-            orderAutoId: orderId,
+            orderId: `${orderId}`,
             pickupStoreAddress: '',
             pickupStoreName: '',
           });
@@ -600,7 +598,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                   color: '#01475b',
                 }}
               >
-                Medicines
+                Tests
               </Text>
               <Text
                 style={{
@@ -611,7 +609,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                   textAlign: 'right',
                 }}
               >
-                {`#${orderInfo.orderAutoId}`}
+                {`#${orderInfo.orderId}`}
               </Text>
             </View>
             <View
