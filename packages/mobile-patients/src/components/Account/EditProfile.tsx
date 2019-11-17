@@ -262,6 +262,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [bottomPopUp, setBottomPopUp] = useState<boolean>(false);
+
   const { isIphoneX } = DeviceHelper();
   const client = useApolloClient();
 
@@ -575,20 +576,29 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     );
   };
 
-  const onRelationSelect = (selected: { key: string; value: string | number }) => {
+  const onRelationSelect = (
+    selected: { key: string; value: string | number },
+    presentRelation: string
+  ) => {
     const isSelfRelation =
       allCurrentPatients &&
       allCurrentPatients!.map((item) => {
         return item.relation === Relation.ME;
       });
+    console.log(presentRelation, 'presentRelation');
+
     const isValid = isSelfRelation!.find((i) => i === true) === undefined;
 
-    if (isValid || selected.key !== Relation.ME) {
+    if (isValid || selected.key !== Relation.ME || presentRelation == Relation.ME) {
       setRelation({
         key: selected.key as Relation,
         title: selected.value.toString(),
       });
-    } else {
+    }
+    // } else if (presentRelation == Relation.ME||) {
+    //   setBottomPopUp(false);
+    // }
+    else {
       setBottomPopUp(true);
     }
   };
@@ -610,7 +620,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           alignSelf: 'flex-start',
         }}
         bottomPadding={{ paddingBottom: 20 }}
-        onPress={(selectedRelation) => onRelationSelect(selectedRelation)}
+        onPress={(selectedRelation) => onRelationSelect(selectedRelation, profileData.relation)}
       >
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
           <View style={styles.placeholderViewStyle}>
@@ -705,9 +715,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
                 } else if (!date) {
                   validationMessage = 'Enter valid date of birth';
                 } else if (!gender) {
-                  validationMessage = 'Select a geder';
+                  validationMessage = 'Select a gender';
                 } else if (!relation) {
-                  validationMessage = 'Select a vaild relation';
+                  validationMessage = 'Select a valid relation';
                 } else if (!(email === '' || (email && isSatisfyingEmailRegex(email)))) {
                   validationMessage = 'Enter valid email';
                 }
@@ -812,7 +822,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       {/* {deleteProfile && isEdit && renderDeleteButton()} */}
       {loading && <Spinner />}
       {bottomPopUp && (
-        <BottomPopUp title="Apollo" description="'Self' is already choosen for another profile.">
+        <BottomPopUp title="Apollo" description={"'Self' is already choosen for another profile."}>
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               style={{

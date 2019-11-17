@@ -105,12 +105,10 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
   useEffect(() => {
     getNetStatus().then((status) => {
       if (status) {
-        console.log('Network status', status);
         chooseDoctor();
       } else {
         setNetworkStatus(true);
         setshowSpinner(false);
-        console.log('Network status failed', status);
       }
     });
   });

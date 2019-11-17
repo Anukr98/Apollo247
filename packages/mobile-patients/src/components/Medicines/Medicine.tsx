@@ -122,7 +122,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   useEffect(() => {
     const getDataFromTree = async () => {
       const storeVallue = await AsyncStorage.getItem('selectUserId');
-      console.log('storeVallue', storeVallue);
+      //console.log('storeVallue', storeVallue);
       setCurrentPatientId(storeVallue);
     };
 

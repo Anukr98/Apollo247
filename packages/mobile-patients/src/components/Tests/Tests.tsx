@@ -213,7 +213,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 setLoadingContext!(true);
                 doRequestAndAccessLocation()
                   .then((response) => {
-                    console.log('response', { response });
+                    //console.log('response', { response });
                     setLocationDetails!(response);
                   })
                   .catch((e) => {
@@ -1400,7 +1400,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 <Text style={styles.hiTextStyle}>{'hi'}</Text>
                 <View>
                   <Text style={styles.nameTextStyle}>
-                    {currentPatient!.firstName!.toLowerCase() || ''}
+                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
                   </Text>
                   <View style={styles.seperatorStyle} />
                 </View>
