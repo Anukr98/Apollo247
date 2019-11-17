@@ -1,5 +1,9 @@
-import { EntityRepository, Repository } from 'typeorm';
-import { DiagnosticOrders, DiagnosticOrderLineItems } from 'profiles-service/entities';
+import { EntityRepository, Repository, Not } from 'typeorm';
+import {
+  DiagnosticOrders,
+  DiagnosticOrderLineItems,
+  DIAGNOSTIC_ORDER_STATUS,
+} from 'profiles-service/entities';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
@@ -15,6 +19,15 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
       });
   }
 
+  updateDiagnosticOrder(
+    id: string,
+    preBookingId: string,
+    fareyeId: string,
+    orderStatus: DIAGNOSTIC_ORDER_STATUS
+  ) {
+    return this.update(id, { fareyeId, preBookingId, orderStatus });
+  }
+
   saveDiagnosticOrderLineItem(lineItemAttrs: Partial<DiagnosticOrderLineItems>) {
     return DiagnosticOrderLineItems.create(lineItemAttrs)
       .save()
@@ -26,7 +39,10 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
   }
 
   getListOfOrders(patient: string) {
-    return this.find({ where: { patient }, relations: ['diagnosticOrderLineItems'] });
+    return this.find({
+      where: { patient, orderStatus: Not(DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED) },
+      relations: ['diagnosticOrderLineItems'],
+    });
   }
 
   getOrderDetails(id: string) {

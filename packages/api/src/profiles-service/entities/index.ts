@@ -130,6 +130,7 @@ export enum MedicalRecordType {
 export enum DIAGNOSTIC_ORDER_STATUS {
   PICKUP_REQUESTED = 'PICKUP_REQUESTED',
   PICKUP_CONFIRMED = 'PICKUP_CONFIRMED',
+  ORDER_FAILED = 'ORDER_FAILED',
 }
 
 //medicine orders starts
