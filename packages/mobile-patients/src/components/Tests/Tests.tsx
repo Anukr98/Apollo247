@@ -23,7 +23,7 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import {
   GET_DIAGNOSTICS_CITES,
   GET_DIAGNOSTIC_DATA,
-  GET_MEDICINE_ORDERS_LIST,
+  GET_DIAGNOSTIC_ORDER_LIST,
   SEARCH_DIAGNOSTICS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
@@ -32,10 +32,6 @@ import {
   getDiagnosticsCitesVariables,
   getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
-import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
 import {
   searchDiagnostics,
   searchDiagnosticsVariables,
@@ -75,6 +71,10 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import {
+  getDiagnosticOrdersList,
+  getDiagnosticOrdersListVariables,
+} from '../../graphql/types/getDiagnosticOrdersList';
 import {
   getDiagnosticsData,
   getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
@@ -302,15 +302,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
     []) as getDiagnosticsData_getDiagnosticsData_diagnosticOrgans[];
 
   const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
-    GetMedicineOrdersList,
-    GetMedicineOrdersListVariables
-  >(GET_MEDICINE_ORDERS_LIST, {
+    getDiagnosticOrdersList,
+    getDiagnosticOrdersListVariables
+  >(GET_DIAGNOSTIC_ORDER_LIST, {
     variables: { patientId: currentPatient && currentPatient.id },
     fetchPolicy: 'no-cache',
   });
 
-  const _orders =
-    (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
+  const _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
 
   // Common Views
 
@@ -1207,7 +1206,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
           }}
           value={searchText}
-          editable={!!locationDetails}
+          // editable={!!locationDetails}
           autoCapitalize="none"
           spellCheck={false}
           onFocus={() => setSearchFocused(true)}

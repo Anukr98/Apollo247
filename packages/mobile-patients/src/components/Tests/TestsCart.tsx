@@ -67,6 +67,8 @@ import {
 } from '../../graphql/types/getDiagnosticSlots';
 import { array } from 'prop-types';
 import { Spinner } from '../ui/Spinner';
+import { TEST_COLLECTION_TYPE } from '../../graphql/types/globalTypes';
+import { TestPackageForDetails } from './TestDetails';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -317,9 +319,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 if (isComingFromConsult)
-                  props.navigation.navigate(AppRoutes.SearchMedicineScene, {
+                  props.navigation.navigate(AppRoutes.SearchTestScene, {
                     isComingFromConsult,
-                    isTest: true,
                   });
                 else props.navigation.goBack();
               }}
@@ -391,10 +392,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               containerStyle={medicineCardContainerStyle}
               key={test.id}
               onPress={() => {
-                CommonLogEvent(AppRoutes.YourCart, 'Navigate to medicine details scene');
-                props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-                  sku: test.id,
-                  title: test.name,
+                CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
+                props.navigation.navigate(AppRoutes.TestDetails, {
+                  testDetails: {
+                    Rate: test!.price,
+                    Gender: '',
+                    ItemID: `${test.id}`,
+                    ItemName: test.name,
+                    collectionType: test.collectionMethod,
+                  } as TestPackageForDetails,
                 });
               }}
               medicineName={test.name!}
@@ -402,7 +408,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               imageUrl={imageUrl}
               onPressAdd={() => {}}
               onPressRemove={() => {
-                CommonLogEvent(AppRoutes.YourCart, 'Remove item from cart');
+                CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
                 onRemoveCartItem(test);
               }}
               onChangeUnit={() => {}}
@@ -483,8 +489,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               }${item.city}, ${item.state} - ${item.zipcode}`}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
-                CommonLogEvent(AppRoutes.YourCart, 'Check service availability');
-                const tests = cartItems.filter((item) => item.collectionMethod == 'C');
+                CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+                const tests = cartItems.filter(
+                  (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
+                );
 
                 if (tests.length) {
                   showAphAlert!({
@@ -626,7 +634,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             title={`${item.CentreName}\n${item.Locality},${item.City},${item.State}`}
             isSelected={clinicId === item.CentreCode}
             onPress={() => {
-              CommonLogEvent(AppRoutes.YourCart, 'Set store id');
+              CommonLogEvent(AppRoutes.TestsCart, 'Set store id');
               setDiagnosticClinic!({ ...item, date: date.getTime() });
               setClinicId && setClinicId(item.CentreCode);
             }}
@@ -1017,6 +1025,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             saveUserChange={true}
             selectedProfile={profile}
             setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            navigation={props.navigation}
           ></ProfileList>
           <Text
             style={{

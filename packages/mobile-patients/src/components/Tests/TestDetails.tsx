@@ -135,7 +135,6 @@ export interface TestPackageForDetails extends TestPackage {
 export interface TestDetailsProps
   extends NavigationScreenProps<{
     testDetails: TestPackageForDetails;
-    itemid: string;
   }> {}
 
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
