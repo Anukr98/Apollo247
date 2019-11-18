@@ -427,6 +427,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const renderUploadSelection = () => {
     return (
       <UploadPrescriprionPopup
+        isProfileImage={true}
         heading="Upload Profile Picture"
         isVisible={uploadVisible}
         hideTAndCs

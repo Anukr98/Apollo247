@@ -250,6 +250,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       description: 'Unable to access location.',
                     });
                     setLocationError(true);
+                    setshowLocationpopup(true);
                   })
                   .finally(() => {
                     setLoadingContext!(false);

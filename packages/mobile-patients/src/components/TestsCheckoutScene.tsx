@@ -307,8 +307,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       patientAddressId: deliveryAddressId!,
       city: (locationForDiagnostics || {}).city!,
       state: (locationForDiagnostics || {}).state!,
-      stateId: (locationForDiagnostics || {}).stateId!,
-      cityId: (locationForDiagnostics || {}).cityId!,
+      stateId: `${(locationForDiagnostics || {}).stateId!}`,
+      cityId: `${(locationForDiagnostics || {}).cityId!}`,
       // for clinic order
       centerName: CentreName || '',
       centerCode: CentreCode || '',

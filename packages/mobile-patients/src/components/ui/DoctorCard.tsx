@@ -170,7 +170,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = (props) => {
         const today: Date = new Date();
         const date2: Date = new Date(nextSlot);
         if (date2 && today) {
-          timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+          timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
         }
         setavailableTime(nextSlot);
         setavailableInMin(timeDiff);

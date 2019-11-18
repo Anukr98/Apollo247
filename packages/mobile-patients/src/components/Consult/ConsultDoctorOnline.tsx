@@ -241,7 +241,7 @@ export const ConsultDoctorOnline: React.FC<ConsultDoctorOnlineProps> = (props) =
             const today: Date = new Date();
             const date2: Date = new Date(nextSlot);
             if (date2 && today) {
-              timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+              timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
             }
             console.log(timeDiff, 'timeDiff', nextSlot, date2);
 
