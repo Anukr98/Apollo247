@@ -96,11 +96,28 @@ export interface UploadPrescriprionPopupProps {
     selectedType: EPrescriptionDisableOption,
     response: (PhysicalPrescription)[]
   ) => void;
+  isProfileImage?: boolean;
 }
 
 export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const formatResponse = (response: ImageCropPickerResponse[]) => {
+    console.log('response Img', response);
+    if (props.isProfileImage) {
+      const res = response[0] || response;
+      const isPdf = res.mime == 'application/pdf';
+      const fileUri = res!.path || `folder/file.jpg`;
+      const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
+      const fileType = isPdf ? 'pdf' : fileUri.substring(fileUri.lastIndexOf('.') + 1);
+      const returnValue = [
+        {
+          base64: res.data,
+          fileType: fileType,
+          title: `${isPdf ? 'PDF' : 'IMG'}_${random8DigitNumber}`,
+        } as PhysicalPrescription,
+      ];
+      return returnValue as PhysicalPrescription[];
+    }
     if (response.length == 0) return [];
 
     return response.map((item) => {
@@ -124,8 +141,12 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     ImagePicker.openCamera({
       // width: 400,
       // height: 400,
-      cropping: false,
+      cropping: props.isProfileImage ? true : false,
+      hideBottomControls: true,
+      width: props.isProfileImage ? 800 : undefined,
+      height: props.isProfileImage ? 800 : undefined,
       includeBase64: true,
+      multiple: props.isProfileImage ? false : true,
       compressImageQuality: 0.1,
     })
       .then((response) => {
@@ -177,8 +198,11 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
 
     ImagePicker.openPicker({
       cropping: true,
+      hideBottomControls: true,
+      width: props.isProfileImage ? 800 : undefined,
+      height: props.isProfileImage ? 800 : undefined,
       includeBase64: true,
-      multiple: true,
+      multiple: props.isProfileImage ? false : true,
       compressImageQuality: 0.1,
     })
       .then((response) => {

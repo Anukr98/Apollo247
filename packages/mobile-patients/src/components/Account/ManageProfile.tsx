@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
         borderRadius: 40,
       },
       android: {
-        borderRadius: 100,
+        borderRadius: 500,
       },
     }),
   },
