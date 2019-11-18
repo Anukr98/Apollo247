@@ -214,7 +214,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [showMenu, setShowMenu] = useState<boolean>(false);
-  const [userName, setuserName] = useState<string>('');
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
@@ -224,10 +223,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
   useEffect(() => {
-    let userName =
-      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
-    userName = userName.toLowerCase();
-    setuserName(userName);
     currentPatient && setshowSpinner(false);
     currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
@@ -236,7 +231,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
     }
 
     analytics.setAnalyticsCollectionEnabled(true);
-  }, [currentPatient, analytics, userName, props.navigation.state.params]);
+  }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
@@ -369,8 +364,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text
                 style={[
                   styles.textStyle,
-                  profile.firstName &&
-                  userName === profile.firstName.split(' ')[0].toLocaleLowerCase()
+                  profile.firstName && currentPatient!.firstName === profile.firstName
                     ? { color: theme.colors.APP_GREEN }
                     : null,
                 ]}
@@ -670,6 +664,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               >
                 <View style={{ flexDirection: 'row' }}>
                   <ProfileList
+                    navigation={props.navigation}
                     saveUserChange={true}
                     childView={
                       <View
@@ -681,9 +676,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                           backgroundColor: theme.colors.WHITE,
                         }}
                       >
-                        <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+                        <Text style={styles.hiTextStyle}>{'hi'}</Text>
                         <View>
-                          <Text style={styles.nameTextStyle}>{userName}</Text>
+                          <Text style={styles.nameTextStyle}>
+                            {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                          </Text>
                           <View style={styles.seperatorStyle} />
                         </View>
                         <View style={{ paddingTop: 15 }}>
@@ -693,7 +690,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                     }
                     selectedProfile={profile}
                     setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-                    navigation={props.navigation}
                   ></ProfileList>
                   {/* <Text style={styles.hiTextStyle}>
                     {string.home.hi} {userName}!

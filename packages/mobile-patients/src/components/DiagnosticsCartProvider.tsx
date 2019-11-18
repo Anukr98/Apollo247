@@ -97,7 +97,7 @@ export interface DiagnosticsCartContextProps {
   clearCartInfo: (() => void) | null;
 
   diagnosticSlot: DiagnosticSlot | null;
-  setDiagnosticSlot: ((item: DiagnosticSlot) => void) | null;
+  setDiagnosticSlot: ((item: DiagnosticSlot | null) => void) | null;
 
   diagnosticClinic: DiagnosticClinic | null;
   setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;

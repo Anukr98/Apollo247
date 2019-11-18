@@ -95,7 +95,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     const getDataFromTree = async () => {
       const storeVallue = await AsyncStorage.getItem('selectUserId');
       console.log('storeVallue', storeVallue);
-      setCurrentPatientId(storeVallue);
+      storeVallue && setCurrentPatientId(storeVallue);
     };
     getDataFromTree();
   }, []);

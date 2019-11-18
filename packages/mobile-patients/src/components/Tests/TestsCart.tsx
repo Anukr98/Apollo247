@@ -2,12 +2,7 @@ import {
   uploadFile,
   uploadFileVariables,
 } from '@aph/mobile-patients/src//graphql/types/uploadFile';
-import {
-  aphConsole,
-  handleGraphQlError,
-  timeTo12HrFormat,
-  g,
-} from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { aphConsole, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
@@ -30,9 +25,9 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
+  GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_FILE,
-  GET_DIAGNOSTIC_SLOTS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -43,7 +38,6 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import {
   Clinic,
   getPlaceInfoByPincode,
-  pinCodeServiceabilityApi,
   searchClinicApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -51,7 +45,7 @@ import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -61,14 +55,12 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { useApolloClient } from 'react-apollo-hooks';
 import {
   getDiagnosticSlots,
   getDiagnosticSlotsVariables,
 } from '../../graphql/types/getDiagnosticSlots';
-import { array } from 'prop-types';
-import { Spinner } from '../ui/Spinner';
 import { TEST_COLLECTION_TYPE } from '../../graphql/types/globalTypes';
+import { Spinner } from '../ui/Spinner';
 import { TestPackageForDetails } from './TestDetails';
 
 const styles = StyleSheet.create({
@@ -241,11 +233,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (clinicId) {
       filterClinics(clinicId, true);
     }
-    if (diagnosticSlot) {
-      setDate(new Date(diagnosticSlot.date));
-      setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
+    if (deliveryAddressId) {
+      if (diagnosticSlot) {
+        setDate(new Date(diagnosticSlot.date));
+        setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
+      } else {
+        setDate(new Date());
+        const selectedAddressIndex = addresses.findIndex(
+          (address) => address.id == deliveryAddressId
+        );
+        checkServicability(addresses[selectedAddressIndex]);
+      }
     }
-  }, []);
+  }, [deliveryAddressId, diagnosticSlot]);
 
   useEffect(() => {
     setLoading!(true);
@@ -580,9 +580,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             {addresses.length > 2 && (
               <Text
                 style={styles.yellowTextStyle}
-                onPress={() =>
-                  props.navigation.navigate(AppRoutes.SelectDeliveryAddress, { isTest: true })
-                }
+                onPress={() => {
+                  setDiagnosticSlot && setDiagnosticSlot(null);
+                  props.navigation.navigate(AppRoutes.SelectDeliveryAddress, { isTest: true });
+                }}
               >
                 VIEW ALL
               </Text>
@@ -756,7 +757,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   };
 
   const renderTimingCard = () => {
-    return (selectedTab === tabs[0].title && deliveryAddressId) ||
+    return (selectedTab === tabs[0].title && deliveryAddressId && !checkingServicability) ||
       (selectedTab === tabs[1].title && clinicId) ? (
       <View
         style={{

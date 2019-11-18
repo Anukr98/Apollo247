@@ -214,14 +214,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   }, [currentPatient]);
 
   const client = useApolloClient();
+
   useEffect(() => {
-    setCurrentPatientId(currentPatient! && currentPatient!.id);
-  }, [currentPatient]);
-  useEffect(() => {
-    console.log('c', currentPatient);
-    setCurrentPatientId(currentPatient! && currentPatient!.id);
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       setshowSpinner(true);
+      setconsultations([]);
       getNetStatus().then((status) => {
         if (status) {
           fetchAppointments();
@@ -881,6 +878,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
           <View>
             <ProfileList
+              navigation={props.navigation}
               saveUserChange={true}
               childView={
                 <View
@@ -892,9 +890,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     backgroundColor: theme.colors.WHITE,
                   }}
                 >
-                  <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+                  <Text style={styles.hiTextStyle}>{'hi'}</Text>
                   <View>
-                    <Text style={styles.nameTextStyle}>{userName}</Text>
+                    <Text style={styles.nameTextStyle}>
+                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                    </Text>
                     <View style={styles.seperatorStyle} />
                   </View>
                   <View style={{ paddingTop: 15 }}>
@@ -902,9 +902,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   </View>
                 </View>
               }
-              // selectedProfile={profile}
+              selectedProfile={profile}
               setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-              navigation={props.navigation}
             ></ProfileList>
             {/* <MaterialMenu
               onPress={(item) => {
