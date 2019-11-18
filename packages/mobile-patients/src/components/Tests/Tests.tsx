@@ -80,9 +80,9 @@ import {
   getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
 } from '../../graphql/types/getDiagnosticsData';
-import { TEST_COLLECTION_TYPE, WeekDay } from '../../graphql/types/globalTypes';
-import { TestPackageForDetails } from './TestDetails';
+import { TEST_COLLECTION_TYPE } from '../../graphql/types/globalTypes';
 import { BottomPopUp } from '../ui/BottomPopUp';
+import { TestPackageForDetails } from './TestDetails';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -135,7 +135,6 @@ const styles = StyleSheet.create({
 export interface TestsProps extends NavigationScreenProps {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length;
   const { currentPatient } = useAllCurrentPatients();
@@ -262,23 +261,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
       });
   }, [locationDetails]);
 
-  // useEffect(() => {
-  //   locationDetails &&
-  //     getMedicinePageProducts()
-  //       .then((d) => {
-  //         setData(d.data);
-  //         setLoading(false);
-  //       })
-  //       .catch((e) => {
-  //         setError(e);
-  //         setLoading(false);
-  //         showAphAlert!({
-  //           title: 'Uh oh! :(',
-  //           description: "We're unable to fetch products, try later.",
-  //         });
-  //       });
-  // }, [locationDetails]);
-
   useEffect(() => {
     console.log(
       'locationForDiagnosticslength',
@@ -289,14 +271,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setLoading(true);
       getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
         .then(({ data }) => {
-          // if (!data.status) {
-          //   console.log('location not found');
-          //   setErrorPopUp(true);
-          // } else {
-          //   setErrorPopUp(false);
-          // }
-          console.log('getTestsPackages', data);
-          // aphConsole.log('getTestsPackages\n', { data });
+          aphConsole.log('getTestsPackages\n', { data });
           setTestPackages(g(data, 'data') || []);
         })
         .catch((e) => {
@@ -310,12 +285,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [locationForDiagnostics && locationForDiagnostics.cityId]);
 
-  // console.log('\ndiagnosticsData\n', {
-  //   diagnosticsData,
-  // });
-
-  // const offerBanner = (g(data, 'mainbanners') || [])[0];
-  // const offerBannerImage = ''; //g(offerBanner, 'image');
   const hotSellers = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticHotSellers') ||
     []) as getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers[];
 

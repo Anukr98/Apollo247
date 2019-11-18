@@ -463,7 +463,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         fetchPolicy: 'no-cache',
         variables: {
           patientId: currentPatient!.id,
-          hubCode: 'HYD_HUB1',
+          hubCode: 'HYD_HUB1', // not considering this field at backend
           selectedDate: moment(date).format('YYYY-MM-DD'),
           zipCode: parseInt(selectedAddress.zipcode!),
         },

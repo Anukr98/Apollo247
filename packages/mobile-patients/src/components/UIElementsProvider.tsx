@@ -10,6 +10,7 @@ import {
   View,
   ViewStyle,
   StyleSheet,
+  Keyboard,
 } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -113,6 +114,7 @@ export const UIElementsProvider: React.FC = (props) => {
   };
 
   const showAphAlert = (params: AphAlertParams) => {
+    Keyboard.dismiss();
     setAlertParams(params);
     setAlertVisible(true);
   };

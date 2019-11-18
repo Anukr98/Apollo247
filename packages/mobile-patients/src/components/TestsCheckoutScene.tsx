@@ -179,6 +179,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     pickupStoreName: '',
     pickupStoreAddress: '',
     orderId: '',
+    displayId: '',
   });
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
   const { showAphAlert } = useUIElements();
@@ -297,12 +298,17 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     } = diagnosticSlot || {};
     setShowSpinner(true);
 
+    const slotTimings = (slotStartTime && slotEndTime
+      ? `${slotStartTime}-${slotEndTime}`
+      : ''
+    ).replace(' ', '');
+
     const orderInfo: DiagnosticOrderInput = {
       // for home collection order
       diagnosticBranchCode: CentreCode ? '' : diagnosticBranchCode!,
       diagnosticEmployeeCode: diagnosticEmployeeCode || '',
       employeeSlotId: employeeSlotId! || 0,
-      slotTimings: slotStartTime && slotEndTime ? `${slotStartTime}-${slotEndTime}` : '',
+      slotTimings: slotTimings,
       diagnosticDate: moment(date).format('YYYY-MM-DD'),
       patientAddressId: deliveryAddressId!,
       city: (locationForDiagnostics || {}).city!,
@@ -337,7 +343,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     saveOrder(orderInfo)
       .then(({ data }) => {
         console.log('\nOrder-Success\n', { data });
-        const { orderId, errorCode, errorMessage } =
+        const { orderId, displayId, errorCode, errorMessage } =
           (data && data.SaveDiagnosticOrder && data.SaveDiagnosticOrder) || {};
         // if (isCashOnDelivery) {
         // only CashOnDelivery supported as of now
@@ -355,6 +361,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           clearCartInfo && clearCartInfo();
           setOrderInfo({
             orderId: `${orderId}`,
+            displayId: `${displayId || orderId}`,
             pickupStoreAddress: '',
             pickupStoreName: '',
           });
@@ -630,7 +637,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                   textAlign: 'right',
                 }}
               >
-                {`#${orderInfo.orderId}`}
+                {`#${orderInfo.displayId}`}
               </Text>
             </View>
             <View

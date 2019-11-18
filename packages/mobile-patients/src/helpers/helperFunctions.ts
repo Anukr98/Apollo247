@@ -330,42 +330,48 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
     Permissions.request('location')
       .then((response) => {
         if (response === 'authorized') {
-          navigator.geolocation.getCurrentPosition((position) => {
-            const { latitude, longitude } = position.coords;
-            getPlaceInfoByLatLng(latitude, longitude)
-              .then((response) => {
-                const addrComponents =
-                  g(response, 'data', 'results', '0' as any, 'address_components') || [];
-                if (addrComponents.length == 0) {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              getPlaceInfoByLatLng(latitude, longitude)
+                .then((response) => {
+                  const addrComponents =
+                    g(response, 'data', 'results', '0' as any, 'address_components') || [];
+                  if (addrComponents.length == 0) {
+                    reject('Unable to get location.');
+                  } else {
+                    const area = [
+                      findAddrComponents('route', addrComponents),
+                      findAddrComponents('sublocality_level_2', addrComponents),
+                      findAddrComponents('sublocality_level_1', addrComponents),
+                    ].filter((i) => i);
+                    resolve({
+                      displayName:
+                        (area || []).pop() ||
+                        (findAddrComponents('locality', addrComponents) ||
+                          findAddrComponents('administrative_area_level_2', addrComponents)),
+                      latitude,
+                      longitude,
+                      area: area.join(', '),
+                      city:
+                        findAddrComponents('locality', addrComponents) ||
+                        findAddrComponents('administrative_area_level_2', addrComponents),
+                      state: findAddrComponents('administrative_area_level_1', addrComponents),
+                      country: findAddrComponents('country', addrComponents),
+                      pincode: findAddrComponents('postal_code', addrComponents),
+                      lastUpdated: new Date().getTime(),
+                    });
+                  }
+                })
+                .catch(() => {
                   reject('Unable to get location.');
-                } else {
-                  const area = [
-                    findAddrComponents('route', addrComponents),
-                    findAddrComponents('sublocality_level_2', addrComponents),
-                    findAddrComponents('sublocality_level_1', addrComponents),
-                  ].filter((i) => i);
-                  resolve({
-                    displayName:
-                      (area || []).pop() ||
-                      (findAddrComponents('locality', addrComponents) ||
-                        findAddrComponents('administrative_area_level_2', addrComponents)),
-                    latitude,
-                    longitude,
-                    area: area.join(', '),
-                    city:
-                      findAddrComponents('locality', addrComponents) ||
-                      findAddrComponents('administrative_area_level_2', addrComponents),
-                    state: findAddrComponents('administrative_area_level_1', addrComponents),
-                    country: findAddrComponents('country', addrComponents),
-                    pincode: findAddrComponents('postal_code', addrComponents),
-                    lastUpdated: new Date().getTime(),
-                  });
-                }
-              })
-              .catch(() => {
-                reject('Unable to get location.');
-              });
-          });
+                });
+            },
+            (error) => {
+              reject('Unable to get location.');
+            },
+            { enableHighAccuracy: false, timeout: 2000 }
+          );
         } else {
           reject('Unable to get location.');
         }

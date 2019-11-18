@@ -287,6 +287,9 @@ export interface DiagnosticOrderInput {
   patientId: string;
   patientAddressId: string;
   city: string;
+  cityId: string;
+  state: string;
+  stateId: string;
   slotTimings: string;
   employeeSlotId: number;
   diagnosticEmployeeCode: string;
