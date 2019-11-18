@@ -42,14 +42,7 @@ const styles = StyleSheet.create({
   profileImageStyle: {
     width: 80,
     height: 80,
-    ...Platform.select({
-      ios: {
-        borderRadius: 40,
-      },
-      android: {
-        borderRadius: 500,
-      },
-    }),
+    borderRadius: 40,
   },
   imageView: {
     marginRight: 16,

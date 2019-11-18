@@ -124,29 +124,29 @@ const styles = StyleSheet.create({
   placeholderTextStyle: {
     ...theme.viewStyles.text('M', 18, '#01475b'),
   },
-  profileImageContainer: {
+  profilePicContainer: {
     backgroundColor: 'transparent',
     alignSelf: 'flex-end',
     alignItems: 'center',
     justifyContent: 'center',
     width: 90,
     height: 90,
-    borderRadius: 45,
     marginTop: -60,
+  },
+  profileImageContainer: {
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    overflow: 'hidden',
   },
   profileImage: {
     width: 90,
     height: 90,
     borderRadius: 45,
     resizeMode: 'contain',
-    ...Platform.select({
-      ios: {
-        borderRadius: 45,
-      },
-      android: {
-        borderRadius: 100,
-      },
-    }),
     position: 'absolute',
   },
   editIcon: {
@@ -244,7 +244,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const isEdit = props.navigation.getParam('isEdit');
   const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
-  const { allCurrentPatients } = useAllCurrentPatients();
+  const { allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
 
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
@@ -355,7 +355,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             photoUrl: photoUrl,
             firstName: firstName,
             lastName: lastName,
-            relation: (relation && relation!.key) || Relation.ME,
+            relation: (relation && relation.key!) || Relation.ME,
             gender: gender,
             dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
             emailAddress: email,
@@ -480,19 +480,20 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const renderProfileImage = () => {
     return (
-      <View style={styles.profileImageContainer}>
-        {photoUrl && photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
-          <Image
-            style={styles.profileImage}
-            source={{
-              uri: photoUrl,
-            }}
-            resizeMode={'contain'}
-          />
-        ) : (
-          <PatientDefaultImage style={styles.profileImage} />
-        )}
-
+      <View style={styles.profilePicContainer}>
+        <View style={styles.profileImageContainer}>
+          {photoUrl && photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+            <Image
+              style={styles.profileImage}
+              source={{
+                uri: photoUrl,
+              }}
+              resizeMode={'contain'}
+            />
+          ) : (
+            <PatientDefaultImage style={styles.profileImage} />
+          )}
+        </View>
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
