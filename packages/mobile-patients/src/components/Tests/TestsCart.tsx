@@ -6,6 +6,7 @@ import {
   aphConsole,
   handleGraphQlError,
   timeTo12HrFormat,
+  g,
 } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   DiagnosticsCartItem,
@@ -431,25 +432,81 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
 
   const [checkingServicability, setCheckingServicability] = useState(false);
 
-  const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  // const checkServicability = (address: savePatientAddress_savePatientAddress_patientAddress) => {
+  //   setCheckingServicability(true);
+  //   pinCodeServiceabilityApi(address.zipcode!)
+  //     .then(({ data: { Availability } }) => {
+  //       setCheckingServicability(false);
+  //       if (Availability) {
+  //         setDeliveryAddressId && setDeliveryAddressId(address.id);
+  //         setPinCode && setPinCode(address.zipcode!);
+  //       } else {
+  //         showAphAlert!({
+  //           title: 'Uh oh.. :(',
+  //           description:
+  //             'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby clinics, or change the pincode.',
+  //         });
+  //       }
+  //     })
+  //     .catch((e) => {
+  //       aphConsole.log({ e });
+  //       setCheckingServicability(false);
+  //       handleGraphQlError(e);
+  //     });
+  // };
+
+  const checkServicability = (
+    selectedAddress: savePatientAddress_savePatientAddress_patientAddress
+  ) => {
     setCheckingServicability(true);
-    pinCodeServiceabilityApi(address.zipcode!)
-      .then(({ data: { Availability } }) => {
-        setCheckingServicability(false);
-        if (Availability) {
-          setDeliveryAddressId && setDeliveryAddressId(address.id);
-        } else {
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby clinics, or change the pincode.',
-          });
-        }
+    client
+      .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+        query: GET_DIAGNOSTIC_SLOTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: currentPatient!.id,
+          hubCode: 'HYD_HUB1',
+          selectedDate: moment(date).format('YYYY-MM-DD'),
+          zipCode: parseInt(selectedAddress.zipcode!),
+        },
       })
-      .catch((e) => {
-        aphConsole.log({ e });
+      .then(({ data }) => {
+        setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
+        setPinCode && setPinCode(selectedAddress.zipcode!);
+        console.log(data, 'GET_DIAGNOSTIC_SLOTS');
+        var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+        var t = finalaray!.slotInfo!.map((item) => {
+          return {
+            label: (item!.slot || '').toString(),
+            time: `${item!.startTime} - ${item!.endTime}`,
+          };
+        });
+        console.log(t, 'finalaray');
+        setDiagnosticSlot &&
+          setDiagnosticSlot({
+            employeeSlotId: 0,
+            diagnosticEmployeeCode: finalaray!.employeeCode || '',
+            slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
+            slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
+            city: selectedAddress!.city || '',
+            date: date.getTime(),
+          });
+        settimeArray(t);
+        setselectedTimeSlot(t[0].time);
+      })
+      .catch((e: string) => {
+        console.log('Error occured', e);
+        setDeliveryAddressId && setDeliveryAddressId('');
+        setPinCode && setPinCode('');
+        setselectedTimeSlot('');
+        showAphAlert!({
+          title: 'Uh oh.. :(',
+          description:
+            'Sorry! We’re working hard to get to this area! In the meantime, you can either visit Clinic near your location or change the address',
+        });
+      })
+      .finally(() => {
         setCheckingServicability(false);
-        handleGraphQlError(e);
       });
   };
 
@@ -675,44 +732,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <Text
           style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
           onPress={() => {
-            var date = moment(new Date()).format('YYYY-MM-DD');
-            console.log(date, 'calenderdate');
-            setshowSpinner(true);
-            client
-              .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
-                query: GET_DIAGNOSTIC_SLOTS,
-                fetchPolicy: 'no-cache',
-                variables: {
-                  patientId: currentPatient!.id,
-                  hubCode: 'HYD_HUB1',
-                  selectedDate: date,
-                  zipCode: 500033,
-                },
-              })
-              .then(({ data }) => {
-                console.log(data, 'GET_DIAGNOSTIC_SLOTS');
-                setshowSpinner(false);
-                var finalaray =
-                  data &&
-                  data.getDiagnosticSlots! &&
-                  data.getDiagnosticSlots!.diagnosticSlot![0] &&
-                  data.getDiagnosticSlots!.diagnosticSlot![0].slotInfo;
-
-                var t = finalaray!.map((item) => {
-                  return {
-                    label: (item!.slot || '').toString(),
-                    time: `${item!.startTime} - ${item!.endTime}`,
-                  };
-                });
-                console.log(t, 'finalaray');
-                settimeArray(t);
-                setDisplaySchedule(true);
-              })
-              .catch((e: string) => {
-                setshowSpinner(false);
-                console.log('Error occured', e);
-              })
-              .finally(() => {});
+            timeArray ? setDisplaySchedule(true) : null;
           }}
         >
           PICK ANOTHER SLOT
@@ -792,6 +812,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             data={tabs}
             onChange={(selectedTab: string) => {
               setselectedTab(selectedTab);
+              // setClinicId!('');
+              // setDeliveryAddressId!('');
+              // setPinCode!('');
             }}
             selectedTab={selectedTab}
           />
@@ -946,7 +969,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const disableProceedToPay = !(
     cartItems.length > 0 &&
     forPatientId &&
-    !!(deliveryAddressId || clinicId) &&
+    !!((deliveryAddressId && selectedTimeSlot) || clinicId) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
       : true)
