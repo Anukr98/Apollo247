@@ -248,12 +248,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
-    }
-  }, [currentPatient]);
-
-  useEffect(() => {
     setLoading!(true);
     (currentPatientId &&
       addresses.length == 0 &&
@@ -488,7 +482,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         console.log(t, 'finalaray');
         setDiagnosticSlot &&
           setDiagnosticSlot({
-            employeeSlotId: 0,
+            employeeSlotId: finalaray!.slotInfo![0]!.slot!,
+            diagnosticBranchCode: data!.getDiagnosticSlots.diagnosticBranchCode!,
             diagnosticEmployeeCode: finalaray!.employeeCode || '',
             slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
             slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
@@ -506,7 +501,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         showAphAlert!({
           title: 'Uh oh.. :(',
           description:
-            'Sorry! We’re working hard to get to this area! In the meantime, you can either visit Clinic near your location or change the address',
+            'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
         });
       })
       .finally(() => {

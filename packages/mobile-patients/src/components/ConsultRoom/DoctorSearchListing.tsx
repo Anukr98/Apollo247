@@ -53,6 +53,7 @@ import { getPlaceInfoByPlaceId, GooglePlacesType } from '@aph/mobile-patients/sr
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { AppConfig } from '../../strings/AppConfig';
 
 const styles = StyleSheet.create({
   topView: {
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
 });
 
 let latlng: locationType | null = null;
-const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+const key = AppConfig.Configuration.GOOGLE_API_KEY;
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 export type filterDataType = {
   label: string;

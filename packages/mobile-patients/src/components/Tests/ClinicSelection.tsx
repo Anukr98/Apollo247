@@ -103,7 +103,7 @@ export const ClinicSelection: React.FC<ClinicSelectionProps> = (props) => {
               const city = (
                 (data.data.results[0].address_components || []).find(
                   (item: any) => item.types.indexOf('locality') > -1
-                ) || {}
+                ) || { long_name: '' }
               ).long_name;
               console.log('cityName', city);
               let filterArray;

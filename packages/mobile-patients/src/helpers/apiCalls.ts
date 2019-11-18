@@ -569,7 +569,7 @@ export const getMedicinePageProducts = (): Promise<AxiosResponse<MedicinePageAPi
   );
 };
 
-const googlePlacesApiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
 export const getPlaceInfoByPincode = (
   pincode: string

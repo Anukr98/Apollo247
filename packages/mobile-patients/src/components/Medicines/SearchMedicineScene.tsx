@@ -45,6 +45,7 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { AppConfig } from '../../strings/AppConfig';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -472,7 +473,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const fetchLocation = (text: string) => {
-    const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+    const key = AppConfig.Configuration.GOOGLE_API_KEY;
     isValidPinCode(text);
     setPinCode(text);
     axios

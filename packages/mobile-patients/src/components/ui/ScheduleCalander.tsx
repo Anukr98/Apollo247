@@ -190,15 +190,10 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
               console.log(data, 'GET_DIAGNOSTIC_SLOTScal');
               setshowSpinner(false);
               var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
-              // data &&
-              // data.getDiagnosticSlots! &&
-              // data.getDiagnosticSlots!.diagnosticSlot![0] &&
-              // data.getDiagnosticSlots!.diagnosticSlot![0].slotInfo;
-              // data.getDiagnosticSlots!.diagnosticSlot![0] &&
-              //   data.getDiagnosticSlots!.diagnosticSlot![0].
               setDiagnosticSlot &&
                 setDiagnosticSlot({
-                  employeeSlotId: 0,
+                  diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode')!,
+                  employeeSlotId: finalaray!.slotInfo![0]!.slot!,
                   diagnosticEmployeeCode: finalaray!.employeeCode || '',
                   slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
                   slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),

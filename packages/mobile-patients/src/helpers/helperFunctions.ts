@@ -8,7 +8,7 @@ import Permissions from 'react-native-permissions';
 import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { getPlaceInfoByLatLng, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 
-const googleApiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
 interface AphConsole {
   error(message?: any, ...optionalParams: any[]): void;
@@ -321,7 +321,8 @@ const findAddrComponents = (
     types: GooglePlacesType[];
   }[]
 ) => {
-  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || {}).long_name || '';
+  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { long_name: '' })
+    .long_name;
 };
 
 export const doRequestAndAccessLocation = (): Promise<LocationData> => {
@@ -344,7 +345,10 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
                     findAddrComponents('sublocality_level_1', addrComponents),
                   ].filter((i) => i);
                   resolve({
-                    displayName: area.length ? area.pop() : '',
+                    displayName:
+                      (area || []).pop() ||
+                      (findAddrComponents('locality', addrComponents) ||
+                        findAddrComponents('administrative_area_level_2', addrComponents)),
                     latitude,
                     longitude,
                     area: area.join(', '),

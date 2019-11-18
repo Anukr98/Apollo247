@@ -60,8 +60,9 @@ import {
   deletePatientAddressVariables,
 } from '../../graphql/types/deletePatientAddress';
 import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { AppConfig } from '../../strings/AppConfig';
 const { height, width } = Dimensions.get('window');
-const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
 
 const styles = StyleSheet.create({

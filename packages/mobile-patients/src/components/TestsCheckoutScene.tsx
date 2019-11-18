@@ -54,6 +54,7 @@ import {
   SaveDiagnosticOrderVariables,
 } from '../graphql/types/SaveDiagnosticOrder';
 import moment from 'moment';
+import { useAppCommonData } from './AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -196,6 +197,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     diagnosticClinic,
   } = useDiagnosticsCart();
 
+  const { locationForDiagnostics } = useAppCommonData();
+
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
 
@@ -283,15 +286,28 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const initiateOrder = async () => {
     const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
-    const { slotStartTime, slotEndTime, employeeSlotId, date, diagnosticEmployeeCode, city } =
-      diagnosticSlot || {};
+    const {
+      slotStartTime,
+      slotEndTime,
+      employeeSlotId,
+      date,
+      diagnosticEmployeeCode,
+      city, // ignore city for now from this and take from "locationForDiagnostics" context
+      diagnosticBranchCode,
+    } = diagnosticSlot || {};
     setShowSpinner(true);
+
+    (locationForDiagnostics || {}).city!;
+    (locationForDiagnostics || {}).cityId!;
+    (locationForDiagnostics || {}).state!;
+    (locationForDiagnostics || {}).stateId!;
+
     const orderInfo: DiagnosticOrderInput = {
       // for home collection order
-      diagnosticBranchCode: CentreCode ? 'HYD_HUB1' : '',
+      diagnosticBranchCode: CentreCode ? '' : diagnosticBranchCode!,
       diagnosticEmployeeCode: diagnosticEmployeeCode || '',
       employeeSlotId: employeeSlotId! || 0,
-      slotTimings: slotStartTime && slotEndTime ? `${slotStartTime} - ${slotEndTime}` : '',
+      slotTimings: slotStartTime && slotEndTime ? `${slotStartTime}-${slotEndTime}` : '',
       diagnosticDate: moment(date).format('YYYY-MM-DD'),
       patientAddressId: deliveryAddressId!,
       city: city || '',
@@ -318,7 +334,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       ),
     };
 
-    console.log(JSON.stringify({ diagnosticOrderInput: { orderInfo } }));
+    console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     console.log('orderInfo\n', { orderInfo });
     saveOrder(orderInfo)
       .then(({ data }) => {

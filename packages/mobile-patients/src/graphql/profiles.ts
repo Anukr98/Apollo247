@@ -939,6 +939,7 @@ export const GET_DIAGNOSTIC_SLOTS = gql`
       selectedDate: $selectedDate
       zipCode: $zipCode
     ) {
+      diagnosticBranchCode
       diagnosticSlot {
         employeeCode
         employeeName
