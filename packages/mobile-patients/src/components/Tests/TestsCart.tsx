@@ -241,6 +241,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     if (clinicId) {
       filterClinics(clinicId, true);
     }
+    if (diagnosticSlot) {
+      setDate(new Date(diagnosticSlot.date));
+      setselectedTimeSlot(`${diagnosticSlot.slotStartTime} - ${diagnosticSlot.slotEndTime}`);
+    }
   }, []);
 
   useEffect(() => {

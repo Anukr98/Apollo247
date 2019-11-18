@@ -318,7 +318,8 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       ),
     };
 
-    console.log(JSON.stringify(orderInfo));
+    console.log(JSON.stringify({ diagnosticOrderInput: { orderInfo } }));
+    console.log('orderInfo\n', { orderInfo });
     saveOrder(orderInfo)
       .then(({ data }) => {
         console.log('\nOrder-Success\n', { data });
@@ -329,6 +330,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         setShowSpinner(false);
         if (errorCode || errorMessage) {
           showAphAlert!({
+            unDismissable: true,
             title: `Uh oh.. :(`,
             description: `Order failed, ${errorMessage}.`,
           });

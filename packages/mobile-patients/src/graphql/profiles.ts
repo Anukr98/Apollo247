@@ -1055,8 +1055,21 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         diagnosticOrderLineItems {
           id
           itemId
-          quantity
           price
+          quantity
+          diagnostics {
+            id
+            itemId
+            itemName
+            gender
+            rate
+            itemRemarks
+            city
+            state
+            itemType
+            fromAgeInDays
+            collectionType
+          }
         }
       }
     }

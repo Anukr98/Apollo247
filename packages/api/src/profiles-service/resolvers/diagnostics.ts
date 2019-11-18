@@ -55,6 +55,7 @@ export const diagnosticsTypeDefs = gql`
 
   type DiagnosticSlotsResult {
     diagnosticSlot: [EmployeeSlots]
+    diagnosticBranchCode: String
   }
 
   type EmployeeSlots {
@@ -132,6 +133,7 @@ type Diagnostics = {
 
 type DiagnosticSlotsResult = {
   diagnosticSlot: EmployeeSlots[];
+  diagnosticBranchCode: string;
 };
 
 type EmployeeSlots = {
@@ -198,7 +200,7 @@ const getDiagnosticSlots: Resolver<
       throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, {});
       console.log('diagnostic slot error', error);
     });
-  return { diagnosticSlot };
+  return { diagnosticBranchCode: hubDetails.route, diagnosticSlot };
 };
 
 const getDiagnosticsData: Resolver<null, {}, ProfilesServiceContext, DiagnosticsData> = async (
