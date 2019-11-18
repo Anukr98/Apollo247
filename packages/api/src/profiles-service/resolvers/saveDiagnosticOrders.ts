@@ -95,6 +95,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     itemId: Int
     price: Float
     quantity: Int
+    diagnostics: Diagnostics
   }
 
   extend type Mutation {
@@ -237,8 +238,10 @@ const SaveDiagnosticOrder: Resolver<
   if (saveOrder) {
     orderId = saveOrder.id;
     await diagnosticOrderInput.items.map(async (item) => {
+      const details = await diagnosticRepo.findDiagnosticById(item.itemId);
       const orderItemAttrs: Partial<DiagnosticOrderLineItems> = {
         diagnosticOrders: saveOrder,
+        diagnostics: details,
         ...item,
       };
       promises.push(getItemDetails(item.itemId, item.quantity));
