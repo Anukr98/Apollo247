@@ -150,6 +150,9 @@ export class Appointment extends BaseEntity {
   @Column({ default: 0 })
   rescheduleCount: number;
 
+  @Column({ default: 0 })
+  rescheduleCountByDoctor: number;
+
   @Column()
   status: STATUS;
 
