@@ -141,6 +141,7 @@ export const caseSheetTypeDefs = gql`
     parentId: String
     status: STATUS!
     rescheduleCount: Int!
+    rescheduleCountByDoctor: Int!
     isFollowUp: Int!
     followUpParentId: String
     isTransfer: Int!

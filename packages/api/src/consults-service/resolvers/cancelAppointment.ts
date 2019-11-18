@@ -52,7 +52,10 @@ const cancelAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
-  if (appointment.appointmentDateTime <= new Date()) {
+  if (
+    appointment.appointmentDateTime <= new Date() &&
+    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT
+  ) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
