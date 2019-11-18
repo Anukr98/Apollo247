@@ -1133,7 +1133,7 @@ export const ADD_CHAT_DOCUMENT = gql`
   mutation AddChatDocument($appointmentId: ID!, $documentPath: String!) {
     addChatDocument(appointmentId: $appointmentId, documentPath: $documentPath) {
       id
-      filePath
+      documentPath
     }
   }
 `;

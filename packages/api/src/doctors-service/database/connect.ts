@@ -46,6 +46,11 @@ import {
   MedicineOrderInvoice,
   PatientMedicalHistory,
   Diagnostics,
+  DiagnosticOrderLineItems,
+  DiagnosticOrders,
+  DiagnosticHotSellers,
+  DiagnosticOrgans,
+  DiagnosticPincodeHubs,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -121,6 +126,11 @@ export const connect = async () => {
         MedicineOrderInvoice,
         PatientMedicalHistory,
         Diagnostics,
+        DiagnosticOrderLineItems,
+        DiagnosticOrders,
+        DiagnosticHotSellers,
+        DiagnosticOrgans,
+        DiagnosticPincodeHubs,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

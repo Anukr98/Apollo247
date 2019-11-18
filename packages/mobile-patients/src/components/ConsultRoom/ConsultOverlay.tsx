@@ -104,7 +104,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [disablePay, setdisablePay] = useState<boolean>(false);
 
   const todayDate = new Date().toDateString().split('T')[0];
-
+  console.log(availableInMin, 'ConsultO');
   const scrollToSlots = (top: number = 400) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
   };

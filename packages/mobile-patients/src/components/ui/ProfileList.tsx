@@ -15,6 +15,8 @@ import { theme } from '../../theme/theme';
 import { DropdownGreen } from './Icons';
 import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
 import { Relation, Gender } from '../../graphql/types/globalTypes';
+import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
+import { AppRoutes } from '../NavigatorContainer';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -44,6 +46,8 @@ export interface ProfileListProps {
   placeholderViewStyle?: StyleProp<ViewStyle>;
   placeholderTextStyle?: StyleProp<TextStyle>;
   listContainerStyle?: StyleProp<ViewStyle>;
+  addStringValue?: string;
+  navigation: NavigationScreenProp<NavigationRoute<{}>, {}>;
 }
 
 export const ProfileList: React.FC<ProfileListProps> = (props) => {
@@ -56,7 +60,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     setDisplayAddProfile,
     listContainerStyle,
   } = props;
-  const addString = 'ADD NEW PROFILE';
+  const addString = 'ADD MEMBER';
   const { getPatientApiCall } = useAuth();
 
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
@@ -69,10 +73,18 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients[] | null
   >(allCurrentPatients);
 
+  const titleCase = (str: string) => {
+    var splitStr = str.toLowerCase().split(' ');
+    for (var i = 0; i < splitStr.length; i++) {
+      splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
+    }
+    return splitStr.join(' ');
+  };
+
   const pickerData =
     (profileArray &&
       profileArray!.map((i) => {
-        return { key: i.id, value: i.firstName || i.lastName || '' };
+        return { key: i.id, value: titleCase(i.firstName || i.lastName || '') };
       })) ||
     [];
 
@@ -87,7 +99,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   }, []);
 
   useEffect(() => {
-    setProfileArray(allCurrentPatients);
+    setProfileArray(addNewProfileText(allCurrentPatients!));
   }, [allCurrentPatients]);
 
   useEffect(() => {
@@ -121,7 +133,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         mobileNumber: addString,
         firstName: addString,
         lastName: addString,
-        relation: Relation.ME,
+        relation: Relation.OTHER,
         uhid: addString,
         gender: Gender.OTHER,
         dateOfBirth: addString,
@@ -152,6 +164,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           alignSelf: 'flex-start',
         }}
         lastTextStyle={{
+          alignSelf: 'flex-end',
+          paddingBottom: 5,
+          textTransform: 'uppercase',
           ...theme.viewStyles.text('B', 13, '#fc9916'),
         }}
         bottomPadding={{ paddingBottom: 20 }}
@@ -162,8 +177,14 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           justifyContent: 'flex-end',
         }}
         onPress={(selectedUser) => {
-          if (selectedUser.key === 'ADD NEW PROFILE') setDisplayAddProfile(true);
-          else {
+          if (selectedUser.key === addString) {
+            props.navigation.navigate(AppRoutes.EditProfile, {
+              isEdit: false,
+              isPoptype: true,
+              mobileNumber: currentPatient && currentPatient!.mobileNumber,
+            });
+            setDisplayAddProfile(true);
+          } else {
             profileArray &&
               profileArray!.map((i) => {
                 if (selectedUser.key === i.id) {
@@ -172,6 +193,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
               });
           }
           saveUserChange &&
+            selectedUser.key !== addString &&
             (setCurrentPatientId!(selectedUser!.key),
             AsyncStorage.setItem('selectUserId', selectedUser!.key));
         }}

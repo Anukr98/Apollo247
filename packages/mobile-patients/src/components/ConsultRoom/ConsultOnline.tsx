@@ -122,6 +122,8 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
 
   useEffect(() => {
+    console.log(availableInMin, 'ConsultOnline');
+
     if (date !== props.date) {
       setDate(props.date);
     }

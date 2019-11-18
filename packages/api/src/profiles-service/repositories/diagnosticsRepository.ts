@@ -1,6 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Diagnostics } from 'profiles-service/entities';
-import { selectionSetFromFieldSet } from '@apollo/gateway/dist/FieldSet';
+import { Diagnostics, DiagnosticPincodeHubs } from 'profiles-service/entities';
 
 @EntityRepository(Diagnostics)
 export class DiagnosticsRepository extends Repository<Diagnostics> {
@@ -24,5 +23,17 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
       ])
       .groupBy('city')
       .getRawMany();
+  }
+
+  getHubDetails(route: string) {
+    return DiagnosticPincodeHubs.findOne({ where: { route } });
+  }
+
+  findHubByZipCode(pincode: string) {
+    return DiagnosticPincodeHubs.findOne({ where: { pincode } });
+  }
+
+  findDiagnosticById(itemId: number) {
+    return this.findOne({ where: { itemId } });
   }
 }

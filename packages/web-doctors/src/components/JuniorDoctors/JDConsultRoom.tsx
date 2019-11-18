@@ -478,7 +478,7 @@ export const JDConsultRoom: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [callId, setcallId] = useState<string>('');
-
+  const [documentArray, setDocumentArray] = useState();
   /* case sheet data*/
   let assignedDoctorFirstName = '',
     assignedDoctorLastName = '',
@@ -828,7 +828,6 @@ export const JDConsultRoom: React.FC = () => {
           setLoaded(true);
         });
       return () => {
-        // console.log('in return...');
         const cookieStr = `action=`;
         document.cookie = cookieStr + ';path=/;';
       };
@@ -871,14 +870,11 @@ export const JDConsultRoom: React.FC = () => {
         }
       })
       .catch((error: ApolloError) => {
-        console.log('Error in Call Notification', error.message);
         alert('An error occurred while sending notification to Client.');
       });
   };
 
   const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
-    // console.log(diagnosis && diagnosis.length, diagnosis!, flag);
-
     // this condition is written to avoid __typename from already existing data
     let symptomsFinal = null,
       diagnosisFinal = null,
@@ -955,7 +951,6 @@ export const JDConsultRoom: React.FC = () => {
           const errorMessage = error && error.message;
           alert(errorMessage);
           setSaving(false);
-          console.log('Error occured while update casesheet', e);
         });
     }
   };
@@ -1007,7 +1002,6 @@ export const JDConsultRoom: React.FC = () => {
       })
       .catch((e: any) => {
         setError('Error occured creating session');
-        console.log('Error occured creating session', e);
       });
   };
 
@@ -1070,6 +1064,8 @@ export const JDConsultRoom: React.FC = () => {
             juniorDoctorNotes,
             diagnosis,
             setDiagnosis,
+            documentArray,
+            setDocumentArray,
             otherInstructions,
             setOtherInstructions,
             diagnosticPrescription,

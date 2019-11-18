@@ -1,10 +1,11 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { List, ListItem, Avatar, IconButton, Theme, Modal } from '@material-ui/core';
 import { Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/styles';
 import { format } from 'date-fns';
 import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments } from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocumentType } from 'graphql/types/GetJuniorDoctorCaseSheet';
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
@@ -234,75 +235,77 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ data }) => {
   const classes = useStyles();
   return (
     <div className={classes.appointmentCardRoot}>
-      <div className={`${classes.appointmentDate}`}>{`${format(
-        new Date(data.appointmentDateTime),
-        'dd  MMMMMMMMMMMM yyyy, h:mm a'
-      )}`}</div>
-      {data &&
-      data.caseSheet &&
-      (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR')
-        ? data &&
-          data.caseSheet &&
-          data.caseSheet.length > 0 &&
-          !!data.caseSheet[1]!.symptoms &&
-          !!data.caseSheet[1]!.symptoms.length && (
-            <div className={`${classes.symptomsList}`}>
-              {(data.caseSheet[1]!.symptoms.length > 3
-                ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
-                : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
-              ).join(', ')}
-              {data.caseSheet[1]!.symptoms!.length > 3 && (
-                <span>{`, +${data.caseSheet[1]!.symptoms.length - 2}`}</span>
-              )}
-            </div>
-          )
-        : data &&
-          data.caseSheet &&
-          data.caseSheet.length > 0 &&
-          !!data.caseSheet[0]!.symptoms &&
-          !!data.caseSheet[0]!.symptoms.length && (
-            <div className={`${classes.symptomsList}`}>
-              {(data.caseSheet[0]!.symptoms.length > 3
-                ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
-                : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
-              ).join(', ')}
-              {data.caseSheet[0]!.symptoms!.length > 3 && (
-                <span>{`, +${data.caseSheet[0]!.symptoms.length - 2}`}</span>
-              )}
-            </div>
-          )}
-      {data &&
-      data.caseSheet &&
-      (data.caseSheet.length > 1 &&
-        data.caseSheet[1] &&
-        data.caseSheet[1]!.doctorType !== 'JUNIOR') ? (
-        <div className={`${classes.iconButton}`}>
-          <IconButton aria-label="Video call">
-            {data &&
-            data.caseSheet &&
-            data.caseSheet.length > 1 &&
-            data.caseSheet[1]!.consultType === 'ONLINE' ? (
-              <img src={require('images/ic_video.svg')} alt="" />
-            ) : (
-              <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
-            )}
-          </IconButton>
-        </div>
-      ) : (
-        <div className={`${classes.iconButton}`}>
-          <IconButton aria-label="Video call">
-            {data &&
+      <Link to={`/jd-consultroom/${data.id}/${data.patientId}/1/done`} target="_blank">
+        <div className={`${classes.appointmentDate}`}>{`${format(
+          new Date(data.appointmentDateTime),
+          'dd  MMMMMMMMMMMM yyyy, h:mm a'
+        )}`}</div>
+        {data &&
+        data.caseSheet &&
+        (data.caseSheet.length > 1 && data.caseSheet[1]!.doctorType !== 'JUNIOR')
+          ? data &&
             data.caseSheet &&
             data.caseSheet.length > 0 &&
-            data.caseSheet[0] &&
-            data.caseSheet[0]!.consultType === 'ONLINE' ? (
-              <img src={require('images/ic_video.svg')} alt="" />
-            ) : (
-              <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+            !!data.caseSheet[1]!.symptoms &&
+            !!data.caseSheet[1]!.symptoms.length && (
+              <div className={`${classes.symptomsList}`}>
+                {(data.caseSheet[1]!.symptoms.length > 3
+                  ? data.caseSheet[1]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                  : data.caseSheet[1]!.symptoms.map((data) => data!.symptom)
+                ).join(', ')}
+                {data.caseSheet[1]!.symptoms!.length > 3 && (
+                  <span>{`, +${data.caseSheet[1]!.symptoms.length - 2}`}</span>
+                )}
+              </div>
+            )
+          : data &&
+            data.caseSheet &&
+            data.caseSheet.length > 0 &&
+            !!data.caseSheet[0]!.symptoms &&
+            !!data.caseSheet[0]!.symptoms.length && (
+              <div className={`${classes.symptomsList}`}>
+                {(data.caseSheet[0]!.symptoms.length > 3
+                  ? data.caseSheet[0]!.symptoms.slice(0, 2).map((data) => data!.symptom)
+                  : data.caseSheet[0]!.symptoms.map((data) => data!.symptom)
+                ).join(', ')}
+                {data.caseSheet[0]!.symptoms!.length > 3 && (
+                  <span>{`, +${data.caseSheet[0]!.symptoms.length - 2}`}</span>
+                )}
+              </div>
             )}
-          </IconButton>
-        </div>
-      )}
+        {data &&
+        data.caseSheet &&
+        (data.caseSheet.length > 1 &&
+          data.caseSheet[1] &&
+          data.caseSheet[1]!.doctorType !== 'JUNIOR') ? (
+          <div className={`${classes.iconButton}`}>
+            <IconButton aria-label="Video call">
+              {data &&
+              data.caseSheet &&
+              data.caseSheet.length > 1 &&
+              data.caseSheet[1]!.consultType === 'ONLINE' ? (
+                <img src={require('images/ic_video.svg')} alt="" />
+              ) : (
+                <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+              )}
+            </IconButton>
+          </div>
+        ) : (
+          <div className={`${classes.iconButton}`}>
+            <IconButton aria-label="Video call">
+              {data &&
+              data.caseSheet &&
+              data.caseSheet.length > 0 &&
+              data.caseSheet[0] &&
+              data.caseSheet[0]!.consultType === 'ONLINE' ? (
+                <img src={require('images/ic_video.svg')} alt="" />
+              ) : (
+                <img src={require('images/ic_physical_consult_icon.svg')} alt="" />
+              )}
+            </IconButton>
+          </div>
+        )}
+      </Link>
     </div>
   );
 };
@@ -312,11 +315,21 @@ export const HealthVault: React.FC = () => {
   const { healthVault, appointmentDocuments, pastAppointments } = useContext(CaseSheetContextJrd);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
+  useEffect(() => {
+    if (documentArray && documentArray.documentPath) {
+      const data = {
+        documentPath: documentArray.documentPath || '',
+      };
+      appointmentDocuments!.push(data as appointmentDocumentType);
+      setDocumentArray((null as unknown) as appointmentDocumentType);
+    }
+  });
 
   return (
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
-        <div className={classes.sectionTitle}>Photos uploaded by Patient</div>
+        <div className={classes.sectionTitle}>Photos uploaded </div>
         <div className={classes.listContainer}>
           {appointmentDocuments && appointmentDocuments.length > 0 ? (
             appointmentDocuments!.map((item, index) => (

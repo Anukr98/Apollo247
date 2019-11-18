@@ -642,7 +642,8 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       if (timer < 1) {
         setRemainingCallTime(0);
         clearInterval(intervalcallId);
-        if (patientMsgs.length === 0) {
+        if (patientMsgs.length === 0 || props.appointmentStatus === STATUS.IN_PROGRESS) {
+          console.log(props.appointmentStatus, patientMsgs.length);
           noShowAction();
         }
       }
@@ -1003,6 +1004,12 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
     }
     clearError();
   }, [cancelReason]);
+  useEffect(() => {
+    if (props.appointmentStatus === STATUS.COMPLETED) {
+      setRemainingCallTime(0);
+      clearInterval(intervalcallId);
+    }
+  }, [props.appointmentStatus]);
   const pubnub = new Pubnub(config);
 
   useEffect(() => {

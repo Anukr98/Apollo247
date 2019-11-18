@@ -128,6 +128,12 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum REQUEST_ROLES {
+  DOCTOR = "DOCTOR",
+  JUNIOR = "JUNIOR",
+  PATIENT = "PATIENT",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -246,7 +252,7 @@ export interface BookTransferAppointmentInput {
 export interface CancelAppointmentInput {
   appointmentId: string;
   cancelReason?: string | null;
-  cancelledBy: TRANSFER_INITIATED_TYPE;
+  cancelledBy: REQUEST_ROLES;
   cancelledById: string;
 }
 
@@ -269,6 +275,17 @@ export interface DoctorPhysicalAvailabilityInput {
   availableDate: any;
   doctorId: string;
   facilityId: string;
+}
+
+export interface EditProfileInput {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: any;
+  gender: Gender;
+  relation: Relation;
+  emailAddress: string;
+  photoUrl: string;
+  id: string;
 }
 
 export interface FilterDoctorInput {
@@ -363,6 +380,17 @@ export interface PatientConsultsAndOrdersInput {
   filter?: CONSULTS_RX_SEARCH_FILTER[] | null;
   offset?: number | null;
   limit?: number | null;
+}
+
+export interface PatientProfileInput {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: any;
+  gender: Gender;
+  relation: Relation;
+  emailAddress: string;
+  photoUrl: string;
+  mobileNumber: string;
 }
 
 export interface PrescriptionMedicineInput {
