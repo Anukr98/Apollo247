@@ -1059,6 +1059,12 @@ export class Diagnostics extends BaseEntity {
     (diagnosticHotSellers) => diagnosticHotSellers.diagnostics
   )
   diagnosticHotSellers: DiagnosticHotSellers[];
+
+  @OneToMany(
+    (type) => DiagnosticOrderLineItems,
+    (diagnosticOrderLineItems) => diagnosticOrderLineItems.diagnosticOrders
+  )
+  diagnosticOrderLineItems: DiagnosticOrderLineItems[];
 }
 
 // Diagnostic orders
@@ -1167,6 +1173,9 @@ export class DiagnosticOrderLineItems extends BaseEntity {
     (diagnosticOrders) => diagnosticOrders.diagnosticOrderLineItems
   )
   diagnosticOrders: DiagnosticOrders;
+
+  @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticOrderLineItems)
+  diagnostics: Diagnostics;
 
   @Column()
   itemId: number;
