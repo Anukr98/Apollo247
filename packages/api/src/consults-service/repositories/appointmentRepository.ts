@@ -675,6 +675,19 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.update(id, { appointmentDateTime, rescheduleCount, appointmentState });
   }
 
+  rescheduleAppointmentByDoctor(
+    id: string,
+    appointmentDateTime: Date,
+    rescheduleCountByDoctor: number,
+    appointmentState: APPOINTMENT_STATE
+  ) {
+    return this.update(id, {
+      appointmentDateTime,
+      rescheduleCountByDoctor,
+      appointmentState,
+    });
+  }
+
   cancelAppointment(
     id: string,
     cancelledBy: REQUEST_ROLES,

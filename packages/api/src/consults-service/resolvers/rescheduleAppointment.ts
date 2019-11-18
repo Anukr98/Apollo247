@@ -308,44 +308,44 @@ const bookRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
   }
 
-  if (
-    bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT &&
-    apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT
-  ) {
-    //cancel appt
-    appointmentRepo.cancelAppointment(
-      bookRescheduleAppointmentInput.appointmentId,
-      REQUEST_ROLES.PATIENT,
-      apptDetails.patientId,
-      'MAX_RESCHEDULES_EXCEEDED'
-    );
-  } else {
-    await appointmentRepo.rescheduleAppointment(
-      bookRescheduleAppointmentInput.appointmentId,
-      bookRescheduleAppointmentInput.newDateTimeslot,
-      apptDetails.rescheduleCount + 1,
-      APPOINTMENT_STATE.RESCHEDULE
-    );
+  if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
+    if (apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT) {
+      //cancel appt
+      appointmentRepo.cancelAppointment(
+        bookRescheduleAppointmentInput.appointmentId,
+        REQUEST_ROLES.PATIENT,
+        apptDetails.patientId,
+        'MAX_RESCHEDULES_EXCEEDED'
+      );
+    } else {
+      await appointmentRepo.rescheduleAppointment(
+        bookRescheduleAppointmentInput.appointmentId,
+        bookRescheduleAppointmentInput.newDateTimeslot,
+        apptDetails.rescheduleCount + 1,
+        APPOINTMENT_STATE.RESCHEDULE
+      );
+    }
   }
 
-  if (
-    bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR &&
-    apptDetails.rescheduleCountByDoctor == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR
-  ) {
-    //cancel appointment
-    appointmentRepo.cancelAppointment(
-      bookRescheduleAppointmentInput.appointmentId,
-      REQUEST_ROLES.DOCTOR,
-      apptDetails.doctorId,
-      'MAX_RESCHEDULES_EXCEEDED'
-    );
-  } else {
-    await appointmentRepo.rescheduleAppointment(
-      bookRescheduleAppointmentInput.appointmentId,
-      bookRescheduleAppointmentInput.newDateTimeslot,
-      apptDetails.rescheduleCountByDoctor + 1,
-      APPOINTMENT_STATE.RESCHEDULE
-    );
+  if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
+    if (
+      apptDetails.rescheduleCountByDoctor == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR
+    ) {
+      //cancel appt
+      appointmentRepo.cancelAppointment(
+        bookRescheduleAppointmentInput.appointmentId,
+        REQUEST_ROLES.PATIENT,
+        apptDetails.patientId,
+        'MAX_RESCHEDULES_EXCEEDED'
+      );
+    } else {
+      await appointmentRepo.rescheduleAppointmentByDoctor(
+        bookRescheduleAppointmentInput.appointmentId,
+        bookRescheduleAppointmentInput.newDateTimeslot,
+        apptDetails.rescheduleCountByDoctor + 1,
+        APPOINTMENT_STATE.RESCHEDULE
+      );
+    }
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
@@ -374,7 +374,6 @@ const bookRescheduleAppointment: Resolver<
   if (!appointmentDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-  console.log(appointmentDetails, 'modified details');
   return { appointmentDetails };
 };
 
