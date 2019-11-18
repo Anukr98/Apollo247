@@ -338,16 +338,16 @@ export const doRequestAndAccessLocation = (): Promise<LocationData> => {
                 if (addrComponents.length == 0) {
                   reject('Unable to get location.');
                 } else {
+                  const area = [
+                    findAddrComponents('route', addrComponents),
+                    findAddrComponents('sublocality_level_2', addrComponents),
+                    findAddrComponents('sublocality_level_1', addrComponents),
+                  ].filter((i) => i);
                   resolve({
+                    displayName: area.length ? area.pop() : '',
                     latitude,
                     longitude,
-                    area: [
-                      findAddrComponents('route', addrComponents),
-                      findAddrComponents('sublocality_level_2', addrComponents),
-                      findAddrComponents('sublocality_level_1', addrComponents),
-                    ]
-                      .filter((i) => i)
-                      .join(', '),
+                    area: area.join(', '),
                     city:
                       findAddrComponents('locality', addrComponents) ||
                       findAddrComponents('administrative_area_level_2', addrComponents),

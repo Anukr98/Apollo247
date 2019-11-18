@@ -78,7 +78,7 @@ export const AppCommonDataProvider: React.FC = (props) => {
       try {
         const locationFromStorage = await AsyncStorage.multiGet(['locationDetails']);
         const location = locationFromStorage[0][1];
-        _setLocationDetails(JSON.parse(location || 'null'));
+        // _setLocationDetails(JSON.parse(location || 'null'));
       } catch (error) {
         console.log('Failed to get cart items from local storage.');
       }
