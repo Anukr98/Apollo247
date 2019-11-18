@@ -2,7 +2,7 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { APPOINTMENT_TYPE } from "./globalTypes";
+import { APPOINTMENT_TYPE, STATUS } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetConsultQueue
@@ -22,6 +22,7 @@ export interface GetConsultQueue_getConsultQueue_consultQueue_appointment {
   id: string;
   appointmentType: APPOINTMENT_TYPE;
   appointmentDateTime: any;
+  status: STATUS;
 }
 
 export interface GetConsultQueue_getConsultQueue_consultQueue {

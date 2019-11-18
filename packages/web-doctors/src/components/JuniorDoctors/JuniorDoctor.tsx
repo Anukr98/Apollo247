@@ -17,6 +17,7 @@ import { AphLinearProgress } from '@aph/web-ui-components';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
+import { STATUS } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -200,18 +201,21 @@ export const JuniorDoctor: React.FC = (props) => {
           <div className={classes.boxGroup}>
             {pastConsults.map(({ id, patient, appointment, isActive }) => {
               isPastConsultsAvailable = true;
+
               return (
-                <Link
-                  key={id}
-                  to={clientRoutes.JDConsultRoom({
-                    appointmentId: appointment.id,
-                    patientId: patient.id,
-                    queueId: String(id),
-                    isActive: isActive ? 'active' : 'done',
-                  })}
-                >
-                  <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
-                </Link>
+                appointment.status !== STATUS.CANCELLED && (
+                  <Link
+                    key={id}
+                    to={clientRoutes.JDConsultRoom({
+                      appointmentId: appointment.id,
+                      patientId: patient.id,
+                      queueId: String(id),
+                      isActive: isActive ? 'active' : 'done',
+                    })}
+                  >
+                    <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
+                  </Link>
+                )
               );
             })}
           </div>
