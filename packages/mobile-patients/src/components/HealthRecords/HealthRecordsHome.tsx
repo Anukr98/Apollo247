@@ -235,7 +235,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         .catch((error) => {
           loading && setLoading(false);
           console.log('Error occured', { error });
-          Alert.alert('Error', error.message);
+          //Alert.alert('Error', error.message);
         });
     },
     [currentPatient]

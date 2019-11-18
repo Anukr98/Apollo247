@@ -1,4 +1,4 @@
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
@@ -13,6 +13,8 @@ import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/St
 import {
   MedicineCartItem,
   MEDICINE_ORDER_PAYMENT_TYPE,
+  DiagnosticOrderInput,
+  DiagnosticLineItem,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   SaveMedicineOrder,
@@ -38,6 +40,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import {
   SAVE_MEDICINE_ORDER,
   SAVE_MEDICINE_ORDER_PAYMENT,
+  SAVE_DIAGNOSTIC_ORDER,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { SaveMedicineOrderPaymentVariables } from '@aph/mobile-patients/src/graphql/types/SaveMedicineOrderPayment';
 import { handleGraphQlError, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -46,6 +49,11 @@ import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp'
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import {
+  SaveDiagnosticOrder,
+  SaveDiagnosticOrderVariables,
+} from '../graphql/types/SaveDiagnosticOrder';
+import moment from 'moment';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -160,23 +168,22 @@ const styles = StyleSheet.create({
 
 export interface CheckoutSceneProps extends NavigationScreenProps {}
 
-export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
+export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const [isOneApolloPayment, setOneApolloPayment] = useState(false);
   const [oneApolloCredits, setOneApolloCredits] = useState(0);
-  const [isCashOnDelivery, setCashOnDelivery] = useState(false);
+  const [isCashOnDelivery, setCashOnDelivery] = useState(true);
   const [showOrderPopup, setShowOrderPopup] = useState<boolean>(false);
   const [showSpinner, setShowSpinner] = useState<boolean>(false);
   const [orderInfo, setOrderInfo] = useState({
     pickupStoreName: '',
     pickupStoreAddress: '',
     orderId: '',
-    orderAutoId: 0,
   });
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
   const { showAphAlert } = useUIElements();
   const {
     deliveryAddressId,
-    storeId,
+    clinicId,
     grandTotal,
     deliveryCharges,
     cartItems,
@@ -184,7 +191,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     clearCartInfo,
     physicalPrescriptions,
     ePrescriptions,
-  } = useShoppingCart();
+
+    diagnosticSlot,
+    diagnosticClinic,
+  } = useDiagnosticsCart();
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -199,10 +209,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   const MAX_SLIDER_VALUE = grandTotal;
   const client = useApolloClient();
 
-  const saveOrder = (orderInfo: SaveMedicineOrderVariables) =>
-    client.mutate<SaveMedicineOrder, SaveMedicineOrderVariables>({
-      mutation: SAVE_MEDICINE_ORDER,
-      variables: orderInfo,
+  const saveOrder = (orderInfo: DiagnosticOrderInput) =>
+    client.mutate<SaveDiagnosticOrder, SaveDiagnosticOrderVariables>({
+      mutation: SAVE_DIAGNOSTIC_ORDER,
+      variables: { diagnosticOrderInput: orderInfo },
     });
 
   const savePayment = (paymentInfo: SaveMedicineOrderPaymentVariables) =>
@@ -211,54 +221,54 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       variables: paymentInfo,
     });
 
-  const placeOrder = (orderId: string, orderAutoId: number) => {
-    savePayment({
-      medicinePaymentInput: {
-        orderId: orderId,
-        orderAutoId: orderAutoId,
-        amountPaid: grandTotal,
-        paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
-        paymentStatus: 'success',
-        responseCode: '',
-        responseMessage: '',
-      },
-    })
-      .then(({ data }) => {
-        const { errorCode, errorMessage } = ((data &&
-          data.SaveMedicineOrder &&
-          data.SaveMedicineOrder) ||
-          {}) as SaveMedicineOrder_SaveMedicineOrder;
+  // const placeOrder = (orderId: string, orderAutoId: number) => {
+  //   savePayment({
+  //     medicinePaymentInput: {
+  //       orderId: orderId,
+  //       orderAutoId: orderAutoId,
+  //       amountPaid: grandTotal,
+  //       paymentType: MEDICINE_ORDER_PAYMENT_TYPE.COD,
+  //       paymentStatus: 'success',
+  //       responseCode: '',
+  //       responseMessage: '',
+  //     },
+  //   })
+  //     .then(({ data }) => {
+  //       const { errorCode, errorMessage } = ((data &&
+  //         data.SaveMedicineOrder &&
+  //         data.SaveMedicineOrder) ||
+  //         {}) as SaveMedicineOrder_SaveMedicineOrder;
 
-        console.log({ errorCode, errorMessage });
-        setShowSpinner(false);
-        if (errorCode || errorMessage) {
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Order failed, ${errorMessage}.`,
-          });
-          // Order-failed
-        } else {
-          // Order-Success
-          // Show popup here & clear info
-          clearCartInfo && clearCartInfo();
-          setOrderInfo({
-            orderId: orderId,
-            orderAutoId: orderAutoId,
-            pickupStoreAddress: '',
-            pickupStoreName: '',
-          });
-          setShowOrderPopup(true);
-        }
-      })
-      .catch((e) => {
-        setShowSpinner(false);
-        aphConsole.log({ e });
-        showAphAlert!({
-          title: `Uh oh.. :(`,
-          description: `Something went wrong, unable to place order.`,
-        });
-      });
-  };
+  //       console.log({ errorCode, errorMessage });
+  //       setShowSpinner(false);
+  //       if (errorCode || errorMessage) {
+  //         showAphAlert!({
+  //           title: `Uh oh.. :(`,
+  //           description: `Order failed, ${errorMessage}.`,
+  //         });
+  //         // Order-failed
+  //       } else {
+  //         // Order-Success
+  //         // Show popup here & clear info
+  //         clearCartInfo && clearCartInfo();
+  //         setOrderInfo({
+  //           orderId: orderId,
+  //           orderAutoId: orderAutoId,
+  //           pickupStoreAddress: '',
+  //           pickupStoreName: '',
+  //         });
+  //         setShowOrderPopup(true);
+  //       }
+  //     })
+  //     .catch((e) => {
+  //       setShowSpinner(false);
+  //       aphConsole.log({ e });
+  //       showAphAlert!({
+  //         title: `Uh oh.. :(`,
+  //         description: `Something went wrong, unable to place order.`,
+  //       });
+  //     });
+  // };
 
   const redirectToPaymentGateway = async (orderId: string, orderAutoId: number) => {
     const token = await firebase.auth().currentUser!.getIdToken();
@@ -272,52 +282,67 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
   };
 
   const initiateOrder = async () => {
+    const { CentreCode, CentreName, City, State, Locality } = diagnosticClinic || {};
+    const { slotStartTime, slotEndTime, employeeSlotId, date, diagnosticEmployeeCode, city } =
+      diagnosticSlot || {};
     setShowSpinner(true);
-    const orderInfo: SaveMedicineOrderVariables = {
-      MedicineCartInput: {
-        quoteId: null,
-        patientId: (currentPatient && currentPatient.id) || '',
-        shopId: storeId || null,
-        patientAddressId: deliveryAddressId!,
-        medicineDeliveryType: deliveryType!,
-        devliveryCharges: deliveryCharges,
-        estimatedAmount: grandTotal,
-        prescriptionImageUrl: [
-          ...physicalPrescriptions.map((item) => item.uploadedUrl),
-          ...ePrescriptions.map((item) => item.uploadedUrl),
-        ].join(','),
-        items: cartItems.map(
-          (item) =>
-            ({
-              medicineSKU: item.id,
-              price: item.price,
-              medicineName: item.name,
-              quantity: item.quantity,
-              mrp: item.price,
-              // isPrescriptionNeeded: item.prescriptionRequired,
-              prescriptionImageUrl: null,
-              mou: parseInt(item.mou),
-              isMedicine: null,
-            } as MedicineCartItem)
-        ),
-      },
+    const orderInfo: DiagnosticOrderInput = {
+      // for home collection order
+      diagnosticBranchCode: CentreCode ? 'HYD_HUB1' : '',
+      diagnosticEmployeeCode: diagnosticEmployeeCode || '',
+      employeeSlotId: employeeSlotId! || 0,
+      slotTimings: slotStartTime && slotEndTime ? `${slotStartTime} - ${slotEndTime}` : '',
+      diagnosticDate: moment(date).format('YYYY-MM-DD'),
+      patientAddressId: deliveryAddressId!,
+      city: city || '',
+      // for clinic order
+      centerName: CentreName || '',
+      centerCode: CentreCode || '',
+      centerCity: City || '',
+      centerState: State || '',
+      centerLocality: Locality || '',
+
+      totalPrice: grandTotal,
+      patientId: (currentPatient && currentPatient.id) || '',
+      prescriptionUrl: [
+        ...physicalPrescriptions.map((item) => item.uploadedUrl),
+        ...ePrescriptions.map((item) => item.uploadedUrl),
+      ].join(','),
+      items: cartItems.map(
+        (item) =>
+          ({
+            itemId: typeof item.id == 'string' ? parseInt(item.id) : item.id,
+            price: (item.specialPrice as number) || item.price,
+            quantity: 1,
+          } as DiagnosticLineItem)
+      ),
     };
 
     console.log(JSON.stringify(orderInfo));
     saveOrder(orderInfo)
       .then(({ data }) => {
-        const { orderId, orderAutoId } = ((data &&
-          data.SaveMedicineOrder &&
-          data.SaveMedicineOrder) ||
-          {}) as SaveMedicineOrder_SaveMedicineOrder;
-        console.log({ orderAutoId, orderId });
-        if (isCashOnDelivery) {
-          placeOrder(orderId, orderAutoId);
-        } else {
-          console.log('redirectToPaymentGateway');
-          redirectToPaymentGateway(orderId, orderAutoId).finally(() => {
-            setShowSpinner(false);
+        console.log('\nOrder-Success\n', { data });
+        const { orderId, errorCode, errorMessage } =
+          (data && data.SaveDiagnosticOrder && data.SaveDiagnosticOrder) || {};
+        // if (isCashOnDelivery) {
+        // only CashOnDelivery supported as of now
+        setShowSpinner(false);
+        if (errorCode || errorMessage) {
+          showAphAlert!({
+            title: `Uh oh.. :(`,
+            description: `Order failed, ${errorMessage}.`,
           });
+          // Order-failed
+        } else {
+          // Order-Success
+          // Show popup here & clear info
+          clearCartInfo && clearCartInfo();
+          setOrderInfo({
+            orderId: `${orderId}`,
+            pickupStoreAddress: '',
+            pickupStoreName: '',
+          });
+          setShowOrderPopup(true);
         }
       })
       .catch((error) => {
@@ -333,7 +358,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
         leftIcon={'backArrow'}
         title={'CHECKOUT'}
         onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.CheckoutScene, 'Go back clicked');
+          CommonLogEvent(AppRoutes.TestsCheckoutScene, 'Go back clicked');
           props.navigation.goBack();
         }}
       />
@@ -462,7 +487,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          CommonLogEvent(AppRoutes.CheckoutScene, 'Pay online');
+          CommonLogEvent(AppRoutes.TestsCheckoutScene, 'Pay online');
           setCashOnDelivery(!isCashOnDelivery);
         }}
       >
@@ -479,8 +504,9 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => {
-          CommonLogEvent(AppRoutes.CheckoutScene, 'Cash on delivery');
-          setCashOnDelivery(!isCashOnDelivery);
+          CommonLogEvent(AppRoutes.TestsCheckoutScene, 'Cash on delivery');
+          // setCashOnDelivery(!isCashOnDelivery);
+          setCashOnDelivery(true);
         }}
       >
         <View style={[styles.paymentModeRowStyle]}>
@@ -492,7 +518,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
     const content = (
       <View>
-        {payUsingPaytmOption}
+        {/* {payUsingPaytmOption} */}
         {cashOnDeliveryOption}
       </View>
     );
@@ -522,7 +548,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           title={`PAY RS. ${grandTotal.toFixed(2)}`}
           onPress={() => {
             try {
-              CommonLogEvent(AppRoutes.CheckoutScene, `PAY RS. ${grandTotal.toFixed(2)}`);
+              CommonLogEvent(AppRoutes.TestsCheckoutScene, `PAY RS. ${grandTotal.toFixed(2)}`);
             } catch (error) {}
             initiateOrder();
           }}
@@ -534,10 +560,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
   const renderOrderInfoPopup = () => {
     const navigateOnSuccess = (showOrderSummaryTab: boolean) => {
-      props.navigation.navigate(AppRoutes.OrderDetailsScene, {
+      props.navigation.navigate(AppRoutes.TestOrderDetails, {
         goToHomeOnBack: true,
         showOrderSummaryTab,
-        orderAutoId: orderInfo.orderAutoId,
+        orderId: orderInfo.orderId,
       });
     };
 
@@ -572,7 +598,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                   color: '#01475b',
                 }}
               >
-                Medicines
+                Tests
               </Text>
               <Text
                 style={{
@@ -583,7 +609,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
                   textAlign: 'right',
                 }}
               >
-                {`#${orderInfo.orderAutoId}`}
+                {`#${orderInfo.orderId}`}
               </Text>
             </View>
             <View

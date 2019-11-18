@@ -77,9 +77,10 @@ const styles = StyleSheet.create({
 
 export interface OrderSummaryViewProps {
   orderDetails: GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails;
+  isTest?: boolean;
 }
 
-export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) => {
+export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, isTest }) => {
   const medicineOrderLineItems = orderDetails!.medicineOrderLineItems || [];
   const subtotal = medicineOrderLineItems.reduce(
     (acc, currentVal) => acc + currentVal!.price! * currentVal!.quantity!,
@@ -145,7 +146,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) 
       <View style={[styles.horizontalline, { borderBottomColor: '#f0f1ec', marginBottom: 4.5 }]} />
 
       <View style={styles.medicineView}>
-        <Text style={[styles.medicineText, { marginLeft: 5 }]}>Medicine</Text>
+        <Text style={[styles.medicineText, { marginLeft: 5 }]}>{isTest ? 'Test' : 'Medicine'}</Text>
         <View style={styles.medicineSubView}>
           <Text style={styles.medicineText}>Quantity</Text>
           <Text style={[styles.medicineText, { marginRight: 5 }]}>Charges</Text>

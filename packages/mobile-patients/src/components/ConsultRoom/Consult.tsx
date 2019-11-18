@@ -214,8 +214,12 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   }, [currentPatient]);
 
   const client = useApolloClient();
-
   useEffect(() => {
+    setCurrentPatientId(currentPatient! && currentPatient!.id);
+  }, [currentPatient]);
+  useEffect(() => {
+    console.log('c', currentPatient);
+    setCurrentPatientId(currentPatient! && currentPatient!.id);
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       setshowSpinner(true);
       getNetStatus().then((status) => {
@@ -236,7 +240,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     // const getDataFromTree = async () => {
     //   const storeVallue = await AsyncStorage.getItem('selectUserId');
     //   console.log('storeVallue', storeVallue);
-    //   setCurrentPatientId(storeVallue);
+    //   if (storeVallue == null) {
+    //     setCurrentPatientId(currentPatient! && currentPatient!.id);
+    //   } else {
+    //     setCurrentPatientId(storeVallue);
+    //   }
     // };
 
     // getDataFromTree();
@@ -259,7 +267,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    console.log('current', currentPatient!.id);
+    console.log('current', currentPatient && currentPatient!.id);
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();

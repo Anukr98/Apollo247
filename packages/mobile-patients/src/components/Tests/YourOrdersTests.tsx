@@ -4,7 +4,10 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { GET_MEDICINE_ORDERS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  GET_MEDICINE_ORDERS_LIST,
+  GET_DIAGNOSTIC_ORDER_LIST,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
@@ -24,6 +27,10 @@ import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View, Alert, TouchableOpacity } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { More } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  getDiagnosticOrdersList,
+  getDiagnosticOrdersListVariables,
+} from '../../graphql/types/getDiagnosticOrdersList';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -35,9 +42,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface YourOrdersSceneProps extends NavigationScreenProps {}
+export interface YourOrdersTestProps extends NavigationScreenProps {}
 
-export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
+export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const isTest = props.navigation.getParam('isTest');
@@ -47,24 +54,21 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
-
+  console.log('', currentPatient);
   let { data, error, loading, refetch } = useQuery<
-    GetMedicineOrdersList,
-    GetMedicineOrdersListVariables
-  >(GET_MEDICINE_ORDERS_LIST, {
+    getDiagnosticOrdersList,
+    getDiagnosticOrdersListVariables
+  >(GET_DIAGNOSTIC_ORDER_LIST, {
     variables: { patientId: currentPatient && currentPatient.id },
     fetchPolicy: 'no-cache',
   });
 
-  const orders = (
-    (!loading && g(data, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
-    []
-  ).filter(
+  const orders = ((!loading && g(data, 'getDiagnosticOrdersList', 'ordersList')) || []).filter(
     (item) =>
       !(
-        (item!.medicineOrdersStatus || []).length == 1 &&
-        (item!.medicineOrdersStatus || []).find(
-          (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
+        (item!.orderStatus || []).length == 1 &&
+        ((item!.orderStatus || []) as any).find(
+          (item: any) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
         )
       )
   );
@@ -72,21 +76,28 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       refetch()
-        .then(() => {})
-        .catch(() => {});
+        .then((data) => {
+          console.log('test orders', data);
+        })
+        .catch((error) => {
+          console.log('trestotdr erroe', error);
+        });
     });
     return () => {
       _didFocusSubscription && _didFocusSubscription.remove();
     };
   }, []);
 
-  const getDeliverType = (type: MEDICINE_DELIVERY_TYPE) => {
+  const getDeliverType = (type: string) => {
     switch (type) {
-      case MEDICINE_DELIVERY_TYPE.HOME_DELIVERY:
-        return 'Home Delivery';
+      case 'H':
+        return 'Home Visit';
         break;
-      case MEDICINE_DELIVERY_TYPE.STORE_PICKUP:
-        return 'Store Pickup';
+      case 'C':
+        return 'Clinic Visit';
+        break;
+      case 'HC':
+        return 'Home or Clinic Visit';
         break;
       default:
         return 'Unknown';
@@ -132,21 +143,20 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         {orders.map((order, index, array) => {
           return (
             <OrderCard
-              isTest={isTest}
+              isTest={true}
               style={index < array.length - 1 ? { marginBottom: 8 } : {}}
-              key={`${order!.orderAutoId}`}
-              orderId={`#${order!.orderAutoId}`}
+              key={`${order!.id}`}
+              orderId={`#${order!.displayId}`}
               onPress={() => {
-                props.navigation.navigate(AppRoutes.OrderDetailsScene, {
-                  orderAutoId: order!.orderAutoId,
-                  orderDetails: order!.medicineOrdersStatus,
+                props.navigation.navigate(AppRoutes.TestOrderDetails, {
+                  orderId: order!.id,
                 });
               }}
-              title={'Medicines'}
-              description={getDeliverType(order!.deliveryType)}
-              statusDesc={getStatusDesc(g(order, 'medicineOrdersStatus')!)}
-              status={getStatusType(g(order, 'medicineOrdersStatus')!)!}
-              dateTime={getFormattedTime(g(order!.medicineOrdersStatus![0]!, 'statusDate'))}
+              title={'Test'}
+              description={getDeliverType(order!.orderType)}
+              statusDesc={order!.orderStatus!}
+              statusDiag={order!.orderStatus!}
+              dateTime={getFormattedTime(g(order!.diagnosticDate, 'statusDate'))}
             />
           );
         })}
@@ -168,7 +178,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
             style={{ marginTop: 20 }}
             title={'ORDER NOW'}
             onPress={() => {
-              props.navigation.navigate(AppRoutes.SearchMedicineScene);
+              props.navigation.navigate(AppRoutes.SearchTestScene);
             }}
           />
         </Card>
@@ -198,13 +208,13 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           title={string.orders.urOrders}
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
-          rightComponent={
-            isTest && (
-              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
-                <More />
-              </TouchableOpacity>
-            )
-          }
+          //   rightComponent={
+          //     isTest && (
+          //       <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+          //         <More />
+          //       </TouchableOpacity>
+          //     )
+          //   }
         />
         <ScrollView bounces={false}>
           {renderOrders()}

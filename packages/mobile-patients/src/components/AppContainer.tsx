@@ -4,6 +4,8 @@ import { ShoppingCartProvider } from '@aph/mobile-patients/src/components/Shoppi
 import { UIElementsProvider } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import React from 'react';
 import { Text, TextInput } from 'react-native';
+import { DiagnosticsCartProvider } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppCommonDataProvider } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 // export const AppContainer: React.FC = () => {
 
@@ -23,20 +25,24 @@ interface AppContainerTypes {}
 export class AppContainer extends React.Component<AppContainerTypes> {
   constructor(props: AppContainerTypes) {
     super(props);
-    Text.defaultProps = Text.defaultProps || {};
-    Text.defaultProps.allowFontScaling = false;
-    TextInput.defaultProps = TextInput.defaultProps || {};
-    TextInput.defaultProps.allowFontScaling = false;
+    (Text as any).defaultProps = (Text as any).defaultProps || {};
+    (Text as any).defaultProps.allowFontScaling = false;
+    (TextInput as any).defaultProps = (TextInput as any).defaultProps || {};
+    (TextInput as any).defaultProps.allowFontScaling = false;
   }
 
   render() {
     return (
       <AuthProvider>
-        <ShoppingCartProvider>
-          <UIElementsProvider>
-            <NavigatorContainer />
-          </UIElementsProvider>
-        </ShoppingCartProvider>
+        <AppCommonDataProvider>
+          <ShoppingCartProvider>
+            <DiagnosticsCartProvider>
+              <UIElementsProvider>
+                <NavigatorContainer />
+              </UIElementsProvider>
+            </DiagnosticsCartProvider>
+          </ShoppingCartProvider>
+        </AppCommonDataProvider>
       </AuthProvider>
     );
   }

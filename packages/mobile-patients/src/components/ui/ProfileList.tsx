@@ -58,7 +58,6 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     saveUserChange,
     selectedProfile,
     setDisplayAddProfile,
-    listContainerStyle,
   } = props;
   const addString = 'ADD MEMBER';
   const { getPatientApiCall } = useAuth();
@@ -76,8 +75,11 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const titleCase = (str: string) => {
     var splitStr = str.toLowerCase().split(' ');
     for (var i = 0; i < splitStr.length; i++) {
+      // You do not need to check if i is larger than splitStr length, as your for does that for you
+      // Assign it back to the array
       splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
     }
+    // Directly return the joined string
     return splitStr.join(' ');
   };
 
@@ -155,7 +157,6 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             marginTop: 16,
             marginLeft: width / 2 - 95,
           },
-          listContainerStyle,
         ]}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}

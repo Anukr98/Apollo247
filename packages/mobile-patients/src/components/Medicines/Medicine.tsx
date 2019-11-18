@@ -122,7 +122,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   useEffect(() => {
     const getDataFromTree = async () => {
       const storeVallue = await AsyncStorage.getItem('selectUserId');
-      console.log('storeVallue', storeVallue);
+      //console.log('storeVallue', storeVallue);
       setCurrentPatientId(storeVallue);
     };
 
@@ -209,7 +209,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() =>
-              props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true })
+              props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
             }
             style={{ right: 20 }}
           >

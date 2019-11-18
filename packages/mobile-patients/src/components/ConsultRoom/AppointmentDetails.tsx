@@ -179,12 +179,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const NextAvailableSlotAPI = () => {
     getNetStatus().then((status) => {
       if (status) {
-        console.log('Network status', status);
         nextAvailableSlot();
       } else {
         setNetworkStatus(true);
         setshowSpinner(false);
-        console.log('Network status failed', status);
       }
     });
   };

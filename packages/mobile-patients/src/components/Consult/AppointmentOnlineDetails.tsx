@@ -237,12 +237,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const NextAvailableSlotAPI = () => {
     getNetStatus().then((status) => {
       if (status) {
-        console.log('Network status', status);
         fetchNextDoctorAvailableData();
       } else {
         setNetworkStatus(true);
         setshowSpinner(false);
-        console.log('Network status failed', status);
       }
     });
   };

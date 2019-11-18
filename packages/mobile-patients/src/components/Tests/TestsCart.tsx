@@ -2,38 +2,55 @@ import {
   uploadFile,
   uploadFileVariables,
 } from '@aph/mobile-patients/src//graphql/types/uploadFile';
-import { aphConsole, handleGraphQlError } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  aphConsole,
+  handleGraphQlError,
+  timeTo12HrFormat,
+} from '@aph/mobile-patients/src//helpers/helperFunctions';
+import {
+  DiagnosticsCartItem,
+  useDiagnosticsCart,
+} from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import {
-  PhysicalPrescription,
-  ShoppingCartItem,
-  useShoppingCart,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { PhysicalPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { ArrowRight, CouponIcon, MedicineIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CalendarShow, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCard';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
+import { ScheduleCalander } from '@aph/mobile-patients/src/components/ui/ScheduleCalander';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { GET_PATIENT_ADDRESS_LIST, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  GET_PATIENT_ADDRESS_LIST,
+  UPLOAD_FILE,
+  GET_DIAGNOSTIC_SLOTS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
   getPatientAddressList,
   getPatientAddressListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
 import {
+  Clinic,
+  getPlaceInfoByPincode,
   pinCodeServiceabilityApi,
-  searchPickupStoresApi,
+  searchClinicApi,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
+
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -43,7 +60,15 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  getDiagnosticSlots,
+  getDiagnosticSlotsVariables,
+} from '../../graphql/types/getDiagnosticSlots';
+import { array } from 'prop-types';
+import { Spinner } from '../ui/Spinner';
+import { TEST_COLLECTION_TYPE } from '../../graphql/types/globalTypes';
+import { TestPackageForDetails } from './TestDetails';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -67,6 +92,11 @@ const styles = StyleSheet.create({
     color: theme.colors.SHERPA_BLUE,
     lineHeight: 24,
   },
+  dateTextStyle: {
+    ...theme.fonts.IBMPlexSansMedium(14),
+    color: theme.colors.SHERPA_BLUE,
+    lineHeight: 24,
+  },
   separatorStyle: {
     borderBottomWidth: 0.5,
     borderBottomColor: 'rgba(2, 71, 91, 0.2)',
@@ -80,15 +110,63 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
+  optionsView: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingBottom: 16,
+  },
+  buttonStyle: {
+    width: 'auto',
+    marginRight: 8,
+    marginTop: 12,
+    backgroundColor: theme.colors.WHITE,
+  },
+  buttonTextStyle: {
+    paddingHorizontal: 12,
+    color: theme.colors.APP_GREEN,
+    ...theme.fonts.IBMPlexSansMedium(15),
+  },
+  placeholderViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    borderBottomWidth: 2,
+    paddingTop: 6,
+    paddingBottom: 3,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
+  placeholderTextStyle: {
+    color: '#01475b',
+    ...theme.fonts.IBMPlexSansMedium(18),
+  },
 });
 
-export interface YourCartProps extends NavigationScreenProps {
+type clinicHoursData = {
+  week: string;
+  time: string;
+};
+
+type TimeArray = {
+  label: string;
+  time: string;
+}[];
+
+type Profile = {
+  pid: string;
+  name: string;
+};
+
+export interface TestsCartProps extends NavigationScreenProps {
   isComingFromConsult: boolean;
 }
 {
 }
 
-export const YourCart: React.FC<YourCartProps> = (props) => {
+export const TestsCart: React.FC<TestsCartProps> = (props) => {
+  const isComingFromConsult = props.navigation.getParam('isComingFromConsult');
   const {
     updateCartItem,
     removeCartItem,
@@ -97,8 +175,6 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     addresses,
     setDeliveryAddressId,
     deliveryAddressId,
-    storeId,
-    setStoreId,
     deliveryCharges,
     cartTotal,
     couponDiscount,
@@ -109,18 +185,62 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     physicalPrescriptions,
     pinCode,
     setPinCode,
-    stores,
-    setStores,
+    clinicId,
+    setClinicId,
+    clinics,
+    setClinics,
     ePrescriptions,
-  } = useShoppingCart();
+    forPatientId,
+    setPatientId,
+    diagnosticClinic,
+    diagnosticSlot,
+    setDiagnosticClinic,
+    setDiagnosticSlot,
+  } = useDiagnosticsCart();
 
-  const tabs = [{ title: 'Home Delivery' }, { title: 'Store Pick Up' }];
-  const [selectedTab, setselectedTab] = useState<string>(storeId ? tabs[1].title : tabs[0].title);
+  const clinicHours: clinicHoursData[] = [
+    {
+      week: 'Mon - Fri',
+      time: '9:00 AM - 5:00 PM',
+    },
+    {
+      week: 'Sat - Sun',
+      time: '10:00 AM - 3:30 PM',
+    },
+  ];
+  const tabs = [
+    { title: 'Home Visit', subtitle: 'Appointment Slot' },
+    { title: 'Clinic Visit', subtitle: 'Clinic Hours' },
+  ];
+  const [timeArray, settimeArray] = useState<TimeArray>([]);
+
+  const [selectedTimeSlot, setselectedTimeSlot] = useState<string>('');
+  const [selectedTab, setselectedTab] = useState<string>(clinicId ? tabs[1].title : tabs[0].title);
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
   const { showAphAlert, setLoading } = useUIElements();
   const { getPatientApiCall } = useAuth();
+  const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
+
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>({
+    ...((currentPatient || {}) as any),
+  });
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
+  const [date, setDate] = useState<Date>(new Date());
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
+
+  useEffect(() => {
+    setPatientId!(currentPatientId!);
+  }, [currentPatientId]);
+
+  useEffect(() => {
+    fetchStorePickup();
+    if (clinicId) {
+      filterClinics(clinicId, true);
+    }
+  }, []);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -153,39 +273,33 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [currentPatientId]);
 
   /*  useEffect(() => {
-    getCartInfo()
-      .then((cartInfo) => {
-        setcartDetails(cartInfo);
-        let cartStatus = {} as typeof medicineCardStatus;
-        cartInfo &&
-          cartInfo.items.forEach((item) => {
-            cartStatus[item.sku] = {
-              isAddedToCart: true,
-              isCardExpanded: true,
-              unit: item.qty,
-              price: item.price!,
-            };
+      getCartInfo()
+        .then((cartInfo) => {
+          setcartDetails(cartInfo);
+          let cartStatus = {} as typeof medicineCardStatus;
+          cartInfo &&
+            cartInfo.items.forEach((item) => {
+              cartStatus[item.sku] = {
+                isAddedToCart: true,
+                isCardExpanded: true,
+                unit: item.qty,
+                price: item.price!,
+              };
+            });
+          setMedicineCardStatus({
+            ...medicineCardStatus,
+            ...cartStatus,
           });
-        setMedicineCardStatus({
-          ...medicineCardStatus,
-          ...cartStatus,
+          setMedicineList(cartInfo.items);
+          setshowSpinner(false);
+        })
+        .catch((e) => {
+          Alert.alert(JSON.stringify({ e }));
+          setshowSpinner(false);
         });
-        setMedicineList(cartInfo.items);
-        setshowSpinner(false);
-      })
-      .catch((e) => {
-        Alert.alert(JSON.stringify({ e }));
-        setshowSpinner(false);
-      });
-  }, []);*/
+    }, []);*/
 
-  const onUpdateCartItem = ({ id }: ShoppingCartItem, unit: number) => {
-    if (!(unit < 1)) {
-      updateCartItem && updateCartItem({ id, quantity: unit });
-    }
-  };
-
-  const onRemoveCartItem = ({ id }: ShoppingCartItem) => {
+  const onRemoveCartItem = ({ id }: DiagnosticsCartItem) => {
     removeCartItem && removeCartItem(id);
   };
 
@@ -197,18 +311,18 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'YOUR CART'}
+        title={'TESTS CART'}
+        titleStyle={{ marginLeft: 20 }}
         rightComponent={
           <View>
             <TouchableOpacity
               activeOpacity={1}
               onPress={() => {
-                if (props.navigation.getParam('isComingFromConsult'))
-                  props.navigation.navigate(AppRoutes.SearchMedicineScene);
-                else {
-                  CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
-                  props.navigation.goBack();
-                }
+                if (isComingFromConsult)
+                  props.navigation.navigate(AppRoutes.SearchTestScene, {
+                    isComingFromConsult,
+                  });
+                else props.navigation.goBack();
               }}
             >
               <Text
@@ -222,10 +336,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             </TouchableOpacity>
           </View>
         }
-        onPressLeftIcon={() => {
-          CommonLogEvent(AppRoutes.YourCart, 'Go back to add items');
-          props.navigation.goBack();
-        }}
+        onPressLeftIcon={() => props.navigation.goBack()}
       />
     );
   };
@@ -260,17 +371,17 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             Your Cart is empty
           </Text>
         )}
-        {cartItems.map((medicine, index, array) => {
+        {cartItems.map((test, index, array) => {
           const medicineCardContainerStyle = [
             { marginBottom: 8, marginHorizontal: 20 },
             index == 0 ? { marginTop: 20 } : {},
             index == array.length - 1 ? { marginBottom: 20 } : {},
           ];
           const imageUrl =
-            medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
-              ? medicine.thumbnail.startsWith('http')
-                ? medicine.thumbnail
-                : `${AppConfig.Configuration.IMAGES_BASE_URL}${medicine.thumbnail}`
+            test.thumbnail && !test.thumbnail.includes('/default/placeholder')
+              ? test.thumbnail.startsWith('http')
+                ? test.thumbnail
+                : `${AppConfig.Configuration.IMAGES_BASE_URL}${test.thumbnail}`
               : '';
 
           return (
@@ -279,35 +390,38 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               //   currentPatient && currentPatient.firstName ? currentPatient.firstName : ''
               // }
               containerStyle={medicineCardContainerStyle}
-              key={medicine.id}
+              key={test.id}
               onPress={() => {
-                CommonLogEvent(AppRoutes.YourCart, 'Navigate to medicine details scene');
-                props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-                  sku: medicine.id,
-                  title: medicine.name,
+                CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
+                props.navigation.navigate(AppRoutes.TestDetails, {
+                  testDetails: {
+                    Rate: test!.price,
+                    Gender: '',
+                    ItemID: `${test.id}`,
+                    ItemName: test.name,
+                    collectionType: test.collectionMethod,
+                  } as TestPackageForDetails,
                 });
               }}
-              medicineName={medicine.name!}
-              price={medicine.price!}
-              unit={medicine.quantity}
+              medicineName={test.name!}
+              price={test.price!}
               imageUrl={imageUrl}
-              onPressAdd={() => { }}
+              onPressAdd={() => {}}
               onPressRemove={() => {
-                CommonLogEvent(AppRoutes.YourCart, 'Remove item from cart');
-                onRemoveCartItem(medicine);
+                CommonLogEvent(AppRoutes.TestsCart, 'Remove item from cart');
+                onRemoveCartItem(test);
               }}
-              onChangeUnit={(unit) => {
-                CommonLogEvent(AppRoutes.YourCart, 'Change unit in cart');
-                onUpdateCartItem(medicine, unit);
-              }}
+              onChangeUnit={() => {}}
               isCardExpanded={true}
               isInStock={true}
-              isPrescriptionRequired={medicine.prescriptionRequired}
+              isTest={true}
+              specialPrice={test.specialPrice!}
+              isPrescriptionRequired={false}
               subscriptionStatus={'unsubscribed'}
-              packOfCount={parseInt(medicine.mou || '0')}
-              onChangeSubscription={() => { }}
-              onEditPress={() => { }}
-              onAddSubscriptionPress={() => { }}
+              packOfCount={test.mou}
+              onChangeSubscription={() => {}}
+              onEditPress={() => {}}
+              onAddSubscriptionPress={() => {}}
             />
           );
         })}
@@ -328,7 +442,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           showAphAlert!({
             title: 'Uh oh.. :(',
             description:
-              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby clinics, or change the pincode.',
           });
         }
       })
@@ -372,11 +486,27 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               key={item.id}
               title={`${item.addressLine1}, ${item.addressLine2}\n${item.landmark}${
                 item.landmark ? ',\n' : ''
-                }${item.city}, ${item.state} - ${item.zipcode}`}
+              }${item.city}, ${item.state} - ${item.zipcode}`}
               isSelected={deliveryAddressId == item.id}
               onPress={() => {
-                CommonLogEvent(AppRoutes.YourCart, 'Check service availability');
-                checkServicability(item);
+                CommonLogEvent(AppRoutes.TestsCart, 'Check service availability');
+                const tests = cartItems.filter(
+                  (item) => item.collectionMethod == TEST_COLLECTION_TYPE.CENTER
+                );
+
+                if (tests.length) {
+                  showAphAlert!({
+                    title: 'Uh oh! :(',
+                    description: `${(currentPatient && currentPatient.firstName) ||
+                      'Hi'}, since your cart includes tests (${tests
+                      .map((item) => item.name)
+                      .join(
+                        ', '
+                      )}), that can only be done at the centre, we request you to get all tests in your cart done at the centre of your convenience. Please proceed to select.`,
+                  });
+                } else {
+                  checkServicability(item);
+                }
               }}
               containerStyle={{ marginTop: 16 }}
               hideSeparator={index + 1 === array.length}
@@ -386,10 +516,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <View style={styles.rowSpaceBetweenStyle}>
           <Text
             style={styles.yellowTextStyle}
-            onPress={() => {
-              CommonLogEvent(AppRoutes.YourCart, 'Add new address');
-              props.navigation.navigate(AppRoutes.AddAddress);
-            }}
+            onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
           >
             ADD NEW ADDRESS
           </Text>
@@ -397,7 +524,9 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             {addresses.length > 2 && (
               <Text
                 style={styles.yellowTextStyle}
-                onPress={() => props.navigation.navigate(AppRoutes.SelectDeliveryAddress)}
+                onPress={() =>
+                  props.navigation.navigate(AppRoutes.SelectDeliveryAddress, { isTest: true })
+                }
               >
                 VIEW ALL
               </Text>
@@ -411,44 +540,80 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const [storePickUpLoading, setStorePickUpLoading] = useState<boolean>(false);
   const isValidPinCode = (text: string): boolean => /^(\s*|[1-9][0-9]*)$/.test(text);
 
-  const fetchStorePickup = (pincode: string) => {
-    if (isValidPinCode(pincode)) {
-      setPinCode && setPinCode(pincode);
-      if (pincode.length == 6) {
-        setStorePickUpLoading(true);
-        searchPickupStoresApi(pincode)
-          .then(({ data: { Stores, stores_count } }) => {
-            setStorePickUpLoading(false);
-            setStores && setStores(stores_count > 0 ? Stores : []);
-          })
-          .catch((e) => {
-            setStorePickUpLoading(false);
-          });
-      } else {
-        setStores && setStores([]);
-        setStoreId && setStoreId('');
+  const fetchStorePickup = () => {
+    setStorePickUpLoading(true);
+    searchClinicApi()
+      .then((data) => {
+        setStorePickUpLoading(false);
+        console.log('clinic response', data.data.data, data);
+        setClinics && setClinics(data.data.data);
+      })
+      .catch((e) => {
+        setStorePickUpLoading(false);
+      });
+  };
+
+  const filterClinics = (key: string, isId?: boolean) => {
+    if (isId) {
+      const data = clinics.filter((item) => item.CentreCode === key);
+      console.log('iid filer=', data);
+      setPinCode && setPinCode(pinCode);
+      setClinicDetails(data);
+    } else {
+      if (isValidPinCode(key)) {
+        setPinCode && setPinCode(key);
+        if (key.length == 6) {
+          setStorePickUpLoading(true);
+          getPlaceInfoByPincode(key)
+            .then((data) => {
+              console.log('locaion data', data);
+              const city = (
+                (data.data.results[0].address_components || []).find(
+                  (item: any) => item.types.indexOf('locality') > -1
+                ) || {}
+              ).long_name;
+              console.log('cityName', city);
+              let filterArray;
+              city &&
+                (filterArray = clinics.filter((item) =>
+                  item.City.toLowerCase().includes(city.toLowerCase())
+                ));
+              console.log('cityName data', filterArray);
+
+              setClinicDetails(filterArray || []);
+            })
+            .catch(() => {
+              setClinicDetails([]);
+            })
+            .finally(() => {
+              setStorePickUpLoading(false);
+            });
+        }
       }
     }
   };
 
   const renderStorePickup = () => {
-    const selectedStoreIndex = stores.findIndex(({ storeid }) => storeid == storeId);
-    const storesLength = stores.length;
+    const selectedStoreIndex =
+      clinicDetails && clinicDetails.findIndex(({ CentreCode }) => CentreCode == clinicId);
+    const storesLength = clinicDetails && clinicDetails.length;
     const spliceStartIndex =
-      selectedStoreIndex == storesLength - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
+      selectedStoreIndex == storesLength! - 1 ? selectedStoreIndex - 1 : selectedStoreIndex;
     const startIndex = spliceStartIndex == -1 ? 0 : spliceStartIndex;
-    const slicedStoreList = [...stores].slice(startIndex, startIndex + 2);
+    const slicedStoreList = [...clinicDetails!].slice(startIndex, startIndex! + 2);
 
     return (
       <View style={{ margin: 16, marginTop: 20 }}>
         <TextInputComponent
           value={`${pinCode}`}
           maxLength={6}
-          onChangeText={(pincode) => fetchStorePickup(pincode)}
+          onChangeText={(pincode) => {
+            filterClinics(pincode);
+          }}
           placeholder={'Enter Pincode'}
         />
         {storePickUpLoading && <ActivityIndicator color="green" size="large" />}
-        {!storePickUpLoading && pinCode.length == 6 && stores.length == 0 && (
+        {!storePickUpLoading && pinCode.length == 6 && clinicDetails!.length == 0 && (
           <Text
             style={{
               paddingTop: 10,
@@ -457,32 +622,34 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               color: '#0087ba',
             }}
           >
-            Sorry! We’re working hard to get to this area! In the meantime, you can either pick up
-            from a nearby store, or change the pincode.
+            {(currentPatient && currentPatient.firstName) || 'Hi'}, our diagnostic services are only
+            available in Chennai and Hyderabad for now. Kindly enter a prin code for Chennai or
+            Hyderabad to proceed.
           </Text>
         )}
 
-        {slicedStoreList.map((store, index, array) => (
+        {slicedStoreList.map((item, index) => (
           <RadioSelectionItem
-            key={store.storeid}
-            title={`${store.storename}\n${store.address}`}
-            isSelected={storeId === store.storeid}
+            key={item.CentreCode}
+            title={`${item.CentreName}\n${item.Locality},${item.City},${item.State}`}
+            isSelected={clinicId === item.CentreCode}
             onPress={() => {
-              CommonLogEvent(AppRoutes.YourCart, 'Set store id');
-              setStoreId && setStoreId(store.storeid);
+              CommonLogEvent(AppRoutes.TestsCart, 'Set store id');
+              setDiagnosticClinic!({ ...item, date: date.getTime() });
+              setClinicId && setClinicId(item.CentreCode);
             }}
             containerStyle={{ marginTop: 16 }}
-            hideSeparator={index == array.length - 1}
+            hideSeparator={index == clinicDetails!.length - 1}
           />
         ))}
         <View>
-          {stores.length > 2 && (
+          {clinicDetails!.length > 2 && (
             <Text
               style={{ ...styles.yellowTextStyle, textAlign: 'right' }}
               onPress={() =>
-                props.navigation.navigate(AppRoutes.StorPickupScene, {
+                props.navigation.navigate(AppRoutes.ClinicSelection, {
                   pincode: pinCode,
-                  stores: stores,
+                  clinics: clinicDetails,
                 })
               }
             >
@@ -494,16 +661,124 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     );
   };
 
+  const renderPickupHours = () => {
+    return (
+      <View>
+        <View style={styles.rowSpaceBetweenStyle}>
+          <Text style={styles.dateTextStyle}>Date</Text>
+          <Text style={styles.dateTextStyle}>{moment(date).format('DD MMM, YYYY')}</Text>
+        </View>
+        <View style={styles.rowSpaceBetweenStyle}>
+          <Text style={styles.dateTextStyle}>Time</Text>
+          <Text style={styles.dateTextStyle}>{selectedTimeSlot ? selectedTimeSlot : ''}</Text>
+        </View>
+        <Text
+          style={[styles.yellowTextStyle, { padding: 0, paddingTop: 20, alignSelf: 'flex-end' }]}
+          onPress={() => {
+            var date = moment(new Date()).format('YYYY-MM-DD');
+            console.log(date, 'calenderdate');
+            setshowSpinner(true);
+            client
+              .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+                query: GET_DIAGNOSTIC_SLOTS,
+                fetchPolicy: 'no-cache',
+                variables: {
+                  patientId: currentPatient!.id,
+                  hubCode: 'HYD_HUB1',
+                  selectedDate: date,
+                  zipCode: 500033,
+                },
+              })
+              .then(({ data }) => {
+                console.log(data, 'GET_DIAGNOSTIC_SLOTS');
+                setshowSpinner(false);
+                var finalaray =
+                  data &&
+                  data.getDiagnosticSlots! &&
+                  data.getDiagnosticSlots!.diagnosticSlot![0] &&
+                  data.getDiagnosticSlots!.diagnosticSlot![0].slotInfo;
+
+                var t = finalaray!.map((item) => {
+                  return {
+                    label: (item!.slot || '').toString(),
+                    time: `${item!.startTime} - ${item!.endTime}`,
+                  };
+                });
+                console.log(t, 'finalaray');
+                settimeArray(t);
+                setDisplaySchedule(true);
+              })
+              .catch((e: string) => {
+                setshowSpinner(false);
+                console.log('Error occured', e);
+              })
+              .finally(() => {});
+          }}
+        >
+          PICK ANOTHER SLOT
+        </Text>
+      </View>
+    );
+  };
+
+  const renderClinicHours = () => {
+    return (
+      <View>
+        {clinicHours.map(({ week, time }) => {
+          return (
+            <View style={styles.rowSpaceBetweenStyle}>
+              <Text style={styles.dateTextStyle}>{week}</Text>
+              <Text style={styles.dateTextStyle}>{time}</Text>
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
+  const renderTimingCard = () => {
+    return (selectedTab === tabs[0].title && deliveryAddressId) ||
+      (selectedTab === tabs[1].title && clinicId) ? (
+      <View
+        style={{
+          ...theme.viewStyles.cardViewStyle,
+          marginHorizontal: 20,
+          marginTop: 4,
+          marginBottom: 24,
+          padding: 16,
+        }}
+      >
+        <View style={{ flexDirection: 'row' }}>
+          <CalendarShow />
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(16),
+              color: theme.colors.SHERPA_BLUE,
+              lineHeight: 24,
+              paddingLeft: 16,
+            }}
+          >
+            {selectedTab === tabs[0].title ? tabs[0].subtitle : tabs[1].subtitle}
+          </Text>
+        </View>
+        <View style={[styles.separatorStyle, { marginTop: 10, marginBottom: 12.5 }]} />
+        {selectedTab === tabs[0].title ? renderPickupHours() : renderClinicHours()}
+      </View>
+    ) : (
+      <View style={{ padding: 12 }}></View>
+    );
+  };
+
   const renderDelivery = () => {
     return (
       <View>
-        {renderLabel('WHERE SHOULD WE DELIVER?')}
+        {renderLabel('WHERE TO COLLECT SAMPLE FROM?')}
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginHorizontal: 20,
             marginTop: 16,
-            marginBottom: 24,
+            marginBottom: 4,
           }}
         >
           <TabsComponent
@@ -522,6 +797,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           />
           {selectedTab === tabs[0].title ? renderHomeDelivery() : renderStorePickup()}
         </View>
+        {renderTimingCard()}
       </View>
     );
   };
@@ -530,7 +806,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     return (
       <View>
         {renderLabel('TOTAL CHARGES')}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           activeOpacity={1}
           style={{
             ...theme.viewStyles.cardViewStyle,
@@ -542,7 +818,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
             paddingHorizontal: 16,
             alignItems: 'center',
           }}
-          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene)}
+          onPress={() => props.navigation.navigate(AppRoutes.ApplyCouponScene, { isTest: true })}
         >
           <CouponIcon />
           <Text
@@ -558,7 +834,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           <View style={{ flex: 1, alignItems: 'flex-end' }}>
             <ArrowRight />
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <View
           style={{
             ...theme.viewStyles.cardViewStyle,
@@ -578,10 +854,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               <Text style={styles.blueTextStyle}>- Rs. {couponDiscount.toFixed(2)}</Text>
             </View>
           )}
-          <View style={styles.rowSpaceBetweenStyle}>
-            <Text style={styles.blueTextStyle}>Delivery Charges</Text>
-            <Text style={styles.blueTextStyle}>+ Rs. {deliveryCharges.toFixed(2)}</Text>
-          </View>
+          {/* <View style={styles.rowSpaceBetweenStyle}>
+            <Text style={styles.blueTextStyle}>Collection Charges</Text>
+            <Text style={styles.blueTextStyle}>Rs. {deliveryCharges.toFixed(2)}</Text>
+          </View> */}
           <View style={[styles.separatorStyle, { marginTop: 16, marginBottom: 7 }]} />
           <View style={styles.rowSpaceBetweenStyle}>
             <Text style={styles.blueTextStyle}>To Pay </Text>
@@ -630,12 +906,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           paddingBottom: 8,
         }}
       >
-        <MedicineIcon />
+        <TestsIcon />
         <Text style={[styles.blueTextStyle, { paddingTop: 4 }]}>{item.name}</Text>
         <View style={[styles.separatorStyle, { marginTop: 3, marginBottom: 5 }]} />
-        <Text style={styles.medicineCostStyle}>
-          {item.cost} <Text style={{ ...theme.fonts.IBMPlexSansMedium(12) }}>/strip</Text>
-        </Text>
+        <Text style={styles.medicineCostStyle}>{item.cost}</Text>
       </View>
     );
   };
@@ -654,6 +928,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
         <FlatList
           contentContainerStyle={{
             marginHorizontal: 14,
+            paddingRight: 28,
           }}
           horizontal={true}
           bounces={false}
@@ -670,7 +945,8 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   const disableProceedToPay = !(
     cartItems.length > 0 &&
-    !!(deliveryAddressId || storeId) &&
+    forPatientId &&
+    !!(deliveryAddressId || clinicId) &&
     (uploadPrescriptionRequired
       ? physicalPrescriptions.length > 0 || ePrescriptions.length > 0
       : true)
@@ -694,7 +970,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const onPressProceedToPay = () => {
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0) {
-      props.navigation.navigate(AppRoutes.CheckoutScene);
+      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else {
       setLoading!(true);
       const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
@@ -715,7 +991,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
               ...prescriptions.filter((item) => item.uploadedUrl),
             ]);
           setLoading!(false);
-          props.navigation.navigate(AppRoutes.CheckoutScene);
+          props.navigation.navigate(AppRoutes.TestsCheckoutScene);
         })
         .catch((e) => {
           aphConsole.log({ e });
@@ -728,14 +1004,73 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   };
 
+  const renderProfiles = () => {
+    return (
+      <View>
+        {renderLabel('WHO ARE THESE TESTS FOR?')}
+        <View
+          style={{
+            ...theme.viewStyles.cardViewStyle,
+            marginHorizontal: 20,
+            paddingHorizontal: 16,
+            marginTop: 16,
+            marginBottom: 20,
+            paddingTop: 8,
+            paddingBottom: 16,
+          }}
+        >
+          {/* {renderProfilePicker()} */}
+          <ProfileList
+            defaultText={'Select who are these tests for'}
+            saveUserChange={true}
+            selectedProfile={profile}
+            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            navigation={props.navigation}
+          ></ProfileList>
+          <Text
+            style={{
+              ...theme.fonts.IBMPlexSansMedium(16),
+              lineHeight: 24,
+              marginTop: 8,
+              color: theme.colors.SKY_BLUE,
+            }}
+          >
+            {`All the tests must be for one person. Tests for multiple profiles will require separate purchases.`}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
+      {displaySchedule && (
+        <ScheduleCalander
+          date={date}
+          setDate={(date) => setDate(date)}
+          setdisplayoverlay={setDisplaySchedule}
+          selectedTimeSlot={selectedTimeSlot}
+          setselectedTimeSlot={(selected) => setselectedTimeSlot(selected)}
+          isDropDown={true}
+          dropdownArray={timeArray}
+          CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
+        />
+      )}
+      {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )}
       <SafeAreaView style={{ ...theme.viewStyles.container }}>
         {renderHeader()}
         <ScrollView bounces={false}>
           <View style={{ marginVertical: 24 }}>
             {renderItemsInCart()}
-            <MedicineUploadPrescriptionView navigation={props.navigation} />
+            {renderProfiles()}
+            <MedicineUploadPrescriptionView isTest={true} navigation={props.navigation} />
             {renderDelivery()}
             {renderTotalCharges()}
             {/* {renderMedicineSuggestions()} */}
@@ -746,14 +1081,12 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           <Button
             disabled={disableProceedToPay}
             title={`PROCEED TO PAY RS. ${grandTotal.toFixed(2)}`}
-            onPress={() => {
-              CommonLogEvent(AppRoutes.YourCart, 'PROCEED TO PAY');
-              onPressProceedToPay();
-            }}
+            onPress={() => onPressProceedToPay()}
             style={{ flex: 1, marginHorizontal: 40 }}
           />
         </StickyBottomComponent>
       </SafeAreaView>
+      {showSpinner && <Spinner />}
     </View>
   );
 };

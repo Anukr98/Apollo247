@@ -23,6 +23,9 @@ const PharmaApiConfig = {
     PRODUCTS_BY_CATEGORY: [`${apolloUatBaseUrl}/apollo_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloUatBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
     ALL_BRANDS: [`${apolloUatBaseUrl}/allbrands_api.php`, pharmaToken201],
+    GET_TEST_PACKAGES: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`],
+    GET_PACKAGE_DATA: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedetail`],
+    GET_CLINICS: ['http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx'],
   },
   prod: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
@@ -41,6 +44,9 @@ const PharmaApiConfig = {
     PRODUCTS_BY_CATEGORY: [`${apolloProdBaseUrl}/categoryproducts_api.php`, pharmaToken201],
     MEDICINE_PAGE: [`${apolloProdBaseUrl}/apollo_24x7_api.php`, pharmaToken201],
     ALL_BRANDS: [`${apolloProdBaseUrl}/allbrands_api.php`, pharmaToken201],
+    GET_TEST_PACKAGES: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedata`],
+    GET_PACKAGE_DATA: [`http://uatlims.apollohl.in/ApolloLive/AskApollo.aspx?cmd=getpackagedetail`],
+    GET_CLINICS: ['http://uatlims.apollohl.in/ApolloLive/CronJob/GetCentreDetail.aspx'],
   },
 };
 
@@ -54,6 +60,7 @@ const Configuration = {
   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
   DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
   PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
   PRO_TOKBOX_KEY: '46429002',
   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -72,6 +79,7 @@ const Configuration = {
 //   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
 //   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
 //   DELIVERY_CHARGES: 25,
+//   DIASGNOS_DELIVERY_CHARGES: 0,
 //   PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
 //   PRO_TOKBOX_KEY: '46429002',
 //   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
@@ -90,6 +98,7 @@ const Configuration = {
 //   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
 //   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
 //   DELIVERY_CHARGES: 25,
+//   DIASGNOS_DELIVERY_CHARGES: 0,
 //   PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', // PRODUCTION
 //   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
 //   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION

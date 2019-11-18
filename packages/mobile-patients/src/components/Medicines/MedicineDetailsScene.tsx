@@ -23,6 +23,7 @@ import {
   MedicineProduct,
   MedicineProductDetails,
   getMedicineDetailsApi,
+  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { isEmptyObject, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -201,11 +202,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   );
 
   useEffect(() => {
-    const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
-        Axios.get(url)
+        const { latitude, longitude } = position.coords;
+        getPlaceInfoByLatLng(latitude, longitude)
           .then((obj) => {
             try {
               if (
@@ -470,6 +470,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderBottomButtons = () => {
+    const opitons = Array.from({ length: 20 }).map((_, i) => {
+      return { key: (i + 1).toString(), value: i + 1 };
+    });
+
     return (
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
         {isOutOfStock ? (
@@ -524,7 +528,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   flex: 1,
                 }}
               >
-                <MaterialMenu onPress={(selectedQuantity) => setselectedQuantity(selectedQuantity)}>
+                <MaterialMenu
+                  options={opitons}
+                  selectedText={selectedQuantity!.toString()}
+                  selectedTextStyle={{
+                    ...theme.viewStyles.text('M', 16, '#00b38e'),
+                  }}
+                  onPress={(selectedQuantity) => setselectedQuantity(selectedQuantity.value)}
+                >
                   <View
                     style={{
                       flexDirection: 'row',

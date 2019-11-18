@@ -104,7 +104,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
     if (response.length == 0) return [];
 
     return response.map((item) => {
-      console.log('item', item);
+      //console.log('item', item);
       const isPdf = item.mime == 'application/pdf';
       const fileUri = item!.path || `folder/file.jpg`;
       const random8DigitNumber = Math.floor(Math.random() * 90000) + 20000000;
@@ -136,7 +136,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         );
       })
       .catch((e) => {
-        aphConsole.log({ e });
+        // aphConsole.log({ e });
         setshowSpinner(false);
       });
   };
@@ -182,7 +182,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
       compressImageQuality: 0.1,
     })
       .then((response) => {
-        console.log('res', response);
+        //console.log('res', response);
 
         setshowSpinner(false);
         props.onResponse(
@@ -191,7 +191,7 @@ export const UploadPrescriprionPopup: React.FC<UploadPrescriprionPopupProps> = (
         );
       })
       .catch((e) => {
-        aphConsole.log({ e });
+        //aphConsole.log({ e });
         setshowSpinner(false);
       });
   };

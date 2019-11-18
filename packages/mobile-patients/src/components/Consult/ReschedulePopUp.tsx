@@ -273,11 +273,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                   onPress={() =>
                     getNetStatus().then((status) => {
                       if (status) {
-                        console.log('Network status', status);
-                        console.log('appointmentdate', moment(props.appadatetime));
-                        console.log('today', moment(new Date()));
                         const dateIsAfter = moment(props.appadatetime).isAfter(moment(new Date()));
-                        console.log('changeslotbuttonconstion', dateIsAfter);
                         if (dateIsAfter) {
                           props.setdisplayoverlay();
                         } else {
@@ -292,7 +288,6 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                       } else {
                         setNetworkStatus(true);
                         setshowSpinner(false);
-                        console.log('Network status failed', status);
                       }
                     })
                   }
