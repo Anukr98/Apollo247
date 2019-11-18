@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AsyncStorage } from 'react-native';
 
 export interface LocationData {
+  displayName: string;
   latitude?: number;
   longitude?: number;
   area: string;

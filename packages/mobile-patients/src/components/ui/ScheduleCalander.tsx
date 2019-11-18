@@ -145,7 +145,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
   const client = useApolloClient();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   useEffect(() => {
-    if (!!props.selectedTimeSlot) {
+    if (!!props.selectedTimeSlot && timeArray) {
       timeArray &&
         timeArray.length > 0 &&
         timeArray.map((value) => {
@@ -154,6 +154,13 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
               setselectedtiming(value.label);
             }
           });
+        });
+    } else if (!!props.selectedTimeSlot && dropArray) {
+      dropArray.length > 0 &&
+        dropArray.map((value) => {
+          if (value.time === props.selectedTimeSlot) {
+            setSelectedDrop(value);
+          }
         });
     }
   }, [props.selectedTimeSlot]);
@@ -167,6 +174,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
           setDate(selectedDate);
           setshowSpinner(true);
           setDropArray([]);
+          const selectedAddress = addresses.find((item) => deliveryAddressId == item.id);
           client
             .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
               query: GET_DIAGNOSTIC_SLOTS,
@@ -175,7 +183,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
                 patientId: currentPatient!.id,
                 hubCode: 'HYD_HUB1',
                 selectedDate: moment(selectedDate).format('YYYY-MM-DD'),
-                zipCode: 500033,
+                zipCode: parseInt(selectedAddress!.zipcode!),
               },
             })
             .then(({ data }) => {
@@ -188,13 +196,12 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
               // data.getDiagnosticSlots!.diagnosticSlot![0].slotInfo;
               // data.getDiagnosticSlots!.diagnosticSlot![0] &&
               //   data.getDiagnosticSlots!.diagnosticSlot![0].
-              const selectedAddress = addresses.find((item) => deliveryAddressId == item.id);
               setDiagnosticSlot &&
                 setDiagnosticSlot({
                   employeeSlotId: 0,
                   diagnosticEmployeeCode: finalaray!.employeeCode || '',
-                  slotStartTime: '',
-                  slotEndTime: '',
+                  slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
+                  slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
                   city: selectedAddress!.city || '',
                   date: date.getTime(),
                 });
@@ -207,6 +214,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
               });
               console.log(t, 'finalaray');
               setDropArray(t);
+              setSelectedDrop(t[0]);
             })
             .catch((e: string) => {
               setshowSpinner(false);

@@ -149,7 +149,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     //   //   setLocationDetails!(null);
     //   // }, 1000);
 
-    locationDetails && setcurrentLocation(locationDetails.city);
+    locationDetails && setcurrentLocation(locationDetails.displayName);
   }, [locationDetails]);
 
   useEffect(() => {
@@ -373,12 +373,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     // update address to context here
     getPlaceInfoByPlaceId(item.placeId)
       .then((response) => {
-        const addrComponents =
-          g(response, 'data', 'results', '0' as any, 'address_components') || [];
-        const { lat, lng } =
-          g(response, 'data', 'results', '0' as any, 'geometry', 'location')! || {};
+        const addrComponents = g(response, 'data', 'result', 'address_components') || [];
+        const { lat, lng } = g(response, 'data', 'result', 'geometry', 'location')! || {};
+
         if (addrComponents.length > 0) {
           setLocationDetails!({
+            displayName: item.name,
             latitude: lat,
             longitude: lng,
             area: [
@@ -399,7 +399,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }
       })
       .catch((error) => {
-        console.log(error);
+        console.log('saveLatlong error\n', error);
       });
   };
 
@@ -476,7 +476,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       setcurrentLocation(item.name);
                       setshowLocationpopup(false);
                       saveLatlong(item);
-                      setLocationDetails!({ city: item.name } as any);
+                      setLocationDetails!({ displayName: item.name, city: item.name } as any);
                     }}
                   >
                     {item.name}
@@ -527,7 +527,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     textTransform: 'uppercase',
                   }}
                 >
-                  {locationDetails.city && locationDetails.city.substring(0, 15)}
+                  {locationDetails.displayName && locationDetails.displayName.substring(0, 15)}
                 </Text>
               ) : null}
               <LocationOn />
