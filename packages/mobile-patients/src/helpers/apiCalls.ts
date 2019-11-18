@@ -130,6 +130,10 @@ export enum ProductCategory {
   HOT_SELLERS = '1174',
 }
 
+export interface PlaceByIdApiResponse {
+  result: PlacesApiResponse['results'][0];
+}
+
 export interface PlacesApiResponse {
   results: {
     address_components: {
@@ -584,7 +588,7 @@ export const getPlaceInfoByLatLng = (
 
 export const getPlaceInfoByPlaceId = (
   placeId: string
-): Promise<AxiosResponse<PlacesApiResponse>> => {
+): Promise<AxiosResponse<PlaceByIdApiResponse>> => {
   const url = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${googlePlacesApiKey}`;
   return Axios.get(url);
 };
