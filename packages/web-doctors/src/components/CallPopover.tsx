@@ -104,10 +104,11 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: theme.typography.fontWeightBold,
       color: "#fff",
       padding: "8px 16px",
+      margin: theme.spacing(1, 1, 0, 0),
       backgroundColor: "#fc9916",
       marginLeft: 20,
       minWidth: 168,
-      marginRight: 10,
+
       borderRadius: 10,
       boxShadow: "0 2px 4px 0 rgba(0,0,0,0.2)",
       "&:hover": {
@@ -161,7 +162,7 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 600,
       color: "#fc9916",
       backgroundColor: "#fff",
-      margin: theme.spacing(0, 1, 0, 1),
+      margin: theme.spacing(1, 1, 0, 0),
       boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.2)",
       "&:hover": {
         backgroundColor: "#fff"
@@ -336,10 +337,18 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     modalBox: {
       maxWidth: 480,
-      height: 340,
+      minHeight: 340,
       margin: "auto",
       marginTop: 88,
       backgroundColor: "#eeeeee",
+      position: "relative"
+    },
+    modalBoxConsult: {
+      maxWidth: 480,
+      minHeight: 260,
+      margin: "auto",
+      marginTop: 88,
+      backgroundColor: "#fff",
       position: "relative"
     },
     modalBoxCancel: {
@@ -392,8 +401,11 @@ const useStyles = makeStyles((theme: Theme) => {
     tabBody: {
       background: "white",
       minHeight: 80,
-      marginTop: 10,
       padding: "10px 15px 15px 15px",
+      '& h3': {
+        fontSize: 18,
+        color: '#02475b',
+      },
       "& p": {
         margin: 0,
         fontSize: "15px",
@@ -1999,7 +2011,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         disableBackdropClick
         disableEscapeKeyDown
       >
-        <Paper className={classes.modalBox}>
+        <Paper className={classes.modalBoxConsult}>
           <div className={classes.tabHeader}>
             <Button className={classes.cross}>
               <img
