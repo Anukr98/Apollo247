@@ -253,7 +253,7 @@ const SaveDiagnosticOrder: Resolver<
     const diagnosticTimings = diagnosticOrderInput.slotTimings.split('-');
     const diagnosticDate = new Date(diagnosticOrderInput.diagnosticDate);
     //console.log(diagnosticDate, format(diagnosticDate, 'dd-MMM-yyyy hh:mm'), 'diagnostic date');
-    console.log(orderLineItems, 'line items');
+    //console.log(orderLineItems, 'line items');
     const preBookingInput = [
       {
         UserName: 'ASKAPOLLO',
