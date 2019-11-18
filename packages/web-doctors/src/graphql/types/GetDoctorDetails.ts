@@ -26,6 +26,7 @@ export interface GetDoctorDetails_getDoctorDetails_consultHours {
   endTime: string;
   consultType: ConsultType;
   weekDay: WeekDay;
+  consultDuration: number | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_packages {
