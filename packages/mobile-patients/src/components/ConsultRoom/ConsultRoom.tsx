@@ -643,7 +643,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   paddingTop: 16,
                   paddingHorizontal: 20,
                   backgroundColor: theme.colors.WHITE,
-                  marginTop: 4,
                 }}
               >
                 <TouchableOpacity

@@ -139,6 +139,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length;
   const { currentPatient } = useAllCurrentPatients();
+  // const [data, setData] = useState<MedicinePageAPiResponse>();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const [currentLocation, setcurrentLocation] = useState<string>('');
+  const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
+  const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
+    []
+  );
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
+    currentPatient!
+  );
+
+  const { data: diagnosticsData, error: hError, loading: hLoading } = useQuery<getDiagnosticsData>(
+    GET_DIAGNOSTIC_DATA,
+    {
+      variables: {},
+      fetchPolicy: 'no-cache',
+    }
+  );
+  const [errorPopUp, setErrorPopUp] = useState<boolean>(false);
 
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
   const {
@@ -148,17 +169,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     locationForDiagnostics,
   } = useAppCommonData();
 
-  aphConsole.log('****INFO****\n', { locationDetails, locationForDiagnostics });
-
   const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
   const [locationError, setLocationError] = useState(false);
 
   useEffect(() => {
-    //   // Code to delete location for test purpose
-    //   // setTimeout(() => {
-    //   //   setLocationDetails!(null);
-    //   // }, 1000);
-
+    console.log(locationDetails, 'locationDetails');
     locationDetails && setcurrentLocation(locationDetails.displayName);
   }, [locationDetails]);
 
@@ -208,7 +223,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }}
           >
             <Button
-              style={{ flex: 1, marginRight: 16 }}
+              style={{
+                flex: 1,
+                marginRight: 16,
+              }}
               title={'ENTER MANUALY'}
               onPress={() => {
                 hideAphAlert!();
@@ -241,7 +259,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
           </View>
         ),
       });
-  }, []);
+  }, [locationDetails]);
 
   // useEffect(() => {
   //   locationDetails &&
@@ -261,16 +279,23 @@ export const Tests: React.FC<TestsProps> = (props) => {
   // }, [locationDetails]);
 
   useEffect(() => {
-    if (locationForDiagnostics) {
-      console.log('locationForDiagnostics\n', { locationForDiagnostics });
+    console.log(
+      'locationForDiagnosticslength',
+      locationForDiagnostics && locationForDiagnostics.cityId
+    );
+
+    if (locationForDiagnostics && locationForDiagnostics.cityId) {
       setLoading(true);
       getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
         .then(({ data }) => {
-          if (!data.status) {
-            console.log('location not found');
-            setErrorPopUp(true);
-          }
-          aphConsole.log('getTestsPackages\n', { data });
+          // if (!data.status) {
+          //   console.log('location not found');
+          //   setErrorPopUp(true);
+          // } else {
+          //   setErrorPopUp(false);
+          // }
+          console.log('getTestsPackages', data);
+          // aphConsole.log('getTestsPackages\n', { data });
           setTestPackages(g(data, 'data') || []);
         })
         .catch((e) => {
@@ -282,31 +307,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
     } else {
       setTestPackages([]);
     }
-  }, [locationForDiagnostics]);
+  }, [locationForDiagnostics && locationForDiagnostics.cityId]);
 
-  // const [data, setData] = useState<MedicinePageAPiResponse>();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<boolean>(false);
-  const [currentLocation, setcurrentLocation] = useState<string>('');
-  const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
-  const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
-    []
-  );
-  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
-    currentPatient!
-  );
-
-  const { data: diagnosticsData, error: hError, loading: hLoading } = useQuery<getDiagnosticsData>(
-    GET_DIAGNOSTIC_DATA,
-    {
-      variables: {},
-      fetchPolicy: 'no-cache',
-    }
-  );
-  const [errorPopUp, setErrorPopUp] = useState<boolean>(false);
-
-  console.log('\ndiagnosticsData\n', { diagnosticsData });
+  // console.log('\ndiagnosticsData\n', {
+  //   diagnosticsData,
+  // });
 
   // const offerBanner = (g(data, 'mainbanners') || [])[0];
   // const offerBannerImage = ''; //g(offerBanner, 'image');
@@ -320,7 +325,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
     getDiagnosticOrdersList,
     getDiagnosticOrdersListVariables
   >(GET_DIAGNOSTIC_ORDER_LIST, {
-    variables: { patientId: currentPatient && currentPatient.id },
+    variables: {
+      patientId: currentPatient && currentPatient.id,
+    },
     fetchPolicy: 'no-cache',
   });
 
@@ -329,7 +336,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
   // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
-    return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
+    return (
+      <Spinner
+        style={{
+          height,
+          position: 'relative',
+          backgroundColor: 'transparent',
+        }}
+      />
+    );
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -356,7 +371,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       main_text: string;
                     };
                   }) => {
-                    return { name: item.structured_formatting.main_text, placeId: item.place_id };
+                    return {
+                      name: item.structured_formatting.main_text,
+                      placeId: item.place_id,
+                    };
                   }
                 );
                 setlocationSearchList(address);
@@ -384,7 +402,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const saveLatlong = (item: { name: string; placeId: string }) => {
-    console.log('placeId\n', { placeId: item.placeId });
+    console.log('placeId\n', {
+      placeId: item.placeId,
+    });
     // update address to context here
     getPlaceInfoByPlaceId(item.placeId)
       .then((response) => {
@@ -491,7 +511,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       setcurrentLocation(item.name);
                       setshowLocationpopup(false);
                       saveLatlong(item);
-                      setLocationDetails!({ displayName: item.name, city: item.name } as any);
+                      setLocationDetails!({
+                        displayName: item.name,
+                        city: item.name,
+                      } as any);
                     }}
                   >
                     {item.name}
@@ -507,7 +530,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderLocation = () => {
     return (
-      <View style={{ flexDirection: 'row', right: 35 }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          right: 35,
+        }}
+      >
         {!locationDetails ? (
           <TouchableOpacity
             activeOpacity={1}
@@ -610,7 +638,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       (!ordersLoading && _orders.length > 0 && (
         <ListCard
           onPress={() => props.navigation.navigate(AppRoutes.YourOrdersTest, { isTest: true })}
-          container={{ marginBottom: 24, marginTop: 20 }}
+          container={{
+            marginBottom: 24,
+            marginTop: 20,
+          }}
           title={'Your Orders'}
           leftIcon={<TestsIcon />}
         />
@@ -684,11 +715,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
         },
       });
       return (
-        <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
+        <View
+          style={[
+            {
+              flexDirection: 'row',
+              marginBottom: 8,
+            },
+          ]}
+        >
           <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
           {!!specialPrice && (
             <Text style={styles.discountedPriceText}>
-              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
+              (
+              <Text
+                style={[
+                  {
+                    textDecorationLine: 'line-through',
+                  },
+                ]}
+              >
+                Rs. {price}
+              </Text>
+              )
             </Text>
           )}
         </View>
@@ -711,7 +759,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <Image
             placeholderStyle={styles.imagePlaceholderStyle}
             source={{ uri: imgUrl }}
-            style={{ height: 40, width: 40, marginBottom: 8 }}
+            style={{
+              height: 40,
+              width: 40,
+              marginBottom: 8,
+            }}
           />
           <View style={{ height: 47.5 }}>
             <Text
@@ -863,9 +915,24 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ]}
         onPress={onPress}
       >
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-          <View style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
-            <View style={{ width: Dimensions.get('window').width * 0.4 }}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+          }}
+        >
+          <View
+            style={{
+              flexGrow: 1,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}
+          >
+            <View
+              style={{
+                width: Dimensions.get('window').width * 0.4,
+              }}
+            >
               <Text style={theme.viewStyles.text('SB', 16, '#02475b', 1, 24)} numberOfLines={2}>
                 {title}
               </Text>
@@ -877,15 +944,37 @@ export const Tests: React.FC<TestsProps> = (props) => {
               <Text style={theme.viewStyles.text('M', 14, '#0087ba', 1, 22)}>{desc}</Text>
             </View>
             <View style={{}}>
-              <Image source={{ uri: '', height: 120, width: 120 }} style={{ borderRadius: 5 }} />
+              <Image
+                source={{
+                  uri: '',
+                  height: 120,
+                  width: 120,
+                }}
+                style={{ borderRadius: 5 }}
+              />
             </View>
           </View>
         </View>
         <Spearator style={{ marginVertical: 11.5 }} />
 
-        <View style={{ flexDirection: 'row', flex: 1 }}>
-          <View style={{ flexGrow: 1, flexDirection: 'row' }}>
-            <Text style={{ marginRight: 8, ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24) }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            flex: 1,
+          }}
+        >
+          <View
+            style={{
+              flexGrow: 1,
+              flexDirection: 'row',
+            }}
+          >
+            <Text
+              style={{
+                marginRight: 8,
+                ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24),
+              }}
+            >
               Rs. {specialPrice || price}
             </Text>
             {!!specialPrice && (
@@ -895,11 +984,26 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   textAlign: 'center',
                 }}
               >
-                (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
+                (
+                <Text
+                  style={[
+                    {
+                      textDecorationLine: 'line-through',
+                    },
+                  ]}
+                >
+                  Rs. {price}
+                </Text>
+                )
               </Text>
             )}
           </View>
-          <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
+          <View
+            style={{
+              flexGrow: 1,
+              alignItems: 'flex-end',
+            }}
+          >
             <Text style={theme.viewStyles.text('B', 13, '#fc9916', 1, 24)} onPress={onPressBookNow}>
               {isAddedToCart ? 'ADDED TO CART' : 'BOOK NOW'}
             </Text>
@@ -964,7 +1068,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       <TouchableOpacity
         activeOpacity={1}
-        style={[{ ...theme.viewStyles.card(16, 4, 10, '#fff', 10), paddingBottom: 12 }, style]}
+        style={[
+          {
+            ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
+            paddingBottom: 12,
+          },
+          style,
+        ]}
       >
         <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22)}>{name}</Text>
         <Spearator style={{ marginVertical: 7.5 }} />
@@ -974,7 +1084,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderPreventiveTests = () => {
-    const preventiveTests = Array.from({ length: 10 }).map((_) => ({
+    const preventiveTests = Array.from({
+      length: 10,
+    }).map((_) => ({
       name: 'Blood Glucose Test',
       price: 120,
     }));
@@ -1121,11 +1233,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <View style={localStyles.nameAndPriceViewStyle}>
           <Text
             numberOfLines={1}
-            style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}
+            style={{
+              ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0),
+            }}
           >
             {data.name}
           </Text>
-          <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+            }}
+          >
             Rs. {data.price}
           </Text>
         </View>
@@ -1139,7 +1257,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <Image
               placeholderStyle={styles.imagePlaceholderStyle}
               source={{ uri: data.imgUri }}
-              style={{ height: 40, width: 40 }}
+              style={{
+                height: 40,
+                width: 40,
+              }}
               resizeMode="contain"
             />
           ) : data.type == 'PACKAGE' ? (
@@ -1244,7 +1365,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
           inputStyle={styles.inputStyle}
           inputContainerStyle={[
             styles.inputContainerStyle,
-            itemsNotFound ? { borderBottomColor: '#890000' } : {},
+            itemsNotFound
+              ? {
+                  borderBottomColor: '#890000',
+                }
+              : {},
           ]}
           rightIconContainerStyle={styles.rightIconContainerStyle}
           style={styles.style}
@@ -1294,9 +1419,18 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const renderSearchSuggestions = () => {
     // if (medicineList.length == 0) return null;
     return (
-      <View style={{ width: '100%', position: 'absolute' }}>
+      <View
+        style={{
+          width: '100%',
+          position: 'absolute',
+        }}
+      >
         {searchSate == 'load' ? (
-          <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
+          <View
+            style={{
+              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+            }}
+          >
             {renderSectionLoader(266)}
           </View>
         ) : (
@@ -1362,7 +1496,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         {/* {renderOfferBanner()} */}
         {renderYourOrders()}
-        {!!(locationForDiagnostics && locationForDiagnostics.cityId) ? (
+        {(!!(locationForDiagnostics && locationForDiagnostics.cityId) && (
           <>
             {renderHotSellers()}
             {/* {renderBrowseByCondition()} */}
@@ -1370,7 +1504,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
             {renderTestsByOrgan()}
             {/* {renderPreventiveTests()} */}
           </>
-        ) : null}
+        )) || (
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, '#0087ba', 1, 24),
+              marginBottom: 20,
+              textAlign: 'center',
+            }}
+          >{`${currentPatient &&
+            currentPatient.firstName}, our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`}</Text>
+        )}
 
         {renderNeedHelp()}
       </TouchableOpacity>
@@ -1421,7 +1564,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
           ></ProfileList>
 
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>
-            <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
+            <View
+              style={{
+                backgroundColor: 'white',
+              }}
+            >
+              {renderSearchBar()}
+            </View>
             {renderSearchBarAndSuggestions()}
           </View>
           <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>
@@ -1433,7 +1582,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
             title={`Hi ${currentPatient && currentPatient.firstName},`}
             description={`Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`}
           >
-            <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <View
+              style={{
+                height: 60,
+                alignItems: 'flex-end',
+              }}
+            >
               <TouchableOpacity
                 activeOpacity={1}
                 style={styles.gotItStyles}
