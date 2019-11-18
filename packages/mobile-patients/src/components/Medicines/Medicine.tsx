@@ -928,7 +928,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
     });
 
-    const shouldEnableSearchSend = searchText.length > 2 && medicineList.length > 0;
+    const shouldEnableSearchSend = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
         activeOpacity={1}

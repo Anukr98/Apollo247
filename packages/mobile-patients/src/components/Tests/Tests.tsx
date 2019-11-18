@@ -153,8 +153,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   }, [locationDetails]);
 
   useEffect(() => {
-    locationDetails &&
-      locationDetails.city &&
+    if (locationDetails && locationDetails.city) {
       client
         .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
           query: GET_DIAGNOSTICS_CITES,
@@ -178,6 +177,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             description: 'Something went wrong.',
           });
         });
+    }
   }, [locationDetails]);
 
   useEffect(() => {
@@ -1172,7 +1172,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
     });
 
-    const shouldEnableSearchSend = searchText.length > 2 && medicineList.length > 0;
+    const shouldEnableSearchSend = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
         activeOpacity={1}

@@ -458,7 +458,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             id: `${orderDetails.displayId}`,
             estimatedAmount: orderDetails.totalPrice,
             medicineOrderLineItems: (orderDetails.diagnosticOrderLineItems || []).map((item) => ({
-              medicineName: `${item!.itemId || ''}`,
+              medicineName: `${(item!.diagnostics || { itemName: '' }).itemName}`,
               price: item!.price,
               quantity: item!.quantity,
             })) as any,
