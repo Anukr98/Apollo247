@@ -6,9 +6,7 @@ import { DiagnosticsRepository } from 'profiles-service/repositories/diagnostics
 import {
   DiagnosticOrders,
   DiagnosticOrderLineItems,
-  PatientAddress,
   DIAGNOSTIC_ORDER_STATUS,
-  TEST_COLLECTION_TYPE,
 } from 'profiles-service/entities';
 import { Resolver } from 'api-gateway';
 import { AphError } from 'AphError';
@@ -33,6 +31,9 @@ export const saveDiagnosticOrderTypeDefs = gql`
     patientId: ID!
     patientAddressId: ID!
     city: String!
+    cityId: String!
+    state: String!
+    stateId: String!
     slotTimings: String!
     employeeSlotId: Int!
     diagnosticEmployeeCode: String!
@@ -112,6 +113,9 @@ type DiagnosticOrderInput = {
   patientId: string;
   patientAddressId: string;
   city: string;
+  cityId: string;
+  state: string;
+  stateId: string;
   slotTimings: string;
   employeeSlotId: number;
   diagnosticEmployeeCode: string;
@@ -394,9 +398,9 @@ const SaveDiagnosticOrder: Resolver<
             locality_id: '0',
             house_no: '',
             locality: '',
-            city_id: '9',
-            state_id: '1',
-            state: 'Telangana',
+            city_id: diagnosticOrderInput.cityId.toString(),
+            state_id: diagnosticOrderInput.stateId.toString(),
+            state: diagnosticOrderInput.state,
             patient_id_proof: '',
             patient_id_proof_no: '',
             lab_reference_no: '21',
