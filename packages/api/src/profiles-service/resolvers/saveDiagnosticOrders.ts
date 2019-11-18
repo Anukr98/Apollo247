@@ -238,13 +238,14 @@ const SaveDiagnosticOrder: Resolver<
   if (saveOrder) {
     orderId = saveOrder.id;
     await diagnosticOrderInput.items.map(async (item) => {
+      promises.push(getItemDetails(item.itemId, item.quantity));
       const details = await diagnosticRepo.findDiagnosticById(item.itemId);
       const orderItemAttrs: Partial<DiagnosticOrderLineItems> = {
         diagnosticOrders: saveOrder,
         diagnostics: details,
         ...item,
       };
-      promises.push(getItemDetails(item.itemId, item.quantity));
+
       await diagnosticOrdersRepo.saveDiagnosticOrderLineItem(orderItemAttrs);
       //console.log(lineItemOrder);
     });
@@ -325,10 +326,10 @@ const SaveDiagnosticOrder: Resolver<
       headers: { 'Content-Type': 'application/json' },
     });
 
-    //console.log(preBookingResp, 'pre booking resp');
+    console.log(preBookingResp, 'pre booking resp');
     const textRes = await preBookingResp.text();
     const preBookResp: DiagnosticPreBookingResult = JSON.parse(textRes);
-    //console.log(preBookResp, preBookResp.PreBookingID, 'text response');
+    console.log(preBookResp, preBookResp.PreBookingID, 'text response');
     const hubDetails = await diagnosticRepo.getHubDetails(
       diagnosticOrderInput.diagnosticBranchCode
     );
