@@ -59,6 +59,7 @@ export const saveDiagnosticOrderTypeDefs = gql`
     errorCode: Int
     errorMessage: String
     orderId: String
+    displayId: String
   }
 
   type DiagnosticOrdersResult {
@@ -141,6 +142,7 @@ type SaveDiagnosticOrderResult = {
   errorCode: number;
   errorMessage: string;
   orderId: string;
+  displayId: string;
 };
 
 type DiagnosticOrdersResult = {
@@ -163,7 +165,8 @@ const SaveDiagnosticOrder: Resolver<
 > = async (parent, { diagnosticOrderInput }, { profilesDb }) => {
   let errorCode = 0,
     errorMessage = '',
-    orderId = '';
+    orderId = '',
+    displayId = '';
 
   if (!diagnosticOrderInput.items) {
     throw new AphError(AphErrorMessages.CART_EMPTY_ERROR, undefined, {});
@@ -242,6 +245,7 @@ const SaveDiagnosticOrder: Resolver<
   }
   if (saveOrder) {
     orderId = saveOrder.id;
+    displayId = saveOrder.displayId.toString();
     await diagnosticOrderInput.items.map(async (item) => {
       promises.push(getItemDetails(item.itemId, item.quantity));
       const details = await diagnosticRepo.findDiagnosticById(item.itemId);
@@ -356,7 +360,7 @@ const SaveDiagnosticOrder: Resolver<
         {
           processDefinitionCode: 'home_collection',
           processData: {
-            time_slot: diagnosticTimings[0].toString() + ':00',
+            time_slot: diagnosticTimings[0].trim().toString() + ':00',
             first_name: patientDetails.firstName,
             last_name: patientDetails.lastName,
             dob: patientDob,
@@ -494,6 +498,7 @@ const SaveDiagnosticOrder: Resolver<
     errorCode,
     errorMessage,
     orderId,
+    displayId,
   };
 };
 
