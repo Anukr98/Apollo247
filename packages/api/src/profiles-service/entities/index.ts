@@ -62,6 +62,7 @@ export enum MEDICINE_ORDER_STATUS {
 }
 
 export enum UPLOAD_FILE_TYPES {
+  JPG = 'JPG',
   PNG = 'PNG',
   JPEG = 'JPEG',
   PDF = 'PDF',
@@ -129,6 +130,7 @@ export enum MedicalRecordType {
 export enum DIAGNOSTIC_ORDER_STATUS {
   PICKUP_REQUESTED = 'PICKUP_REQUESTED',
   PICKUP_CONFIRMED = 'PICKUP_CONFIRMED',
+  ORDER_FAILED = 'ORDER_FAILED',
 }
 
 //medicine orders starts
@@ -1057,6 +1059,12 @@ export class Diagnostics extends BaseEntity {
     (diagnosticHotSellers) => diagnosticHotSellers.diagnostics
   )
   diagnosticHotSellers: DiagnosticHotSellers[];
+
+  @OneToMany(
+    (type) => DiagnosticOrderLineItems,
+    (diagnosticOrderLineItems) => diagnosticOrderLineItems.diagnosticOrders
+  )
+  diagnosticOrderLineItems: DiagnosticOrderLineItems[];
 }
 
 // Diagnostic orders
@@ -1165,6 +1173,9 @@ export class DiagnosticOrderLineItems extends BaseEntity {
     (diagnosticOrders) => diagnosticOrders.diagnosticOrderLineItems
   )
   diagnosticOrders: DiagnosticOrders;
+
+  @ManyToOne((type) => Diagnostics, (diagnostics) => diagnostics.diagnosticOrderLineItems)
+  diagnostics: Diagnostics;
 
   @Column()
   itemId: number;

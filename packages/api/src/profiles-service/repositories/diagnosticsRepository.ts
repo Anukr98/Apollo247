@@ -25,7 +25,15 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
       .getRawMany();
   }
 
+  getHubDetails(route: string) {
+    return DiagnosticPincodeHubs.findOne({ where: { route } });
+  }
+
   findHubByZipCode(pincode: string) {
     return DiagnosticPincodeHubs.findOne({ where: { pincode } });
+  }
+
+  findDiagnosticById(itemId: number) {
+    return this.findOne({ where: { itemId } });
   }
 }
