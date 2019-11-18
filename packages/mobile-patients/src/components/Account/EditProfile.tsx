@@ -12,6 +12,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  AsyncStorage,
 } from 'react-native';
 import { Text } from 'react-native-elements';
 import { NavigationScreenProps } from 'react-navigation';
@@ -365,6 +366,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       .then((data) => {
         getPatientApiCall();
         props.navigation.goBack();
+        if (relation!.key === Relation.ME && profileData.relation !== Relation.ME) {
+          setCurrentPatientId(profileData!.id);
+          AsyncStorage.setItem('selectUserId', profileData!.id);
+        }
         // props.navigation.pop(2);
         // props.navigation.push(AppRoutes.ManageProfile, {
         //   mobileNumber: props.navigation.getParam('mobileNumber'),
@@ -399,6 +404,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       .then((data) => {
         getPatientApiCall();
         props.navigation.goBack();
+        if (relation!.key === Relation.ME) {
+          setCurrentPatientId(profileData!.id);
+          AsyncStorage.setItem('selectUserId', profileData!.id);
+        }
         // isPoptype
         //   ? (props.navigation.goBack(), getPatientApiCall())
         //   : (props.navigation.pop(2),

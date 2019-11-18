@@ -43,29 +43,34 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={() => {
             setLoading(true);
-            pinCodeServiceabilityApi(selectedPinCode)
-              .then(({ data: { Availability } }) => {
-                setLoading(false);
-                if (Availability) {
-                  setSelectedAddressId && setSelectedAddressId(selectedId);
-                  props.navigation.goBack();
-                  CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Address selected');
-                } else {
-                  Alert.alert(
-                    'Alert',
-                    'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
-                  );
-                  CommonLogEvent(
-                    AppRoutes.SelectDeliveryAddress,
-                    'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
-                  );
-                  setSelectedAddressId && setSelectedAddressId('');
-                }
-              })
-              .catch((e) => {
-                setLoading(false);
-                Alert.alert('Alert', 'Unable to check if the address is serviceable or not.');
-              });
+            if (isTest) {
+              setSelectedAddressId && setSelectedAddressId(selectedId);
+              props.navigation.goBack();
+            } else {
+              pinCodeServiceabilityApi(selectedPinCode)
+                .then(({ data: { Availability } }) => {
+                  setLoading(false);
+                  if (Availability) {
+                    setSelectedAddressId && setSelectedAddressId(selectedId);
+                    props.navigation.goBack();
+                    CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Address selected');
+                  } else {
+                    Alert.alert(
+                      'Alert',
+                      'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
+                    );
+                    CommonLogEvent(
+                      AppRoutes.SelectDeliveryAddress,
+                      'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
+                    );
+                    setSelectedAddressId && setSelectedAddressId('');
+                  }
+                })
+                .catch((e) => {
+                  setLoading(false);
+                  Alert.alert('Alert', 'Unable to check if the address is serviceable or not.');
+                });
+            }
           }}
         />
       </StickyBottomComponent>
