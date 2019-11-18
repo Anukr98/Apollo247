@@ -42,6 +42,7 @@ import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
 import moment from 'moment';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
+import { AppConfig } from '../../strings/AppConfig';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -221,7 +222,7 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           });
       }
 
-      const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+      const key = AppConfig.Configuration.GOOGLE_API_KEY;
 
       const destination = selectedClinic
         ? `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}` //`${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}`

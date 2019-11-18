@@ -297,11 +297,6 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
     } = diagnosticSlot || {};
     setShowSpinner(true);
 
-    (locationForDiagnostics || {}).city!;
-    (locationForDiagnostics || {}).cityId!;
-    (locationForDiagnostics || {}).state!;
-    (locationForDiagnostics || {}).stateId!;
-
     const orderInfo: DiagnosticOrderInput = {
       // for home collection order
       diagnosticBranchCode: CentreCode ? '' : diagnosticBranchCode!,
@@ -310,7 +305,10 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       slotTimings: slotStartTime && slotEndTime ? `${slotStartTime}-${slotEndTime}` : '',
       diagnosticDate: moment(date).format('YYYY-MM-DD'),
       patientAddressId: deliveryAddressId!,
-      city: city || '',
+      city: (locationForDiagnostics || {}).city!,
+      state: (locationForDiagnostics || {}).state!,
+      stateId: (locationForDiagnostics || {}).stateId!,
+      cityId: (locationForDiagnostics || {}).cityId!,
       // for clinic order
       centerName: CentreName || '',
       centerCode: CentreCode || '',
@@ -365,7 +363,12 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       })
       .catch((error) => {
         setShowSpinner(false);
-        handleGraphQlError(error);
+        showAphAlert!({
+          unDismissable: true,
+          title: `Uh oh.. :(`,
+          description: `Order failed, something went wrong.`,
+        });
+        // handleGraphQlError(error);
       });
   };
 

@@ -862,9 +862,10 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           style={{
             ...theme.viewStyles.cardViewStyle,
             marginHorizontal: 20,
-            marginTop: 4,
+            // marginTop: 4,
             marginBottom: 12,
             padding: 16,
+            marginTop: 16,
           }}
         >
           <View style={styles.rowSpaceBetweenStyle}>
