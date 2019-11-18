@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
         borderRadius: 45,
       },
       android: {
-        borderRadius: 500,
+        borderRadius: 100,
       },
     }),
     position: 'absolute',
@@ -428,24 +428,24 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         onClickClose={() => {
           setUploadVisible(false);
         }}
-        isProfileImage={true}
         onResponse={(type, response) => {
           console.log('profile data', type, response);
-          const res = response[0] || response;
-          client
-            .mutate<uploadFile, uploadFileVariables>({
-              mutation: UPLOAD_FILE,
-              fetchPolicy: 'no-cache',
-              variables: {
-                fileType: res.fileType,
-                base64FileInput: res.base64,
-              },
-            })
-            .then((data) => {
-              console.log(data);
-              data!.data!.uploadFile && setPhotoUrl(data!.data!.uploadFile!.filePath!);
-              setUploadVisible(false);
-            });
+          response.map((item) =>
+            client
+              .mutate<uploadFile, uploadFileVariables>({
+                mutation: UPLOAD_FILE,
+                fetchPolicy: 'no-cache',
+                variables: {
+                  fileType: item.fileType,
+                  base64FileInput: item.base64,
+                },
+              })
+              .then((data) => {
+                console.log(data);
+                data!.data!.uploadFile && setPhotoUrl(data!.data!.uploadFile!.filePath!);
+                setUploadVisible(false);
+              })
+          );
           setUploadVisible(false);
         }}
       />
@@ -620,7 +620,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           alignSelf: 'flex-start',
         }}
         bottomPadding={{ paddingBottom: 20 }}
-        onPress={(selectedRelation) => onRelationSelect(selectedRelation, profileData!.relation!)}
+        onPress={(selectedRelation) =>
+          onRelationSelect(selectedRelation, (profileData && profileData.relation!) || '')
+        }
       >
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
           <View style={styles.placeholderViewStyle}>

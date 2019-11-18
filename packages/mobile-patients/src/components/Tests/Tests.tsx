@@ -80,8 +80,9 @@ import {
   getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
 } from '../../graphql/types/getDiagnosticsData';
-import { TEST_COLLECTION_TYPE } from '../../graphql/types/globalTypes';
+import { TEST_COLLECTION_TYPE, WeekDay } from '../../graphql/types/globalTypes';
 import { TestPackageForDetails } from './TestDetails';
+import { BottomPopUp } from '../ui/BottomPopUp';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -119,6 +120,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#00b38e',
     marginTop: 5,
     marginHorizontal: 5,
+  },
+  gotItStyles: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
   },
 });
 
@@ -256,6 +266,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
       setLoading(true);
       getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
         .then(({ data }) => {
+          if (!data.status) {
+            console.log('location not found');
+            setErrorPopUp(true);
+          }
           aphConsole.log('getTestsPackages\n', { data });
           setTestPackages(g(data, 'data') || []);
         })
@@ -290,6 +304,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       fetchPolicy: 'no-cache',
     }
   );
+  const [errorPopUp, setErrorPopUp] = useState<boolean>(false);
 
   console.log('\ndiagnosticsData\n', { diagnosticsData });
 
@@ -1046,6 +1061,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
     setSearchText(_searchText);
     if (!(_searchText && _searchText.length > 2)) {
       setMedicineList([]);
+      console.log('onSearchMedicine');
       return;
     }
     setsearchSate('load');
@@ -1346,7 +1362,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       >
         {/* {renderOfferBanner()} */}
         {renderYourOrders()}
-        {(!!(locationForDiagnostics && locationForDiagnostics.cityId) && (
+        {!!(locationForDiagnostics && locationForDiagnostics.cityId) ? (
           <>
             {renderHotSellers()}
             {/* {renderBrowseByCondition()} */}
@@ -1354,16 +1370,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             {renderTestsByOrgan()}
             {/* {renderPreventiveTests()} */}
           </>
-        )) || (
-          <Text
-            style={{
-              ...theme.viewStyles.text('M', 16, '#0087ba', 1, 24),
-              marginBottom: 20,
-              textAlign: 'center',
-            }}
-          >{`${currentPatient &&
-            currentPatient.firstName}, our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`}</Text>
-        )}
+        ) : null}
 
         {renderNeedHelp()}
       </TouchableOpacity>
@@ -1421,6 +1428,24 @@ export const Tests: React.FC<TestsProps> = (props) => {
             {renderSections()}
           </View>
         </ScrollView>
+        {errorPopUp && (
+          <BottomPopUp
+            title={`Hi ${currentPatient && currentPatient.firstName},`}
+            description={`Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`}
+          >
+            <View style={{ height: 60, alignItems: 'flex-end' }}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.gotItStyles}
+                onPress={() => {
+                  setErrorPopUp(false);
+                }}
+              >
+                <Text style={styles.gotItTextStyles}>Okay, got it</Text>
+              </TouchableOpacity>
+            </View>
+          </BottomPopUp>
+        )}
       </SafeAreaView>
       {renderPopup()}
       {displayAddProfile && (

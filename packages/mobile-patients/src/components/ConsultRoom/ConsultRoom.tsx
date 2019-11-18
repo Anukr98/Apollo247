@@ -212,7 +212,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const startDoctor = string.home.startDoctor;
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
-  const [showPopUp, setshowPopUp] = useState<boolean>(true);
+  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [userName, setuserName] = useState<string>('');
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
@@ -243,6 +243,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {
         setshowPopUp(false);
+      } else {
+        setshowPopUp(true);
       }
     }
     fetchData();
