@@ -63,6 +63,7 @@ export const rescheduleAppointmentTypeDefs = gql`
   type RescheduleAppointmentResult {
     rescheduleAppointment: RescheduleAppointment
     rescheduleCount: Int
+    doctorRescheduleCount: Int
   }
 
   type BookRescheduleAppointmentResult {
@@ -97,6 +98,7 @@ export const rescheduleAppointmentTypeDefs = gql`
 type RescheduleAppointmentResult = {
   rescheduleAppointment: RescheduleAppointment;
   rescheduleCount: number;
+  doctorRescheduleCount: number;
 };
 
 type RescheduleAppointment = {
@@ -255,6 +257,7 @@ const initiateRescheduleAppointment: Resolver<
   return {
     rescheduleAppointment,
     rescheduleCount: appointment.rescheduleCount,
+    doctorRescheduleCount: appointment.rescheduleCountByDoctor,
   };
 };
 
@@ -269,7 +272,7 @@ const bookRescheduleAppointment: Resolver<
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const apptDetails = await appointmentRepo.findById(bookRescheduleAppointmentInput.appointmentId);
-  let finalAppointmentId = bookRescheduleAppointmentInput.appointmentId;
+  const finalAppointmentId = bookRescheduleAppointmentInput.appointmentId;
   if (!apptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -309,18 +312,38 @@ const bookRescheduleAppointment: Resolver<
     bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT &&
     apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT
   ) {
-    //cancel and book new appt
+    //cancel appt
     appointmentRepo.cancelAppointment(
       bookRescheduleAppointmentInput.appointmentId,
       REQUEST_ROLES.PATIENT,
       apptDetails.patientId,
-      ''
+      'MAX_RESCHEDULES_EXCEEDED'
     );
   } else {
     await appointmentRepo.rescheduleAppointment(
       bookRescheduleAppointmentInput.appointmentId,
       bookRescheduleAppointmentInput.newDateTimeslot,
       apptDetails.rescheduleCount + 1,
+      APPOINTMENT_STATE.RESCHEDULE
+    );
+  }
+
+  if (
+    bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR &&
+    apptDetails.rescheduleCountByDoctor == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR
+  ) {
+    //cancel appointment
+    appointmentRepo.cancelAppointment(
+      bookRescheduleAppointmentInput.appointmentId,
+      REQUEST_ROLES.DOCTOR,
+      apptDetails.doctorId,
+      'MAX_RESCHEDULES_EXCEEDED'
+    );
+  } else {
+    await appointmentRepo.rescheduleAppointment(
+      bookRescheduleAppointmentInput.appointmentId,
+      bookRescheduleAppointmentInput.newDateTimeslot,
+      apptDetails.rescheduleCountByDoctor + 1,
       APPOINTMENT_STATE.RESCHEDULE
     );
   }
