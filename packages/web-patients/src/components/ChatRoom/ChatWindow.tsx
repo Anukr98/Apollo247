@@ -404,8 +404,8 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
   const patientId = currentUserId;
   const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: process.env.SUBSCRIBE_KEY,
-    publishKey: process.env.PUBLISH_KEY,
+    subscribeKey: process.env.SUBSCRIBE_KEY || "",
+    publishKey: process.env.PUBLISH_KEY || "",
     ssl: true
   };
 
