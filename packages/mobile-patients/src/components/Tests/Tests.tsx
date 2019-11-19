@@ -13,6 +13,7 @@ import {
   NotificationIcon,
   SearchSendIcon,
   TestsIcon,
+  ShieldIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -1356,6 +1357,34 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
+  const renderBanner = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: theme.colors.APP_GREEN,
+          width: '100%',
+          paddingVertical: 16,
+          paddingHorizontal: 20,
+          flexDirection: 'row',
+        }}
+      >
+        <ShieldIcon />
+        <View
+          style={{
+            borderRightWidth: 1,
+            borderRightColor: 'rgba(2, 71, 91, 0.5)',
+            marginHorizontal: 19.5,
+          }}
+        />
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <Text style={theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 22)}>
+            Most trusted diagnostics from the comfort of your home!
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   const renderSearchSuggestionItemView = (
     data: ListRenderItemInfo<searchDiagnostics_searchDiagnostics_diagnostics>
   ) => {
@@ -1544,6 +1573,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             {renderSearchBarAndSuggestions()}
           </View>
           <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>
+            {renderBanner()}
             {renderSections()}
           </View>
         </ScrollView>

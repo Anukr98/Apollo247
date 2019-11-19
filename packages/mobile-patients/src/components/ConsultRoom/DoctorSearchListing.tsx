@@ -906,6 +906,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <TabsComponent
           style={{
             backgroundColor: theme.colors.CARD_BG,
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
+            shadowOffset: { width: 0, height: 1 },
+            shadowRadius: 1.0,
           }}
           data={tabs}
           onChange={(selectedTab: string) => {
