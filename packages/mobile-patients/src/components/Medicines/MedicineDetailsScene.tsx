@@ -559,7 +559,18 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     { fontWeight: 'bold' },
                   ]}
                 >
-                  Rs. {medicineDetails.price}
+                  <Text
+                    style={[
+                      {
+                        textDecorationLine: 'line-through',
+                        color: '#01475b',
+                        opacity: 0.6,
+                      },
+                    ]}
+                  >
+                    (Rs. {medicineDetails.price})
+                  </Text>{' '}
+                  &nbsp; Rs. {medicineDetails.special_price}
                 </Text>
               </View>
             </View>
