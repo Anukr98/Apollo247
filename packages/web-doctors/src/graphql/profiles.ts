@@ -675,6 +675,7 @@ export const GET_CASESHEET = gql`
           status
           appointmentState
           displayId
+          rescheduleCount
         }
         createdDoctorProfile {
           doctorType

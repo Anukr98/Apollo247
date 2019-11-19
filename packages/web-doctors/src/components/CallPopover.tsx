@@ -402,9 +402,9 @@ const useStyles = makeStyles((theme: Theme) => {
       background: "white",
       minHeight: 80,
       padding: "10px 15px 15px 15px",
-      '& h3': {
+      "& h3": {
         fontSize: 18,
-        color: '#02475b',
+        color: "#02475b"
       },
       "& p": {
         margin: 0,
@@ -611,7 +611,6 @@ const unSubscribeBrowserButtonsListener = () => {
 type Params = { id: string; patientId: string };
 export const CallPopover: React.FC<CallPopoverProps> = props => {
   const classes = useStyles();
-  const rescheduleCount = 3;
   const params = useParams<Params>();
   const useAuthContext = () => useContext<AuthContextProps>(AuthContext);
   const { currentUserType } = useAuthContext();
@@ -677,7 +676,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
       }
     }, 1000);
   };
-
+  //console.log((appointmentInfo && appointmentInfo.rescheduleCount) || 0);
   const noShowAction = () => {
     client
       .mutate<EndAppointmentSession, EndAppointmentSessionVariables>({
@@ -1693,7 +1692,11 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                     <li
                       onClick={() => {
                         handleCloseThreeDots();
-                        if (rescheduleCount > 2) {
+                        const rescheduleCount =
+                          (appointmentInfo &&
+                            appointmentInfo.rescheduleCount) ||
+                          0;
+                        if (rescheduleCount >= 3) {
                           setIsCancelDialogOpen(true);
                         } else {
                           setIsCancelDialogOpen(false);
