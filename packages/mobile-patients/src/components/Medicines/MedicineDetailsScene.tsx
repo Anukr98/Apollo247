@@ -1194,7 +1194,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <TouchableOpacity
               activeOpacity={1}
               onPress={() =>
-                props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true })
+                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
               }
               style={{ right: 20 }}
             >
