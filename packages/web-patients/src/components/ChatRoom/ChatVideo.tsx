@@ -140,7 +140,6 @@ interface ConsultProps {
 }
 export const ChatVideo: React.FC<ConsultProps> = props => {
   const classes = useStyles();
-  const apikey = process.env.OPENTOK_KEY;
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(
@@ -165,7 +164,7 @@ export const ChatVideo: React.FC<ConsultProps> = props => {
 
         {isCall && (
           <OTSession
-            apiKey={apikey}
+            apiKey={process.env.OPENTOK_KEY}
             sessionId={props.sessionId}
             token={props.token}
             eventHandlers={{

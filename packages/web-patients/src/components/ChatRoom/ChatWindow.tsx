@@ -400,18 +400,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = props => {
     jdThankyou: "^^#jdThankyou"
   };
 
-  const subscribekey: string = process.env.SUBSCRIBE_KEY
-    ? process.env.SUBSCRIBE_KEY
-    : "";
-  const publishkey: string = process.env.PUBLISH_KEY
-    ? process.env.PUBLISH_KEY
-    : "";
   const doctorId = props.doctorId;
   const patientId = currentUserId;
   const channel = props.appointmentId;
   const config: Pubnub.PubnubConfig = {
-    subscribeKey: subscribekey,
-    publishKey: publishkey,
+    subscribeKey: process.env.SUBSCRIBE_KEY,
+    publishKey: process.env.PUBLISH_KEY,
     ssl: true
   };
 
