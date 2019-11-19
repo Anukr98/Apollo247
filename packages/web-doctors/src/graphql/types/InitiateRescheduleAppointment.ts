@@ -20,7 +20,6 @@ export interface InitiateRescheduleAppointment_initiateRescheduleAppointment {
   __typename: "RescheduleAppointmentResult";
   rescheduleAppointment: InitiateRescheduleAppointment_initiateRescheduleAppointment_rescheduleAppointment | null;
   rescheduleCount: number | null;
-  cancelled: boolean | null;
 }
 
 export interface InitiateRescheduleAppointment {
