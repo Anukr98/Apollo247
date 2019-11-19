@@ -108,8 +108,8 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
           <CapsuleView
             title={
               address.addressType === PATIENT_ADDRESS_TYPE.OTHER
-                ? address.otherAddressType
-                : address.addressType
+                ? address.otherAddressType!
+                : address.addressType!
             }
             style={{
               position: 'absolute',

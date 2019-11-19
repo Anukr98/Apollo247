@@ -72,6 +72,26 @@ export interface Store {
   message: string;
 }
 
+export interface Clinic {
+  CentreType: string;
+  CentreCode: string;
+  CentreName: string;
+  MobileNo: string;
+  BusinessZone: string;
+  State: string;
+  City: string;
+  Zone: string;
+  Locality: string;
+  IsNabl: boolean;
+  IsCap: boolean;
+}
+
+export interface ClinicDetailsResponse {
+  Message: string;
+  Status: boolean;
+  data: Clinic[];
+}
+
 export interface GetDeliveryTimeResponse {
   tat: {
     artCode: string;
@@ -96,7 +116,10 @@ interface InventoryCheckApiResponse {
   };
 }
 
-type GooglePlacesType =
+export type GooglePlacesType =
+  | 'route'
+  | 'sublocality_level_2'
+  | 'sublocality_level_1'
   | 'postal_code'
   | 'locality'
   | 'administrative_area_level_2'
@@ -107,13 +130,34 @@ export enum ProductCategory {
   HOT_SELLERS = '1174',
 }
 
-interface PlacesApiResponse {
+export interface PlaceByIdApiResponse {
+  result: PlacesApiResponse['results'][0];
+}
+
+export interface PlacesApiResponse {
   results: {
     address_components: {
       long_name: string;
       short_name: string;
       types: GooglePlacesType[];
     }[];
+    formatted_address: string;
+    geometry: {
+      location: {
+        lat: number;
+        lng: number;
+      };
+      viewport: {
+        northeast: {
+          lat: number;
+          lng: number;
+        };
+        southwest: {
+          lat: number;
+          lng: number;
+        };
+      };
+    };
   }[];
 }
 
@@ -143,6 +187,41 @@ export interface MedicinePageAPiResponse {
   shop_by_category: MedicinePageSection[];
   shop_by_brand: MedicinePageSection[];
   hot_sellers?: { products: MedicineProduct[] };
+}
+
+export interface PackageInclusion {
+  TestInclusion: string;
+  SampleRemarks: string;
+  SampleTypeName: string;
+  TestParameters: string;
+  TestName?: string; // getting TestInclusion value in TestName from API
+}
+
+export interface TestPackage {
+  ItemID: string;
+  ItemCode: string;
+  ItemName: string;
+  ItemAliasName: string;
+  Rate: number;
+  LabName: string;
+  LabCode: string;
+  Panel_ID: number;
+  FromAgeInDays: number;
+  ToAgeInDays: number;
+  Gender: string;
+  PackageInClussion: PackageInclusion[];
+}
+
+export interface TestsPackageResponse {
+  status: boolean;
+  message: string;
+  data: TestPackage[];
+}
+
+export interface GetPackageDataResponse {
+  status: boolean;
+  message: string;
+  data: PackageInclusion[];
 }
 
 /*
@@ -378,6 +457,18 @@ export const searchPickupStoresApi = async (
   );
 };
 
+export const searchClinicApi = async (): Promise<AxiosResponse<ClinicDetailsResponse>> => {
+  return Axios.post(
+    AppConfig.Configuration.GET_CLINICS[0],
+    {
+      ...TestApiCredentials,
+    },
+    {
+      headers: {},
+    }
+  );
+};
+
 export const pinCodeServiceabilityApi = (
   pinCode: string
 ): Promise<AxiosResponse<{ Availability: boolean }>> => {
@@ -478,11 +569,32 @@ export const getMedicinePageProducts = (): Promise<AxiosResponse<MedicinePageAPi
   );
 };
 
+const googlePlacesApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
+
 export const getPlaceInfoByPincode = (
   pincode: string
 ): Promise<AxiosResponse<PlacesApiResponse>> => {
-  const apiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${apiKey}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${pincode}&key=${googlePlacesApiKey}`;
+  return Axios.get(url);
+};
+
+export const getPlaceInfoByLatLng = (
+  lat: number,
+  lng: number
+): Promise<AxiosResponse<PlacesApiResponse>> => {
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${googlePlacesApiKey}`;
+  return Axios.get(url);
+};
+
+export const getPlaceInfoByPlaceId = (
+  placeId: string
+): Promise<AxiosResponse<PlaceByIdApiResponse>> => {
+  const url = `https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${googlePlacesApiKey}`;
+  return Axios.get(url);
+};
+
+export const autoCompletePlaceSearch = (searchText: string): Promise<AxiosResponse<any>> => {
+  const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${googlePlacesApiKey}`;
   return Axios.get(url);
 };
 
@@ -517,5 +629,37 @@ export const getAllBrands = (): Promise<AxiosResponse<BrandsResponse>> => {
     headers: {
       Authorization: config.ALL_BRANDS[1],
     },
+  });
+};
+
+const TestApiCredentials = {
+  UserName: 'ASKAPOLLO',
+  Password: '3HAQbAb9wrsykr8TMLnV',
+  InterfaceClient: 'ASKAPOLLO',
+};
+
+export const getTestsPackages = (
+  CityID: string,
+  StateID: string
+): Promise<AxiosResponse<TestsPackageResponse>> => {
+  return Axios.post(
+    config.GET_TEST_PACKAGES[0],
+    {
+      ...TestApiCredentials,
+      StateID,
+      CityID,
+    },
+    {
+      headers: {},
+    }
+  );
+};
+
+export const getPackageData = (
+  currentItemId: string
+): Promise<AxiosResponse<GetPackageDataResponse>> => {
+  return Axios.post(config.GET_PACKAGE_DATA[0], {
+    ...TestApiCredentials,
+    ItemID: currentItemId,
   });
 };

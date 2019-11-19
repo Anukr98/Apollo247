@@ -128,16 +128,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [isfollowcount, setIsfollowucount] = useState<number>(0);
-  const [userName, setuserName] = useState<string | number>('');
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   useEffect(() => {
-    let userName =
-      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
-    userName = userName.toLowerCase();
-    setuserName(userName);
     currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       getPatientApiCall();
@@ -235,7 +230,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         .catch((error) => {
           loading && setLoading(false);
           console.log('Error occured', { error });
-          Alert.alert('Error', error.message);
+          //Alert.alert('Error', error.message);
         });
     },
     [currentPatient]
@@ -306,6 +301,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         </View>
         <View>
           <ProfileList
+            navigation={props.navigation}
             saveUserChange={true}
             childView={
               <View
@@ -317,9 +313,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                   backgroundColor: theme.colors.WHITE,
                 }}
               >
-                <Text style={styles.hiTextStyle}>hi</Text>
+                <Text style={styles.hiTextStyle}>{'hi'}</Text>
                 <View>
-                  <Text style={styles.nameTextStyle}>{userName}</Text>
+                  <Text style={styles.nameTextStyle}>
+                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                  </Text>
                   <View style={styles.seperatorStyle} />
                 </View>
                 <View style={{ paddingTop: 15 }}>
@@ -329,7 +327,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             }
             selectedProfile={profile}
             setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-            navigation={props.navigation}
           ></ProfileList>
           {/* <MaterialMenu
             onPress={(item) => {

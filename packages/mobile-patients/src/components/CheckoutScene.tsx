@@ -519,10 +519,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '66.66%' }}
-          title={`PAY RS. ${grandTotal.toPrecision()}`}
+          title={`PAY RS. ${grandTotal.toFixed(2)}`}
           onPress={() => {
             try {
-              CommonLogEvent(AppRoutes.CheckoutScene, `PAY RS. ${grandTotal.toPrecision()}`);
+              CommonLogEvent(AppRoutes.CheckoutScene, `PAY RS. ${grandTotal.toFixed(2)}`);
             } catch (error) {}
             initiateOrder();
           }}

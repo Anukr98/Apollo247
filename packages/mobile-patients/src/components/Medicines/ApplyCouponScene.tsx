@@ -11,12 +11,16 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { GET_COUPONS } from '../../graphql/profiles';
-import { getCoupons, getCoupons_getCoupons_coupons } from '../../graphql/types/getCoupons';
-import { g, handleGraphQlError } from '../../helpers/helperFunctions';
-import { Spinner } from '../ui/Spinner';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '../NavigatorContainer';
+import { GET_COUPONS } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getCoupons,
+  getCoupons_getCoupons_coupons,
+} from '@aph/mobile-patients/src/graphql/types/getCoupons';
+import { g, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {
@@ -85,9 +89,12 @@ const styles = StyleSheet.create({
 export interface ApplyCouponSceneProps extends NavigationScreenProps {}
 
 export const ApplyCouponScene: React.FC<ApplyCouponSceneProps> = (props) => {
+  const isTest = props.navigation.getParam('isTest');
   const [couponText, setCouponText] = useState<string>('');
   const [isValidCoupon, setValidCoupon] = useState<boolean>(false);
-  const { setCoupon, coupon: cartCoupon, cartTotal } = useShoppingCart();
+  const { setCoupon, coupon: cartCoupon, cartTotal } = isTest
+    ? useDiagnosticsCart()
+    : useShoppingCart();
   const [couponList, setCouponList] = useState<(getCoupons_getCoupons_coupons | null)[]>([]);
   const client = useApolloClient();
   const [loading, setLoading] = useState<boolean>(true);

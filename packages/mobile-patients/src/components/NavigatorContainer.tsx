@@ -50,9 +50,19 @@ import { ShopByBrand } from '@aph/mobile-patients/src/components/Medicines/ShopB
 import { ImageSliderScreen } from '@aph/mobile-patients/src/components/ui/ImageSiderScreen';
 import { SearchByBrand } from '@aph/mobile-patients/src/components/Medicines/SearchByBrand';
 import { AsyncStorage } from 'react-native';
+import { TestsCart } from '@aph/mobile-patients/src/components/Tests/TestsCart';
+import { MedAndTestCart } from '@aph/mobile-patients/src/components/Tests/MedAndTestCart';
+import { TestDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+
+import { SearchTestScene } from '@aph/mobile-patients/src/components/Medicines/SearchTestScene';
+import { TestsCheckoutScene } from '@aph/mobile-patients/src/components/TestsCheckoutScene';
+import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/YourOrdersTests';
+import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/TestOrderDetails';
+import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
 import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
+import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';
 
 export enum AppRoutes {
   Onboarding = 'Onboarding',
@@ -76,6 +86,7 @@ export enum AppRoutes {
   AppointmentDetails = 'AppointmentDetails',
   StorPickupScene = 'StorPickupScene',
   SearchMedicineScene = 'SearchMedicineScene',
+  SearchTestScene = 'SearchTestScene',
   MedicineDetailsScene = 'MedicineDetailsScene',
   ApplyCouponScene = 'ApplyCouponScene',
   ChatRoom = 'ChatRoom',
@@ -83,6 +94,7 @@ export enum AppRoutes {
   OrderDetailsScene = 'OrderDetailsScene',
   YourCart = 'YourCart',
   CheckoutScene = 'CheckoutScene',
+  TestsCheckoutScene = 'TestsCheckoutScene',
   PaymentScene = 'PaymentScene',
   AddAddress = 'AddAddress',
   UploadPrescription = 'UploadPrescription',
@@ -101,8 +113,15 @@ export enum AppRoutes {
   ShopByBrand = 'ShopByBrand',
   ImageSliderScreen = 'ImageSliderScreen',
   SearchByBrand = 'SearchByBrand',
+  TestsByCategory = 'TestsByCategory',
+  TestsCart = 'TestsCart',
+  MedAndTestCart = 'MedAndTestCart',
+  TestDetails = 'TestDetails',
   EditProfile = 'EditProfile',
   ManageProfile = 'ManageProfile',
+  YourOrdersTest = 'YourOrdersTest',
+  TestOrderDetails = 'TestOrderDetails',
+  ClinicSelection = 'ClinicSelection',
 }
 
 export type AppRoute = keyof typeof AppRoutes;
@@ -184,6 +203,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.SearchMedicineScene]: {
     screen: SearchMedicineScene,
   },
+  [AppRoutes.SearchTestScene]: {
+    screen: SearchTestScene,
+  },
   [AppRoutes.MedicineDetailsScene]: {
     screen: MedicineDetailsScene,
   },
@@ -201,6 +223,9 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   },
   [AppRoutes.CheckoutScene]: {
     screen: CheckoutScene,
+  },
+  [AppRoutes.TestsCheckoutScene]: {
+    screen: TestsCheckoutScene,
   },
   [AppRoutes.PaymentScene]: {
     screen: PaymentScene,
@@ -262,11 +287,32 @@ const routeConfigMap: Partial<Record<AppRoute, NavigationRouteConfig>> = {
   [AppRoutes.SearchByBrand]: {
     screen: SearchByBrand,
   },
+  [AppRoutes.TestsByCategory]: {
+    screen: TestsByCategory,
+  },
+  [AppRoutes.TestsCart]: {
+    screen: TestsCart,
+  },
+  [AppRoutes.MedAndTestCart]: {
+    screen: MedAndTestCart,
+  },
+  [AppRoutes.TestDetails]: {
+    screen: TestDetails,
+  },
   [AppRoutes.EditProfile]: {
     screen: EditProfile,
   },
   [AppRoutes.ManageProfile]: {
     screen: ManageProfile,
+  },
+  [AppRoutes.YourOrdersTest]: {
+    screen: YourOrdersTest,
+  },
+  [AppRoutes.TestOrderDetails]: {
+    screen: TestOrderDetails,
+  },
+  [AppRoutes.ClinicSelection]: {
+    screen: ClinicSelection,
   },
 };
 

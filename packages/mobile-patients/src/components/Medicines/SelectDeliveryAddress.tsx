@@ -11,6 +11,7 @@ import { Spinner } from '../ui/Spinner';
 import { pinCodeServiceabilityApi } from '../../helpers/apiCalls';
 import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { AppRoutes } from '../NavigatorContainer';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   cardStyle: {
@@ -24,11 +25,13 @@ const styles = StyleSheet.create({
 export interface SelectDeliveryAddressProps extends NavigationScreenProps {}
 
 export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (props) => {
+  const isTest = props.navigation.getParam('isTest');
+
   const {
     addresses: addressList,
     deliveryAddressId: selectedAddressId,
     setDeliveryAddressId: setSelectedAddressId,
-  } = useShoppingCart();
+  } = isTest ? useDiagnosticsCart() : useShoppingCart();
   const [selectedId, setselectedId] = useState<string>(selectedAddressId);
   const [selectedPinCode, setselectedPinCode] = useState<string>(selectedAddressId);
   const [loading, setLoading] = useState<boolean>(false);
@@ -40,29 +43,34 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={() => {
             setLoading(true);
-            pinCodeServiceabilityApi(selectedPinCode)
-              .then(({ data: { Availability } }) => {
-                setLoading(false);
-                if (Availability) {
-                  setSelectedAddressId && setSelectedAddressId(selectedId);
-                  props.navigation.goBack();
-                  CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Address selected');
-                } else {
-                  Alert.alert(
-                    'Alert',
-                    'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
-                  );
-                  CommonLogEvent(
-                    AppRoutes.SelectDeliveryAddress,
-                    'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
-                  );
-                  setSelectedAddressId && setSelectedAddressId('');
-                }
-              })
-              .catch((e) => {
-                setLoading(false);
-                Alert.alert('Alert', 'Unable to check if the address is serviceable or not.');
-              });
+            if (isTest) {
+              setSelectedAddressId && setSelectedAddressId(selectedId);
+              props.navigation.goBack();
+            } else {
+              pinCodeServiceabilityApi(selectedPinCode)
+                .then(({ data: { Availability } }) => {
+                  setLoading(false);
+                  if (Availability) {
+                    setSelectedAddressId && setSelectedAddressId(selectedId);
+                    props.navigation.goBack();
+                    CommonLogEvent(AppRoutes.SelectDeliveryAddress, 'Address selected');
+                  } else {
+                    Alert.alert(
+                      'Alert',
+                      'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
+                    );
+                    CommonLogEvent(
+                      AppRoutes.SelectDeliveryAddress,
+                      'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.'
+                    );
+                    setSelectedAddressId && setSelectedAddressId('');
+                  }
+                })
+                .catch((e) => {
+                  setLoading(false);
+                  Alert.alert('Alert', 'Unable to check if the address is serviceable or not.');
+                });
+            }
           }}
         />
       </StickyBottomComponent>

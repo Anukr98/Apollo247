@@ -44,6 +44,7 @@ import {
 import {
   TRANSFER_INITIATED_TYPE,
   APPOINTMENT_STATE,
+  REQUEST_ROLES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   bookRescheduleAppointment,
@@ -179,12 +180,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const NextAvailableSlotAPI = () => {
     getNetStatus().then((status) => {
       if (status) {
-        console.log('Network status', status);
         nextAvailableSlot();
       } else {
         setNetworkStatus(true);
         setshowSpinner(false);
-        console.log('Network status failed', status);
       }
     });
   };
@@ -382,7 +381,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     const appointmentTransferInput = {
       appointmentId: data.id,
       cancelReason: '',
-      cancelledBy: TRANSFER_INITIATED_TYPE.PATIENT, //appointmentDate,
+      cancelledBy: REQUEST_ROLES.PATIENT, //appointmentDate,
       cancelledById: data.patientId,
     };
 

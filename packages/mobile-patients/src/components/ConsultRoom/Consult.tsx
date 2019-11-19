@@ -218,6 +218,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
       setshowSpinner(true);
+      setconsultations([]);
       getNetStatus().then((status) => {
         if (status) {
           fetchAppointments();
@@ -236,7 +237,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
     // const getDataFromTree = async () => {
     //   const storeVallue = await AsyncStorage.getItem('selectUserId');
     //   console.log('storeVallue', storeVallue);
-    //   setCurrentPatientId(storeVallue);
+    //   if (storeVallue == null) {
+    //     setCurrentPatientId(currentPatient! && currentPatient!.id);
+    //   } else {
+    //     setCurrentPatientId(storeVallue);
+    //   }
     // };
 
     // getDataFromTree();
@@ -259,7 +264,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    console.log('current', currentPatient!.id);
+    console.log('current', currentPatient && currentPatient!.id);
     let userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
     userName = userName.toLowerCase();
@@ -861,7 +866,6 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               paddingTop: 16,
               paddingHorizontal: 0,
               backgroundColor: theme.colors.WHITE,
-              marginTop: 4,
             }}
           >
             <TouchableOpacity
@@ -873,6 +877,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
           <View>
             <ProfileList
+              navigation={props.navigation}
               saveUserChange={true}
               childView={
                 <View
@@ -884,9 +889,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                     backgroundColor: theme.colors.WHITE,
                   }}
                 >
-                  <Text style={styles.hiTextStyle}>{string.home.hi}</Text>
+                  <Text style={styles.hiTextStyle}>{'hi'}</Text>
                   <View>
-                    <Text style={styles.nameTextStyle}>{userName}</Text>
+                    <Text style={styles.nameTextStyle}>
+                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                    </Text>
                     <View style={styles.seperatorStyle} />
                   </View>
                   <View style={{ paddingTop: 15 }}>
@@ -894,9 +901,8 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   </View>
                 </View>
               }
-              // selectedProfile={profile}
+              selectedProfile={profile}
               setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-              navigation={props.navigation}
             ></ProfileList>
             {/* <MaterialMenu
               onPress={(item) => {
