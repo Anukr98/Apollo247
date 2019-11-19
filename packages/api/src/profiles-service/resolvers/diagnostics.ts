@@ -55,6 +55,7 @@ export const diagnosticsTypeDefs = gql`
 
   type DiagnosticSlotsResult {
     diagnosticSlot: [EmployeeSlots]
+    diagnosticBranchCode: String
   }
 
   type EmployeeSlots {
@@ -132,6 +133,7 @@ type Diagnostics = {
 
 type DiagnosticSlotsResult = {
   diagnosticSlot: EmployeeSlots[];
+  diagnosticBranchCode: string;
 };
 
 type EmployeeSlots = {
@@ -174,7 +176,6 @@ const getDiagnosticsCites: Resolver<
 > = async (patent, args, { profilesDb }) => {
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
   const diagnosticsCities = await diagnosticsRepo.getDiagnosticsCites(args.cityName);
-  console.log('diagnosticsCities', diagnosticsCities);
 
   return { diagnosticsCities };
 };
@@ -198,7 +199,7 @@ const getDiagnosticSlots: Resolver<
       throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, {});
       console.log('diagnostic slot error', error);
     });
-  return { diagnosticSlot };
+  return { diagnosticBranchCode: hubDetails.route, diagnosticSlot };
 };
 
 const getDiagnosticsData: Resolver<null, {}, ProfilesServiceContext, DiagnosticsData> = async (

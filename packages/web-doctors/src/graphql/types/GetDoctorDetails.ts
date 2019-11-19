@@ -2,7 +2,15 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { DoctorType, DOCTOR_ONLINE_STATUS, Salutation, ConsultMode, ConsultType, WeekDay, AccountType } from "./globalTypes";
+import {
+  DoctorType,
+  DOCTOR_ONLINE_STATUS,
+  Salutation,
+  ConsultMode,
+  ConsultType,
+  WeekDay,
+  AccountType
+} from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetails
@@ -26,6 +34,7 @@ export interface GetDoctorDetails_getDoctorDetails_consultHours {
   endTime: string;
   consultType: ConsultType;
   weekDay: WeekDay;
+  consultDuration: number | null;
 }
 
 export interface GetDoctorDetails_getDoctorDetails_packages {
@@ -142,7 +151,9 @@ export interface GetDoctorDetails_getDoctorDetails {
   streetLine3: string | null;
   zip: string | null;
   doctorSecretary: GetDoctorDetails_getDoctorDetails_doctorSecretary | null;
-  consultHours: (GetDoctorDetails_getDoctorDetails_consultHours | null)[] | null;
+  consultHours:
+    | (GetDoctorDetails_getDoctorDetails_consultHours | null)[]
+    | null;
   packages: (GetDoctorDetails_getDoctorDetails_packages | null)[] | null;
   bankAccount: (GetDoctorDetails_getDoctorDetails_bankAccount | null)[] | null;
   specialty: GetDoctorDetails_getDoctorDetails_specialty | null;

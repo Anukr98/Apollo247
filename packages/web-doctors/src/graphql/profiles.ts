@@ -153,6 +153,7 @@ export const GET_DOCTOR_DETAILS = gql`
         endTime
         consultType
         weekDay
+        consultDuration
       }
       packages {
         name
@@ -403,6 +404,7 @@ export const GET_DOCTOR_DETAILS_BY_ID = gql`
         endTime
         consultType
         weekDay
+        consultDuration
       }
       packages {
         name
