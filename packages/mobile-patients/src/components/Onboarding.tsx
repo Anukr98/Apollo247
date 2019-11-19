@@ -162,6 +162,7 @@ export const Onboarding: React.FC<OnboardingProps> = (props) => {
                 <TouchableOpacity
                   activeOpacity={1}
                   onPress={() => {
+                    setcurrentIndex(item.index);
                     if (item.index === slides.length) {
                       AsyncStorage.setItem('onboarding', 'true');
                       props.navigation.replace(AppRoutes.Login);
