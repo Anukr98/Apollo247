@@ -40,6 +40,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import {
   TRANSFER_INITIATED_TYPE,
   APPOINTMENT_STATE,
+  REQUEST_ROLES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   bookRescheduleAppointment,
@@ -284,7 +285,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     const appointmentTransferInput = {
       appointmentId: data.id,
       cancelReason: '',
-      cancelledBy: TRANSFER_INITIATED_TYPE.PATIENT, //appointmentDate,
+      cancelledBy: REQUEST_ROLES.PATIENT, //appointmentDate,
       cancelledById: data.patientId,
     };
     // console.log(appointmentTransferInput, 'appointmentTransferInput');

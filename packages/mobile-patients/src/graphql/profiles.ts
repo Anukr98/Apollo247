@@ -1621,6 +1621,7 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
       errorCode
       errorMessage
       orderId
+      displayId
     }
   }
 `;
