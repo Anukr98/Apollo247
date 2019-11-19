@@ -94,11 +94,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { signOut, getPatientApiCall } = useAuth();
 
   useEffect(() => {
-    console.log('cu', currentPatient && currentPatient!.id);
-
     if (!currentPatient) {
       getPatientApiCall();
     }
+    currentPatient && setprofileDetails(currentPatient);
   }, [currentPatient]);
 
   const headMov = scrollY.interpolate({

@@ -164,6 +164,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const {
     locationDetails,
     setLocationDetails,
+    diagnosticsCities,
     setDiagnosticsCities,
     locationForDiagnostics,
   } = useAppCommonData();
@@ -260,6 +261,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
         ),
       });
   }, [locationDetails]);
+
+  useEffect(() => {
+    if (
+      locationDetails &&
+      diagnosticsCities.length > 0 &&
+      !diagnosticsCities.find((item) => item!.cityname === locationDetails!.city)
+    ) {
+      setErrorPopUp(true);
+    }
+  }, [locationDetails && diagnosticsCities]);
 
   useEffect(() => {
     console.log(

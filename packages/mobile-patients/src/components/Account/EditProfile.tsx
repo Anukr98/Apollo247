@@ -269,6 +269,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [bottomPopUp, setBottomPopUp] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<boolean>(false);
 
   const { isIphoneX } = DeviceHelper();
   const client = useApolloClient();
@@ -342,8 +343,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         });
       })
       .catch((e) => {
-        Alert.alert('Alert', e.message);
-        console.log(JSON.stringify(e), 'eeeee');
+        setAlertMessage(true);
+        setBottomPopUp(true);
       })
       .finally(() => {
         setLoading(false);
@@ -363,7 +364,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               firstName: firstName,
               lastName: lastName,
               relation: (relation && relation.key!) || Relation.ME,
-              gender: gender!,
+              gender: gender ? gender : Gender.OTHER,
               dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
               emailAddress: email,
             },
@@ -371,18 +372,19 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         })
         .then((data) => {
           getPatientApiCall();
-          props.navigation.goBack();
           if (relation!.key === Relation.ME && profileData.relation !== Relation.ME) {
             setCurrentPatientId(profileData!.id);
             AsyncStorage.setItem('selectUserId', profileData!.id);
           }
+          props.navigation.goBack();
           // props.navigation.pop(2);
           // props.navigation.push(AppRoutes.ManageProfile, {
           //   mobileNumber: props.navigation.getParam('mobileNumber'),
           // });
         })
         .catch((e) => {
-          Alert.alert('Alert', e.message);
+          setAlertMessage(true);
+          setBottomPopUp(true);
         })
         .finally(() => {
           setLoading(false);
@@ -402,7 +404,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
             firstName: firstName,
             lastName: lastName,
             dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-            gender: gender!,
+            gender: gender ? gender : Gender.OTHER,
             relation: (relation && relation!.key) || Relation.ME,
             emailAddress: email,
             photoUrl: photoUrl,
@@ -425,8 +427,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         //     }));
       })
       .catch((e) => {
-        Alert.alert('Alert', e.message);
-        console.log(JSON.stringify(e), 'eeeee');
+        setAlertMessage(true);
+        setBottomPopUp(true);
       })
       .finally(() => {
         setLoading(false);
@@ -619,6 +621,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     //   setBottomPopUp(false);
     // }
     else {
+      setAlertMessage(false);
       setBottomPopUp(true);
     }
   };
@@ -844,7 +847,14 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       {/* {deleteProfile && isEdit && renderDeleteButton()} */}
       {loading && <Spinner />}
       {bottomPopUp && (
-        <BottomPopUp title="Apollo" description={"'Self' is already choosen for another profile."}>
+        <BottomPopUp
+          title={alertMessage ? 'Network Error!' : 'Apollo'}
+          description={
+            alertMessage
+              ? 'Please try again later.'
+              : "'Self' is already choosen for another profile."
+          }
+        >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               style={{
@@ -854,6 +864,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               }}
               onPress={() => {
                 setBottomPopUp(false);
+                setAlertMessage(false);
               }}
             >
               <Text
