@@ -2,6 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 import { Patient, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
 import { ApiConstants } from 'ApiConstants';
 import requestPromise from 'request-promise';
+import { UhidCreateResult } from 'types/uhidCreateTypes';
 
 import {
   PrismGetAuthTokenResponse,
@@ -14,6 +15,7 @@ import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentTo
 
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { format } from 'date-fns';
 
 @EntityRepository(Patient)
 export class PatientRepository extends Repository<Patient> {
@@ -200,7 +202,93 @@ export class PatientRepository extends Repository<Patient> {
     return this.update(id, patientAttrs);
   }
 
+  updateUhid(id: string, uhid: string) {
+    return this.update(id, { uhid });
+  }
+
   deleteProfile(id: string) {
     return this.update(id, { isActive: false });
+  }
+
+  async createNewUhid(id: string) {
+    const patientDetails = await this.getPatientDetails(id);
+    if (patientDetails == null)
+      throw new AphError(AphErrorMessages.SAVE_NEW_PROFILE_ERROR, undefined, {});
+    const newUhidUrl = process.env.CREATE_NEW_UHID_URL ? process.env.CREATE_NEW_UHID_URL : '';
+    const uhidInput = {
+      OnlineAppointmentID: null,
+      Title: '1',
+      LocationID: 10201,
+      RegionID: 1,
+      ResourceID: 0,
+      StartDateTime: null,
+      EndDateTime: null,
+      FirstName: patientDetails.firstName,
+      LastName: patientDetails.lastName,
+      UHIDNumber: null,
+      PRNNumber: null,
+      ModeofAppointment: 'Apollo24|7',
+      DateOfBirth: format(patientDetails.dateOfBirth, 'dd-MMM-yyyy'),
+      MobileNumber: '91-' + patientDetails.mobileNumber.substr(3),
+      RegistrationTypes: 'QUICKUHID',
+      Gender: '72',
+      MaritalStatus: '1',
+      StatusCheck: null,
+      ServiceID: 0,
+      SpecialityID: 0,
+      UpdatedBy: null,
+      Country: 97,
+      State: 280,
+      District: 1134,
+      City: 6277,
+      Address_Line_1: '',
+      EmailID: patientDetails.emailAddress,
+      FatherName: '',
+      SpouseName: null,
+      MotherName: null,
+      GaurdianName: null,
+      EmergencyNumber: null,
+      PinCode: '',
+      Religion: null,
+      AddressTypeID: 2,
+      Occupation: null,
+      Citizenship: '97',
+      Flag: 1,
+      RegAuthConsent: {
+        PatientorAttendentName: '',
+        PatientorAttendentAge: 0,
+        NextofKinName: '',
+        Resident: '',
+        IpAddress: '',
+        ConsentStatus: '',
+        ConsentCreatedDate: '',
+      },
+      InternationalPatientFlag: false,
+      InternationalPatient: {
+        Nationality: '',
+        PassportNo: '',
+        VisaIssueDate: '',
+        VisaExpDate: '',
+        ResidingCity: '',
+        CountryIssued: '',
+        PassportIssueDate: '',
+        PassportExpDate: '',
+        VisaIssuingAuthority: '',
+        Citizenship: '',
+      },
+    };
+    const uhidCreateResp = await fetch(newUhidUrl, {
+      method: 'POST',
+      body: JSON.stringify(uhidInput),
+      headers: {
+        'Content-Type': 'application/json',
+        Authkey: process.env.UHID_CREATE_AUTH_KEY ? process.env.UHID_CREATE_AUTH_KEY : '',
+      },
+    });
+
+    const textProcessRes = await uhidCreateResp.text();
+    const uhidResp: UhidCreateResult = JSON.parse(textProcessRes);
+    console.log(uhidResp, 'uhid resp');
+    this.updateUhid(id, uhidResp.result.toString());
   }
 }
