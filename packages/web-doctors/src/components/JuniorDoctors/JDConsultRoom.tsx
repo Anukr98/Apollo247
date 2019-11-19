@@ -1025,7 +1025,11 @@ export const JDConsultRoom: React.FC = () => {
     ) {
       status = casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.status;
     }
-    return isActive === 'done' || (status && status === STATUS.CANCELLED) ? true : false;
+    return isActive === 'done' ||
+      (status && status === STATUS.CANCELLED) ||
+      (status && status === STATUS.COMPLETED)
+      ? true
+      : false;
   };
 
   const idleTimerRef = useRef(null);
