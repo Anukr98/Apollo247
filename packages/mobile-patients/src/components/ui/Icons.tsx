@@ -652,3 +652,11 @@ export const InjectionIcon: React.FC<IconProps> = (props) => (
 export const SearchSendIcon: React.FC<IconProps> = (props) => (
   <IconBase size="sm" {...props} source={require('./icons/ic_send.png')} />
 );
+export const ShieldIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    style={{ height: 42.1, width: 36 }}
+    {...props}
+    source={require('./icons/ic_shield.png')}
+  />
+);

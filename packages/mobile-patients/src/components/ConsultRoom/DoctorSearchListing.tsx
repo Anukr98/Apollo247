@@ -1,4 +1,7 @@
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -7,6 +10,8 @@ import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterN
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDoctorsBySpecialtyAndFilters,
@@ -20,13 +25,14 @@ import {
   Range,
   SpecialtySearchType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getPlaceInfoByPlaceId, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
-  getNetStatus,
-  getUserCurrentPosition,
   doRequestAndAccessLocation,
   g,
+  getNetStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios from 'axios';
@@ -35,7 +41,6 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Animated,
-  AsyncStorage,
   BackHandler,
   PermissionsAndroid,
   Platform,
@@ -46,14 +51,6 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import Geocoder from 'react-native-geocoding';
-import { CommonScreenLog, CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { getPlaceInfoByPlaceId, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
-import { Button } from '@aph/mobile-patients/src/components/ui/Button';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   topView: {
@@ -909,6 +906,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <TabsComponent
           style={{
             backgroundColor: theme.colors.CARD_BG,
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
+            shadowOffset: { width: 0, height: 1 },
+            shadowRadius: 1.0,
           }}
           data={tabs}
           onChange={(selectedTab: string) => {

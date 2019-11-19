@@ -211,7 +211,7 @@ export const timeDiffFromNow = (toDate: string) => {
   const today: Date = new Date();
   const date2: Date = new Date(toDate);
   if (date2 && today) {
-    timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+    timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
   }
   return timeDiff;
 };
