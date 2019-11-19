@@ -120,7 +120,7 @@ export const ActiveConsultCard: React.FC<ActiveConsultCardProps> = (props) => {
   const { id, patient, appointment } = props;
   const appointmentDateIST = format(
     new Date(appointment.appointmentDateTime).getTime(),
-    'dd/MM/yyyy hh:mm a'
+    'dd/MM/yyyy, hh:mm a'
   );
 
   return (
