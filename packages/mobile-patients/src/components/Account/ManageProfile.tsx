@@ -33,6 +33,7 @@ import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks'
 import { PatientDefaultImage } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 
 const styles = StyleSheet.create({
   separatorStyle: {
@@ -77,6 +78,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   const [profiles, setProfiles] = useState<
     (getPatientByMobileNumber_getPatientByMobileNumber_patients | null)[]
   >();
+  const [bottomPopUP, setBottomPopUP] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const backDataFunctionality = async () => {
@@ -101,7 +103,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         profileData && setProfiles(profileData!.patients!);
       })
       .catch((e: any) => {
-        Alert.alert('Alert', e.message);
+        setBottomPopUP(true);
       })
       .finally(() => {
         setLoading!(false);
@@ -269,7 +271,31 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         <View style={{ padding: 40 }} />
       </ScrollView>
       {!isLoading && renderBottomStickyComponent()}
-      {/* {loading && <Spinner />} */}
+      {bottomPopUP && (
+        <BottomPopUp title="Network Error!" description={'Please try again later.'}>
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottomPopUP(false);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
     </SafeAreaView>
   );
 };
