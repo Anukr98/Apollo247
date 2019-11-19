@@ -1636,6 +1636,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             {renderSearchBarAndSuggestions()}
           </View>
           <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>
+            {renderBanner()}
             {renderSections()}
           </View>
         </ScrollView>
