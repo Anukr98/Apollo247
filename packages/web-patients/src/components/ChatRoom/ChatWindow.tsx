@@ -15,8 +15,6 @@ import {
 import { useMutation } from 'react-apollo-hooks';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
 import { DoctorChatCard } from 'components/ChatRoom/DoctorChatCard';
-import { NamedTypeNode } from 'graphql';
-//import { string } from 'prop-types';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -316,7 +314,7 @@ interface AutoMessageStrings {
   videoCallMsg: string;
   audioCallMsg: string;
   stopcallMsg: string;
-  acceptcallMsg: string;
+  acceptedcallMsg: string;
   startConsult: string;
   stopConsult: string;
   transferConsult: string;
@@ -378,7 +376,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     videoCallMsg: '^^callme`video^^',
     audioCallMsg: '^^callme`audio^^',
     stopcallMsg: '^^callme`stop^^',
-    acceptcallMsg: '^^callme`accept^^',
+    acceptedcallMsg: '^^callme`accept^^',
     startConsult: '^^#startconsult',
     stopConsult: '^^#stopconsult',
     transferConsult: '^^#transferconsult',
@@ -545,7 +543,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           message.message.message !== autoMessageStrings.videoCallMsg &&
           message.message.message !== autoMessageStrings.audioCallMsg &&
           message.message.message !== autoMessageStrings.stopcallMsg &&
-          message.message.message !== autoMessageStrings.acceptcallMsg &&
+          message.message.message !== autoMessageStrings.acceptedcallMsg &&
           message.message.message !== autoMessageStrings.startConsult &&
           message.message.message !== autoMessageStrings.stopConsult &&
           message.message.message !== autoMessageStrings.transferConsult &&
@@ -785,14 +783,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
     if (
-      rowData.id === patientId &&
-      rowData.message !== autoMessageStrings.videoCallMsg &&
-      rowData.message !== autoMessageStrings.audioCallMsg &&
-      rowData.message !== autoMessageStrings.stopcallMsg &&
-      rowData.message !== autoMessageStrings.acceptcallMsg &&
-      rowData.message !== autoMessageStrings.startConsult &&
-      rowData.message !== autoMessageStrings.stopConsult
+      rowData.message === autoMessageStrings.typingMsg ||
+      rowData.message === autoMessageStrings.stopcallMsg ||
+      rowData.message === autoMessageStrings.audioCallMsg ||
+      rowData.message === autoMessageStrings.videoCallMsg ||
+      rowData.message === autoMessageStrings.acceptedcallMsg
     ) {
+      return null;
+    }
+    if (rowData.id === patientId) {
       leftComponent++;
       rightComponent = 0;
       return (
@@ -824,16 +823,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
           </div>
         </div>
       );
-    }
-    console.log(rowData);
-    if (
-      rowData.message !== autoMessageStrings.videoCallMsg &&
-      rowData.message !== autoMessageStrings.audioCallMsg &&
-      rowData.message !== autoMessageStrings.stopcallMsg &&
-      rowData.message !== autoMessageStrings.acceptcallMsg &&
-      rowData.message !== autoMessageStrings.startConsult &&
-      rowData.message !== autoMessageStrings.stopConsult
-    ) {
+    } else {
       leftComponent = 0;
       rightComponent++;
       return (
@@ -855,9 +845,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 />
               </span>
             )}
-            {rowData.message === autoMessageStrings.transferConsult && (
+            {/* {rowData.message === autoMessageStrings.transferConsult && (
               <div className={classes.doctorChatWindow}>
-                <div className={`${classes.doctorChatBubble} ${classes.blueBubble}`}>
+                <div
+                  className={`${classes.doctorChatBubble} ${classes.blueBubble}`}
+                >
                   Your appointment has been transferred to —
                   <DoctorChatCard transferData={rowData.transferInfo} />
                   <div className={classes.bubbleActions}>
@@ -868,12 +860,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 <div className={classes.doctorImg}>
                   <Avatar
                     alt=""
-                    src={require('images/ic_chat_bot.svg')}
+                    src={require("images/ic_chat_bot.svg")}
                     className={classes.avatar}
                   />
                 </div>
               </div>
-            )}
+            )} */}
             {rowData.duration === '00 : 00' ? (
               <span className={classes.missCall}>
                 <img src={require('images/ic_missedcall.svg')} />
@@ -892,7 +884,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
                 </div>
               </div>
             ) : (
-              rowData.message !== autoMessageStrings.transferConsult &&
               rowData.message !== autoMessageStrings.rescheduleconsult && (
                 <div>
                   <span>{rowData.automatedText || rowData.message}</span>
