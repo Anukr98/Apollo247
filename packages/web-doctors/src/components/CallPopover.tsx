@@ -1166,16 +1166,16 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
           parseInt(followUpAfterInDays[0]) * 24 * 60 * 60 * 1000
       ).toISOString();
     }
-    const followupObj: any = {
-      appointmentId: props.appointmentId,
-      folloupDateTime: folloupDateTime,
-      doctorId: props.doctorId,
-      caseSheetId: props.caseSheetId,
-      doctorInfo: currentPatient,
-      pdfUrl: props.prescriptionPdf
-    };
 
-    if (folloupDateTime !== "") {
+    if (followUp[0] && folloupDateTime !== "") {
+      const followupObj = {
+        appointmentId: props.appointmentId,
+        folloupDateTime: folloupDateTime,
+        doctorId: props.doctorId,
+        caseSheetId: props.caseSheetId,
+        doctorInfo: currentPatient,
+        pdfUrl: props.prescriptionPdf
+      };
       setTimeout(() => {
         pubnub.publish(
           {
