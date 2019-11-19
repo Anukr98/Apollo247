@@ -1,38 +1,6 @@
-import Moment from 'moment';
-import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Alert,
-  Dimensions,
-  Image,
-  Keyboard,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  AsyncStorage,
-} from 'react-native';
-import { Text } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  ADD_NEW_PROFILE,
-  DELETE_PROFILE,
-  EDIT_PROFILE,
-  UPLOAD_FILE,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import { addNewProfile } from '@aph/mobile-patients/src/graphql/types/addNewProfile';
-import {
-  deleteProfile,
-  deleteProfileVariables,
-} from '@aph/mobile-patients/src/graphql/types/deleteProfile';
-import { editProfile } from '@aph/mobile-patients/src/graphql/types/editProfile';
-import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -46,10 +14,48 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  ADD_NEW_PROFILE,
+  DELETE_PROFILE,
+  EDIT_PROFILE,
+  UPLOAD_FILE,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  addNewProfile,
+  addNewProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/addNewProfile';
+import {
+  deleteProfile,
+  deleteProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/deleteProfile';
+import {
+  editProfile,
+  editProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/editProfile';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Alert,
+  AsyncStorage,
+  Dimensions,
+  Image,
+  Keyboard,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Text } from 'react-native-elements';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -348,7 +354,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     setLoading(true);
     if (!isChanged) {
       client
-        .mutate<editProfile, any>({
+        .mutate<editProfile, editProfileVariables>({
           mutation: EDIT_PROFILE,
           variables: {
             editProfileInput: {
@@ -357,7 +363,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               firstName: firstName,
               lastName: lastName,
               relation: (relation && relation.key!) || Relation.ME,
-              gender: gender,
+              gender: gender!,
               dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
               emailAddress: email,
             },
@@ -389,14 +395,14 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const newProfile = () => {
     setLoading(true);
     client
-      .mutate<addNewProfile, any>({
+      .mutate<addNewProfile, addNewProfileVariables>({
         mutation: ADD_NEW_PROFILE,
         variables: {
           PatientProfileInput: {
             firstName: firstName,
             lastName: lastName,
             dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-            gender: gender,
+            gender: gender!,
             relation: (relation && relation!.key) || Relation.ME,
             emailAddress: email,
             photoUrl: photoUrl,
@@ -441,7 +447,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         onClickClose={() => {
           setUploadVisible(false);
         }}
-        isProfileImage={true}
         onResponse={(type, response) => {
           console.log('profile data', type, response);
           response.map((item) =>
