@@ -253,6 +253,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     setLoading!(true);
     (currentPatientId &&
+      addresses.length == 0 &&
       client
         .query<getPatientAddressList, getPatientAddressListVariables>({
           query: GET_PATIENT_ADDRESS_LIST,
