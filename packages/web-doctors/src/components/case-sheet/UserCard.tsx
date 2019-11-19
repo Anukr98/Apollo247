@@ -51,7 +51,7 @@ export const UserCard: React.FC = () => {
     patientDetails.patientAddress.length > 0 &&
     patientDetails.patientAddress[0]!.city !== ""
   ) {
-    userCardStrip.push(patientDetails.patientAddress[0].city);
+    userCardStrip.push(patientDetails.patientAddress[0]!.city);
   }
   const photoUrl =
     patientDetails && patientDetails.photoUrl
