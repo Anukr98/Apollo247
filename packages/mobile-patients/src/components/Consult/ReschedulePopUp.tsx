@@ -9,11 +9,14 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Platform, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getNetStatus } from '../../helpers/helperFunctions';
-import { AppRoutes } from '../NavigatorContainer';
-import { NoInterNetPopup } from '../ui/NoInterNetPopup';
-import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { BottomPopUp } from '../ui/BottomPopUp';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import {
+  CommonScreenLog,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 
 const { width, height } = Dimensions.get('window');
 

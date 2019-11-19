@@ -43,9 +43,9 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
-import { AppConfig } from '../../strings/AppConfig';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {

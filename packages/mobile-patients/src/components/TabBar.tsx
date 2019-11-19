@@ -18,7 +18,7 @@ import {
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { createBottomTabNavigator, NavigationRouteConfig } from 'react-navigation';
-import { Tests } from './Tests/Tests';
+import { Tests } from '@aph/mobile-patients/src/components/Tests/Tests';
 
 const routeToIcon: Partial<Record<string, NavigationRouteConfig>> = {
   'CONSULT ROOM': <ConsultationRoom />,

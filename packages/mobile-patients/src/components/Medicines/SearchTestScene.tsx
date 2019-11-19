@@ -47,8 +47,8 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
-import { TestPackage } from '../../helpers/apiCalls';
-import { useAppCommonData } from '../AppCommonDataProvider';
+import { TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {

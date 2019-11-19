@@ -24,17 +24,20 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useApolloClient } from 'react-apollo-hooks';
 import Moment from 'moment';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
+import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import {
   timeTo12HrFormat,
   divideSlots,
   getNetStatus,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { BottomPopUp } from '../ui/BottomPopUp';
-import { getDoctorAvailableSlots } from '../../graphql/types/getDoctorAvailableSlots';
-import { getNextAvailableSlots } from '../../helpers/clientCalls';
-import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '../NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import {
+  CommonLogEvent,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   selectedButtonView: {

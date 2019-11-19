@@ -48,13 +48,13 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   SaveDiagnosticOrder,
   SaveDiagnosticOrderVariables,
-} from '../graphql/types/SaveDiagnosticOrder';
+} from '@aph/mobile-patients/src/graphql/types/SaveDiagnosticOrder';
 import moment from 'moment';
-import { useAppCommonData } from './AppCommonDataProvider';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {

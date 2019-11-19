@@ -22,8 +22,8 @@ import {
   ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { Spinner } from '../ui/Spinner';
-import { Card } from '../ui/Card';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({

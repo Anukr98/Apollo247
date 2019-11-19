@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
-import { MaterialMenu } from './MaterialMenu';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
   Dimensions,
   View,
@@ -11,12 +11,12 @@ import {
   StyleProp,
   TextStyle,
 } from 'react-native';
-import { theme } from '../../theme/theme';
-import { DropdownGreen } from './Icons';
-import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
-import { Relation, Gender } from '../../graphql/types/globalTypes';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
-import { AppRoutes } from '../NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {

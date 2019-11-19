@@ -21,15 +21,19 @@ import {
   Linking,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
-import { getMedicineDetailsApi } from '../../helpers/apiCalls';
-import { g } from '../../helpers/helperFunctions';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { AppConfig } from '../../strings/AppConfig';
-import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
+import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  EPrescription,
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import RNFetchBlob from 'react-native-fetch-blob';
-import { MEDICINE_UNIT } from '../../graphql/types/globalTypes';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   viewStyle: {

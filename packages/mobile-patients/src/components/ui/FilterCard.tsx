@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle, TouchableOpacity } from 'react-native';
 import { Calendar, DateObject } from 'react-native-calendars';
 import { NavigationScreenProps } from 'react-navigation';
-import { theme } from '../../theme/theme';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const styles = StyleSheet.create({
   cardContainer: {

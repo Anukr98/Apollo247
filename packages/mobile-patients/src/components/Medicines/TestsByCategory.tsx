@@ -26,18 +26,18 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from '../../graphql/types/getDiagnosticsData';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics } from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
 import {
   searchDiagnostics,
   searchDiagnosticsVariables,
   searchDiagnostics_searchDiagnostics_diagnostics,
-} from '../../graphql/types/searchDiagnostics';
-import { g } from '../../helpers/helperFunctions';
-import { useAppCommonData } from '../AppCommonDataProvider';
-import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
-import { TestPackageForDetails } from '../Tests/TestDetails';
-import { Spearator } from '../ui/BasicComponents';
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {

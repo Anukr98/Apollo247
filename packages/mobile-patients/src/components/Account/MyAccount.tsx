@@ -22,15 +22,15 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getNetStatus } from '../../helpers/helperFunctions';
-import { NoInterNetPopup } from '../ui/NoInterNetPopup';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { useApolloClient } from 'react-apollo-hooks';
-import { DELETE_DEVICE_TOKEN } from '../../graphql/profiles';
+import { DELETE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   deleteDeviceToken,
   deleteDeviceTokenVariables,
-} from '../../graphql/types/deleteDeviceToken';
-import { ApolloLogo } from '../ApolloLogo';
+} from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 
 const { height, width } = Dimensions.get('window');
 
@@ -263,7 +263,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               // profileDetails.photoUrl &&
               // profileDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
               <Animated.Image
-                source={require('../ui/icons/no-photo-icon-round.png')}
+                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
                 style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
                 resizeMode={'contain'}
               />

@@ -2,9 +2,14 @@ import moment from 'moment';
 import React, { useRef, useState } from 'react';
 import { StyleProp, Text, TextStyle, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { Calendar, DateObject, DayComponentProps } from 'react-native-calendars';
-import { theme } from '../../theme/theme';
-import { WeekView } from '../WeekView';
-import { ArrowLeft, ArrowRight, DropdownBlueDown, DropdownBlueUp } from './Icons';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { WeekView } from '@aph/mobile-patients/src/components/WeekView';
+import {
+  ArrowLeft,
+  ArrowRight,
+  DropdownBlueDown,
+  DropdownBlueUp,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 export enum CALENDAR_TYPE {
   MONTH = 'MONTH',

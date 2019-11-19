@@ -9,16 +9,16 @@ import {
   WebView,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
-import { theme } from '../theme/theme';
-import { AppRoutes } from './NavigatorContainer';
-import { useShoppingCart } from './ShoppingCartProvider';
-import { BottomPopUp } from './ui/BottomPopUp';
-import { Header } from './ui/Header';
-import { CheckedIcon, MedicineIcon, UnCheck } from './ui/Icons';
-import { AppConfig } from '../strings/AppConfig';
-import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '../graphql/types/GetMedicineOrdersList';
-import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { CheckedIcon, MedicineIcon, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {

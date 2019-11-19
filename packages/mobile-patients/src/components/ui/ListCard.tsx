@@ -8,7 +8,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { theme } from '../../theme/theme';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({

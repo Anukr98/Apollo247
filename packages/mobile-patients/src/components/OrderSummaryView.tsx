@@ -6,8 +6,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import {
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderLineItems,
-} from '../graphql/types/GetMedicineOrderDetails';
-import { g } from '../helpers/helperFunctions';
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -200,7 +200,6 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
           <Text style={styles.deliveryText}>2 Hour Delivery Promise!</Text>
         </View>
       )}
-
       <View style={[styles.horizontalline, { borderBottomColor: '#f0f1ec', marginBottom: 20 }]} />
       <Text
         style={[

@@ -44,15 +44,15 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import {
   checkIfReschedule,
   checkIfRescheduleVariables,
-} from '../../graphql/types/checkIfReschedule';
+} from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
 
 import {
   BookFollowUpAppointment,
   BookFollowUpAppointmentVariables,
-} from '../../graphql/types/BookFollowUpAppointment';
+} from '@aph/mobile-patients/src/graphql/types/BookFollowUpAppointment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 

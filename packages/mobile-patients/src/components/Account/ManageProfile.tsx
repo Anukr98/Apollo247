@@ -22,17 +22,17 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { GET_PATIENTS_MOBILE } from '../../graphql/profiles';
+import { GET_PATIENTS_MOBILE } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientByMobileNumber,
   getPatientByMobileNumberVariables,
   getPatientByMobileNumber_getPatientByMobileNumber_patients,
-} from '../../graphql/types/getPatientByMobileNumber';
-import { Gender, Relation } from '../../graphql/types/globalTypes';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { PatientDefaultImage } from '../ui/Icons';
-import { Spinner } from '../ui/Spinner';
-import { useUIElements } from '../UIElementsProvider';
+} from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { PatientDefaultImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const styles = StyleSheet.create({
   separatorStyle: {
