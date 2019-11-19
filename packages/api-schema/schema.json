@@ -2765,6 +2765,18 @@
             "deprecationReason": null
           },
           {
+            "name": "prismPrescriptionFileId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "medicineOrderLineItems",
             "description": null,
             "args": [],
@@ -2968,6 +2980,18 @@
           },
           {
             "name": "prescriptionImageUrl",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "prismPrescriptionFileId",
             "description": null,
             "args": [],
             "type": {
@@ -3660,6 +3684,18 @@
           },
           {
             "name": "documentURLs",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "prismFileIds",
             "description": null,
             "args": [],
             "type": {
@@ -15194,6 +15230,16 @@
                 "name": "documentPath",
                 "description": null,
                 "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null
+              },
+              {
+                "name": "prismFileId",
+                "description": null,
+                "type": {
                   "kind": "NON_NULL",
                   "name": null,
                   "ofType": {
@@ -16945,6 +16991,20 @@
             "defaultValue": null
           },
           {
+            "name": "prismPrescriptionFileId",
+            "description": null,
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "defaultValue": null
+          },
+          {
             "name": "appointmentId",
             "description": null,
             "type": {
@@ -17594,6 +17654,16 @@
           },
           {
             "name": "documentURLs",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "prismFileIds",
             "description": null,
             "type": {
               "kind": "SCALAR",
@@ -22507,6 +22577,18 @@
           },
           {
             "name": "documentPath",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "prismFileId",
             "description": null,
             "args": [],
             "type": {
