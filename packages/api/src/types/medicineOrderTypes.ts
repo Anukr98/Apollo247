@@ -33,3 +33,7 @@ export interface PharmaLineItem {
 export interface PrescriptionUrl {
   url: string;
 }
+
+export interface PrescriptionPrismFileId {
+  fileId: string;
+}

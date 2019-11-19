@@ -20,6 +20,7 @@ export const uploadChatDocumentTypeDefs = gql`
   type UploadedDocumentDetails {
     id: String
     documentPath: String
+    prismFileId: String
   }
 
   type ChatDocumentDeleteResult {
@@ -33,7 +34,11 @@ export const uploadChatDocumentTypeDefs = gql`
       base64FileInput: String
     ): UploadChatDocumentResult!
 
-    addChatDocument(appointmentId: ID!, documentPath: String!): UploadedDocumentDetails
+    addChatDocument(
+      appointmentId: ID!
+      documentPath: String
+      prismFileId: String!
+    ): UploadedDocumentDetails
     removeChatDocument(documentPathId: ID!): ChatDocumentDeleteResult
   }
 `;
@@ -115,11 +120,12 @@ const uploadChatDocument: Resolver<
 type UploadedDocumentDetails = {
   id: string;
   documentPath: string;
+  prismFileId: string;
 };
 
 const addChatDocument: Resolver<
   null,
-  { appointmentId: string; documentPath: string },
+  { appointmentId: string; documentPath: string; prismFileId: string },
   ConsultServiceContext,
   UploadedDocumentDetails
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
@@ -133,15 +139,20 @@ const addChatDocument: Resolver<
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
-  if (args.documentPath.length == 0) throw new AphError(AphErrorMessages.INVALID_DOCUMENT_PATH);
+  if (args.prismFileId.length == 0) throw new AphError(AphErrorMessages.INVALID_DOCUMENT_PATH);
 
   const documentAttrs: Partial<AppointmentDocuments> = {
     documentPath: args.documentPath,
+    prismFileId: args.prismFileId,
     appointment: appointmentData,
   };
   const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
   const appointmentDocuments = await appointmentDocumentRepo.saveDocument(documentAttrs);
-  return { id: appointmentDocuments.id, documentPath: appointmentDocuments.documentPath };
+  return {
+    id: appointmentDocuments.id,
+    documentPath: appointmentDocuments.documentPath,
+    prismFileId: appointmentDocuments.prismFileId,
+  };
 };
 
 type ChatDocumentDeleteResult = {

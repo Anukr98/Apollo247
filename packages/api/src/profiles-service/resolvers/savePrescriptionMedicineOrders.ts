@@ -27,6 +27,7 @@ export const savePrescriptionMedicineOrderTypeDefs = gql`
     medicineDeliveryType: MEDICINE_DELIVERY_TYPE!
     patinetAddressId: ID
     prescriptionImageUrl: String!
+    prismPrescriptionFileId: String!
     appointmentId: String
     payment: PrescriptionMedicinePaymentDetails
   }
@@ -61,6 +62,7 @@ type PrescriptionMedicineInput = {
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId: string;
   prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
   appointmentId: string;
   payment?: PrescriptionMedicinePaymentDetails;
 };
@@ -106,6 +108,7 @@ const SavePrescriptionMedicineOrder: Resolver<
     quoteId: prescriptionMedicineInput.quoteId,
     appointmentId: prescriptionMedicineInput.appointmentId,
     prescriptionImageUrl: prescriptionMedicineInput.prescriptionImageUrl,
+    prismPrescriptionFileId: prescriptionMedicineInput.prismPrescriptionFileId,
     estimatedAmount: 0.0,
     devliveryCharges: 0.0,
     patientAddressId: prescriptionMedicineInput.patinetAddressId,
