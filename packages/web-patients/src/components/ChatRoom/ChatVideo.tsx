@@ -1,129 +1,129 @@
-import React, { useEffect, useState } from 'react';
-import { Theme, Button } from '@material-ui/core';
-import Grid from '@material-ui/core/Grid';
-import { makeStyles } from '@material-ui/styles';
-import { OTSession, OTPublisher, OTStreams, OTSubscriber } from 'opentok-react';
+import React, { useEffect, useState } from "react";
+import { Theme, Button } from "@material-ui/core";
+import Grid from "@material-ui/core/Grid";
+import { makeStyles } from "@material-ui/styles";
+import { OTSession, OTPublisher, OTStreams, OTSubscriber } from "opentok-react";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      paddingLeft: 20,
+      paddingLeft: 20
     },
     videoContainer: {
-      backgroundColor: '#000',
+      backgroundColor: "#000",
       borderRadius: 10,
-      overflow: 'hidden',
-      position: 'relative',
-      zIndex: 8,
+      overflow: "hidden",
+      position: "relative",
+      zIndex: 8
     },
     largeVideoContainer: {
-      height: 'calc(100vh - 195px)',
+      height: "calc(100vh - 195px)"
     },
     smallVideoContainer: {
-      position: 'absolute',
+      position: "absolute",
       right: 38,
       top: 20,
       width: 204,
       height: 154,
-      boxShadow: '0 5px 20px 0 rgba(0, 0, 0, 0.6)',
+      boxShadow: "0 5px 20px 0 rgba(0, 0, 0, 0.6)",
       zIndex: 10,
-      backgroundColor: 'rgba(0,0,0,0.2)',
+      backgroundColor: "rgba(0,0,0,0.2)"
     },
     videoChatWindow: {
-      paddingRight: 17,
+      paddingRight: 17
     },
     videoPoster: {
-      padding: 0,
+      padding: 0
     },
     videoButtonContainer: {
-      position: 'absolute',
+      position: "absolute",
       zIndex: 9,
       bottom: 0,
-      width: '100%',
+      width: "100%",
       padding: 20,
-      '& button': {
-        backgroundColor: 'transparent',
+      "& button": {
+        backgroundColor: "transparent",
         border: 0,
-        boxShadow: 'none',
+        boxShadow: "none",
         padding: 0,
-        minWidth: 'auto',
-        '&:focus': {
-          backgroundColor: 'transparent',
+        minWidth: "auto",
+        "&:focus": {
+          backgroundColor: "transparent",
           border: 0,
-          boxShadow: 'none',
+          boxShadow: "none"
         },
-        '&:hover': {
-          backgroundColor: 'transparent',
+        "&:hover": {
+          backgroundColor: "transparent",
           border: 0,
-          boxShadow: 'none',
+          boxShadow: "none"
         },
-        '& img': {
-          verticalAlign: 'middle',
-          maxWidth: 48,
-        },
-      },
+        "& img": {
+          verticalAlign: "middle",
+          maxWidth: 48
+        }
+      }
     },
     middleActions: {
-      textAlign: 'center',
-      '& button': {
+      textAlign: "center",
+      "& button": {
         paddingLeft: 10,
-        paddingRight: 10,
-      },
+        paddingRight: 10
+      }
     },
     rightActions: {
-      textAlign: 'right',
+      textAlign: "right"
     },
     callActions: {
-      position: 'absolute',
+      position: "absolute",
       bottom: 0,
-      width: '100%',
+      width: "100%",
       padding: 10,
-      display: 'flex',
-      alignItems: 'center',
+      display: "flex",
+      alignItems: "center",
       zIndex: 9999,
-      '& button': {
+      "& button": {
         padding: 0,
-        boxShadow: 'none',
-        minWidth: 'auto',
-        backgroundColor: 'transparent',
-        '&:hover': {
-          boxShadow: 'none',
-          backgroundColor: 'transparent',
+        boxShadow: "none",
+        minWidth: "auto",
+        backgroundColor: "transparent",
+        "&:hover": {
+          boxShadow: "none",
+          backgroundColor: "transparent"
         },
-        '&:focus': {
-          boxShadow: 'none',
-          backgroundColor: 'transparent',
+        "&:focus": {
+          boxShadow: "none",
+          backgroundColor: "transparent"
         },
-        '& img': {
+        "& img": {
           maxWidth: 40,
-          verticalAlign: 'middle',
-        },
-      },
+          verticalAlign: "middle"
+        }
+      }
     },
     stopCallBtn: {
-      marginLeft: 'auto',
+      marginLeft: "auto"
     },
     otPublisher: {
-      '& >div': {
-        '& >div': {
-          position: 'absolute',
+      "& >div": {
+        "& >div": {
+          position: "absolute",
           top: 20,
           right: 38,
           zIndex: 9,
-          borderRadius: 10,
-        },
-      },
+          borderRadius: 10
+        }
+      }
     },
     smallPoster: {
-      '& img': {
-        maxHeight: 154,
-      },
+      "& img": {
+        maxHeight: 154
+      }
     },
     largePoster: {
-      '& img': {
-        maxHeight: 'calc(100vh - 195px)',
-      },
-    },
+      "& img": {
+        maxHeight: "calc(100vh - 195px)"
+      }
+    }
   };
 });
 interface ConsultProps {
@@ -138,12 +138,13 @@ interface ConsultProps {
   timerMinuts: number;
   timerSeconds: number;
 }
-const openTokApiKey = '46401302';
-export const ChatVideo: React.FC<ConsultProps> = (props) => {
+export const ChatVideo: React.FC<ConsultProps> = props => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
   const [mute, setMute] = React.useState(true);
-  const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
+  const [subscribeToVideo, setSubscribeToVideo] = React.useState(
+    props.isVideoCall ? true : false
+  );
   // const [subscribeToAudio, setSubscribeToAudio] = React.useState(props.isVideoCall ? false : true);
   // const [startTimerAppoinmentt, setstartTimerAppoinmentt] = React.useState<boolean>(false);
 
@@ -151,7 +152,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
     <div className={classes.root}>
       <div
         className={`${classes.videoChatWindow} ${
-          props.showVideoChat || !subscribeToVideo ? 'chatVideo' : ''
+          props.showVideoChat || !subscribeToVideo ? "chatVideo" : ""
         }`}
       >
         {/* {!props.showVideoChat && (
@@ -163,14 +164,14 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
 
         {isCall && (
           <OTSession
-            apiKey={openTokApiKey}
+            apiKey={process.env.OPENTOK_KEY}
             sessionId={props.sessionId}
             token={props.token}
             eventHandlers={{
               connectionDestroyed: (event: any) => {
                 props.stopConsultCall();
                 setIscall(false);
-              },
+              }
             }}
           >
             <div className={classes.otPublisher}>
@@ -179,7 +180,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                   publishAudio: mute,
                   publishVideo: subscribeToVideo,
                   width: 204,
-                  height: 154,
+                  height: 154
                 }}
               />
             </div>
@@ -199,32 +200,38 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
             )} */}
             <div
               className={`${classes.videoContainer} ${
-                props.showVideoChat ? classes.smallVideoContainer : classes.largeVideoContainer
+                props.showVideoChat
+                  ? classes.smallVideoContainer
+                  : classes.largeVideoContainer
               }`}
             >
               {!subscribeToVideo && !props.showVideoChat && (
-                <div className={`${classes.videoPoster} ${classes.largePoster}`}>
-                  <img src={require('images/doctor_profile_image.png')} />
+                <div
+                  className={`${classes.videoPoster} ${classes.largePoster}`}
+                >
+                  <img src={require("images/doctor_profile_image.png")} />
                 </div>
               )}
               <OTStreams>
                 <OTSubscriber
                   properties={{
-                    width: '100%',
-                    height: 'calc(100vh - 195px)',
+                    width: "100%",
+                    height: "calc(100vh - 195px)"
                   }}
                 />
               </OTStreams>
               {props.showVideoChat && (
                 <div>
                   {!subscribeToVideo && (
-                    <div className={`${classes.videoPoster} ${classes.smallPoster}`}>
-                      <img src={require('images/doctor_profile_image.png')} />
+                    <div
+                      className={`${classes.videoPoster} ${classes.smallPoster}`}
+                    >
+                      <img src={require("images/doctor_profile_image.png")} />
                     </div>
                   )}
                   <div className={classes.callActions}>
                     <Button onClick={() => props.toggelChatVideo()}>
-                      <img src={require('images/ic_expand_circle.svg')} />
+                      <img src={require("images/ic_expand_circle.svg")} />
                     </Button>
                     <Button
                       className={classes.stopCallBtn}
@@ -233,7 +240,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                         props.stopAudioVideoCall();
                       }}
                     >
-                      <img src={require('images/ic_endcall_small.svg')} />
+                      <img src={require("images/ic_endcall_small.svg")} />
                     </Button>
                   </div>
                 </div>
@@ -245,9 +252,15 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                       {isCall && (
                         <Button onClick={() => props.toggelChatVideo()}>
                           {props.isNewMsg ? (
-                            <img src={require('images/ic_message.svg')} alt="msgicon" />
+                            <img
+                              src={require("images/ic_message.svg")}
+                              alt="msgicon"
+                            />
                           ) : (
-                            <img src={require('images/ic_chat_circle.svg')} alt="msgicon" />
+                            <img
+                              src={require("images/ic_chat_circle.svg")}
+                              alt="msgicon"
+                            />
                           )}
                         </Button>
                       )}
@@ -255,22 +268,35 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                     <Grid item xs={4} className={classes.middleActions}>
                       {isCall && mute && (
                         <Button onClick={() => setMute(!mute)}>
-                          <img src={require('images/ic_mute.svg')} alt="mute" />
+                          <img src={require("images/ic_mute.svg")} alt="mute" />
                         </Button>
                       )}
                       {isCall && !mute && (
                         <Button onClick={() => setMute(!mute)}>
-                          <img src={require('images/ic_unmute.svg')} alt="unmute" />
+                          <img
+                            src={require("images/ic_unmute.svg")}
+                            alt="unmute"
+                          />
                         </Button>
                       )}
                       {isCall && subscribeToVideo && (
-                        <Button onClick={() => setSubscribeToVideo(!subscribeToVideo)}>
-                          <img src={require('images/ic_videoon.svg')} alt="video on" />
+                        <Button
+                          onClick={() => setSubscribeToVideo(!subscribeToVideo)}
+                        >
+                          <img
+                            src={require("images/ic_videoon.svg")}
+                            alt="video on"
+                          />
                         </Button>
                       )}
                       {isCall && !subscribeToVideo && (
-                        <Button onClick={() => setSubscribeToVideo(!subscribeToVideo)}>
-                          <img src={require('images/ic_videooff.svg')} alt="video off" />
+                        <Button
+                          onClick={() => setSubscribeToVideo(!subscribeToVideo)}
+                        >
+                          <img
+                            src={require("images/ic_videooff.svg")}
+                            alt="video off"
+                          />
                         </Button>
                       )}
                     </Grid>
@@ -284,7 +310,10 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
                             setIscall(false);
                           }}
                         >
-                          <img src={require('images/ic_endcall_big.svg')} alt="end call" />
+                          <img
+                            src={require("images/ic_endcall_big.svg")}
+                            alt="end call"
+                          />
                         </Button>
                       )}
                     </Grid>
