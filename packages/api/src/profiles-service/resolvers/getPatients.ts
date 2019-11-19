@@ -126,10 +126,12 @@ const addNewProfile: Resolver<
   const patientRepo = profilesDb.getCustomRepository(PatientRepository);
   patientProfileInput.firebaseUid = firebaseUid;
   const pateintDetails = await patientRepo.findByMobileNumber(patientProfileInput.mobileNumber);
-  if (pateintDetails == null)
+  if (pateintDetails == null || pateintDetails.length == 0)
     throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
-  //console.log(patientProfileInput, 'patient input');
-  const patient = await patientRepo.saveNewProfile(patientProfileInput);
+  const savePatient = await patientRepo.saveNewProfile(patientProfileInput);
+  await patientRepo.createNewUhid(savePatient.id);
+  const patient = await patientRepo.getPatientDetails(savePatient.id);
+  if (patient == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_DETAILS, undefined, {});
   return { patient };
 };
 
