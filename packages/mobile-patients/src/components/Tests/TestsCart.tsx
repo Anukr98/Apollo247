@@ -251,12 +251,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [clinicId]);
 
   useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
-    }
-  }, [currentPatient]);
-
-  useEffect(() => {
     setLoading!(true);
     (currentPatientId &&
       client
