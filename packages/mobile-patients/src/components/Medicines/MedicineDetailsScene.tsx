@@ -559,7 +559,20 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     { fontWeight: 'bold' },
                   ]}
                 >
-                  Rs. {medicineDetails.price}
+                  {!!medicineDetails.special_price && (
+                    <Text
+                      style={[
+                        {
+                          textDecorationLine: 'line-through',
+                          color: '#01475b',
+                          opacity: 0.6,
+                        },
+                      ]}
+                    >
+                      (Rs. {medicineDetails.price})
+                    </Text>
+                  )}{' '}
+                  <Text> Rs. {medicineDetails.special_price || medicineDetails.price}</Text>
                 </Text>
               </View>
             </View>
@@ -1194,7 +1207,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <TouchableOpacity
               activeOpacity={1}
               onPress={() =>
-                props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true })
+                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
               }
               style={{ right: 20 }}
             >
