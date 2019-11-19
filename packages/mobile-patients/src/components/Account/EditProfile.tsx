@@ -404,10 +404,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       .then((data) => {
         getPatientApiCall();
         props.navigation.goBack();
-        if (relation!.key === Relation.ME) {
-          setCurrentPatientId(profileData!.id);
-          AsyncStorage.setItem('selectUserId', profileData!.id);
-        }
+        // if (relation!.key === Relation.ME) {
+        //   setCurrentPatientId(profileData!.id);
+        //   AsyncStorage.setItem('selectUserId', profileData!.id);
+        // }
         // isPoptype
         //   ? (props.navigation.goBack(), getPatientApiCall())
         //   : (props.navigation.pop(2),
@@ -438,6 +438,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         onClickClose={() => {
           setUploadVisible(false);
         }}
+        isProfileImage={true}
         onResponse={(type, response) => {
           console.log('profile data', type, response);
           response.map((item) =>
