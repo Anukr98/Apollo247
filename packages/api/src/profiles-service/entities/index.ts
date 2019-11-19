@@ -175,6 +175,9 @@ export class MedicineOrders extends BaseEntity {
   @Column({ nullable: true })
   prescriptionImageUrl: string;
 
+  @Column({ nullable: true })
+  prismPrescriptionFileId: string;
+
   @Column({ type: 'timestamp' })
   quoteDateTime: Date;
 
@@ -258,6 +261,9 @@ export class MedicineOrderLineItems extends BaseEntity {
 
   @Column({ nullable: true })
   prescriptionImageUrl: string;
+
+  @Column({ nullable: true })
+  prismPrescriptionFileId: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
@@ -794,6 +800,9 @@ export class MedicalRecords extends BaseEntity {
   @Column({ nullable: true, type: 'text' })
   documentURLs: string;
 
+  @Column({ nullable: true, type: 'text' })
+  prismFileIds: string;
+
   @OneToMany(
     (type) => MedicalRecordParameters,
     (medicalRecordParameters) => medicalRecordParameters.medicalRecords
@@ -1114,6 +1123,9 @@ export class DiagnosticOrders extends BaseEntity {
 
   @Column({ nullable: true })
   prescriptionUrl: string;
+
+  @Column({ nullable: true })
+  prismPrescriptionFileId: string;
 
   @Column('decimal', { precision: 5, scale: 2, default: 0.0 })
   collectionCharges: number;
