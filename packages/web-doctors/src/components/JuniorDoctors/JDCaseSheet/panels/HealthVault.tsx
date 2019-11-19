@@ -105,6 +105,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   listData: {
     padding: 0,
+    display: 'flex',
+    width: '100%',
     '& span:last-child': {
       fontSize: 10,
       fontWeight: 500,
@@ -117,6 +119,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     fontWeight: 600,
     letterSpacing: 0.02,
     color: '#0087ba',
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+    display: 'block',
+    width: '80%',
   },
   noDataFound: {
     borderRadius: 5,
@@ -347,11 +353,13 @@ export const HealthVault: React.FC = () => {
                   className={classes.bigAvatar}
                 />
                 <div className={classes.listData}>
-                  <span className={classes.fileName}>
-                    bloodtest.pdf
+                  <h4 className={classes.fileName}>
                     {item.documentPath!.substr(item.documentPath!.lastIndexOf('/') + 1)}
+                  </h4>
+                  <span>
+                    {/* 5 MB | 5 Aug 2019, 11.05 AM{" "} */}
+                    {/* {'5MB'} | {'2019-01-01T11:30'} */}
                   </span>
-                  <span>5 MB | 5 Aug 2019, 11.05 AM {/* {'5MB'} | {'2019-01-01T11:30'} */}</span>
                 </div>
               </div>
             ))
