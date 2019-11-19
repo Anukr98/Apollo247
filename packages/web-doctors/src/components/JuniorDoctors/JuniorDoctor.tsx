@@ -167,7 +167,9 @@ export const JuniorDoctor: React.FC = (props) => {
       },
     }));
     const activeConsults = allConsults.filter((consult) => consult.isActive);
-    const pastConsults = allConsults.filter((consult) => !consult.isActive);
+    const pastConsults = allConsults.filter(
+      (consult) => !consult.isActive && consult.appointment.status !== STATUS.CANCELLED
+    );
 
     content = [
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
@@ -203,19 +205,17 @@ export const JuniorDoctor: React.FC = (props) => {
               isPastConsultsAvailable = true;
 
               return (
-                appointment.status !== STATUS.CANCELLED && (
-                  <Link
-                    key={id}
-                    to={clientRoutes.JDConsultRoom({
-                      appointmentId: appointment.id,
-                      patientId: patient.id,
-                      queueId: String(id),
-                      isActive: isActive ? 'active' : 'done',
-                    })}
-                  >
-                    <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
-                  </Link>
-                )
+                <Link
+                  key={id}
+                  to={clientRoutes.JDConsultRoom({
+                    appointmentId: appointment.id,
+                    patientId: patient.id,
+                    queueId: String(id),
+                    isActive: isActive ? 'active' : 'done',
+                  })}
+                >
+                  <PastConsultCard id={id} key={id} patient={patient} appointment={appointment} />
+                </Link>
               );
             })}
           </div>
