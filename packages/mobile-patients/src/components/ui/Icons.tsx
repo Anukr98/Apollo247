@@ -668,3 +668,12 @@ export const TestsCartMedicineIcon: React.FC<IconProps> = (props) => (
     source={require('./icons/ic_medicines.png')}
   />
 );
+
+export const ShieldIcon: React.FC<IconProps> = (props) => (
+  <IconBase
+    size="sm"
+    style={{ height: 42.1, width: 36 }}
+    {...props}
+    source={require('./icons/ic_shield.png')}
+  />
+);
