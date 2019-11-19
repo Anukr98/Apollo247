@@ -21,49 +21,41 @@ export const UserCard: React.FC = () => {
   } = useContext(CaseSheetContext);
 
   const userCardStrip = [];
-  const displayId =
-    appointmentInfo &&
-    appointmentInfo !== null &&
-    appointmentInfo.displayId !== null
-      ? appointmentInfo!.displayId
-      : "";
+  const displayId = (appointmentInfo && appointmentInfo.displayId) || "";
   if (
-    patientDetails!.dateOfBirth &&
-    patientDetails!.dateOfBirth !== null &&
-    patientDetails!.dateOfBirth !== ""
+    patientDetails &&
+    patientDetails.dateOfBirth &&
+    patientDetails.dateOfBirth !== ""
   ) {
     userCardStrip.push(
       Math.abs(
         new Date(Date.now()).getUTCFullYear() -
-          new Date(patientDetails!.dateOfBirth).getUTCFullYear()
+          new Date(patientDetails.dateOfBirth).getUTCFullYear()
       ).toString()
     );
   }
-  if (patientDetails!.gender && patientDetails!.gender !== null) {
-    if (patientDetails!.gender === Gender.FEMALE) {
+  if (patientDetails && patientDetails.gender) {
+    if (patientDetails.gender === Gender.FEMALE) {
       userCardStrip.push("F");
     }
-    if (patientDetails!.gender === Gender.MALE) {
+    if (patientDetails.gender === Gender.MALE) {
       userCardStrip.push("M");
     }
-    if (patientDetails!.gender === Gender.OTHER) {
+    if (patientDetails.gender === Gender.OTHER) {
       userCardStrip.push("O");
     }
   }
   if (
     patientDetails &&
-    patientDetails!.patientAddress &&
-    patientDetails.patientAddress !== null &&
+    patientDetails.patientAddress &&
     patientDetails.patientAddress.length > 0 &&
-    patientDetails!.patientAddress[0]!.city !== ""
+    patientDetails.patientAddress[0]!.city !== ""
   ) {
-    userCardStrip.push(patientDetails!.patientAddress[0]!.city);
+    userCardStrip.push(patientDetails.patientAddress[0].city);
   }
   const photoUrl =
-    patientDetails &&
-    patientDetails!.photoUrl &&
-    patientDetails!.photoUrl !== null
-      ? patientDetails!.photoUrl
+    patientDetails && patientDetails.photoUrl
+      ? patientDetails.photoUrl
       : require("images/no_person_icon.svg");
   return loading && !patientDetails ? (
     <CircularProgress />
