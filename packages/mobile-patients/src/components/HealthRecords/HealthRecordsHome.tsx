@@ -43,23 +43,23 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { Button } from '../ui/Button';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   getPatientMedicalRecords,
   getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
-} from '../../graphql/types/getPatientMedicalRecords';
-import { g } from '../../helpers/helperFunctions';
+} from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientMedicalRecord,
   deletePatientMedicalRecordVariables,
-} from '../../graphql/types/deletePatientMedicalRecord';
-import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
-import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { MaterialMenu } from '../ui/MaterialMenu';
-import { AddProfile } from '../ui/AddProfile';
-import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
-import { ProfileList } from '../ui/ProfileList';
+} from '@aph/mobile-patients/src/graphql/types/deletePatientMedicalRecord';
+import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 
 const { width, height } = Dimensions.get('window');
 

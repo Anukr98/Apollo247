@@ -50,10 +50,14 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { MEDICINE_ORDER_STATUS } from '../graphql/types/globalTypes';
-import { useShoppingCart, ShoppingCartItem, EPrescription } from './ShoppingCartProvider';
-import { useUIElements } from './UIElementsProvider';
-import { getMedicineDetailsApi } from '../helpers/apiCalls';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  useShoppingCart,
+  ShoppingCartItem,
+  EPrescription,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {

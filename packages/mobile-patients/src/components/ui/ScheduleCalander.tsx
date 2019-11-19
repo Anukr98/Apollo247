@@ -29,17 +29,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { MaterialMenu } from './MaterialMenu';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
   getDiagnosticSlots,
   getDiagnosticSlotsVariables,
   getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot,
-} from '../../graphql/types/getDiagnosticSlots';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { GET_DIAGNOSTIC_SLOTS } from '../../graphql/profiles';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { GET_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { useApolloClient } from 'react-apollo-hooks';
-import { Spinner } from './Spinner';
-import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const { width, height } = Dimensions.get('window');
 

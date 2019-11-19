@@ -55,13 +55,13 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { useUIElements } from '../UIElementsProvider';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { MaterialMenu } from '../ui/MaterialMenu';
-import { string } from '../../strings/string';
-import { AddProfile } from '../ui/AddProfile';
-import { ProfileList } from '../ui/ProfileList';
-import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { string } from '@aph/mobile-patients/src/strings/string';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 
 const styles = StyleSheet.create({
   labelView: {

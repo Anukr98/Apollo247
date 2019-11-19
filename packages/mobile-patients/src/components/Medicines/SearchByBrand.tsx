@@ -40,10 +40,13 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { AppConfig } from '../../strings/AppConfig';
-import { ImagePlaceholderView, Spearator } from '../ui/BasicComponents';
-import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  ImagePlaceholderView,
+  Spearator,
+} from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {

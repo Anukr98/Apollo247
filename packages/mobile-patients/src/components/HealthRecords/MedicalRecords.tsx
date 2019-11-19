@@ -7,8 +7,8 @@ import React, { useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { Button } from '../ui/Button';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   filterViewStyle: {

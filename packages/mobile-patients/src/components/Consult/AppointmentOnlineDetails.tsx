@@ -45,18 +45,21 @@ import {
 import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
-} from '../../graphql/types/bookRescheduleAppointment';
-import { Spinner } from '../ui/Spinner';
-import { getDoctorAvailableSlots_getDoctorAvailableSlots } from '../../graphql/types/getDoctorAvailableSlots';
+} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { getDoctorAvailableSlots_getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
 import {
   checkIfReschedule,
   checkIfRescheduleVariables,
-} from '../../graphql/types/checkIfReschedule';
+} from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
-import { getNetStatus } from '../../helpers/helperFunctions';
-import { NoInterNetPopup } from '../ui/NoInterNetPopup';
-import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import {
+  CommonLogEvent,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 

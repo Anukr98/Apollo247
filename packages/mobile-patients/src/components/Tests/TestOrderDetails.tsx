@@ -1,34 +1,33 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { OrderSummary } from '@aph/mobile-patients/src/components/OrderSummaryView';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { TestOrderSummaryView } from '@aph/mobile-patients/src/components/TestOrderSummaryView';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossPopup, DropdownGreen, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CrossPopup, DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
-  GET_MEDICINE_ORDER_DETAILS,
-  SAVE_ORDER_CANCEL_STATUS,
-  GET_DIAGNOSTIC_ORDER_LIST,
   GET_DIAGNOSTIC_ORDER_LIST_DETAILS,
+  SAVE_ORDER_CANCEL_STATUS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  GetMedicineOrderDetails,
-  GetMedicineOrderDetailsVariables,
-  GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
-} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
+  getDiagnosticOrderDetails,
+  getDiagnosticOrderDetailsVariables,
+  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 import {
   saveOrderCancelStatus,
   saveOrderCancelStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveOrderCancelStatus';
 import {
-  g,
-  getOrderStatusText,
-  handleGraphQlError,
   aphConsole,
+  g,
+  handleGraphQlError,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -52,19 +51,6 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  useShoppingCart,
-  ShoppingCartItem,
-  EPrescription,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
-import {
-  getDiagnosticOrderDetailsVariables,
-  getDiagnosticOrderDetails,
-  getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
-} from '../../graphql/types/getDiagnosticOrderDetails';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -450,23 +436,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
   };
 
   const renderOrderSummary = () => {
-    return (
-      <OrderSummary
-        orderDetails={
-          {
-            orderAutoId: orderDetails.displayId,
-            id: `${orderDetails.displayId}`,
-            estimatedAmount: orderDetails.totalPrice,
-            medicineOrderLineItems: (orderDetails.diagnosticOrderLineItems || []).map((item) => ({
-              medicineName: `${(item!.diagnostics || { itemName: '' }).itemName}`,
-              price: item!.price,
-              quantity: item!.quantity,
-            })) as any,
-          } as any
-        }
-        isTest={true}
-      />
-    );
+    return <TestOrderSummaryView orderDetails={orderDetails} />;
   };
 
   const onPressConfirmCancelOrder = () => {

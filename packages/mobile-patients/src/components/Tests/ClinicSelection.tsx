@@ -15,8 +15,8 @@ import React, { useState, useEffect } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   bottonButtonContainer: {

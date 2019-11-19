@@ -19,7 +19,7 @@ import {
   EmitterSubscription,
 } from 'react-native';
 import { NavigationScreenProps, NavigationEventSubscription } from 'react-navigation';
-import { useAuth } from '../hooks/authHooks';
+import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 // import SmsListener from 'react-native-android-sms-listener';
 import {
   timeOutDataType,
@@ -30,7 +30,10 @@ import firebase from 'react-native-firebase';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CommonLogEvent, CommonBugFender } from '../FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   container: {

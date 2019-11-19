@@ -49,10 +49,10 @@ import DeviceInfo from 'react-native-device-info';
 import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { NotificationListener } from '../NotificationListener';
-import { AddProfile } from '../ui/AddProfile';
-import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
-import { ProfileList } from '../ui/ProfileList';
+import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 
 const { width, height } = Dimensions.get('window');
 

@@ -19,13 +19,13 @@ import {
   View,
   Alert,
 } from 'react-native';
-import { Gender, Relation } from '../../graphql/types/globalTypes';
+import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { useApolloClient } from 'react-apollo-hooks';
-import { addNewProfile } from '../../graphql/types/addNewProfile';
-import { ADD_NEW_PROFILE } from '../../graphql/profiles';
-import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
-import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
-import { useUIElements } from '../UIElementsProvider';
+import { addNewProfile } from '@aph/mobile-patients/src/graphql/types/addNewProfile';
+import { ADD_NEW_PROFILE } from '@aph/mobile-patients/src/graphql/profiles';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const { width, height } = Dimensions.get('window');
 

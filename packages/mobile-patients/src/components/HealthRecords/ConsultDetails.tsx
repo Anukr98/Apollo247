@@ -32,17 +32,21 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
-import { getMedicineDetailsApi } from '../../helpers/apiCalls';
-import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
-import { AppConfig } from '../../strings/AppConfig';
-import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
-import { AppRoutes } from '../NavigatorContainer';
-import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
-import { Download } from '../ui/Icons';
-import { Spinner } from '../ui/Spinner';
-import { MEDICINE_UNIT } from '../../graphql/types/globalTypes';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  EPrescription,
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   imageView: {

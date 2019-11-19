@@ -38,11 +38,11 @@ import {
   View,
 } from 'react-native';
 import Permissions from 'react-native-permissions';
-import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
+import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import moment from 'moment';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
-import { AppConfig } from '../../strings/AppConfig';
+import { CommonLogEvent, CommonScreenLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   optionsView: {

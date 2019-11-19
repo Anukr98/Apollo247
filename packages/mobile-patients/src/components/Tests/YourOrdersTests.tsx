@@ -4,19 +4,9 @@ import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import {
-  GET_MEDICINE_ORDERS_LIST,
-  GET_DIAGNOSTIC_ORDER_LIST,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus,
-} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
-import {
-  MEDICINE_DELIVERY_TYPE,
-  MEDICINE_ORDER_STATUS,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { GET_DIAGNOSTIC_ORDER_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g, getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -24,13 +14,12 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Alert, TouchableOpacity } from 'react-native';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
-} from '../../graphql/types/getDiagnosticOrdersList';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 
 const styles = StyleSheet.create({
   noDataCard: {

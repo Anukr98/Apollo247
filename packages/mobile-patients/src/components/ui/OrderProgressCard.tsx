@@ -1,7 +1,10 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { OrderPlacedIcon, OrderTrackerSmallIcon } from './Icons';
+import {
+  OrderPlacedIcon,
+  OrderTrackerSmallIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   containerStyle: {
