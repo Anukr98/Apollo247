@@ -271,7 +271,7 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             style={{ marginBottom: 8 }}
             // key={index}
             description={''}
-            status={orderDetails.orderStatus}
+            status={orderDetails.orderStatus && orderDetails.orderStatus.replace('_', ' ')}
             date={getFormattedDate(orderDetails.diagnosticDate)}
             time={getFormattedTime(orderDetails.diagnosticDate)}
             isStatusDone={true}

@@ -940,6 +940,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else if (message.message.message === languageQue) {
         console.log('languageQue');
         addMessages(message);
+      } else if (message.message.message === jdThankyou) {
+        console.log('jdThankyou');
+        addMessages(message);
       }
     } else {
       console.log('succss');

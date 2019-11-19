@@ -192,10 +192,15 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, is
           </Text>
         </View>
       </View>
-      <View style={{ marginLeft: 25, marginBottom: 8, marginTop: 17 }}>
-        <Delivery />
-      </View>
-      <Text style={styles.deliveryText}>2 Hour Delivery Promise!</Text>
+      {isTest ? null : (
+        <View>
+          <View style={{ marginLeft: 25, marginBottom: 8, marginTop: 17 }}>
+            <Delivery />
+          </View>
+          <Text style={styles.deliveryText}>2 Hour Delivery Promise!</Text>
+        </View>
+      )}
+
       <View style={[styles.horizontalline, { borderBottomColor: '#f0f1ec', marginBottom: 20 }]} />
       <Text
         style={[

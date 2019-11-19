@@ -818,7 +818,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               paddingBottom: 16,
                             }}
                           >
-                            You can chat with the doctor
+                            You can chat with the doctor for
                           </Text>
 
                           <Text
@@ -834,7 +834,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                             }}
                           >
                             {day1.diff(day2, 'days') == 0
-                              ? 'today'
+                              ? 'Today'
                               : day1.diff(day2, 'days') +
                                 'more ' +
                                 (day1.diff(day2, 'days') == 1 ? 'day' : 'days')}
