@@ -32,7 +32,7 @@ import {
   StackActions,
 } from 'react-navigation';
 import Moment from 'moment';
-import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   updatePatientVariables,
   updatePatient,
@@ -41,7 +41,10 @@ import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalT
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CommonLogEvent, CommonScreenLog } from '../FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { height } = Dimensions.get('window');
 

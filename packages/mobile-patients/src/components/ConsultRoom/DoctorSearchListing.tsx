@@ -48,12 +48,12 @@ import {
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import Geocoder from 'react-native-geocoding';
-import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonScreenLog, CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { getPlaceInfoByPlaceId, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { AppConfig } from '../../strings/AppConfig';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   topView: {

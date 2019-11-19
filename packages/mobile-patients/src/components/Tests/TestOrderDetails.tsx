@@ -64,7 +64,7 @@ import {
   getDiagnosticOrderDetailsVariables,
   getDiagnosticOrderDetails,
   getDiagnosticOrderDetails_getDiagnosticOrderDetails_ordersList,
-} from '../../graphql/types/getDiagnosticOrderDetails';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrderDetails';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {

@@ -49,7 +49,7 @@ import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextI
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { BottomPopUp } from '../ui/BottomPopUp';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -294,15 +294,15 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     }
   };
 
-  const isValidProfile =
-    firstName &&
-    isSatisfyingNameRegex(firstName) &&
-    lastName &&
-    isSatisfyingNameRegex(lastName) &&
-    date &&
-    gender &&
-    relation &&
-    (isSatisfyingEmailRegex(email) || email === '');
+  const isChanged =
+    profileData &&
+    firstName === profileData.firstName &&
+    lastName === profileData.lastName &&
+    Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD') === profileData.dateOfBirth &&
+    gender === profileData.gender &&
+    relation!.key === profileData.relation &&
+    email === profileData.emailAddress &&
+    photoUrl === profileData.photoUrl;
 
   useEffect(() => {
     if (profileData) {
@@ -346,41 +346,44 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const updateUserProfile = () => {
     setLoading(true);
-    allCurrentPatients!.length > 0 && relation;
-    client
-      .mutate<editProfile, any>({
-        mutation: EDIT_PROFILE,
-        variables: {
-          editProfileInput: {
-            id: profileData.id,
-            photoUrl: photoUrl,
-            firstName: firstName,
-            lastName: lastName,
-            relation: (relation && relation.key!) || Relation.ME,
-            gender: gender,
-            dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-            emailAddress: email,
+    if (!isChanged) {
+      client
+        .mutate<editProfile, any>({
+          mutation: EDIT_PROFILE,
+          variables: {
+            editProfileInput: {
+              id: profileData.id,
+              photoUrl: photoUrl,
+              firstName: firstName,
+              lastName: lastName,
+              relation: (relation && relation.key!) || Relation.ME,
+              gender: gender,
+              dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+              emailAddress: email,
+            },
           },
-        },
-      })
-      .then((data) => {
-        getPatientApiCall();
-        props.navigation.goBack();
-        if (relation!.key === Relation.ME && profileData.relation !== Relation.ME) {
-          setCurrentPatientId(profileData!.id);
-          AsyncStorage.setItem('selectUserId', profileData!.id);
-        }
-        // props.navigation.pop(2);
-        // props.navigation.push(AppRoutes.ManageProfile, {
-        //   mobileNumber: props.navigation.getParam('mobileNumber'),
-        // });
-      })
-      .catch((e) => {
-        Alert.alert('Alert', e.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+        })
+        .then((data) => {
+          getPatientApiCall();
+          props.navigation.goBack();
+          if (relation!.key === Relation.ME && profileData.relation !== Relation.ME) {
+            setCurrentPatientId(profileData!.id);
+            AsyncStorage.setItem('selectUserId', profileData!.id);
+          }
+          // props.navigation.pop(2);
+          // props.navigation.push(AppRoutes.ManageProfile, {
+          //   mobileNumber: props.navigation.getParam('mobileNumber'),
+          // });
+        })
+        .catch((e) => {
+          Alert.alert('Alert', e.message);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      props.navigation.goBack();
+    }
   };
 
   const newProfile = () => {

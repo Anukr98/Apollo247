@@ -39,10 +39,13 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from '../NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { AvailabilityCapsule } from '@aph/mobile-patients/src/components/ui/AvailabilityCapsule';
-import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 

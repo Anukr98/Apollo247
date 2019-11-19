@@ -30,7 +30,7 @@ import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
-} from '../../graphql/types/getDiagnosticOrdersList';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 
 const styles = StyleSheet.create({
   noDataCard: {

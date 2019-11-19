@@ -59,7 +59,10 @@ import { TestsCheckoutScene } from '@aph/mobile-patients/src/components/TestsChe
 import { YourOrdersTest } from '@aph/mobile-patients/src/components/Tests/YourOrdersTests';
 import { TestOrderDetails } from '@aph/mobile-patients/src/components/Tests/TestOrderDetails';
 import { ClinicSelection } from '@aph/mobile-patients/src/components/Tests/ClinicSelection';
-import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import {
+  CommonScreenLog,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { EditProfile } from '@aph/mobile-patients/src/components/Account/EditProfile';
 import { ManageProfile } from '@aph/mobile-patients/src/components/Account/ManageProfile';
 import { TestsByCategory } from '@aph/mobile-patients/src/components/Medicines/TestsByCategory';

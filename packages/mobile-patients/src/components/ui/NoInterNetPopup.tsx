@@ -1,7 +1,7 @@
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { theme } from '../../theme/theme';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const styles = StyleSheet.create({
   gotItStyles: {

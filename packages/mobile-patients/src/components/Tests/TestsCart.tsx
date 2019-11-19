@@ -58,10 +58,10 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import {
   getDiagnosticSlots,
   getDiagnosticSlotsVariables,
-} from '../../graphql/types/getDiagnosticSlots';
-import { TEST_COLLECTION_TYPE } from '../../graphql/types/globalTypes';
-import { Spinner } from '../ui/Spinner';
-import { TestPackageForDetails } from './TestDetails';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -229,10 +229,6 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [currentPatientId]);
 
   useEffect(() => {
-    fetchStorePickup();
-    if (clinicId) {
-      filterClinics(clinicId, true);
-    }
     if (deliveryAddressId) {
       if (diagnosticSlot) {
         setDate(new Date(diagnosticSlot.date));
@@ -248,9 +244,15 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   }, [deliveryAddressId, diagnosticSlot]);
 
   useEffect(() => {
+    fetchStorePickup();
+    if (clinicId) {
+      filterClinics(clinicId, true);
+    }
+  }, [clinicId]);
+
+  useEffect(() => {
     setLoading!(true);
     (currentPatientId &&
-      addresses.length == 0 &&
       client
         .query<getPatientAddressList, getPatientAddressListVariables>({
           query: GET_PATIENT_ADDRESS_LIST,

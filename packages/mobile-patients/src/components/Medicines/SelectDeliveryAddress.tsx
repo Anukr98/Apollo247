@@ -7,11 +7,11 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, View, Alert, Platform } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { Spinner } from '../ui/Spinner';
-import { pinCodeServiceabilityApi } from '../../helpers/apiCalls';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '../NavigatorContainer';
-import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { pinCodeServiceabilityApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   cardStyle: {

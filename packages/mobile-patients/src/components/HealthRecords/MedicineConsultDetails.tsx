@@ -23,15 +23,18 @@ import {
   PermissionsAndroid,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { Button } from '../ui/Button';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import RNFetchBlob from 'react-native-fetch-blob';
-import { Spinner } from '../ui/Spinner';
-import { useShoppingCart, ShoppingCartItem } from '../ShoppingCartProvider';
-import { getMedicineDetailsApi } from '../../helpers/apiCalls';
-import { AppRoutes } from '../NavigatorContainer';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  useShoppingCart,
+  ShoppingCartItem,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import moment from 'moment';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   imageView: {

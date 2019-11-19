@@ -12,21 +12,28 @@ import {
   GET_APPOINTMENT_DATA,
   GET_MEDICINE_ORDER_DETAILS,
   GET_CALL_DETAILS,
-} from '../graphql/profiles';
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getAppointmentData,
   getAppointmentDataVariables,
-} from '../graphql/types/getAppointmentData';
+} from '@aph/mobile-patients/src/graphql/types/getAppointmentData';
 import {
   GetMedicineOrderDetails,
   GetMedicineOrderDetailsVariables,
-} from '../graphql/types/GetMedicineOrderDetails';
-import { getMedicineDetailsApi } from '../helpers/apiCalls';
-import { aphConsole } from '../helpers/helperFunctions';
-import { useAllCurrentPatients } from '../hooks/authHooks';
-import { AppRoutes } from './NavigatorContainer';
-import { EPrescription, ShoppingCartItem, useShoppingCart } from './ShoppingCartProvider';
-import { getCallDetails, getCallDetailsVariables } from '../graphql/types/getCallDetails';
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  EPrescription,
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  getCallDetails,
+  getCallDetailsVariables,
+} from '@aph/mobile-patients/src/graphql/types/getCallDetails';
 
 const styles = StyleSheet.create({
   rescheduleTextStyles: {

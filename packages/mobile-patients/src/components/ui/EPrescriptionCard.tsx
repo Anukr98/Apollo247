@@ -1,7 +1,12 @@
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { CheckedIcon, CrossYellow, PrescriptionIcon, UnCheck } from './Icons';
+import {
+  CheckedIcon,
+  CrossYellow,
+  PrescriptionIcon,
+  UnCheck,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({});
 

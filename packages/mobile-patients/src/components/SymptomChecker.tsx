@@ -19,14 +19,17 @@ import { Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import Moment from 'moment';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { StackActions } from 'react-navigation';
-import { AppConfig } from '../strings/AppConfig';
-import { CommonScreenLog, CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
-import { DropdownGreen } from './ui/Icons';
-import { MaterialMenu } from './ui/MaterialMenu';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  CommonScreenLog,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
-import { GetCurrentPatients_getCurrentPatients_patients } from '../graphql/types/GetCurrentPatients';
-import { theme } from '../theme/theme';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 export interface CustomComponentProps extends NavigationScreenProps {}
 const styles = StyleSheet.create({

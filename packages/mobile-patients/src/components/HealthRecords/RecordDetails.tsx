@@ -27,7 +27,7 @@ import { NavigationScreenProps } from 'react-navigation';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import moment from 'moment';
 import RNFetchBlob from 'react-native-fetch-blob';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   imageView: {

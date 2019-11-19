@@ -74,15 +74,15 @@ import { FlatList, NavigationScreenProps } from 'react-navigation';
 import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
-} from '../../graphql/types/getDiagnosticOrdersList';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import {
   getDiagnosticsData,
   getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
   getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
-} from '../../graphql/types/getDiagnosticsData';
-import { TEST_COLLECTION_TYPE } from '../../graphql/types/globalTypes';
-import { BottomPopUp } from '../ui/BottomPopUp';
-import { TestPackageForDetails } from './TestDetails';
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
 const styles = StyleSheet.create({
   labelView: {
