@@ -184,12 +184,16 @@ export const ConsultRoom: React.FC = (props) => {
   >(GET_PATIENT_APPOINTMENTS, {
     variables: {
       patientAppointmentsInput: {
-        patientId: (currentPatient && currentPatient.id) || '',
+        patientId:
+          (currentPatient && currentPatient.id) ||
+          (allCurrentPatients && allCurrentPatients[0].id) ||
+          '',
         appointmentDate: currentDate,
       },
     },
     fetchPolicy: 'no-cache',
   });
+
   if (loading) {
     return <LinearProgress />;
   }
@@ -203,6 +207,8 @@ export const ConsultRoom: React.FC = (props) => {
     data && data.getPatinetAppointments && data.getPatinetAppointments.patinetAppointments
       ? data.getPatinetAppointments.patinetAppointments
       : [];
+
+  console.log(appointments + '');
 
   // filter appointments that are greater than current time.
   const filterAppointments = appointments.filter((appointmentDetails) => {
