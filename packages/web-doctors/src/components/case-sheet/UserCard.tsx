@@ -92,7 +92,7 @@ export const UserCard: React.FC = () => {
         <Typography variant="h6" color="textSecondary" component="h6">
           Submitted by Dr. {jrdName}{" "}
           {jrdSubmitDate &&
-            `on{" "}
+            `on 
           ${format(new Date(jrdSubmitDate), "dd/MM/yyyy hh:mm:ss")}`}
         </Typography>
       </CardContent>
