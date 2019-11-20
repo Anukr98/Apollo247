@@ -76,6 +76,18 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   notes: string | null;
 }
 
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile {
+  __typename: "Profile";
+  firstName: string | null;
+  lastName: string | null;
+}
+
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorCaseSheet {
+  __typename: "CaseSheet";
+  createdDate: any | null;
+  createdDoctorProfile: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile | null;
+}
+
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_familyHistory {
   __typename: "PatientFamilyHistory";
   description: string | null;
@@ -192,6 +204,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointme
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet {
   __typename: "CaseSheetFullDetails";
   caseSheetDetails: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails | null;
+  juniorDoctorCaseSheet: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorCaseSheet | null;
   patientDetails: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails | null;
   pastAppointments: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments | null)[] | null;
   juniorDoctorNotes: string | null;
