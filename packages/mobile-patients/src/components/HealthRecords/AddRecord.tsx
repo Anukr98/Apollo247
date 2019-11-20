@@ -46,8 +46,8 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { MaterialMenu } from '../ui/MaterialMenu';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -202,8 +202,8 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
       return (
         (item.maximum || item.minimum || item.result || item.parameterName) &&
         item.maximum! > item.minimum! &&
-        item.result <= item.maximum! &&
-        item.result >= item.minimum!
+        item.result! <= item.maximum! &&
+        item.result! >= item.minimum!
       );
     });
     return valid.find((i) => i === false) !== undefined;
@@ -558,7 +558,7 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
                   <TextInputComponent
                     label={'Name Of Parameter'}
                     placeholder={'Enter name'}
-                    value={item.parameterName}
+                    value={item.parameterName || ''}
                     onChangeText={(value) => setParametersData('parameterName', value, i)}
                   />
                   <View style={{ flexDirection: 'row' }}>

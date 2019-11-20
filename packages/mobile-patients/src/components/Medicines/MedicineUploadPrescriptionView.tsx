@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView, NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { theme } from '../../theme/theme';
-import { EPrescription, PhysicalPrescription, useShoppingCart } from '../ShoppingCartProvider';
-import { EPrescriptionCard } from '../ui/EPrescriptionCard';
-import { CrossYellow, FileBig } from '../ui/Icons';
-import { TextInputComponent } from '../ui/TextInputComponent';
-import { SelectEPrescriptionModal } from './SelectEPrescriptionModal';
-import { UploadPrescriprionPopup } from './UploadPrescriprionPopup';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import {
+  EPrescription,
+  PhysicalPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
+import { CrossYellow, FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -32,11 +37,16 @@ const styles = StyleSheet.create({
   },
 });
 
-export interface MedicineUploadPrescriptionViewProps extends NavigationScreenProps {}
+export interface MedicineUploadPrescriptionViewProps extends NavigationScreenProps {
+  isTest?: boolean;
+}
+{
+}
 
 export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescriptionViewProps> = (
   props
 ) => {
+  const { isTest } = props;
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const { currentPatient } = useAllCurrentPatients();
@@ -50,7 +60,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
     ePrescriptions,
     setEPrescriptions,
     removeEPrescription,
-  } = useShoppingCart();
+  } = isTest ? useDiagnosticsCart() : useShoppingCart();
 
   const renderLabel = (label: string, rightText?: string) => {
     return (
@@ -291,10 +301,10 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
   };
 
   const renderUploadPrescription = () => {
-    if (uploadPrescriptionRequired) {
+    if (uploadPrescriptionRequired || isTest) {
       return (
         <View>
-          {renderLabel('UPLOAD PRESCRIPTION')}
+          {renderLabel(isTest ? 'UPLOAD PRESCRIPTION (OPTIONAL)' : 'UPLOAD PRESCRIPTION')}
           {physicalPrescriptions.length == 0 && ePrescriptions.length == 0 ? (
             <View
               style={{
@@ -313,7 +323,9 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                     padding: 16,
                   }}
                 >
-                  {`Items in your cart marked with ‘Rx’ need prescriptions to complete your purchase. Please upload the necessary prescriptions`}
+                  {isTest
+                    ? `Prescriptions help the pathologists to understand the requirements better. If you have a prescription, you can upload them.`
+                    : `Items in your cart marked with ‘Rx’ need prescriptions to complete your purchase. Please upload the necessary prescriptions`}
                 </Text>
                 <Text
                   style={{
@@ -325,7 +337,7 @@ export const MedicineUploadPrescriptionView: React.FC<MedicineUploadPrescription
                   UPLOAD PRESCRIPTION
                 </Text>
               </TouchableOpacity>
-              {consultDoctorCTA()}
+              {!isTest && consultDoctorCTA()}
             </View>
           ) : (
             rendePrescriptions()

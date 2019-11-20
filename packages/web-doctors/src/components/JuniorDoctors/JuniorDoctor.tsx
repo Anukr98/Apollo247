@@ -17,6 +17,7 @@ import { AphLinearProgress } from '@aph/web-ui-components';
 import { GET_DOCTOR_DETAILS } from 'graphql/profiles';
 import { GetDoctorDetails } from 'graphql/types/GetDoctorDetails';
 import { DOCTOR_ONLINE_STATUS } from 'graphql/types/globalTypes';
+import { STATUS } from 'graphql/types/globalTypes';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -166,7 +167,9 @@ export const JuniorDoctor: React.FC = (props) => {
       },
     }));
     const activeConsults = allConsults.filter((consult) => consult.isActive);
-    const pastConsults = allConsults.filter((consult) => !consult.isActive);
+    const pastConsults = allConsults.filter(
+      (consult) => !consult.isActive && consult.appointment.status !== STATUS.CANCELLED
+    );
 
     content = [
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 320px'}>
@@ -200,6 +203,7 @@ export const JuniorDoctor: React.FC = (props) => {
           <div className={classes.boxGroup}>
             {pastConsults.map(({ id, patient, appointment, isActive }) => {
               isPastConsultsAvailable = true;
+
               return (
                 <Link
                   key={id}

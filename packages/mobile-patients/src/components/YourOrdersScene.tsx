@@ -21,8 +21,9 @@ import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import { SafeAreaView, StyleSheet, View, Alert } from 'react-native';
+import { SafeAreaView, StyleSheet, View, Alert, TouchableOpacity } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
+import { More } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -39,6 +40,7 @@ export interface YourOrdersSceneProps extends NavigationScreenProps {}
 export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const isTest = props.navigation.getParam('isTest');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -130,6 +132,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
         {orders.map((order, index, array) => {
           return (
             <OrderCard
+              isTest={isTest}
               style={index < array.length - 1 ? { marginBottom: 8 } : {}}
               key={`${order!.orderAutoId}`}
               orderId={`#${order!.orderAutoId}`}
@@ -195,6 +198,13 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
           title={string.orders.urOrders}
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => props.navigation.goBack()}
+          rightComponent={
+            isTest && (
+              <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+                <More />
+              </TouchableOpacity>
+            )
+          }
         />
         <ScrollView bounces={false}>
           {renderOrders()}

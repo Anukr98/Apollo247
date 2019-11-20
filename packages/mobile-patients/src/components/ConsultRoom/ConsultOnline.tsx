@@ -26,9 +26,9 @@ import Moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import { StyleSheet, Text, View } from 'react-native';
-import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { AppRoutes } from '../NavigatorContainer';
+import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   selectedButtonView: {
@@ -222,7 +222,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
             const today: Date = new Date();
             const date2: Date = new Date(nextSlot);
             if (date2 && today) {
-              timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+              timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
             }
             props.setNextAvailableSlot(nextSlot);
             props.setavailableInMin(timeDiff);

@@ -43,7 +43,7 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -197,7 +197,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'YOUR CART'}
+        title={'MEDICINE CART'}
         rightComponent={
           <View>
             <TouchableOpacity

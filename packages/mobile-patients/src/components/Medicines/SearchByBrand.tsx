@@ -40,9 +40,13 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { AppConfig } from '../../strings/AppConfig';
-import { ImagePlaceholderView, Spearator } from '../ui/BasicComponents';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  ImagePlaceholderView,
+  Spearator,
+} from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -89,12 +93,13 @@ export interface SearchByBrandProps
   extends NavigationScreenProps<{
     title: string;
     category_id: string;
+    isTest?: boolean; // Ignoring for now
   }> {}
 
 export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
   const category_id = props.navigation.getParam('category_id');
   const pageTitle = props.navigation.getParam('title');
-
+  const isTest = props.navigation.getParam('isTest');
   const [searchText, setSearchText] = useState<string>('');
   const [productsList, setProductsList] = useState<MedicineProduct[]>([]);
   const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
@@ -150,20 +155,19 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
     is_prescription_required,
     thumbnail,
   }: MedicineProduct) => {
-    addCartItem &&
-      addCartItem({
-        id: sku,
-        mou,
-        name,
-        price: special_price
-          ? typeof special_price == 'string'
-            ? parseInt(special_price)
-            : special_price
-          : price,
-        prescriptionRequired: is_prescription_required == '1',
-        quantity: 1,
-        thumbnail,
-      });
+    addCartItem!({
+      id: sku,
+      mou,
+      name,
+      price: special_price
+        ? typeof special_price == 'string'
+          ? parseInt(special_price)
+          : special_price
+        : price,
+      prescriptionRequired: is_prescription_required == '1',
+      quantity: 1,
+      thumbnail,
+    });
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -197,7 +201,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               activeOpacity={1}
               // style={{ marginRight: 24 }}
               onPress={() => {
-                props.navigation.navigate(AppRoutes.YourCart);
+                props.navigation.navigate(AppRoutes.MedAndTestCart);
               }}
             >
               <CartIcon />

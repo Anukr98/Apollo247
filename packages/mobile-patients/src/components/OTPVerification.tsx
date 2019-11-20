@@ -22,15 +22,18 @@ import {
 } from 'react-native';
 // import SmsListener from 'react-native-android-sms-listener';
 import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { useAllCurrentPatients, useAuth } from '../hooks/authHooks';
-import { OTPTextView } from './ui/OTPTextView';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { OTPTextView } from '@aph/mobile-patients/src/components/ui/OTPTextView';
 import firebase from 'react-native-firebase';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { Header } from './ui/Header';
-import { fonts } from '../theme/fonts';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import Hyperlink from 'react-native-hyperlink';
-import { CommonLogEvent, CommonBugFender } from '../FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonBugFender,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { height, width } = Dimensions.get('window');
 

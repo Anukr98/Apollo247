@@ -8,8 +8,8 @@ import {
   TouchableOpacityProps,
   ViewStyle,
 } from 'react-native';
-import { theme } from '../../theme/theme';
-import { isIphone5s } from '../../helpers/helperFunctions';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { isIphone5s } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   containerStyles: {

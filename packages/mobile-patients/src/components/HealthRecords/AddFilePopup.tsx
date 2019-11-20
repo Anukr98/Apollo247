@@ -13,7 +13,7 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import ImagePicker from 'react-native-image-crop-picker';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Image as PickerImage } from 'react-native-image-crop-picker';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 

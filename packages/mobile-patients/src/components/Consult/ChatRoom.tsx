@@ -90,25 +90,25 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 // import {
 //   addToConsultQueue,
 //   addToConsultQueueVariables,
-// } from '../../graphql/types/addToConsultQueue';
+// } from '@aph/mobile-patients/src/graphql/types/addToConsultQueue';
 import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
-} from '../../graphql/types/bookRescheduleAppointment';
+} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import {
   uploadChatDocument,
   uploadChatDocumentVariables,
-} from '../../graphql/types/uploadChatDocument';
+} from '@aph/mobile-patients/src/graphql/types/uploadChatDocument';
 import {
   addToConsultQueue,
   checkIfRescheduleAppointment,
   getNextAvailableSlots,
-} from '../../helpers/clientCalls';
-import { AppConfig } from '../../strings/AppConfig';
-import { Spinner } from '../ui/Spinner';
-import { OverlayRescheduleView } from './OverlayRescheduleView';
-import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
-import { SelectEPrescriptionModal } from '../Medicines/SelectEPrescriptionModal';
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -939,6 +939,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === languageQue) {
         console.log('languageQue');
+        addMessages(message);
+      } else if (message.message.message === jdThankyou) {
+        console.log('jdThankyou');
         addMessages(message);
       }
     } else {

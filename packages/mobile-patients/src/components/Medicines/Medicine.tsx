@@ -55,13 +55,13 @@ import {
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { useUIElements } from '../UIElementsProvider';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { MaterialMenu } from '../ui/MaterialMenu';
-import { string } from '../../strings/string';
-import { AddProfile } from '../ui/AddProfile';
-import { ProfileList } from '../ui/ProfileList';
-import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { string } from '@aph/mobile-patients/src/strings/string';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -108,7 +108,6 @@ export interface MedicineProps extends NavigationScreenProps {}
 export const Medicine: React.FC<MedicineProps> = (props) => {
   const [ShowPopop, setShowPopop] = useState<boolean>(false);
   const [isSelectPrescriptionVisible, setSelectPrescriptionVisible] = useState(false);
-  const [userName, setuserName] = useState<string | number>('');
   const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
   const cartItemsCount = cartItems.length;
@@ -119,19 +118,9 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   const { showAphAlert } = useUIElements();
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
-  useEffect(() => {
-    const getDataFromTree = async () => {
-      const storeVallue = await AsyncStorage.getItem('selectUserId');
-      console.log('storeVallue', storeVallue);
-      setCurrentPatientId(storeVallue);
-    };
 
-    getDataFromTree();
-    let userName =
-      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
-    userName = userName.toLowerCase();
-    setuserName(userName);
-    currentPatient && setProfile(currentPatient!);
+  useEffect(() => {
+    setProfile(currentPatient!);
     getMedicinePageProducts()
       .then((d) => {
         setData(d.data);
@@ -209,7 +198,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           <TouchableOpacity
             activeOpacity={1}
             onPress={() =>
-              props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true })
+              props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
             }
             style={{ right: 20 }}
           >
@@ -928,7 +917,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
     });
 
-    const shouldEnableSearchSend = searchText.length > 2 && medicineList.length > 0;
+    const shouldEnableSearchSend = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
         activeOpacity={1}
@@ -1131,6 +1120,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         >
           <View style={{ backgroundColor: theme.colors.WHITE }}>
             <ProfileList
+              navigation={props.navigation}
               saveUserChange={true}
               childView={
                 <View
@@ -1142,9 +1132,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                     backgroundColor: theme.colors.WHITE,
                   }}
                 >
-                  <Text style={styles.hiTextStyle}>hi</Text>
+                  <Text style={styles.hiTextStyle}>{'hi'}</Text>
                   <View>
-                    <Text style={styles.nameTextStyle}>{userName}</Text>
+                    <Text style={styles.nameTextStyle}>
+                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                    </Text>
                     <View style={styles.seperatorStyle} />
                   </View>
                   <View style={{ paddingTop: 15 }}>
@@ -1152,9 +1144,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                   </View>
                 </View>
               }
-              // selectedProfile={profile}
+              selectedProfile={profile}
               setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-              navigation={props.navigation}
             ></ProfileList>
           </View>
           {/* <Text

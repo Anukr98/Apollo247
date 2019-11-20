@@ -35,6 +35,9 @@ const useStyles = makeStyles(() => ({
       fontWeight: 600,
       color: '#0087ba',
       padding: 0,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      width: '90%',
     },
     '& h6': {
       fontSize: 10,

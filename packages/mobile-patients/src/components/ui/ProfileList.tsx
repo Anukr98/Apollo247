@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
-import { MaterialMenu } from './MaterialMenu';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import {
   Dimensions,
   View,
@@ -11,12 +11,12 @@ import {
   StyleProp,
   TextStyle,
 } from 'react-native';
-import { theme } from '../../theme/theme';
-import { DropdownGreen } from './Icons';
-import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
-import { Relation, Gender } from '../../graphql/types/globalTypes';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
-import { AppRoutes } from '../NavigatorContainer';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -58,7 +58,6 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     saveUserChange,
     selectedProfile,
     setDisplayAddProfile,
-    listContainerStyle,
   } = props;
   const addString = 'ADD MEMBER';
   const { getPatientApiCall } = useAuth();
@@ -76,8 +75,11 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   const titleCase = (str: string) => {
     var splitStr = str.toLowerCase().split(' ');
     for (var i = 0; i < splitStr.length; i++) {
+      // You do not need to check if i is larger than splitStr length, as your for does that for you
+      // Assign it back to the array
       splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);
     }
+    // Directly return the joined string
     return splitStr.join(' ');
   };
 
@@ -93,7 +95,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     const getDataFromTree = async () => {
       const storeVallue = await AsyncStorage.getItem('selectUserId');
       console.log('storeVallue', storeVallue);
-      setCurrentPatientId(storeVallue);
+      storeVallue && setCurrentPatientId(storeVallue);
     };
     getDataFromTree();
   }, []);
@@ -155,7 +157,6 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             marginTop: 16,
             marginLeft: width / 2 - 95,
           },
-          listContainerStyle,
         ]}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}

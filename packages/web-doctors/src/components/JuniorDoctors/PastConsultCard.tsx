@@ -88,7 +88,7 @@ export const PastConsultCard: React.FC<PastConsultCardProps> = (props) => {
   const { id, patient, appointment } = props;
   const appointmentDateIST = format(
     new Date(appointment.appointmentDateTime).getTime(),
-    'dd-MM-yyyy hh:mm a'
+    'dd/MM/yyyy, hh:mm a'
   );
   return (
     <div className={classes.root}>

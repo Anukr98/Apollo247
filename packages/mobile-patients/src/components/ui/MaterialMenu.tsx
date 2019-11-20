@@ -70,7 +70,11 @@ export const MaterialMenu: React.FC<MaterialMenuProps> = (props) => {
   return (
     <Menu
       ref={menuRef}
-      button={<TouchableOpacity onPress={showMenu}>{props.children}</TouchableOpacity>}
+      button={
+        <TouchableOpacity activeOpacity={1} onPress={showMenu}>
+          {props.children}
+        </TouchableOpacity>
+      }
       style={[styles.menuContainer, props.menuContainerStyle]}
     >
       <ScrollView bounces={false} style={{ paddingVertical: 8 }}>

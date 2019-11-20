@@ -16,9 +16,9 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { Remove, AddIcon } from '../ui/Icons';
-import { PATIENT_ADDRESS_TYPE } from '../../graphql/types/globalTypes';
-import { CapsuleView } from '../ui/CapsuleView';
+import { Remove, AddIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { PATIENT_ADDRESS_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
 
 const styles = StyleSheet.create({
   addressContainer: {
@@ -108,8 +108,8 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
           <CapsuleView
             title={
               address.addressType === PATIENT_ADDRESS_TYPE.OTHER
-                ? address.otherAddressType
-                : address.addressType
+                ? address.otherAddressType!
+                : address.addressType!
             }
             style={{
               position: 'absolute',

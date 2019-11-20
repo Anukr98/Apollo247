@@ -43,23 +43,23 @@ import {
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { Button } from '../ui/Button';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   getPatientMedicalRecords,
   getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
-} from '../../graphql/types/getPatientMedicalRecords';
-import { g } from '../../helpers/helperFunctions';
+} from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientMedicalRecord,
   deletePatientMedicalRecordVariables,
-} from '../../graphql/types/deletePatientMedicalRecord';
-import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
-import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { MaterialMenu } from '../ui/MaterialMenu';
-import { AddProfile } from '../ui/AddProfile';
-import { GetCurrentPatients_getCurrentPatients_patients } from '../../graphql/types/GetCurrentPatients';
-import { ProfileList } from '../ui/ProfileList';
+} from '@aph/mobile-patients/src/graphql/types/deletePatientMedicalRecord';
+import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 
 const { width, height } = Dimensions.get('window');
 
@@ -128,16 +128,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [isfollowcount, setIsfollowucount] = useState<number>(0);
-  const [userName, setuserName] = useState<string | number>('');
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   useEffect(() => {
-    let userName =
-      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
-    userName = userName.toLowerCase();
-    setuserName(userName);
     currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       getPatientApiCall();
@@ -235,7 +230,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         .catch((error) => {
           loading && setLoading(false);
           console.log('Error occured', { error });
-          Alert.alert('Error', error.message);
+          //Alert.alert('Error', error.message);
         });
     },
     [currentPatient]
@@ -306,6 +301,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         </View>
         <View>
           <ProfileList
+            navigation={props.navigation}
             saveUserChange={true}
             childView={
               <View
@@ -317,9 +313,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                   backgroundColor: theme.colors.WHITE,
                 }}
               >
-                <Text style={styles.hiTextStyle}>hi</Text>
+                <Text style={styles.hiTextStyle}>{'hi'}</Text>
                 <View>
-                  <Text style={styles.nameTextStyle}>{userName}</Text>
+                  <Text style={styles.nameTextStyle}>
+                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                  </Text>
                   <View style={styles.seperatorStyle} />
                 </View>
                 <View style={{ paddingTop: 15 }}>
@@ -329,7 +327,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             }
             selectedProfile={profile}
             setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
-            navigation={props.navigation}
           ></ProfileList>
           {/* <MaterialMenu
             onPress={(item) => {

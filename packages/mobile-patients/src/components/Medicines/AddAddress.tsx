@@ -48,19 +48,24 @@ import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import {
   updatePatientAddress,
   updatePatientAddressVariables,
-} from '../../graphql/types/updatePatientAddress';
-import { fonts } from '../../theme/fonts';
-import { AppRoutes } from '../NavigatorContainer';
-import { CommonLogEvent, DeviceHelper } from '../../FunctionHelpers/DeviceHelper';
-import { Remove, RemoveIcon, More } from '../ui/Icons';
-import { MaterialMenu } from '../ui/MaterialMenu';
-import { colors } from '../../theme/colors';
+} from '@aph/mobile-patients/src/graphql/types/updatePatientAddress';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  CommonLogEvent,
+  DeviceHelper,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { Remove, RemoveIcon, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { colors } from '@aph/mobile-patients/src/theme/colors';
 import {
   deletePatientAddress,
   deletePatientAddressVariables,
-} from '../../graphql/types/deletePatientAddress';
+} from '@aph/mobile-patients/src/graphql/types/deletePatientAddress';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 const { height, width } = Dimensions.get('window');
-const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+const key = AppConfig.Configuration.GOOGLE_API_KEY;
 const { isIphoneX } = DeviceHelper();
 
 const styles = StyleSheet.create({
@@ -174,6 +179,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const addOnly = props.navigation.state.params ? props.navigation.state.params.addOnly : false;
 
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
+  const { addAddress: addA, setDeliveryAddressId: setD } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
   const { showAphAlert, hideAphAlert } = useUIElements();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
@@ -341,12 +347,16 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         // const address = saveAddressResult.data!.savePatientAddress.patientAddress!;
         const address = g(saveAddressResult.data, 'savePatientAddress', 'patientAddress')!;
         addAddress && addAddress(address);
+        addA!(address);
 
         if (pinAvailabilityResult.data.Availability || addOnly) {
           setDeliveryAddressId && setDeliveryAddressId(address.id || '');
+          setD!(address.id || '');
           props.navigation.goBack();
         } else {
           setDeliveryAddressId && setDeliveryAddressId('');
+          setD!(address.id || '');
+
           showAphAlert!({
             title: 'Uh oh.. :(',
             description:
