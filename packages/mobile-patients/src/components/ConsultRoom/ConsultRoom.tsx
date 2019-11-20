@@ -9,6 +9,8 @@ import {
   Person,
   ShoppingCart,
   TestsIcon,
+  MedicineIcon,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -47,7 +49,10 @@ import DeviceInfo from 'react-native-device-info';
 import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { NotificationListener } from '../NotificationListener';
+import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 
 const { width, height } = Dimensions.get('window');
 
@@ -121,6 +126,22 @@ const styles = StyleSheet.create({
     borderColor: '#dddddd',
     marginHorizontal: 16,
   },
+  placeholderViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    borderBottomWidth: 2,
+    paddingTop: 6,
+    paddingBottom: 3,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
+  placeholderTextStyle: {
+    color: '#01475b',
+    ...theme.fonts.IBMPlexSansMedium(18),
+  },
 });
 
 type ArrayTest = {
@@ -191,34 +212,34 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const startDoctor = string.home.startDoctor;
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
-  const [showPopUp, setshowPopUp] = useState<boolean>(true);
+  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [showMenu, setShowMenu] = useState<boolean>(false);
-  const [userName, setuserName] = useState<string>('');
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
   useEffect(() => {
-    let userName =
-      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
-    userName = userName.toLowerCase();
-    setuserName(userName);
     currentPatient && setshowSpinner(false);
-
+    currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
     }
 
     analytics.setAnalyticsCollectionEnabled(true);
-  }, [currentPatient, analytics, userName, props.navigation.state.params]);
+  }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {
         setshowPopUp(false);
+      } else {
+        setshowPopUp(true);
       }
     }
     fetchData();
@@ -343,8 +364,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text
                 style={[
                   styles.textStyle,
-                  profile.firstName &&
-                  userName === profile.firstName.split(' ')[0].toLocaleLowerCase()
+                  profile.firstName && currentPatient!.firstName === profile.firstName
                     ? { color: theme.colors.APP_GREEN }
                     : null,
                 ]}
@@ -623,7 +643,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   paddingTop: 16,
                   paddingHorizontal: 20,
                   backgroundColor: theme.colors.WHITE,
-                  marginTop: 4,
                 }}
               >
                 <TouchableOpacity
@@ -643,9 +662,37 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.hiTextStyle}>
+                  <ProfileList
+                    navigation={props.navigation}
+                    saveUserChange={true}
+                    childView={
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          paddingRight: 8,
+                          borderRightWidth: 0,
+                          borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                          backgroundColor: theme.colors.WHITE,
+                        }}
+                      >
+                        <Text style={styles.hiTextStyle}>{'hi'}</Text>
+                        <View>
+                          <Text style={styles.nameTextStyle}>
+                            {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                          </Text>
+                          <View style={styles.seperatorStyle} />
+                        </View>
+                        <View style={{ paddingTop: 15 }}>
+                          <DropdownGreen />
+                        </View>
+                      </View>
+                    }
+                    selectedProfile={profile}
+                    setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+                  ></ProfileList>
+                  {/* <Text style={styles.hiTextStyle}>
                     {string.home.hi} {userName}!
-                  </Text>
+                  </Text> */}
                   {/* <View>
                     <View
                       style={{
@@ -771,6 +818,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </View>
       </BottomPopUp> */}
       {showSpinner && <Spinner />}
+      {/* {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )} */}
       <NotificationListener navigation={props.navigation} />
     </View>
   );

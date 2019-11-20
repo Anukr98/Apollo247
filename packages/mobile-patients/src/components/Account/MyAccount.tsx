@@ -22,15 +22,15 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getNetStatus } from '../../helpers/helperFunctions';
-import { NoInterNetPopup } from '../ui/NoInterNetPopup';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { useApolloClient } from 'react-apollo-hooks';
-import { DELETE_DEVICE_TOKEN } from '../../graphql/profiles';
+import { DELETE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   deleteDeviceToken,
   deleteDeviceTokenVariables,
-} from '../../graphql/types/deleteDeviceToken';
-import { ApolloLogo } from '../ApolloLogo';
+} from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
 
 const { height, width } = Dimensions.get('window');
 
@@ -97,6 +97,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     if (!currentPatient) {
       getPatientApiCall();
     }
+    currentPatient && setprofileDetails(currentPatient);
   }, [currentPatient]);
 
   const headMov = scrollY.interpolate({
@@ -189,6 +190,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     AsyncStorage.setItem('userLoggedIn', 'false');
     AsyncStorage.setItem('multiSignUp', 'false');
     AsyncStorage.setItem('signUp', 'false');
+    AsyncStorage.setItem('selectUserId', '');
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -208,7 +210,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
     const input = {
       deviceToken: currentDeviceToken.deviceToken,
-      patientId: currentPatient ? currentPatient.id : '',
+      patientId: currentPatient ? currentPatient && currentPatient.id : '',
     };
     console.log('deleteDeviceTokenInput', input);
 
@@ -224,9 +226,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         onPressLogout();
       })
       .catch((e: string) => {
-        console.log('Error occured while adding Doctor', e);
-        setshowSpinner(false);
-        onPressLogout();
+        try {
+          console.log('delete device token', e);
+          setshowSpinner(false);
+          onPressLogout();
+        } catch {}
       });
   };
 
@@ -258,7 +262,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               // profileDetails.photoUrl &&
               // profileDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
               <Animated.Image
-                source={require('../ui/icons/no-photo-icon-round.png')}
+                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
                 style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
                 resizeMode={'contain'}
               />
@@ -285,18 +289,20 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             borderBottomWidth: 0,
           }}
           rightComponent={
-            <TouchableOpacity activeOpacity={1} onPress={deleteDeviceToken}>
+            <TouchableOpacity activeOpacity={1} onPress={() => deleteDeviceToken()}>
               <Text>Logout</Text>
             </TouchableOpacity>
           }
         />
-        <View
+        {/* <View
           style={{
             zIndex: 3,
             position: 'absolute',
             top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 50 : 40) : 20,
             left: 20,
             right: 0,
+            width: 77,
+            height: 57,
           }}
         >
           <TouchableOpacity
@@ -305,7 +311,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           >
             <ApolloLogo />
           </TouchableOpacity>
-        </View>
+        </View> */}
       </>
     );
   };
@@ -376,7 +382,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              PRO V 1.0(14)
+              QA V 1.0(15)
             </Text>
           </View>
         </Animated.ScrollView>

@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView, NavigationScreenProps } from 'react-navigation';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { theme } from '../../theme/theme';
-import { EPrescription, PhysicalPrescription, useShoppingCart } from '../ShoppingCartProvider';
-import { EPrescriptionCard } from '../ui/EPrescriptionCard';
-import { CrossYellow, FileBig } from '../ui/Icons';
-import { TextInputComponent } from '../ui/TextInputComponent';
-import { SelectEPrescriptionModal } from './SelectEPrescriptionModal';
-import { UploadPrescriprionPopup } from './UploadPrescriprionPopup';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import {
+  EPrescription,
+  PhysicalPrescription,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { EPrescriptionCard } from '@aph/mobile-patients/src/components/ui/EPrescriptionCard';
+import { CrossYellow, FileBig } from '@aph/mobile-patients/src/components/ui/Icons';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';

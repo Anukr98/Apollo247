@@ -1,8 +1,12 @@
 import { MedicineIcon, OrderPlacedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_ORDER_STATUS,
+  DIAGNOSTIC_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { isTest } from 'apollo-utilities';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -45,6 +49,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: 0.04,
     color: theme.colors.LIGHT_BLUE,
+    textTransform: 'capitalize',
     flex: 1,
   },
   dateTimeStyle: {
@@ -100,17 +105,20 @@ export interface OrderCardProps {
   title: string;
   description: string;
   dateTime: string;
-  status: OrderStatusType;
+  status?: OrderStatusType;
+  statusDiag?: String;
   statusDesc: string;
   onPress: () => void;
   style?: StyleProp<ViewStyle>;
 }
 
 export const OrderCard: React.FC<OrderCardProps> = (props) => {
-  const isOrderWithProgressIcons =
-    props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-    props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
-    props.status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY;
+  const isOrderWithProgressIcons = isTest
+    ? props.statusDiag == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
+      props.statusDiag == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
+    : props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
+      props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
+      props.status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY;
 
   const isReschedule =
     props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
@@ -171,7 +179,7 @@ export const OrderCard: React.FC<OrderCardProps> = (props) => {
               : {},
           ]}
         >
-          {props.statusDesc}
+          {props.statusDesc.replace('_', ' ')}
         </Text>
         <Text numberOfLines={1} style={styles.dateTimeStyle}>
           {props.dateTime}

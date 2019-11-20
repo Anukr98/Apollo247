@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { makeStyles } from '@material-ui/styles';
+import React, { useState, useContext, useEffect } from "react";
+import { makeStyles } from "@material-ui/styles";
 import {
   Theme,
   Typography,
@@ -7,10 +7,10 @@ import {
   ExpansionPanelSummary,
   ExpansionPanelDetails,
   Divider,
-  Box,
-} from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { AphTextField } from '@aph/web-ui-components';
+  Box
+} from "@material-ui/core";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import { AphTextField } from "@aph/web-ui-components";
 import {
   Symptoms,
   LifeStyle,
@@ -21,127 +21,127 @@ import {
   MedicinePrescription,
   DiagnosticPrescription,
   FollowUp,
-  OtherInstructions,
-} from 'components/case-sheet/panels';
-import { UserCard } from 'components/case-sheet/UserCard';
-import { CaseSheetContext } from 'context/CaseSheetContext';
+  OtherInstructions
+} from "components/case-sheet/panels";
+import { UserCard } from "components/case-sheet/UserCard";
+import { CaseSheetContext } from "context/CaseSheetContext";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
     container: {
-      padding: 20,
+      padding: 20
     },
     caseSheet: {
-      minHeight: 'calc(100vh - 360px)',
-      display: 'flex',
-      flexFlow: 'row',
-      flexWrap: 'wrap',
+      minHeight: "calc(100vh - 360px)",
+      display: "flex",
+      flexFlow: "row",
+      flexWrap: "wrap",
       marginTop: 10,
-      '& .Mui-expanded': {
-        margin: '5px 0 0 0 !important',
+      "& .Mui-expanded": {
+        margin: "5px 0 0 0 !important",
         minHeight: 20,
         paddingBottom: 0,
         paddingRight: 6,
-        paddingTop: 3,
+        paddingTop: 3
       },
-      '& div': {
-        color: '#000',
+      "& div": {
+        color: "#000"
       },
-      [theme.breakpoints.down('xs')]: {
-        display: 'block',
-      },
+      [theme.breakpoints.down("xs")]: {
+        display: "block"
+      }
     },
     column: {
-      display: 'flex',
-      flexDirection: 'column',
+      display: "flex",
+      flexDirection: "column",
       flex: 1,
-      maxWidth: 707,
+      maxWidth: 707
     },
     right: {
-      flex: 'initial',
-      margin: '0 15px 0 0',
+      flex: "initial",
+      margin: "0 15px 0 0",
       minWidth: 300,
       maxWidth: 300,
-      [theme.breakpoints.down('xs')]: {
-        margin: '0 0 15px 0',
-        maxWidth: '100%',
-        minWidth: 200,
+      [theme.breakpoints.down("xs")]: {
+        margin: "0 0 15px 0",
+        maxWidth: "100%",
+        minWidth: 200
       },
-      '& h2': {
+      "& h2": {
         fontSize: 20,
-        lineHeight: 'normal',
+        lineHeight: "normal",
         fontWeight: 600,
-        color: '#02475b',
+        color: "#02475b"
       },
-      '& h5': {
+      "& h5": {
         fontSize: 16,
-        lineHeight: 'normal',
+        lineHeight: "normal",
         fontWeight: 500,
-        color: 'rgba(2, 71, 91, 0.8)',
+        color: "rgba(2, 71, 91, 0.8)",
         marginBottom: 10,
-        textTransform: 'capitalize',
+        textTransform: "capitalize"
       },
-      '& h6': {
+      "& h6": {
         fontSize: 14,
-        lineHeight: 'normal',
+        lineHeight: "normal",
         fontWeight: 500,
-        color: 'rgba(2, 71, 91, 0.8)',
-        marginBottom: 10,
+        color: "rgba(2, 71, 91, 0.8)",
+        marginBottom: 10
       },
-      '& hr': {
-        marginBottom: 10,
-      },
+      "& hr": {
+        marginBottom: 10
+      }
     },
     expandIcon: {
-      color: '#02475b',
-      margin: '5px 0',
-      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      color: "#02475b",
+      margin: "5px 0",
+      boxShadow: "0 5px 20px 0 rgba(128, 128, 128, 0.3)",
       borderRadius: 10,
-      backgroundColor: '#fff',
-      '&:before': {
-        backgroundColor: 'transparent',
+      backgroundColor: "#fff",
+      "&:before": {
+        backgroundColor: "transparent"
       },
-      '&:first-child': {
-        marginTop: 0,
+      "&:first-child": {
+        marginTop: 0
       },
-      '& h3': {
+      "& h3": {
         fontSize: 17,
         fontWeight: theme.typography.fontWeightMedium,
-        color: '#01475b',
-        lineHeight: '24px',
-        padding: '4px 0',
-      },
+        color: "#01475b",
+        lineHeight: "24px",
+        padding: "4px 0"
+      }
     },
     divider: {
-      margin: '20px 0',
-      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+      margin: "20px 0",
+      backgroundColor: "rgba(0, 0, 0, 0.4)"
     },
     notesHeader: {
-      color: '#0087ba',
+      color: "#0087ba",
       fontSize: 17,
       fontWeight: 500,
-      marginBottom: 10,
+      marginBottom: 10
     },
     notesContainer: {
       padding: 16,
-      backgroundColor: '#fff',
+      backgroundColor: "#fff"
     },
     textFieldColor: {
-      '& input': {
-        color: 'initial',
-        '& :before': {
-          border: 0,
-        },
-      },
+      "& input": {
+        color: "initial",
+        "& :before": {
+          border: 0
+        }
+      }
     },
     textFieldWrapper: {
-      border: 'solid 1px #30c1a3',
+      border: "solid 1px #30c1a3",
       borderRadius: 10,
       padding: 16,
-      color: '#01475b',
+      color: "#01475b",
       fontSize: 14,
-      fontWeight: 500,
-    },
+      fontWeight: 500
+    }
   };
 });
 
@@ -149,105 +149,128 @@ interface CashSheetProps {
   startAppointment: boolean;
 }
 
-export const CaseSheet: React.FC<CashSheetProps> = (props) => {
+export const CaseSheet: React.FC<CashSheetProps> = props => {
   const classes = useStyles();
 
   const [symptoms, setSymptoms] = useState<boolean>(props.startAppointment);
   const [lifestyle, setLifestyle] = useState<boolean>(props.startAppointment);
-  const [healthVault, setHealthVault] = useState<boolean>(props.startAppointment);
+  const [healthVault, setHealthVault] = useState<boolean>(
+    props.startAppointment
+  );
   const [note, setNotes] = useState<boolean>(props.startAppointment);
   const [diagnosis, setDiagnosis] = useState<boolean>(props.startAppointment);
-  const [medicinePrescription, setMedicinePrescription] = useState<boolean>(props.startAppointment);
+  const [medicinePrescription, setMedicinePrescription] = useState<boolean>(
+    props.startAppointment
+  );
   const [diagnosticPrescription, setDiagnosticPrescription] = useState<boolean>(
     props.startAppointment
   );
-  const [followUpPanel, setFollowUpPanel] = useState<boolean>(props.startAppointment);
-  const [otherInstructions, setOtherInstructions] = useState<boolean>(props.startAppointment);
+  const [followUpPanel, setFollowUpPanel] = useState<boolean>(
+    props.startAppointment
+  );
+  const [otherInstructions, setOtherInstructions] = useState<boolean>(
+    props.startAppointment
+  );
   const [vitals, setVitals] = useState<boolean>(props.startAppointment);
 
   const items = [
-    { key: 'symptoms', value: 'Chief Complaints', state: symptoms, component: <Symptoms /> },
     {
-      key: 'lifestyle',
-      value: 'Patient’s Medical and Family History',
+      key: "symptoms",
+      value: "Chief Complaints",
+      state: symptoms,
+      component: <Symptoms />
+    },
+    {
+      key: "lifestyle",
+      value: "Patient’s Medical and Family History",
       state: lifestyle,
-      component: <LifeStyle />,
+      component: <LifeStyle />
     },
     {
-      key: 'vital',
-      value: 'Vitals',
+      key: "vital",
+      value: "Vitals",
       state: vitals,
-      component: <Vital />,
+      component: <Vital />
     },
     {
-      key: 'healthVault',
-      value: 'Patient Health Vault',
+      key: "healthVault",
+      value: "Patient Health Vault",
       state: healthVault,
-      component: <HealthVault />,
+      component: <HealthVault />
     },
-    { key: 'note', value: "Junior Doctor's Notes", state: note, component: <DoctorsNotes /> },
-    { key: 'diagnosis', value: 'Diagnosis', state: diagnosis, component: <Diagnosis /> },
     {
-      key: 'medicinePrescription',
-      value: 'Medication Prescribed',
+      key: "note",
+      value: "Junior Doctor's Notes",
+      state: note,
+      component: <DoctorsNotes />
+    },
+    {
+      key: "diagnosis",
+      value: "Diagnosis",
+      state: diagnosis,
+      component: <Diagnosis />
+    },
+    {
+      key: "medicinePrescription",
+      value: "Medication Prescribed",
       state: medicinePrescription,
-      component: <MedicinePrescription />,
+      component: <MedicinePrescription />
     },
     {
-      key: 'diagnosticPrescription',
-      value: 'Tests',
+      key: "diagnosticPrescription",
+      value: "Tests",
       state: diagnosticPrescription,
-      component: <DiagnosticPrescription />,
+      component: <DiagnosticPrescription />
     },
     {
-      key: 'otherInstructions',
-      value: 'Advice/Instructions',
+      key: "otherInstructions",
+      value: "Advice/Instructions",
       state: otherInstructions,
-      component: <OtherInstructions />,
+      component: <OtherInstructions />
     },
-    { key: 'followup', value: 'Follow up', state: followUpPanel, component: <FollowUp /> },
+    {
+      key: "followup",
+      value: "Follow up",
+      state: followUpPanel,
+      component: <FollowUp />
+    }
   ];
 
-  const { notes, setSRDNotes, followUp, setFollowUp } = useContext(CaseSheetContext);
-
-  useEffect(() => {
-    followUp[0] = props.startAppointment;
-    setFollowUp(followUp);
-  }, [props.startAppointment]);
+  const { notes, setSRDNotes } = useContext(CaseSheetContext);
 
   const handlePanelExpansion = (expansionKey: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
   ) => {
     switch (expansionKey) {
-      case 'symptoms':
+      case "symptoms":
         setSymptoms(isExpanded);
         break;
-      case 'lifestyle':
+      case "lifestyle":
         setLifestyle(isExpanded);
         break;
-      case 'vital':
+      case "vital":
         setVitals(isExpanded);
         break;
-      case 'healthVault':
+      case "healthVault":
         setHealthVault(isExpanded);
         break;
-      case 'note':
+      case "note":
         setNotes(isExpanded);
         break;
-      case 'diagnosis':
+      case "diagnosis":
         setDiagnosis(isExpanded);
         break;
-      case 'medicinePrescription':
+      case "medicinePrescription":
         setMedicinePrescription(isExpanded);
         break;
-      case 'diagnosticPrescription':
+      case "diagnosticPrescription":
         setDiagnosticPrescription(isExpanded);
         break;
-      case 'followup':
+      case "followup":
         setFollowUpPanel(isExpanded);
         break;
-      case 'otherInstructions':
+      case "otherInstructions":
         setOtherInstructions(isExpanded);
         break;
     }
@@ -260,7 +283,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
           <UserCard />
         </section>
         <section className={classes.column}>
-          {items.map((item) => (
+          {items.map(item => (
             <ExpansionPanel
               key={item.key}
               expanded={item.state}
@@ -286,7 +309,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
             className={classes.textFieldColor}
             placeholder="What you enter here won't be shown to the patient.."
             defaultValue={notes}
-            onBlur={(e) => {
+            onBlur={e => {
               setSRDNotes(e.target.value);
             }}
           />

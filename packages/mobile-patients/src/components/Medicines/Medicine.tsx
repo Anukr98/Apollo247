@@ -14,6 +14,7 @@ import {
   NotificationIcon,
   SearchSendIcon,
   SyrupBottleIcon,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
@@ -50,11 +51,17 @@ import {
   View,
   ViewStyle,
   Keyboard,
+  AsyncStorage,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { useUIElements } from '../UIElementsProvider';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { string } from '@aph/mobile-patients/src/strings/string';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -77,6 +84,23 @@ const styles = StyleSheet.create({
     opacity: 0.5,
     borderRadius: 5,
   },
+  hiTextStyle: {
+    marginLeft: 20,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  nameTextStyle: {
+    marginLeft: 5,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  seperatorStyle: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    marginTop: 2,
+    //marginHorizontal: 5,
+    marginBottom: 5,
+  },
 });
 
 export interface MedicineProps extends NavigationScreenProps {}
@@ -87,10 +111,16 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
   const cartItemsCount = cartItems.length;
-  const { currentPatient } = useAllCurrentPatients();
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
+
+  const { width, height } = Dimensions.get('window');
+
   const { showAphAlert } = useUIElements();
+  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
+    setProfile(currentPatient!);
     getMedicinePageProducts()
       .then((d) => {
         setData(d.data);
@@ -104,7 +134,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           description: "We're unable to fetch products, try later.",
         });
       });
-  }, []);
+  }, [currentPatient]);
 
   // Api Call
   // const { data, loading, error } = useFetch(() => getMedicinePageProducts());
@@ -236,7 +266,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const [imgHeight, setImgHeight] = useState(120);
   const { width: winWidth } = Dimensions.get('window');
   const renderOfferBanner = () => {
-    if (loading) return renderSectionLoader();
+    if (loading) return null;
     else if (offerBannerImage)
       return (
         <Image
@@ -887,7 +917,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
       },
     });
 
-    const shouldEnableSearchSend = searchText.length > 2 && medicineList.length > 0;
+    const shouldEnableSearchSend = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
         activeOpacity={1}
@@ -1088,7 +1118,37 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <Text
+          <View style={{ backgroundColor: theme.colors.WHITE }}>
+            <ProfileList
+              navigation={props.navigation}
+              saveUserChange={true}
+              childView={
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    paddingRight: 8,
+                    borderRightWidth: 0,
+                    borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                    backgroundColor: theme.colors.WHITE,
+                  }}
+                >
+                  <Text style={styles.hiTextStyle}>{'hi'}</Text>
+                  <View>
+                    <Text style={styles.nameTextStyle}>
+                      {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                    </Text>
+                    <View style={styles.seperatorStyle} />
+                  </View>
+                  <View style={{ paddingTop: 15 }}>
+                    <DropdownGreen />
+                  </View>
+                </View>
+              }
+              selectedProfile={profile}
+              setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            ></ProfileList>
+          </View>
+          {/* <Text
             style={{
               height: isSearchFocused ? 0 : 'auto',
               ...theme.viewStyles.text('SB', 36, '#02475b', 1),
@@ -1101,7 +1161,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               currentPatient.firstName &&
               `hi ${currentPatient.firstName.toLowerCase()}!`) ||
               ''}
-          </Text>
+          </Text> */}
 
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>
             <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
@@ -1112,6 +1172,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
+      {/* {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )} */}
       {renderEPrescriptionModal()}
       {renderUploadPrescriprionPopup()}
     </View>

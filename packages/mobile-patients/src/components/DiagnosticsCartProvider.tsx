@@ -2,13 +2,13 @@ import { getCoupons_getCoupons_coupons } from '@aph/mobile-patients/src/graphql/
 import {
   DiscountType,
   MEDICINE_DELIVERY_TYPE,
+  TEST_COLLECTION_TYPE,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobile-patients/src/graphql/types/savePatientAddress';
-import { Store } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { Clinic } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Alert, AsyncStorage } from 'react-native';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   EPrescription,
   PhysicalPrescription,
@@ -17,10 +17,25 @@ import {
 export interface DiagnosticsCartItem {
   id: string;
   name: string;
-  mou: string; // pack of how many units (eg. 10 tablets)
+  mou: number; // package of how many tests (eg. 10)
   price: number;
   thumbnail: string | null;
-  specialPrice: number;
+  specialPrice?: number;
+  collectionMethod: TEST_COLLECTION_TYPE; // Home or Clinic (most probably `H` will not be an option)
+}
+
+export interface DiagnosticClinic extends Clinic {
+  date: number; // timestamp
+}
+
+export interface DiagnosticSlot {
+  employeeSlotId: number;
+  diagnosticBranchCode: string;
+  diagnosticEmployeeCode: string;
+  slotStartTime: string;
+  slotEndTime: string;
+  city: string;
+  date: number; // timestamp
 }
 
 export interface DiagnosticsCartContextProps {
@@ -69,8 +84,8 @@ export interface DiagnosticsCartContextProps {
   clinicId: string;
   setClinicId: ((id: string) => void) | null;
 
-  clinics: Store[];
-  setClinics: ((store: Store[]) => void) | null;
+  clinics: Clinic[];
+  setClinics: ((clinic: Clinic[]) => void) | null;
 
   pinCode: string;
   setPinCode: ((pinCode: string) => void) | null;
@@ -80,6 +95,12 @@ export interface DiagnosticsCartContextProps {
 
   deliveryType: MEDICINE_DELIVERY_TYPE | null;
   clearCartInfo: (() => void) | null;
+
+  diagnosticSlot: DiagnosticSlot | null;
+  setDiagnosticSlot: ((item: DiagnosticSlot | null) => void) | null;
+
+  diagnosticClinic: DiagnosticClinic | null;
+  setDiagnosticClinic: ((item: DiagnosticClinic) => void) | null;
 }
 
 export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>({
@@ -129,6 +150,11 @@ export const DiagnosticsCartContext = createContext<DiagnosticsCartContextProps>
   setPinCode: null,
 
   clearCartInfo: null,
+
+  diagnosticClinic: null,
+  diagnosticSlot: null,
+  setDiagnosticClinic: null,
+  setDiagnosticSlot: null,
 });
 
 const showGenericAlert = (message: string) => {
@@ -136,8 +162,8 @@ const showGenericAlert = (message: string) => {
 };
 
 export const DiagnosticsCartProvider: React.FC = (props) => {
-  const { currentPatient } = useAllCurrentPatients();
-  const id = (currentPatient && currentPatient.id) || '';
+  // const { currentPatient } = useAllCurrentPatients();
+  const id = ''; //(currentPatient && currentPatient.id) || '';
   const AsyncStorageKeys = {
     cartItems: `diagnosticsCartItems${id}`,
     ePrescriptions: `diagnosticsEPrescriptions${id}`,
@@ -153,7 +179,7 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
 
   const [coupon, setCoupon] = useState<DiagnosticsCartContextProps['coupon']>(null);
 
-  const [clinics, setClinics] = useState<Store[]>([]);
+  const [clinics, setClinics] = useState<Clinic[]>([]);
   const [addresses, setAddresses] = useState<
     savePatientAddress_savePatientAddress_patientAddress[]
   >([]);
@@ -176,6 +202,24 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const [ePrescriptions, _setEPrescriptions] = useState<
     DiagnosticsCartContextProps['ePrescriptions']
   >([]);
+
+  const [diagnosticClinic, _setDiagnosticClinic] = useState<
+    DiagnosticsCartContextProps['diagnosticClinic']
+  >(null);
+
+  const [diagnosticSlot, _setDiagnosticSlot] = useState<
+    DiagnosticsCartContextProps['diagnosticSlot']
+  >(null);
+
+  const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
+    _setDiagnosticClinic(item);
+    _setDiagnosticSlot(null);
+  };
+
+  const setDiagnosticSlot: DiagnosticsCartContextProps['setDiagnosticSlot'] = (item) => {
+    _setDiagnosticSlot(item);
+    _setDiagnosticClinic(null);
+  };
 
   const setEPrescriptions: DiagnosticsCartContextProps['setEPrescriptions'] = (items) => {
     _setEPrescriptions(items);
@@ -406,6 +450,11 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
         setPinCode,
 
         clearCartInfo,
+
+        diagnosticClinic,
+        setDiagnosticClinic,
+        diagnosticSlot,
+        setDiagnosticSlot,
       }}
     >
       {props.children}

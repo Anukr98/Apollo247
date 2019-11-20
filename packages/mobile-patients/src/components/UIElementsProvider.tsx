@@ -10,6 +10,7 @@ import {
   View,
   ViewStyle,
   StyleSheet,
+  Keyboard,
 } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -27,12 +28,14 @@ const styles = StyleSheet.create({
 });
 
 export interface UIElementsContextProps {
+  loading: boolean;
   setLoading: ((isLoading: boolean) => void) | null;
   showAphAlert: ((params: AphAlertParams) => void) | null;
   hideAphAlert: (() => void) | null;
 }
 
 export const UIElementsContext = createContext<UIElementsContextProps>({
+  loading: false,
   setLoading: null,
   showAphAlert: null,
   hideAphAlert: null,
@@ -111,6 +114,7 @@ export const UIElementsProvider: React.FC = (props) => {
   };
 
   const showAphAlert = (params: AphAlertParams) => {
+    Keyboard.dismiss();
     setAlertParams(params);
     setAlertVisible(true);
   };
@@ -123,6 +127,7 @@ export const UIElementsProvider: React.FC = (props) => {
   return (
     <UIElementsContext.Provider
       value={{
+        loading,
         setLoading,
         showAphAlert,
         hideAphAlert,

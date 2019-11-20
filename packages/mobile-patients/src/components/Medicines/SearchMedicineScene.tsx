@@ -43,8 +43,9 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
-import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -253,21 +254,19 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
     });
-    addCartItem &&
-      addCartItem({
-        id: sku,
-        mou,
-        name: stripHtml(name),
-        price: special_price
-          ? typeof special_price == 'string'
-            ? parseInt(special_price)
-            : special_price
-          : price,
-        specialPrice: special_price as number,
-        prescriptionRequired: is_prescription_required == '1',
-        quantity: 1,
-        thumbnail,
-      });
+    addCartItem!({
+      id: sku,
+      mou,
+      name: stripHtml(name),
+      price: special_price
+        ? typeof special_price == 'string'
+          ? parseInt(special_price)
+          : special_price
+        : price,
+      prescriptionRequired: is_prescription_required == '1',
+      quantity: 1,
+      thumbnail,
+    });
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -474,7 +473,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const fetchLocation = (text: string) => {
-    const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+    const key = AppConfig.Configuration.GOOGLE_API_KEY;
     isValidPinCode(text);
     setPinCode(text);
     axios

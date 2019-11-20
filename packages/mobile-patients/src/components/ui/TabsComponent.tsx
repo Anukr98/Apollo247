@@ -10,6 +10,7 @@ import {
   ScrollView,
   TextStyle,
 } from 'react-native';
+import { isIphone5s } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   container: {
@@ -30,12 +31,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 4,
     borderBottomColor: theme.colors.CLEAR,
   },
-  textStyle: {
-    color: 'rgba(2, 71, 91, 0.5)',
-    ...theme.fonts.IBMPlexSansMedium(16),
-    paddingTop: 4,
-    // paddingBottom: 14,
-  },
+  textStyle: theme.viewStyles.text('M', isIphone5s() ? 14 : 16, 'rgba(2, 71, 91, 0.5)'),
 });
 
 export interface TabsComponentProps {

@@ -22,7 +22,7 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { MenuProvider } from 'react-native-popup-menu';
 import { NavigationScreenProps } from 'react-navigation';
-import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updatePatientVariables,
@@ -35,7 +35,7 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import moment from 'moment';
 import { StackActions } from 'react-navigation';
 import { NavigationActions } from 'react-navigation';
-import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 

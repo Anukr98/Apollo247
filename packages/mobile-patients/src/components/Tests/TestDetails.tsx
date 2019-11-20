@@ -1,27 +1,29 @@
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CartIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
-import {
-  getMedicineDetailsApi,
-  MedicineProductDetails,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getPackageData, TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
-  BackHandler,
   Dimensions,
   SafeAreaView,
   ScrollView,
+  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 
 const { height } = Dimensions.get('window');
 const styles = StyleSheet.create({
@@ -65,12 +67,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 5,
+    paddingVertical: 20,
   },
   descriptionTextStyles: {
     ...theme.fonts.IBMPlexSansMedium(14),
     color: theme.colors.SKY_BLUE,
     textAlign: 'left',
-    paddingVertical: 20,
     lineHeight: 22,
   },
   priceText: {
@@ -98,75 +100,78 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 2,
   },
+  labelView: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: '#ff748e',
+    height: 14,
+    width: 14,
+    borderRadius: 7,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  labelText: {
+    ...theme.fonts.IBMPlexSansBold(9),
+    color: theme.colors.WHITE,
+  },
 });
 
 const tabs = [
   {
-    title: 'Overview',
-    description: '',
-  },
-  {
-    title: 'Tests Included',
-    description: '',
-  },
-  {
-    title: 'Preparation',
-    description: '',
-  },
-];
-
-const tabsdescription = [
-  {
     id: '1',
-    title: 'Overview',
-    description:
-      'The test is performed to detect the presence of Nicotine and Cotinine in urine. This helps determine whether the patient has used tobacco recently or not. Nicotine has a half-life of 40 minutes and its presence means that the patient has used tobacco recently.',
+    title: 'Tests Included',
   },
   {
     id: '2',
-    title: 'Overview',
-    description: '',
-  },
-  {
-    id: '3',
-    title: 'Overview',
-    description:
-      ' Nicotine has a half-life of 40 minutes and its presence means that the patient has used tobacco recently.',
+    title: 'Preparation',
   },
 ];
+
+export interface TestPackageForDetails extends TestPackage {
+  collectionType: TEST_COLLECTION_TYPE;
+}
+
 export interface TestDetailsProps
   extends NavigationScreenProps<{
-    sku: string;
-    title: string;
+    testDetails: TestPackageForDetails;
   }> {}
+
 export const TestDetails: React.FC<TestDetailsProps> = (props) => {
-  const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
-    {} as MedicineProductDetails
-  );
-  const [selectedTab, settabsdescription] = useState<string>(tabs[0].title);
-  const sku = 'ICA0005'; //props.navigation.getParam('sku');
-  const [apiError, setApiError] = useState<boolean>(false);
-  const [loading, setLoading] = useState(true);
+  const [selectedTab, setSelectedTab] = useState<string>(tabs[0].title);
+  const testDetails = props.navigation.getParam('testDetails');
+  console.log({ testDetails });
+
+  const [testInfo, setTestInfo] = useState<TestPackageForDetails>(testDetails);
+  const TestDetailsDiscription = testInfo.PackageInClussion;
+  const { cartItems, addCartItem } = useDiagnosticsCart();
+  const cartItemsCount = cartItems.length;
+  const currentItemId = testInfo.ItemID;
+  aphConsole.log('currentItemId : ' + currentItemId);
+  const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
 
   useEffect(() => {
-    getMedicineDetailsApi(sku)
-      .then(({ data }) => {
-        console.log(data);
-        setmedicineDetails((data && data.productdp && data.productdp[0]) || {});
-        setLoading(false);
-      })
-      .catch((err) => {
-        aphConsole.log('error:' + err);
-        setApiError(!!err);
-        setLoading(false);
-      });
+    !TestDetailsDiscription &&
+      getPackageData(currentItemId)
+        .then(({ data }) => {
+          setsearchSate('success');
+          aphConsole.log('getPackageData \n', { data });
+          setTestInfo({ ...testInfo, PackageInClussion: data.data || [] });
+        })
+        .catch((e) => {
+          aphConsole.log('getPackageData Error \n', { e });
+          setsearchSate('fail');
+        });
   }, []);
 
-  const backDataFunctionality = async () => {
-    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
-    props.navigation.goBack();
-    return false;
+  const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
+    return (
+      <View style={[styles.labelView, containerStyle]}>
+        <Text style={styles.labelText}>{count}</Text>
+      </View>
+    );
   };
+
   const renderHeader = () => {
     return (
       <View>
@@ -177,10 +182,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           }}
           title={'TEST DETAIL'}
           leftIcon="backArrow"
-          onPressLeftIcon={() => backDataFunctionality()}
+          onPressLeftIcon={() => props.navigation.goBack()}
           rightComponent={
             <TouchableOpacity onPress={() => props.navigation.navigate(AppRoutes.TestsCart)}>
               <CartIcon style={{}} />
+              {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
           }
         />
@@ -188,40 +194,56 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
     );
   };
 
-  const renderTestDetails = (
-    rowData = {
-      offPercent: '30 % Off',
-      testName: 'Urine Cotinine (Nicotine) Test',
-      ageGroup: 'BELOW 7 YEARS',
-      actualCost: ' Rs. 165',
-      price: 'Rs. 6,500',
-      gender: 'FOR BOYS AND GIRLS',
-      test: '8',
-      address: 'Apollo Hospitals, Jubilee Hills',
-      status: 'REMOVE FROM CART',
-      SampleType: 'URINE',
-      CollectionMethod: 'HOME VISIT OR CLINIC VISIT',
-    }
-  ) => {
+  const renderTestDetails = () => {
     return (
       <View style={{ overflow: 'hidden', padding: 20 }}>
         <View>
-          <Text style={styles.testNameStyles}>{rowData.testName}</Text>
-          <View style={styles.personDetailsView}>
-            <Text style={styles.personDetailLabelStyles}>Age Group</Text>
-            <Text style={styles.personDetailStyles}> {rowData.ageGroup}</Text>
-          </View>
-          <View style={styles.personDetailsView}>
-            <Text style={styles.personDetailLabelStyles}>Gender</Text>
-            <Text style={styles.personDetailStyles}> {rowData.gender}</Text>
-          </View>
-          <View style={styles.personDetailsView}>
-            <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
-            <Text style={styles.personDetailStyles}> {rowData.SampleType}</Text>
-          </View>
+          <Text style={styles.testNameStyles}>{testInfo.ItemName}</Text>
+          {!!testInfo.FromAgeInDays && (
+            <View style={styles.personDetailsView}>
+              <Text style={styles.personDetailLabelStyles}>Age Group</Text>
+              <Text style={styles.personDetailStyles}>
+                {(testInfo.FromAgeInDays / 365).toFixed(0)} TO
+                {(testInfo.ToAgeInDays / 365).toFixed(0)} YEARS
+              </Text>
+            </View>
+          )}
+
+          {!!testInfo.Gender && (
+            <View style={styles.personDetailsView}>
+              <Text style={styles.personDetailLabelStyles}>Gender</Text>
+              <Text style={styles.personDetailStyles}>
+                FOR{' '}
+                {testInfo.Gender == 'B'
+                  ? 'BOYS AND GIRLS'
+                  : testInfo.Gender == 'M'
+                  ? 'BOYS'
+                  : 'GIRLS'}
+              </Text>
+            </View>
+          )}
+          {!!testInfo.PackageInClussion && (
+            <View style={styles.personDetailsView}>
+              <Text style={styles.personDetailLabelStyles}>Sample Type</Text>
+              <Text style={styles.personDetailStyles}>
+                {testInfo.PackageInClussion.map((item) => item.SampleTypeName)
+                  .filter((i) => i)
+                  .filter((i, idx, array) => array.indexOf(i) >= idx)
+                  .join(', ')}
+              </Text>
+            </View>
+          )}
+
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Collection Method</Text>
-            <Text style={styles.personDetailStyles}> {rowData.CollectionMethod}</Text>
+            <Text style={styles.personDetailStyles}>
+              {' '}
+              {testInfo.collectionType
+                ? TEST_COLLECTION_TYPE.HC
+                  ? 'HOME VISIT OR CLINIC VISIT'
+                  : 'CLINIC VISIT'
+                : null}
+            </Text>
           </View>
         </View>
       </View>
@@ -230,7 +252,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   };
 
   const renderTabsData = () => {
-    console.log(tabsdescription);
+    console.log(tabs);
     return (
       <View>
         <TabsComponent
@@ -239,49 +261,101 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           }}
           height={44}
           data={tabs}
-          onChange={(selectedTab: string) => settabsdescription(selectedTab)}
+          onChange={(selectedTab: string) => setSelectedTab(selectedTab)}
           selectedTab={selectedTab}
           selectedTitleStyle={theme.viewStyles.text('SB', 14, theme.colors.LIGHT_BLUE)}
           titleStyle={theme.viewStyles.text('M', 14, theme.colors.LIGHT_BLUE)}
         />
-        <View style={styles.descriptionStyles}>
-          <Text style={styles.descriptionTextStyles}>
-            The test is performed to detect the presence of Nicotine and Cotinine in urine. This
-            helps determine whether the patient has used tobacco recently or not. Nicotine has a
-            half-life of 40 minutes and its presence means that the patient has used tobacco
-            recently.
-          </Text>
-        </View>
       </View>
     );
   };
 
-  return (
-    <SafeAreaView
-      style={{
-        ...theme.viewStyles.container,
-      }}
-    >
-      {renderHeader()}
-      <ScrollView bounces={false} keyboardDismissMode="on-drag">
-        <View>{renderTestDetails()}</View>
-        {renderTabsData()}
-      </ScrollView>
-      <StickyBottomComponent defaultBG style={styles.container}>
-        <View style={{ marginBottom: 11, alignItems: 'flex-end' }}>
-          <Text style={styles.priceText}>Rs. 6,500</Text>
-        </View>
+  const renderTestsIncludedData = () => {
+    return (
+      <View style={styles.descriptionStyles}>
+        {testInfo.PackageInClussion.map((item, i) => (
+          <View key={i}>
+            <Text style={styles.descriptionTextStyles}>
+              {i + 1}. {item.TestInclusion || item.TestName}
+            </Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
 
-        <View style={styles.SeparatorStyle}></View>
+  const renderPreparation = () => {
+    return (
+      <View style={styles.descriptionStyles}>
+        {/* {TestDetailsDiscription.map((item, i) => (
+          <View key={i}> */}
+        <Text style={styles.descriptionTextStyles}>
+          {/* {i + 1}. {item.TestParameters} */}
+          Not available
+        </Text>
+        {/* </View> */}
+        {/* ))} */}
+      </View>
+    );
+  };
 
-        <View style={{ flex: 1, alignItems: 'center', marginHorizontal: 60 }}>
-          <Button
-            title="ADD TO CART"
-            style={{ flex: 1, marginBottom: 16 }}
-            onPress={() => props.navigation.navigate(AppRoutes.MedAndTestCart)}
-          />
-        </View>
-      </StickyBottomComponent>
-    </SafeAreaView>
-  );
+  const isAddedToCart = !!cartItems.find((item) => item.id == testInfo.ItemID);
+  console.log('isAddedToCart' + isAddedToCart);
+
+  if (!TestDetailsDiscription && searchSate != 'fail') {
+    return <Spinner />;
+  } else if (searchSate == 'fail') {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <Card
+          cardContainer={{ marginTop: 0 }}
+          heading={'Uh oh! :('}
+          description={'Test Details Not Available!'}
+          descriptionTextStyle={{ fontSize: 14 }}
+          headingTextStyle={{ fontSize: 14 }}
+        />
+      </View>
+    );
+  } else {
+    return (
+      <SafeAreaView
+        style={{
+          ...theme.viewStyles.container,
+        }}
+      >
+        {renderHeader()}
+        <ScrollView bounces={false} keyboardDismissMode="on-drag">
+          <View>{renderTestDetails()}</View>
+          {renderTabsData()}
+          {selectedTab === tabs[0].title ? renderTestsIncludedData() : renderPreparation()}
+        </ScrollView>
+        <StickyBottomComponent defaultBG style={styles.container}>
+          <View style={{ marginBottom: 11, alignItems: 'flex-end' }}>
+            <Text style={styles.priceText}>Rs. {testInfo.Rate}</Text>
+          </View>
+
+          <View style={styles.SeparatorStyle}></View>
+
+          <View style={{ flex: 1, alignItems: 'center', marginHorizontal: 60 }}>
+            <Button
+              title={!isAddedToCart ? 'ADD TO CART' : 'ADDED TO CART'}
+              disabled={!isAddedToCart ? false : true}
+              style={{ flex: 1, marginBottom: 16 }}
+              onPress={() =>
+                addCartItem!({
+                  id: testInfo.ItemID,
+                  name: testInfo.ItemName,
+                  mou: testInfo.PackageInClussion.length,
+                  price: testInfo.Rate,
+                  thumbnail: '',
+                  specialPrice: undefined,
+                  collectionMethod: testInfo.collectionType,
+                })
+              }
+            />
+          </View>
+        </StickyBottomComponent>
+      </SafeAreaView>
+    );
+  }
 };

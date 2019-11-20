@@ -4,7 +4,8 @@ import { ShoppingCartProvider } from '@aph/mobile-patients/src/components/Shoppi
 import { UIElementsProvider } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import React from 'react';
 import { Text, TextInput } from 'react-native';
-import { DiagnosticsCartProvider } from './DiagnosticsCartProvider';
+import { DiagnosticsCartProvider } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppCommonDataProvider } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 // export const AppContainer: React.FC = () => {
 
@@ -33,13 +34,15 @@ export class AppContainer extends React.Component<AppContainerTypes> {
   render() {
     return (
       <AuthProvider>
-        <ShoppingCartProvider>
-          <DiagnosticsCartProvider>
-            <UIElementsProvider>
-              <NavigatorContainer />
-            </UIElementsProvider>
-          </DiagnosticsCartProvider>
-        </ShoppingCartProvider>
+        <AppCommonDataProvider>
+          <ShoppingCartProvider>
+            <DiagnosticsCartProvider>
+              <UIElementsProvider>
+                <NavigatorContainer />
+              </UIElementsProvider>
+            </DiagnosticsCartProvider>
+          </ShoppingCartProvider>
+        </AppCommonDataProvider>
       </AuthProvider>
     );
   }

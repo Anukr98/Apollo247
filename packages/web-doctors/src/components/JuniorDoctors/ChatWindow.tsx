@@ -5,6 +5,8 @@ import { AphTextField, AphButton } from '@aph/web-ui-components';
 import Pubnub from 'pubnub';
 import Scrollbars from 'react-custom-scrollbars';
 import { JDConsult } from 'components/JuniorDoctors/JDConsult';
+import { ApolloError } from 'apollo-client';
+
 // import { UploadChatDocument, UploadChatDocumentVariables } from 'graphql/types/UploadChatDocument';
 // import { UPLOAD_CHAT_DOCUMENT } from 'graphql/consults';
 // import { useMutation } from 'react-apollo-hooks';
@@ -15,12 +17,16 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
 import { CaseSheetContext } from 'context/CaseSheetContext';
+import { AddChatDocument, AddChatDocumentVariables } from 'graphql/types/AddChatDocument';
+import { ADD_CHAT_DOCUMENT } from 'graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 const client = new AphStorageClient(
   process.env.AZURE_STORAGE_CONNECTION_STRING_WEB_DOCTORS,
   process.env.AZURE_STORAGE_CONTAINER_NAME
 );
-
+import { GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument } from 'graphql/types/GetJuniorDoctorCaseSheet';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -306,6 +312,9 @@ const useStyles = makeStyles((theme: Theme) => {
       textTransform: 'uppercase',
     },
     modalContent: {
+      textAlign: 'center',
+      maxHeight: 'calc(100vh - 212px)',
+      overflow: 'hidden',
       '& img': {
         maxWidth: '100%',
       },
@@ -355,11 +364,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const [fileUploading, setFileUploading] = React.useState<boolean>(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [imgPrevUrl, setImgPrevUrl] = React.useState();
+  const apolloClient = useApolloClient();
 
   // this hook is used to send auto chat message when the consult is closed by system
-  useEffect(() => {
-    console.log('auto close case sheet action....', props.autoCloseCaseSheet);
-  }, [props.autoCloseCaseSheet]);
 
   const covertVideoMsg = '^^convert`video^^';
   const covertAudioMsg = '^^convert`audio^^';
@@ -403,7 +410,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
   const timerLastMinuts = Math.floor(startingTime / 60);
   const timerLastSeconds = startingTime - timerMinuts * 60;
   const { patientDetails } = useContext(CaseSheetContext);
-
+  const { documentArray, setDocumentArray } = useContext(CaseSheetContextJrd);
   const startIntervalTimer = (timer: number) => {
     // setstartTimerAppoinmentt(true);
     setInterval(() => {
@@ -477,7 +484,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
           message.message.message !== followupconsult &&
           message.message.message !== patientConsultStarted &&
           message.message.message !== firstMessage &&
-          message.message.message !== secondMessage
+          message.message.message !== secondMessage &&
+          message.message.message !== covertVideoMsg &&
+          message.message.message !== covertAudioMsg
         ) {
           setIsNewMsg(true);
           props.isNewMessage(true);
@@ -520,6 +529,25 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
         resetMessagesAction();
       }
     );
+  };
+
+  const uploadfile = (url: string) => {
+    // console.log('ram');
+    apolloClient
+      .mutate<AddChatDocument, AddChatDocumentVariables>({
+        mutation: ADD_CHAT_DOCUMENT,
+        fetchPolicy: 'no-cache',
+        variables: { appointmentId: props.appointmentId, documentPath: url },
+      })
+      .then((_data) => {
+        if (_data && _data.data && _data.data.addChatDocument) {
+          // console.log('Document ', _data.data.addChatDocument);
+          setDocumentArray((_data.data.addChatDocument as unknown) as appointmentDocument);
+        }
+      })
+      .catch((error: ApolloError) => {
+        // console.log(error);
+      });
   };
 
   const send = () => {
@@ -567,7 +595,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       leftComponent++;
       rightComponent = 0;
@@ -644,7 +674,9 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
       rowData.message !== followupconsult &&
       rowData.message !== patientConsultStarted &&
       rowData.message !== firstMessage &&
-      rowData.message !== secondMessage
+      rowData.message !== secondMessage &&
+      rowData.message !== covertVideoMsg &&
+      rowData.message !== covertAudioMsg
     ) {
       leftComponent = 0;
       rightComponent++;
@@ -874,7 +906,6 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                         fileExtension &&
                         (fileExtension.toLowerCase() === 'png' ||
                           fileExtension.toLowerCase() === 'jpg' ||
-                          fileExtension.toLowerCase() === 'pdf' ||
                           fileExtension.toLowerCase() === 'jpeg')
                       ) {
                         if (file) {
@@ -891,6 +922,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = (props) => {
                             url: url,
                             isTyping: true,
                           };
+                          uploadfile(url);
                           sendMsg(uploadObject, true);
                           setFileUploading(false);
                         }

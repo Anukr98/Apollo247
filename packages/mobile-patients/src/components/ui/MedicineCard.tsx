@@ -6,6 +6,7 @@ import {
   MedicineIcon,
   MedicineRxIcon,
   RemoveIcon,
+  TestsIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Doseform } from '@aph/mobile-patients/src/helpers/apiCalls';
@@ -297,12 +298,22 @@ export const MedicineCard: React.FC<MedicineCardProps> = (props) => {
       <View style={{ width: 40, marginRight: 12, alignItems: 'center' }}>
         {imageUrl ? (
           <Image
-            PlaceholderContent={isPrescriptionRequired ? <MedicineRxIcon /> : <MedicineIcon />}
+            PlaceholderContent={
+              isTest ? (
+                <TestsIcon />
+              ) : isPrescriptionRequired ? (
+                <MedicineRxIcon />
+              ) : (
+                <MedicineIcon />
+              )
+            }
             placeholderStyle={{ backgroundColor: 'transparent' }}
             source={{ uri: imageUrl }}
             style={{ height: 40, width: 40 }}
             resizeMode="contain"
           />
+        ) : isTest ? (
+          <TestsIcon />
         ) : isPrescriptionRequired ? (
           <MedicineRxIcon />
         ) : (

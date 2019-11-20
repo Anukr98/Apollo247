@@ -8,7 +8,7 @@ import {
   ViewStyle,
   ImagePropsBase,
 } from 'react-native';
-import { theme } from '../../theme/theme';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { Image } from 'react-native-elements';
 
 export interface SectionHeaderProps {

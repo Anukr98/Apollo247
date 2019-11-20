@@ -1,4 +1,7 @@
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { FilterScene } from '@aph/mobile-patients/src/components/FilterScene';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { DoctorCard } from '@aph/mobile-patients/src/components/ui/DoctorCard';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -7,6 +10,8 @@ import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterN
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { DOCTOR_SPECIALITY_BY_FILTERS } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getDoctorsBySpecialtyAndFilters,
@@ -20,11 +25,14 @@ import {
   Range,
   SpecialtySearchType,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getPlaceInfoByPlaceId, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  doRequestAndAccessLocation,
+  g,
   getNetStatus,
-  getUserCurrentPosition,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { default as string } from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios from 'axios';
@@ -33,7 +41,6 @@ import React, { useEffect, useState } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Animated,
-  AsyncStorage,
   BackHandler,
   PermissionsAndroid,
   Platform,
@@ -44,9 +51,6 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import Geocoder from 'react-native-geocoding';
-import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   topView: {
@@ -74,7 +78,9 @@ const styles = StyleSheet.create({
     ...theme.fonts.IBMPlexSansMedium(17),
   },
 });
-const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+
+let latlng: locationType | null = null;
+const key = AppConfig.Configuration.GOOGLE_API_KEY;
 export interface DoctorSearchListingProps extends NavigationScreenProps {}
 export type filterDataType = {
   label: string;
@@ -82,7 +88,7 @@ export type filterDataType = {
   selectedOptions: string[];
 };
 
-export type locationType = { lat: string; lng: string };
+export type locationType = { lat: number | string; lng: number | string };
 export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) => {
   const filterData: filterDataType[] = [
     {
@@ -121,7 +127,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     { title: 'Online Consults' },
     { title: 'Clinic Visits' },
   ];
-  let latlng: locationType | null = null;
 
   const [selectedTab, setselectedTab] = useState<string>(tabs[0].title);
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
@@ -136,6 +141,9 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
+  const { locationDetails, setLocationDetails } = useAppCommonData();
+  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
+
   // const [doctorsAvailability, setdoctorsAvailability] = useState<
   //   | (getDoctorsBySpecialtyAndFilters_getDoctorsBySpecialtyAndFilters_doctorsAvailability | null)[]
   //   | null
@@ -181,7 +189,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
         console.log('You can use the location');
-        fetchCurrentLocation();
+        // fetchCurrentLocation();
       } else {
         console.log('location permission denied');
       }
@@ -194,8 +202,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     Platform.OS === 'android' && requestLocationPermission();
     getNetStatus().then((status) => {
       if (status) {
-        fetchCurrentLocation();
-
+        // fetchCurrentLocation();
         // fetchSpecialityFilterData(filterMode, FilterData);
       } else {
         setshowSpinner(false);
@@ -218,11 +225,101 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     });
 
+    console.log(locationDetails, 'locationDetails');
+
+    if (!locationDetails) {
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Hi! :)',
+        description:
+          'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
+        children: (
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginVertical: 18,
+            }}
+          >
+            <Button
+              style={{ flex: 1, marginRight: 16 }}
+              title={'ENTER MANUALY'}
+              onPress={() => {
+                hideAphAlert!();
+                setshowLocationpopup(true);
+              }}
+            />
+            <Button
+              style={{ flex: 1 }}
+              title={'ALLOW AUTO DETECT'}
+              onPress={() => {
+                hideAphAlert!();
+                setLoadingContext!(true);
+                doRequestAndAccessLocation()
+                  .then((response) => {
+                    console.log('response', { response });
+                    setLocationDetails!(response);
+                    setcurrentLocation(response.displayName);
+                    response &&
+                      fetchSpecialityFilterData(filterMode, FilterData, {
+                        lat: response.latitude || '',
+                        lng: response.longitude || '',
+                      });
+                  })
+                  .catch((e) => {
+                    showAphAlert!({
+                      title: 'Uh oh! :(',
+                      description: 'Unable to access location.',
+                    });
+                  })
+                  .finally(() => {
+                    setLoadingContext!(false);
+                  });
+              }}
+            />
+          </View>
+        ),
+      });
+    } else {
+      const coordinates = {
+        lat: locationDetails.latitude || '',
+        lng: locationDetails.longitude || '',
+      };
+      latlng = coordinates;
+
+      console.log(latlng, 'latlng []');
+
+      fetchSpecialityFilterData(filterMode, FilterData, latlng);
+      setcurrentLocation(locationDetails.displayName);
+    }
+
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
       willBlurSubscription && willBlurSubscription.remove();
     };
   }, []);
+
+  useEffect(() => {
+    //   // Code to delete location for test purpose
+    //   // setTimeout(() => {
+    //   //   setLocationDetails!(null);
+    //   // }, 1000);
+
+    if (locationDetails) {
+      setcurrentLocation(locationDetails.displayName);
+      const coordinates = {
+        lat: locationDetails.latitude || '',
+        lng: locationDetails.longitude || '',
+      };
+      latlng = coordinates;
+
+      console.log(latlng, 'latlng [locationDetails]');
+
+      fetchSpecialityFilterData(filterMode, FilterData, latlng);
+    }
+  }, [locationDetails]);
 
   // const fetchNextSlots = (doctorIds: (string | null)[]) => {
   //   const todayDate = new Date().toISOString().slice(0, 10);
@@ -330,8 +427,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     let geolocation = {} as any;
     if (location) {
       geolocation['geolocation'] = {
-        latitude: parseFloat(location.lat),
-        longitude: parseFloat(location.lng),
+        latitude: parseFloat(location.lat.toString()),
+        longitude: parseFloat(location.lng.toString()),
       };
     }
 
@@ -441,47 +538,105 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     });
   };
 
+  const findAddrComponents = (
+    proptoFind: GooglePlacesType,
+    addrComponents: {
+      long_name: string;
+      short_name: string;
+      types: GooglePlacesType[];
+    }[]
+  ) => {
+    return (
+      (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || {}).long_name || ''
+    );
+  };
+
   const saveLatlong = (item: { name: string; placeId: string }) => {
-    getNetStatus().then((status) => {
-      if (status) {
-        axios
-          .get(
-            `https://maps.googleapis.com/maps/api/place/details/json?placeid=${item.placeId}&key=${key}`
-          )
-          .then((obj) => {
-            try {
-              if (obj.data.result.geometry && obj.data.result.geometry.location) {
-                AsyncStorage.setItem(
-                  'location',
-                  JSON.stringify({ latlong: obj.data.result.geometry.location, name: item.name })
-                );
-                // setlatlng(obj.data.result.geometry.location);
-                latlng = obj.data.result.geometry.location;
-                setshowSpinner(true);
-                fetchSpecialityFilterData(filterMode, FilterData, latlng);
-              }
-            } catch (error) {
-              console.log(error);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
+    // getNetStatus().then((status) => {
+    //   if (status) {
+    //     axios
+    //       .get(
+    //         `https://maps.googleapis.com/maps/api/place/details/json?placeid=${item.placeId}&key=${key}`
+    //       )
+    //       .then((obj) => {
+    //         try {
+    //           if (obj.data.result.geometry && obj.data.result.geometry.location) {
+    //             AsyncStorage.setItem(
+    //               'location',
+    //               JSON.stringify({ latlong: obj.data.result.geometry.location, name: item.name })
+    //             );
+    //             // setlatlng(obj.data.result.geometry.location);
+    //             latlng = obj.data.result.geometry.location;
+    //             setshowSpinner(true);
+    //             fetchSpecialityFilterData(filterMode, FilterData, latlng);
+    //           }
+    //         } catch (error) {
+    //           console.log(error);
+    //         }
+    //       })
+    //       .catch((error) => {
+    //         console.log(error);
+    //       });
+    //   }
+    // });
+    console.log('placeId\n', { placeId: item.placeId });
+    // update address to context here
+    getPlaceInfoByPlaceId(item.placeId)
+      .then((response) => {
+        const addrComponents = g(response, 'data', 'result', 'address_components') || [];
+        const coordinates = g(response, 'data', 'result', 'geometry', 'location')! || {};
+
+        if (addrComponents.length > 0) {
+          setcurrentLocation(item.name);
+          setshowSpinner(true);
+          fetchSpecialityFilterData(filterMode, FilterData, latlng);
+          latlng = latlng;
+          setLocationDetails!({
+            displayName: item.name,
+            latitude: coordinates.lat,
+            longitude: coordinates.lng,
+            area: [
+              findAddrComponents('route', addrComponents),
+              findAddrComponents('sublocality_level_2', addrComponents),
+              findAddrComponents('sublocality_level_1', addrComponents),
+            ]
+              .filter((i) => i)
+              .join(', '),
+            city:
+              findAddrComponents('locality', addrComponents) ||
+              findAddrComponents('administrative_area_level_2', addrComponents),
+            state: findAddrComponents('administrative_area_level_1', addrComponents),
+            country: findAddrComponents('country', addrComponents),
+            pincode: findAddrComponents('postal_code', addrComponents),
+            lastUpdated: new Date().getTime(),
           });
-      }
-    });
+        }
+      })
+      .catch((error) => {
+        console.log('saveLatlong error\n', error);
+      });
   };
 
   const fetchCurrentLocation = () => {
     // Geocoder.init(key);
     // console.log(getUserCurrentPosition(), 'getUserCurrentPosition');
-    getUserCurrentPosition()
-      .then((res: any) => {
-        res.name && setcurrentLocation(res.name.toUpperCase());
-        fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
-        latlng = res.latlong;
-        console.log(res, 'getUserCurrentPosition');
-      })
-      .catch((error) => console.log(error, 'getUserCurrentPosition err'));
+    // doRequestAndAccessLocation();
+    // getUserCurrentPosition()
+    //   .then((res: any) => {
+    //     res.name && setcurrentLocation(res.name.toUpperCase());
+    //     fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
+    //     latlng = res.latlong;
+    //     console.log(res, 'getUserCurrentPosition');
+    //     AsyncStorage.setItem(
+    //       'location',
+    //       JSON.stringify({
+    //         latlong: res.latlong,
+    //         name: res.name.toUpperCase(),
+    //         zipcode: res.zipcode,
+    //       })
+    //     );
+    //   })
+    //   .catch((error) => console.log(error, 'getUserCurrentPosition err'));
     // AsyncStorage.getItem('location').then((item) => {
     //   const location = item ? JSON.parse(item) : null;
     //   if (location) {
@@ -492,7 +647,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
     //         const searchstring = position.coords.latitude + ',' + position.coords.longitude;
     //         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${searchstring}&sensor=true&key=${key}`;
     //         console.log(searchstring, 'searchstring');
-
     //         // Geocoder.from(position.coords.latitude, position.coords.longitude)
     //         //   .then((json) => {
     //         //     const addressComponent = json.results[0].address_components[1].long_name || '';
@@ -581,7 +735,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <TouchableOpacity
           activeOpacity={1}
           style={{ marginLeft: 20 }}
-          onPress={() => setDisplayFilter(true)}
+          onPress={() => {
+            CommonLogEvent(AppRoutes.DoctorSearchListing, 'Filter view opened');
+            setDisplayFilter(true);
+          }}
         >
           <Filter />
         </TouchableOpacity>
@@ -749,6 +906,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         <TabsComponent
           style={{
             backgroundColor: theme.colors.CARD_BG,
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
+            shadowOffset: { width: 0, height: 1 },
+            shadowRadius: 1.0,
           }}
           data={tabs}
           onChange={(selectedTab: string) => {
@@ -762,6 +923,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
                 : ConsultMode.PHYSICAL;
             setfilterMode(selectedFilterMode);
             fetchSpecialityFilterData(selectedFilterMode);
+            CommonLogEvent(AppRoutes.DoctorSearchListing, selectedFilterMode);
           }}
           selectedTab={selectedTab}
         />
@@ -895,6 +1057,10 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             getNetStatus().then((status) => {
               if (status) {
                 fetchSpecialityFilterData(filterMode, selecteddata);
+                CommonLogEvent(
+                  AppRoutes.DoctorSearchListing,
+                  `Filter selected data ${selecteddata}`
+                );
               } else {
                 setshowSpinner(false);
                 setshowOfflinePopup(true);

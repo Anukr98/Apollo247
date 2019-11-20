@@ -1,48 +1,62 @@
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { SectionHeader, Spearator } from '@aph/mobile-patients/src/components/ui/BasicComponents';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   CartIcon,
-  InjectionIcon,
-  MedicineIcon,
-  MedicineRxIcon,
+  DropdownGreen,
+  LocationOff,
+  LocationOn,
   NotificationIcon,
   SearchSendIcon,
-  SyrupBottleIcon,
   TestsIcon,
-  LocationOn,
-  LocationOff,
+  ShieldIcon,
 } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  getNetStatus,
-  getUserCurrentPosition,
-} from '@aph/mobile-patients/src/helpers/helperFunctions';
-import axios from 'axios';
 import { ListCard } from '@aph/mobile-patients/src/components/ui/ListCard';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { GET_MEDICINE_ORDERS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import {
-  GetMedicineOrdersList,
-  GetMedicineOrdersListVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
+  GET_DIAGNOSTICS_CITES,
+  GET_DIAGNOSTIC_DATA,
+  GET_DIAGNOSTIC_ORDER_LIST,
+  SEARCH_DIAGNOSTICS,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
-  Doseform,
-  getMedicinePageProducts,
-  getMedicineSearchSuggestionsApi,
-  MedicinePageAPiResponse,
-  MedicineProduct,
+  getDiagnosticsCites,
+  getDiagnosticsCitesVariables,
+  getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsCites';
+import {
+  searchDiagnostics,
+  searchDiagnosticsVariables,
+  searchDiagnostics_searchDiagnostics_diagnostics,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import {
+  autoCompletePlaceSearch,
+  getPlaceInfoByPlaceId,
+  getTestsPackages,
+  GooglePlacesType,
+  TestPackage,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import {
+  aphConsole,
+  doRequestAndAccessLocation,
+  g,
+  getNetStatus,
+} from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { viewStyles } from '@aph/mobile-patients/src/theme/viewStyles';
-import Axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-apollo-hooks';
+import { useApolloClient, useQuery } from 'react-apollo-hooks';
 import {
   Dimensions,
   Keyboard,
@@ -55,14 +69,21 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-  PermissionsAndroid,
-  Platform,
-  AsyncStorage,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
-import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import {
+  getDiagnosticOrdersList,
+  getDiagnosticOrdersListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import {
+  getDiagnosticsData,
+  getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers,
+  getDiagnosticsData_getDiagnosticsData_diagnosticOrgans,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticsData';
+import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -85,105 +106,227 @@ const styles = StyleSheet.create({
     opacity: 0.5,
     borderRadius: 5,
   },
+  hiTextStyle: {
+    marginLeft: 20,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  nameTextStyle: {
+    marginLeft: 5,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  seperatorStyle: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    marginTop: 5,
+    marginHorizontal: 5,
+  },
+  gotItStyles: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
+  },
 });
-const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
-
-export type locationType = { lat: string; lng: string };
 
 export interface TestsProps extends NavigationScreenProps {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length;
   const { currentPatient } = useAllCurrentPatients();
-  const { showAphAlert } = useUIElements();
-
-  useEffect(() => {
-    getMedicinePageProducts()
-      .then((d) => {
-        setData(d.data);
-        setLoading(false);
-      })
-      .catch((e) => {
-        setError(e);
-        setLoading(false);
-        showAphAlert!({
-          title: 'Uh oh! :(',
-          description: "We're unable to fetch products, try later.",
-        });
-      });
-  }, []);
-
-  useEffect(() => {
-    Platform.OS === 'android' && requestLocationPermission();
-    getNetStatus().then((status) => {
-      if (status) {
-        fetchCurrentLocation();
-        // fetchSpecialityFilterData(filterMode, FilterData);
-      } else {
-        setLoading(false);
-        setError(true);
-      }
-    });
-  }, []);
-  const [data, setData] = useState<MedicinePageAPiResponse>();
-  const [loading, setLoading] = useState<boolean>(true);
+  // const [data, setData] = useState<MedicinePageAPiResponse>();
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [currentLocation, setcurrentLocation] = useState<string>('');
   const [showLocationpopup, setshowLocationpopup] = useState<boolean>(false);
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
+    currentPatient!
+  );
 
-  const offerBanner = (g(data, 'mainbanners') || [])[0];
-  const offerBannerImage = ''; //g(offerBanner, 'image');
-  const shopByCategory = g(data, 'shop_by_category') || [];
-  const hotSellers = g(data, 'hot_sellers', 'products') || [];
-  let latlng: locationType | null = null;
+  const { data: diagnosticsData, error: hError, loading: hLoading } = useQuery<getDiagnosticsData>(
+    GET_DIAGNOSTIC_DATA,
+    {
+      variables: {},
+      fetchPolicy: 'no-cache',
+    }
+  );
+  const [errorPopUp, setErrorPopUp] = useState<boolean>(false);
+
+  const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
+  const {
+    locationDetails,
+    setLocationDetails,
+    diagnosticsCities,
+    setDiagnosticsCities,
+    locationForDiagnostics,
+  } = useAppCommonData();
+
+  const [testPackages, setTestPackages] = useState<TestPackage[]>([]);
+  const [locationError, setLocationError] = useState(false);
+
+  useEffect(() => {
+    console.log(locationDetails, 'locationDetails');
+    locationDetails && setcurrentLocation(locationDetails.displayName);
+  }, [locationDetails]);
+
+  useEffect(() => {
+    if (locationDetails && locationDetails.city) {
+      client
+        .query<getDiagnosticsCites, getDiagnosticsCitesVariables>({
+          query: GET_DIAGNOSTICS_CITES,
+          variables: {
+            cityName: locationDetails.city,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+        })
+        .then(({ data }) => {
+          aphConsole.log('getDiagnosticsCites\n', { data });
+          const cities = g(data, 'getDiagnosticsCites', 'diagnosticsCities') || [];
+          setDiagnosticsCities!(
+            cities as getDiagnosticsCites_getDiagnosticsCites_diagnosticsCities[]
+          );
+        })
+        .catch((e) => {
+          aphConsole.log('getDiagnosticsCites Error\n', { e });
+          showAphAlert!({
+            unDismissable: true,
+            title: 'Uh oh! :(',
+            description: 'Something went wrong.',
+          });
+        });
+    }
+  }, [locationDetails]);
+
+  useEffect(() => {
+    !locationDetails &&
+      showAphAlert!({
+        unDismissable: true,
+        title: 'Hi! :)',
+        description:
+          'We need to know your location to function better. Please allow us to auto detect your location or enter location manually.',
+        children: (
+          <View
+            style={{
+              flexDirection: 'row',
+              marginHorizontal: 20,
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              marginVertical: 18,
+            }}
+          >
+            <Button
+              style={{
+                flex: 1,
+                marginRight: 16,
+              }}
+              title={'ENTER MANUALY'}
+              onPress={() => {
+                hideAphAlert!();
+                setshowLocationpopup(true);
+              }}
+            />
+            <Button
+              style={{ flex: 1 }}
+              title={'ALLOW AUTO DETECT'}
+              onPress={() => {
+                hideAphAlert!();
+                setLoadingContext!(true);
+                doRequestAndAccessLocation()
+                  .then((response) => {
+                    //console.log('response', { response });
+                    setLocationDetails!(response);
+                  })
+                  .catch((e) => {
+                    showAphAlert!({
+                      title: 'Uh oh! :(',
+                      description: 'Unable to access location.',
+                    });
+                    setLocationError(true);
+                    setshowLocationpopup(true);
+                  })
+                  .finally(() => {
+                    setLoadingContext!(false);
+                  });
+              }}
+            />
+          </View>
+        ),
+      });
+  }, [locationDetails]);
+
+  useEffect(() => {
+    if (
+      locationDetails &&
+      diagnosticsCities.length > 0 &&
+      !diagnosticsCities.find((item) => item!.cityname === locationDetails!.city)
+    ) {
+      setErrorPopUp(true);
+    }
+  }, [locationDetails && diagnosticsCities]);
+
+  useEffect(() => {
+    console.log(
+      'locationForDiagnosticslength',
+      locationForDiagnostics && locationForDiagnostics.cityId
+    );
+
+    if (locationForDiagnostics && locationForDiagnostics.cityId) {
+      setLoading(true);
+      getTestsPackages(locationForDiagnostics.cityId, locationForDiagnostics.stateId)
+        .then(({ data }) => {
+          aphConsole.log('getTestsPackages\n', { data });
+          setTestPackages(g(data, 'data') || []);
+        })
+        .catch((e) => {
+          aphConsole.log('getTestsPackages Error\n', { e });
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setTestPackages([]);
+    }
+  }, [locationForDiagnostics && locationForDiagnostics.cityId]);
+
+  const hotSellers = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticHotSellers') ||
+    []) as getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers[];
+
+  const shopByOrgans = (g(diagnosticsData, 'getDiagnosticsData', 'diagnosticOrgans') ||
+    []) as getDiagnosticsData_getDiagnosticsData_diagnosticOrgans[];
 
   const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
-    GetMedicineOrdersList,
-    GetMedicineOrdersListVariables
-  >(GET_MEDICINE_ORDERS_LIST, {
-    variables: { patientId: currentPatient && currentPatient.id },
+    getDiagnosticOrdersList,
+    getDiagnosticOrdersListVariables
+  >(GET_DIAGNOSTIC_ORDER_LIST, {
+    variables: {
+      patientId: currentPatient && currentPatient.id,
+    },
     fetchPolicy: 'no-cache',
   });
 
-  const _orders =
-    (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
-
-  const requestLocationPermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('You can use the location');
-        fetchCurrentLocation();
-      } else {
-        console.log('location permission denied');
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const fetchCurrentLocation = () => {
-    getUserCurrentPosition()
-      .then((res: any) => {
-        res.name && setcurrentLocation(res.name.toUpperCase());
-        // fetchSpecialityFilterData(filterMode, FilterData, res.latlong);
-        latlng = res.latlong;
-        console.log(res, 'getUserCurrentPosition');
-      })
-      .catch((error) => console.log(error, 'getUserCurrentPosition err'));
-  };
+  const _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
 
   // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
-    return <Spinner style={{ height, position: 'relative', backgroundColor: 'transparent' }} />;
+    return (
+      <Spinner
+        style={{
+          height,
+          position: 'relative',
+          backgroundColor: 'transparent',
+        }}
+      />
+    );
   };
 
   const renderBadge = (count: number, containerStyle: StyleProp<ViewStyle>) => {
@@ -197,11 +340,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const autoSearch = (searchText: string) => {
     getNetStatus().then((status) => {
       if (status) {
-        axios
-          .get(
-            `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${searchText}&key=${key}`
-          )
+        autoCompletePlaceSearch(searchText)
           .then((obj) => {
+            console.log({});
+
             try {
               if (obj.data.predictions) {
                 const address = obj.data.predictions.map(
@@ -211,7 +353,10 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       main_text: string;
                     };
                   }) => {
-                    return { name: item.structured_formatting.main_text, placeId: item.place_id };
+                    return {
+                      name: item.structured_formatting.main_text,
+                      placeId: item.place_id,
+                    };
                   }
                 );
                 setlocationSearchList(address);
@@ -225,34 +370,54 @@ export const Tests: React.FC<TestsProps> = (props) => {
     });
   };
 
+  const findAddrComponents = (
+    proptoFind: GooglePlacesType,
+    addrComponents: {
+      long_name: string;
+      short_name: string;
+      types: GooglePlacesType[];
+    }[]
+  ) => {
+    return (
+      (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || {}).long_name || ''
+    );
+  };
+
   const saveLatlong = (item: { name: string; placeId: string }) => {
-    getNetStatus().then((status) => {
-      if (status) {
-        axios
-          .get(
-            `https://maps.googleapis.com/maps/api/place/details/json?placeid=${item.placeId}&key=${key}`
-          )
-          .then((obj) => {
-            try {
-              if (obj.data.result.geometry && obj.data.result.geometry.location) {
-                AsyncStorage.setItem(
-                  'location',
-                  JSON.stringify({ latlong: obj.data.result.geometry.location, name: item.name })
-                );
-                // setlatlng(obj.data.result.geometry.location);
-                latlng = obj.data.result.geometry.location;
-                // setLoading(true);
-                // fetchSpecialityFilterData(filterMode, FilterData, latlng);
-              }
-            } catch (error) {
-              console.log(error);
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
+    console.log('placeId\n', {
+      placeId: item.placeId,
     });
+    // update address to context here
+    getPlaceInfoByPlaceId(item.placeId)
+      .then((response) => {
+        const addrComponents = g(response, 'data', 'result', 'address_components') || [];
+        const { lat, lng } = g(response, 'data', 'result', 'geometry', 'location')! || {};
+
+        if (addrComponents.length > 0) {
+          setLocationDetails!({
+            displayName: item.name,
+            latitude: lat,
+            longitude: lng,
+            area: [
+              findAddrComponents('route', addrComponents),
+              findAddrComponents('sublocality_level_2', addrComponents),
+              findAddrComponents('sublocality_level_1', addrComponents),
+            ]
+              .filter((i) => i)
+              .join(', '),
+            city:
+              findAddrComponents('locality', addrComponents) ||
+              findAddrComponents('administrative_area_level_2', addrComponents),
+            state: findAddrComponents('administrative_area_level_1', addrComponents),
+            country: findAddrComponents('country', addrComponents),
+            pincode: findAddrComponents('postal_code', addrComponents),
+            lastUpdated: new Date().getTime(),
+          });
+        }
+      })
+      .catch((error) => {
+        console.log('saveLatlong error\n', error);
+      });
   };
 
   const renderPopup = () => {
@@ -326,8 +491,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     }}
                     onPress={() => {
                       setcurrentLocation(item.name);
-                      saveLatlong(item);
                       setshowLocationpopup(false);
+                      saveLatlong(item);
+                      setLocationDetails!({
+                        displayName: item.name,
+                        city: item.name,
+                      } as any);
                     }}
                   >
                     {item.name}
@@ -343,15 +512,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
 
   const renderLocation = () => {
     return (
-      <View style={{ flexDirection: 'row', right: 35 }}>
-        {currentLocation === '' ? (
+      <View
+        style={{
+          flexDirection: 'row',
+          right: 35,
+        }}
+      >
+        {!locationDetails ? (
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => {
               getNetStatus().then((status) => {
                 if (status) {
                   setshowLocationpopup(true);
-                  fetchCurrentLocation();
+                  // fetchCurrentLocation();
                 } else {
                   setError(true);
                 }
@@ -370,7 +544,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 alignItems: 'center',
               }}
             >
-              {currentLocation ? (
+              {locationDetails ? (
                 <Text
                   style={{
                     color: theme.colors.SHERPA_BLUE,
@@ -378,7 +552,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                     textTransform: 'uppercase',
                   }}
                 >
-                  {currentLocation}
+                  {locationDetails.displayName && locationDetails.displayName.substring(0, 15)}
                 </Text>
               ) : null}
               <LocationOn />
@@ -424,29 +598,32 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const [imgHeight, setImgHeight] = useState(120);
-  const { width: winWidth } = Dimensions.get('window');
-  const renderOfferBanner = () => {
-    if (offerBannerImage)
-      return (
-        <Image
-          placeholderStyle={styles.imagePlaceholderStyle}
-          onLoad={(value) => {
-            const { height, width } = value.nativeEvent.source;
-            setImgHeight(height * (winWidth / width));
-          }}
-          style={{ width: '100%', minHeight: imgHeight }}
-          source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
-        />
-      );
-  };
+  // const [imgHeight, setImgHeight] = useState(120);
+  // const { width: winWidth } = Dimensions.get('window');
+  // const renderOfferBanner = () => {
+  //   if (offerBannerImage)
+  //     return (
+  //       <Image
+  //         placeholderStyle={styles.imagePlaceholderStyle}
+  //         onLoad={(value) => {
+  //           const { height, width } = value.nativeEvent.source;
+  //           setImgHeight(height * (winWidth / width));
+  //         }}
+  //         style={{ width: '100%', minHeight: imgHeight }}
+  //         source={{ uri: `${config.IMAGES_BASE_URL[0]}${offerBannerImage}` }}
+  //       />
+  //     );
+  // };
 
   const renderYourOrders = () => {
     return (
       (!ordersLoading && _orders.length > 0 && (
         <ListCard
-          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene, { isTest: true })}
-          container={{ marginBottom: 24, marginTop: 20 }}
+          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersTest, { isTest: true })}
+          container={{
+            marginBottom: 24,
+            marginTop: 20,
+          }}
           title={'Your Orders'}
           leftIcon={<TestsIcon />}
         />
@@ -520,11 +697,28 @@ export const Tests: React.FC<TestsProps> = (props) => {
         },
       });
       return (
-        <View style={[{ flexDirection: 'row', marginBottom: 8 }]}>
+        <View
+          style={[
+            {
+              flexDirection: 'row',
+              marginBottom: 8,
+            },
+          ]}
+        >
           <Text style={[styles.priceText, { marginRight: 4 }]}>Rs. {specialPrice || price}</Text>
           {!!specialPrice && (
             <Text style={styles.discountedPriceText}>
-              (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
+              (
+              <Text
+                style={[
+                  {
+                    textDecorationLine: 'line-through',
+                  },
+                ]}
+              >
+                Rs. {price}
+              </Text>
+              )
             </Text>
           )}
         </View>
@@ -547,7 +741,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
           <Image
             placeholderStyle={styles.imagePlaceholderStyle}
             source={{ uri: imgUrl }}
-            style={{ height: 40, width: 40, marginBottom: 8 }}
+            style={{
+              height: 40,
+              width: 40,
+              marginBottom: 8,
+            }}
           />
           <View style={{ height: 47.5 }}>
             <Text
@@ -576,45 +774,46 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderHotSellerItem = (data: ListRenderItemInfo<MedicineProduct>) => {
-    const {
-      sku,
-      is_prescription_required,
-      name,
-      mou,
-      special_price,
-      price,
-      image,
-      thumbnail,
-    } = data.item;
+  const renderHotSellerItem = (
+    data: ListRenderItemInfo<getDiagnosticsData_getDiagnosticsData_diagnosticHotSellers>
+  ) => {
+    const { id, packageImage, packageName, diagnostics } = data.item;
+    const foundMedicineInCart = !!cartItems.find((item) => item.id == `${diagnostics!.itemId}`);
+    const specialPrice = undefined;
     const addToCart = () =>
       addCartItem!({
-        id: sku,
-        mou: mou,
-        name: name,
-        price: specialPrice,
-        thumbnail,
+        id: `${diagnostics!.itemId!}`,
+        mou: 1,
+        name: packageName!,
+        price: diagnostics!.rate,
+        specialPrice: specialPrice,
+        thumbnail: packageImage,
+        collectionMethod: diagnostics!.collectionType!,
       });
-    const removeFromCart = () => removeCartItem!(sku);
-    const foundMedicineInCart = !!cartItems.find((item) => item.id == sku);
-    const specialPrice = special_price
-      ? typeof special_price == 'string'
-        ? parseInt(special_price)
-        : special_price
-      : price;
+    const removeFromCart = () => removeCartItem!(`${diagnostics!.itemId}`);
+    // const specialPrice = special_price
+    //   ? typeof special_price == 'string'
+    //     ? parseInt(special_price)
+    //     : special_price
+    //   : price;
 
     return hotSellerCard({
-      name,
-      imgUrl: `${config.IMAGES_BASE_URL[0]}${image}`,
-      price,
-      specialPrice: special_price
-        ? typeof special_price == 'string'
-          ? parseInt(special_price)
-          : special_price
-        : undefined,
+      name: packageName!,
+      imgUrl: packageImage!,
+      price: diagnostics!.rate,
+      specialPrice: undefined,
       isAddedToCart: foundMedicineInCart,
       onAddOrRemoveCartItem: foundMedicineInCart ? removeFromCart : addToCart,
-      onPress: () => props.navigation.navigate(AppRoutes.TestDetails, { sku }),
+      onPress: () =>
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          testDetails: {
+            Rate: diagnostics!.rate,
+            Gender: diagnostics!.gender,
+            ItemID: `${diagnostics!.itemId}`,
+            ItemName: packageName,
+            collectionType: diagnostics!.collectionType,
+          } as TestPackageForDetails,
+        }),
       style: {
         marginHorizontal: 4,
         marginTop: 16,
@@ -625,6 +824,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderHotSellers = () => {
+    if (hotSellers.length == 0) return null;
     return (
       <View>
         <SectionHeader leftText={'HOT SELLERS'} />
@@ -640,46 +840,49 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderBrowseByCondition = () => {
-    return (
-      <View>
-        <SectionHeader leftText={'BROWSE BY CONDITION'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={shopByCategory}
-          renderItem={({ item, index }) => {
-            return renderCatalogCard(
-              item.title,
-              `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
-              () =>
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
-                  category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
-                  isTest: true,
-                }),
-              {
-                marginHorizontal: 4,
-                marginTop: 16,
-                marginBottom: 20,
-                ...(index == 0 ? { marginLeft: 20 } : {}),
-              }
-            );
-          }}
-        />
-      </View>
-    );
-  };
+  // const renderBrowseByCondition = () => {
+  //   return (
+  //     <View>
+  //       <SectionHeader leftText={'BROWSE BY CONDITION'} />
+  //       <FlatList
+  //         bounces={false}
+  //         keyExtractor={(_, index) => `${index}`}
+  //         showsHorizontalScrollIndicator={false}
+  //         horizontal
+  //         data={shopByOrgans}
+  //         renderItem={({ item, index }) => {
+  //           return renderCatalogCard(
+  //             item.title,
+  //             `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
+  //             () =>
+  //               props.navigation.navigate(AppRoutes.SearchByBrand, {
+  //                 category_id: item.category_id,
+  //                 title: `${item.title || 'Products'}`.toUpperCase(),
+  //                 isTest: true,
+  //               }),
+  //             {
+  //               marginHorizontal: 4,
+  //               marginTop: 16,
+  //               marginBottom: 20,
+  //               ...(index == 0 ? { marginLeft: 20 } : {}),
+  //             }
+  //           );
+  //         }}
+  //       />
+  //     </View>
+  //   );
+  // };
 
   const renderPackageCard = (
     title: string,
     subtitle: string,
     desc: string,
     price: number,
-    specialPrice: number,
-    style: ViewStyle
+    specialPrice: number | undefined,
+    style: ViewStyle,
+    isAddedToCart: boolean,
+    onPress: () => void,
+    onPressBookNow: () => void
   ) => {
     return (
       <TouchableOpacity
@@ -692,11 +895,29 @@ export const Tests: React.FC<TestsProps> = (props) => {
           },
           style,
         ]}
+        onPress={onPress}
       >
-        <View style={{ flex: 1, flexDirection: 'row' }}>
-          <View style={{ flexGrow: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
-            <View style={{ width: Dimensions.get('window').width * 0.4 }}>
-              <Text style={theme.viewStyles.text('SB', 16, '#02475b', 1, 24)}>{title}</Text>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+          }}
+        >
+          <View
+            style={{
+              flexGrow: 1,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+            }}
+          >
+            <View
+              style={{
+                width: Dimensions.get('window').width * 0.4,
+              }}
+            >
+              <Text style={theme.viewStyles.text('SB', 16, '#02475b', 1, 24)} numberOfLines={2}>
+                {title}
+              </Text>
               <View style={{ height: 8 }} />
               <Text style={theme.viewStyles.text('M', 10, '#02475b', 1, undefined, 0.25)}>
                 {subtitle}
@@ -706,7 +927,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
             </View>
             <View style={{}}>
               <Image
-                source={{ uri: 'https://via.placeholder.com/120', height: 120, width: 120 }}
+                source={{
+                  uri: '',
+                  height: 120,
+                  width: 120,
+                }}
                 style={{ borderRadius: 5 }}
               />
             </View>
@@ -714,10 +939,25 @@ export const Tests: React.FC<TestsProps> = (props) => {
         </View>
         <Spearator style={{ marginVertical: 11.5 }} />
 
-        <View style={{ flexDirection: 'row', flex: 1 }}>
-          <View style={{ flexGrow: 1, flexDirection: 'row' }}>
-            <Text style={{ marginRight: 8, ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24) }}>
-              Rs. {specialPrice}
+        <View
+          style={{
+            flexDirection: 'row',
+            flex: 1,
+          }}
+        >
+          <View
+            style={{
+              flexGrow: 1,
+              flexDirection: 'row',
+            }}
+          >
+            <Text
+              style={{
+                marginRight: 8,
+                ...theme.viewStyles.text('SB', 14, '#02475b', 1, 24),
+              }}
+            >
+              Rs. {specialPrice || price}
             </Text>
             {!!specialPrice && (
               <Text
@@ -726,63 +966,97 @@ export const Tests: React.FC<TestsProps> = (props) => {
                   textAlign: 'center',
                 }}
               >
-                (<Text style={[{ textDecorationLine: 'line-through' }]}>Rs. {price}</Text>)
+                (
+                <Text
+                  style={[
+                    {
+                      textDecorationLine: 'line-through',
+                    },
+                  ]}
+                >
+                  Rs. {price}
+                </Text>
+                )
               </Text>
             )}
           </View>
-          <View style={{ flexGrow: 1, alignItems: 'flex-end' }}>
-            <Text style={theme.viewStyles.text('B', 13, '#fc9916', 1, 24)}>{'BOOK NOW'}</Text>
+          <View
+            style={{
+              flexGrow: 1,
+              alignItems: 'flex-end',
+            }}
+          >
+            <Text style={theme.viewStyles.text('B', 13, '#fc9916', 1, 24)} onPress={onPressBookNow}>
+              {isAddedToCart ? 'ADDED TO CART' : 'BOOK NOW'}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
     );
   };
 
-  const packages = [
-    ...Array.from({ length: 10 }).map(() => ({
-      title: 'Basic Diabetic Screening Checkup',
-      subtitle: '66 TESTS INCLUDED',
-      desc: 'Ideal for individuals between 20-40 years.',
-      specialPrice: 1599,
-      price: 2000,
-    })),
-  ];
-
   const renderTestPackages = () => {
-    return (
-      <View>
-        <SectionHeader leftText={'BROWSE PACKAGES'} />
-        <FlatList
-          bounces={false}
-          keyExtractor={(_, index) => `${index}`}
-          showsHorizontalScrollIndicator={false}
-          horizontal
-          data={packages}
-          renderItem={({ item, index }) => {
-            return renderPackageCard(
-              item.title,
-              item.subtitle,
-              item.desc,
-              item.price,
-              item.specialPrice,
-              {
-                marginHorizontal: 4,
-                marginTop: 16,
-                marginBottom: 20,
-                ...(index == 0 ? { marginLeft: 20 } : {}),
-              }
-            );
-          }}
-        />
-      </View>
-    );
+    if (testPackages.length > 0) {
+      return (
+        <View>
+          <SectionHeader leftText={'BROWSE PACKAGES'} />
+          <FlatList
+            bounces={false}
+            keyExtractor={(_, index) => `${index}`}
+            showsHorizontalScrollIndicator={false}
+            horizontal
+            data={testPackages}
+            renderItem={({ item, index }) => {
+              const inclusionCount = (item.PackageInClussion || []).length;
+              const desc = inclusionCount
+                ? `${inclusionCount} TEST${inclusionCount == 1 ? '' : 'S'} INCLUDED`
+                : '';
+              const applicableAge = `Ideal for individuals between ${(
+                item.FromAgeInDays / 365
+              ).toFixed(0)}-${(item.ToAgeInDays / 365).toFixed(0)} years.`;
+              return renderPackageCard(
+                item.ItemName,
+                desc,
+                applicableAge,
+                parseInt(item.Rate.toFixed(0)),
+                0,
+                {
+                  marginHorizontal: 4,
+                  marginTop: 16,
+                  marginBottom: 20,
+                  ...(index == 0 ? { marginLeft: 20 } : {}),
+                },
+                !!cartItems.find((_item) => _item.id == item.ItemID),
+                () => props.navigation.navigate(AppRoutes.TestDetails, { testDetails: item }),
+                () =>
+                  addCartItem!({
+                    id: item.ItemID,
+                    name: item.ItemName,
+                    mou: item.PackageInClussion.length,
+                    price: item.Rate,
+                    thumbnail: '',
+                    specialPrice: undefined,
+                    collectionMethod: TEST_COLLECTION_TYPE.HC, // hardcoding here
+                  })
+              );
+            }}
+          />
+        </View>
+      );
+    }
   };
 
   const preventiveTestCard = (name: string, price: number, style: ViewStyle) => {
     return (
       <TouchableOpacity
         activeOpacity={1}
-        style={[{ ...theme.viewStyles.card(16, 4, 10, '#fff', 10), paddingBottom: 12 }, style]}
+        style={[
+          {
+            ...theme.viewStyles.card(16, 4, 10, '#fff', 10),
+            paddingBottom: 12,
+          },
+          style,
+        ]}
       >
         <Text style={theme.viewStyles.text('M', 14, '#01475b', 1, 22)}>{name}</Text>
         <Spearator style={{ marginVertical: 7.5 }} />
@@ -792,7 +1066,9 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderPreventiveTests = () => {
-    const preventiveTests = Array.from({ length: 10 }).map((_) => ({
+    const preventiveTests = Array.from({
+      length: 10,
+    }).map((_) => ({
       name: 'Blood Glucose Test',
       price: 120,
     }));
@@ -820,6 +1096,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const renderTestsByOrgan = () => {
+    if (shopByOrgans.length == 0) return null;
     return (
       <View>
         <SectionHeader leftText={'BROWSE TESTS BY ORGANS'} />
@@ -828,16 +1105,17 @@ export const Tests: React.FC<TestsProps> = (props) => {
           keyExtractor={(_, index) => `${index}`}
           showsHorizontalScrollIndicator={false}
           horizontal
-          data={shopByCategory}
+          data={shopByOrgans}
           renderItem={({ item, index }) => {
             return renderCatalogCard(
-              item.title,
-              `${config.IMAGES_BASE_URL[0]}${item.image_url}`,
+              item.organName!,
+              item.organImage!,
               () =>
-                props.navigation.navigate(AppRoutes.SearchByBrand, {
-                  category_id: item.category_id,
-                  title: `${item.title || 'Products'}`.toUpperCase(),
+                props.navigation.navigate(AppRoutes.TestsByCategory, {
+                  // category_id: item.category_id,
+                  title: `${item.organName || 'Products'}`.toUpperCase(),
                   isTest: true,
+                  products: [item.diagnostics],
                 }),
               {
                 // marginRight: 8,
@@ -866,39 +1144,48 @@ export const Tests: React.FC<TestsProps> = (props) => {
   };
 
   const [searchText, setSearchText] = useState<string>('');
-  const [medicineList, setMedicineList] = useState<MedicineProduct[]>([]);
+  const [medicineList, setMedicineList] = useState<
+    searchDiagnostics_searchDiagnostics_diagnostics[]
+  >([]);
   const [searchSate, setsearchSate] = useState<'load' | 'success' | 'fail' | undefined>();
   const [isSearchFocused, setSearchFocused] = useState(false);
+  const client = useApolloClient();
 
   const onSearchMedicine = (_searchText: string) => {
     setSearchText(_searchText);
     if (!(_searchText && _searchText.length > 2)) {
       setMedicineList([]);
+      console.log('onSearchMedicine');
       return;
     }
     setsearchSate('load');
-    getMedicineSearchSuggestionsApi(_searchText)
+    client
+      .query<searchDiagnostics, searchDiagnosticsVariables>({
+        query: SEARCH_DIAGNOSTICS,
+        variables: {
+          searchText: _searchText,
+          city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
+          patientId: (currentPatient && currentPatient.id) || '',
+        },
+        fetchPolicy: 'no-cache',
+      })
       .then(({ data }) => {
         // aphConsole.log({ data });
-        const products = data.products || [];
-        setMedicineList(products);
+        const products = g(data, 'searchDiagnostics', 'diagnostics') || [];
+        setMedicineList(products as searchDiagnostics_searchDiagnostics_diagnostics[]);
         setsearchSate('success');
       })
       .catch((e) => {
         // aphConsole.log({ e });
-        if (!Axios.isCancel(e)) {
-          setsearchSate('fail');
-        }
+        setsearchSate('fail');
       });
   };
 
   interface SuggestionType {
     name: string;
     price: number;
-    isOutOfStock: boolean;
-    type: Doseform;
+    type: 'TEST' | 'PACKAGE';
     imgUri?: string;
-    prescriptionRequired: boolean;
     onPress: () => void;
     showSeparator?: boolean;
     style?: ViewStyle;
@@ -928,19 +1215,19 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <View style={localStyles.nameAndPriceViewStyle}>
           <Text
             numberOfLines={1}
-            style={{ ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0) }}
+            style={{
+              ...theme.viewStyles.text('M', 16, '#01475b', 1, 24, 0),
+            }}
           >
             {data.name}
           </Text>
-          {data.isOutOfStock ? (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#890000', 1, 20, 0.04) }}>
-              {'Out Of Stock'}
-            </Text>
-          ) : (
-            <Text style={{ ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04) }}>
-              Rs. {data.price}
-            </Text>
-          )}
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 12, '#02475b', 0.6, 20, 0.04),
+            }}
+          >
+            Rs. {data.price}
+          </Text>
         </View>
       );
     };
@@ -952,17 +1239,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
             <Image
               placeholderStyle={styles.imagePlaceholderStyle}
               source={{ uri: data.imgUri }}
-              style={{ height: 40, width: 40 }}
+              style={{
+                height: 40,
+                width: 40,
+              }}
               resizeMode="contain"
             />
-          ) : data.type == 'SYRUP' ? (
-            <SyrupBottleIcon />
-          ) : data.type == 'INJECTION' ? (
-            <InjectionIcon />
-          ) : data.prescriptionRequired ? (
-            <MedicineRxIcon />
+          ) : data.type == 'PACKAGE' ? (
+            <TestsIcon />
           ) : (
-            <MedicineIcon />
+            <TestsIcon />
           )}
         </View>
       );
@@ -1005,7 +1291,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
       },
     });
 
-    const shouldEnableSearchSend = searchText.length > 2 && medicineList.length > 0;
+    const shouldEnableSearchSend = searchText.length > 2;
     const rigthIconView = (
       <TouchableOpacity
         activeOpacity={1}
@@ -1014,9 +1300,8 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         disabled={!shouldEnableSearchSend}
         onPress={() => {
-          props.navigation.navigate(AppRoutes.SearchMedicineScene, {
+          props.navigation.navigate(AppRoutes.SearchTestScene, {
             searchText: searchText,
-            isTest: true,
           });
           setSearchText('');
           setMedicineList([]);
@@ -1034,13 +1319,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
         <Input
           onSubmitEditing={() => {
             if (searchText.length > 2) {
-              props.navigation.navigate(AppRoutes.SearchMedicineScene, {
+              props.navigation.navigate(AppRoutes.SearchTestScene, {
                 searchText: searchText,
-                isTest: true,
               });
             }
           }}
           value={searchText}
+          // editable={!!locationDetails}
           autoCapitalize="none"
           spellCheck={false}
           onFocus={() => setSearchFocused(true)}
@@ -1062,7 +1347,11 @@ export const Tests: React.FC<TestsProps> = (props) => {
           inputStyle={styles.inputStyle}
           inputContainerStyle={[
             styles.inputContainerStyle,
-            itemsNotFound ? { borderBottomColor: '#890000' } : {},
+            itemsNotFound
+              ? {
+                  borderBottomColor: '#890000',
+                }
+              : {},
           ]}
           rightIconContainerStyle={styles.rightIconContainerStyle}
           style={styles.style}
@@ -1079,35 +1368,79 @@ export const Tests: React.FC<TestsProps> = (props) => {
     );
   };
 
-  const renderSearchSuggestionItemView = (data: ListRenderItemInfo<MedicineProduct>) => {
+  const renderBanner = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: theme.colors.APP_GREEN,
+          width: '100%',
+          paddingVertical: 16,
+          paddingHorizontal: 20,
+          flexDirection: 'row',
+        }}
+      >
+        <ShieldIcon />
+        <View
+          style={{
+            borderRightWidth: 1,
+            borderRightColor: 'rgba(2, 71, 91, 0.5)',
+            marginHorizontal: 19.5,
+          }}
+        />
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          <Text style={theme.viewStyles.text('M', 14, theme.colors.WHITE, 1, 22)}>
+            Most trusted diagnostics from the comfort of your home!
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  const renderSearchSuggestionItemView = (
+    data: ListRenderItemInfo<searchDiagnostics_searchDiagnostics_diagnostics>
+  ) => {
     const { index, item } = data;
-    const imgUri = item.thumbnail ? `${config.IMAGES_BASE_URL[0]}${item.thumbnail}` : '';
+    const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
+    const { rate, gender, itemId, itemName, collectionType } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
-        props.navigation.navigate(AppRoutes.MedicineDetailsScene, {
-          sku: item.sku,
+        props.navigation.navigate(AppRoutes.TestDetails, {
+          testDetails: {
+            Rate: rate,
+            Gender: gender,
+            ItemID: `${itemId}`,
+            ItemName: itemName,
+            collectionType: collectionType,
+          } as TestPackageForDetails,
         });
       },
-      name: item.name,
-      price: item.price,
-      isOutOfStock: !item.is_in_stock,
-      type: ((item.PharmaOverview || [])[0] || {}).Doseform,
+      name: item.itemName,
+      price: item.rate,
+      type: 'TEST',
       style: {
         marginHorizontal: 20,
         paddingBottom: index == medicineList.length - 1 ? 10 : 0,
       },
       showSeparator: !(index == medicineList.length - 1),
       imgUri,
-      prescriptionRequired: item.is_prescription_required == '1',
     });
   };
 
   const renderSearchSuggestions = () => {
     // if (medicineList.length == 0) return null;
     return (
-      <View style={{ width: '100%', position: 'absolute' }}>
+      <View
+        style={{
+          width: '100%',
+          position: 'absolute',
+        }}
+      >
         {searchSate == 'load' ? (
-          <View style={{ backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }}>
+          <View
+            style={{
+              backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
+            }}
+          >
             {renderSectionLoader(266)}
           </View>
         ) : (
@@ -1171,19 +1504,27 @@ export const Tests: React.FC<TestsProps> = (props) => {
         }}
         style={{ flex: 1 }}
       >
-        {renderOfferBanner()}
+        {/* {renderOfferBanner()} */}
         {renderYourOrders()}
-        {loading
-          ? renderSectionLoader()
-          : !error && (
-              <>
-                {renderHotSellers()}
-                {renderBrowseByCondition()}
-                {renderTestPackages()}
-                {renderTestsByOrgan()}
-                {renderPreventiveTests()}
-              </>
-            )}
+        {(!!(locationForDiagnostics && locationForDiagnostics.cityId) && (
+          <>
+            {renderHotSellers()}
+            {/* {renderBrowseByCondition()} */}
+            {renderTestPackages()}
+            {renderTestsByOrgan()}
+            {/* {renderPreventiveTests()} */}
+          </>
+        )) || (
+          <Text
+            style={{
+              ...theme.viewStyles.text('M', 16, '#0087ba', 1, 24),
+              marginBottom: 20,
+              textAlign: 'center',
+            }}
+          >{`${currentPatient &&
+            currentPatient.firstName}, our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`}</Text>
+        )}
+
         {renderNeedHelp()}
       </TouchableOpacity>
     );
@@ -1203,31 +1544,83 @@ export const Tests: React.FC<TestsProps> = (props) => {
             isSearchFocused && searchText.length > 2 && medicineList.length > 0 ? { flex: 1 } : {},
           ]}
         >
-          <Text
-            style={{
-              height: isSearchFocused ? 0 : 'auto',
-              ...theme.viewStyles.text('SB', 36, '#02475b', 1),
-              paddingTop: 20,
-              backgroundColor: '#fff',
-              paddingHorizontal: 20,
-            }}
-          >
-            {(currentPatient &&
-              currentPatient.firstName &&
-              `hi ${currentPatient.firstName.toLowerCase()}!`) ||
-              ''}
-          </Text>
+          <ProfileList
+            navigation={props.navigation}
+            saveUserChange={true}
+            childView={
+              <View
+                style={{
+                  flexDirection: 'row',
+                  paddingRight: 8,
+                  borderRightWidth: 0,
+                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                  backgroundColor: theme.colors.WHITE,
+                }}
+              >
+                <Text style={styles.hiTextStyle}>{'hi'}</Text>
+                <View>
+                  <Text style={styles.nameTextStyle}>
+                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                  </Text>
+                  <View style={styles.seperatorStyle} />
+                </View>
+                <View style={{ paddingTop: 15 }}>
+                  <DropdownGreen />
+                </View>
+              </View>
+            }
+            selectedProfile={profile}
+            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+          ></ProfileList>
 
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>
-            <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
+            <View
+              style={{
+                backgroundColor: 'white',
+              }}
+            >
+              {renderSearchBar()}
+            </View>
             {renderSearchBarAndSuggestions()}
           </View>
           <View style={[isSearchFocused && searchText.length > 2 ? { height: 0 } : {}]}>
+            {renderBanner()}
             {renderSections()}
           </View>
         </ScrollView>
+        {errorPopUp && (
+          <BottomPopUp
+            title={`Hi ${currentPatient && currentPatient.firstName},`}
+            description={`Our diagnostic services are only available in Chennai and Hyderabad for now. Kindly change location to Chennai or Hyderabad.`}
+          >
+            <View
+              style={{
+                height: 60,
+                alignItems: 'flex-end',
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.gotItStyles}
+                onPress={() => {
+                  setErrorPopUp(false);
+                }}
+              >
+                <Text style={styles.gotItTextStyles}>Okay, got it</Text>
+              </TouchableOpacity>
+            </View>
+          </BottomPopUp>
+        )}
       </SafeAreaView>
       {renderPopup()}
+      {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )}
     </View>
   );
 };

@@ -22,34 +22,28 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { GET_PATIENTS_MOBILE } from '../../graphql/profiles';
+import { GET_PATIENTS_MOBILE } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   getPatientByMobileNumber,
   getPatientByMobileNumberVariables,
   getPatientByMobileNumber_getPatientByMobileNumber_patients,
-} from '../../graphql/types/getPatientByMobileNumber';
-import { Gender, Relation } from '../../graphql/types/globalTypes';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { PatientDefaultImage } from '../ui/Icons';
-import { Spinner } from '../ui/Spinner';
-import { useUIElements } from '../UIElementsProvider';
+} from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { PatientDefaultImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 
 const styles = StyleSheet.create({
   separatorStyle: {
     borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
   },
   profileImageStyle: {
     width: 80,
     height: 80,
-    ...Platform.select({
-      ios: {
-        borderRadius: 40,
-      },
-      android: {
-        borderRadius: 100,
-      },
-    }),
+    borderRadius: 40,
   },
   imageView: {
     marginRight: 16,
@@ -68,7 +62,7 @@ type profile = {
   lastName: string;
   relation: Relation | undefined;
   gender: Gender | undefined;
-  //  descripiton: string;
+  //  descripiton: string;
   uhid?: string;
   dateOfBirth?: Date;
   photoUrl?: string;
@@ -84,6 +78,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   const [profiles, setProfiles] = useState<
     (getPatientByMobileNumber_getPatientByMobileNumber_patients | null)[]
   >();
+  const [bottomPopUP, setBottomPopUP] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { currentPatient } = useAllCurrentPatients();
   const backDataFunctionality = async () => {
@@ -108,7 +103,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         profileData && setProfiles(profileData!.patients!);
       })
       .catch((e: any) => {
-        Alert.alert('Alert', e.message);
+        setBottomPopUP(true);
       })
       .finally(() => {
         setLoading!(false);
@@ -121,7 +116,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       <View>
         <Header
           container={{ borderBottomWidth: 0 }}
-          title={'MANAGE PROFILES'}
+          title={'MANAGE PROFILES'}
           leftIcon="backArrow"
           onPressLeftIcon={() => backDataFunctionality()}
         />
@@ -155,7 +150,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                     backgroundColor: colors.WHITE,
                     flexDirection: 'row',
                     height: 145,
-                    //  marginTop: i === 0 ? 16 : 8,
+                    //  marginTop: i === 0 ? 16 : 8,
                     marginBottom: 8,
                   }}
                   key={i}
@@ -168,15 +163,15 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         source={{
                           uri: profile!.photoUrl,
                         }}
-                        resizeMode={'contain'}
+                        // resizeMode={'contain'}
                       />
                     ) : (
                       <PatientDefaultImage style={styles.profileImageStyle} />
                     )}
-                    {/* {profile.photoUrl &&
-       profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
-                    {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
-                    {/* )} */}
+                    {/* {profile.photoUrl &&
+       profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
+                    {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
+                    {/* )} */}
                   </View>
 
                   <View style={{ flex: 1, justifyContent: 'space-between' }}>
@@ -189,7 +184,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         marginBottom: 8,
                       }}
                     >
-                      {profile!.firstName + ' ' + profile!.lastName}
+                      {profile!.firstName + ' ' + profile!.lastName}
                     </Text>
                     <View style={styles.separatorStyle} />
                     <Text
@@ -213,7 +208,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         ...fonts.IBMPlexSansMedium(12),
                       }}
                     >
-                      UHID : {profile!.uhid}
+                      UHID : {profile!.uhid}
                     </Text>
                     <Text
                       style={{
@@ -222,8 +217,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         ...fonts.IBMPlexSansMedium(12),
                       }}
                     >
-                      DOB :{' '}
-                      {profile!.dateOfBirth && moment(profile!.dateOfBirth).format('DD MMM, YYYY')}
+                      DOB :{' '}
+                      {profile!.dateOfBirth && moment(profile!.dateOfBirth).format('DD MMM, YYYY')}
                     </Text>
                   </View>
                 </View>
@@ -239,7 +234,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 ...fonts.IBMPlexSansMedium(12),
               }}
             >
-              {isLoading ? '' : 'No Profiles avaliable'}
+              {isLoading ? '' : 'No Profiles avaliable'}
             </Text>
           </View>
         )}
@@ -251,7 +246,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     return (
       <StickyBottomComponent defaultBG style={{}}>
         <Button
-          title="ADD NEW PROFILE"
+          title="ADD NEW PROFILE"
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={() =>
             props.navigation.navigate(AppRoutes.EditProfile, {
@@ -276,7 +271,31 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
         <View style={{ padding: 40 }} />
       </ScrollView>
       {!isLoading && renderBottomStickyComponent()}
-      {/* {loading && <Spinner />} */}
+      {bottomPopUP && (
+        <BottomPopUp title="Network Error!" description={'Please try again later.'}>
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottomPopUP(false);
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
     </SafeAreaView>
   );
 };

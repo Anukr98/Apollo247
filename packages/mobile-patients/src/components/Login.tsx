@@ -1,36 +1,33 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+// import SmsListener from 'react-native-android-sms-listener';
+import { timeOutDataType } from '@aph/mobile-patients/src/components/OTPVerification';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { ArrowDisabled, ArrowYellow } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
+  AsyncStorage,
+  EmitterSubscription,
+  Keyboard,
   Platform,
   SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   View,
-  ActivityIndicator,
-  Keyboard,
-  Alert,
-  PermissionsAndroid,
-  AsyncStorage,
-  EmitterSubscription,
 } from 'react-native';
-import { NavigationScreenProps, NavigationEventSubscription } from 'react-navigation';
-import { useAuth } from '../hooks/authHooks';
-// import SmsListener from 'react-native-android-sms-listener';
-import {
-  timeOutDataType,
-  ReceivedSmsMessage,
-} from '@aph/mobile-patients/src/components/OTPVerification';
-import { RNFirebase } from 'react-native-firebase';
-import firebase from 'react-native-firebase';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import firebase, { RNFirebase } from 'react-native-firebase';
+import { NavigationEventSubscription, NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   container: {
@@ -241,7 +238,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 console.log(error.message, 'errormessage');
 
                 CommonLogEvent(AppRoutes.Login, error.message);
-
+                CommonBugFender(AppRoutes.Login, error.message);
                 Alert.alert(
                   'Error',
                   (error && error.message) || 'The interaction was cancelled by the user.'

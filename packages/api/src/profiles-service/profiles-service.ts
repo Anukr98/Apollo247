@@ -12,6 +12,10 @@ import {
   getCurrentPatientsTypeDefs,
 } from 'profiles-service/resolvers/getCurrentPatients';
 import {
+  getCurrentLoginPatientsResolvers,
+  getCurrentLoginPatientsTypeDefs,
+} from 'profiles-service/resolvers/getCurrentLoginPatients';
+import {
   getDigitizedOrderResolvers,
   getDigitizedOrderTypeDefs,
 } from 'profiles-service/resolvers/getDigitizedOrderDetails';
@@ -38,6 +42,10 @@ import {
   updatePatientTypeDefs,
 } from 'profiles-service/resolvers/updatePatient';
 import {
+  updateNewPatientResolvers,
+  updateNewPatientTypeDefs,
+} from 'profiles-service/resolvers/updateNewPatient';
+import {
   savePatientNotificationSettingsResolvers,
   savePatientNotificationSettingsTypeDefs,
 } from 'profiles-service/resolvers/savePatientNotificationSettings';
@@ -62,6 +70,14 @@ import {
   getMedicineOrdersListResolvers,
 } from 'profiles-service/resolvers/getMedicineOrdersList';
 import { uploadFileTypeDefs, uploadFileResolvers } from 'profiles-service/resolvers/uploadFile';
+import {
+  uploadDocumentTypeDefs,
+  uploadDocumentResolvers,
+} from 'profiles-service/resolvers/uploadDocumentToPrism';
+import {
+  downloadDocumentsTypeDefs,
+  downloadDocumentsResolvers,
+} from 'profiles-service/resolvers/downloadDocumentsFromPrism';
 import {
   addPatientMedicalRecordTypeDefs,
   addPatientMedicalRecordResolvers,
@@ -111,19 +127,35 @@ import {
   saveMedicineOrderInvoiceTypeDefs,
   saveMedicineOrderInvoiceResolvers,
 } from 'profiles-service/resolvers/pharmaOrderInvoice';
+import { diagnosticsTypeDefs, diagnosticsResolvers } from 'profiles-service/resolvers/diagnostics';
+import {
+  saveDiagnosticOrderTypeDefs,
+  saveDiagnosticOrderResolvers,
+} from 'profiles-service/resolvers/saveDiagnosticOrders';
 import 'reflect-metadata';
 import { getConnection } from 'typeorm';
 import { helpTypeDefs, helpResolvers } from 'profiles-service/resolvers/help';
 import { format, differenceInMilliseconds } from 'date-fns';
+import path from 'path';
+import { ApiConstants } from 'ApiConstants';
 
 (async () => {
   await connect();
   //configure winston for profiles service
+  const logsDirPath = <string>process.env.API_LOGS_DIRECTORY;
+  const logsDir = path.resolve(logsDirPath);
   winston.configure({
     transports: [
-      new winston.transports.File({ filename: 'access-logs/profiles-service.log', level: 'info' }),
-      new winston.transports.File({ filename: 'error-logs/profiles-service.log', level: 'error' }),
+      new winston.transports.File({
+        filename: logsDir + ApiConstants.PROFILES_SERVICE_ACCESS_LOG_FILE,
+        level: 'info',
+      }),
+      new winston.transports.File({
+        filename: logsDir + ApiConstants.PROFILES_SERVICE_ERROR_LOG_FILE,
+        level: 'error',
+      }),
     ],
+    exitOnError: false, // do not exit on handled exceptions
   });
 
   const server = new ApolloServer({
@@ -164,8 +196,16 @@ import { format, differenceInMilliseconds } from 'date-fns';
         resolvers: getCurrentPatientsResolvers,
       },
       {
+        typeDefs: getCurrentLoginPatientsTypeDefs,
+        resolvers: getCurrentLoginPatientsResolvers,
+      },
+      {
         typeDefs: updatePatientTypeDefs,
         resolvers: updatePatientResolvers,
+      },
+      {
+        typeDefs: updateNewPatientTypeDefs,
+        resolvers: updateNewPatientResolvers,
       },
       {
         typeDefs: getPatientTypeDefs,
@@ -224,6 +264,14 @@ import { format, differenceInMilliseconds } from 'date-fns';
         resolvers: uploadFileResolvers,
       },
       {
+        typeDefs: uploadDocumentTypeDefs,
+        resolvers: uploadDocumentResolvers,
+      },
+      {
+        typeDefs: downloadDocumentsTypeDefs,
+        resolvers: downloadDocumentsResolvers,
+      },
+      {
         typeDefs: addPatientMedicalRecordTypeDefs,
         resolvers: addPatientMedicalRecordResolvers,
       },
@@ -279,32 +327,38 @@ import { format, differenceInMilliseconds } from 'date-fns';
         typeDefs: saveMedicineOrderInvoiceTypeDefs,
         resolvers: saveMedicineOrderInvoiceResolvers,
       },
+      {
+        typeDefs: diagnosticsTypeDefs,
+        resolvers: diagnosticsResolvers,
+      },
+      {
+        typeDefs: saveDiagnosticOrderTypeDefs,
+        resolvers: saveDiagnosticOrderResolvers,
+      },
     ]),
     plugins: [
       /* This plugin is defined in-line. */
       {
         serverWillStart() {
-          //winston.log('info', 'Server starting up!');
-          console.log('Server starting up!');
+          winston.log('info', 'Server starting up!');
         },
         requestDidStart({ operationName, request }) {
           /* Within this returned object, define functions that respond
              to request-specific lifecycle events. */
           const reqStartTime = new Date();
           const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
-          console.log(reqStartTimeFormatted);
           return {
             parsingDidStart(requestContext) {
-              // winston.log({
-              //   message: 'Request Starting',
-              //   time: reqStartTimeFormatted,
-              //   operation: requestContext.request.query,
-              //   level: 'info',
-              // });
+              winston.log({
+                message: 'Request Starting',
+                time: reqStartTimeFormatted,
+                operation: requestContext.request.query,
+                level: 'info',
+              });
             },
             didEncounterErrors(requestContext) {
               requestContext.errors.forEach((error) => {
-                //winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
+                winston.log('error', `Encountered Error at ${reqStartTimeFormatted}: `, error);
               });
             },
             willSendResponse({ response }) {
@@ -319,7 +373,7 @@ import { format, differenceInMilliseconds } from 'date-fns';
               };
               //remove response if there is no error
               if (errorCount === 0) delete responseLog.response;
-              //winston.log(responseLog);
+              winston.log(responseLog);
             },
           };
         },

@@ -478,10 +478,11 @@ export const JDConsultRoom: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [callId, setcallId] = useState<string>('');
-
+  const [documentArray, setDocumentArray] = useState();
   /* case sheet data*/
   let assignedDoctorFirstName = '',
     assignedDoctorLastName = '',
+    assignedDoctorDisplayName = '',
     assignedDoctorMobile = '',
     assignedDoctorSpecialty = '',
     assignedDoctorPhoto = '',
@@ -509,6 +510,11 @@ export const JDConsultRoom: React.FC = () => {
       (assignedDoctorDetailsData &&
         assignedDoctorDetailsData.getDoctorDetailsById &&
         assignedDoctorDetailsData.getDoctorDetailsById.lastName) ||
+      '';
+    assignedDoctorDisplayName =
+      (assignedDoctorDetailsData &&
+        assignedDoctorDetailsData.getDoctorDetailsById &&
+        assignedDoctorDetailsData.getDoctorDetailsById.displayName) ||
       '';
     assignedDoctorMobile =
       (assignedDoctorDetailsData &&
@@ -822,7 +828,6 @@ export const JDConsultRoom: React.FC = () => {
           setLoaded(true);
         });
       return () => {
-        // console.log('in return...');
         const cookieStr = `action=`;
         document.cookie = cookieStr + ';path=/;';
       };
@@ -865,14 +870,11 @@ export const JDConsultRoom: React.FC = () => {
         }
       })
       .catch((error: ApolloError) => {
-        console.log('Error in Call Notification', error.message);
         alert('An error occurred while sending notification to Client.');
       });
   };
 
   const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
-    // console.log(diagnosis && diagnosis.length, diagnosis!, flag);
-
     // this condition is written to avoid __typename from already existing data
     let symptomsFinal = null,
       diagnosisFinal = null,
@@ -949,7 +951,6 @@ export const JDConsultRoom: React.FC = () => {
           const errorMessage = error && error.message;
           alert(errorMessage);
           setSaving(false);
-          console.log('Error occured while update casesheet', e);
         });
     }
   };
@@ -1001,7 +1002,6 @@ export const JDConsultRoom: React.FC = () => {
       })
       .catch((e: any) => {
         setError('Error occured creating session');
-        console.log('Error occured creating session', e);
       });
   };
 
@@ -1025,7 +1025,11 @@ export const JDConsultRoom: React.FC = () => {
     ) {
       status = casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.status;
     }
-    return isActive === 'done' || (status && status === STATUS.CANCELLED) ? true : false;
+    return isActive === 'done' ||
+      (status && status === STATUS.CANCELLED) ||
+      (status && status === STATUS.COMPLETED)
+      ? true
+      : false;
   };
 
   const idleTimerRef = useRef(null);
@@ -1064,6 +1068,8 @@ export const JDConsultRoom: React.FC = () => {
             juniorDoctorNotes,
             diagnosis,
             setDiagnosis,
+            documentArray,
+            setDocumentArray,
             otherInstructions,
             setOtherInstructions,
             diagnosticPrescription,
@@ -1081,10 +1087,11 @@ export const JDConsultRoom: React.FC = () => {
             followUpDate,
             setFollowUpDate,
             healthVault: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.healthVault,
+            appointmentDocuments: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDocuments,
             pastAppointments: casesheetInfo!.getJuniorDoctorCaseSheet!.pastAppointments,
             setCasesheetNotes,
             autoCloseCaseSheet,
-
             height,
             weight,
             bp,
@@ -1211,6 +1218,7 @@ export const JDConsultRoom: React.FC = () => {
                     assignedDoctorSalutation={assignedDoctorSalutation}
                     assignedDoctorFirstName={assignedDoctorFirstName}
                     assignedDoctorLastName={assignedDoctorLastName}
+                    assignedDoctorDisplayName={assignedDoctorDisplayName}
                     isAudioVideoCallEnded={(isAudioVideoCall: boolean) => {
                       setIsAuditoVideoCall(isAudioVideoCall);
                     }}

@@ -16,9 +16,10 @@ import {
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { timeTo12HrFormat } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { timeTo12HrFormat, g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useEffect, useState } from 'react';
+import moment from 'moment';
 import {
   Dimensions,
   Platform,
@@ -28,7 +29,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { MaterialMenu } from './MaterialMenu';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import {
+  getDiagnosticSlots,
+  getDiagnosticSlotsVariables,
+  getDiagnosticSlots_getDiagnosticSlots_diagnosticSlot,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticSlots';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { GET_DIAGNOSTIC_SLOTS } from '@aph/mobile-patients/src/graphql/profiles';
+import { useApolloClient } from 'react-apollo-hooks';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -115,6 +126,14 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
   ];
   const { isIphoneX } = DeviceHelper();
 
+  const {
+    diagnosticSlot,
+    setDiagnosticSlot,
+    addresses,
+    deliveryAddressId,
+    setDiagnosticClinic,
+  } = useDiagnosticsCart();
+
   const [type, setType] = useState<CALENDAR_TYPE>(props.CALENDAR_TYPE);
   const [date, setDate] = useState<Date>(props.date);
   const [selectedtiming, setselectedtiming] = useState<string>(timings[0].title);
@@ -122,8 +141,11 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
   const [dropArray, setDropArray] = useState<TimeOptionArray[]>(props!.dropdownArray!);
   const [selectedTimeSlot, setselectedTimeSlot] = useState<string>(props.selectedTimeSlot);
   const [selectedDrop, setSelectedDrop] = useState<TimeOptionArray>();
+  const { currentPatient } = useAllCurrentPatients();
+  const client = useApolloClient();
+  const [showSpinner, setshowSpinner] = useState<boolean>(false);
   useEffect(() => {
-    if (!!props.selectedTimeSlot) {
+    if (!!props.selectedTimeSlot && timeArray) {
       timeArray &&
         timeArray.length > 0 &&
         timeArray.map((value) => {
@@ -133,6 +155,13 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             }
           });
         });
+    } else if (!!props.selectedTimeSlot && dropArray) {
+      dropArray.length > 0 &&
+        dropArray.map((value) => {
+          if (value.time === props.selectedTimeSlot) {
+            setSelectedDrop(value);
+          }
+        });
     }
   }, [props.selectedTimeSlot]);
 
@@ -141,7 +170,52 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
       <CalendarView
         date={date}
         onPressDate={(selectedDate) => {
+          console.log(moment(selectedDate).format('YYYY-MM-DD'), 'selectedDate');
           setDate(selectedDate);
+          setshowSpinner(true);
+          setDropArray([]);
+          const selectedAddress = addresses.find((item) => deliveryAddressId == item.id);
+          client
+            .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+              query: GET_DIAGNOSTIC_SLOTS,
+              fetchPolicy: 'no-cache',
+              variables: {
+                patientId: currentPatient!.id,
+                hubCode: 'HYD_HUB1',
+                selectedDate: moment(selectedDate).format('YYYY-MM-DD'),
+                zipCode: parseInt(selectedAddress!.zipcode!),
+              },
+            })
+            .then(({ data }) => {
+              console.log(data, 'GET_DIAGNOSTIC_SLOTScal');
+              setshowSpinner(false);
+              var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+              setDiagnosticSlot &&
+                setDiagnosticSlot({
+                  diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode')!,
+                  employeeSlotId: finalaray!.slotInfo![0]!.slot!,
+                  diagnosticEmployeeCode: finalaray!.employeeCode || '',
+                  slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
+                  slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
+                  city: selectedAddress!.city || '',
+                  date: date.getTime(),
+                });
+
+              var t = finalaray!.slotInfo!.map((item) => {
+                return {
+                  label: (item!.slot || '').toString(),
+                  time: `${item!.startTime} - ${item!.endTime}`,
+                };
+              });
+              console.log(t, 'finalaray');
+              setDropArray(t);
+              setSelectedDrop(t[0]);
+            })
+            .catch((e: string) => {
+              setshowSpinner(false);
+              console.log('Error occured', e);
+            })
+            .finally(() => {});
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {
@@ -280,9 +354,16 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         <Button
           title={`Done`}
           onPress={() => {
+            setDiagnosticSlot &&
+              setDiagnosticSlot({
+                ...diagnosticSlot!,
+                slotStartTime: selectedDrop!.time.split('-')[0],
+                slotEndTime: selectedDrop!.time.split('-')[1],
+                date: date.getTime(),
+              });
             props.setDate(date);
             props.setdisplayoverlay(false);
-            props.setselectedTimeSlot(selectedTimeSlot);
+            props.setselectedTimeSlot(selectedDrop!.time);
           }}
         />
       </StickyBottomComponent>
@@ -352,6 +433,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             <View style={{ height: 96 }} />
           </ScrollView>
           {renderTimeSelectButton()}
+          {showSpinner && <Spinner />}
         </View>
       </View>
     </View>

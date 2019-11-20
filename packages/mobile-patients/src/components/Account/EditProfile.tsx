@@ -1,37 +1,6 @@
-import Moment from 'moment';
-import React, { useEffect, useState } from 'react';
-import { useApolloClient } from 'react-apollo-hooks';
-import {
-  Alert,
-  Dimensions,
-  Image,
-  Keyboard,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { Text } from 'react-native-elements';
-import { NavigationScreenProps } from 'react-navigation';
-import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import {
-  ADD_NEW_PROFILE,
-  DELETE_PROFILE,
-  EDIT_PROFILE,
-  UPLOAD_FILE,
-} from '@aph/mobile-patients/src/graphql/profiles';
-import { addNewProfile } from '@aph/mobile-patients/src/graphql/types/addNewProfile';
-import {
-  deleteProfile,
-  deleteProfileVariables,
-} from '@aph/mobile-patients/src/graphql/types/deleteProfile';
-import { editProfile } from '@aph/mobile-patients/src/graphql/types/editProfile';
-import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { theme } from '@aph/mobile-patients/src/theme/theme';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DatePicker } from '@aph/mobile-patients/src/components/ui/DatePicker';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
@@ -45,10 +14,48 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { DeviceHelper } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  ADD_NEW_PROFILE,
+  DELETE_PROFILE,
+  EDIT_PROFILE,
+  UPLOAD_FILE,
+} from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  addNewProfile,
+  addNewProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/addNewProfile';
+import {
+  deleteProfile,
+  deleteProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/deleteProfile';
+import {
+  editProfile,
+  editProfileVariables,
+} from '@aph/mobile-patients/src/graphql/types/editProfile';
 import { getPatientByMobileNumber_getPatientByMobileNumber_patients } from '@aph/mobile-patients/src/graphql/types/getPatientByMobileNumber';
+import { Gender, Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
-import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
-import { BottomPopUp } from '../ui/BottomPopUp';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import Moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  Alert,
+  AsyncStorage,
+  Dimensions,
+  Image,
+  Keyboard,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Text } from 'react-native-elements';
+import { NavigationScreenProps } from 'react-navigation';
 
 const styles = StyleSheet.create({
   yellowTextStyle: {
@@ -124,29 +131,29 @@ const styles = StyleSheet.create({
   placeholderTextStyle: {
     ...theme.viewStyles.text('M', 18, '#01475b'),
   },
-  profileImageContainer: {
+  profilePicContainer: {
     backgroundColor: 'transparent',
     alignSelf: 'flex-end',
     alignItems: 'center',
     justifyContent: 'center',
     width: 90,
     height: 90,
-    borderRadius: 45,
     marginTop: -60,
+  },
+  profileImageContainer: {
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    overflow: 'hidden',
   },
   profileImage: {
     width: 90,
     height: 90,
     borderRadius: 45,
     resizeMode: 'contain',
-    ...Platform.select({
-      ios: {
-        borderRadius: 45,
-      },
-      android: {
-        borderRadius: 100,
-      },
-    }),
     position: 'absolute',
   },
   editIcon: {
@@ -235,14 +242,17 @@ const relationArray: RelationArray[] = [
 
 export interface EditProfileProps extends NavigationScreenProps {
   isEdit: boolean;
+  isPoptype?: boolean;
 }
 {
 }
 
 export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const isEdit = props.navigation.getParam('isEdit');
+  const isPoptype = props.navigation.getParam('isPoptype');
   const { width, height } = Dimensions.get('window');
-  const { allCurrentPatients } = useAllCurrentPatients();
+  const { allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
+  const { getPatientApiCall } = useAuth();
 
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
@@ -259,28 +269,47 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [bottomPopUp, setBottomPopUp] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<boolean>(false);
+
   const { isIphoneX } = DeviceHelper();
   const client = useApolloClient();
 
   const isSatisfyingNameRegex = (value: string) =>
     value == ' '
       ? false
-      : value == '' || /^[a-zA-Z]+(([' ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
+      : value == '' || /^[a-zA-Z]+((['’ ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
       ? true
       : false;
 
   const isSatisfyingEmailRegex = (value: string) =>
-    /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+      value
+    );
 
-  const isValidProfile =
-    firstName &&
-    isSatisfyingNameRegex(firstName) &&
-    lastName &&
-    isSatisfyingNameRegex(lastName) &&
-    date &&
-    gender &&
-    relation &&
-    (isSatisfyingEmailRegex(email) || email === '');
+  const _setFirstName = (value: string) => {
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
+      setFirstName(value);
+    } else {
+      return false;
+    }
+  };
+  const _setLastName = (value: string) => {
+    if (/^[a-zA-Z'’ ]*$/.test(value)) {
+      setLastName(value);
+    } else {
+      return false;
+    }
+  };
+
+  const isChanged =
+    profileData &&
+    firstName === profileData.firstName &&
+    lastName === profileData.lastName &&
+    Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD') === profileData.dateOfBirth &&
+    gender === profileData.gender &&
+    relation!.key === profileData.relation &&
+    email === profileData.emailAddress &&
+    photoUrl === profileData.photoUrl;
 
   useEffect(() => {
     if (profileData) {
@@ -314,8 +343,8 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         });
       })
       .catch((e) => {
-        Alert.alert('Alert', e.message);
-        console.log(JSON.stringify(e), 'eeeee');
+        setAlertMessage(true);
+        setBottomPopUp(true);
       })
       .finally(() => {
         setLoading(false);
@@ -324,48 +353,58 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const updateUserProfile = () => {
     setLoading(true);
-    allCurrentPatients!.length > 0 && relation;
-    client
-      .mutate<editProfile, any>({
-        mutation: EDIT_PROFILE,
-        variables: {
-          editProfileInput: {
-            id: profileData.id,
-            photoUrl: photoUrl,
-            firstName: firstName,
-            lastName: lastName,
-            relation: (relation && relation!.key) || Relation.ME,
-            gender: gender,
-            dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-            emailAddress: email,
+    if (!isChanged) {
+      client
+        .mutate<editProfile, editProfileVariables>({
+          mutation: EDIT_PROFILE,
+          variables: {
+            editProfileInput: {
+              id: profileData.id,
+              photoUrl: photoUrl,
+              firstName: firstName,
+              lastName: lastName,
+              relation: (relation && relation.key!) || Relation.ME,
+              gender: gender ? gender : Gender.OTHER,
+              dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
+              emailAddress: email,
+            },
           },
-        },
-      })
-      .then((data) => {
-        props.navigation.pop(2);
-        props.navigation.push(AppRoutes.ManageProfile, {
-          mobileNumber: props.navigation.getParam('mobileNumber'),
+        })
+        .then((data) => {
+          getPatientApiCall();
+          if (relation!.key === Relation.ME && profileData.relation !== Relation.ME) {
+            setCurrentPatientId(profileData!.id);
+            AsyncStorage.setItem('selectUserId', profileData!.id);
+          }
+          props.navigation.goBack();
+          // props.navigation.pop(2);
+          // props.navigation.push(AppRoutes.ManageProfile, {
+          //   mobileNumber: props.navigation.getParam('mobileNumber'),
+          // });
+        })
+        .catch((e) => {
+          setAlertMessage(true);
+          setBottomPopUp(true);
+        })
+        .finally(() => {
+          setLoading(false);
         });
-      })
-      .catch((e) => {
-        Alert.alert('Alert', e.message);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    } else {
+      props.navigation.goBack();
+    }
   };
 
   const newProfile = () => {
     setLoading(true);
     client
-      .mutate<addNewProfile, any>({
+      .mutate<addNewProfile, addNewProfileVariables>({
         mutation: ADD_NEW_PROFILE,
         variables: {
           PatientProfileInput: {
             firstName: firstName,
             lastName: lastName,
             dateOfBirth: Moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD'),
-            gender: gender,
+            gender: gender ? gender : Gender.OTHER,
             relation: (relation && relation!.key) || Relation.ME,
             emailAddress: email,
             photoUrl: photoUrl,
@@ -374,14 +413,22 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         },
       })
       .then((data) => {
-        props.navigation.pop(2);
-        props.navigation.push(AppRoutes.ManageProfile, {
-          mobileNumber: props.navigation.getParam('mobileNumber'),
-        });
+        getPatientApiCall();
+        props.navigation.goBack();
+        // if (relation!.key === Relation.ME) {
+        //   setCurrentPatientId(profileData!.id);
+        //   AsyncStorage.setItem('selectUserId', profileData!.id);
+        // }
+        // isPoptype
+        //   ? (props.navigation.goBack(), getPatientApiCall())
+        //   : (props.navigation.pop(2),
+        //     props.navigation.push(AppRoutes.ManageProfile, {
+        //       mobileNumber: props.navigation.getParam('mobileNumber'),
+        //     }));
       })
       .catch((e) => {
-        Alert.alert('Alert', e.message);
-        console.log(JSON.stringify(e), 'eeeee');
+        setAlertMessage(true);
+        setBottomPopUp(true);
       })
       .finally(() => {
         setLoading(false);
@@ -391,6 +438,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const renderUploadSelection = () => {
     return (
       <UploadPrescriprionPopup
+        isProfileImage={true}
         heading="Upload Profile Picture"
         isVisible={uploadVisible}
         hideTAndCs
@@ -453,19 +501,20 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
 
   const renderProfileImage = () => {
     return (
-      <View style={styles.profileImageContainer}>
-        {photoUrl && photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
-          <Image
-            style={styles.profileImage}
-            source={{
-              uri: photoUrl,
-            }}
-            resizeMode={'contain'}
-          />
-        ) : (
-          <PatientDefaultImage style={styles.profileImage} />
-        )}
-
+      <View style={styles.profilePicContainer}>
+        <View style={styles.profileImageContainer}>
+          {photoUrl && photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/) ? (
+            <Image
+              style={styles.profileImage}
+              source={{
+                uri: photoUrl,
+              }}
+              resizeMode={'contain'}
+            />
+          ) : (
+            <PatientDefaultImage style={styles.profileImage} />
+          )}
+        </View>
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => {
@@ -549,20 +598,30 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     );
   };
 
-  const onRelationSelect = (selected: { key: string; value: string | number }) => {
+  const onRelationSelect = (
+    selected: { key: string; value: string | number },
+    presentRelation: string
+  ) => {
     const isSelfRelation =
       allCurrentPatients &&
       allCurrentPatients!.map((item) => {
         return item.relation === Relation.ME;
       });
+    console.log(presentRelation, 'presentRelation');
+
     const isValid = isSelfRelation!.find((i) => i === true) === undefined;
 
-    if (isValid || selected.key !== Relation.ME) {
+    if (isValid || selected.key !== Relation.ME || presentRelation == Relation.ME) {
       setRelation({
         key: selected.key as Relation,
         title: selected.value.toString(),
       });
-    } else {
+    }
+    // } else if (presentRelation == Relation.ME||) {
+    //   setBottomPopUp(false);
+    // }
+    else {
+      setAlertMessage(false);
       setBottomPopUp(true);
     }
   };
@@ -584,7 +643,9 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           alignSelf: 'flex-start',
         }}
         bottomPadding={{ paddingBottom: 20 }}
-        onPress={(selectedRelation) => onRelationSelect(selectedRelation)}
+        onPress={(selectedRelation) =>
+          onRelationSelect(selectedRelation, (profileData && profileData.relation!) || '')
+        }
       >
         <View style={{ flexDirection: 'row', marginBottom: 8 }}>
           <View style={styles.placeholderViewStyle}>
@@ -620,12 +681,12 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         <TextInputComponent
           label={'Full Name'}
           value={`${firstName}`}
-          onChangeText={(fname) => setFirstName(fname)}
+          onChangeText={(fname) => _setFirstName(fname)}
           placeholder={'First Name'}
         />
         <TextInputComponent
           value={`${lastName}`}
-          onChangeText={(lname) => setLastName(lname)}
+          onChangeText={(lname) => _setLastName(lname)}
           placeholder={'Last Name'}
         />
         <TextInputComponent label={'Date Of Birth'} noInput={true} />
@@ -658,12 +719,39 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           <View style={styles.bottomButtonStyle}>
             <Button
               onPress={() => {
-                setFirstName(firstName.trim());
-                setLastName(lastName.trim());
-                setEmail(email.trim());
-                isEdit ? updateUserProfile() : newProfile();
+                // setFirstName(firstName.trim());
+                // setLastName(lastName.trim());
+                // setEmail(email.trim());
+                // console.log(
+                //   firstName.length,
+                //   firstName,
+                //   'fname',
+                //   isSatisfyingNameRegex(firstName),
+                //   !firstName && isSatisfyingNameRegex(firstName),
+                //   firstName && isSatisfyingNameRegex(firstName),
+                //   !firstName && !isSatisfyingNameRegex(firstName)
+                // );
+
+                let validationMessage = '';
+                if (!(firstName && isSatisfyingNameRegex(firstName))) {
+                  validationMessage = 'Enter valid first name';
+                } else if (!(lastName && isSatisfyingNameRegex(lastName))) {
+                  validationMessage = 'Enter valid last name';
+                } else if (!date) {
+                  validationMessage = 'Enter valid date of birth';
+                } else if (!gender) {
+                  validationMessage = 'Select a gender';
+                } else if (!relation) {
+                  validationMessage = 'Select a valid relation';
+                } else if (!(email === '' || (email && isSatisfyingEmailRegex(email)))) {
+                  validationMessage = 'Enter valid email';
+                }
+                if (validationMessage) {
+                  Alert.alert('Error', validationMessage);
+                } else {
+                  isEdit ? updateUserProfile() : newProfile();
+                }
               }}
-              disabled={!isValidProfile}
               title={'SAVE'}
               style={styles.bottomButtonStyle}
             />
@@ -756,10 +844,17 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         </ScrollView>
         {renderButtons()}
       </SafeAreaView>
-      {deleteProfile && isEdit && renderDeleteButton()}
+      {/* {deleteProfile && isEdit && renderDeleteButton()} */}
       {loading && <Spinner />}
       {bottomPopUp && (
-        <BottomPopUp title="Apollo" description="Me is already choosen for another profile.">
+        <BottomPopUp
+          title={alertMessage ? 'Network Error!' : 'Apollo'}
+          description={
+            alertMessage
+              ? 'Please try again later.'
+              : "'Self' is already choosen for another profile."
+          }
+        >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
               style={{
@@ -769,6 +864,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               }}
               onPress={() => {
                 setBottomPopUp(false);
+                setAlertMessage(false);
               }}
             >
               <Text

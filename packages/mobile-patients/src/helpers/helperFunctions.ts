@@ -2,11 +2,13 @@ import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/gl
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { GraphQLError } from 'graphql';
 import moment from 'moment';
-import { Alert, NetInfo, AsyncStorage } from 'react-native';
+import { Alert, NetInfo, AsyncStorage, Dimensions } from 'react-native';
 import Geocoder from 'react-native-geocoding';
 import Permissions from 'react-native-permissions';
+import { LocationData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { getPlaceInfoByLatLng, GooglePlacesType } from '@aph/mobile-patients/src/helpers/apiCalls';
 
-const googleApiKey = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+const googleApiKey = AppConfig.Configuration.GOOGLE_API_KEY;
 
 interface AphConsole {
   error(message?: any, ...optionalParams: any[]): void;
@@ -209,7 +211,7 @@ export const timeDiffFromNow = (toDate: string) => {
   const today: Date = new Date();
   const date2: Date = new Date(toDate);
   if (date2 && today) {
-    timeDiff = Math.round(((date2 as any) - (today as any)) / 60000);
+    timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
   }
   return timeDiff;
 };
@@ -311,6 +313,75 @@ export const isEmptyObject = (object: Object) => {
   return Object.keys(object).length === 0;
 };
 
+const findAddrComponents = (
+  proptoFind: GooglePlacesType,
+  addrComponents: {
+    long_name: string;
+    short_name: string;
+    types: GooglePlacesType[];
+  }[]
+) => {
+  return (addrComponents.find((item) => item.types.indexOf(proptoFind) > -1) || { long_name: '' })
+    .long_name;
+};
+
+export const doRequestAndAccessLocation = (): Promise<LocationData> => {
+  return new Promise((resolve, reject) => {
+    Permissions.request('location')
+      .then((response) => {
+        if (response === 'authorized') {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              getPlaceInfoByLatLng(latitude, longitude)
+                .then((response) => {
+                  const addrComponents =
+                    g(response, 'data', 'results', '0' as any, 'address_components') || [];
+                  if (addrComponents.length == 0) {
+                    reject('Unable to get location.');
+                  } else {
+                    const area = [
+                      findAddrComponents('route', addrComponents),
+                      findAddrComponents('sublocality_level_2', addrComponents),
+                      findAddrComponents('sublocality_level_1', addrComponents),
+                    ].filter((i) => i);
+                    resolve({
+                      displayName:
+                        (area || []).pop() ||
+                        (findAddrComponents('locality', addrComponents) ||
+                          findAddrComponents('administrative_area_level_2', addrComponents)),
+                      latitude,
+                      longitude,
+                      area: area.join(', '),
+                      city:
+                        findAddrComponents('locality', addrComponents) ||
+                        findAddrComponents('administrative_area_level_2', addrComponents),
+                      state: findAddrComponents('administrative_area_level_1', addrComponents),
+                      country: findAddrComponents('country', addrComponents),
+                      pincode: findAddrComponents('postal_code', addrComponents),
+                      lastUpdated: new Date().getTime(),
+                    });
+                  }
+                })
+                .catch(() => {
+                  reject('Unable to get location.');
+                });
+            },
+            (error) => {
+              reject('Unable to get location.');
+            },
+            { enableHighAccuracy: false, timeout: 2000 }
+          );
+        } else {
+          reject('Unable to get location.');
+        }
+      })
+      .catch((_) => {
+        reject('Unable to get location.');
+      });
+  });
+};
+
 export const getUserCurrentPosition = async () => {
   const item = await AsyncStorage.getItem('location');
   const location = item ? JSON.parse(item) : null;
@@ -339,10 +410,12 @@ export const getUserCurrentPosition = async () => {
                 if (jsonData) {
                   const result = jsonData.results[0];
                   const addressComponent = result.address_components[1].long_name || '';
-                  console.log(jsonData, addressComponent, 'addressComponent');
+                  const pincode = result.address_components.slice(-1)[0].long_name || '';
+                  console.log(jsonData, addressComponent, 'addressComponent', pincode);
                   resolve({
                     latlong: result.geometry.location,
                     name: addressComponent,
+                    zipcode: pincode,
                   });
                 }
                 reject(null);
@@ -358,3 +431,7 @@ export const getUserCurrentPosition = async () => {
     });
   }
 };
+
+const { height } = Dimensions.get('window');
+
+export const isIphone5s = () => height === 568;

@@ -38,10 +38,11 @@ import {
   View,
 } from 'react-native';
 import Permissions from 'react-native-permissions';
-import { CalendarView, CALENDAR_TYPE } from '../ui/CalendarView';
+import { CalendarView, CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
 import moment from 'moment';
 import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
-import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent, CommonScreenLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   optionsView: {
@@ -221,10 +222,10 @@ export const ConsultPhysical: React.FC<ConsultPhysicalProps> = (props) => {
           });
       }
 
-      const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+      const key = AppConfig.Configuration.GOOGLE_API_KEY;
 
       const destination = selectedClinic
-        ? `${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}` // `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}`
+        ? `${selectedClinic.facility.latitude},${selectedClinic.facility.longitude}` //`${selectedClinic.facility.streetLine1}, ${selectedClinic.facility.city}`
         : '';
       const distanceUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${searchstring}&destinations=${destination}&mode=driving&language=pl-PL&sensor=true&key=${key}`;
       Axios.get(distanceUrl)

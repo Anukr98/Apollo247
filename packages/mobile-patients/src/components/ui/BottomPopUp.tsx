@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { theme } from '../../theme/theme';
-import { Mascot } from './Icons';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
+import { Mascot } from '@aph/mobile-patients/src/components/ui/Icons';
 
 const styles = StyleSheet.create({
   showPopUp: {

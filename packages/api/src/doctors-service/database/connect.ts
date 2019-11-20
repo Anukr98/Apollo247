@@ -10,6 +10,7 @@ import {
   JuniorAppointmentSessions,
   AppointmentDocuments,
   AppointmentCallDetails,
+  DoctorNextAvaialbleSlots,
 } from 'consults-service/entities/';
 import {
   ConsultHours,
@@ -44,6 +45,12 @@ import {
   SearchHistory,
   MedicineOrderInvoice,
   PatientMedicalHistory,
+  Diagnostics,
+  DiagnosticOrderLineItems,
+  DiagnosticOrders,
+  DiagnosticHotSellers,
+  DiagnosticOrgans,
+  DiagnosticPincodeHubs,
 } from 'profiles-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -88,6 +95,7 @@ export const connect = async () => {
         JuniorAppointmentSessions,
         AppointmentDocuments,
         AppointmentCallDetails,
+        DoctorNextAvaialbleSlots,
       ],
       type: 'postgres',
       host: process.env.CONSULTS_DB_HOST,
@@ -117,6 +125,12 @@ export const connect = async () => {
         MedicalRecordParameters,
         MedicineOrderInvoice,
         PatientMedicalHistory,
+        Diagnostics,
+        DiagnosticOrderLineItems,
+        DiagnosticOrders,
+        DiagnosticHotSellers,
+        DiagnosticOrgans,
+        DiagnosticPincodeHubs,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,

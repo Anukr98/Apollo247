@@ -17,6 +17,7 @@ import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
+//import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Doctor)
 export class DoctorRepository extends Repository<Doctor> {
@@ -211,6 +212,7 @@ export class DoctorRepository extends Repository<Doctor> {
     consultsDb: Connection
   ) {
     const appts = consultsDb.getCustomRepository(AppointmentRepository);
+    //const nextSlotRepo = consultsDb.getCustomRepository(DoctorNextAvaialbleSlotsRepository);
     const doctorAvailalbeSlots: DoctorSlotAvailability[] = [];
 
     function slots(doctorId: string) {
@@ -226,6 +228,21 @@ export class DoctorRepository extends Repository<Doctor> {
         if (consultHrsOnline > 0) {
           //if the slot is empty check for next day
           let nextDate = new Date();
+          // const doctorNextSlotDetails = await nextSlotRepo.getDoctorSlot(doctorId);
+          // console.log(doctorNextSlotDetails, 'doctorNextSlotDetails');
+          // if (doctorNextSlotDetails) {
+          //   console.log(doctorNextSlotDetails.onlineSlot.toString(), 'online slot', doctorId);
+          //   if (doctorNextSlotDetails.onlineSlot != null)
+          //     onlineSlot =
+          //       format(doctorNextSlotDetails.onlineSlot, 'yyyy-MM-dd') +
+          //       'T' +
+          //       format(doctorNextSlotDetails.onlineSlot, 'HH:mm');
+          //   if (doctorNextSlotDetails.physicalSlot != null)
+          //     physicalSlot =
+          //       format(doctorNextSlotDetails.physicalSlot, 'yyyy-MM-dd') +
+          //       'T' +
+          //       format(doctorNextSlotDetails.physicalSlot, 'HH:mm');
+          // }
           while (true) {
             const nextSlot = await appts.getDoctorNextSlotDate(
               doctorId,
@@ -651,5 +668,9 @@ export class DoctorRepository extends Repository<Doctor> {
       .orderBy('doctor.firstName')
       .getMany();
     return queryBuilder;
+  }
+
+  updateNextAvailSlot(id: string, nextAvailableSlot: Date) {
+    return this.update(id, { nextAvailableSlot });
   }
 }

@@ -6,6 +6,7 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { sendNotification, NotificationType } from 'notifications-service/resolvers/notifications';
+import { ConsultQueueRepository } from 'consults-service/repositories/consultQueueRepository';
 
 export const cancelAppointmentTypeDefs = gql`
   input CancelAppointmentInput {
@@ -51,7 +52,10 @@ const cancelAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
-  if (appointment.appointmentDateTime <= new Date()) {
+  if (
+    appointment.appointmentDateTime <= new Date() &&
+    cancelAppointmentInput.cancelledBy == REQUEST_ROLES.PATIENT
+  ) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
@@ -65,6 +69,12 @@ const cancelAppointment: Resolver<
     cancelAppointmentInput.cancelledById,
     cancelAppointmentInput.cancelReason
   );
+
+  //remove from consult queue
+  const cqRepo = consultsDb.getCustomRepository(ConsultQueueRepository);
+  const existingQueueItem = await cqRepo.findByAppointmentId(appointment.id);
+  if (existingQueueItem !== undefined && existingQueueItem != null)
+    await cqRepo.update(existingQueueItem.id, { isActive: false });
 
   if (cancelAppointmentInput.cancelledBy == REQUEST_ROLES.DOCTOR) {
     const pushNotificationInput = {

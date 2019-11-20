@@ -269,6 +269,7 @@ export const LifeStyle: React.FC = () => {
               defaultValue={pastSurgicalHistory}
               onBlur={(e) => {
                 setPastSurgicalHistory(e.target.value);
+                setDisablePastSurgicalHistory(true);
               }}
               inputRef={pastSurgicalRef}
             />
@@ -304,6 +305,7 @@ export const LifeStyle: React.FC = () => {
               defaultValue={drugAllergies}
               onBlur={(e) => {
                 setDrugAllergies(e.target.value);
+                setDisableDrugAllergies(true);
               }}
               inputRef={drugAllergiesRef}
             />
@@ -339,6 +341,7 @@ export const LifeStyle: React.FC = () => {
               defaultValue={dietAllergies}
               onBlur={(e) => {
                 setDietAllergies(e.target.value);
+                setDisableDietAllergies(true);
               }}
               inputRef={dietAllergiesRef}
             />
@@ -374,6 +377,7 @@ export const LifeStyle: React.FC = () => {
               defaultValue={lifeStyle}
               onBlur={(e) => {
                 setLifeStyle(e.target.value);
+                setDisableLifeStyle(true);
               }}
               inputRef={lifeStyleRef}
             />
@@ -410,6 +414,7 @@ export const LifeStyle: React.FC = () => {
                 defaultValue={menstrualHistory}
                 onBlur={(e) => {
                   setMenstrualHistory(e.target.value);
+                  setDisableMenstrualHistory(true);
                 }}
                 inputRef={menstrualRef}
               />
@@ -446,6 +451,7 @@ export const LifeStyle: React.FC = () => {
               defaultValue={familyHistory}
               onBlur={(e) => {
                 setFamilyHistory(e.target.value);
+                setDisableFamilyHistory(true);
               }}
               inputRef={familyHistoryRef}
             />

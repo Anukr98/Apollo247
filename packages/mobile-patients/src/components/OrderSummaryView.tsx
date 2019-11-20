@@ -6,8 +6,8 @@ import { StyleSheet, Text, View } from 'react-native';
 import {
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails_medicineOrderLineItems,
-} from '../graphql/types/GetMedicineOrderDetails';
-import { g } from '../helpers/helperFunctions';
+} from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 
 const styles = StyleSheet.create({
   horizontalline: {
@@ -77,9 +77,10 @@ const styles = StyleSheet.create({
 
 export interface OrderSummaryViewProps {
   orderDetails: GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails;
+  isTest?: boolean;
 }
 
-export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) => {
+export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails, isTest }) => {
   const medicineOrderLineItems = orderDetails!.medicineOrderLineItems || [];
   const subtotal = medicineOrderLineItems.reduce(
     (acc, currentVal) => acc + currentVal!.price! * currentVal!.quantity!,
@@ -145,7 +146,7 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) 
       <View style={[styles.horizontalline, { borderBottomColor: '#f0f1ec', marginBottom: 4.5 }]} />
 
       <View style={styles.medicineView}>
-        <Text style={[styles.medicineText, { marginLeft: 5 }]}>Medicine</Text>
+        <Text style={[styles.medicineText, { marginLeft: 5 }]}>{isTest ? 'Test' : 'Medicine'}</Text>
         <View style={styles.medicineSubView}>
           <Text style={styles.medicineText}>Quantity</Text>
           <Text style={[styles.medicineText, { marginRight: 5 }]}>Charges</Text>
@@ -191,10 +192,14 @@ export const OrderSummary: React.FC<OrderSummaryViewProps> = ({ orderDetails }) 
           </Text>
         </View>
       </View>
-      <View style={{ marginLeft: 25, marginBottom: 8, marginTop: 17 }}>
-        <Delivery />
-      </View>
-      <Text style={styles.deliveryText}>2 Hour Delivery Promise!</Text>
+      {isTest ? null : (
+        <View>
+          <View style={{ marginLeft: 25, marginBottom: 8, marginTop: 17 }}>
+            <Delivery />
+          </View>
+          <Text style={styles.deliveryText}>2 Hour Delivery Promise!</Text>
+        </View>
+      )}
       <View style={[styles.horizontalline, { borderBottomColor: '#f0f1ec', marginBottom: 20 }]} />
       <Text
         style={[

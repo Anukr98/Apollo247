@@ -10,7 +10,10 @@ import {
   GetMedicineOrdersListVariables,
   GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
-import { MEDICINE_DELIVERY_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import {
+  MEDICINE_DELIVERY_TYPE,
+  MEDICINE_ORDER_STATUS,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g, getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -53,7 +56,18 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
 
-  const orders = (!loading && g(data, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
+  const orders = (
+    (!loading && g(data, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
+    []
+  ).filter(
+    (item) =>
+      !(
+        (item!.medicineOrdersStatus || []).length == 1 &&
+        (item!.medicineOrdersStatus || []).find(
+          (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
+        )
+      )
+  );
 
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {

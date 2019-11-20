@@ -163,12 +163,13 @@ const getYyMmDd = (ddmmyyyy: string) => {
 // };
 
 interface OnlineConsultProps {
+  setIsPopoverOpen: (openPopup: boolean) => void;
   doctorDetails: DoctorDetails;
   onBookConsult: (popover: boolean) => void;
 }
 
 export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [showCalendar, setShowCalendar] = useState<boolean>(false);
   const [dateSelected, setDateSelected] = useState<string>('');
   const [timeSelected, setTimeSelected] = useState<string>('');
@@ -182,7 +183,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
   // const currentTime = new Date().getTime();
   // const autoSlot = getAutoSlot();
 
-  const { doctorDetails } = props;
+  const { doctorDetails, setIsPopoverOpen } = props;
 
   let slotAvailableNext = '';
   let autoSlot = '';
@@ -232,7 +233,10 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
     GET_DOCTOR_AVAILABLE_SLOTS,
     {
       variables: {
-        DoctorAvailabilityInput: { doctorId: doctorId, availableDate: apiDateFormat },
+        DoctorAvailabilityInput: {
+          doctorId: doctorId,
+          availableDate: apiDateFormat,
+        },
       },
       fetchPolicy: 'no-cache',
     }
@@ -365,6 +369,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                 onClick={(e) => {
                   setShowCalendar(!showCalendar);
                   setScheduleLater(true);
+                  setConsultNow(false);
                 }}
                 color="secondary"
                 className={`${classes.button} ${
@@ -420,15 +425,16 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             bookAppointment: {
               patientId: currentPatient ? currentPatient.id : '',
               doctorId: doctorId,
-              appointmentDateTime: consultNowAvailable
-                ? autoSlot
-                : new Date(
-                    `${apiDateFormat} ${
-                      timeSelected !== ''
-                        ? timeSelected.padStart(5, '0')
-                        : slotAvailableNext.padStart(5, '0')
-                    }:00`
-                  ).toISOString(),
+              appointmentDateTime:
+                consultNow && !scheduleLater
+                  ? autoSlot
+                  : new Date(
+                      `${apiDateFormat} ${
+                        timeSelected !== ''
+                          ? timeSelected.padStart(5, '0')
+                          : slotAvailableNext.padStart(5, '0')
+                      }:00`
+                    ).toISOString(),
               appointmentType: APPOINTMENT_TYPE.ONLINE,
               hospitalId: '',
             },
@@ -497,6 +503,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             color="primary"
             onClick={() => {
               setIsDialogOpen(false);
+              setIsPopoverOpen(false);
               window.location.href = clientRoutes.consultRoom();
             }}
             autoFocus

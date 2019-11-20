@@ -282,7 +282,15 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
       </View>
     );
   };
-
+  const closePop = () => {
+    const filterData = data.map((obj) => {
+      if (obj) obj.selectedOptions = [];
+      return obj;
+    });
+    setData(filterData);
+    props.setData(filterData);
+    props.onClickClose(data);
+  };
   const renderTopView = () => {
     return (
       <Header
@@ -308,7 +316,7 @@ export const FilterScene: React.FC<FilterSceneProps> = (props) => {
             <Reload />
           </TouchableOpacity>
         }
-        onPressLeftIcon={() => props.onClickClose(data)}
+        onPressLeftIcon={() => closePop()}
       />
     );
   };

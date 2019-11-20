@@ -32,17 +32,21 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
-import { getMedicineDetailsApi } from '../../helpers/apiCalls';
-import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
-import { AppConfig } from '../../strings/AppConfig';
-import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
-import { AppRoutes } from '../NavigatorContainer';
-import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
-import { Download } from '../ui/Icons';
-import { Spinner } from '../ui/Spinner';
-import { MEDICINE_UNIT } from '../../graphql/types/globalTypes';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import {
+  EPrescription,
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -121,6 +125,8 @@ type rescheduleType = {
 
 export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const data = props.navigation.state.params!.DoctorInfo;
+  console.log('phr', data);
+
   const [loading, setLoading] = useState<boolean>(true);
   const client = useApolloClient();
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
@@ -163,7 +169,6 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       .then((_data) => {
         setLoading(false);
         props.navigation.state.params!.DisplayId = _data.data.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
-
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
       })
       .catch((error) => {
@@ -199,9 +204,22 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                 {props.navigation.state.params!.DoctorInfo &&
                   'Dr.' + props.navigation.state.params!.DoctorInfo.firstName}
               </Text>
-              <Text style={styles.timeStyle}>
-                {props.navigation.state.params!.appointmentType} CONSULT
-              </Text>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={styles.timeStyle}>
+                  {caseSheetDetails &&
+                    moment(caseSheetDetails!.appointment!.appointmentDateTime).format(
+                      'DD MMM YYYY'
+                    )}
+                </Text>
+                <Text style={styles.timeStyle}>{','}</Text>
+
+                <Text style={styles.timeStyle}>
+                  {props.navigation.state.params!.appointmentType == 'ONLINE'
+                    ? 'Online'
+                    : 'Physical'}{' '}
+                  Consult
+                </Text>
+              </View>
               <View style={theme.viewStyles.lightSeparatorStyle} />
             </View>
             <View style={styles.imageView}>
@@ -533,14 +551,13 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         : 'Online Consult '}
                     </Text>
                   </View>
-                  {caseSheetDetails!.followUpAfterInDays == null ? (
+                  {caseSheetDetails!.followUpAfterInDays! <= '7' ? (
                     <Text style={styles.dataTextStyle}>
-                      Recommended after{' '}
-                      {moment(caseSheetDetails!.followUpDate).format('DD MMM YYYY')}{' '}
+                      Recommended after {caseSheetDetails!.followUpAfterInDays} days
                     </Text>
                   ) : (
                     <Text style={styles.dataTextStyle}>
-                      Recommended after {caseSheetDetails!.followUpAfterInDays} days
+                      Follow up on {moment(caseSheetDetails!.followUpDate).format('DD MMM YYYY')}{' '}
                     </Text>
                   )}
                 </View>
@@ -630,9 +647,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         <View>
           {renderSymptoms()}
           {renderPrescriptions()}
-          {renderTestNotes()}
           {renderDiagnosis()}
           {renderGenerealAdvice()}
+          {renderTestNotes()}
           {renderFollowUp()}
         </View>
       );
@@ -647,7 +664,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       >
         <SafeAreaView style={{ flex: 1 }}>
           <Header
-            title="PRESCRIPTION"
+            title="PRESCRIPTION DETAILS"
             leftIcon="backArrow"
             onPressLeftIcon={() => props.navigation.goBack()}
             rightComponent={

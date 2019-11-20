@@ -78,6 +78,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  BackHandler,
   WebView,
 } from 'react-native';
 import RNFetchBlob from 'react-native-fetch-blob';
@@ -89,25 +90,25 @@ import { NavigationActions, NavigationScreenProps, StackActions } from 'react-na
 // import {
 //   addToConsultQueue,
 //   addToConsultQueueVariables,
-// } from '../../graphql/types/addToConsultQueue';
+// } from '@aph/mobile-patients/src/graphql/types/addToConsultQueue';
 import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
-} from '../../graphql/types/bookRescheduleAppointment';
+} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import {
   uploadChatDocument,
   uploadChatDocumentVariables,
-} from '../../graphql/types/uploadChatDocument';
+} from '@aph/mobile-patients/src/graphql/types/uploadChatDocument';
 import {
   addToConsultQueue,
   checkIfRescheduleAppointment,
   getNextAvailableSlots,
-} from '../../helpers/clientCalls';
-import { AppConfig } from '../../strings/AppConfig';
-import { Spinner } from '../ui/Spinner';
-import { OverlayRescheduleView } from './OverlayRescheduleView';
-import { UploadPrescriprionPopup } from '../Medicines/UploadPrescriprionPopup';
-import { SelectEPrescriptionModal } from '../Medicines/SelectEPrescriptionModal';
+} from '@aph/mobile-patients/src/helpers/clientCalls';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
+import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -281,13 +282,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [patientImageshow, setPatientImageshow] = useState<boolean>(false);
   const [showweb, setShowWeb] = useState<boolean>(false);
   const [url, setUrl] = useState('');
+
   useEffect(() => {
     if (!currentPatient) {
       console.log('No current patients available');
       getPatientApiCall();
     }
   }, [currentPatient]);
+  useEffect(() => {
+    const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', backDataFunctionality);
+    });
 
+    const willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    });
+
+    return () => {
+      didFocusSubscription && didFocusSubscription.remove();
+      willBlurSubscription && willBlurSubscription.remove();
+    };
+  }, []);
+
+  const backDataFunctionality = async () => {
+    BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
+    CommonLogEvent(AppRoutes.TabBar, 'Go back clicked');
+    props.navigation.replace(AppRoutes.TabBar);
+    return false;
+  };
   useEffect(() => {
     const userName =
       currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
@@ -822,7 +844,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       } else {
         minuteTimer && clearTimeout(minuteTimer);
       }
-    }, 60000);
+    }, 90000);
   }, []);
 
   const checkingAppointmentDates = () => {
@@ -914,6 +936,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === secondMessage) {
         console.log('secondMessage');
+        addMessages(message);
+      } else if (message.message.message === languageQue) {
+        console.log('languageQue');
+        addMessages(message);
+      } else if (message.message.message === jdThankyou) {
+        console.log('jdThankyou');
         addMessages(message);
       }
     } else {
@@ -1689,6 +1717,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 style={{
                   width: 32,
                   height: 32,
+                  borderRadius: 16,
                 }}
               />
             ) : (
@@ -1903,6 +1932,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     style={{
                       width: 32,
                       height: 32,
+                      borderRadius: 16,
                     }}
                   />
                 ) : (
@@ -2010,6 +2040,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     style={{
                       width: 32,
                       height: 32,
+                      borderRadius: 16,
                     }}
                   />
                 ) : (
@@ -2313,7 +2344,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       color: '#01475b',
                       paddingHorizontal: 16,
                       paddingVertical: 12,
-                          textAlign: 'left',
+                      textAlign: 'left',
                       ...theme.fonts.IBMPlexSansMedium(16),
                     }}
                   >
@@ -3216,14 +3247,38 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           backgroundColor: 'black',
         }}
       >
-        <DoctorCall
+        {appointmentData.doctorInfo.photoUrl &&
+        appointmentData.doctorInfo.photoUrl.match(
+          /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|png|JPG|PNG)/
+        ) ? (
+          <Image
+            source={{ uri: appointmentData.doctorInfo.photoUrl }}
+            resizeMode={'contain'}
+            style={{
+              width: 155,
+              height: 205,
+              opacity: 0.8,
+              borderRadius: 30,
+            }}
+          />
+        ) : (
+          <DoctorPlaceholderImage
+            style={{
+              width: 155,
+              height: 205,
+              opacity: 0.8,
+              borderRadius: 30,
+            }}
+          />
+        )}
+        {/* <DoctorCall
           style={{
             width: 155,
             height: 205,
             opacity: 0.5,
             borderRadius: 30,
           }}
-        />
+        /> */}
         <Text
           style={{
             position: 'absolute',
@@ -3455,7 +3510,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         optionTexts={{
           camera: 'TAKE A PHOTO',
           gallery: 'CHOOSE FROM\nGALLERY',
-          prescription: 'UPLOAD\nFROMPHR',
+          prescription: 'UPLOAD\nFROM PHR',
         }}
         hideTAndCs={false}
         onClickClose={() => setDropdownVisible(false)}
@@ -3716,7 +3771,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   marginLeft: 5,
                 }}
                 onPress={async () => {
-                  console.log('isDropdownVisible', isDropdownVisible);
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Upload document clicked.');
                   setDropdownVisible(!isDropdownVisible);
                 }}
               >

@@ -17,6 +17,7 @@ export const GET_CONSULT_QUEUE = gql`
           id
           appointmentType
           appointmentDateTime
+          status
         }
       }
     }

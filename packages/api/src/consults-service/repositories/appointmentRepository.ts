@@ -19,7 +19,6 @@ import {
   APPOINTMENT_STATE,
   APPOINTMENT_TYPE,
   CONSULTS_RX_SEARCH_FILTER,
-  AppointmentDocuments,
   REQUEST_ROLES,
 } from 'consults-service/entities';
 import { AppointmentDateTime } from 'doctors-service/resolvers/getDoctorsBySpecialtyAndFilters';
@@ -29,6 +28,7 @@ import { format, addMinutes, differenceInMinutes, addDays, subDays } from 'date-
 import { ConsultHours, ConsultMode } from 'doctors-service/entities';
 import { DoctorConsultHoursRepository } from 'doctors-service/repositories/doctorConsultHoursRepository';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
+//import { DoctorNextAvaialbleSlotsRepository } from 'consults-service/repositories/DoctorNextAvaialbleSlotsRepository';
 
 @EntityRepository(Appointment)
 export class AppointmentRepository extends Repository<Appointment> {
@@ -535,7 +535,7 @@ export class AppointmentRepository extends Repository<Appointment> {
         if (lastMins < docConsultHr.consultDuration) {
           availableSlots.pop();
         }
-        //console.log(availableSlotsReturn);
+        console.log(availableSlotsReturn);
       });
       if (doctorAppointments && doctorAppointments.length > 0) {
         doctorAppointments.map((doctorAppointment) => {
@@ -569,6 +569,8 @@ export class AppointmentRepository extends Repository<Appointment> {
           foundFlag = 1;
         }
       });
+      //const doctorSlotRepo = getCustomRepository(DoctorNextAvaialbleSlotsRepository);
+      //doctorSlotRepo.updateSlot(doctorId, appointmentType, new Date(finalSlot));
       return finalSlot;
     } else {
       return '';
@@ -673,6 +675,19 @@ export class AppointmentRepository extends Repository<Appointment> {
     return this.update(id, { appointmentDateTime, rescheduleCount, appointmentState });
   }
 
+  rescheduleAppointmentByDoctor(
+    id: string,
+    appointmentDateTime: Date,
+    rescheduleCountByDoctor: number,
+    appointmentState: APPOINTMENT_STATE
+  ) {
+    return this.update(id, {
+      appointmentDateTime,
+      rescheduleCountByDoctor,
+      appointmentState,
+    });
+  }
+
   cancelAppointment(
     id: string,
     cancelledBy: REQUEST_ROLES,
@@ -716,16 +731,6 @@ export class AppointmentRepository extends Repository<Appointment> {
 
   followUpBookedCount(id: string) {
     return this.count({ where: { followUpParentId: id } });
-  }
-
-  saveDocument(documentAttrs: Partial<AppointmentDocuments>) {
-    return AppointmentDocuments.create(documentAttrs)
-      .save()
-      .catch((createErrors) => {
-        throw new AphError(AphErrorMessages.CREATE_APPOINTMENT_DOCUMENT_ERROR, undefined, {
-          createErrors,
-        });
-      });
   }
 
   async getDoctorBlockedSlots(doctorId: string, availableDate: Date, doctorsDb: Connection) {

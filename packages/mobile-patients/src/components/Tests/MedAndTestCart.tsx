@@ -34,6 +34,7 @@ type ArrayTest = {
   title: string;
   descripiton: string;
   image: ImageSourcePropType;
+  cartCount: number;
 };
 
 export interface MedAndTestCartProps
@@ -57,12 +58,14 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
       title: `Medicines`,
       descripiton: cartItems.length > 0 ? `${cartItems.length} Items` : 'No Items',
       image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
+      cartCount: cartItems.length,
     },
     {
       id: 2,
       title: 'Tests',
       descripiton: testCartItems.length > 0 ? `${testCartItems.length} Items` : 'No Items',
       image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
+      cartCount: testCartItems.length,
     },
   ];
 
@@ -74,15 +77,15 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
           leftIcon="backArrow"
           container={{ borderBottomWidth: 0 }}
           onPressLeftIcon={() => backDataFunctionality()}
-          rightComponent={
-            <TouchableOpacity
-            // onPress={() => {
-            //     setCancelAppointment(true);
-            // }}
-            >
-              <More />
-            </TouchableOpacity>
-          }
+          // rightComponent={
+          //   <TouchableOpacity
+          //   // onPress={() => {
+          //   //     setCancelAppointment(true);
+          //   // }}
+          //   >
+          //     <More />
+          //   </TouchableOpacity>
+          // }
         />
       </View>
     );
@@ -109,7 +112,7 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
                   ...viewStyles.shadowStyle,
                   padding: 16,
                   marginHorizontal: 20,
-                  backgroundColor: cartItems.length === 0 ? '#f0f1ec' : colors.WHITE,
+                  backgroundColor: serviceTitle.cartCount == 0 ? '#f0f1ec' : colors.WHITE,
                   flexDirection: 'row',
                   height: 88,
                   marginTop: i === 0 ? 16 : 8,
