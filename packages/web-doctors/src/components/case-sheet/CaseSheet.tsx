@@ -172,6 +172,7 @@ export const CaseSheet: React.FC<CashSheetProps> = props => {
     props.startAppointment
   );
   const [vitals, setVitals] = useState<boolean>(props.startAppointment);
+  const { appointmentInfo } = useContext(CaseSheetContext);
 
   const items = [
     {
@@ -232,12 +233,11 @@ export const CaseSheet: React.FC<CashSheetProps> = props => {
       key: "followup",
       value: "Follow up",
       state: followUpPanel,
-      component: <FollowUp />
+      component: <FollowUp startAppointment={props.startAppointment} />
     }
   ];
 
   const { notes, setSRDNotes } = useContext(CaseSheetContext);
-
   const handlePanelExpansion = (expansionKey: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
@@ -312,6 +312,7 @@ export const CaseSheet: React.FC<CashSheetProps> = props => {
             onBlur={e => {
               setSRDNotes(e.target.value);
             }}
+            disabled={!props.startAppointment}
           />
         </Typography>
       </Box>
