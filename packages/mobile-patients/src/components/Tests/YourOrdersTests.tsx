@@ -130,6 +130,8 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View style={{ margin: 20 }}>
         {orders.map((order, index, array) => {
+          const title =
+            g(order, 'diagnosticOrderLineItems', '0' as any, 'diagnostics', 'itemName') || 'Test';
           return (
             <OrderCard
               isTest={true}
@@ -141,7 +143,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   orderId: order!.id,
                 });
               }}
-              title={'Test'}
+              title={title}
               description={getDeliverType(order!.orderType)}
               statusDesc={order!.orderStatus!}
               statusDiag={order!.orderStatus!}

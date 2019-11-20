@@ -15,6 +15,7 @@ export const GET_CURRENT_PATIENTS = gql`
         emailAddress
         gender
         dateOfBirth
+        photoUrl
       }
     }
   }
@@ -1025,6 +1026,11 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
           itemId
           quantity
           price
+          diagnostics {
+            id
+            itemId
+            itemName
+          }
         }
       }
     }
