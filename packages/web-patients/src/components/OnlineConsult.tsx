@@ -202,6 +202,14 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
       ? doctorDetails.getDoctorDetailsById.onlineConsultationFees
       : '';
 
+  const hospitalId =
+    doctorDetails &&
+    doctorDetails.getDoctorDetailsById &&
+    doctorDetails.getDoctorDetailsById.doctorHospital[0] &&
+    doctorDetails.getDoctorDetailsById.doctorHospital[0].facility
+      ? doctorDetails.getDoctorDetailsById.doctorHospital[0].facility.id
+      : '';
+
   const morningSlots: number[] = [],
     afternoonSlots: number[] = [],
     eveningSlots: number[] = [],
@@ -436,7 +444,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                       }:00`
                     ).toISOString(),
               appointmentType: APPOINTMENT_TYPE.ONLINE,
-              hospitalId: '',
+              hospitalId: hospitalId,
             },
           }}
           onCompleted={() => {
