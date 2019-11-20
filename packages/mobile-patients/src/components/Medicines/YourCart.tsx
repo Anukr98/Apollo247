@@ -197,7 +197,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'YOUR CART'}
+        title={'MEDICINE CART'}
         rightComponent={
           <View>
             <TouchableOpacity

@@ -1313,6 +1313,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
             transferDateTime: rescheduledDateTime,
             doctorId: props.doctorId,
             reschduleCount: rescheduleCount,
+            doctorInfo: currentPatient,
             reschduleId: reschduleId
           };
 
@@ -1408,6 +1409,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
         <div className={classes.consultButtonContainer}>
           <span>
             {props.appointmentStatus === "COMPLETED" &&
+            currentUserType !== LoggedInUserType.SECRETARY &&
             props.sentToPatient === true ? (
               <span className={classes.prescriptionSent}>
                 PRESCRIPTION SENT
@@ -1415,6 +1417,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
               </span>
             ) : (
               props.appointmentStatus === "COMPLETED" &&
+              currentUserType !== LoggedInUserType.SECRETARY &&
               props.sentToPatient === false && (
                 <span>
                   {(isClickedOnPriview || props.sentToPatient === false) &&
@@ -1467,7 +1470,8 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                 </span>
               )
             )}
-            {props.appointmentStatus !== "COMPLETED" &&
+            {(props.appointmentStatus !== "COMPLETED" ||
+              currentUserType === LoggedInUserType.SECRETARY) &&
               (props.startAppointment ? (
                 <span>
                   <Button

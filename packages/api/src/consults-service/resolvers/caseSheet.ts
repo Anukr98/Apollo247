@@ -36,6 +36,7 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { PatientFamilyHistoryRepository } from 'profiles-service/repositories/patientFamilyHistoryRepository';
 import { PatientLifeStyleRepository } from 'profiles-service/repositories/patientLifeStyleRepository';
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
+import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
 
 export type DiagnosisJson = {
   name: string;
@@ -382,10 +383,18 @@ const getJuniorDoctorCaseSheet: Resolver<
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
+  //check if logged in mobile number is associated with doctor
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryDetails = await secretaryRepo.getSecretary(mobileNumber, true);
+
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (
+    doctorData == null &&
+    (secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber)
+  )
+    throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //get junior doctor case-sheet
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
@@ -428,10 +437,18 @@ const getCaseSheet: Resolver<
   const patientDetails = await patientRepo.getPatientDetails(appointmentData.patientId);
   if (patientDetails == null) throw new AphError(AphErrorMessages.INVALID_PATIENT_ID);
 
+  //check if logged in mobile number is associated with doctor
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryDetails = await secretaryRepo.getSecretary(mobileNumber, true);
+
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-  if (doctorData == null && mobileNumber != patientDetails.mobileNumber)
+  if (
+    doctorData == null &&
+    mobileNumber != patientDetails.mobileNumber &&
+    (secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber)
+  )
     throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
