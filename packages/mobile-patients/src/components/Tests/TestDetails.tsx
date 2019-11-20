@@ -204,7 +204,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Age Group</Text>
               <Text style={styles.personDetailStyles}>
-                {(testInfo.FromAgeInDays / 365).toFixed(0)} TO
+                {(testInfo.FromAgeInDays / 365).toFixed(0)} TO{' '}
                 {(testInfo.ToAgeInDays / 365).toFixed(0)} YEARS
               </Text>
             </View>
@@ -238,7 +238,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Collection Method</Text>
             <Text style={styles.personDetailStyles}>
-              {' '}
               {testInfo.collectionType
                 ? TEST_COLLECTION_TYPE.HC
                   ? 'HOME VISIT OR CLINIC VISIT'

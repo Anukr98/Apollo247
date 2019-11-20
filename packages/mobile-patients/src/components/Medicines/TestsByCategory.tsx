@@ -6,7 +6,6 @@ import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCar
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { SAVE_SEARCH, SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
 import { DIAGNOSTICS_TYPE, SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
@@ -273,7 +272,16 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   ) => {
     const { index, item } = data;
     const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
-    const { rate, gender, itemId, itemName } = item;
+    const {
+      rate,
+      gender,
+      itemId,
+      itemName,
+      collectionType,
+      fromAgeInDays,
+      testPreparationData,
+      toAgeInDays,
+    } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
         props.navigation.navigate(AppRoutes.TestDetails, {
@@ -282,7 +290,11 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             Gender: gender,
             ItemID: `${itemId}`,
             ItemName: itemName,
-          } as TestPackage,
+            FromAgeInDays: fromAgeInDays,
+            ToAgeInDays: toAgeInDays,
+            collectionType: collectionType,
+            preparation: testPreparationData,
+          } as TestPackageForDetails,
         });
       },
       name: item.itemName,
@@ -401,6 +413,9 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
               ItemID: `${medicine!.itemId}`,
               ItemName: medicine!.itemName,
               collectionType: medicine!.collectionType,
+              FromAgeInDays: medicine!.fromAgeInDays,
+              ToAgeInDays: medicine!.toAgeInDays,
+              preparation: medicine!.testPreparationData,
             } as TestPackageForDetails,
           });
         }}

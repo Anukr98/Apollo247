@@ -941,7 +941,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const renderMedicineSuggestions = () => {
+  const renderTestSuggestions = () => {
     return (
       <View
         style={{
@@ -1100,7 +1100,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             <MedicineUploadPrescriptionView isTest={true} navigation={props.navigation} />
             {renderDelivery()}
             {renderTotalCharges()}
-            {/* {renderMedicineSuggestions()} */}
+            {/* {renderTestSuggestions()} */}
           </View>
           <View style={{ height: 70 }} />
         </ScrollView>

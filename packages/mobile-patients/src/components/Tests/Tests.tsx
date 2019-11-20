@@ -144,7 +144,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
-  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
     currentPatient!
   );
@@ -1611,7 +1610,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               </View>
             }
             selectedProfile={profile}
-            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            setDisplayAddProfile={() => {}}
           ></ProfileList>
 
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>
@@ -1630,14 +1629,6 @@ export const Tests: React.FC<TestsProps> = (props) => {
         </ScrollView>
       </SafeAreaView>
       {renderPopup()}
-      {displayAddProfile && (
-        <AddProfile
-          setdisplayoverlay={setDisplayAddProfile}
-          setProfile={(profile) => {
-            setProfile(profile);
-          }}
-        />
-      )}
     </View>
   );
 };
