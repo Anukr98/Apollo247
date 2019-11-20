@@ -514,6 +514,13 @@ export const GET_CASESHEET_JRD = gql`
         consultType
         notes
       }
+      juniorDoctorCaseSheet {
+        createdDate
+        createdDoctorProfile {
+          firstName
+          lastName
+        }
+      }
       patientDetails {
         allergies
         dateOfBirth

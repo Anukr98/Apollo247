@@ -88,9 +88,12 @@ export const UserCard: React.FC = () => {
           Appt ID: {displayId}
         </Typography>
         <Divider />
+
         <Typography variant="h6" color="textSecondary" component="h6">
-          Submitted by Dr. {jrdName} on{" "}
-          {format(new Date(jrdSubmitDate), "dd/MM/yyyy hh:mm:ss")}
+          Submitted by Dr. {jrdName}{" "}
+          {jrdSubmitDate &&
+            `on{" "}
+          ${format(new Date(jrdSubmitDate), "dd/MM/yyyy hh:mm:ss")}`}
         </Typography>
       </CardContent>
     </Card>
