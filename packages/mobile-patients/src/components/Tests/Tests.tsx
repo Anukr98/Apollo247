@@ -784,7 +784,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ItemName: packageName,
             collectionType: diagnostics!.collectionType,
             FromAgeInDays: diagnostics!.fromAgeInDays,
-            ToAgeInDays: 0,
+            ToAgeInDays: diagnostics!.toAgeInDays,
           } as TestPackageForDetails,
         }),
       style: {
@@ -1441,7 +1441,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   ) => {
     const { index, item } = data;
     const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
-    const { rate, gender, itemId, itemName, collectionType, fromAgeInDays } = item;
+    const { rate, gender, itemId, itemName, collectionType, fromAgeInDays, toAgeInDays } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
         props.navigation.navigate(AppRoutes.TestDetails, {
@@ -1452,7 +1452,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ItemName: itemName,
             collectionType: collectionType,
             FromAgeInDays: fromAgeInDays,
-            ToAgeInDays: 0,
+            ToAgeInDays: toAgeInDays,
           } as TestPackageForDetails,
         });
       },
@@ -1495,7 +1495,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
               style={{
-                paddingTop: 10.5,
+                paddingTop: medicineList.length > 0 ? 10.5 : 0,
                 maxHeight: 266,
                 backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
               }}

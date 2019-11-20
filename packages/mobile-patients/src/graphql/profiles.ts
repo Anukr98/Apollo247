@@ -973,6 +973,8 @@ export const GET_DIAGNOSTIC_DATA = gql`
           state
           itemType
           fromAgeInDays
+          toAgeInDays
+          testPreparationData
           collectionType
         }
       }
@@ -992,6 +994,8 @@ export const GET_DIAGNOSTIC_DATA = gql`
           state
           itemType
           fromAgeInDays
+          toAgeInDays
+          testPreparationData
           collectionType
         }
       }
@@ -1604,6 +1608,8 @@ export const SEARCH_DIAGNOSTICS = gql`
         state
         collectionType
         fromAgeInDays
+        toAgeInDays
+        testPreparationData
       }
     }
   }

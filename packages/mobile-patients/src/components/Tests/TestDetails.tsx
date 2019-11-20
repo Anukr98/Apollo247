@@ -130,6 +130,7 @@ const tabs = [
 
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
+  preparation: string;
 }
 
 export interface TestDetailsProps
