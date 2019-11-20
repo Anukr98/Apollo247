@@ -1186,9 +1186,12 @@ export const JDConsultRoom: React.FC = () => {
                           <div className={classes.assign}>Assigned to:</div>
                           <div
                             className={classes.doctorName}
-                          >{`${assignedDoctorSalutation} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
+                          >{`${assignedDoctorSalutation}${'.'} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
                           <div className={classes.doctorType}>{assignedDoctorSpecialty}</div>
-                          <div className={classes.doctorContact}>{assignedDoctorMobile}</div>
+                          <div className={classes.doctorContact}>
+                            {assignedDoctorMobile.slice(0, 3)}{' '}
+                            {assignedDoctorMobile.split('+91').join(' ')}
+                          </div>
                         </div>
                       </>
                     )}

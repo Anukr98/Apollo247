@@ -3,7 +3,11 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { SectionHeader } from '@aph/mobile-patients/src/components/ui/BasicComponents';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  More,
+  TestsCartIcon,
+  TestsCartMedicineIcon,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { colors } from '@aph/mobile-patients/src/theme/colors';
 import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
@@ -33,7 +37,8 @@ type ArrayTest = {
   id: number;
   title: string;
   descripiton: string;
-  image: ImageSourcePropType;
+  image: Element;
+  // ImageSourcePropType;
   cartCount: number;
 };
 
@@ -45,7 +50,7 @@ export interface MedAndTestCartProps
 export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
   const { cartItems } = useShoppingCart();
   const { cartItems: testCartItems } = useDiagnosticsCart();
-  console.log('length : ' + cartItems.length);
+  console.log('length : ' + cartItems.length, testCartItems.length);
   const backDataFunctionality = async () => {
     BackHandler.removeEventListener('hardwareBackPress', backDataFunctionality);
     props.navigation.goBack();
@@ -57,14 +62,14 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
       id: 1,
       title: `Medicines`,
       descripiton: cartItems.length > 0 ? `${cartItems.length} Items` : 'No Items',
-      image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
+      image: <TestsCartMedicineIcon />,
       cartCount: cartItems.length,
     },
     {
       id: 2,
       title: 'Tests',
       descripiton: testCartItems.length > 0 ? `${testCartItems.length} Items` : 'No Items',
-      image: require('@aph/mobile-patients/src/images/medicine/ic_medicines.png'),
+      image: <TestsCartIcon />,
       cartCount: testCartItems.length,
     },
   ];
@@ -150,7 +155,7 @@ export const MedAndTestCart: React.FC<MedAndTestCartProps> = (props) => {
                     width: 62,
                   }}
                 >
-                  <Image style={{ height: 56, width: 56 }} source={serviceTitle.image} />
+                  {serviceTitle.image}
                 </View>
               </View>
             </TouchableOpacity>
