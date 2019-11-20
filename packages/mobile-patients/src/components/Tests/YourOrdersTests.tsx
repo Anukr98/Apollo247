@@ -139,7 +139,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
               description={getDeliverType(order!.orderType)}
               statusDesc={order!.orderStatus!}
               status={order!.orderStatus!}
-              dateTime={getFormattedTime(g(order!.diagnosticDate, 'statusDate'))}
+              dateTime={getFormattedTime(order!.createdDate)}
             />
           );
         })}

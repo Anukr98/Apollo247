@@ -1025,6 +1025,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         orderStatus
         orderType
         displayId
+        createdDate
         diagnosticOrderLineItems {
           id
           itemId
@@ -1063,6 +1064,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         orderStatus
         orderType
         displayId
+        createdDate
         diagnosticOrderLineItems {
           id
           itemId
