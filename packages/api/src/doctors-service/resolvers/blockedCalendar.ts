@@ -28,6 +28,7 @@ export const blockedCalendarTypeDefs = gql`
       doctorId: String!
       start: DateTime!
       end: DateTime!
+      reason: String
     ): BlockedCalendarResult!
     updateBlockedCalendarItem(
       id: Int!
