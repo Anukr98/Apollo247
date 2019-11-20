@@ -9,16 +9,12 @@ import { ConsultDoctorProfile } from 'components/ChatRoom/ConsultDoctorProfile';
 import { useParams } from 'hooks/routerHooks';
 import { useAuth } from 'hooks/authHooks';
 import { GET_DOCTOR_DETAILS_BY_ID } from 'graphql/doctors';
-import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
-import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
 import {
   GetDoctorDetailsById,
   GetDoctorDetailsByIdVariables,
 } from 'graphql/types/GetDoctorDetailsById';
 import { useQueryWithSkip } from 'hooks/apolloHooks';
 import LinearProgress from '@material-ui/core/LinearProgress';
-import { useMutation } from 'react-apollo-hooks';
-import { ApolloError } from 'apollo-client';
 import { ChatMessage } from 'components/ChatRoom/ChatMessage';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -192,25 +188,6 @@ export const ChatRoom: React.FC = (props) => {
   const { isSignedIn } = useAuth();
   const mascotRef = useRef(null);
   const [isPopoverOpen] = React.useState<boolean>(true);
-
-  const mutationRequestToJrDoctor = useMutation<AddToConsultQueue, AddToConsultQueueVariables>(
-    ADD_TO_CONSULT_QUEUE,
-    {
-      variables: {
-        appointmentId,
-      },
-    }
-  );
-
-  useEffect(() => {
-    mutationRequestToJrDoctor()
-      .then((res: any) => {
-        console.log(res);
-      })
-      .catch((e: ApolloError) => {
-        console.log(e);
-      });
-  }, []);
 
   const { data, loading, error } = useQueryWithSkip<
     GetDoctorDetailsById,

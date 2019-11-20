@@ -383,10 +383,18 @@ const getJuniorDoctorCaseSheet: Resolver<
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
+  //check if logged in mobile number is associated with doctor
+  const secretaryRepo = doctorsDb.getCustomRepository(SecretaryRepository);
+  const secretaryDetails = await secretaryRepo.getSecretary(mobileNumber, true);
+
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-  if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (
+    doctorData == null &&
+    (secretaryDetails != null && mobileNumber != secretaryDetails.mobileNumber)
+  )
+    throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //get junior doctor case-sheet
   const caseSheetRepo = consultsDb.getCustomRepository(CaseSheetRepository);
