@@ -281,7 +281,12 @@ const defaultMaterialTheme = createMuiTheme({
     },
   },
 });
-export const FollowUp: React.FC = () => {
+
+interface CashSheetProps {
+  startAppointment: boolean;
+}
+
+export const FollowUp: React.FC<CashSheetProps> = (props) => {
   const classes = useStyles();
   const {
     followUp,
@@ -292,6 +297,7 @@ export const FollowUp: React.FC = () => {
     setFollowUpDate,
     followUpConsultType: consultTypeData,
     setFollowUpConsultType: setConsultTypeData,
+    appointmentInfo,
   } = useContext(CaseSheetContext);
   const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(followUp[0]);
   const [followUpDays, setFollowUpDays] = useState<number>(
@@ -361,6 +367,7 @@ export const FollowUp: React.FC = () => {
                 max={9}
                 defaultValue={defaultValue}
                 onChange={debounce((e, value) => setFollowUpDays(value), 200)}
+                disabled={!props.startAppointment}
               />
               {followUpDays === 9 && (
                 <div className={classes.recommendedType}>
@@ -400,7 +407,11 @@ export const FollowUp: React.FC = () => {
                   value={followUpConsultType}
                   onChange={(e, newValue) => setFollowUpConsultType(newValue)}
                 >
-                  <ToggleButton value="ONLINE" className={classes.button}>
+                  <ToggleButton
+                    value="ONLINE"
+                    className={classes.button}
+                    disabled={!props.startAppointment}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"
@@ -417,7 +428,11 @@ export const FollowUp: React.FC = () => {
                     </svg>
                     online
                   </ToggleButton>
-                  <ToggleButton value="PHYSICAL" className={classes.button}>
+                  <ToggleButton
+                    value="PHYSICAL"
+                    className={classes.button}
+                    disabled={!props.startAppointment}
+                  >
                     {/* <img src={require('images/ic_clicic_consult.svg')} alt="" /> */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

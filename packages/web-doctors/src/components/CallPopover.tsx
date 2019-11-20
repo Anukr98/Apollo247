@@ -1313,6 +1313,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
             transferDateTime: rescheduledDateTime,
             doctorId: props.doctorId,
             reschduleCount: rescheduleCount,
+            doctorInfo: currentPatient,
             reschduleId: reschduleId
           };
 
