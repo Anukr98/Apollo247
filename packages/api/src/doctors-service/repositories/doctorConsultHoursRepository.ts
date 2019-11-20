@@ -39,13 +39,16 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
     return this.count({ where: [{ doctor, consultMode }, { doctor, consultMode: 'BOTH' }] });
   }
 
-  getDayStarAndEndTimesArray(dayAllTimings: string): DayTimes[] {
+  getDayStarAndEndTimesArray(dayAllTimings: string, index: number): DayTimes[] {
     const delimiter = '\r\n';
     const arrayTimings = dayAllTimings.split(delimiter);
     const startEndTimes = arrayTimings.map((timings) => {
       const timesArray = timings.split('-');
       const istStartTime = timesArray[0].toString().trim();
       const istEndTime = timesArray[1].toString().trim();
+
+      //console.log(istStartTime, istEndTime, index);
+
       const istStartDate = new Date(format(new Date(), 'yyyy-MM-dd') + ' ' + istStartTime);
       const istEndDate = new Date(format(new Date(), 'yyyy-MM-dd') + ' ' + istEndTime);
       const utcStartDate = addMilliseconds(istStartDate, -19800000);
@@ -62,7 +65,7 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async insertOrUpdateAllConsultHours(availabilityData: any[]) {
     const consultHours: Partial<ConsultHours>[] = [];
-    availabilityData.forEach((consultHourData) => {
+    availabilityData.forEach((consultHourData, index) => {
       if (
         typeof consultHourData.weekDays != 'undefined' &&
         typeof consultHourData.availability != 'undefined'
@@ -70,7 +73,7 @@ export class DoctorConsultHoursRepository extends Repository<ConsultHours> {
         const weekDays = consultHourData.weekDays.toString();
         const arrWeekDays = weekDays.split(',');
         const availability = consultHourData.availability.toString();
-        const arrDayTimes = this.getDayStarAndEndTimesArray(availability);
+        const arrDayTimes = this.getDayStarAndEndTimesArray(availability, index);
 
         arrWeekDays.forEach((weekDay: WeekDay) => {
           arrDayTimes.forEach((dayTimes: DayTimes) => {
