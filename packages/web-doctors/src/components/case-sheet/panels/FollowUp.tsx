@@ -292,6 +292,7 @@ export const FollowUp: React.FC = () => {
     setFollowUpDate,
     followUpConsultType: consultTypeData,
     setFollowUpConsultType: setConsultTypeData,
+    appointmentInfo,
   } = useContext(CaseSheetContext);
   const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(followUp[0]);
   const [followUpDays, setFollowUpDays] = useState<number>(
@@ -327,6 +328,8 @@ export const FollowUp: React.FC = () => {
     setFollowUpDate(followUpDate);
   }, [followUpConsultType, shouldFollowUp, followUpDays, selectedDate]);
 
+  console.log('appointmentInfo', appointmentInfo);
+
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Typography component="div" className={classes.followUpContainer}>
@@ -361,6 +364,7 @@ export const FollowUp: React.FC = () => {
                 max={9}
                 defaultValue={defaultValue}
                 onChange={debounce((e, value) => setFollowUpDays(value), 200)}
+                disabled={appointmentInfo!.status! !== 'IN_PROGRESS'}
               />
               {followUpDays === 9 && (
                 <div className={classes.recommendedType}>
@@ -400,7 +404,11 @@ export const FollowUp: React.FC = () => {
                   value={followUpConsultType}
                   onChange={(e, newValue) => setFollowUpConsultType(newValue)}
                 >
-                  <ToggleButton value="ONLINE" className={classes.button}>
+                  <ToggleButton
+                    value="ONLINE"
+                    className={classes.button}
+                    disabled={appointmentInfo!.status! !== 'IN_PROGRESS'}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"
@@ -417,7 +425,11 @@ export const FollowUp: React.FC = () => {
                     </svg>
                     online
                   </ToggleButton>
-                  <ToggleButton value="PHYSICAL" className={classes.button}>
+                  <ToggleButton
+                    value="PHYSICAL"
+                    className={classes.button}
+                    disabled={appointmentInfo!.status! !== 'IN_PROGRESS'}
+                  >
                     {/* <img src={require('images/ic_clicic_consult.svg')} alt="" /> */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

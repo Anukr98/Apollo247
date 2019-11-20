@@ -172,6 +172,9 @@ export const CaseSheet: React.FC<CashSheetProps> = props => {
     props.startAppointment
   );
   const [vitals, setVitals] = useState<boolean>(props.startAppointment);
+  const { appointmentInfo } = useContext(CaseSheetContext);
+
+  console.log("appointmentInfo", appointmentInfo);
 
   const items = [
     {
@@ -312,6 +315,7 @@ export const CaseSheet: React.FC<CashSheetProps> = props => {
             onBlur={e => {
               setSRDNotes(e.target.value);
             }}
+            disabled={appointmentInfo!.status! !== "IN_PROGRESS"}
           />
         </Typography>
       </Box>
