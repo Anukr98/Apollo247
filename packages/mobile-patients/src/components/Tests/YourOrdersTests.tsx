@@ -2,7 +2,6 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { GET_DIAGNOSTIC_ORDER_LIST } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
@@ -20,6 +19,7 @@ import {
   getDiagnosticOrdersList,
   getDiagnosticOrdersListVariables,
 } from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
+import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -133,7 +133,7 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
           const title =
             g(order, 'diagnosticOrderLineItems', '0' as any, 'diagnostics', 'itemName') || 'Test';
           return (
-            <OrderCard
+            <TestOrderCard
               isTest={true}
               style={index < array.length - 1 ? { marginBottom: 8 } : {}}
               key={`${order!.id}`}
