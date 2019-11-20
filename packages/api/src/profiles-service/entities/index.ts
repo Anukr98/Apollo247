@@ -1051,6 +1051,9 @@ export class Diagnostics extends BaseEntity {
   @Column({ default: TEST_COLLECTION_TYPE.HC })
   collectionType: TEST_COLLECTION_TYPE;
 
+  @Column({ nullable: true })
+  testPreparationData: string;
+
   @OneToMany((type) => DiagnosticOrgans, (diagnosticOrgans) => diagnosticOrgans.diagnostics)
   diagnosticOrgans: DiagnosticOrgans[];
 
