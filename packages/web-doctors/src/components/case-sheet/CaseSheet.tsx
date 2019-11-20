@@ -25,6 +25,7 @@ import {
 } from "components/case-sheet/panels";
 import { UserCard } from "components/case-sheet/UserCard";
 import { CaseSheetContext } from "context/CaseSheetContext";
+import { STATUS } from "graphql/types/globalTypes";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -174,8 +175,6 @@ export const CaseSheet: React.FC<CashSheetProps> = props => {
   const [vitals, setVitals] = useState<boolean>(props.startAppointment);
   const { appointmentInfo } = useContext(CaseSheetContext);
 
-  console.log("appointmentInfo", appointmentInfo);
-
   const items = [
     {
       key: "symptoms",
@@ -235,12 +234,11 @@ export const CaseSheet: React.FC<CashSheetProps> = props => {
       key: "followup",
       value: "Follow up",
       state: followUpPanel,
-      component: <FollowUp />
+      component: <FollowUp startAppointment={props.startAppointment} />
     }
   ];
 
   const { notes, setSRDNotes } = useContext(CaseSheetContext);
-
   const handlePanelExpansion = (expansionKey: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
@@ -315,7 +313,7 @@ export const CaseSheet: React.FC<CashSheetProps> = props => {
             onBlur={e => {
               setSRDNotes(e.target.value);
             }}
-            disabled={appointmentInfo!.status! !== "IN_PROGRESS"}
+            disabled={!props.startAppointment}
           />
         </Typography>
       </Box>

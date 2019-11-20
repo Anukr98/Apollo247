@@ -281,7 +281,12 @@ const defaultMaterialTheme = createMuiTheme({
     },
   },
 });
-export const FollowUp: React.FC = () => {
+
+interface CashSheetProps {
+  startAppointment: boolean;
+}
+
+export const FollowUp: React.FC<CashSheetProps> = (props) => {
   const classes = useStyles();
   const {
     followUp,
@@ -328,8 +333,6 @@ export const FollowUp: React.FC = () => {
     setFollowUpDate(followUpDate);
   }, [followUpConsultType, shouldFollowUp, followUpDays, selectedDate]);
 
-  console.log('appointmentInfo', appointmentInfo);
-
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Typography component="div" className={classes.followUpContainer}>
@@ -364,7 +367,7 @@ export const FollowUp: React.FC = () => {
                 max={9}
                 defaultValue={defaultValue}
                 onChange={debounce((e, value) => setFollowUpDays(value), 200)}
-                disabled={appointmentInfo!.status! !== 'IN_PROGRESS'}
+                disabled={!props.startAppointment}
               />
               {followUpDays === 9 && (
                 <div className={classes.recommendedType}>
@@ -407,7 +410,7 @@ export const FollowUp: React.FC = () => {
                   <ToggleButton
                     value="ONLINE"
                     className={classes.button}
-                    disabled={appointmentInfo!.status! !== 'IN_PROGRESS'}
+                    disabled={!props.startAppointment}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -428,7 +431,7 @@ export const FollowUp: React.FC = () => {
                   <ToggleButton
                     value="PHYSICAL"
                     className={classes.button}
-                    disabled={appointmentInfo!.status! !== 'IN_PROGRESS'}
+                    disabled={!props.startAppointment}
                   >
                     {/* <img src={require('images/ic_clicic_consult.svg')} alt="" /> */}
                     <svg
