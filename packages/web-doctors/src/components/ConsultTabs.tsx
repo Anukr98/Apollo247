@@ -313,15 +313,7 @@ export const ConsultTabs: React.FC = () => {
   });
   const [patientId, setpatientId] = useState<string>(params.patientId);
   const [appointmentId, setAppointmentId] = useState<string>(paramId);
-  const { queueId, isActive } = useParams<JDConsultRoomParams>();
-  const mutationCreateJrdCaseSheet = useMutation<
-    CreateJuniorDoctorCaseSheet,
-    CreateJuniorDoctorCaseSheetVariables
-  >(CREATE_CASESHEET_FOR_JRD, {
-    variables: {
-      appointmentId: appointmentId
-    }
-  });
+
   // setAppointmentId(paramId);
   // setpatientId(params.patientId);
   // setdoctorId(currentPatient.id);
@@ -995,19 +987,7 @@ export const ConsultTabs: React.FC = () => {
             AphErrorMessages.NO_CASESHEET_EXIST
           );
           if (isCasesheetNotExists) {
-            setError("Creating Casesheet. Please wait....");
-            mutationCreateJrdCaseSheet()
-              .then(response => {
-                window.location.href = clientRoutes.JDConsultRoom({
-                  appointmentId: appointmentId,
-                  patientId: patientId,
-                  queueId: queueId,
-                  isActive: "active"
-                });
-              })
-              .catch((e: ApolloError) => {
-                setError("Unable to load Consult.");
-              });
+            setError("Casesheet is not created by Doctor.....");
           }
         })
         .finally(() => {
@@ -1278,7 +1258,6 @@ export const ConsultTabs: React.FC = () => {
       <div className={classes.headerSticky}>
         <Header />
       </div>
-      {console.log("finally ", casesheetInfo)}
       {!loaded && <CircularProgress className={classes.loading} />}
 
       {error && error !== "" && (
@@ -1295,7 +1274,8 @@ export const ConsultTabs: React.FC = () => {
               ? casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails
               : casesheetInfo!.getCaseSheet!.patientDetails,
             appointmentInfo: isSecretary
-              ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails
+              ? casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+                  .appointment
               : casesheetInfo!.getCaseSheet!.caseSheetDetails!.appointment,
             createdDoctorProfile:
               !isSecretary &&
