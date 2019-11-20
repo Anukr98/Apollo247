@@ -84,13 +84,9 @@ export interface TestsByCategoryProps
   extends NavigationScreenProps<{
     title: string;
     products: getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics[];
-    // category_id: string;
-    // isTest?: boolean; // Ignoring for now
   }> {}
 
 export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
-  // const category_id = props.navigation.getParam('category_id');
-  // const isTest = props.navigation.getParam('isTest');
   const pageTitle = props.navigation.getParam('title');
   const products = props.navigation.getParam('products');
   const [searchText, setSearchText] = useState<string>('');
@@ -109,29 +105,11 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const { locationForDiagnostics } = useAppCommonData();
 
-  console.log('\nproductsList\n', { productsList });
-
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
     }
   }, [currentPatient]);
-
-  // useEffect(() => {
-  //   getProductsByCategoryApi(category_id)
-  //     .then(({ data }) => {
-  //       console.log(data, 'getProductsByCategoryApi');
-  //       const products = data.products || [];
-  //       setProductsList(products);
-  //       setIsLoading(false);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err, 'errr');
-  //     })
-  //     .finally(() => {
-  //       // setshowSpinner(false);
-  //     });
-  // }, []);
 
   const savePastSeacrh = (sku: string, name: string) =>
     client.mutate({

@@ -1603,6 +1603,7 @@ export const SEARCH_DIAGNOSTICS = gql`
         city
         state
         collectionType
+        fromAgeInDays
       }
     }
   }

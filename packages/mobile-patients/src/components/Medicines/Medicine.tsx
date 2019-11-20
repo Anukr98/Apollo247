@@ -447,6 +447,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderShopByHealthAreas = () => {
+    if (healthAreas.length == 0) return null;
     return (
       <View>
         <SectionHeader leftText={'SHOP BY HEALTH AREAS'} />
@@ -479,6 +480,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderDealsOfTheDay = () => {
+    if (dealsOfTheDay.length == 0) return null;
     return (
       <View>
         <SectionHeader leftText={'DEALS OF THE DAY'} />
@@ -659,6 +661,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderHotSellers = () => {
+    if (hotSellers.length == 0) return null;
     return (
       <View>
         <SectionHeader leftText={'HOT SELLERS'} />
@@ -675,6 +678,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderShopByCategory = () => {
+    if (shopByCategory.length == 0) return null;
     return (
       <View>
         <SectionHeader leftText={'SHOP BY CATEGORY'} />
@@ -707,6 +711,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   };
 
   const renderShopByBrand = () => {
+    if (shopByBrand.length == 0) return null;
     return (
       <View>
         <SectionHeader

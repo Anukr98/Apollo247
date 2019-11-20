@@ -58,6 +58,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     saveUserChange,
     selectedProfile,
     setDisplayAddProfile,
+    listContainerStyle,
   } = props;
   const addString = 'ADD MEMBER';
   const { getPatientApiCall } = useAuth();
@@ -158,6 +159,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
             marginTop: 16,
             marginLeft: width / 2 - 95,
           },
+          listContainerStyle,
         ]}
         itemContainer={{ height: 44.8, marginHorizontal: 12, width: width / 2 }}
         itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b'), paddingHorizontal: 0 }}

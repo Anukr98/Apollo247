@@ -199,7 +199,7 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <View style={{ overflow: 'hidden', padding: 20 }}>
         <View>
           <Text style={styles.testNameStyles}>{testInfo.ItemName}</Text>
-          {!!testInfo.FromAgeInDays && (
+          {!!testInfo.ToAgeInDays && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Age Group</Text>
               <Text style={styles.personDetailStyles}>

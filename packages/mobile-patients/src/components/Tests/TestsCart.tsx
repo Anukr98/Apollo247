@@ -2,7 +2,7 @@ import {
   uploadFile,
   uploadFileVariables,
 } from '@aph/mobile-patients/src//graphql/types/uploadFile';
-import { aphConsole, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { g, aphConsole } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
@@ -450,7 +450,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   //       }
   //     })
   //     .catch((e) => {
-  //       aphConsole.log({ e });
+  //       aphaphConsole.log({ e });
   //       setCheckingServicability(false);
   //       handleGraphQlError(e);
   //     });
@@ -474,7 +474,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       .then(({ data }) => {
         setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
         setPinCode && setPinCode(selectedAddress.zipcode!);
-        console.log(data, 'GET_DIAGNOSTIC_SLOTS');
+        aphConsole.log({ data }, 'GET_DIAGNOSTIC_SLOTS');
         var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
         var t = finalaray!.slotInfo!.map((item) => {
           return {
@@ -482,7 +482,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             time: `${item!.startTime} - ${item!.endTime}`,
           };
         });
-        console.log(t, 'finalaray');
+        aphConsole.log(t, 'finalaray');
         setDiagnosticSlot &&
           setDiagnosticSlot({
             employeeSlotId: finalaray!.slotInfo![0]!.slot!,
@@ -496,8 +496,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         settimeArray(t);
         setselectedTimeSlot(t[0].time);
       })
-      .catch((e: string) => {
-        console.log('Error occured', e);
+      .catch((e) => {
+        aphConsole.log('Error occured', { e });
         setDeliveryAddressId && setDeliveryAddressId('');
         setPinCode && setPinCode('');
         setselectedTimeSlot('');
@@ -605,7 +605,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     searchClinicApi()
       .then((data) => {
         setStorePickUpLoading(false);
-        console.log('clinic response', data.data.data, data);
+        aphConsole.log('clinic response', data.data.data, data);
         setClinics && setClinics(data.data.data);
       })
       .catch((e) => {
@@ -616,7 +616,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const filterClinics = (key: string, isId?: boolean) => {
     if (isId) {
       const data = clinics.filter((item) => item.CentreCode === key);
-      console.log('iid filer=', data);
+      aphConsole.log('iid filer=', data);
       setPinCode && setPinCode(pinCode);
       setClinicDetails(data);
     } else {
@@ -626,19 +626,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setStorePickUpLoading(true);
           getPlaceInfoByPincode(key)
             .then((data) => {
-              console.log('locaion data', data);
+              aphConsole.log('locaion data', data);
               const city = (
                 (data.data.results[0].address_components || []).find(
                   (item: any) => item.types.indexOf('locality') > -1
                 ) || {}
               ).long_name;
-              console.log('cityName', city);
+              aphConsole.log('cityName', city);
               let filterArray;
               city &&
                 (filterArray = clinics.filter((item) =>
                   item.City.toLowerCase().includes(city.toLowerCase())
                 ));
-              console.log('cityName data', filterArray);
+              aphConsole.log('cityName data', filterArray);
 
               setClinicDetails(filterArray || []);
             })
@@ -683,7 +683,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             }}
           >
             {(currentPatient && currentPatient.firstName) || 'Hi'}, our diagnostic services are only
-            available in Chennai and Hyderabad for now. Kindly enter a prin code for Chennai or
+            available in Chennai and Hyderabad for now. Kindly enter a pin code for Chennai or
             Hyderabad to proceed.
           </Text>
         )}
