@@ -1,12 +1,8 @@
-import { MedicineIcon, OrderPlacedIcon } from '@aph/mobile-patients/src/components/ui/Icons';
-import {
-  MEDICINE_ORDER_STATUS,
-  DIAGNOSTIC_ORDER_STATUS,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { OrderPlacedIcon, TestsIcon } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DIAGNOSTIC_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React from 'react';
 import { StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
-import { isTest } from 'apollo-utilities';
 
 const styles = StyleSheet.create({
   containerStyle: {
@@ -97,55 +93,47 @@ const styles = StyleSheet.create({
   },
 });
 
-type OrderStatusType = MEDICINE_ORDER_STATUS;
+type OrderStatusType = DIAGNOSTIC_ORDER_STATUS;
 
 export interface TestOrderCardProps {
-  isTest?: boolean;
   orderId: string;
   title: string;
   description: string;
   dateTime: string;
   status?: OrderStatusType;
-  statusDiag?: String;
   statusDesc: string;
   onPress: () => void;
+  isReschedule?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
 export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
-  const isOrderWithProgressIcons = isTest
-    ? props.statusDiag == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
-      props.statusDiag == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
-    : props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-      props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED ||
-      props.status == MEDICINE_ORDER_STATUS.OUT_FOR_DELIVERY;
-
-  const isReschedule =
-    props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-    props.status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED;
+  const isOrderWithProgressIcons =
+    props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED ||
+    props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED;
 
   const getProgressWidth = (
     status: TestOrderCardProps['status'],
     progresDirection: 'left' | 'right'
   ) => {
     if (progresDirection == 'left') {
-      if (
-        status == MEDICINE_ORDER_STATUS.ORDER_PLACED ||
-        status == MEDICINE_ORDER_STATUS.ORDER_VERIFIED
-      ) {
+      if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED) {
+        return 0;
+      } else if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED) {
         return 1;
       }
-      return 3;
     } else {
-      if (status == MEDICINE_ORDER_STATUS.ORDER_PLACED) {
-        return 3;
+      if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED) {
+        return 1;
+      } else if (status == DIAGNOSTIC_ORDER_STATUS.PICKUP_CONFIRMED) {
+        return 5;
       }
-      return 1;
     }
   };
 
   const renderGraphicalStatus = () => {
-    if (props.status == MEDICINE_ORDER_STATUS.DELIVERED) {
+    if (props.status == ('Reports Generated' as any)) {
+      //Change once we get all the status list from API
       return <View style={styles.progressLineDone} />;
     }
     if (isOrderWithProgressIcons) {
@@ -171,10 +159,10 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
           numberOfLines={1}
           style={[
             styles.statusStyle,
-            props.status == MEDICINE_ORDER_STATUS.ORDER_PLACED
+            props.status == DIAGNOSTIC_ORDER_STATUS.PICKUP_REQUESTED
               ? { ...theme.fonts.IBMPlexSansSemiBold(12) }
               : {},
-            props.status == MEDICINE_ORDER_STATUS.CANCELLED
+            props.status == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED
               ? { color: theme.colors.INPUT_FAILURE_TEXT }
               : {},
           ]}
@@ -227,7 +215,7 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
         {renderDescriptionAndId()}
         {renderGraphicalStatus()}
         {renderStatusAndTime()}
-        {props.isTest && isReschedule && renderReschedule()}
+        {props.isReschedule && renderReschedule()}
       </View>
     );
   };
@@ -241,12 +229,12 @@ export const TestOrderCard: React.FC<TestOrderCardProps> = (props) => {
       style={[
         styles.containerStyle,
         props.style,
-        props.status == MEDICINE_ORDER_STATUS.RETURN_ACCEPTED
+        props.status == DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED
           ? { backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR }
           : {},
       ]}
     >
-      <MedicineIcon />
+      <TestsIcon style={{ height: 24, width: 24 }} />
       {renderDetails()}
     </TouchableOpacity>
   );
