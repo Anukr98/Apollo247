@@ -25,7 +25,6 @@ import {
 } from "components/case-sheet/panels";
 import { UserCard } from "components/case-sheet/UserCard";
 import { CaseSheetContext } from "context/CaseSheetContext";
-import { STATUS } from "graphql/types/globalTypes";
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
