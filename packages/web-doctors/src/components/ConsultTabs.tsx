@@ -14,18 +14,12 @@ import { useApolloClient } from "react-apollo-hooks";
 import { LoggedInUserType } from "graphql/types/globalTypes";
 import { JDConsultRoomParams } from "helpers/clientRoutes";
 import { AphStorageClient } from "@aph/universal/dist/AphStorageClient";
-import {
-  CreateJuniorDoctorCaseSheet,
-  CreateJuniorDoctorCaseSheetVariables
-} from "graphql/types/CreateJuniorDoctorCaseSheet";
 import { GET_CASESHEET_JRD } from "graphql/profiles";
 import {
   REQUEST_ROLES,
   Gender,
-  CASESHEET_STATUS,
   DOCTOR_CALL_TYPE,
   APPT_CALL_TYPE,
-  Relation,
   STATUS
 } from "graphql/types/globalTypes";
 import {
@@ -70,7 +64,6 @@ import {
   END_APPOINTMENT_SESSION,
   CREATE_CASESHEET_FOR_SRD,
   // GET_CASESHEET_JRD,
-  CREATE_CASESHEET_FOR_JRD,
   MODIFY_CASESHEET,
   UPDATE_PATIENT_PRESCRIPTIONSENTSTATUS
 } from "graphql/profiles";
