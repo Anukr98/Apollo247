@@ -140,6 +140,7 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
         gender: Gender.OTHER,
         dateOfBirth: addString,
         emailAddress: addString,
+        photoUrl: addString,
       });
     }
     return pArray;
