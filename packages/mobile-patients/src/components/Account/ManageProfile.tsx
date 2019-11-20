@@ -38,7 +38,7 @@ import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp'
 const styles = StyleSheet.create({
   separatorStyle: {
     borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
+    borderBottomColor: 'rgba(2, 71, 91, 0.2)',
   },
   profileImageStyle: {
     width: 80,
@@ -62,7 +62,7 @@ type profile = {
   lastName: string;
   relation: Relation | undefined;
   gender: Gender | undefined;
-  //  descripiton: string;
+  //  descripiton: string;
   uhid?: string;
   dateOfBirth?: Date;
   photoUrl?: string;
@@ -116,7 +116,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
       <View>
         <Header
           container={{ borderBottomWidth: 0 }}
-          title={'MANAGE PROFILES'}
+          title={'MANAGE PROFILES'}
           leftIcon="backArrow"
           onPressLeftIcon={() => backDataFunctionality()}
         />
@@ -150,7 +150,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                     backgroundColor: colors.WHITE,
                     flexDirection: 'row',
                     height: 145,
-                    //  marginTop: i === 0 ? 16 : 8,
+                    //  marginTop: i === 0 ? 16 : 8,
                     marginBottom: 8,
                   }}
                   key={i}
@@ -168,10 +168,10 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                     ) : (
                       <PatientDefaultImage style={styles.profileImageStyle} />
                     )}
-                    {/* {profile.photoUrl &&
-       profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
-                    {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
-                    {/* )} */}
+                    {/* {profile.photoUrl &&
+       profile.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && ( */}
+                    {/* <Image style={styles.profileImageStyle} source={profile.image} /> */}
+                    {/* )} */}
                   </View>
 
                   <View style={{ flex: 1, justifyContent: 'space-between' }}>
@@ -184,7 +184,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         marginBottom: 8,
                       }}
                     >
-                      {profile!.firstName + ' ' + profile!.lastName}
+                      {profile!.firstName + ' ' + profile!.lastName}
                     </Text>
                     <View style={styles.separatorStyle} />
                     <Text
@@ -208,7 +208,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         ...fonts.IBMPlexSansMedium(12),
                       }}
                     >
-                      UHID : {profile!.uhid}
+                      UHID : {profile!.uhid}
                     </Text>
                     <Text
                       style={{
@@ -217,8 +217,8 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                         ...fonts.IBMPlexSansMedium(12),
                       }}
                     >
-                      DOB :{' '}
-                      {profile!.dateOfBirth && moment(profile!.dateOfBirth).format('DD MMM, YYYY')}
+                      DOB :{' '}
+                      {profile!.dateOfBirth && moment(profile!.dateOfBirth).format('DD MMM, YYYY')}
                     </Text>
                   </View>
                 </View>
@@ -234,7 +234,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
                 ...fonts.IBMPlexSansMedium(12),
               }}
             >
-              {isLoading ? '' : 'No Profiles avaliable'}
+              {isLoading ? '' : 'No Profiles avaliable'}
             </Text>
           </View>
         )}
@@ -246,7 +246,7 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
     return (
       <StickyBottomComponent defaultBG style={{}}>
         <Button
-          title="ADD NEW PROFILE"
+          title="ADD NEW PROFILE"
           style={{ flex: 1, marginHorizontal: 60 }}
           onPress={() =>
             props.navigation.navigate(AppRoutes.EditProfile, {
