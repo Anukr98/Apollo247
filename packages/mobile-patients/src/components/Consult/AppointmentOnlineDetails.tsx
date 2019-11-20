@@ -455,7 +455,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     setdisplayoverlay(true), setResheduleoverlay(false);
   };
 
-  if (data.doctorInfo)
+  if (data.doctorInfo) {
+    const isAwaitingReschedule = data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE;
     return (
       <View style={styles.viewStyles}>
         <SafeAreaView style={styles.indexValue}>
@@ -521,19 +522,25 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             <Button
               title={'RESCHEDULE'}
               style={[
-                data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
+                isAwaitingReschedule
                   ? styles.reschduleWaitButtonStyle
                   : styles.reschduleButtonStyle,
               ]}
-              titleTextStyle={{ color: '#fc9916', opacity: dateIsAfter ? 1 : 0.5 }}
+              titleTextStyle={{
+                color: '#fc9916',
+                opacity: isAwaitingReschedule ? 1 : dateIsAfter ? 1 : 0.5,
+              }}
               onPress={() => {
                 CommonLogEvent(
                   AppRoutes.AppointmentOnlineDetails,
                   'Reschdule_Appointment_Online_Details_Clicked'
                 );
-
                 try {
-                  dateIsAfter ? NextAvailableSlotAPI() : null;
+                  isAwaitingReschedule
+                    ? NextAvailableSlotAPI()
+                    : dateIsAfter
+                    ? NextAvailableSlotAPI()
+                    : null;
                 } catch (error) {}
               }}
             />
@@ -744,5 +751,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
         {showSpinner && <Spinner />}
       </View>
     );
+  }
   return null;
 };

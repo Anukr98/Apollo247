@@ -48,10 +48,15 @@ import {
   Text,
   TouchableOpacity,
   View,
+  AsyncStorage,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
 import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
-import { CommonScreenLog, CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonScreenLog,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import moment from 'moment';
 
 const { width } = Dimensions.get('window');
 
@@ -246,7 +251,55 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
     }
   };
 
+  // const fetchSpecialities = () => {
+  //   client
+  //     .query<getAllSpecialties>({
+  //       query: GET_ALL_SPECIALTIES,
+  //       fetchPolicy: 'no-cache',
+  //     })
+  //     .then(({ data }) => {
+  //       try {
+  //         if (data && data.getAllSpecialties && Specialities !== data.getAllSpecialties) {
+  //           setSpecialities(data.getAllSpecialties);
+  //           setshowSpinner(false);
+  //         }
+  //       } catch {}
+  //     })
+  //     .catch((e: string) => {
+  //       setshowSpinner(false);
+  //       console.log('Error occured', e);
+  //     });
+  // };
+
+  // const fetchPastSearches = () => {
+  //   client
+  //     .query<getPatientPastSearches>({
+  //       query: GET_PATIENT_PAST_SEARCHES,
+  //       variables: {
+  //         patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+  //       },
+  //       fetchPolicy: 'no-cache',
+  //     })
+  //     .then(({ data }) => {
+  //       try {
+  //         if (data && data.getPatientPastSearches) {
+  //           // console.log('fetchPastSearches', data.getPatientPastSearches);
+  //           setPastSearches(data.getPatientPastSearches);
+  //         }
+  //       } catch {}
+  //     })
+  //     .catch((e: string) => {
+  //       console.log('Error occured', e);
+  //     })
+  //     .finally(() => {
+  //       fetchSpecialities();
+  //       !!searchText && fetchSearchData();
+  //     });
+  // };
+
   const fetchSpecialities = () => {
+    console.log('fetchSpecialities');
+
     client
       .query<getAllSpecialties>({
         query: GET_ALL_SPECIALTIES,
@@ -257,6 +310,8 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
           if (data && data.getAllSpecialties && Specialities !== data.getAllSpecialties) {
             setSpecialities(data.getAllSpecialties);
             setshowSpinner(false);
+            AsyncStorage.setItem('SpecialistData', JSON.stringify(data.getAllSpecialties));
+            AsyncStorage.setItem('APICalledDate', todayDate);
           }
         } catch {}
       })
@@ -287,9 +342,26 @@ export const DoctorSearch: React.FC<DoctorSearchProps> = (props) => {
         console.log('Error occured', e);
       })
       .finally(() => {
-        fetchSpecialities();
+        callSpecialityAPI();
         !!searchText && fetchSearchData();
       });
+  };
+
+  const todayDate = moment(new Date()).format('YYYY-MM-DD');
+  const callSpecialityAPI = async () => {
+    let isToday = false;
+    const checkDate: any = await AsyncStorage.getItem('APICalledDate');
+    if (checkDate == null) {
+      AsyncStorage.setItem('APICalledDate', todayDate);
+    }
+    isToday = checkDate ? checkDate === todayDate : false;
+    if (isToday) {
+      const specialistData = await AsyncStorage.getItem('SpecialistData');
+      specialistData && setSpecialities(JSON.parse(specialistData));
+      setshowSpinner(false);
+    } else {
+      fetchSpecialities();
+    }
   };
 
   useEffect(() => {
