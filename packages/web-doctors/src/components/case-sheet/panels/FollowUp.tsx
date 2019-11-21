@@ -389,8 +389,7 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
                         onKeyPress={(e) => {
                           if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
                         }}
-                        // InputAdornmentProps={{ position: 'end' }}
-                        onChange={(date) => handleDateChange((date as unknown) as Date)}
+                        onChange={(date) => handleDateChange(date as Date)}
                         disabled={!props.startAppointment}
                       />
                     </span>
