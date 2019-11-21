@@ -165,10 +165,11 @@ const searchDiagnostics: Resolver<
   SearchDiagnosticsResult
 > = async (parent, args, { profilesDb }) => {
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
-  const diagnostics = await diagnosticsRepo.searchDiagnostics(
-    args.searchText.toUpperCase(),
-    args.city
-  );
+  const diagnostics =
+    args.city == ''
+      ? await diagnosticsRepo.searchDiagnosticswithoutcity(args.searchText.toUpperCase())
+      : await diagnosticsRepo.searchDiagnostics(args.searchText.toUpperCase(), args.city);
+  console.log(diagnostics, 'diagnostics');
   return { diagnostics };
 };
 
