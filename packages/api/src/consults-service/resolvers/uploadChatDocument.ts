@@ -37,7 +37,7 @@ export const uploadChatDocumentTypeDefs = gql`
     addChatDocument(
       appointmentId: ID!
       documentPath: String
-      prismFileId: String!
+      prismFileId: String
     ): UploadedDocumentDetails
     removeChatDocument(documentPathId: ID!): ChatDocumentDeleteResult
   }
