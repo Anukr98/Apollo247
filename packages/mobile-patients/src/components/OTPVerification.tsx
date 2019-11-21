@@ -1,13 +1,26 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
+import { CountDownTimer } from '@aph/mobile-patients/src/components/ui/CountDownTimer';
+import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { BackArrow, OkText, OkTextDisabled } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { OTPTextView } from '@aph/mobile-patients/src/components/ui/OTPTextView';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  CommonBugFender,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
+import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   AsyncStorage,
+  BackHandler,
+  Dimensions,
   EmitterSubscription,
   Keyboard,
   Platform,
@@ -17,23 +30,11 @@ import {
   TouchableOpacity,
   View,
   WebView,
-  Dimensions,
-  BackHandler,
 } from 'react-native';
-// import SmsListener from 'react-native-android-sms-listener';
-import { NavigationScreenProps, StackActions, NavigationActions } from 'react-navigation';
-import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
-import { OTPTextView } from '@aph/mobile-patients/src/components/ui/OTPTextView';
 import firebase from 'react-native-firebase';
-import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { fonts } from '@aph/mobile-patients/src/theme/fonts';
 import Hyperlink from 'react-native-hyperlink';
-import {
-  CommonLogEvent,
-  CommonBugFender,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+// import SmsListener from 'react-native-android-sms-listener';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
 const { height, width } = Dimensions.get('window');
 
@@ -137,22 +138,22 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     };
   }, []);
 
-  const startInterval = useCallback(
-    (timer: number) => {
-      const intervalId = setInterval(() => {
-        timer = timer - 1;
-        setRemainingTime(timer);
-        if (timer == 0) {
-          console.log('descriptionTextStyle remainingTime', remainingTime);
-          setRemainingTime(0);
-          setInvalidOtpCount(0);
-          setIsValidOTP(true);
-          clearInterval(intervalId);
-        }
-      }, 1000);
-    },
-    [remainingTime]
-  );
+  // const startInterval = useCallback(
+  //   (timer: number) => {
+  //     const intervalId = setInterval(() => {
+  //       timer = timer - 1;
+  //       setRemainingTime(timer);
+  //       if (timer == 0) {
+  //         console.log('descriptionTextStyle remainingTime', remainingTime);
+  //         setRemainingTime(0);
+  //         setInvalidOtpCount(0);
+  //         setIsValidOTP(true);
+  //         clearInterval(intervalId);
+  //       }
+  //     }, 1000);
+  //   },
+  //   [remainingTime]
+  // );
 
   const _removeFromStore = useCallback(async () => {
     try {
@@ -186,7 +187,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
             const t2 = new Date(obj.startTime);
             const dif = t1.getTime() - t2.getTime();
 
-            const seconds = Math.round(dif / 1000);
+            const seconds = Math.ceil(dif / 1000);
             console.log(seconds, 'seconds');
             if (obj.invalidAttems === 3) {
               if (seconds < 900) {
@@ -195,7 +196,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 timer = 900 - seconds;
                 console.log(timer, 'timertimer');
                 setRemainingTime(timer);
-                startInterval(timer);
+                // startInterval(timer);
               } else {
                 _removeFromStore();
               }
@@ -210,7 +211,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
       // Error retrieving data
       console.log(error.message);
     }
-  }, [_removeFromStore, props.navigation.state.params, startInterval]);
+  }, [_removeFromStore, props.navigation.state.params]);
 
   useEffect(() => {
     // const { otpString } = props.navigation.state.params!;
@@ -346,7 +347,7 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                     if (invalidOtpCount + 1 === 3) {
                       setShowErrorMsg(true);
                       setIsValidOTP(false);
-                      startInterval(timer);
+                      // startInterval(timer);
                       setIntervalId(intervalId);
                     } else {
                       setShowErrorMsg(true);
@@ -390,18 +391,28 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     };
   }, [subscriptionId]);
 
-  useEffect(() => {
-    if (timer === 1 || timer === 0) {
-      console.log('timer', 'wedfrtgy5u676755ertyuiojkhgfghjkgf');
-      timer = 900;
-      setRemainingTime(900);
-      setShowErrorMsg(false);
-      setInvalidOtpCount(0);
-      setIsValidOTP(true);
-      clearInterval(intervalId);
-      _removeFromStore();
-    }
-  }, [intervalId, _removeFromStore]);
+  // useEffect(() => {
+  //   if (timer === 1 || timer === 0) {
+  //     console.log('timer', 'wedfrtgy5u676755ertyuiojkhgfghjkgf');
+  //     timer = 900;
+  //     setRemainingTime(900);
+  //     setShowErrorMsg(false);
+  //     setInvalidOtpCount(0);
+  //     setIsValidOTP(true);
+  //     clearInterval(intervalId);
+  //     _removeFromStore();
+  //   }
+  // }, [intervalId, _removeFromStore]);
+
+  const onStopTimer = () => {
+    // timer = 900;
+    setRemainingTime(900);
+    setShowErrorMsg(false);
+    setInvalidOtpCount(0);
+    setIsValidOTP(true);
+    clearInterval(intervalId);
+    _removeFromStore();
+  };
 
   const isOtpValid = (otp: string) => {
     setOtp(otp);
@@ -468,16 +479,16 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
     );
   };
 
-  const renderTime = () => {
-    console.log(remainingTime, 'remainingTime', timer, 'timer');
+  // const renderTime = () => {
+  //   console.log(remainingTime, 'remainingTime', timer, 'timer');
 
-    const minutes = Math.floor(timer / 60);
-    const seconds = timer - minutes * 60;
+  //   const minutes = Math.floor(timer / 60);
+  //   const seconds = timer - minutes * 60;
 
-    return `${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
-      seconds.toString().length < 2 ? '0' + seconds : seconds
-    }`;
-  };
+  //   return `${minutes.toString().length < 2 ? '0' + minutes : minutes} : ${
+  //     seconds.toString().length < 2 ? '0' + seconds : seconds
+  //   }`;
+  // };
   // console.log(isSigningIn, currentPatient, isVerifyingOtp);
   return (
     <View style={{ flex: 1 }}>
@@ -516,7 +527,15 @@ export const OTPVerification: React.FC<OTPVerificationProps> = (props) => {
                 editable={false}
               />
             </View>
-            <Text style={[styles.errorText]}>Try again after — {renderTime()}</Text>
+
+            <Text style={[styles.errorText]}>
+              Try again after —{' '}
+              <CountDownTimer
+                timer={remainingTime}
+                style={[styles.errorText]}
+                onStopTimer={onStopTimer}
+              />
+            </Text>
 
             <View
               style={{

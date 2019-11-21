@@ -2,7 +2,7 @@ import {
   uploadFile,
   uploadFileVariables,
 } from '@aph/mobile-patients/src//graphql/types/uploadFile';
-import { aphConsole, g } from '@aph/mobile-patients/src//helpers/helperFunctions';
+import { g, aphConsole } from '@aph/mobile-patients/src//helpers/helperFunctions';
 import {
   DiagnosticsCartItem,
   useDiagnosticsCart,
@@ -28,6 +28,7 @@ import {
   GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_FILE,
+  SEARCH_DIAGNOSTICS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -62,6 +63,12 @@ import {
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+import {
+  searchDiagnostics_searchDiagnostics_diagnostics,
+  searchDiagnostics,
+  searchDiagnosticsVariables,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -212,7 +219,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
-  const { showAphAlert, setLoading } = useUIElements();
+  const { locationForDiagnostics } = useAppCommonData();
+
+  const { setLoading, showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
 
@@ -253,6 +262,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     setLoading!(true);
     (currentPatientId &&
+      addresses.length == 0 &&
       client
         .query<getPatientAddressList, getPatientAddressListVariables>({
           query: GET_PATIENT_ADDRESS_LIST,
@@ -351,6 +361,48 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  const errorAlert = () => {
+    showAphAlert!({
+      title: 'Uh oh! :(',
+      description: 'Unable to fetch test details.',
+    });
+  };
+
+  const fetchPackageDetails = (
+    name: string,
+    func: (product: searchDiagnostics_searchDiagnostics_diagnostics) => void
+  ) => {
+    {
+      setLoading!(true);
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: name,
+            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          aphConsole.log('searchDiagnostics\n', { data });
+          const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
+          if (product) {
+            func && func(product);
+          } else {
+            errorAlert();
+          }
+        })
+        .catch((e) => {
+          aphConsole.log({ e });
+          errorAlert();
+        })
+        .finally(() => {
+          setLoading!(false);
+        });
+    }
+  };
+
   const renderItemsInCart = () => {
     const cartItemsCount =
       cartItems.length > 10 || cartItems.length == 0
@@ -394,14 +446,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               key={test.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
-                props.navigation.navigate(AppRoutes.TestDetails, {
-                  testDetails: {
-                    Rate: test!.price,
-                    Gender: '',
-                    ItemID: `${test.id}`,
-                    ItemName: test.name,
-                    collectionType: test.collectionMethod,
-                  } as TestPackageForDetails,
+                fetchPackageDetails(test.name, (product) => {
+                  props.navigation.navigate(AppRoutes.TestDetails, {
+                    testDetails: {
+                      ItemID: test.id,
+                      ItemName: test.name,
+                      Rate: test!.price,
+                      FromAgeInDays: product.fromAgeInDays!,
+                      ToAgeInDays: product.toAgeInDays!,
+                      Gender: product.gender,
+                      collectionType: test.collectionMethod,
+                      preparation: product.testPreparationData,
+                    } as TestPackageForDetails,
+                  });
                 });
               }}
               medicineName={test.name!}
@@ -449,7 +506,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   //       }
   //     })
   //     .catch((e) => {
-  //       aphConsole.log({ e });
+  //       aphaphConsole.log({ e });
   //       setCheckingServicability(false);
   //       handleGraphQlError(e);
   //     });
@@ -473,7 +530,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       .then(({ data }) => {
         setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
         setPinCode && setPinCode(selectedAddress.zipcode!);
-        console.log(data, 'GET_DIAGNOSTIC_SLOTS');
+        aphConsole.log({ data }, 'GET_DIAGNOSTIC_SLOTS');
         var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
         var t = finalaray!.slotInfo!.map((item) => {
           return {
@@ -481,7 +538,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             time: `${item!.startTime} - ${item!.endTime}`,
           };
         });
-        console.log(t, 'finalaray');
+        aphConsole.log(t, 'finalaray');
         setDiagnosticSlot &&
           setDiagnosticSlot({
             employeeSlotId: finalaray!.slotInfo![0]!.slot!,
@@ -495,8 +552,8 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         settimeArray(t);
         setselectedTimeSlot(t[0].time);
       })
-      .catch((e: string) => {
-        console.log('Error occured', e);
+      .catch((e) => {
+        aphConsole.log('Error occured', { e });
         setDeliveryAddressId && setDeliveryAddressId('');
         setPinCode && setPinCode('');
         setselectedTimeSlot('');
@@ -604,7 +661,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     searchClinicApi()
       .then((data) => {
         setStorePickUpLoading(false);
-        console.log('clinic response', data.data.data, data);
+        aphConsole.log('clinic response', data.data.data, data);
         setClinics && setClinics(data.data.data);
       })
       .catch((e) => {
@@ -615,7 +672,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const filterClinics = (key: string, isId?: boolean) => {
     if (isId) {
       const data = clinics.filter((item) => item.CentreCode === key);
-      console.log('iid filer=', data);
+      aphConsole.log('iid filer=', data);
       setPinCode && setPinCode(pinCode);
       setClinicDetails(data);
     } else {
@@ -625,19 +682,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
           setStorePickUpLoading(true);
           getPlaceInfoByPincode(key)
             .then((data) => {
-              console.log('locaion data', data);
+              aphConsole.log('locaion data', data);
               const city = (
                 (data.data.results[0].address_components || []).find(
                   (item: any) => item.types.indexOf('locality') > -1
                 ) || {}
               ).long_name;
-              console.log('cityName', city);
+              aphConsole.log('cityName', city);
               let filterArray;
               city &&
                 (filterArray = clinics.filter((item) =>
                   item.City.toLowerCase().includes(city.toLowerCase())
                 ));
-              console.log('cityName data', filterArray);
+              aphConsole.log('cityName data', filterArray);
 
               setClinicDetails(filterArray || []);
             })
@@ -682,7 +739,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             }}
           >
             {(currentPatient && currentPatient.firstName) || 'Hi'}, our diagnostic services are only
-            available in Chennai and Hyderabad for now. Kindly enter a prin code for Chennai or
+            available in Chennai and Hyderabad for now. Kindly enter a pin code for Chennai or
             Hyderabad to proceed.
           </Text>
         )}
@@ -940,7 +997,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const renderMedicineSuggestions = () => {
+  const renderTestSuggestions = () => {
     return (
       <View
         style={{
@@ -1099,7 +1156,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             <MedicineUploadPrescriptionView isTest={true} navigation={props.navigation} />
             {renderDelivery()}
             {renderTotalCharges()}
-            {/* {renderMedicineSuggestions()} */}
+            {/* {renderTestSuggestions()} */}
           </View>
           <View style={{ height: 70 }} />
         </ScrollView>

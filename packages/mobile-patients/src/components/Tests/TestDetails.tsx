@@ -130,6 +130,7 @@ const tabs = [
 
 export interface TestPackageForDetails extends TestPackage {
   collectionType: TEST_COLLECTION_TYPE;
+  preparation: string;
 }
 
 export interface TestDetailsProps
@@ -199,11 +200,11 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
       <View style={{ overflow: 'hidden', padding: 20 }}>
         <View>
           <Text style={styles.testNameStyles}>{testInfo.ItemName}</Text>
-          {!!testInfo.FromAgeInDays && (
+          {!!testInfo.ToAgeInDays && (
             <View style={styles.personDetailsView}>
               <Text style={styles.personDetailLabelStyles}>Age Group</Text>
               <Text style={styles.personDetailStyles}>
-                {(testInfo.FromAgeInDays / 365).toFixed(0)} TO
+                {(testInfo.FromAgeInDays / 365).toFixed(0)} TO{' '}
                 {(testInfo.ToAgeInDays / 365).toFixed(0)} YEARS
               </Text>
             </View>
@@ -237,7 +238,6 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
           <View style={styles.personDetailsView}>
             <Text style={styles.personDetailLabelStyles}>Collection Method</Text>
             <Text style={styles.personDetailStyles}>
-              {' '}
               {testInfo.collectionType
                 ? TEST_COLLECTION_TYPE.HC
                   ? 'HOME VISIT OR CLINIC VISIT'
@@ -287,14 +287,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderPreparation = () => {
     return (
       <View style={styles.descriptionStyles}>
-        {/* {TestDetailsDiscription.map((item, i) => (
-          <View key={i}> */}
         <Text style={styles.descriptionTextStyles}>
-          {/* {i + 1}. {item.TestParameters} */}
-          Not available
+          {(testInfo && testInfo.preparation) || 'Not available'}
         </Text>
-        {/* </View> */}
-        {/* ))} */}
       </View>
     );
   };

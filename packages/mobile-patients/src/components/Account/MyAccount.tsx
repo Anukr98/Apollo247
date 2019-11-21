@@ -94,11 +94,10 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   const { signOut, getPatientApiCall } = useAuth();
 
   useEffect(() => {
-    console.log('cu', currentPatient && currentPatient!.id);
-
     if (!currentPatient) {
       getPatientApiCall();
     }
+    currentPatient && setprofileDetails(currentPatient);
   }, [currentPatient]);
 
   const headMov = scrollY.interpolate({
@@ -290,7 +289,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             borderBottomWidth: 0,
           }}
           rightComponent={
-            <TouchableOpacity activeOpacity={1} onPress={() => deleteDeviceToken()}>
+            <TouchableOpacity activeOpacity={1} onPress={deleteDeviceToken}>
               <Text>Logout</Text>
             </TouchableOpacity>
           }
@@ -383,7 +382,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              QA V 1.0(15)
+              Dev V 1.0(53)
             </Text>
           </View>
         </Animated.ScrollView>

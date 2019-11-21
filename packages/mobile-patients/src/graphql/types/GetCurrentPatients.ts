@@ -19,6 +19,7 @@ export interface GetCurrentPatients_getCurrentPatients_patients {
   gender: Gender | null;
   dateOfBirth: any | null;
   emailAddress: string | null;
+  photoUrl: string | null;
 }
 
 export interface GetCurrentPatients_getCurrentPatients {

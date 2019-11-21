@@ -258,8 +258,8 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
             // key={index}
             description={''}
             status={orderDetails.orderStatus && orderDetails.orderStatus.replace('_', ' ')}
-            date={getFormattedDate(orderDetails.diagnosticDate)}
-            time={getFormattedTime(orderDetails.diagnosticDate)}
+            date={getFormattedDate(orderDetails.createdDate)}
+            time={getFormattedTime(orderDetails.createdDate)}
             isStatusDone={true}
             nextItemStatus={'NOT_EXIST'}
           />

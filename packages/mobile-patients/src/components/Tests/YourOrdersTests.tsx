@@ -2,11 +2,14 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Card } from '@aph/mobile-patients/src/components/ui/Card';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { OrderCard } from '@aph/mobile-patients/src/components/ui/OrderCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { TestOrderCard } from '@aph/mobile-patients/src/components/ui/TestOrderCard';
 import { GET_DIAGNOSTIC_ORDER_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  getDiagnosticOrdersList,
+  getDiagnosticOrdersListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { g, getOrderStatusText } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -16,10 +19,6 @@ import React, { useEffect } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import {
-  getDiagnosticOrdersList,
-  getDiagnosticOrdersListVariables,
-} from '@aph/mobile-patients/src/graphql/types/getDiagnosticOrdersList';
 
 const styles = StyleSheet.create({
   noDataCard: {
@@ -52,15 +51,9 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     fetchPolicy: 'no-cache',
   });
 
-  const orders = ((!loading && g(data, 'getDiagnosticOrdersList', 'ordersList')) || []).filter(
-    (item) =>
-      !(
-        (item!.orderStatus || []).length == 1 &&
-        ((item!.orderStatus || []) as any).find(
-          (item: any) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
-        )
-      )
-  );
+  const orders = (!loading && g(data, 'getDiagnosticOrdersList', 'ordersList')) || [];
+
+  console.log({ orders });
 
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
@@ -130,9 +123,10 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
     return (
       <View style={{ margin: 20 }}>
         {orders.map((order, index, array) => {
+          const title =
+            g(order, 'diagnosticOrderLineItems', '0' as any, 'diagnostics', 'itemName') || 'Test';
           return (
-            <OrderCard
-              isTest={true}
+            <TestOrderCard
               style={index < array.length - 1 ? { marginBottom: 8 } : {}}
               key={`${order!.id}`}
               orderId={`#${order!.displayId}`}
@@ -141,11 +135,11 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
                   orderId: order!.id,
                 });
               }}
-              title={'Test'}
+              title={title}
               description={getDeliverType(order!.orderType)}
               statusDesc={order!.orderStatus!}
-              statusDiag={order!.orderStatus!}
-              dateTime={getFormattedTime(g(order!.diagnosticDate, 'statusDate'))}
+              status={order!.orderStatus!}
+              dateTime={getFormattedTime(order!.createdDate)}
             />
           );
         })}
