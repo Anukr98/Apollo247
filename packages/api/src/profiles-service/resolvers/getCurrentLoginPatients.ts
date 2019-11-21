@@ -37,7 +37,9 @@ const getCurrentLoginPatients: Resolver<
       time: reqStartTimeFormatted,
       operation: `https://healthcare.crm8.dynamics.com/api/data/v9.1/contacts`,
       level: 'info',
-    })
+    }),
+    'info',
+    ''
   );
   console.log('data', data);
   //get access token from microsoft auth api
