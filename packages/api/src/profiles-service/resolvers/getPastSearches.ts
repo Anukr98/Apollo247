@@ -8,6 +8,7 @@ export const getPastSearchesTypeDefs = gql`
     DOCTOR
     SPECIALTY
     MEDICINE
+    TEST
   }
   type SearchData {
     searchType: SEARCH_TYPE
