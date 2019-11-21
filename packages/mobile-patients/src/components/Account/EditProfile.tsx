@@ -7,8 +7,8 @@ import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import {
   DropdownGreen,
   More,
-  PatientDefaultImage,
   EditIcon,
+  EditProfilePlaceHolder,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -512,7 +512,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               resizeMode={'contain'}
             />
           ) : (
-            <PatientDefaultImage style={styles.profileImage} />
+            <EditProfilePlaceHolder style={styles.profileImage} />
           )}
         </View>
         <TouchableOpacity
