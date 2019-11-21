@@ -240,9 +240,9 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     itemName,
     rate,
   }: searchDiagnostics_searchDiagnostics_diagnostics) => {
-    savePastSeacrh(id, itemName).catch((e) => {
-      aphConsole.log({ e });
-    });
+    // savePastSeacrh(id, itemName).catch((e) => {
+    //   aphConsole.log({ e });
+    // });
     addCartItem!({
       id,
       name: stripHtml(itemName),
