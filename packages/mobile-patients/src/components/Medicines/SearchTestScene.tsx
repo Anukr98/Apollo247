@@ -49,6 +49,7 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
 import { TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -395,7 +396,11 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
               Gender: product.gender,
               ItemID: `${product.itemId}`,
               ItemName: product.itemName,
-            } as TestPackage,
+              FromAgeInDays: product.fromAgeInDays,
+              ToAgeInDays: product.toAgeInDays,
+              collectionType: product.collectionType,
+              preparation: product.testPreparationData,
+            } as TestPackageForDetails,
           });
         }}
         medicineName={stripHtml(product.itemName)}
