@@ -41,7 +41,7 @@ export const bookAppointmentTypeDefs = gql`
     doctorId: ID!
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
-    hospitalId: ID
+    hospitalId: ID!
     status: STATUS!
     patientName: String!
     appointmentState: APPOINTMENT_STATE!
@@ -53,7 +53,7 @@ export const bookAppointmentTypeDefs = gql`
     doctorId: ID!
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
-    hospitalId: ID
+    hospitalId: ID!
     status: STATUS!
     patientName: String!
     appointmentState: APPOINTMENT_STATE!
@@ -65,7 +65,7 @@ export const bookAppointmentTypeDefs = gql`
     doctorId: ID!
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
-    hospitalId: ID
+    hospitalId: ID!
   }
 
   type BookAppointmentResult {
@@ -86,7 +86,7 @@ type BookAppointmentInput = {
   doctorId: string;
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string;
+  hospitalId: string;
 };
 
 type AppointmentBooking = {
@@ -95,7 +95,7 @@ type AppointmentBooking = {
   doctorId: string;
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string;
+  hospitalId: string;
   status: STATUS;
   patientName: string;
   appointmentState: APPOINTMENT_STATE;
@@ -107,7 +107,7 @@ type AppointmentBookingResult = {
   doctorId: string;
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string;
+  hospitalId: string;
   status: STATUS;
   patientName: string;
   appointmentState: APPOINTMENT_STATE;
@@ -150,6 +150,9 @@ const bookAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   }
 
+  if (docDetails.doctorHospital[0].facility.id !== appointmentInput.hospitalId) {
+    throw new AphError(AphErrorMessages.INVALID_HOSPITAL_ID, undefined, {});
+  }
   //check if doctor and hospital are matched
   const facilityId = appointmentInput.hospitalId;
   if (facilityId) {
