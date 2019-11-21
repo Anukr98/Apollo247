@@ -1062,7 +1062,6 @@ export const ConsultTabs: React.FC = () => {
     // );
 
     // console.log('notes...', customNotes);
-    console.log("diagnosticPrescription consult ", diagnosticPrescription);
 
     // this condition is written to avoid __typename from already existing data
     let symptomsFinal = null,

@@ -305,9 +305,7 @@ export const DiagnosticPrescription: React.FC = () => {
         }
       })
       .then((_data: any) => {
-        console.log("diagnosis JD ", _data!.data!);
         const filterVal: any = _data!.data!.searchDiagnostics!.diagnostics;
-        console.log(_data!.data!.searchDiagnostics!);
 
         filterVal.forEach((val: any, index: any) => {
           selectedValues!.forEach((selectedval: any) => {

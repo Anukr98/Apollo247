@@ -282,7 +282,6 @@ export const DiagnosticPrescription: React.FC = () => {
         }
       })
       .then((_data: any) => {
-        console.log("diagnosis ", _data!.data!);
         const filterVal: any = _data!.data!.searchDiagnostics!.diagnostics;
 
         filterVal.forEach((val: any, index: any) => {
@@ -306,8 +305,6 @@ export const DiagnosticPrescription: React.FC = () => {
   };
 
   function getSuggestionValue(suggestion: any | null) {
-    console.log("suggestion!.itemname ", suggestion!.itemName);
-
     return suggestion!.itemName;
   }
   useEffect(() => {
@@ -453,7 +450,6 @@ export const DiagnosticPrescription: React.FC = () => {
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
               selectedValues!.push(suggestion);
-              console.log("selectedValues ", selectedValues);
 
               setSelectedValues(selectedValues);
               setShowAddCondition(false);
