@@ -70,7 +70,7 @@ export class PatientRepository extends Repository<Patient> {
       timeOut: ApiConstants.PRISM_TIMEOUT,
     };
 
-    //mobileNumber = '8019677178';
+    mobileNumber = '8019677178';
 
     const authTokenResult = await fetch(
       `${process.env.PRISM_GET_AUTH_TOKEN_API}?mobile=${mobileNumber}`,
@@ -86,7 +86,7 @@ export class PatientRepository extends Repository<Patient> {
 
   //utility method to get prism users list
   async getPrismUsersList(mobileNumber: string, authToken: string) {
-    //mobileNumber = '8019677178';
+    mobileNumber = '8019677178';
     const prismHeaders = {
       method: 'GET',
       timeOut: ApiConstants.PRISM_TIMEOUT,
@@ -186,6 +186,26 @@ export class PatientRepository extends Repository<Patient> {
     return uploadResult && uploadResult.response
       ? `${uploadResult.response}_${documentName}`
       : null;
+  }
+
+  async getPatientLabResults(uhid: string, authToken: string) {
+    const prismHeaders = {
+      method: 'GET',
+      timeOut: ApiConstants.PRISM_TIMEOUT,
+    };
+
+    const labResults = await fetch(
+      `${process.env.PRISM_GET_USER_LAB_RESULTS_API}?authToken=${authToken}&uhid=${uhid}`,
+      prismHeaders
+    )
+      .then((res) => {
+        return res.json();
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+      });
+
+    return labResults;
   }
 
   saveNewProfile(patientAttrs: Partial<Patient>) {
