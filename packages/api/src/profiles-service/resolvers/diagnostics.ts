@@ -50,6 +50,8 @@ export const diagnosticsTypeDefs = gql`
     state: String!
     itemType: DIAGNOSTICS_TYPE
     fromAgeInDays: Int!
+    toAgeInDays: Int!
+    testPreparationData: String!
     collectionType: TEST_COLLECTION_TYPE
   }
 
@@ -128,6 +130,8 @@ type Diagnostics = {
   state: string;
   itemType: DIAGNOSTICS_TYPE;
   fromAgeInDays: number;
+  toAgeInDays: number;
+  testPreparationData: string;
   collectionType: TEST_COLLECTION_TYPE;
 };
 
@@ -161,10 +165,11 @@ const searchDiagnostics: Resolver<
   SearchDiagnosticsResult
 > = async (parent, args, { profilesDb }) => {
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
-  const diagnostics = await diagnosticsRepo.searchDiagnostics(
-    args.searchText.toUpperCase(),
-    args.city
-  );
+  const diagnostics =
+    args.city == ''
+      ? await diagnosticsRepo.searchDiagnosticswithoutcity(args.searchText.toUpperCase())
+      : await diagnosticsRepo.searchDiagnostics(args.searchText.toUpperCase(), args.city);
+  console.log(diagnostics, 'diagnostics');
   return { diagnostics };
 };
 
@@ -192,13 +197,14 @@ const getDiagnosticSlots: Resolver<
   const selDate = format(args.selectedDate, 'yyyy-MM-dd');
   const diagnosticSlotsUrl = process.env.DIAGNOSTIC_SLOTS_URL;
   const diagnosticSlot = await fetch(
-    `${diagnosticSlotsUrl}&jobType=home_collection&hubCode=${hubDetails.route}&date=${selDate}`
+    `${diagnosticSlotsUrl}&jobType=home_collection&hubCode=${hubDetails.pincodeAreaname}&transactionDate=${selDate}`
   )
     .then((res) => res.json())
     .catch((error) => {
       throw new AphError(AphErrorMessages.NO_HUB_SLOTS, undefined, {});
       console.log('diagnostic slot error', error);
     });
+  console.log(diagnosticSlot, 'diagnosticSlot');
   return { diagnosticBranchCode: hubDetails.route, diagnosticSlot };
 };
 

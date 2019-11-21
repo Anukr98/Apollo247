@@ -18,6 +18,7 @@ export const getPatientMedicalRecordsTypeDefs = gql`
     additionalNotes: String
     sourceName: String
     documentURLs: String
+    prismFileIds: String
     patient: Patient
     medicalRecordParameters: [MedicalRecordParameters]
   }

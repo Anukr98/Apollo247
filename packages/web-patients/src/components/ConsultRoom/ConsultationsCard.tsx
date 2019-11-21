@@ -190,7 +190,6 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   ) {
     bookedAppointments = props.appointments.getPatinetAppointments.patinetAppointments;
   }
-
   // filter appointments that are greater than current time.
   const filterAppointments = bookedAppointments.filter((appointmentDetails) => {
     const currentTime = new Date().getTime();
@@ -263,23 +262,26 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                 appointmentDetails.doctorInfo && appointmentDetails.doctorId
                   ? appointmentDetails.doctorId
                   : '';
+              const isConsultStarted = appointmentDetails.isConsultStarted;
               return (
                 <Grid item sm={6} key={index}>
                   <div
                     className={classes.consultCard}
                     role="button"
                     onClick={() => {
-                      addConsultToQueue({
-                        variables: {
-                          appointmentId,
-                        },
-                      })
-                        .then((res) => {
-                          window.location.href = clientRoutes.chatRoom(appointmentId, doctorId);
-                        })
-                        .catch((e: ApolloError) => {
-                          console.log(e);
-                        });
+                      isConsultStarted
+                        ? (window.location.href = clientRoutes.chatRoom(appointmentId, doctorId))
+                        : addConsultToQueue({
+                            variables: {
+                              appointmentId,
+                            },
+                          })
+                            .then((res) => {
+                              window.location.href = clientRoutes.chatRoom(appointmentId, doctorId);
+                            })
+                            .catch((e: ApolloError) => {
+                              console.log(e);
+                            });
                     }}
                   >
                     <div className={classes.consultCardWrap}>
@@ -334,20 +336,28 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     <div className={classes.cardBottomActons}>
                       <AphButton
                         onClick={() => {
-                          addConsultToQueue({
-                            variables: {
-                              appointmentId,
-                            },
-                          })
-                            .then((res) => {
-                              window.location.href = clientRoutes.chatRoom(appointmentId, doctorId);
-                            })
-                            .catch((e: ApolloError) => {
-                              console.log(e);
-                            });
+                          isConsultStarted
+                            ? (window.location.href = clientRoutes.chatRoom(
+                                appointmentId,
+                                doctorId
+                              ))
+                            : addConsultToQueue({
+                                variables: {
+                                  appointmentId,
+                                },
+                              })
+                                .then((res) => {
+                                  window.location.href = clientRoutes.chatRoom(
+                                    appointmentId,
+                                    doctorId
+                                  );
+                                })
+                                .catch((e: ApolloError) => {
+                                  console.log(e);
+                                });
                         }}
                       >
-                        Start Consult
+                        {isConsultStarted ? 'Continue Consult' : 'Start Consult'}
                       </AphButton>
                       <div className={classes.noteText}>You are entitled to 1 free follow-up!</div>
                     </div>

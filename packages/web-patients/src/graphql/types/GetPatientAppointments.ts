@@ -41,6 +41,7 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
   hospitalId: string | null;
   status: STATUS;
   bookingDate: any | null;
+  isConsultStarted: boolean | null;
   doctorInfo: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo | null;
 }
 
