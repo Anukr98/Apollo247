@@ -2,11 +2,12 @@ import gql from 'graphql-tag';
 import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext';
 import { Patient } from 'profiles-service/entities';
 import { PatientNewRepository } from 'profiles-service/repositories/patientNewRepository';
-
+import { logsUtility } from 'logsUtility';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { Resolver } from 'api-gateway';
 import { getConnection } from 'typeorm';
+import { format, differenceInMilliseconds } from 'date-fns';
 
 export const getCurrentLoginPatientsTypeDefs = gql`
   extend type Query {
@@ -26,9 +27,23 @@ const getCurrentLoginPatients: Resolver<
 > = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
   const patientsNewRepo = profilesDb.getCustomRepository(PatientNewRepository);
 
+  const reqStartTime = new Date();
+  const reqStartTimeFormatted = format(reqStartTime, "yyyy-MM-dd'T'HH:mm:ss.SSSX");
+
+  const data = logsUtility.logger(
+    'profilServices',
+    JSON.stringify({
+      message: 'External apiRequest Starting',
+      time: reqStartTimeFormatted,
+      operation: `https://healthcare.crm8.dynamics.com/api/data/v9.1/contacts`,
+      level: 'info',
+    })
+  );
+  console.log('data', data);
   //get access token from microsoft auth api
   const authToken = await patientsNewRepo.getAuthToken();
   console.log('AcessToken', authToken);
+  const insertResponse = await patientsNewRepo.insertPatient(authToken, mobileNumber);
 
   let patientPromises: Object[] = [];
 
