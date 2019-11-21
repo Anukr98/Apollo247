@@ -1,28 +1,28 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from 'react';
 
-import { Chip, Theme, MenuItem, Paper } from "@material-ui/core";
-import { makeStyles, createStyles } from "@material-ui/styles";
-import { AphButton, AphTextField } from "@aph/web-ui-components";
-import deburr from "lodash/deburr";
-import match from "autosuggest-highlight/match";
-import parse from "autosuggest-highlight/parse";
-import Autosuggest from "react-autosuggest";
-import { useApolloClient } from "react-apollo-hooks";
-import { SEARCH_DIAGNOSTICS } from "graphql/profiles";
-import { SearchDiagnostics } from "graphql/types/SearchDiagnostics";
+import { Chip, Theme, MenuItem, Paper } from '@material-ui/core';
+import { makeStyles, createStyles } from '@material-ui/styles';
+import { AphButton, AphTextField } from '@aph/web-ui-components';
+import deburr from 'lodash/deburr';
+import match from 'autosuggest-highlight/match';
+import parse from 'autosuggest-highlight/parse';
+import Autosuggest from 'react-autosuggest';
+import { useApolloClient } from 'react-apollo-hooks';
+import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
+import { SearchDiagnostics } from 'graphql/types/SearchDiagnostics';
 // import {
 //   GetJuniorDoctorCaseSheet,
 //   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
 // } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import {
   GetJuniorDoctorCaseSheet,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosticPrescription
-} from "graphql/types/GetJuniorDoctorCaseSheet";
-import { CaseSheetContextJrd } from "context/CaseSheetContextJrd";
+  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosticPrescription,
+} from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { CaseSheetContextJrd } from 'context/CaseSheetContextJrd';
 
 interface OptionType {
   itemname: string;
-  __typename: "DiagnosticPrescription";
+  __typename: 'DiagnosticPrescription';
 }
 
 let suggestions: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[] = [];
@@ -34,13 +34,13 @@ function renderInputComponent(inputProps: any) {
     <AphTextField
       fullWidth
       InputProps={{
-        inputRef: node => {
+        inputRef: (node) => {
           ref(node);
           inputRef(node);
         },
         classes: {
-          root: classes.inputRoot
-        }
+          root: classes.inputRoot,
+        },
       }}
       {...other}
     />
@@ -56,15 +56,12 @@ function renderSuggestion(
 
   return (
     <MenuItem selected={isHighlighted} component="div">
-      {parts.map(part => (
-        <span
-          key={part.text}
-          style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: "pre" }}
-        >
+      {parts.map((part) => (
+        <span key={part.text} style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}>
           {part.text}
         </span>
       ))}
-      <img src={require("images/ic-add.svg")} alt="" />
+      <img src={require('images/ic-add.svg')} alt="" />
     </MenuItem>
   );
 }
@@ -72,211 +69,211 @@ function renderSuggestion(
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      padding: 0
+      padding: 0,
     },
     sectionGroup: {
-      padding: 0
+      padding: 0,
     },
     sectionTitle: {
-      color: "#02475b",
+      color: '#02475b',
       opacity: 0.6,
 
       fontSize: 14,
       fontWeight: 500,
       letterSpacing: 0.02,
-      paddingBottom: 5
+      paddingBottom: 5,
     },
     addBtn: {
-      backgroundColor: "transparent",
-      boxShadow: "none",
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
       color: theme.palette.action.selected,
       fontSize: 14,
       fontWeight: 600,
       padding: 0,
       marginTop: 12,
-      "&:hover": {
-        backgroundColor: "transparent"
+      '&:hover': {
+        backgroundColor: 'transparent',
       },
-      "& img": {
-        marginRight: 8
-      }
+      '& img': {
+        marginRight: 8,
+      },
     },
 
     inputRoot: {
       marginTop: 10,
-      "&:before": {
-        borderBottom: "2px solid #00b38e"
+      '&:before': {
+        borderBottom: '2px solid #00b38e',
       },
-      "&:after": {
-        borderBottom: "2px solid #00b38e"
+      '&:after': {
+        borderBottom: '2px solid #00b38e',
       },
-      "& input": {
+      '& input': {
         fontSize: 16,
         fontWeight: 500,
-        color: "#01475b",
-        paddingTop: 0
+        color: '#01475b',
+        paddingTop: 0,
       },
-      "&:hover": {
-        "&:before": {
-          borderBottom: "2px solid #00b38e !important"
+      '&:hover': {
+        '&:before': {
+          borderBottom: '2px solid #00b38e !important',
         },
-        "&:after": {
-          borderBottom: "2px solid #00b38e !important"
-        }
-      }
+        '&:after': {
+          borderBottom: '2px solid #00b38e !important',
+        },
+      },
     },
     chipSection: {
-      paddingBottom: 0
+      paddingBottom: 0,
     },
     chipCol: {
-      display: "inline-block"
+      display: 'inline-block',
     },
     chipItem: {
       padding: 12,
       paddingRight: 12,
       fontSize: 14,
       fontWeight: 600,
-      color: "#02475b",
-      backgroundColor: "rgba(0, 0, 0, 0.02)",
+      color: '#02475b',
+      backgroundColor: 'rgba(0, 0, 0, 0.02)',
       borderRadius: 5,
       marginRight: 16,
       marginTop: 6,
-      border: "solid 1px rgba(2, 71, 91, 0.15)",
-      height: "auto",
-      wordBreak: "break-word",
-      "& span": {
+      border: 'solid 1px rgba(2, 71, 91, 0.15)',
+      height: 'auto',
+      wordBreak: 'break-word',
+      '& span': {
         padding: 0,
-        whiteSpace: "normal"
+        whiteSpace: 'normal',
       },
-      "&:focus": {
-        backgroundColor: "rgba(0, 0, 0, 0.02)"
+      '&:focus': {
+        backgroundColor: 'rgba(0, 0, 0, 0.02)',
       },
-      "& img": {
+      '& img': {
         margin: 0,
         marginLeft: 12,
-        maxWidth: 20
-      }
+        maxWidth: 20,
+      },
     },
     autoSuggestBox: {
-      position: "relative",
-      "& input": {
-        paddingRight: 30
-      }
+      position: 'relative',
+      '& input': {
+        paddingRight: 30,
+      },
     },
     searchpopup: {
       borderRadius: 10,
-      boxShadow: "0 5px 20px 0 rgba(128,128,128,0.8)",
+      boxShadow: '0 5px 20px 0 rgba(128,128,128,0.8)',
       marginTop: 2,
-      position: "absolute",
+      position: 'absolute',
       left: 0,
-      width: "100%",
+      width: '100%',
       zIndex: 1,
-      "& ul": {
+      '& ul': {
         padding: 0,
         margin: 0,
         borderRadius: 10,
-        overflow: "hidden",
-        "& li": {
+        overflow: 'hidden',
+        '& li': {
           padding: 0,
-          listStyleType: "none",
-          position: "relative",
-          "&:after": {
+          listStyleType: 'none',
+          position: 'relative',
+          '&:after': {
             content: '""',
             height: 1,
             left: 20,
             right: 20,
             bottom: 0,
-            position: "absolute",
-            backgroundColor: "rgba(2, 71, 91, 0.15)"
+            position: 'absolute',
+            backgroundColor: 'rgba(2, 71, 91, 0.15)',
           },
-          "& >div": {
-            padding: "10px 62px 10px 16px",
+          '& >div': {
+            padding: '10px 62px 10px 16px',
             fontSize: 18,
             fontWeight: 500,
-            color: "#02475b",
-            "&:hover": {
-              backgroundColor: "#f0f4f5 !important"
+            color: '#02475b',
+            '&:hover': {
+              backgroundColor: '#f0f4f5 !important',
             },
-            "&:focus": {
-              backgroundColor: "#f0f4f5 !important"
+            '&:focus': {
+              backgroundColor: '#f0f4f5 !important',
             },
-            "& span:nth-child(2)": {
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis"
+            '& span:nth-child(2)': {
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             },
-            "& img": {
-              position: "absolute",
+            '& img': {
+              position: 'absolute',
               right: 20,
-              display: "none"
-            }
+              display: 'none',
+            },
           },
-          "&:first-child": {
-            borderRadius: "10px 10px 0 0"
+          '&:first-child': {
+            borderRadius: '10px 10px 0 0',
           },
-          "&:last-child": {
-            borderRadius: "10px 10px 0 0",
-            "&:after": {
-              display: "none"
-            }
+          '&:last-child': {
+            borderRadius: '10px 10px 0 0',
+            '&:after': {
+              display: 'none',
+            },
           },
-          "&:hover": {
-            "& >div": {
-              "& img": {
-                display: "block"
-              }
-            }
-          }
-        }
-      }
+          '&:hover': {
+            '& >div': {
+              '& img': {
+                display: 'block',
+              },
+            },
+          },
+        },
+      },
     },
     addNewDiagnostic: {
-      color: "#02475b",
+      color: '#02475b',
       fontSize: 16,
-      position: "relative",
-      "& button": {
-        backgroundColor: "transparent",
-        boxShadow: "none",
-        position: "absolute",
+      position: 'relative',
+      '& button': {
+        backgroundColor: 'transparent',
+        boxShadow: 'none',
+        position: 'absolute',
         right: 0,
         padding: 0,
-        minWidth: "auto",
+        minWidth: 'auto',
         bottom: 5,
-        "&:hover": {
-          backgroundColor: "transparent",
-          boxShadow: "none"
-        }
-      }
+        '&:hover': {
+          backgroundColor: 'transparent',
+          boxShadow: 'none',
+        },
+      },
     },
     othersBtn: {
-      border: "1px solid rgba(2, 71, 91, 0.15)",
-      backgroundColor: "rgba(0,0,0,0.02)",
+      border: '1px solid rgba(2, 71, 91, 0.15)',
+      backgroundColor: 'rgba(0,0,0,0.02)',
       height: 44,
       marginBottom: 12,
       borderRadius: 5,
       fontWeight: 600,
       fontSize: 14,
-      color: "#02475b !important",
-      whiteSpace: "normal",
-      "&:focus": {
-        backgroundColor: "rgba(0,0,0,0.02)"
+      color: '#02475b !important',
+      whiteSpace: 'normal',
+      '&:focus': {
+        backgroundColor: 'rgba(0,0,0,0.02)',
       },
-      "& span": {
-        display: "inline-block",
-        width: "100%",
-        textAlign: "left",
-        whiteSpace: "normal"
-      }
-    }
+      '& span': {
+        display: 'inline-block',
+        width: '100%',
+        textAlign: 'left',
+        whiteSpace: 'normal',
+      },
+    },
   })
 );
 
 export const DiagnosticPrescription: React.FC = () => {
   const classes = useStyles();
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useState('');
   const {
     diagnosticPrescription: selectedValues,
-    setDiagnosticPrescription: setSelectedValues
+    setDiagnosticPrescription: setSelectedValues,
   } = useContext(CaseSheetContextJrd);
   const [idx, setIdx] = React.useState();
   const client = useApolloClient();
@@ -284,7 +281,7 @@ export const DiagnosticPrescription: React.FC = () => {
 
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const [showAddOtherTests, setShowAddOtherTests] = useState<boolean>(false);
-  const [otherDiagnostic, setOtherDiagnostic] = useState("");
+  const [otherDiagnostic, setOtherDiagnostic] = useState('');
   const showAddConditionHandler = (show: boolean) => setShowAddCondition(show);
   const [lengthOfSuggestions, setLengthOfSuggestions] = useState<number>(1);
 
@@ -298,11 +295,10 @@ export const DiagnosticPrescription: React.FC = () => {
             patientDetails.patientAddress &&
             patientDetails.patientAddress.length > 0
               ? patientDetails.patientAddress[0]!.city
-              : "",
-          patientId:
-            patientDetails && patientDetails.id ? patientDetails.id : "",
-          searchText: value
-        }
+              : '',
+          patientId: patientDetails && patientDetails.id ? patientDetails.id : '',
+          searchText: value,
+        },
       })
       .then((_data: any) => {
         const filterVal: any = _data!.data!.searchDiagnostics!.diagnostics;
@@ -319,8 +315,8 @@ export const DiagnosticPrescription: React.FC = () => {
         setLengthOfSuggestions(suggestions.length);
         setSearchInput(value);
       })
-      .catch(e => {
-        console.log("Error occured while searching for Doctors", e);
+      .catch((e) => {
+        console.log('Error occured while searching for Doctors', e);
       });
   };
   const getSuggestions = (value: string) => {
@@ -340,7 +336,7 @@ export const DiagnosticPrescription: React.FC = () => {
     if (idx >= 0) {
       setSelectedValues(selectedValues);
       suggestions!.map((item, idx) => {
-        selectedValues!.map(val => {
+        selectedValues!.map((val) => {
           if (item!.itemname === val.itemname) {
             const indexDelete = suggestions.indexOf(item);
             suggestions!.splice(indexDelete, 1);
@@ -351,8 +347,8 @@ export const DiagnosticPrescription: React.FC = () => {
   }, [selectedValues, idx]);
 
   const [state, setState] = React.useState({
-    single: "",
-    popper: ""
+    single: '',
+    popper: '',
   });
   const [stateSuggestions, setSuggestions] = React.useState<
     (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments_caseSheet_diagnosticPrescription | null)[]
@@ -375,7 +371,7 @@ export const DiagnosticPrescription: React.FC = () => {
     setOtherDiagnostic(newValue.trim());
     setState({
       ...state,
-      [itemname]: newValue
+      [itemname]: newValue,
     });
   };
 
@@ -392,7 +388,7 @@ export const DiagnosticPrescription: React.FC = () => {
     onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     getSuggestionValue,
-    renderSuggestion
+    renderSuggestion,
   };
   return (
     <div className={classes.root}>
@@ -404,7 +400,7 @@ export const DiagnosticPrescription: React.FC = () => {
             selectedValues.length > 0 &&
             selectedValues!.map((item, idx) =>
               item.itemName
-                ? item.itemName!.trim() !== "" && (
+                ? item.itemName!.trim() !== '' && (
                     <div className={classes.chipCol}>
                       <Chip
                         className={classes.chipItem}
@@ -413,18 +409,14 @@ export const DiagnosticPrescription: React.FC = () => {
                         onDelete={() => handleDelete(item, idx)}
                         deleteIcon={
                           <img
-                            src={
-                              caseSheetEdit
-                                ? require("images/ic_cancel_green.svg")
-                                : ""
-                            }
+                            src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
                             alt=""
                           />
                         }
                       />
                     </div>
                   )
-                : item.itemname!.trim() !== "" && (
+                : item.itemname!.trim() !== '' && (
                     <div className={classes.chipCol}>
                       <Chip
                         className={classes.chipItem}
@@ -433,11 +425,7 @@ export const DiagnosticPrescription: React.FC = () => {
                         onDelete={() => handleDelete(item, idx)}
                         deleteIcon={
                           <img
-                            src={
-                              caseSheetEdit
-                                ? require("images/ic_cancel_green.svg")
-                                : ""
-                            }
+                            src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
                             alt=""
                           />
                         }
@@ -454,12 +442,12 @@ export const DiagnosticPrescription: React.FC = () => {
           onClick={() => {
             showAddConditionHandler(true);
             setState({
-              single: "",
-              popper: ""
+              single: '',
+              popper: '',
             });
           }}
         >
-          <img src={require("images/ic_dark_plus.svg")} alt="" /> ADD TESTS
+          <img src={require('images/ic_dark_plus.svg')} alt="" /> ADD TESTS
         </AphButton>
       )}
       {showAddCondition && !showAddOtherTests && (
@@ -468,32 +456,26 @@ export const DiagnosticPrescription: React.FC = () => {
             selectedValues!.push(suggestion);
             setSelectedValues(selectedValues);
             setShowAddCondition(false);
-            suggestions = suggestions.filter(
-              val => !selectedValues!.includes(val!)
-            );
+            suggestions = suggestions.filter((val) => !selectedValues!.includes(val!));
             setState({
-              single: "",
-              popper: ""
+              single: '',
+              popper: '',
             });
-            setOtherDiagnostic("");
+            setOtherDiagnostic('');
           }}
           {...autosuggestProps}
           inputProps={{
             classes,
-            id: "react-autosuggest-simple",
-            placeholder: "Search Tests",
+            id: 'react-autosuggest-simple',
+            placeholder: 'Search Tests',
             value: state.single,
-            onChange: handleChange("single")
+            onChange: handleChange('single'),
           }}
           theme={{
-            container: classes.autoSuggestBox
+            container: classes.autoSuggestBox,
           }}
-          renderSuggestionsContainer={options => (
-            <Paper
-              {...options.containerProps}
-              square
-              className={classes.searchpopup}
-            >
+          renderSuggestionsContainer={(options) => (
+            <Paper {...options.containerProps} square className={classes.searchpopup}>
               {options.children}
             </Paper>
           )}
@@ -503,24 +485,24 @@ export const DiagnosticPrescription: React.FC = () => {
         <div className={classes.addNewDiagnostic}>
           <AphButton
             onClick={() => {
-              if (otherDiagnostic.trim() !== "") {
+              if (otherDiagnostic.trim() !== '') {
                 selectedValues!.splice(idx, 0, {
                   itemname: otherDiagnostic,
-                  __typename: "DiagnosticPrescription"
+                  __typename: 'DiagnosticPrescription',
                 });
                 setSelectedValues(selectedValues);
                 setShowAddOtherTests(false);
                 setShowAddCondition(false);
                 setIdx(selectedValues!.length + 1);
                 setTimeout(() => {
-                  setOtherDiagnostic("");
+                  setOtherDiagnostic('');
                 }, 10);
               } else {
-                setOtherDiagnostic("");
+                setOtherDiagnostic('');
               }
             }}
           >
-            <img src={require("images/ic_add_circle.svg")} alt="" />
+            <img src={require('images/ic_add_circle.svg')} alt="" />
           </AphButton>
         </div>
       )}

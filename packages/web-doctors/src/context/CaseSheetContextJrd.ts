@@ -8,41 +8,33 @@ import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_healthVault,
-  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument
-} from "graphql/types/GetJuniorDoctorCaseSheet";
-import { createContext } from "react";
+  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument,
+} from 'graphql/types/GetJuniorDoctorCaseSheet';
+import { createContext } from 'react';
 
 export interface CaseSheetContextPropsJrd {
   loading: boolean;
   caseSheetEdit: boolean;
-  setCaseSheetEdit:
-    | React.Dispatch<React.SetStateAction<boolean>>
-    | (() => false);
+  setCaseSheetEdit: React.Dispatch<React.SetStateAction<boolean>> | (() => false);
   patientDetails: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails | null;
   appointmentInfo: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment | null;
   caseSheetId: string | null;
-  symptoms:
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
-    | null;
+  symptoms: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[] | null;
   setSymptoms:
     | React.Dispatch<
         React.SetStateAction<
-          | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[]
-          | null
+          GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_symptoms[] | null
         >
       >
     | (() => void);
   notes: string | null;
   setNotes: React.Dispatch<React.SetStateAction<string | null>> | (() => void);
   juniorDoctorNotes: string | null;
-  diagnosis:
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
-    | null;
+  diagnosis: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[] | null;
   setDiagnosis:
     | React.Dispatch<
         React.SetStateAction<
-          | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[]
-          | null
+          GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosis[] | null
         >
       >
     | (() => void);
@@ -58,9 +50,7 @@ export interface CaseSheetContextPropsJrd {
       >
     | (() => void);
   diagnosticPrescription: any[] | null;
-  setDiagnosticPrescription:
-    | React.Dispatch<React.SetStateAction<any[] | null>>
-    | (() => void);
+  setDiagnosticPrescription: React.Dispatch<React.SetStateAction<any[] | null>> | (() => void);
   medicinePrescription:
     | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
     | null;
@@ -77,20 +67,14 @@ export interface CaseSheetContextPropsJrd {
   followUp: boolean[];
   setFollowUp: React.Dispatch<React.SetStateAction<boolean[]>> | (() => void);
   followUpAfterInDays: string[];
-  setFollowUpAfterInDays:
-    | React.Dispatch<React.SetStateAction<string[]>>
-    | (() => void);
+  setFollowUpAfterInDays: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   followUpDate: string[];
-  setFollowUpDate:
-    | React.Dispatch<React.SetStateAction<string[]>>
-    | (() => void);
+  setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   healthVault:
     | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_healthVault[]
     | null;
   appointmentDocuments: appointmentDocument[] | null;
-  pastAppointments:
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments[]
-    | null;
+  pastAppointments: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments[] | null;
   setCasesheetNotes: (notes: string) => void;
   autoCloseCaseSheet: boolean;
 
@@ -159,17 +143,17 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   autoCloseCaseSheet: false,
   documentArray: null,
   setDocumentArray: () => {},
-  height: "",
-  weight: "",
-  bp: "",
-  temperature: "",
-  pastMedicalHistory: "",
-  pastSurgicalHistory: "",
-  dietAllergies: "",
-  drugAllergies: "",
-  lifeStyle: "",
-  familyHistory: "",
-  menstrualHistory: "",
+  height: '',
+  weight: '',
+  bp: '',
+  temperature: '',
+  pastMedicalHistory: '',
+  pastSurgicalHistory: '',
+  dietAllergies: '',
+  drugAllergies: '',
+  lifeStyle: '',
+  familyHistory: '',
+  menstrualHistory: '',
 
   setBp: () => {},
   setHeight: () => {},
@@ -183,6 +167,6 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   setFamilyHistory: () => {},
   setMenstrualHistory: () => {},
 
-  gender: "",
-  setGender: () => {}
+  gender: '',
+  setGender: () => {},
 });
