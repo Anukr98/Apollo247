@@ -57,7 +57,10 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import { CommonLogEvent, CommonScreenLog } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -228,6 +231,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       })
       .then((availabilitySlot) => {
         setshowSpinner(false);
+        console.log('availabilitySlot', availabilitySlot);
 
         if (
           availabilitySlot &&
@@ -298,6 +302,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   };
 
   const rescheduleAPI = (availability: any) => {
+    console.log('availability', availability);
+
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
@@ -776,7 +782,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             setdisplayoverlay={() => reshedulePopUpMethod()}
             acceptChange={() => acceptChange()}
             appadatetime={props.navigation.state.params!.data.appointmentDateTime}
-            reschduleDateTime={availability.data}
+            reschduleDateTime={availability && availability.data}
             rescheduleCount={newRescheduleCount ? newRescheduleCount.rescheduleCount : 1}
             data={data}
           />

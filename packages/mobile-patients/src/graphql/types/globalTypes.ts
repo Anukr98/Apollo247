@@ -161,6 +161,7 @@ export enum SEARCH_TYPE {
   DOCTOR = "DOCTOR",
   MEDICINE = "MEDICINE",
   SPECIALTY = "SPECIALTY",
+  TEST = "TEST",
 }
 
 export enum STATUS {
@@ -214,6 +215,7 @@ export interface AddMedicalRecordInput {
   observations?: string | null;
   additionalNotes?: string | null;
   documentURLs?: string | null;
+  prismFileIds?: string | null;
   medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
 }
 
@@ -368,6 +370,7 @@ export interface MedicineCartInput {
   patientAddressId: string;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
   items?: (MedicineCartItem | null)[] | null;
 }
 
@@ -379,6 +382,7 @@ export interface MedicineCartItem {
   mrp?: number | null;
   isPrescriptionNeeded?: number | null;
   prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
   mou?: number | null;
   isMedicine?: string | null;
 }
@@ -444,6 +448,7 @@ export interface PrescriptionMedicineInput {
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId?: string | null;
   prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
   appointmentId?: string | null;
   payment?: PrescriptionMedicinePaymentDetails | null;
 }
