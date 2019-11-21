@@ -199,7 +199,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   };
 
   useEffect(() => {
-    Platform.OS === 'android' && requestLocationPermission();
+    // Platform.OS === 'android' && requestLocationPermission();
     getNetStatus().then((status) => {
       if (status) {
         // fetchCurrentLocation();
@@ -245,7 +245,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
           >
             <Button
               style={{ flex: 1, marginRight: 16 }}
-              title={'ENTER MANUALY'}
+              title={'ENTER MANUALLY'}
               onPress={() => {
                 hideAphAlert!();
                 setshowLocationpopup(true);

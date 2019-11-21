@@ -551,7 +551,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
               style={{
-                paddingTop: 10.5,
+                paddingTop: medicineList.length > 0 ? 10.5 : 0,
                 maxHeight: 266,
                 backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
               }}

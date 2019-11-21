@@ -223,7 +223,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                 flex: 1,
                 marginRight: 16,
               }}
-              title={'ENTER MANUALY'}
+              title={'ENTER MANUALLY'}
               onPress={() => {
                 hideAphAlert!();
                 setshowLocationpopup(true);
@@ -784,6 +784,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             collectionType: diagnostics!.collectionType,
             FromAgeInDays: diagnostics!.fromAgeInDays,
             ToAgeInDays: diagnostics!.toAgeInDays,
+            preparation: diagnostics!.testPreparationData,
           } as TestPackageForDetails,
         }),
       style: {
@@ -1057,6 +1058,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
                       testDetails: {
                         ...item,
                         collectionType: product.collectionType,
+                        preparation: product.testPreparationData,
                       } as TestPackageForDetails,
                     });
                   });
@@ -1440,7 +1442,16 @@ export const Tests: React.FC<TestsProps> = (props) => {
   ) => {
     const { index, item } = data;
     const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
-    const { rate, gender, itemId, itemName, collectionType, fromAgeInDays, toAgeInDays } = item;
+    const {
+      rate,
+      gender,
+      itemId,
+      itemName,
+      collectionType,
+      fromAgeInDays,
+      toAgeInDays,
+      testPreparationData,
+    } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
         props.navigation.navigate(AppRoutes.TestDetails, {
@@ -1452,6 +1463,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             collectionType: collectionType,
             FromAgeInDays: fromAgeInDays,
             ToAgeInDays: toAgeInDays,
+            preparation: testPreparationData,
           } as TestPackageForDetails,
         });
       },
