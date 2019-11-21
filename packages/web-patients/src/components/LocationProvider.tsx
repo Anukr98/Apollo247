@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const LOCATION_API_KEY = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
-
 export interface LocationContextProps {
   currentLocation: string | null;
   currentLat: string | null;
@@ -34,7 +32,7 @@ export const LocationProvider: React.FC = (props) => {
       } else {
         setCurrentLocation(currentAddress);
       }
-      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${currentAddress}&key=${LOCATION_API_KEY}`;
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${currentAddress}&key=${process.env.GOOGLE_LOCATION_SERVICE_KEY}`;
       axios.get(url).then((res) => {
         if (res != null && res.data != null && res.data.results[0] != null) {
           const { lat, lng } = res.data.results[0].geometry.location;
@@ -47,10 +45,9 @@ export const LocationProvider: React.FC = (props) => {
         ({ coords: { latitude, longitude } }) => {
           setCurrentLat(latitude.toString());
           setCurrentLong(longitude.toString());
-          console.log(latitude, longitude);
           axios
             .get(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${LOCATION_API_KEY}`
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.GOOGLE_LOCATION_SERVICE_KEY}`
             )
             .then((res) => {
               setCurrentLocation(res.data.results[0].address_components[2].short_name);

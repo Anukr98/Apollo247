@@ -95,7 +95,9 @@ export const AppLocations: React.FC = (props) => {
   return (
     <div className={classes.userLocation}>
       <Helmet>
-        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAYlCMRcL4ngJHVxUS0tQLW-7O2Ni40VkQ&libraries=places"></script>
+        <script
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.PLACE_API_KEY}&libraries=places`}
+        ></script>
       </Helmet>
       <div
         className={classes.locationWrap}
@@ -155,7 +157,6 @@ export const AppLocations: React.FC = (props) => {
               <div className="autocomplete-dropdown-container">
                 {loading && <div>Loading...</div>}
                 {suggestions.map((suggestion: SuggestionProps) => {
-                  console.log(suggestion);
                   const className = suggestion.active
                     ? 'suggestion-item--active'
                     : 'suggestion-item';

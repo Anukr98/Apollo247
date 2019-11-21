@@ -3,14 +3,14 @@ declare interface Window {
 }
 declare namespace NodeJS {
   interface ProcessEnv {
-    NODE_ENV: 'local' | 'development' | 'staging' | 'production' | 'dev';
+    NODE_ENV: "local" | "development" | "staging" | "production" | "dev";
 
-    USE_SSL: 'true' | 'false';
+    USE_SSL: "true" | "false";
 
     FIREBASE_PROJECT_ID: string;
     GOOGLE_APPLICATION_CREDENTIALS: string;
 
-    USE_AZURE_SERVICE_BUS: 'true' | 'false';
+    USE_AZURE_SERVICE_BUS: "true" | "false";
     AZURE_SERVICE_BUS_CONNECTION_STRING: string;
     AZURE_SERVICE_BUS_PORT: string;
     RABBITMQ_HOST: string;
@@ -51,6 +51,9 @@ declare namespace NodeJS {
     PROFILES_DB_PORT: string;
     PROFILES_DB_USER: string;
     PROFILES_DB_PASSWORD: string;
+
+    GOOGLE_LOCATION_SERVICE_KEY: string;
+    PLACE_API_KEY: string;
 
     PHARMACY_MED_SEARCH_URL: string;
     PHARMACY_MED_PRODUCT_INFO_URL: string;
