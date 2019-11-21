@@ -109,7 +109,7 @@ export const TestOrderSummaryView: React.FC<TestOrderSummaryViewProps> = ({ orde
         </View>
         <View style={styles.subView}>
           <Text style={styles.orderName}>Date/Time</Text>
-          <Text style={styles.hideText}>{getFormattedDateTime(orderDetails.diagnosticDate)}</Text>
+          <Text style={styles.hideText}>{getFormattedDateTime(orderDetails.createdDate)}</Text>
         </View>
       </View>
 

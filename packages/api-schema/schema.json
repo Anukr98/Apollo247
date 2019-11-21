@@ -2393,6 +2393,12 @@
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "TEST",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "possibleTypes": null
@@ -12278,6 +12284,18 @@
             "deprecationReason": null
           },
           {
+            "name": "prismPrescriptionFileId",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "shopId",
             "description": null,
             "args": [],
@@ -16770,6 +16788,16 @@
             "defaultValue": null
           },
           {
+            "name": "prismPrescriptionFileId",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
             "name": "items",
             "description": null,
             "type": {
@@ -16856,6 +16884,16 @@
           },
           {
             "name": "prescriptionImageUrl",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null
+          },
+          {
+            "name": "prismPrescriptionFileId",
             "description": null,
             "type": {
               "kind": "SCALAR",

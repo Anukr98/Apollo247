@@ -130,7 +130,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
 
   useEffect(() => {
     setLoading!(true);
-    (currentPatientId &&
+    (currentPatient &&
       addresses.length == 0 &&
       client
         .query<getPatientAddressList, getPatientAddressListVariables>({
@@ -150,7 +150,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           });
         })) ||
       setLoading!(false);
-  }, [currentPatientId]);
+  }, [currentPatient]);
 
   /*  useEffect(() => {
     getCartInfo()

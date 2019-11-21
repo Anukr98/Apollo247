@@ -15,6 +15,7 @@ export const GET_CURRENT_PATIENTS = gql`
         emailAddress
         gender
         dateOfBirth
+        photoUrl
       }
     }
   }
@@ -972,6 +973,8 @@ export const GET_DIAGNOSTIC_DATA = gql`
           state
           itemType
           fromAgeInDays
+          toAgeInDays
+          testPreparationData
           collectionType
         }
       }
@@ -991,6 +994,8 @@ export const GET_DIAGNOSTIC_DATA = gql`
           state
           itemType
           fromAgeInDays
+          toAgeInDays
+          testPreparationData
           collectionType
         }
       }
@@ -1020,11 +1025,17 @@ export const GET_DIAGNOSTIC_ORDER_LIST = gql`
         orderStatus
         orderType
         displayId
+        createdDate
         diagnosticOrderLineItems {
           id
           itemId
           quantity
           price
+          diagnostics {
+            id
+            itemId
+            itemName
+          }
         }
       }
     }
@@ -1053,6 +1064,7 @@ export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
         orderStatus
         orderType
         displayId
+        createdDate
         diagnosticOrderLineItems {
           id
           itemId
@@ -1597,6 +1609,9 @@ export const SEARCH_DIAGNOSTICS = gql`
         city
         state
         collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
       }
     }
   }

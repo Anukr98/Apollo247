@@ -6,7 +6,6 @@ import { MedicineCard } from '@aph/mobile-patients/src/components/ui/MedicineCar
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { SAVE_SEARCH, SEARCH_DIAGNOSTICS } from '@aph/mobile-patients/src/graphql/profiles';
 import { DIAGNOSTICS_TYPE, SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import { TestPackage } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import Axios from 'axios';
@@ -84,13 +83,9 @@ export interface TestsByCategoryProps
   extends NavigationScreenProps<{
     title: string;
     products: getDiagnosticsData_getDiagnosticsData_diagnosticOrgans_diagnostics[];
-    // category_id: string;
-    // isTest?: boolean; // Ignoring for now
   }> {}
 
 export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
-  // const category_id = props.navigation.getParam('category_id');
-  // const isTest = props.navigation.getParam('isTest');
   const pageTitle = props.navigation.getParam('title');
   const products = props.navigation.getParam('products');
   const [searchText, setSearchText] = useState<string>('');
@@ -109,29 +104,11 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const { locationForDiagnostics } = useAppCommonData();
 
-  console.log('\nproductsList\n', { productsList });
-
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
     }
   }, [currentPatient]);
-
-  // useEffect(() => {
-  //   getProductsByCategoryApi(category_id)
-  //     .then(({ data }) => {
-  //       console.log(data, 'getProductsByCategoryApi');
-  //       const products = data.products || [];
-  //       setProductsList(products);
-  //       setIsLoading(false);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err, 'errr');
-  //     })
-  //     .finally(() => {
-  //       // setshowSpinner(false);
-  //     });
-  // }, []);
 
   const savePastSeacrh = (sku: string, name: string) =>
     client.mutate({
@@ -295,7 +272,16 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
   ) => {
     const { index, item } = data;
     const imgUri = undefined; //`${config.IMAGES_BASE_URL[0]}${1}`;
-    const { rate, gender, itemId, itemName } = item;
+    const {
+      rate,
+      gender,
+      itemId,
+      itemName,
+      collectionType,
+      fromAgeInDays,
+      testPreparationData,
+      toAgeInDays,
+    } = item;
     return renderSearchSuggestionItem({
       onPress: () => {
         props.navigation.navigate(AppRoutes.TestDetails, {
@@ -304,7 +290,11 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
             Gender: gender,
             ItemID: `${itemId}`,
             ItemName: itemName,
-          } as TestPackage,
+            FromAgeInDays: fromAgeInDays,
+            ToAgeInDays: toAgeInDays,
+            collectionType: collectionType,
+            preparation: testPreparationData,
+          } as TestPackageForDetails,
         });
       },
       name: item.itemName,
@@ -412,9 +402,9 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
         containerStyle={[medicineCardContainerStyle, {}]}
         onPress={() => {
           CommonLogEvent('SEARCH_BY_BRAND', 'Save past Search');
-          savePastSeacrh(`${medicine.itemId}`, medicine.itemName).catch((e) => {
-            // handleGraphQlError(e);
-          });
+          // savePastSeacrh(`${medicine.itemId}`, medicine.itemName).catch((e) => {
+          //   // handleGraphQlError(e);
+          // });
           props.navigation.navigate(AppRoutes.TestDetails, {
             title: medicine.itemName,
             testDetails: {
@@ -423,6 +413,9 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
               ItemID: `${medicine!.itemId}`,
               ItemName: medicine!.itemName,
               collectionType: medicine!.collectionType,
+              FromAgeInDays: medicine!.fromAgeInDays,
+              ToAgeInDays: medicine!.toAgeInDays,
+              preparation: medicine!.testPreparationData,
             } as TestPackageForDetails,
           });
         }}
@@ -558,7 +551,7 @@ export const TestsByCategory: React.FC<TestsByCategoryProps> = (props) => {
               keyExtractor={(_, index) => `${index}`}
               showsVerticalScrollIndicator={false}
               style={{
-                paddingTop: 10.5,
+                paddingTop: medicineList.length > 0 ? 10.5 : 0,
                 maxHeight: 266,
                 backgroundColor: theme.colors.DEFAULT_BACKGROUND_COLOR,
               }}

@@ -92,6 +92,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
     estimatedAmount: Float
     deliveryCharges: Float
     prescriptionImageUrl: String
+    prismPrescriptionFileId: String
     shopId: String
     medicineOrderLineItems: [Medicine]
   }
