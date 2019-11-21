@@ -71,6 +71,8 @@ const saveSearch: Resolver<
     }
   } else if (saveSearchAttrs.type == 'MEDICINE') {
     //Medicine TypeId(SKUID) validation logic here
+  } else if (saveSearchAttrs.type == 'TEST') {
+    //Diagnostics Test ID validation logic here
   }
 
   const searchHistoryRepository = profilesDb.getCustomRepository(SearchHistoryRepository);

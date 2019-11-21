@@ -41,6 +41,7 @@ export enum SEARCH_TYPE {
   DOCTOR = 'DOCTOR',
   SPECIALTY = 'SPECIALTY',
   MEDICINE = 'MEDICINE',
+  TEST = 'TEST',
 }
 
 export enum MEDICINE_ORDER_STATUS {
