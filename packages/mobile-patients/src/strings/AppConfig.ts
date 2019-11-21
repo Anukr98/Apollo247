@@ -51,31 +51,11 @@ const PharmaApiConfig = {
 };
 
 //Development;
-const Configuration = {
-  LOG_ENVIRONMENT: 'debug',
-  ANALYTICAL_ENIVRONMENT: 'debug',
-  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-  PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
-  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
-  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
-  DELIVERY_CHARGES: 25,
-  DIASGNOS_DELIVERY_CHARGES: 0,
-  PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
-  PRO_TOKBOX_KEY: '46429002',
-  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
-  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
-  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-  ...PharmaApiConfig.dev,
-};
-
-// QA
 // const Configuration = {
-//   LOG_ENVIRONMENT: 'release',
+//   LOG_ENVIRONMENT: 'debug',
 //   ANALYTICAL_ENIVRONMENT: 'debug',
 //   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-//   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
+//   PAYMENT_GATEWAY_BASE_URL: 'https://aph.dev.pmt.popcornapps.com',
 //   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
 //   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
 //   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
@@ -87,8 +67,28 @@ const Configuration = {
 //   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
 //   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
 //   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-//   ...PharmaApiConfig.prod,
+//   ...PharmaApiConfig.dev,
 // };
+
+// QA
+const Configuration = {
+  LOG_ENVIRONMENT: 'release',
+  ANALYTICAL_ENIVRONMENT: 'debug',
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  ...PharmaApiConfig.prod,
+};
 
 //Production
 // const Configuration = {
