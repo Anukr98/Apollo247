@@ -311,6 +311,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                   borderRightWidth: 0,
                   borderRightColor: 'rgba(2, 71, 91, 0.2)',
                   backgroundColor: theme.colors.WHITE,
+                  paddingBottom: 8,
                 }}
               >
                 <Text style={styles.hiTextStyle}>{'hi'}</Text>
@@ -407,8 +408,11 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         </View> */}
         <TabsComponent
           style={{
+            ...theme.viewStyles.cardViewStyle,
+            borderRadius: 0,
             //marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
             backgroundColor: theme.colors.CARD_BG,
+            shadowRadius: 2,
           }}
           height={44}
           data={tabs}
