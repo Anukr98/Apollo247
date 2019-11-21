@@ -6,7 +6,6 @@ import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
-
     card: {
       background: '#fff',
       boxShadow: '0 2px 5px 0 rgba(128, 128, 128, 0.2)',
@@ -33,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) => {
               top: -2,
               marginRight: 10,
             },
-          }
+          },
         },
       },
     },
@@ -104,7 +103,8 @@ export const MyAccountPrescription: React.FC = () => {
             <div className={classes.faverite}>Favorite Medicines</div>
             <div className={classes.card}>
               <ul>
-                <li>Acetaminophen 1.5% w/w
+                <li>
+                  Acetaminophen 1.5% w/w
                   <span className={classes.iconRight}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -114,8 +114,7 @@ export const MyAccountPrescription: React.FC = () => {
                 <li>
                   <Button className={classes.addmedicine_btn}>
                     <img src={require('images/ic_round-add.svg')} alt="" /> Add Medicine
-                    </Button>
-
+                  </Button>
                 </li>
               </ul>
             </div>
@@ -124,7 +123,8 @@ export const MyAccountPrescription: React.FC = () => {
             <div className={classes.faverite}>Favorite Tests</div>
             <div className={classes.card}>
               <ul>
-                <li>Test ABC
+                <li>
+                  Test ABC
                   <span className={classes.iconRight}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -134,8 +134,7 @@ export const MyAccountPrescription: React.FC = () => {
                 <li>
                   <Button className={classes.addmedicine_btn}>
                     <img src={require('images/ic_round-add.svg')} alt="" /> Add Tests
-                    </Button>
-
+                  </Button>
                 </li>
               </ul>
             </div>
@@ -144,7 +143,8 @@ export const MyAccountPrescription: React.FC = () => {
             <div className={classes.faverite}>Favorite Advice</div>
             <div className={classes.card}>
               <ul>
-                <li>Advise 01
+                <li>
+                  Advise 01
                   <span className={classes.iconRight}>
                     <img src={require('images/round_edit_24_px.svg')} alt="" />
                     <img src={require('images/ic_cancel_green.svg')} alt="" />
@@ -154,8 +154,7 @@ export const MyAccountPrescription: React.FC = () => {
                 <li>
                   <Button className={classes.addmedicine_btn}>
                     <img src={require('images/ic_round-add.svg')} alt="" /> Add Advice
-                    </Button>
-
+                  </Button>
                 </li>
               </ul>
             </div>

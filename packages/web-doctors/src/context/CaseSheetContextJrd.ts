@@ -49,17 +49,8 @@ export interface CaseSheetContextPropsJrd {
         >
       >
     | (() => void);
-  diagnosticPrescription:
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription[]
-    | null;
-  setDiagnosticPrescription:
-    | React.Dispatch<
-        React.SetStateAction<
-          | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription[]
-          | null
-        >
-      >
-    | (() => void);
+  diagnosticPrescription: any[] | null;
+  setDiagnosticPrescription: React.Dispatch<React.SetStateAction<any[] | null>> | (() => void);
   medicinePrescription:
     | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
     | null;
