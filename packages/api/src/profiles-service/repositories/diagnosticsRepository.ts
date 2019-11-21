@@ -12,6 +12,14 @@ export class DiagnosticsRepository extends Repository<Diagnostics> {
       .getMany();
   }
 
+  async searchDiagnosticswithoutcity(itemName: string) {
+    console.log('itemName', itemName, 'city', 'diagnosioticsrepo');
+    //return this.find({ where: { itemName } });
+    return await this.createQueryBuilder('diagnostics')
+      .where('diagnostics.itemName like :name', { name: '%' + itemName + '%' })
+      .getMany();
+  }
+
   async getDiagnosticsCites(cityName: string) {
     console.log('cityName', cityName);
     return await this.createQueryBuilder('diagnostics')
