@@ -5,6 +5,7 @@ import android.app.Application;
 import com.crashlytics.android.Crashlytics;
 import com.facebook.react.ReactApplication;
 import com.bugfender.react.RNBugfenderPackage;
+import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import io.fabric.sdk.android.Fabric;
 import io.github.mr03web.softinputmode.SoftInputModePackage;
 import com.reactnative.ivpusic.imagepicker.PickerPackage;
@@ -21,7 +22,6 @@ import io.invertase.firebase.RNFirebasePackage;
 import com.oblador.vectoricons.VectorIconsPackage;
 import io.invertase.firebase.analytics.RNFirebaseAnalyticsPackage; // <-- Add this line
 import io.invertase.firebase.auth.RNFirebaseAuthPackage; 
-import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
@@ -45,6 +45,7 @@ public class MainApplication extends Application implements ReactApplication {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
             new RNBugfenderPackage(),
+            new RNGestureHandlerPackage(),
             new SoftInputModePackage(),
             new PickerPackage(),
             new KCKeepAwakePackage(),
@@ -58,7 +59,6 @@ public class MainApplication extends Application implements ReactApplication {
             new SplashScreenReactPackage(),
             new RNFirebasePackage(),
             new VectorIconsPackage(),
-            new RNGestureHandlerPackage(),
             new RNFirebaseAnalyticsPackage(), // <-- Add this line
             new RNFirebaseAuthPackage(),
             new RNFirebaseMessagingPackage(),
