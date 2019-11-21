@@ -4,27 +4,40 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { More, DoctorPlaceholderImage } from '@aph/mobile-patients/src/components/ui/Icons';
+import { DoctorPlaceholderImage, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
-  CANCEL_APPOINTMENT,
-  NEXT_AVAILABLE_SLOT,
   BOOK_APPOINTMENT_RESCHEDULE,
+  CANCEL_APPOINTMENT,
   CHECK_IF_RESCHDULE,
 } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  bookRescheduleAppointment,
+  bookRescheduleAppointmentVariables,
+} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
 import {
   cancelAppointment,
   cancelAppointmentVariables,
 } from '@aph/mobile-patients/src/graphql/types/cancelAppointment';
 import {
-  GetDoctorNextAvailableSlot,
-  GetDoctorNextAvailableSlotVariables,
-} from '@aph/mobile-patients/src/graphql/types/GetDoctorNextAvailableSlot';
+  checkIfReschedule,
+  checkIfRescheduleVariables,
+} from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
+import {
+  APPOINTMENT_STATE,
+  REQUEST_ROLES,
+  TRANSFER_INITIATED_TYPE,
+} from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from 'react-apollo-hooks';
+import { useApolloClient } from 'react-apollo-hooks';
 import {
   AsyncStorage,
   Dimensions,
@@ -34,32 +47,8 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
-import { NavigationScreenProps } from 'react-navigation';
-import {
-  TRANSFER_INITIATED_TYPE,
-  APPOINTMENT_STATE,
-  REQUEST_ROLES,
-} from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  bookRescheduleAppointment,
-  bookRescheduleAppointmentVariables,
-} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
-import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { getDoctorAvailableSlots_getDoctorAvailableSlots } from '@aph/mobile-patients/src/graphql/types/getDoctorAvailableSlots';
-import {
-  checkIfReschedule,
-  checkIfRescheduleVariables,
-} from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
-import { StackActions } from 'react-navigation';
-import { NavigationActions } from 'react-navigation';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
-import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
-import {
-  CommonLogEvent,
-  CommonScreenLog,
-} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -192,7 +181,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [belowThree, setBelowThree] = useState<boolean>(false);
   const [newRescheduleCount, setNewRescheduleCount] = useState<any>();
-  const [nextSlotAvailable, setNextSlotAvailable] = useState<any>('');
+  const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
@@ -210,10 +199,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
       NextAvailableSlotAPI();
     }
   }, [currentPatient]);
-
-  // useEffect(() => {
-  //   console.log('consultStarted', consultStarted);
-  // }, []);
 
   const client = useApolloClient();
 
@@ -256,25 +241,16 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
 
   const fetchNextDoctorAvailableData = () => {
     setshowSpinner(true);
-    client
-      .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
-        query: NEXT_AVAILABLE_SLOT,
-        variables: {
-          DoctorNextAvailableSlotInput: {
-            doctorIds: doctorDetails ? [doctorDetails.id] : [],
-            availableDate: todayDate,
-          },
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then((_data: any) => {
+    getNextAvailableSlots(client, doctorDetails ? [doctorDetails.id] : [], todayDate)
+      .then(({ data }: any) => {
+        setshowSpinner(false);
         try {
-          setshowSpinner(false);
-          console.log('GetDoctorNextAvailableSlot', _data);
-          setNextSlotAvailable(_data);
-        } catch (error) {}
+          data[0] && setNextSlotAvailable(data[0].availableSlot);
+        } catch (error) {
+          setNextSlotAvailable('');
+        }
       })
-      .catch((e: any) => {
+      .catch((e: string) => {
         setshowSpinner(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while GetDoctorNextAvailableSlot', error);
@@ -325,12 +301,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
-      newDateTimeslot:
-        availability &&
-        availability.data! &&
-        availability.data!.getDoctorNextAvailableSlot! &&
-        availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0] &&
-        availability.data!.getDoctorNextAvailableSlot!.doctorAvailalbeSlots[0].availableSlot,
+      newDateTimeslot: availability,
       initiatedBy:
         data.appointmentState == APPOINTMENT_STATE.AWAITING_RESCHEDULE
           ? TRANSFER_INITIATED_TYPE.DOCTOR
@@ -743,9 +714,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             setdisplayoverlay={() => reshedulePopUpMethod()}
             acceptChange={() => acceptChange()}
             appadatetime={props.navigation.state.params!.data.appointmentDateTime}
-            reschduleDateTime={nextSlotAvailable.data}
+            reschduleDateTime={nextSlotAvailable}
             rescheduleCount={newRescheduleCount ? newRescheduleCount.rescheduleCount : 1}
             data={data}
+            setShowCancelPopup={setShowCancelPopup}
           />
         )}
         {showSpinner && <Spinner />}

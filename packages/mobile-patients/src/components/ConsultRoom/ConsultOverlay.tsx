@@ -28,7 +28,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -42,6 +42,7 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const { width, height } = Dimensions.get('window');
 
@@ -108,6 +109,22 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const scrollToSlots = (top: number = 400) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
   };
+
+  useEffect(() => {
+    const todayDate = new Date().toISOString().slice(0, 10);
+    getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
+      .then(({ data }: any) => {
+        try {
+          const nextSlot = data[0] ? data[0]!.availableSlot : '';
+          if (!nextSlot && data[0]!.physicalAvailableSlot) {
+            tabs.length > 1 && setselectedTab(tabs[1].title);
+          }
+        } catch {}
+      })
+      .catch((e: any) => {
+        console.log('error', e);
+      });
+  }, []);
 
   const onSubmitBookAppointment = () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');

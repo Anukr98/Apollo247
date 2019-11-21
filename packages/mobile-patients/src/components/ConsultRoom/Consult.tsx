@@ -1040,9 +1040,14 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           title={'Hi! :)'}
           description={`Your appointment with Dr. ${props.navigation.getParam(
             'DoctorName'
-          )} \nhas been rescheduled for — ${newAppointmentTime}\n\nYou have ${newRescheduleCount} free ${
-            newRescheduleCount == 1 ? 'reschedule' : 'reschedules'
-          } left.`}
+          )} \nhas been rescheduled for — ${newAppointmentTime}\n\n${
+            newRescheduleCount == 0
+              ? 'You have reached the maximum number of reschedules for this appointment.'
+              : `You have ${newRescheduleCount} free ${
+                  newRescheduleCount == 1 ? 'reschedule' : 'reschedules'
+                } left.`
+          }
+          `}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
