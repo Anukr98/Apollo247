@@ -391,6 +391,7 @@ export const FollowUp: React.FC<CashSheetProps> = (props) => {
                         }}
                         // InputAdornmentProps={{ position: 'end' }}
                         onChange={(date) => handleDateChange((date as unknown) as Date)}
+                        disabled={!props.startAppointment}
                       />
                     </span>
                   </ThemeProvider>
