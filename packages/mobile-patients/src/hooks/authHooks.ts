@@ -99,19 +99,19 @@ export const useAllCurrentPatients = () => {
       // console.log('currentPatientId', currentPatientId);
       // console.log('defaultCurrentPatient', defaultCurrentPatient);
     } else {
-      client
-        .query<getPatientAddressList, getPatientAddressListVariables>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          variables: { patientId: currentPatientId },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
-          diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
-          shopCart.setAddresses && shopCart.setAddresses(addressList!);
-          diagCart.setAddresses && diagCart.setAddresses(addressList!);
-        })
-        .catch((e) => {});
+      // client
+      //   .query<getPatientAddressList, getPatientAddressListVariables>({
+      //     query: GET_PATIENT_ADDRESS_LIST,
+      //     variables: { patientId: currentPatientId },
+      //     fetchPolicy: 'no-cache',
+      //   })
+      //   .then(({ data: { getPatientAddressList: { addressList } } }) => {
+      //     shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
+      //     diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
+      //     shopCart.setAddresses && shopCart.setAddresses(addressList!);
+      //     diagCart.setAddresses && diagCart.setAddresses(addressList!);
+      //   })
+      //   .catch((e) => {});
     }
   }, [allCurrentPatients, currentPatientId, setCurrentPatientId]);
 

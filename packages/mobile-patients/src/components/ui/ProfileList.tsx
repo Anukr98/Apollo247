@@ -17,6 +17,14 @@ import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-pati
 import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { NavigationScreenProp, NavigationRoute } from 'react-navigation';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { useApolloClient } from 'react-apollo-hooks';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '../../graphql/types/getPatientAddressList';
+import { GET_PATIENT_ADDRESS_LIST } from '../../graphql/profiles';
+import { useShoppingCart } from '../ShoppingCartProvider';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   placeholderViewStyle: {
@@ -62,7 +70,9 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
   } = props;
   const addString = 'ADD MEMBER';
   const { getPatientApiCall } = useAuth();
-
+  const client = useApolloClient();
+  const shopCart = useShoppingCart();
+  const diagCart = useDiagnosticsCart();
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
   const { width, height } = Dimensions.get('window');
 
@@ -92,11 +102,29 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     [];
 
   useEffect(() => {
-    getPatientApiCall();
+    if (!currentPatient) {
+      getPatientApiCall();
+    }
     const getDataFromTree = async () => {
       const storeVallue = await AsyncStorage.getItem('selectUserId');
-      console.log('storeVallue', storeVallue);
+      console.log('storeVallue : uuh', storeVallue, currentPatient);
       storeVallue && setCurrentPatientId(storeVallue);
+      console.log(
+        'validation addres fetcher : ',
+        currentPatient,
+        storeVallue,
+        shopCart,
+        storeVallue &&
+          ((currentPatient && currentPatient!.id !== storeVallue) ||
+            currentPatient === null ||
+            (shopCart.addresses!.length === 0 || diagCart.addresses!.length === 0))
+      );
+
+      storeVallue &&
+        ((currentPatient && currentPatient!.id !== storeVallue) ||
+          currentPatient === null ||
+          (shopCart.addresses!.length === 0 || diagCart.addresses!.length === 0)) &&
+        setAddressList(storeVallue);
     };
     getDataFromTree();
   }, []);
@@ -109,6 +137,22 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
     setProfileArray(addNewProfileText(profileArray!, selectedProfile));
     setProfile(selectedProfile);
   }, [profileArray!, selectedProfile]);
+
+  const setAddressList = (key: string) => {
+    client
+      .query<getPatientAddressList, getPatientAddressListVariables>({
+        query: GET_PATIENT_ADDRESS_LIST,
+        variables: { patientId: key },
+        fetchPolicy: 'no-cache',
+      })
+      .then(({ data: { getPatientAddressList: { addressList } } }) => {
+        shopCart.setDeliveryAddressId && shopCart.setDeliveryAddressId('');
+        diagCart.setDeliveryAddressId && diagCart.setDeliveryAddressId('');
+        shopCart.setAddresses && shopCart.setAddresses(addressList!);
+        diagCart.setAddresses && diagCart.setAddresses(addressList!);
+      })
+      .catch((e) => {});
+  };
 
   const isNewEntry = (
     data: GetCurrentPatients_getCurrentPatients_patients[],
@@ -199,7 +243,8 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
           saveUserChange &&
             selectedUser.key !== addString &&
             (setCurrentPatientId!(selectedUser!.key),
-            AsyncStorage.setItem('selectUserId', selectedUser!.key));
+            AsyncStorage.setItem('selectUserId', selectedUser!.key),
+            setAddressList(selectedUser!.key));
         }}
       >
         {props.childView ? (
