@@ -265,25 +265,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
               const isConsultStarted = appointmentDetails.isConsultStarted;
               return (
                 <Grid item sm={6} key={index}>
-                  <div
-                    className={classes.consultCard}
-                    role="button"
-                    onClick={() => {
-                      isConsultStarted
-                        ? (window.location.href = clientRoutes.chatRoom(appointmentId, doctorId))
-                        : addConsultToQueue({
-                            variables: {
-                              appointmentId,
-                            },
-                          })
-                            .then((res) => {
-                              window.location.href = clientRoutes.chatRoom(appointmentId, doctorId);
-                            })
-                            .catch((e: ApolloError) => {
-                              console.log(e);
-                            });
-                    }}
-                  >
+                  <div className={classes.consultCard}>
                     <div className={classes.consultCardWrap}>
                       <div className={classes.startDoctor}>
                         <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
@@ -304,9 +286,11 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             ? `Available in ${difference} mins`
                             : otherDateMarkup(appointmentTime)}
                         </div>
-                        <div className={classes.doctorName}>{`Dr. ${_startCase(
-                          _toLower(firstName)
-                        )} ${_startCase(_toLower(lastName))}`}</div>
+                        <Link to={clientRoutes.doctorDetails(doctorId)}>
+                          <div className={classes.doctorName}>{`Dr. ${_startCase(
+                            _toLower(firstName)
+                          )} ${_startCase(_toLower(lastName))}`}</div>
+                        </Link>
                         <div className={classes.doctorType}>
                           {specialization}
                           <span className={classes.doctorExp}>{experience} YRS</span>
