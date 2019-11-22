@@ -1292,6 +1292,7 @@ export const GET_MEDICAL_RECORD = gql`
         additionalNotes
         sourceName
         documentURLs
+        prismFileIds
         medicalRecordParameters {
           id
           parameterName
@@ -1412,6 +1413,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
         estimatedAmount
         prescriptionImageUrl
         shopId
+        prismPrescriptionFileId
         medicineOrderLineItems {
           medicineSKU
           medicineName
@@ -1637,6 +1639,23 @@ export const SAVE_DIAGNOSTIC_ORDER = gql`
       errorMessage
       orderId
       displayId
+    }
+  }
+`;
+
+export const UPLOAD_DOCUMENT = gql`
+  mutation uploadDocument($UploadDocumentInput: UploadDocumentInput) {
+    uploadDocument(uploadDocumentInput: $UploadDocumentInput) {
+      status
+      fileId
+    }
+  }
+`;
+
+export const DOWNLOAD_DOCUMENT = gql`
+  query downloadDocuments($downloadDocumentsInput: DownloadDocumentsInput!) {
+    downloadDocuments(downloadDocumentsInput: $downloadDocumentsInput) {
+      downloadPaths
     }
   }
 `;

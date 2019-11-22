@@ -111,6 +111,7 @@ export const SelectEPrescriptionModal: React.FC<SelectEPrescriptionModalProps> =
           doctorName: `Meds Rx ${(item!.id && item!.id.substring(0, item!.id.indexOf('-'))) || ''}`, // item.referringDoctor ? `Dr. ${item.referringDoctor}` : ''
           forPatient: (currentPatient && currentPatient.firstName) || '',
           medicines: getMedicines(item!.medicineOrderLineItems! || []),
+          prismPrescriptionFileId: item!.prismPrescriptionFileId,
         } as EPrescription)
     )
     .concat(
