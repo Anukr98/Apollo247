@@ -289,7 +289,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             borderBottomWidth: 0,
           }}
           rightComponent={
-            <TouchableOpacity activeOpacity={1} onPress={() => deleteDeviceToken()}>
+            <TouchableOpacity activeOpacity={1} onPress={deleteDeviceToken}>
               <Text>Logout</Text>
             </TouchableOpacity>
           }
@@ -382,7 +382,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              DEV V 1.0(53)
+              Dev V 1.0(53)
             </Text>
           </View>
         </Animated.ScrollView>

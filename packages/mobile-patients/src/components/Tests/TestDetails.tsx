@@ -287,14 +287,9 @@ export const TestDetails: React.FC<TestDetailsProps> = (props) => {
   const renderPreparation = () => {
     return (
       <View style={styles.descriptionStyles}>
-        {/* {TestDetailsDiscription.map((item, i) => (
-          <View key={i}> */}
         <Text style={styles.descriptionTextStyles}>
-          {/* {i + 1}. {item.TestParameters} */}
-          Not available
+          {(testInfo && testInfo.preparation) || 'Not available'}
         </Text>
-        {/* </View> */}
-        {/* ))} */}
       </View>
     );
   };

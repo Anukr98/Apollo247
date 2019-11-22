@@ -28,6 +28,7 @@ import {
   GET_DIAGNOSTIC_SLOTS,
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_FILE,
+  SEARCH_DIAGNOSTICS,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -62,6 +63,12 @@ import {
 import { TEST_COLLECTION_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TestPackageForDetails } from '@aph/mobile-patients/src/components/Tests/TestDetails';
+import {
+  searchDiagnostics_searchDiagnostics_diagnostics,
+  searchDiagnostics,
+  searchDiagnosticsVariables,
+} from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -212,7 +219,9 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
-  const { showAphAlert, setLoading } = useUIElements();
+  const { locationForDiagnostics } = useAppCommonData();
+
+  const { setLoading, showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
   const [clinicDetails, setClinicDetails] = useState<Clinic[] | undefined>([]);
 
@@ -352,6 +361,48 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
+  const errorAlert = () => {
+    showAphAlert!({
+      title: 'Uh oh! :(',
+      description: 'Unable to fetch test details.',
+    });
+  };
+
+  const fetchPackageDetails = (
+    name: string,
+    func: (product: searchDiagnostics_searchDiagnostics_diagnostics) => void
+  ) => {
+    {
+      setLoading!(true);
+      client
+        .query<searchDiagnostics, searchDiagnosticsVariables>({
+          query: SEARCH_DIAGNOSTICS,
+          variables: {
+            searchText: name,
+            city: locationForDiagnostics && locationForDiagnostics.city, //'Hyderabad' | 'Chennai,
+            patientId: (currentPatient && currentPatient.id) || '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          aphConsole.log('searchDiagnostics\n', { data });
+          const product = g(data, 'searchDiagnostics', 'diagnostics', '0' as any);
+          if (product) {
+            func && func(product);
+          } else {
+            errorAlert();
+          }
+        })
+        .catch((e) => {
+          aphConsole.log({ e });
+          errorAlert();
+        })
+        .finally(() => {
+          setLoading!(false);
+        });
+    }
+  };
+
   const renderItemsInCart = () => {
     const cartItemsCount =
       cartItems.length > 10 || cartItems.length == 0
@@ -395,14 +446,19 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               key={test.id}
               onPress={() => {
                 CommonLogEvent(AppRoutes.TestsCart, 'Navigate to medicine details scene');
-                props.navigation.navigate(AppRoutes.TestDetails, {
-                  testDetails: {
-                    Rate: test!.price,
-                    Gender: '',
-                    ItemID: `${test.id}`,
-                    ItemName: test.name,
-                    collectionType: test.collectionMethod,
-                  } as TestPackageForDetails,
+                fetchPackageDetails(test.name, (product) => {
+                  props.navigation.navigate(AppRoutes.TestDetails, {
+                    testDetails: {
+                      ItemID: test.id,
+                      ItemName: test.name,
+                      Rate: test!.price,
+                      FromAgeInDays: product.fromAgeInDays!,
+                      ToAgeInDays: product.toAgeInDays!,
+                      Gender: product.gender,
+                      collectionType: test.collectionMethod,
+                      preparation: product.testPreparationData,
+                    } as TestPackageForDetails,
+                  });
                 });
               }}
               medicineName={test.name!}
