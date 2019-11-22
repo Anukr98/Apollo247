@@ -7,8 +7,8 @@ import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SEARCH_DIAGNOSTIC } from 'graphql/profiles';
-import { SearchDiagnostic } from 'graphql/types/SearchDiagnostic';
+import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
+import { SearchDiagnostics } from 'graphql/types/SearchDiagnostics';
 import { GetCaseSheet_getCaseSheet_pastAppointments_caseSheet_diagnosticPrescription } from 'graphql/types/GetCaseSheet';
 import { CaseSheetContext } from 'context/CaseSheetContext';
 
@@ -40,11 +40,11 @@ function renderInputComponent(inputProps: any) {
 }
 
 function renderSuggestion(
-  suggestion: OptionType | null,
+  suggestion: any | null,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion!.itemname, query);
-  const parts = parse(suggestion!.itemname, matches);
+  const matches = match(suggestion!.itemName, query);
+  const parts = parse(suggestion!.itemName, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -52,7 +52,10 @@ function renderSuggestion(
         {parts.map((part) => (
           <span
             key={part.text}
-            style={{ fontWeight: part.highlight ? 500 : 400, whiteSpace: 'pre' }}
+            style={{
+              fontWeight: part.highlight ? 500 : 400,
+              whiteSpace: 'pre',
+            }}
           >
             {part.text}
           </span>
@@ -253,24 +256,35 @@ export const DiagnosticPrescription: React.FC = () => {
   } = useContext(CaseSheetContext);
   const [idx, setIdx] = React.useState();
   const client = useApolloClient();
-  const { caseSheetEdit } = useContext(CaseSheetContext);
+  const { caseSheetEdit, patientDetails } = useContext(CaseSheetContext);
 
   const fetchDignostic = async (value: string) => {
     client
-      .query<SearchDiagnostic, any>({
-        query: SEARCH_DIAGNOSTIC,
-        variables: { searchString: value },
+      .query<SearchDiagnostics, any>({
+        query: SEARCH_DIAGNOSTICS,
+        variables: {
+          city:
+            patientDetails &&
+            patientDetails.patientAddress &&
+            patientDetails.patientAddress.length > 0
+              ? patientDetails.patientAddress[0]!.city
+              : '',
+          patientId: patientDetails && patientDetails.id ? patientDetails.id : '',
+          searchText: value,
+        },
       })
       .then((_data: any) => {
-        const filterVal: any = _data!.data!.searchDiagnostic!;
+        const filterVal: any = _data!.data!.searchDiagnostics!.diagnostics;
+
         filterVal.forEach((val: any, index: any) => {
           selectedValues!.forEach((selectedval: any) => {
-            if (val.itemname === selectedval.itemname) {
+            if (val.itemName === selectedval.itemname) {
               filterVal.splice(index, 1);
             }
           });
         });
         suggestions = filterVal;
+
         setLengthOfSuggestions(suggestions.length);
         setSearchInput(value);
       })
@@ -282,8 +296,8 @@ export const DiagnosticPrescription: React.FC = () => {
     return suggestions;
   };
 
-  function getSuggestionValue(suggestion: OptionType | null) {
-    return suggestion!.itemname;
+  function getSuggestionValue(suggestion: any | null) {
+    return suggestion!.itemName;
   }
   useEffect(() => {
     if (searchInput.length > 2) {
@@ -365,22 +379,37 @@ export const DiagnosticPrescription: React.FC = () => {
         <Typography component="div" className={classes.listContainer}>
           {selectedValues !== null &&
             selectedValues.length > 0 &&
-            selectedValues!.map(
-              (item, idx) =>
-                item.itemname!.trim() !== '' && (
-                  <Chip
-                    className={classes.othersBtn}
-                    key={idx}
-                    label={item!.itemname}
-                    onDelete={() => handleDelete(item, idx)}
-                    deleteIcon={
-                      <img
-                        src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                        alt=""
-                      />
-                    }
-                  />
-                )
+            selectedValues!.map((item, idx) =>
+              item.itemName
+                ? item.itemName!.trim() !== '' && (
+                    <Chip
+                      className={classes.othersBtn}
+                      key={idx}
+                      label={item!.itemName}
+                      onDelete={() => handleDelete(item, idx)}
+                      deleteIcon={
+                        <img
+                          src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+                          alt=""
+                        />
+                      }
+                    />
+                  )
+                : item.itemname &&
+                  item.itemname!.trim() !== '' && (
+                    <Chip
+                      className={classes.othersBtn}
+                      key={idx}
+                      label={item!.itemname}
+                      onDelete={() => handleDelete(item, idx)}
+                      deleteIcon={
+                        <img
+                          src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+                          alt=""
+                        />
+                      }
+                    />
+                  )
             )}
         </Typography>
       </Typography>
@@ -405,6 +434,7 @@ export const DiagnosticPrescription: React.FC = () => {
           <Autosuggest
             onSuggestionSelected={(e, { suggestion }) => {
               selectedValues!.push(suggestion);
+
               setSelectedValues(selectedValues);
               setShowAddCondition(false);
               suggestions = suggestions.filter((val) => !selectedValues!.includes(val!));

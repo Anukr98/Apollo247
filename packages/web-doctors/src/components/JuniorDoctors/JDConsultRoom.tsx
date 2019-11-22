@@ -445,10 +445,7 @@ export const JDConsultRoom: React.FC = () => {
   const [otherInstructions, setOtherInstructions] = useState<
     GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[] | null
   >(null);
-  const [diagnosticPrescription, setDiagnosticPrescription] = useState<
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription[]
-    | null
-  >(null);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<any[] | null>(null);
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
@@ -661,7 +658,7 @@ export const JDConsultRoom: React.FC = () => {
             : setOtherInstructions([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
             ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .diagnosticPrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription[])
+                .diagnosticPrescription as unknown) as any[])
             : setDiagnosticPrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
             ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
@@ -893,8 +890,12 @@ export const JDConsultRoom: React.FC = () => {
       });
     }
     if (diagnosticPrescription && diagnosticPrescription.length > 0) {
-      diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
+      const diagnosticPrescriptionFinal1 = diagnosticPrescription.map((prescription) => {
         return _omit(prescription, ['__typename']);
+      });
+      // convert itemName to itemname
+      diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
+        return { itemname: prescription.itemName };
       });
     }
     if (medicinePrescription && medicinePrescription.length > 0) {
