@@ -26,7 +26,7 @@ export const LocationProvider: React.FC = (props) => {
 
   useEffect(() => {
     const currentAddress = localStorage.getItem('currentAddress');
-    if (currentAddress != null) {
+    if (currentAddress) {
       if (currentAddress.includes(',')) {
         setCurrentLocation(currentAddress.substring(0, currentAddress.indexOf(',')));
       } else {
@@ -34,7 +34,7 @@ export const LocationProvider: React.FC = (props) => {
       }
       const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${currentAddress}&key=${process.env.GOOGLE_LOCATION_SERVICE_KEY}`;
       axios.get(url).then((res) => {
-        if (res != null && res.data != null && res.data.results[0] != null) {
+        if (res && res.data && res.data.results[0]) {
           const { lat, lng } = res.data.results[0].geometry.location;
           setCurrentLat(lat.toString());
           setCurrentLong(lng.toString());

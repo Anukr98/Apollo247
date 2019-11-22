@@ -108,7 +108,7 @@ export const AppLocations: React.FC = (props) => {
         <span className={classes.selectedLocation}>
           {selectedAddress.length > 0
             ? selectedAddress
-            : currentLocation != null && currentLocation.length > 0
+            : currentLocation && currentLocation.length > 0
             ? currentLocation
             : 'No location'}
         </span>
