@@ -139,6 +139,11 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum PRISM_DOCUMENT_CATEGORY {
+  HealthChecks = "HealthChecks",
+  OpSummary = "OpSummary",
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
@@ -161,6 +166,7 @@ export enum SEARCH_TYPE {
   DOCTOR = "DOCTOR",
   MEDICINE = "MEDICINE",
   SPECIALTY = "SPECIALTY",
+  TEST = "TEST",
 }
 
 export enum STATUS {
@@ -194,6 +200,13 @@ export enum TRANSFER_INITIATED_TYPE {
   PATIENT = "PATIENT",
 }
 
+export enum UPLOAD_FILE_TYPES {
+  JPEG = "JPEG",
+  JPG = "JPG",
+  PDF = "PDF",
+  PNG = "PNG",
+}
+
 export enum WeekDay {
   FRIDAY = "FRIDAY",
   MONDAY = "MONDAY",
@@ -214,6 +227,7 @@ export interface AddMedicalRecordInput {
   observations?: string | null;
   additionalNotes?: string | null;
   documentURLs?: string | null;
+  prismFileIds?: string | null;
   medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
 }
 
@@ -321,6 +335,11 @@ export interface DoctorPhysicalAvailabilityInput {
   facilityId: string;
 }
 
+export interface DownloadDocumentsInput {
+  fileIds: string[];
+  patientId: string;
+}
+
 export interface EditProfileInput {
   firstName: string;
   lastName: string;
@@ -368,6 +387,7 @@ export interface MedicineCartInput {
   patientAddressId: string;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
   items?: (MedicineCartItem | null)[] | null;
 }
 
@@ -379,6 +399,7 @@ export interface MedicineCartItem {
   mrp?: number | null;
   isPrescriptionNeeded?: number | null;
   prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
   mou?: number | null;
   isMedicine?: string | null;
 }
@@ -444,6 +465,7 @@ export interface PrescriptionMedicineInput {
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId?: string | null;
   prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
   appointmentId?: string | null;
   payment?: PrescriptionMedicinePaymentDetails | null;
 }
@@ -514,6 +536,13 @@ export interface UpdatePatientInput {
   dateOfBirth?: any | null;
   relation?: Relation | null;
   photoUrl?: string | null;
+}
+
+export interface UploadDocumentInput {
+  fileType: UPLOAD_FILE_TYPES;
+  base64FileInput: string;
+  patientId: string;
+  category: PRISM_DOCUMENT_CATEGORY;
 }
 
 //==============================================================

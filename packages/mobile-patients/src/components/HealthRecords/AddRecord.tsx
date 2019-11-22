@@ -16,7 +16,12 @@ import {
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { StickyBottomComponent } from '@aph/mobile-patients/src/components/ui/StickyBottomComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
-import { ADD_MEDICAL_RECORD, UPLOAD_FILE } from '@aph/mobile-patients/src/graphql/profiles';
+import {
+  ADD_MEDICAL_RECORD,
+  UPLOAD_FILE,
+  UPLOAD_DOCUMENT,
+  DOWNLOAD_DOCUMENT,
+} from '@aph/mobile-patients/src/graphql/profiles';
 import {
   addPatientMedicalRecord,
   addPatientMedicalRecordVariables,
@@ -25,6 +30,7 @@ import {
   AddMedicalRecordParametersInput,
   MedicalRecordType,
   MedicalTestUnit,
+  UPLOAD_FILE_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { uploadFile, uploadFileVariables } from '@aph/mobile-patients/src/graphql/types/uploadFile';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
@@ -48,6 +54,13 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { uploadDocumentVariables, uploadDocument } from '../../graphql/types/uploadDocument';
+import {
+  downloadDocuments,
+  downloadDocumentsVariables,
+} from '../../graphql/types/downloadDocuments';
+import { BottomPopUp } from '../ui/BottomPopUp';
+import { string } from '../../strings/string';
 
 const styles = StyleSheet.create({
   labelStyle: {
@@ -84,6 +97,15 @@ const styles = StyleSheet.create({
   },
   placeholderStyle: {
     color: theme.colors.placeholderTextColor,
+  },
+  gotItStyles: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
   },
 });
 
@@ -165,11 +187,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const [showRecordTypePopup, setshowRecordTypePopup] = useState<boolean>(false);
   const [isDateTimePickerVisible, setIsDateTimePickerVisible] = useState<boolean>(false);
 
-  const [showUnitPopup, setshowUnitPopup] = useState<boolean>(false);
-
+  const [showPopUp, setshowPopUp] = useState<boolean>(false);
+  const [imageError, setImageError] = useState<boolean>(false);
   const [selectedUnitIndex, setselectedUnitIndex] = useState<number>();
 
-  const [Images, setImages] = useState<PickerImage[]>(
+  const [Images, setImages] = useState<PickerImage>(
     props.navigation.state.params ? props.navigation.state.params!.images : []
   );
   const { currentPatient } = useAllCurrentPatients();
@@ -183,15 +205,34 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const client = useApolloClient();
 
+  // const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
+  //   return Promise.all(
+  //     prescriptions.map((item) =>
+  //       client.mutate<uploadFile, uploadFileVariables>({
+  //         mutation: UPLOAD_FILE,
+  //         fetchPolicy: 'no-cache',
+  //         variables: {
+  //           fileType: item.path!.substring(item.path!.lastIndexOf('.') + 1),
+  //           base64FileInput: item.data,
+  //         },
+  //       })
+  //     )
+  //   );
+  // };
+
   const multiplePhysicalPrescriptionUpload = (prescriptions: PickerImage[]) => {
     return Promise.all(
       prescriptions.map((item) =>
-        client.mutate<uploadFile, uploadFileVariables>({
-          mutation: UPLOAD_FILE,
+        client.mutate<uploadDocument>({
+          mutation: UPLOAD_DOCUMENT,
           fetchPolicy: 'no-cache',
           variables: {
-            fileType: item.path!.substring(item.path!.lastIndexOf('.') + 1),
-            base64FileInput: item.data,
+            UploadDocumentInput: {
+              base64FileInput: item.data,
+              category: 'HealthChecks',
+              fileType: item.path!.substring(item.path!.lastIndexOf('.') + 1).toUpperCase(),
+              patientId: currentPatient && currentPatient!.id,
+            },
           },
         })
       )
@@ -225,64 +266,132 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
 
   const onSavePress = () => {
     setshowSpinner(true);
-    let uploadedUrls = [];
-    multiplePhysicalPrescriptionUpload(Images)
-      .then((data) => {
-        const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
-        const uploadedPrescriptions = Images.map((item, index) => ({
-          ...item,
-          uploadedUrl: uploadUrls[index],
-        }));
+    console.log('images', Images);
 
-        uploadedUrls = uploadedPrescriptions.map((item) => item.uploadedUrl);
-
-        // setPhysicalPrescriptions && setPhysicalPrescriptions(uploadedPrescriptions);
-        // setshowSpinner(false);
-        // props.navigation.navigate(AppRoutes.CheckoutScene);
-
-        const inputData = {
-          patientId: currentPatient ? currentPatient.id : '',
-          testName: testName,
-          testDate: dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
-          recordType: typeofRecord,
-          referringDoctor: referringDoctor,
-          sourceName: '',
-          observations: observations,
-          additionalNotes: additionalNotes,
-          medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
-          documentURLs: uploadedUrls.join(','),
-        };
-        console.log('in', inputData);
-
-        if (currentPatient && currentPatient.id)
-          client
-            .mutate<addPatientMedicalRecord, addPatientMedicalRecordVariables>({
-              mutation: ADD_MEDICAL_RECORD,
-              variables: {
-                AddMedicalRecordInput: inputData,
-              },
-            })
-            .then(({ data }) => {
-              setshowSpinner(false);
-              const status = g(data, 'addPatientMedicalRecord', 'status');
-
-              if (status) {
-                props.navigation.goBack();
-              }
-            })
-            .catch((e) => {
-              setshowSpinner(false);
-              console.log(JSON.stringify(e), 'eeeee');
-              Alert.alert('Alert', 'Please fill all the details', [
-                { text: 'OK', onPress: () => console.log('OK Pressed') },
-              ]);
-            });
-      })
-      .catch((e) => {
-        setshowSpinner(false);
-        console.error({ e });
-        Alert.alert('Alert', 'Error occurred while uploading prescriptions.');
-      });
+    let uploadedUrls: any = [];
+    if (Images.length > 0) {
+      multiplePhysicalPrescriptionUpload(Images)
+        .then((data) => {
+          console.log('uploaddocument', data);
+          const uploadUrlscheck = data.map((item) =>
+            item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
+          );
+          console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
+          var filtered = uploadUrlscheck.filter(function(el) {
+            return el != null;
+          });
+          console.log('filtered', filtered);
+          if (filtered.length > 0) {
+            client
+              .query<downloadDocuments>({
+                query: DOWNLOAD_DOCUMENT,
+                fetchPolicy: 'no-cache',
+                variables: {
+                  downloadDocumentsInput: {
+                    patientId: currentPatient && currentPatient.id,
+                    fileIds: uploadUrlscheck,
+                  },
+                },
+              })
+              .then(({ data }) => {
+                console.log(data, 'DOWNLOAD_DOCUMENT');
+                const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+                console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+                const inputData = {
+                  patientId: currentPatient ? currentPatient.id : '',
+                  testName: testName,
+                  testDate:
+                    dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+                  recordType: typeofRecord,
+                  referringDoctor: referringDoctor,
+                  sourceName: '',
+                  observations: observations,
+                  additionalNotes: additionalNotes,
+                  medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
+                  documentURLs: uploadUrlscheck!.join(','),
+                  prismFileIds: filtered.join(','),
+                };
+                console.log('in', inputData);
+                if (uploadUrlscheck!.length > 0) {
+                  client
+                    .mutate<addPatientMedicalRecord>({
+                      mutation: ADD_MEDICAL_RECORD,
+                      variables: {
+                        AddMedicalRecordInput: inputData,
+                      },
+                    })
+                    .then(({ data }) => {
+                      setshowSpinner(false);
+                      console.log('suceessfully added', data);
+                      const status = g(data, 'addPatientMedicalRecord', 'status');
+                      if (status) {
+                        props.navigation.goBack();
+                      }
+                    })
+                    .catch((e) => {
+                      setshowSpinner(false);
+                      console.log(JSON.stringify(e), 'eeeee');
+                      Alert.alert('Alert', 'Please fill all the details', [
+                        { text: 'OK', onPress: () => console.log('OK Pressed') },
+                      ]);
+                    });
+                } else {
+                  Alert.alert('Download image url not getting');
+                }
+              })
+              .catch((e: string) => {
+                console.log('Error occured', e);
+              })
+              .finally(() => {
+                setshowSpinner(false);
+              });
+          } else {
+            setshowSpinner(false);
+            setImageError(true);
+          }
+        })
+        .catch((e) => {
+          setshowSpinner(false);
+          console.log({ e });
+        });
+    } else {
+      const inputData = {
+        patientId: currentPatient ? currentPatient.id : '',
+        testName: testName,
+        testDate: dateOfTest !== '' ? Moment(dateOfTest, 'DD/MM/YYYY').format('YYYY-MM-DD') : '',
+        recordType: typeofRecord,
+        referringDoctor: referringDoctor,
+        sourceName: '',
+        observations: observations,
+        additionalNotes: additionalNotes,
+        medicalRecordParameters: showReportDetails ? medicalRecordParameters : [],
+        documentURLs: '',
+        prismFileIds: '',
+      };
+      console.log('in', inputData);
+      client
+        .mutate<addPatientMedicalRecord>({
+          mutation: ADD_MEDICAL_RECORD,
+          variables: {
+            AddMedicalRecordInput: inputData,
+          },
+        })
+        .then(({ data }) => {
+          setshowSpinner(false);
+          console.log('suceessfully added', data);
+          const status = g(data, 'addPatientMedicalRecord', 'status');
+          if (status) {
+            props.navigation.goBack();
+          }
+        })
+        .catch((e) => {
+          setshowSpinner(false);
+          console.log(JSON.stringify(e), 'eeeee');
+          Alert.alert('Alert', 'Please fill all the details', [
+            { text: 'OK', onPress: () => console.log('OK Pressed') },
+          ]);
+        });
+    }
   };
 
   const renderImagesRow = (data: PickerImage, i: number) => {
@@ -793,6 +902,42 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         />
       )} */}
       {showSpinner && <Spinner />}
+      {showPopUp && (
+        <BottomPopUp
+          title={`Hi ,${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}`}
+          description={'Please select images first'}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.gotItStyles}
+              onPress={() => {
+                setshowPopUp(false);
+              }}
+            >
+              <Text style={styles.gotItTextStyles}>{string.LocalStrings.ok}</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {imageError && (
+        <BottomPopUp
+          title={`Hi ,${(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}`}
+          description={'Your upload images are failed '}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.gotItStyles}
+              onPress={() => {
+                setImageError(false);
+              }}
+            >
+              <Text style={styles.gotItTextStyles}>{string.LocalStrings.ok}</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
     </View>
   );
 };
