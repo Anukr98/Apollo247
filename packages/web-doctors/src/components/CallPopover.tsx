@@ -1968,7 +1968,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                             : cancelReason,
                         cancelledBy: isSeniorDoctor
                           ? REQUEST_ROLES.DOCTOR
-                          : REQUEST_ROLES.PATIENT,
+                          : REQUEST_ROLES.JUNIOR,
                         cancelledById: isSeniorDoctor
                           ? srDoctorId || ""
                           : params.patientId
@@ -1978,6 +1978,20 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                     .then(response => {
                       setIsCancelPopoverOpen(false);
                       cancelConsultAction();
+                      unSubscribeBrowserButtonsListener();
+                      const text = {
+                        id: props.doctorId,
+                        message: cancelConsultInitiated,
+                        isTyping: true
+                      };
+                      pubnub.publish(
+                        {
+                          message: text,
+                          channel: channel,
+                          storeInHistory: true
+                        },
+                        (status, response) => {}
+                      );
                       window.location.href = clientRoutes.calendar();
                     })
                     .catch((e: ApolloError) => {
@@ -2054,7 +2068,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                       cancelReason: "MAX_RESCHEDULES_EXCEEDED",
                       cancelledBy: isSeniorDoctor
                         ? REQUEST_ROLES.DOCTOR
-                        : REQUEST_ROLES.PATIENT,
+                        : REQUEST_ROLES.JUNIOR,
                       cancelledById: isSeniorDoctor
                         ? srDoctorId || ""
                         : params.patientId
