@@ -16,6 +16,7 @@ import { ProtectedWithLoginPopup } from 'components/ProtectedWithLoginPopup';
 
 import { useLoginPopupState, useAuth } from 'hooks/authHooks';
 import { AppLocations } from './AppLocations';
+import { LocationProvider } from 'components/LocationProvider';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -89,7 +90,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Header: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const avatarRef = useRef(null);
   const { signOut, isSigningIn, isSignedIn } = useAuth();
   const { isLoginPopupVisible, setIsLoginPopupVisible } = useLoginPopupState();
@@ -102,7 +103,11 @@ export const Header: React.FC = (props) => {
           <img src={require('images/ic_logo.png')} />
         </Link>
       </div>
-      {isSignedIn && <AppLocations />}
+      {isSignedIn && (
+        <LocationProvider>
+          <AppLocations />
+        </LocationProvider>
+      )}
       {isSignedIn && <Navigation />}
       <div className={`${classes.userAccount} ${isSignedIn ? '' : classes.userAccountLogin}`}>
         <ProtectedWithLoginPopup>
