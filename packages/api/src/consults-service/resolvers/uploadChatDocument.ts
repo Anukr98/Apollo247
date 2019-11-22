@@ -14,7 +14,6 @@ import { DoctorRepository } from 'doctors-service/repositories/doctorRepository'
 import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
-
 export const uploadChatDocumentTypeDefs = gql`
   enum PRISM_DOCUMENT_CATEGORY {
     HealthChecks
@@ -76,8 +75,7 @@ type UploadChatDocumentResult = {
 type UploadPrismChatDocumentResult = {
   status: Boolean;
   fileId: string;
-}
-
+};
 
 const uploadChatDocument: Resolver<
   null,
@@ -150,10 +148,14 @@ const uploadChatDocument: Resolver<
   return { filePath: client.getBlobUrl(readmeBlob.name) };
 };
 
-
 const uploadChatDocumentToPrism: Resolver<
   null,
-  { appointmentId: string; patientId: string; fileType: UPLOAD_FILE_TYPES; base64FileInput: string },
+  {
+    appointmentId: string;
+    patientId: string;
+    fileType: UPLOAD_FILE_TYPES;
+    base64FileInput: string;
+  },
   ConsultServiceContext,
   UploadPrismChatDocumentResult
 > = async (parent, args, { mobileNumber, consultsDb, patientsDb }) => {
@@ -181,18 +183,13 @@ const uploadChatDocumentToPrism: Resolver<
 
   const uploadDocInput = {
     ...args,
-    category: PRISM_DOCUMENT_CATEGORY.OpSummary
-  }
+    category: PRISM_DOCUMENT_CATEGORY.OpSummary,
+  };
 
-  const fileId = await patientsRepo.uploadDocumentToPrism(
-    uhid,
-    prismAuthToken,
-    uploadDocInput
-  );
+  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismAuthToken, uploadDocInput);
 
   return fileId ? { status: true, fileId } : { status: false, fileId: '' };
 };
-
 
 type UploadedDocumentDetails = {
   id: string;
