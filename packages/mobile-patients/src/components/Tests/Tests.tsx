@@ -144,9 +144,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>(
-    currentPatient!
-  );
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   const { data: diagnosticsData, error: hError, loading: hLoading } = useQuery<getDiagnosticsData>(
     GET_DIAGNOSTIC_DATA,
@@ -172,6 +170,12 @@ export const Tests: React.FC<TestsProps> = (props) => {
     console.log(locationDetails, 'locationDetails');
     locationDetails && setcurrentLocation(locationDetails.displayName);
   }, [locationDetails]);
+
+  useEffect(() => {
+    if (currentPatient) {
+      setProfile(currentPatient);
+    }
+  }, [currentPatient]);
 
   useEffect(() => {
     if (locationDetails && locationDetails.city) {
@@ -589,12 +593,14 @@ export const Tests: React.FC<TestsProps> = (props) => {
     return (
       (!ordersLoading && _orders.length > 0 && (
         <ListCard
-          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersTest, { isTest: true })}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.YourOrdersTest, { orders: _orders, isTest: true })
+          }
           container={{
             marginBottom: 24,
             marginTop: 20,
           }}
-          title={'Your Orders'}
+          title={'Your Orders'}
           leftIcon={<TestsIcon />}
         />
       )) || <View style={{ height: 24 }} />
@@ -1623,6 +1629,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             }
             selectedProfile={profile}
             setDisplayAddProfile={() => {}}
+            unsetloaderDisplay={true}
           ></ProfileList>
 
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>

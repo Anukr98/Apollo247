@@ -215,7 +215,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
   const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [showMenu, setShowMenu] = useState<boolean>(false);
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
-  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
@@ -224,9 +223,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   useEffect(() => {
     currentPatient && setshowSpinner(false);
-    currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
-      console.log('No current patients available');
+      console.log('No current patients available', allCurrentPatients);
       getPatientApiCall();
     }
 
@@ -687,8 +685,8 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                         </View>
                       </View>
                     }
-                    selectedProfile={profile}
                     setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+                    unsetloaderDisplay={true}
                   ></ProfileList>
                   {/* <Text style={styles.hiTextStyle}>
                     {string.home.hi} {userName}!

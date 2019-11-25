@@ -60,6 +60,7 @@ import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMen
 import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
+import { useUIElements } from '../UIElementsProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -121,7 +122,9 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
+  // const [loading, setLoading && setLoading] = useState<boolean>(true);
+  const { loading, setLoading } = useUIElements();
+
   const [pastarrya, setPastarrya] = useState<[]>([]);
   const [arrayValues, setarrayValues] = useState<any>();
   const client = useApolloClient();
@@ -147,7 +150,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
     if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
 
-    setLoading(true);
+    setLoading && setLoading(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
         query: GET_PAST_CONSULTS_PRESCRIPTIONS,
@@ -200,10 +203,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         setarrayValues(array);
         //setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
 
-        setLoading(false);
+        setLoading && setLoading(false);
       })
       .catch((e) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Heath records', error);
         //Alert.alert('Error', error);
@@ -212,7 +215,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
   const fetchData = useCallback(
     (loading: boolean = false) => {
-      loading && setLoading(true);
+      loading && setLoading && setLoading(true);
       client
         .query<getPatientMedicalRecords>({
           query: GET_MEDICAL_RECORD,
@@ -223,12 +226,12 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         })
         .then(({ data }) => {
           console.log('data', data);
-          loading && setLoading(false);
+          loading && setLoading && setLoading(false);
           const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
           setmedicalRecords(records);
         })
         .catch((error) => {
-          loading && setLoading(false);
+          loading && setLoading && setLoading(false);
           console.log('Error occured', { error });
           //Alert.alert('Error', error.message);
         });
@@ -587,7 +590,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           data={JSON.parse(JSON.stringify(FilterData))}
           filterLength={() => {
             setTimeout(() => {
-              setLoading(false);
+              setLoading && setLoading(false);
             }, 500);
           }}
         />
@@ -600,7 +603,6 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           getData={(data: (PickerImage | PickerImage[])[]) => {}}
         />
       )}
-      {loading && <Spinner />}
       {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}
