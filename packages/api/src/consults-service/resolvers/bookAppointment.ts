@@ -149,7 +149,7 @@ const bookAppointment: Resolver<
   if (isJunior) {
     throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   }
-
+  // check if hospital id is linked to doctor
   if (docDetails.doctorHospital[0].facility.id !== appointmentInput.hospitalId) {
     throw new AphError(AphErrorMessages.INVALID_HOSPITAL_ID, undefined, {});
   }
@@ -207,6 +207,17 @@ const bookAppointment: Resolver<
 
   if (!checkHours) {
     throw new AphError(AphErrorMessages.OUT_OF_CONSULT_HOURS, undefined, {});
+  }
+
+  // check if patient cancelled appointment for more than 3 weeks in a week
+
+  const apptsrepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const cancelledCount = await apptsrepo.checkPatientCancelledHistory(
+    appointmentInput.patientId,
+    appointmentInput.doctorId
+  );
+  if (cancelledCount >= 3) {
+    throw new AphError(AphErrorMessages.BOOKING_LIMIT_EXCEEDED, undefined, {});
   }
 
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
