@@ -164,12 +164,12 @@ const arrayTest: ArrayTest[] = [
     descripiton: 'SEARCH MEDICINE',
     image: require('@aph/mobile-patients/src/images/home/medicine.png'),
   },
-  // {
-  //   id: 3,
-  //   title: 'Do you want to get some tests done?',
-  //   descripiton: 'BOOK A TEST',
-  //   image: require('@aph/mobile-patients/src/images/home/test.png'),
-  // },
+  {
+    id: 3,
+    title: 'Do you want to get some tests done?',
+    descripiton: 'BOOK A TEST',
+    image: require('@aph/mobile-patients/src/images/home/test.png'),
+  },
 ];
 
 type TabBarOptions = {
@@ -719,8 +719,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
                       props.navigation.navigate(AppRoutes.DoctorSearch);
                     } else if (i == 1) {
-                      CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'SearchMedicineScene_clicked');
                       props.navigation.navigate(AppRoutes.SearchMedicineScene);
+                    } else if (i == 2) {
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'SearchTestScene_clicked');
+                      props.navigation.navigate(AppRoutes.SearchTestScene);
                     }
                   }}
                 >

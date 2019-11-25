@@ -214,11 +214,13 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
     _setDiagnosticSlot(null);
+    _setDeliveryAddressId('');
   };
 
   const setDiagnosticSlot: DiagnosticsCartContextProps['setDiagnosticSlot'] = (item) => {
     _setDiagnosticSlot(item);
     _setDiagnosticClinic(null);
+    _setClinicId('');
   };
 
   const setEPrescriptions: DiagnosticsCartContextProps['setEPrescriptions'] = (items) => {
