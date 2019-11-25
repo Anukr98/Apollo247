@@ -1365,7 +1365,8 @@ export const JDCallPopover: React.FC<CallPopoverProps> = props => {
               //disabled={disableStartConsult}
               disabled={
                 disableOnCancel ||
-                appointmentInfo!.appointmentState !== "NEW" ||
+                (appointmentInfo!.appointmentState !== "NEW" &&
+                  appointmentInfo!.appointmentState !== "RESCHEDULE") ||
                 (appointmentInfo!.status !== STATUS.IN_PROGRESS &&
                   appointmentInfo!.status !== STATUS.PENDING)
               }
