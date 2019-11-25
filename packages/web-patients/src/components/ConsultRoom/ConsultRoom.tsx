@@ -25,7 +25,6 @@ import { TransferConsultMessage } from 'components/ConsultRoom/TransferConsultMe
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import moment from 'moment';
-import { red } from '@material-ui/core/colors';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -162,7 +161,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     leftSection: {
       width: 'calc(100% - 328px)',
-      marginTop: -80,
+      marginTop: -60,
     },
     rightSection: {
       width: 328,
