@@ -287,8 +287,6 @@ export const ConsultRoom: React.FC = (props) => {
     return <Typography component="div">{props.children}</Typography>;
   };
 
-  console.log(pastAppointments);
-
   return isSignedIn ? (
     <div className={classes.root}>
       <div className={classes.headerSticky}>
