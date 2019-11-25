@@ -8,7 +8,7 @@ import {
   TouchableOpacityProps,
   ViewStyle,
 } from 'react-native';
-import { theme } from '../../theme/theme';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const styles = StyleSheet.create({
   containerStyles: {

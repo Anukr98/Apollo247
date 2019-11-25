@@ -1,7 +1,7 @@
 import { DropdownGreen } from '@aph/mobile-patients/src/components/ui/Icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, StyleProp, ViewStyle } from 'react-native';
-import { theme } from '../../theme/theme';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const styles = StyleSheet.create({
   container: {},

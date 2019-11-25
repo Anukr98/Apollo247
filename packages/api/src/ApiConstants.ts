@@ -37,6 +37,7 @@ export enum ApiConstants {
   PHARMA_TOKEN = '9f15bdd0fcd5423190c2e877ba0228A24',
 
   PRISM_TIMEOUT = 10000,
+  PRISM_UPLOAD_DOCUMENT_PROGRAME = 'prog2',
 
   GENERAL_PHYSICIAN = 'General Physician/ Internal Medicine',
 
@@ -47,6 +48,16 @@ export enum ApiConstants {
   CART_READY_BODY = 'Hi {0}, your prescription cart is ready',
 
   GOOGLE_MAPS_DISTANCE_MATRIX_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json',
+
+  //All services log files
+  PROFILES_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/profiles-service.log',
+  PROFILES_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/profiles-service.log',
+  DOCTORS_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/doctors-service.log',
+  DOCTORS_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/doctors-service.log',
+  CONSULTS_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/consults-service.log',
+  CONSULTS_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/consults-service.log',
+  NOTIFICATIONS_SERVICE_ACCESS_LOG_FILE = '/logs/access-logs/notifications-service.log',
+  NOTIFICATIONS_SERVICE_ERROR_LOG_FILE = '/logs/error-logs/notifications-service.log',
 
   TO_MAIL = 'sriram.kanchan@popcornapps.com',
   CC_MAIL = 'raj@popcornapps.com,prasanth.babu@popcornapps.com',
@@ -60,4 +71,7 @@ export enum ApiConstants {
 
   CANCEL_APPT_TITLE = 'Your appointment has been cancelled',
   CANCEL_APPT_BODY = 'Hi {0}! :) Dr. {1} has cancelled your consultation.',
+
+  APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT = 3,
+  APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR = 3,
 }

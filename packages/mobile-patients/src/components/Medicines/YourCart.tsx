@@ -43,7 +43,7 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -128,29 +128,29 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
     }
   }, [currentPatient]);
 
-  useEffect(() => {
-    setLoading!(true);
-    (currentPatientId &&
-      addresses.length == 0 &&
-      client
-        .query<getPatientAddressList, getPatientAddressListVariables>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          variables: { patientId: currentPatientId },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          setLoading!(false);
-          setAddresses && setAddresses(addressList!);
-        })
-        .catch((e) => {
-          setLoading!(false);
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Something went wrong, unable to fetch addresses.`,
-          });
-        })) ||
-      setLoading!(false);
-  }, [currentPatientId]);
+  // useEffect(() => {
+  //   setLoading!(true);
+  //   (currentPatient &&
+  //     addresses.length == 0 &&
+  //     client
+  //       .query<getPatientAddressList, getPatientAddressListVariables>({
+  //         query: GET_PATIENT_ADDRESS_LIST,
+  //         variables: { patientId: currentPatientId },
+  //         fetchPolicy: 'no-cache',
+  //       })
+  //       .then(({ data: { getPatientAddressList: { addressList } } }) => {
+  //         setLoading!(false);
+  //         setAddresses && setAddresses(addressList!);
+  //       })
+  //       .catch((e) => {
+  //         setLoading!(false);
+  //         showAphAlert!({
+  //           title: `Uh oh.. :(`,
+  //           description: `Something went wrong, unable to fetch addresses.`,
+  //         });
+  //       })) ||
+  //     setLoading!(false);
+  // }, [currentPatient]);
 
   /*  useEffect(() => {
     getCartInfo()
@@ -197,7 +197,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           borderRadius: 0,
         }}
         leftIcon={'backArrow'}
-        title={'YOUR CART'}
+        title={'MEDICINE CART'}
         rightComponent={
           <View>
             <TouchableOpacity

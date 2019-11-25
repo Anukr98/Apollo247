@@ -32,7 +32,7 @@ import {
   StackActions,
 } from 'react-navigation';
 import Moment from 'moment';
-import { useAuth, useAllCurrentPatients } from '../hooks/authHooks';
+import { useAuth, useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
 import {
   updatePatientVariables,
   updatePatient,
@@ -41,7 +41,10 @@ import { Relation, Gender } from '@aph/mobile-patients/src/graphql/types/globalT
 import { UPDATE_PATIENT } from '@aph/mobile-patients/src/graphql/profiles';
 import { Mutation } from 'react-apollo';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
-import { CommonLogEvent, CommonScreenLog } from '../FunctionHelpers/DeviceHelper';
+import {
+  CommonLogEvent,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { height } = Dimensions.get('window');
 
@@ -129,10 +132,14 @@ export const SignUp: React.FC<SignUpProps> = (props) => {
       : value == '' || /^[a-zA-Z]+(([' ][a-zA-Z])?[a-zA-Z]*)*$/.test(value)
       ? true
       : false;
+
   const isSatisfyingEmailRegex = (value: string) =>
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
       value
     );
+
+  // const isSatisfyingEmailRegex = (value: string) =>
+  //   /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/.test(value);
 
   const _setEmail = (value: string) => {
     setEmail(value);

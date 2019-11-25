@@ -37,6 +37,17 @@ export enum DEVICE_TYPE {
   IOS = "IOS",
 }
 
+export enum DIAGNOSTICS_TYPE {
+  PACKAGE = "PACKAGE",
+  TEST = "TEST",
+}
+
+export enum DIAGNOSTIC_ORDER_STATUS {
+  ORDER_FAILED = "ORDER_FAILED",
+  PICKUP_CONFIRMED = "PICKUP_CONFIRMED",
+  PICKUP_REQUESTED = "PICKUP_REQUESTED",
+}
+
 export enum DiscountType {
   AMOUNT = "AMOUNT",
   PERCENT = "PERCENT",
@@ -128,6 +139,12 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum REQUEST_ROLES {
+  DOCTOR = "DOCTOR",
+  JUNIOR = "JUNIOR",
+  PATIENT = "PATIENT",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -144,6 +161,7 @@ export enum SEARCH_TYPE {
   DOCTOR = "DOCTOR",
   MEDICINE = "MEDICINE",
   SPECIALTY = "SPECIALTY",
+  TEST = "TEST",
 }
 
 export enum STATUS {
@@ -165,6 +183,11 @@ export enum Salutation {
 export enum SpecialtySearchType {
   ID = "ID",
   NAME = "NAME",
+}
+
+export enum TEST_COLLECTION_TYPE {
+  CENTER = "CENTER",
+  HC = "HC",
 }
 
 export enum TRANSFER_INITIATED_TYPE {
@@ -192,13 +215,14 @@ export interface AddMedicalRecordInput {
   observations?: string | null;
   additionalNotes?: string | null;
   documentURLs?: string | null;
+  prismFileIds?: string | null;
   medicalRecordParameters?: (AddMedicalRecordParametersInput | null)[] | null;
 }
 
 export interface AddMedicalRecordParametersInput {
-  parameterName: string;
+  parameterName?: string | null;
   unit?: MedicalTestUnit | null;
-  result: number;
+  result?: number | null;
   minimum?: number | null;
   maximum?: number | null;
 }
@@ -246,13 +270,41 @@ export interface BookTransferAppointmentInput {
 export interface CancelAppointmentInput {
   appointmentId: string;
   cancelReason?: string | null;
-  cancelledBy: TRANSFER_INITIATED_TYPE;
+  cancelledBy: REQUEST_ROLES;
   cancelledById: string;
 }
 
 export interface ChooseDoctorInput {
   slotDateTime: any;
   specialityId: string;
+}
+
+export interface DiagnosticLineItem {
+  itemId?: number | null;
+  price?: number | null;
+  quantity?: number | null;
+}
+
+export interface DiagnosticOrderInput {
+  patientId: string;
+  patientAddressId: string;
+  city: string;
+  cityId: string;
+  state: string;
+  stateId: string;
+  slotTimings: string;
+  employeeSlotId: number;
+  diagnosticEmployeeCode: string;
+  diagnosticBranchCode: string;
+  totalPrice: number;
+  prescriptionUrl: string;
+  diagnosticDate: any;
+  centerName: string;
+  centerCode: string;
+  centerCity: string;
+  centerState: string;
+  centerLocality: string;
+  items?: (DiagnosticLineItem | null)[] | null;
 }
 
 export interface DoctorAvailabilityInput {
@@ -269,6 +321,17 @@ export interface DoctorPhysicalAvailabilityInput {
   availableDate: any;
   doctorId: string;
   facilityId: string;
+}
+
+export interface EditProfileInput {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: any;
+  gender: Gender;
+  relation: Relation;
+  emailAddress: string;
+  photoUrl: string;
+  id: string;
 }
 
 export interface FilterDoctorInput {
@@ -307,6 +370,7 @@ export interface MedicineCartInput {
   patientAddressId: string;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
   items?: (MedicineCartItem | null)[] | null;
 }
 
@@ -318,6 +382,7 @@ export interface MedicineCartItem {
   mrp?: number | null;
   isPrescriptionNeeded?: number | null;
   prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
   mou?: number | null;
   isMedicine?: string | null;
 }
@@ -365,6 +430,17 @@ export interface PatientConsultsAndOrdersInput {
   limit?: number | null;
 }
 
+export interface PatientProfileInput {
+  firstName: string;
+  lastName: string;
+  dateOfBirth: any;
+  gender: Gender;
+  relation: Relation;
+  emailAddress: string;
+  photoUrl: string;
+  mobileNumber: string;
+}
+
 export interface PrescriptionMedicineInput {
   quoteId?: string | null;
   shopId?: string | null;
@@ -372,6 +448,7 @@ export interface PrescriptionMedicineInput {
   medicineDeliveryType: MEDICINE_DELIVERY_TYPE;
   patinetAddressId?: string | null;
   prescriptionImageUrl: string;
+  prismPrescriptionFileId: string;
   appointmentId?: string | null;
   payment?: PrescriptionMedicinePaymentDetails | null;
 }

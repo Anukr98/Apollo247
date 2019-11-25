@@ -23,6 +23,7 @@ import {
   MedicineProduct,
   MedicineProductDetails,
   getMedicineDetailsApi,
+  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { isEmptyObject, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -201,11 +202,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   );
 
   useEffect(() => {
-    const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${key}`;
-        Axios.get(url)
+        const { latitude, longitude } = position.coords;
+        getPlaceInfoByLatLng(latitude, longitude)
           .then((obj) => {
             try {
               if (
@@ -218,7 +218,6 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                 const _pincode = (
                   addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
                 ).long_name;
-                Alert.alert(_pincode);
                 setpincode(_pincode || '');
               }
             } catch {}
@@ -471,6 +470,10 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   };
 
   const renderBottomButtons = () => {
+    const opitons = Array.from({ length: 20 }).map((_, i) => {
+      return { key: (i + 1).toString(), value: i + 1 };
+    });
+
     return (
       <StickyBottomComponent style={{ height: 'auto' }} defaultBG>
         {isOutOfStock ? (
@@ -525,7 +528,14 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                   flex: 1,
                 }}
               >
-                <MaterialMenu onPress={(selectedQuantity) => setselectedQuantity(selectedQuantity)}>
+                <MaterialMenu
+                  options={opitons}
+                  selectedText={selectedQuantity!.toString()}
+                  selectedTextStyle={{
+                    ...theme.viewStyles.text('M', 16, '#00b38e'),
+                  }}
+                  onPress={(selectedQuantity) => setselectedQuantity(selectedQuantity.value)}
+                >
                   <View
                     style={{
                       flexDirection: 'row',
@@ -549,7 +559,20 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
                     { fontWeight: 'bold' },
                   ]}
                 >
-                  Rs. {medicineDetails.price}
+                  {!!medicineDetails.special_price && (
+                    <Text
+                      style={[
+                        {
+                          textDecorationLine: 'line-through',
+                          color: '#01475b',
+                          opacity: 0.6,
+                        },
+                      ]}
+                    >
+                      (Rs. {medicineDetails.price})
+                    </Text>
+                  )}{' '}
+                  <Text> Rs. {medicineDetails.special_price || medicineDetails.price}</Text>
                 </Text>
               </View>
             </View>
@@ -622,7 +645,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               onPress={() =>
                 !!medicineDetails.image
                   ? props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                      images: [AppConfig.Configuration.IMAGES_BASE_URL + medicineDetails.image],
+                      images: [AppConfig.Configuration.IMAGES_BASE_URL[0] + medicineDetails.image],
                       heading: medicineDetails.name,
                     })
                   : {}
@@ -630,7 +653,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             >
               {!!medicineDetails.image ? (
                 <Image
-                  source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL + medicineDetails.image }}
+                  source={{
+                    uri: AppConfig.Configuration.IMAGES_BASE_URL[0] + medicineDetails.image,
+                  }}
                   style={styles.doctorImage}
                 />
               ) : (
@@ -786,7 +811,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         {data.image ? (
           <Image
             placeholderStyle={styles.imagePlaceholderStyle}
-            source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL + data.image }}
+            source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL[0] + data.image }}
             style={{ height: 40, width: 40 }}
             resizeMode="contain"
           />
@@ -1184,7 +1209,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             <TouchableOpacity
               activeOpacity={1}
               onPress={() =>
-                props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true })
+                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true })
               }
               style={{ right: 20 }}
             >

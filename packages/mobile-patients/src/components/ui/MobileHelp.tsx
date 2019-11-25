@@ -26,9 +26,9 @@ import {
 import { Overlay } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { NavigationScreenProps } from 'react-navigation';
-import { BottomPopUp } from './BottomPopUp';
-import { AppRoutes } from '../NavigatorContainer';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   showPopUp: {

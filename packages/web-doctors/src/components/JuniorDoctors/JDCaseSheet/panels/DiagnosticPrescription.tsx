@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+
 import { Chip, Theme, MenuItem, Paper } from '@material-ui/core';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { AphButton, AphTextField } from '@aph/web-ui-components';
@@ -7,8 +8,8 @@ import match from 'autosuggest-highlight/match';
 import parse from 'autosuggest-highlight/parse';
 import Autosuggest from 'react-autosuggest';
 import { useApolloClient } from 'react-apollo-hooks';
-import { SEARCH_DIAGNOSTIC } from 'graphql/profiles';
-import { SearchDiagnostic } from 'graphql/types/SearchDiagnostic';
+import { SEARCH_DIAGNOSTICS } from 'graphql/profiles';
+import { SearchDiagnostics } from 'graphql/types/SearchDiagnostics';
 // import {
 //   GetJuniorDoctorCaseSheet,
 //   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription,
@@ -47,11 +48,11 @@ function renderInputComponent(inputProps: any) {
 }
 
 function renderSuggestion(
-  suggestion: OptionType | null,
+  suggestion: any | null,
   { query, isHighlighted }: Autosuggest.RenderSuggestionParams
 ) {
-  const matches = match(suggestion!.itemname, query);
-  const parts = parse(suggestion!.itemname, matches);
+  const matches = match(suggestion!.itemName, query);
+  const parts = parse(suggestion!.itemName, matches);
 
   return (
     <MenuItem selected={isHighlighted} component="div">
@@ -76,6 +77,7 @@ const useStyles = makeStyles((theme: Theme) =>
     sectionTitle: {
       color: '#02475b',
       opacity: 0.6,
+
       fontSize: 14,
       fontWeight: 500,
       letterSpacing: 0.02,
@@ -96,6 +98,7 @@ const useStyles = makeStyles((theme: Theme) =>
         marginRight: 8,
       },
     },
+
     inputRoot: {
       marginTop: 10,
       '&:before': {
@@ -274,7 +277,7 @@ export const DiagnosticPrescription: React.FC = () => {
   } = useContext(CaseSheetContextJrd);
   const [idx, setIdx] = React.useState();
   const client = useApolloClient();
-  const { caseSheetEdit } = useContext(CaseSheetContextJrd);
+  const { caseSheetEdit, patientDetails } = useContext(CaseSheetContextJrd);
 
   const [showAddCondition, setShowAddCondition] = useState<boolean>(false);
   const [showAddOtherTests, setShowAddOtherTests] = useState<boolean>(false);
@@ -284,22 +287,31 @@ export const DiagnosticPrescription: React.FC = () => {
 
   const fetchDignostic = async (value: string) => {
     client
-      .query<SearchDiagnostic, any>({
-        query: SEARCH_DIAGNOSTIC,
-        variables: { searchString: value },
+      .query<SearchDiagnostics, any>({
+        query: SEARCH_DIAGNOSTICS,
+        variables: {
+          city:
+            patientDetails &&
+            patientDetails.patientAddress &&
+            patientDetails.patientAddress.length > 0
+              ? patientDetails.patientAddress[0]!.city
+              : '',
+          patientId: patientDetails && patientDetails.id ? patientDetails.id : '',
+          searchText: value,
+        },
       })
       .then((_data: any) => {
-        const filterVal: any = _data!.data!.searchDiagnostic!;
-        console.log(_data!.data!.searchDiagnostic!);
+        const filterVal: any = _data!.data!.searchDiagnostics!.diagnostics;
 
         filterVal.forEach((val: any, index: any) => {
           selectedValues!.forEach((selectedval: any) => {
-            if (val.itemname === selectedval.itemname) {
+            if (val.itemName === selectedval.itemname) {
               filterVal.splice(index, 1);
             }
           });
         });
         suggestions = filterVal;
+
         setLengthOfSuggestions(suggestions.length);
         setSearchInput(value);
       })
@@ -311,8 +323,8 @@ export const DiagnosticPrescription: React.FC = () => {
     return suggestions;
   };
 
-  function getSuggestionValue(suggestion: OptionType | null) {
-    return suggestion!.itemname;
+  function getSuggestionValue(suggestion: any | null) {
+    return suggestion!.itemName;
   }
   useEffect(() => {
     if (searchInput.length > 2) {
@@ -349,6 +361,7 @@ export const DiagnosticPrescription: React.FC = () => {
   const handleSuggestionsClearRequested = () => {
     setSuggestions([]);
   };
+
   const handleChange = (itemname: keyof typeof state) => (
     event: React.ChangeEvent<{}>,
     { newValue }: Autosuggest.ChangeEvent
@@ -361,6 +374,7 @@ export const DiagnosticPrescription: React.FC = () => {
       [itemname]: newValue,
     });
   };
+
   const handleDelete = (item: any, idx: number) => {
     // suggestions.splice(0, 0, item);
     selectedValues!.splice(idx, 1);
@@ -380,27 +394,44 @@ export const DiagnosticPrescription: React.FC = () => {
     <div className={classes.root}>
       <div className={classes.sectionGroup}>
         <div className={classes.sectionTitle}>Tests</div>
+
         <div className={classes.chipSection}>
           {selectedValues !== null &&
             selectedValues.length > 0 &&
-            selectedValues!.map(
-              (item, idx) =>
-                item.itemname!.trim() !== '' && (
-                  <div className={classes.chipCol}>
-                    <Chip
-                      className={classes.chipItem}
-                      key={idx}
-                      label={item!.itemname}
-                      onDelete={() => handleDelete(item, idx)}
-                      deleteIcon={
-                        <img
-                          src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
-                          alt=""
-                        />
-                      }
-                    />
-                  </div>
-                )
+            selectedValues!.map((item, idx) =>
+              item.itemName
+                ? item.itemName!.trim() !== '' && (
+                    <div className={classes.chipCol}>
+                      <Chip
+                        className={classes.chipItem}
+                        key={idx}
+                        label={item!.itemName}
+                        onDelete={() => handleDelete(item, idx)}
+                        deleteIcon={
+                          <img
+                            src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+                            alt=""
+                          />
+                        }
+                      />
+                    </div>
+                  )
+                : item.itemname!.trim() !== '' && (
+                    <div className={classes.chipCol}>
+                      <Chip
+                        className={classes.chipItem}
+                        key={idx}
+                        label={item!.itemname}
+                        onDelete={() => handleDelete(item, idx)}
+                        deleteIcon={
+                          <img
+                            src={caseSheetEdit ? require('images/ic_cancel_green.svg') : ''}
+                            alt=""
+                          />
+                        }
+                      />
+                    </div>
+                  )
             )}
         </div>
       </div>

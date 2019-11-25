@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid, Avatar } from '@material-ui/core';
-import React from 'react';
+import React, { useState } from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import {
   GetPatientAppointments,
@@ -18,6 +18,10 @@ import { STATUS } from 'graphql/types/globalTypes';
 import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { AphButton } from '@aph/web-ui-components';
+import { ApolloError } from 'apollo-client';
+import { useMutation } from 'react-apollo-hooks';
+import { AddToConsultQueue, AddToConsultQueueVariables } from 'graphql/types/AddToConsultQueue';
+import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -186,27 +190,15 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   ) {
     bookedAppointments = props.appointments.getPatinetAppointments.patinetAppointments;
   }
-
   // filter appointments that are greater than current time.
   const filterAppointments = bookedAppointments.filter((appointmentDetails) => {
     const currentTime = new Date().getTime();
-    // const aptArray = appointmentDetails.appointmentDateTime.split('T');
-    // const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-    // const appointmentStatus = appointmentDetails.status;
-    if (
-      // appointmentTime > currentTime &&
-      // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-      // the above condition is commented as per demo feedback on 13/08/2019
-      // appointmentTime > currentTime &&
-      // appointmentStatus === STATUS.IN_PROGRESS
-      appointmentTime > currentTime
-    ) {
+
+    if (appointmentTime > currentTime) {
       return appointmentDetails;
     }
   });
-
-  // console.log('filter appointments......', filterAppointments);
 
   const otherDateMarkup = (appointmentTime: number) => {
     if (isToday(new Date(appointmentTime))) {
@@ -217,6 +209,21 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       return format(new Date(appointmentTime), 'dd MMM yyyy, h:mm a');
     }
   };
+
+  const [refreshTimer, setRefreshTimer] = useState<boolean>(false);
+
+  const shouldRefreshComponent = (diff: number) => {
+    const id = setInterval(() => {
+      id && clearInterval(id);
+      if (diff <= 15 && diff >= -1) {
+        setRefreshTimer(!refreshTimer);
+      }
+    }, 60000);
+  };
+
+  const addConsultToQueue = useMutation<AddToConsultQueue, AddToConsultQueueVariables>(
+    ADD_TO_CONSULT_QUEUE
+  );
 
   return (
     <div className={classes.root}>
@@ -249,88 +256,96 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   : '';
               const currentTime = new Date().getTime();
               const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-              // const aptArray = appointmentDetails.appointmentDateTime.split('T');
-              // const appointmentTime = getIstTimestamp(
-              //   new Date(aptArray[0]),
-              //   aptArray[1].substring(0, 5)
-              // );
-              // console.log('....................', appointmentTime);
-              // console.log('difference is....', difference);
               const difference = Math.round((appointmentTime - currentTime) / 60000);
+              shouldRefreshComponent(difference);
               const doctorId =
                 appointmentDetails.doctorInfo && appointmentDetails.doctorId
                   ? appointmentDetails.doctorId
                   : '';
+              const isConsultStarted = appointmentDetails.isConsultStarted;
               return (
                 <Grid item sm={6} key={index}>
-                  <Link
-                    to={clientRoutes.chatRoom(appointmentId, doctorId)}
-                    className={
-                      appointmentDetails.appointmentType === APPOINTMENT_TYPE.PHYSICAL
-                        ? classes.disableLink
-                        : ''
-                    }
-                  >
-                    <div className={classes.consultCard}>
-                      <div className={classes.consultCardWrap}>
-                        <div className={classes.startDoctor}>
-                          <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
-                          {appointmentDetails.doctorInfo &&
-                          appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO ? (
-                            <span>
-                              <img src={require('images/ic_star.svg')} alt="" />
-                            </span>
-                          ) : null}
+                  <div className={classes.consultCard}>
+                    <div className={classes.consultCardWrap}>
+                      <div className={classes.startDoctor}>
+                        <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
+                        {appointmentDetails.doctorInfo &&
+                        appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO ? (
+                          <span>
+                            <img src={require('images/ic_star.svg')} alt="" />
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className={classes.doctorInfo}>
+                        <div
+                          className={`${classes.availability} ${
+                            difference <= 15 ? classes.availableNow : ''
+                          }`}
+                        >
+                          {difference <= 15
+                            ? `Available in ${difference} mins`
+                            : otherDateMarkup(appointmentTime)}
                         </div>
-                        <div className={classes.doctorInfo}>
-                          <div
-                            className={`${classes.availability} ${
-                              difference <= 15 ? classes.availableNow : ''
-                            }`}
-                          >
-                            {difference <= 15
-                              ? `Available in ${difference} mins`
-                              : otherDateMarkup(appointmentTime)}
-                          </div>
+                        <Link to={clientRoutes.doctorDetails(doctorId)}>
                           <div className={classes.doctorName}>{`Dr. ${_startCase(
                             _toLower(firstName)
                           )} ${_startCase(_toLower(lastName))}`}</div>
-                          <div className={classes.doctorType}>
-                            {specialization}
-                            <span className={classes.doctorExp}>{experience} YRS</span>
-                          </div>
-                          <div className={classes.consultaitonType}>
-                            <span>
-                              {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-                                ? 'Online Consultation'
-                                : 'Clinic Visit'}
-                            </span>
-                            <span>
-                              {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
-                                <img src={require('images/ic_onlineconsult.svg')} alt="" />
-                              ) : (
-                                <img src={require('images/ic_clinicvisit.svg')} alt="" />
-                              )}
-                            </span>
-                          </div>
-                          <div className={classes.appointBooked}>
-                            <ul>
-                              <li>Fever</li>
-                              <li>Cough &amp; Cold</li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                      <div className={classes.cardBottomActons}>
-                        <Link to={clientRoutes.chatRoom(appointmentId, doctorId)}>
-                          <AphButton>Start Consult</AphButton>
                         </Link>
-                        <div className={classes.noteText}>
-                          You are entitled to 1 free follow-up!
+                        <div className={classes.doctorType}>
+                          {specialization}
+                          <span className={classes.doctorExp}>{experience} YRS</span>
+                        </div>
+                        <div className={classes.consultaitonType}>
+                          <span>
+                            {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
+                              ? 'Online Consultation'
+                              : 'Clinic Visit'}
+                          </span>
+                          <span>
+                            {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
+                              <img src={require('images/ic_onlineconsult.svg')} alt="" />
+                            ) : (
+                              <img src={require('images/ic_clinicvisit.svg')} alt="" />
+                            )}
+                          </span>
+                        </div>
+                        <div className={classes.appointBooked}>
+                          <ul>
+                            <li>Fever</li>
+                            <li>Cough &amp; Cold</li>
+                          </ul>
                         </div>
                       </div>
                     </div>
-                  </Link>
+                    <div className={classes.cardBottomActons}>
+                      <AphButton
+                        onClick={() => {
+                          isConsultStarted
+                            ? (window.location.href = clientRoutes.chatRoom(
+                                appointmentId,
+                                doctorId
+                              ))
+                            : addConsultToQueue({
+                                variables: {
+                                  appointmentId,
+                                },
+                              })
+                                .then((res) => {
+                                  window.location.href = clientRoutes.chatRoom(
+                                    appointmentId,
+                                    doctorId
+                                  );
+                                })
+                                .catch((e: ApolloError) => {
+                                  console.log(e);
+                                });
+                        }}
+                      >
+                        {isConsultStarted ? 'Continue Consult' : 'Start Consult'}
+                      </AphButton>
+                      <div className={classes.noteText}>You are entitled to 1 free follow-up!</div>
+                    </div>
+                  </div>
                 </Grid>
               );
             })}

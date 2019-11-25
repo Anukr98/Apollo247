@@ -8,6 +8,7 @@ import {
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments,
   GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_healthVault,
+  GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument,
 } from 'graphql/types/GetJuniorDoctorCaseSheet';
 import { createContext } from 'react';
 
@@ -48,17 +49,8 @@ export interface CaseSheetContextPropsJrd {
         >
       >
     | (() => void);
-  diagnosticPrescription:
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription[]
-    | null;
-  setDiagnosticPrescription:
-    | React.Dispatch<
-        React.SetStateAction<
-          | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription[]
-          | null
-        >
-      >
-    | (() => void);
+  diagnosticPrescription: any[] | null;
+  setDiagnosticPrescription: React.Dispatch<React.SetStateAction<any[] | null>> | (() => void);
   medicinePrescription:
     | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[]
     | null;
@@ -81,6 +73,7 @@ export interface CaseSheetContextPropsJrd {
   healthVault:
     | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_healthVault[]
     | null;
+  appointmentDocuments: appointmentDocument[] | null;
   pastAppointments: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments[] | null;
   setCasesheetNotes: (notes: string) => void;
   autoCloseCaseSheet: boolean;
@@ -111,6 +104,8 @@ export interface CaseSheetContextPropsJrd {
 
   gender: string;
   setGender: (gender: string) => void;
+  documentArray: appointmentDocument | null;
+  setDocumentArray: (documentArray: appointmentDocument) => void;
 }
 
 export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
@@ -119,6 +114,7 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   caseSheetEdit: false,
   patientDetails: null,
   appointmentInfo: null,
+  appointmentDocuments: null,
   caseSheetId: null,
   symptoms: null,
   setSymptoms: () => {},
@@ -145,7 +141,8 @@ export const CaseSheetContextJrd = createContext<CaseSheetContextPropsJrd>({
   pastAppointments: null,
   setCasesheetNotes: () => {},
   autoCloseCaseSheet: false,
-
+  documentArray: null,
+  setDocumentArray: () => {},
   height: '',
   weight: '',
   bp: '',

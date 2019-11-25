@@ -138,7 +138,6 @@ interface ConsultProps {
   timerMinuts: number;
   timerSeconds: number;
 }
-const openTokApiKey = '46401302';
 export const ChatVideo: React.FC<ConsultProps> = (props) => {
   const classes = useStyles();
   const [isCall, setIscall] = React.useState(true);
@@ -163,7 +162,7 @@ export const ChatVideo: React.FC<ConsultProps> = (props) => {
 
         {isCall && (
           <OTSession
-            apiKey={openTokApiKey}
+            apiKey={process.env.OPENTOK_KEY}
             sessionId={props.sessionId}
             token={props.token}
             eventHandlers={{

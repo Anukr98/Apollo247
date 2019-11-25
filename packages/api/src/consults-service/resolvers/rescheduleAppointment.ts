@@ -63,6 +63,7 @@ export const rescheduleAppointmentTypeDefs = gql`
   type RescheduleAppointmentResult {
     rescheduleAppointment: RescheduleAppointment
     rescheduleCount: Int
+    doctorRescheduleCount: Int
   }
 
   type BookRescheduleAppointmentResult {
@@ -97,6 +98,7 @@ export const rescheduleAppointmentTypeDefs = gql`
 type RescheduleAppointmentResult = {
   rescheduleAppointment: RescheduleAppointment;
   rescheduleCount: number;
+  doctorRescheduleCount: number;
 };
 
 type RescheduleAppointment = {
@@ -217,21 +219,32 @@ const initiateRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
 
+  if (RescheduleAppointmentInput.rescheduledDateTime < new Date())
+    throw new AphError(AphErrorMessages.INVALID_DATES);
+
   if (RescheduleAppointmentInput.autoSelectSlot == 1) {
     RescheduleAppointmentInput.rescheduledDateTime = new Date();
   }
 
-  const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const rescheduleAppointmentAttrs: Omit<RescheduleAppointment, 'id'> = {
     ...RescheduleAppointmentInput,
     rescheduleStatus: TRANSFER_STATUS.INITIATED,
     appointment,
   };
 
+  const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
+  const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
+  await appointmentRepo.updateTransferState(
+    RescheduleAppointmentInput.appointmentId,
+    APPOINTMENT_STATE.AWAITING_RESCHEDULE
+  );
+
+  const notificationType = NotificationType.INITIATE_RESCHEDULE;
+
   // send notification
   const pushNotificationInput = {
     appointmentId: appointment.id,
-    notificationType: NotificationType.INITIATE_RESCHEDULE,
+    notificationType,
   };
   const notificationResult = sendNotification(
     pushNotificationInput,
@@ -241,14 +254,10 @@ const initiateRescheduleAppointment: Resolver<
   );
   console.log(notificationResult, 'notificationResult');
 
-  const rescheduleAppointment = await rescheduleApptRepo.saveReschedule(rescheduleAppointmentAttrs);
-  await appointmentRepo.updateTransferState(
-    RescheduleAppointmentInput.appointmentId,
-    APPOINTMENT_STATE.AWAITING_RESCHEDULE
-  );
   return {
     rescheduleAppointment,
     rescheduleCount: appointment.rescheduleCount,
+    doctorRescheduleCount: appointment.rescheduleCountByDoctor,
   };
 };
 
@@ -263,7 +272,7 @@ const bookRescheduleAppointment: Resolver<
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
   const rescheduleApptRepo = consultsDb.getCustomRepository(RescheduleAppointmentRepository);
   const apptDetails = await appointmentRepo.findById(bookRescheduleAppointmentInput.appointmentId);
-  let finalAppointmentId = bookRescheduleAppointmentInput.appointmentId;
+  const finalAppointmentId = bookRescheduleAppointmentInput.appointmentId;
   if (!apptDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
@@ -299,39 +308,44 @@ const bookRescheduleAppointment: Resolver<
     throw new AphError(AphErrorMessages.ANOTHER_DOCTOR_APPOINTMENT_EXIST, undefined, {});
   }
 
-  if (
-    bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT &&
-    apptDetails.rescheduleCount == 3
-  ) {
-    //cancel and book new appt
-    appointmentRepo.cancelAppointment(
-      bookRescheduleAppointmentInput.appointmentId,
-      REQUEST_ROLES.PATIENT,
-      apptDetails.patientId,
-      ''
-    );
+  if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
+    if (apptDetails.rescheduleCount == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_PATIENT) {
+      //cancel appt
+      appointmentRepo.cancelAppointment(
+        bookRescheduleAppointmentInput.appointmentId,
+        REQUEST_ROLES.PATIENT,
+        apptDetails.patientId,
+        'MAX_RESCHEDULES_EXCEEDED'
+      );
+    } else {
+      await appointmentRepo.rescheduleAppointment(
+        bookRescheduleAppointmentInput.appointmentId,
+        bookRescheduleAppointmentInput.newDateTimeslot,
+        apptDetails.rescheduleCount + 1,
+        APPOINTMENT_STATE.RESCHEDULE
+      );
+    }
+  }
 
-    const appointmentAttrs = {
-      patientId: apptDetails.patientId,
-      doctorId: apptDetails.doctorId,
-      status: STATUS.PENDING,
-      patientName: apptDetails.patientName,
-      appointmentDateTime: new Date(bookRescheduleAppointmentInput.newDateTimeslot.toISOString()),
-      appointmentState: APPOINTMENT_STATE.NEW,
-      isFollowUp: apptDetails.isFollowUp,
-      isFollowPaid: apptDetails.isFollowPaid,
-      followUpParentId: apptDetails.followUpParentId,
-      appointmentType: apptDetails.appointmentType,
-    };
-    const appointment = await appointmentRepo.saveAppointment(appointmentAttrs);
-    finalAppointmentId = appointment.id;
-  } else {
-    await appointmentRepo.rescheduleAppointment(
-      bookRescheduleAppointmentInput.appointmentId,
-      bookRescheduleAppointmentInput.newDateTimeslot,
-      apptDetails.rescheduleCount + 1,
-      APPOINTMENT_STATE.RESCHEDULE
-    );
+  if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.DOCTOR) {
+    if (
+      apptDetails.rescheduleCountByDoctor == ApiConstants.APPOINTMENT_MAX_RESCHEDULE_COUNT_DOCTOR
+    ) {
+      //cancel appt
+      appointmentRepo.cancelAppointment(
+        bookRescheduleAppointmentInput.appointmentId,
+        REQUEST_ROLES.PATIENT,
+        apptDetails.patientId,
+        'MAX_RESCHEDULES_EXCEEDED'
+      );
+    } else {
+      await appointmentRepo.rescheduleAppointmentByDoctor(
+        bookRescheduleAppointmentInput.appointmentId,
+        bookRescheduleAppointmentInput.newDateTimeslot,
+        apptDetails.rescheduleCountByDoctor + 1,
+        APPOINTMENT_STATE.RESCHEDULE
+      );
+    }
   }
 
   if (bookRescheduleAppointmentInput.initiatedBy == TRANSFER_INITIATED_TYPE.PATIENT) {
@@ -360,7 +374,6 @@ const bookRescheduleAppointment: Resolver<
   if (!appointmentDetails) {
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
-  console.log(appointmentDetails, 'modified details');
   return { appointmentDetails };
 };
 

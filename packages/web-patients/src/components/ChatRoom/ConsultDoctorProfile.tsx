@@ -285,7 +285,7 @@ interface ConsultDoctorProfileProps {
 }
 
 export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
 
   const { doctorDetails, appointmentId, hasDoctorJoined } = props;
   const { allCurrentPatients } = useAllCurrentPatients();
@@ -294,7 +294,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const [showMore, setShowMore] = useState<boolean>(true);
   const [moreOrLessMessage, setMoreOrLessMessage] = useState<string>('MORE');
 
-  const patientId = (allCurrentPatients && allCurrentPatients[0].id) || '';
+  const { currentPatient } = useAllCurrentPatients();
+  const patientId = currentPatient ? currentPatient.id : '';
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAppointments,
@@ -431,6 +432,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         <div className={classes.doctorImage}>
           <img
             src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}
+            height="300"
+            width="300"
             alt={firstName}
           />
           <div className={classes.moreProfileActions}>
@@ -459,118 +462,63 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               {moreOrLessMessage}
             </div>
           </div>
-          <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 514px'}>
-            <div className={showMore ? classes.hideMore : ''}>
-              <div className={classes.doctorInfoGroup}>
-                <div className={classes.infoRow}>
-                  <div className={classes.iconType}>
-                    <img src={require('images/ic-edu.svg')} alt="" />
-                  </div>
-                  <div className={classes.details}>{education}</div>
+          {/* <Scrollbars
+            autoHide={true}
+            autoHeight
+            autoHeightMax={"calc(100vh - 514px"}
+          > */}
+          <div className={showMore ? classes.hideMore : ''}>
+            <div className={classes.doctorInfoGroup}>
+              <div className={classes.infoRow}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-edu.svg')} alt="" />
                 </div>
+                <div className={classes.details}>{education}</div>
+              </div>
+              <div className={classes.infoRow}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-awards.svg')} alt="" />
+                </div>
+                <div className={classes.details}>
+                  {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
+                </div>
+              </div>
+            </div>
+            <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
+              <div className={classes.infoRow}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-location.svg')} alt="" />
+                </div>
+                <div className={classes.details}>{hospitalLocation}</div>
+              </div>
+              <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                <div className={classes.iconType}>
+                  <img src={require('images/ic-language.svg')} alt="" />
+                </div>
+                <div className={classes.details}>{languages}</div>
+              </div>
+            </div>
+            <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
+              <div className={classes.consultGroup}>
                 <div className={classes.infoRow}>
                   <div className={classes.iconType}>
-                    <img src={require('images/ic-awards.svg')} alt="" />
+                    <img src={require('images/ic-rupee.svg')} alt="" />
                   </div>
                   <div className={classes.details}>
-                    {awards && awards.replace(/<\/?[^>]+(>|$)/g, '')}
+                    Online Consultation
+                    <br />
+                    Clinic Visit
+                    {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
+                  </div>
+                  <div className={classes.doctorPrice}>
+                    Rs. {onlineConsultFees} <br />
+                    Rs. {physicalConsultationFees}
                   </div>
                 </div>
               </div>
-              <div className={`${classes.doctorInfoGroup} ${classes.opacityMobile}`}>
-                <div className={classes.infoRow}>
-                  <div className={classes.iconType}>
-                    <img src={require('images/ic-location.svg')} alt="" />
-                  </div>
-                  <div className={classes.details}>{hospitalLocation}</div>
-                </div>
-                <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                  <div className={classes.iconType}>
-                    <img src={require('images/ic-language.svg')} alt="" />
-                  </div>
-                  <div className={classes.details}>{languages}</div>
-                </div>
-              </div>
-              <div className={`${classes.doctorInfoGroup} ${classes.consultDoctorInfoGroup}`}>
-                <div className={classes.consultGroup}>
-                  <div className={classes.infoRow}>
-                    <div className={classes.iconType}>
-                      <img src={require('images/ic-rupee.svg')} alt="" />
-                    </div>
-                    <div className={classes.details}>
-                      Online Consultation
-                      <br />
-                      Clinic Visit
-                      {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
-                    </div>
-                    <div className={classes.doctorPrice}>
-                      Rs. {onlineConsultFees} <br />
-                      Rs. {physicalConsultationFees}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {appointmentDetails ? (
-                <div className={classes.appointmentDetails}>
-                  <div className={classes.sectionHead}>
-                    <span>Appointment Details</span>
-                    <span className={classes.moreIcon}>
-                      <img src={require('images/ic_more.svg')} alt="" />
-                    </span>
-                  </div>
-                  <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
-                    <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                      <div className={classes.iconType}>
-                        <img src={require('images/ic_calendar_show.svg')} alt="" />
-                      </div>
-                      <div className={classes.details}>
-                        {difference <= 15
-                          ? `in ${difference} mins`
-                          : otherDateMarkup(appointmentTime)}
-                      </div>
-                    </div>
-                    <div className={`${classes.infoRow} ${classes.textCenter}`}>
-                      <div className={classes.iconType}>
-                        <img src={require('images/ic-language.svg')} alt="" />
-                      </div>
-                      <div className={classes.details}>40 min average waiting time</div>
-                    </div>
-                    <div className={`${classes.infoRow}`}>
-                      <div className={classes.iconType}>
-                        <img src={require('images/ic-location.svg')} alt="" />
-                      </div>
-                      <div className={classes.details}>
-                        {hospitalLocation}
-                        <br />
-                        {address1}
-                        <br />
-                        {`${address2} ${address3}`}
-                      </div>
-                    </div>
-                  </div>
-                  <div className={classes.consultGroup}>
-                    <div className={classes.infoRow}>
-                      <div className={classes.iconType}>
-                        <img src={require('images/ic-rupee.svg')} alt="" />
-                      </div>
-                      <div className={classes.details}>
-                        Online Consultation
-                        <br />
-                        Clinic Visit
-                        <br />
-                        {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
-                        <AphButton className={classes.invoiceBtn}>Download Invoice</AphButton>
-                      </div>
-                      <div className={classes.doctorPrice}>
-                        Rs. {onlineConsultFees} <br />
-                        Rs. {physicalConsultationFees}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
             </div>
-          </Scrollbars>
+          </div>
+          {/* </Scrollbars> */}
           <div className={classes.buttonGroup}>
             {!hasDoctorJoined && (
               <div className={classes.joinInSection}>
@@ -583,6 +531,65 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
                 <span className={classes.joinTime}>14 mins</span>
               </div> */}
           </div>
+          {appointmentDetails ? (
+            <div className={classes.appointmentDetails}>
+              <div className={classes.sectionHead}>
+                <span>Appointment Details</span>
+                <span className={classes.moreIcon}>
+                  <img src={require('images/ic_more.svg')} alt="" />
+                </span>
+              </div>
+              <div className={`${classes.doctorInfoGroup} ${classes.noBorder}`}>
+                <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic_calendar_show.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    {difference <= 15 ? `in ${difference} mins` : otherDateMarkup(appointmentTime)}
+                  </div>
+                </div>
+                {/* <div className={`${classes.infoRow} ${classes.textCenter}`}>
+                  <div className={classes.iconType}>
+                    <img src={require("images/ic-language.svg")} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    40 min average waiting time
+                  </div>
+                </div> */}
+                {/* <div className={`${classes.infoRow}`}>
+                  <div className={classes.iconType}>
+                    <img src={require("images/ic-location.svg")} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    {hospitalLocation}
+                    <br />
+                    {address1}
+                    <br />
+                    {`${address2} ${address3}`}
+                  </div>
+                </div> */}
+              </div>
+              <div className={classes.consultGroup}>
+                <div className={classes.infoRow}>
+                  <div className={classes.iconType}>
+                    <img src={require('images/ic-rupee.svg')} alt="" />
+                  </div>
+                  <div className={classes.details}>
+                    Online Consultation
+                    <br />
+                    Clinic Visit
+                    <br />
+                    {/* <div className={classes.doctorPriceIn}>Rs. 299</div> */}
+                    <AphButton className={classes.invoiceBtn}>Download Invoice</AphButton>
+                  </div>
+                  <div className={classes.doctorPrice}>
+                    Rs. {onlineConsultFees} <br />
+                    Rs. {physicalConsultationFees}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
         <div className={classes.bottomActions}>
           {hasDoctorJoined && (

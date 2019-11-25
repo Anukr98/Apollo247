@@ -39,10 +39,13 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/bookTransferAppointment';
 import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { Spinner } from '../ui/Spinner';
-import { getNetStatus } from '../../helpers/helperFunctions';
-import { BottomPopUp } from '../ui/BottomPopUp';
-import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import {
+  CommonScreenLog,
+  CommonLogEvent,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   headerText: {
@@ -105,12 +108,10 @@ export const ChooseDoctor: React.FC<ChooseDoctorProps> = (props) => {
   useEffect(() => {
     getNetStatus().then((status) => {
       if (status) {
-        console.log('Network status', status);
         chooseDoctor();
       } else {
         setNetworkStatus(true);
         setshowSpinner(false);
-        console.log('Network status failed', status);
       }
     });
   });

@@ -21,15 +21,19 @@ import {
   Linking,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
-import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '../../graphql/types/getPatientPastConsultsAndPrescriptions';
-import { getMedicineDetailsApi } from '../../helpers/apiCalls';
-import { g } from '../../helpers/helperFunctions';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { AppConfig } from '../../strings/AppConfig';
-import { EPrescription, ShoppingCartItem, useShoppingCart } from '../ShoppingCartProvider';
+import { getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults_caseSheet_medicinePrescription } from '@aph/mobile-patients/src/graphql/types/getPatientPastConsultsAndPrescriptions';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import {
+  EPrescription,
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import RNFetchBlob from 'react-native-fetch-blob';
-import { MEDICINE_UNIT } from '../../graphql/types/globalTypes';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   viewStyle: {
@@ -111,26 +115,7 @@ type rowData = {
   status: string;
   desease: string;
 };
-const data: rowData = {
-  id: 'id',
-  salutation: 'Dr',
-  firstName: 'Mamatha',
-  lastName: 'V',
-  qualification: 'MBBS',
-  mobileNumber: '2345678909',
-  experience: '2',
-  languages: 'English,Telugu',
-  city: 'Hyderabad',
-  awards: '',
-  photoUrl:
-    'https://image.shutterstock.com/image-photo/smiling-doctor-posing-arms-crossed-600w-519507367.jpg',
-  specialty: undefined,
-  registrationNumber: '',
-  onlineConsultationFees: '',
-  physicalConsultationFees: '',
-  status: 'Follow-up to 20 Apr 2019',
-  desease: 'Cold, Cough, Fever, Nausea',
-};
+
 export interface HealthConsultViewProps extends NavigationScreenProps {
   PastData?: any; //getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_consults;
   onPressOrder?: () => void;
@@ -150,7 +135,6 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
       obj!.doctorType === 'PAYROLL'
     );
   });
-  // console.log('pharama', item);
 
   useEffect(() => {
     Platform.OS === 'android' && requestReadSmsPermission();
@@ -260,9 +244,16 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                 <View style={{ flexDirection: 'row' }}>
                   <View style={styles.imageView}>
                     {/* {data.image} */}
-                    {data.photoUrl &&
-                      data.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
-                        <Image style={styles.profileImageStyle} source={{ uri: data.photoUrl }} />
+                    {props.PastData &&
+                      props.PastData.doctorInfo &&
+                      props.PastData.doctorInfo.photoUrl &&
+                      props.PastData.doctorInfo.photoUrl.match(
+                        /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/
+                      ) && (
+                        <Image
+                          style={styles.profileImageStyle}
+                          source={{ uri: props.PastData.doctorInfo.photoUrl }}
+                        />
                       )}
                   </View>
                   <View style={{ flex: 1 }}>

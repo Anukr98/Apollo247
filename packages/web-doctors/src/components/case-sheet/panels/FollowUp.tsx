@@ -281,7 +281,12 @@ const defaultMaterialTheme = createMuiTheme({
     },
   },
 });
-export const FollowUp: React.FC = () => {
+
+interface CashSheetProps {
+  startAppointment: boolean;
+}
+
+export const FollowUp: React.FC<CashSheetProps> = (props) => {
   const classes = useStyles();
   const {
     followUp,
@@ -292,16 +297,15 @@ export const FollowUp: React.FC = () => {
     setFollowUpDate,
     followUpConsultType: consultTypeData,
     setFollowUpConsultType: setConsultTypeData,
+    appointmentInfo,
   } = useContext(CaseSheetContext);
   const [shouldFollowUp, setShouldFollowUp] = useState<boolean>(followUp[0]);
   const [followUpDays, setFollowUpDays] = useState<number>(
     parseInt(followUpAfterInDays[0], 10) || 5
   );
-  const [defaultValue, setDefaultValue] = useState(
-    parseInt(followUpAfterInDays[0], 10) ||
-      (followUpDate[0] !== null && followUpDate[0] !== '' ? 9 : 5)
-  );
-  //const [defaultValue, setDefaultValue] = useState(followUpDate ? 9 : 5);
+
+  const [defaultValue, setDefaultValue] = useState(parseInt(followUpAfterInDays[0], 10) || 5);
+
   const [followUpConsultType, setFollowUpConsultType] = useState<string>(consultTypeData[0]);
   const [selectedDate, handleDateChange] = useState<Date>(
     followUp[0] && followUpDate[0] !== '' && followUpDate[0] !== null
@@ -311,7 +315,6 @@ export const FollowUp: React.FC = () => {
   useEffect(() => {
     if (!shouldFollowUp) {
       handleDateChange(new Date());
-      setFollowUpDays(5);
       setFollowUpConsultType('');
     }
   }, [shouldFollowUp]);
@@ -329,6 +332,7 @@ export const FollowUp: React.FC = () => {
     followUpDate[0] = `${followUpDays === 9 ? selectedDate : addDays(new Date(), followUpDays)}`;
     setFollowUpDate(followUpDate);
   }, [followUpConsultType, shouldFollowUp, followUpDays, selectedDate]);
+
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Typography component="div" className={classes.followUpContainer}>
@@ -340,7 +344,7 @@ export const FollowUp: React.FC = () => {
             checked={shouldFollowUp}
             onChange={(e) => {
               setShouldFollowUp(e.target.checked);
-              followUp[0] = shouldFollowUp;
+              followUp[0] = e.target.checked;
               setFollowUp(followUp);
             }}
             value="followup"
@@ -363,6 +367,7 @@ export const FollowUp: React.FC = () => {
                 max={9}
                 defaultValue={defaultValue}
                 onChange={debounce((e, value) => setFollowUpDays(value), 200)}
+                disabled={!props.startAppointment}
               />
               {followUpDays === 9 && (
                 <div className={classes.recommendedType}>
@@ -384,8 +389,8 @@ export const FollowUp: React.FC = () => {
                         onKeyPress={(e) => {
                           if (e.key !== 'Enter' && isNaN(parseInt(e.key, 10))) e.preventDefault();
                         }}
-                        // InputAdornmentProps={{ position: 'end' }}
-                        onChange={(date) => handleDateChange((date as unknown) as Date)}
+                        onChange={(date) => handleDateChange(date as Date)}
+                        disabled={!props.startAppointment}
                       />
                     </span>
                   </ThemeProvider>
@@ -402,14 +407,18 @@ export const FollowUp: React.FC = () => {
                   value={followUpConsultType}
                   onChange={(e, newValue) => setFollowUpConsultType(newValue)}
                 >
-                  <ToggleButton value="ONLINE" className={classes.button}>
+                  <ToggleButton
+                    value="ONLINE"
+                    className={classes.button}
+                    disabled={!props.startAppointment}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"
                       height="24"
                       viewBox="0 0 24 24"
                     >
-                      <g fill="none" fill-rule="evenodd">
+                      <g fill="none" fillRule="evenodd">
                         <path
                           fill="#00B38E"
                           fillRule="nonzero"
@@ -419,7 +428,11 @@ export const FollowUp: React.FC = () => {
                     </svg>
                     online
                   </ToggleButton>
-                  <ToggleButton value="PHYSICAL" className={classes.button}>
+                  <ToggleButton
+                    value="PHYSICAL"
+                    className={classes.button}
+                    disabled={!props.startAppointment}
+                  >
                     {/* <img src={require('images/ic_clicic_consult.svg')} alt="" /> */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -427,10 +440,10 @@ export const FollowUp: React.FC = () => {
                       height="18"
                       viewBox="0 0 18 18"
                     >
-                      <g fill="none" fill-rule="evenodd">
+                      <g fill="none" fillRule="evenodd">
                         <path
                           fill="#00B38E"
-                          fill-rule="nonzero"
+                          fillRule="nonzero"
                           d="M17 16h-1V2c0-.55-.45-1-1-1h-4c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v15H1c-.55 0-1 .45-1 1s.45 1 1 1h9c.55 0 1-.45 1-1V3h3v14c0 .55.45 1 1 1h2c.55 0 1-.45 1-1s-.45-1-1-1zm-8-6H7V8h2v2z"
                         />
                       </g>

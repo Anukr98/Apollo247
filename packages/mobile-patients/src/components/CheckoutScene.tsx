@@ -45,7 +45,7 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { CommonLogEvent } from '../FunctionHelpers/DeviceHelper';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const styles = StyleSheet.create({
   headerContainerStyle: {
@@ -519,10 +519,10 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       <StickyBottomComponent style={styles.stickyBottomComponentStyle}>
         <Button
           style={{ width: '66.66%' }}
-          title={`PAY RS. ${grandTotal.toPrecision()}`}
+          title={`PAY RS. ${grandTotal.toFixed(2)}`}
           onPress={() => {
             try {
-              CommonLogEvent(AppRoutes.CheckoutScene, `PAY RS. ${grandTotal.toPrecision()}`);
+              CommonLogEvent(AppRoutes.CheckoutScene, `PAY RS. ${grandTotal.toFixed(2)}`);
             } catch (error) {}
             initiateOrder();
           }}

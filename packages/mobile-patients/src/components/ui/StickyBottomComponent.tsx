@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dimensions, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { theme } from '../../theme/theme';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 const { height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({

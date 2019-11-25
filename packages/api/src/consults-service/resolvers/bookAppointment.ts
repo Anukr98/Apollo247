@@ -214,12 +214,12 @@ const bookAppointment: Resolver<
     appointmentState: APPOINTMENT_STATE.NEW,
   };
   const appointment = await appts.saveAppointment(appointmentAttrs);
-  appts.getDoctorNextSlotDate(
-    appointmentInput.doctorId,
-    appointmentInput.appointmentDateTime,
-    doctorsDb,
-    appointmentInput.appointmentType
-  );
+  // appts.getDoctorNextSlotDate(
+  //   appointmentInput.doctorId,
+  //   appointmentInput.appointmentDateTime,
+  //   doctorsDb,
+  //   appointmentInput.appointmentType
+  // );
   let smsMessage = ApiConstants.BOOK_APPOINTMENT_SMS_MESSAGE.replace(
     '{0}',
     patientDetails.firstName

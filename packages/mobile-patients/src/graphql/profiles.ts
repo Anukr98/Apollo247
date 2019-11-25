@@ -15,6 +15,7 @@ export const GET_CURRENT_PATIENTS = gql`
         emailAddress
         gender
         dateOfBirth
+        photoUrl
       }
     }
   }
@@ -37,6 +38,98 @@ export const UPDATE_PATIENT = gql`
     }
   }
 `;
+
+// export const GET_PATIENTS = gql`
+//   query getPatients {
+//     getPatients {
+//       patients {
+//         addressList {
+//           id
+//           addressType
+//           addressLine1
+//           addressLine2
+//           state
+//           landmark
+//           createdDate
+//           updatedDate
+//           mobileNumber
+//           city
+//           otherAddressType
+//         }
+//         id
+//         mobileNumber
+//         firstName
+//         lastName
+//         relation
+//         uhid
+//         gender
+//         emailAddress
+//         gender
+//         dateOfBirth
+//       }
+//     }
+//   }
+// `;
+
+export const GET_PATIENTS_MOBILE = gql`
+  query getPatientByMobileNumber($mobileNumber: String) {
+    getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+      patients {
+        id
+        uhid
+        firstName
+        lastName
+        mobileNumber
+        dateOfBirth
+        emailAddress
+        gender
+        relation
+        photoUrl
+        photoUrl
+      }
+    }
+  }
+`;
+
+export const ADD_NEW_PROFILE = gql`
+  mutation addNewProfile($PatientProfileInput: PatientProfileInput!) {
+    addNewProfile(patientProfileInput: $PatientProfileInput) {
+      patient {
+        id
+        uhid
+        mobileNumber
+        firstName
+        lastName
+        emailAddress
+        gender
+      }
+    }
+  }
+`;
+
+// export const EDIT_PROFILE = gql`
+//   mutation editProfile($editProfileInput: EditProfileInput!) {
+//     editProfile(editProfileInput: $editProfileInput) {
+//       patient {
+//         id
+//         photoUrl
+//         firstName
+//         lastName
+//         relation
+//         gender
+//         dateOfBirth
+//         emailAddress
+//       }
+//     }
+//   }
+// `;
+// export const DELETE_PROFILE = gql`
+//   mutation deleteProfile($patientId: String) {
+//     deleteProfile(patientId: $patientId) {
+//       status
+//     }
+//   }
+// `;
 
 export const BOOK_APPOINTMENT = gql`
   mutation bookAppointment($bookAppointment: BookAppointmentInput!) {
@@ -540,6 +633,8 @@ export const SAVE_PATIENT_ADDRESS = gql`
         landmark
         createdDate
         updatedDate
+        addressType
+        otherAddressType
       }
     }
   }
@@ -557,7 +652,123 @@ export const UPDATE_PATIENT_ADDRESS = gql`
         landmark
         createdDate
         updatedDate
+        addressType
+        otherAddressType
       }
+    }
+  }
+`;
+export const DELETE_PATIENT_ADDRESS = gql`
+  mutation deletePatientAddress($id: String) {
+    deletePatientAddress(id: $id) {
+      status
+    }
+  }
+`;
+
+// export const GET_PATIENTS_MOBILE = gql`
+//   query getPatientByMobileNumber($mobileNumber: String) {
+//     getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+//       patients {
+//         id
+//         firstName
+//         dateOfBirth
+//         gender
+//         uhid
+//         lastName
+//         relation
+//       }
+//     }
+//   }
+// `;
+export const GET_PATIENTS = gql`
+  query getPatients {
+    getPatients {
+      patients {
+        addressList {
+          id
+          addressType
+          addressLine1
+          addressLine2
+          state
+          landmark
+          createdDate
+          updatedDate
+          mobileNumber
+          city
+          otherAddressType
+        }
+        id
+        mobileNumber
+        firstName
+        lastName
+        relation
+        uhid
+        gender
+        emailAddress
+        gender
+        dateOfBirth
+      }
+    }
+  }
+`;
+
+// export const GET_PATIENTS_MOBILE = gql`
+//   query getPatientByMobileNumber($mobileNumber: String) {
+//     getPatientByMobileNumber(mobileNumber: $mobileNumber) {
+//       patients {
+//         id
+//         uhid
+//         firstName
+//         lastName
+//         mobileNumber
+//         dateOfBirth
+//         emailAddress
+//         gender
+//         relation
+//         photoUrl
+//         photoUrl
+//       }
+//     }
+//   }
+// `;
+
+// export const ADD_NEW_PROFILE = gql`
+//   mutation addNewProfile($PatientProfileInput: PatientProfileInput!) {
+//     addNewProfile(patientProfileInput: $PatientProfileInput) {
+//       patient {
+//         id
+//         uhid
+//         mobileNumber
+//         firstName
+//         lastName
+//         emailAddress
+//         gender
+//       }
+//     }
+//   }
+// `;
+
+export const EDIT_PROFILE = gql`
+  mutation editProfile($editProfileInput: EditProfileInput!) {
+    editProfile(editProfileInput: $editProfileInput) {
+      patient {
+        id
+        photoUrl
+        firstName
+        lastName
+        relation
+        gender
+        dateOfBirth
+        emailAddress
+      }
+    }
+  }
+`;
+export const DELETE_PROFILE = gql`
+  mutation deleteProfile($patientId: String) {
+    deleteProfile(patientId: $patientId) {
+      status
     }
   }
 `;
@@ -575,6 +786,8 @@ export const GET_PATIENT_ADDRESS_LIST = gql`
         landmark
         createdDate
         updatedDate
+        addressType
+        otherAddressType
       }
     }
   }
@@ -708,6 +921,168 @@ export const GET_MEDICINE_ORDERS_LIST = gql`
           id
           orderStatus
           statusDate
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_SLOTS = gql`
+  query getDiagnosticSlots(
+    $patientId: String
+    $hubCode: String
+    $selectedDate: Date
+    $zipCode: Int
+  ) {
+    getDiagnosticSlots(
+      patientId: $patientId
+      hubCode: $hubCode
+      selectedDate: $selectedDate
+      zipCode: $zipCode
+    ) {
+      diagnosticBranchCode
+      diagnosticSlot {
+        employeeCode
+        employeeName
+        slotInfo {
+          endTime
+          status
+          startTime
+          slot
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_DATA = gql`
+  query getDiagnosticsData {
+    getDiagnosticsData {
+      diagnosticOrgans {
+        id
+        organName
+        organImage
+        diagnostics {
+          id
+          itemId
+          itemName
+          gender
+          rate
+          itemRemarks
+          city
+          state
+          itemType
+          fromAgeInDays
+          toAgeInDays
+          testPreparationData
+          collectionType
+        }
+      }
+      diagnosticHotSellers {
+        id
+        packageName
+        price
+        packageImage
+        diagnostics {
+          id
+          itemId
+          itemName
+          gender
+          rate
+          itemRemarks
+          city
+          state
+          itemType
+          fromAgeInDays
+          toAgeInDays
+          testPreparationData
+          collectionType
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_LIST = gql`
+  query getDiagnosticOrdersList($patientId: String) {
+    getDiagnosticOrdersList(patientId: $patientId) {
+      ordersList {
+        id
+        patientAddressId
+        city
+        slotTimings
+        employeeSlotId
+        diagnosticEmployeeCode
+        diagnosticBranchCode
+        totalPrice
+        prescriptionUrl
+        diagnosticDate
+        centerName
+        centerCode
+        centerCity
+        centerState
+        centerLocality
+        orderStatus
+        orderType
+        displayId
+        createdDate
+        diagnosticOrderLineItems {
+          id
+          itemId
+          quantity
+          price
+          diagnostics {
+            id
+            itemId
+            itemName
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTIC_ORDER_LIST_DETAILS = gql`
+  query getDiagnosticOrderDetails($diagnosticOrderId: String) {
+    getDiagnosticOrderDetails(diagnosticOrderId: $diagnosticOrderId) {
+      ordersList {
+        id
+        patientAddressId
+        city
+        slotTimings
+        employeeSlotId
+        diagnosticEmployeeCode
+        diagnosticBranchCode
+        totalPrice
+        prescriptionUrl
+        diagnosticDate
+        centerName
+        centerCode
+        centerCity
+        centerState
+        centerLocality
+        orderStatus
+        orderType
+        displayId
+        createdDate
+        diagnosticOrderLineItems {
+          id
+          itemId
+          price
+          quantity
+          diagnostics {
+            id
+            itemId
+            itemName
+            gender
+            rate
+            itemRemarks
+            city
+            state
+            itemType
+            fromAgeInDays
+            collectionType
+          }
         }
       }
     }
@@ -974,6 +1349,7 @@ export const GET_PAST_CONSULTS_PRESCRIPTIONS = gql`
         displayId
         bookingDate
         caseSheet {
+          notes
           blobName
           consultType
           diagnosis {
@@ -1214,6 +1590,53 @@ export const DELETE_DEVICE_TOKEN = gql`
   mutation deleteDeviceToken($deviceToken: String, $patientId: String) {
     deleteDeviceToken(deviceToken: $deviceToken, patientId: $patientId) {
       status
+    }
+  }
+`;
+
+export const SEARCH_DIAGNOSTICS = gql`
+  query searchDiagnostics($city: String, $patientId: String, $searchText: String) {
+    searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
+      diagnostics {
+        id
+        itemId
+        itemName
+        itemType
+        rate
+        itemType
+        gender
+        itemRemarks
+        city
+        state
+        collectionType
+        fromAgeInDays
+        toAgeInDays
+        testPreparationData
+      }
+    }
+  }
+`;
+
+export const GET_DIAGNOSTICS_CITES = gql`
+  query getDiagnosticsCites($patientId: String, $cityName: String) {
+    getDiagnosticsCites(patientId: $patientId, cityName: $cityName) {
+      diagnosticsCities {
+        cityname
+        statename
+        cityid
+        stateid
+      }
+    }
+  }
+`;
+
+export const SAVE_DIAGNOSTIC_ORDER = gql`
+  mutation SaveDiagnosticOrder($diagnosticOrderInput: DiagnosticOrderInput) {
+    SaveDiagnosticOrder(diagnosticOrderInput: $diagnosticOrderInput) {
+      errorCode
+      errorMessage
+      orderId
+      displayId
     }
   }
 `;

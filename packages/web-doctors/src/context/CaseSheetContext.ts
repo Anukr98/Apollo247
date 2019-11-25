@@ -9,6 +9,7 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile,
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails_healthVault,
+  GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument,
 } from 'graphql/types/GetCaseSheet';
 import { createContext } from 'react';
 
@@ -41,16 +42,8 @@ export interface CaseSheetContextProps {
         React.SetStateAction<GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null>
       >
     | (() => void);
-  diagnosticPrescription:
-    | GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
-    | null;
-  setDiagnosticPrescription:
-    | React.Dispatch<
-        React.SetStateAction<
-          GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] | null
-        >
-      >
-    | (() => void);
+  diagnosticPrescription: any[] | null;
+  setDiagnosticPrescription: React.Dispatch<React.SetStateAction<any[] | null>> | (() => void);
   medicinePrescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null;
   setMedicinePrescription:
     | React.Dispatch<
@@ -71,6 +64,7 @@ export interface CaseSheetContextProps {
   setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
   healthVault: GetCaseSheet_getCaseSheet_patientDetails_healthVault[] | null;
   pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
+  appointmentDocuments: appointmentDocument[] | null;
   height: string;
   weight: string;
   temperature: string;
@@ -100,6 +94,8 @@ export interface CaseSheetContextProps {
 
   jrdName: string;
   jrdSubmitDate: string;
+  documentArray: appointmentDocument | null;
+  setDocumentArray: (documentArray: appointmentDocument) => void;
 }
 
 export const CaseSheetContext = createContext<CaseSheetContextProps>({
@@ -108,6 +104,7 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   caseSheetEdit: false,
   patientDetails: null,
   appointmentInfo: null,
+  appointmentDocuments: null,
   createdDoctorProfile: null,
   caseSheetId: null,
   symptoms: null,
@@ -135,6 +132,8 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setFollowUpDate: () => {},
   healthVault: null,
   pastAppointments: null,
+  documentArray: null,
+  setDocumentArray: (documentArray: appointmentDocument) => {},
   height: '',
   weight: '',
   bp: '',

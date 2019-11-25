@@ -50,8 +50,8 @@ import {
   View,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { ArrowRight } from '../ui/Icons';
-import { CommonScreenLog, CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { ArrowRight } from '@aph/mobile-patients/src/components/ui/Icons';
+import { CommonScreenLog, CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width } = Dimensions.get('window');
 

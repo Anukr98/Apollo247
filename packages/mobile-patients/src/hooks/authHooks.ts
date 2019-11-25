@@ -1,10 +1,18 @@
 import { useContext, useEffect } from 'react';
 import { AuthContext } from '@aph/mobile-patients/src/components/AuthProvider';
+import { useApolloClient } from 'react-apollo-hooks';
 // import { useQuery } from 'react-apollo-hooks';
 // import { GetCurrentPatients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 // import { GET_CURRENT_PATIENTS } from '@aph/mobile-patients/src/graphql/profiles';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { AsyncStorage } from 'react-native';
+import {
+  getPatientAddressList,
+  getPatientAddressListVariables,
+} from '@aph/mobile-patients/src/graphql/types/getPatientAddressList';
+import { GET_PATIENT_ADDRESS_LIST } from '@aph/mobile-patients/src/graphql/profiles';
+import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const useAuthContext = () => useContext(AuthContext);
 
@@ -63,6 +71,9 @@ export const useAllCurrentPatients = () => {
   // console.log('hasAuthToken', hasAuthToken);
   // console.log('hasAuthToken error', error);
   // console.log('data', data);
+  const client = useApolloClient();
+  const shopCart = useShoppingCart();
+  const diagCart = useDiagnosticsCart();
 
   const setCurrentPatientId = useAuthContext().setCurrentPatientId!;
   const currentPatientId = useAuthContext().currentPatientId;

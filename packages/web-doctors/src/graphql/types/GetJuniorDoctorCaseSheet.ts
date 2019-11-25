@@ -8,10 +8,16 @@ import { STATUS, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMINGS, MEDICINE_UNIT, Gender, 
 // GraphQL query operation: GetJuniorDoctorCaseSheet
 // ====================================================
 
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments {
+  __typename: "AppointmentDocuments";
+  documentPath: string | null;
+}
+
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment {
   __typename: "Appointment";
   id: string;
   appointmentDateTime: any;
+  appointmentDocuments: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment_appointmentDocuments | null)[] | null;
   status: STATUS;
   appointmentState: string | null;
   displayId: string;
@@ -56,6 +62,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   __typename: "CaseSheet";
   id: string | null;
   doctorId: string | null;
+  status: string | null;
   appointment: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_appointment | null;
   medicinePrescription: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription | null)[] | null;
   otherInstructions: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions | null)[] | null;
@@ -67,6 +74,18 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDeta
   followUpAfterInDays: string | null;
   consultType: string | null;
   notes: string | null;
+}
+
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile {
+  __typename: "Profile";
+  firstName: string | null;
+  lastName: string | null;
+}
+
+export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorCaseSheet {
+  __typename: "CaseSheet";
+  createdDate: any | null;
+  createdDoctorProfile: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorCaseSheet_createdDoctorProfile | null;
 }
 
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails_familyHistory {
@@ -185,6 +204,7 @@ export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointme
 export interface GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet {
   __typename: "CaseSheetFullDetails";
   caseSheetDetails: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails | null;
+  juniorDoctorCaseSheet: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_juniorDoctorCaseSheet | null;
   patientDetails: GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_patientDetails | null;
   pastAppointments: (GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_pastAppointments | null)[] | null;
   juniorDoctorNotes: string | null;

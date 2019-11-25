@@ -150,6 +150,9 @@ export class Appointment extends BaseEntity {
   @Column({ default: 0 })
   rescheduleCount: number;
 
+  @Column({ default: 0 })
+  rescheduleCountByDoctor: number;
+
   @Column()
   status: STATUS;
 
@@ -201,6 +204,9 @@ export class AppointmentDocuments extends BaseEntity {
 
   @Column({ nullable: true })
   documentPath: string;
+
+  @Column({ nullable: true })
+  prismFileId: string;
 
   @ManyToOne((type) => Appointment, (appointment) => appointment.appointmentDocuments)
   appointment: Appointment;
@@ -431,6 +437,9 @@ export class CaseSheet extends BaseEntity {
 
   @Column({ nullable: true, type: 'text' })
   blobName: string;
+
+  @Column({ nullable: true, type: 'text' })
+  prismFileId: string;
 
   @Column()
   consultType: APPOINTMENT_TYPE;

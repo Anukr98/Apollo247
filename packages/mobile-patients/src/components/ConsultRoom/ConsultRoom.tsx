@@ -8,6 +8,9 @@ import {
   MyHealth,
   Person,
   ShoppingCart,
+  TestsIcon,
+  MedicineIcon,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
@@ -46,7 +49,10 @@ import DeviceInfo from 'react-native-device-info';
 import firebase from 'react-native-firebase';
 import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { NotificationListener } from '../NotificationListener';
+import { NotificationListener } from '@aph/mobile-patients/src/components/NotificationListener';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 
 const { width, height } = Dimensions.get('window');
 
@@ -120,6 +126,22 @@ const styles = StyleSheet.create({
     borderColor: '#dddddd',
     marginHorizontal: 16,
   },
+  placeholderViewStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    borderBottomWidth: 2,
+    paddingTop: 6,
+    paddingBottom: 3,
+    borderColor: theme.colors.INPUT_BORDER_SUCCESS,
+  },
+  placeholderStyle: {
+    color: theme.colors.placeholderTextColor,
+  },
+  placeholderTextStyle: {
+    color: '#01475b',
+    ...theme.fonts.IBMPlexSansMedium(18),
+  },
 });
 
 type ArrayTest = {
@@ -142,12 +164,12 @@ const arrayTest: ArrayTest[] = [
     descripiton: 'SEARCH MEDICINE',
     image: require('@aph/mobile-patients/src/images/home/medicine.png'),
   },
-  // {
-  //   id: 3,
-  //   title: 'Do you want to get some tests done?',
-  //   descripiton: 'BOOK A TEST',
-  //   image: require('@aph/mobile-patients/src/images/home/test.png'),
-  // },
+  {
+    id: 3,
+    title: 'Do you want to get some tests done?',
+    descripiton: 'BOOK A TEST',
+    image: require('@aph/mobile-patients/src/images/home/test.png'),
+  },
 ];
 
 type TabBarOptions = {
@@ -174,6 +196,11 @@ const tabBarOptions: TabBarOptions[] = [
   },
   {
     id: 4,
+    title: 'TESTS',
+    image: <TestsIcon style={{ marginTop: -4 }} />,
+  },
+  {
+    id: 5,
     title: 'MY ACCOUNT',
     image: <Person style={{ marginTop: -4 }} />,
   },
@@ -185,34 +212,32 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
 
   const startDoctor = string.home.startDoctor;
   const scrollViewWidth = arrayTest.length * 250 + arrayTest.length * 20;
-  const [showPopUp, setshowPopUp] = useState<boolean>(true);
+  const [showPopUp, setshowPopUp] = useState<boolean>(false);
   const [showMenu, setShowMenu] = useState<boolean>(false);
-  const [userName, setuserName] = useState<string>('');
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+
   const { analytics, getPatientApiCall } = useAuth();
   const { currentPatient, allCurrentPatients } = useAllCurrentPatients();
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
   const [deviceTokenApICalled, setDeviceTokenApICalled] = useState<boolean>(false);
 
   useEffect(() => {
-    let userName =
-      currentPatient && currentPatient.firstName ? currentPatient.firstName.split(' ')[0] : '';
-    userName = userName.toLowerCase();
-    setuserName(userName);
     currentPatient && setshowSpinner(false);
-
     if (!currentPatient) {
-      console.log('No current patients available');
+      console.log('No current patients available', allCurrentPatients);
       getPatientApiCall();
     }
 
     analytics.setAnalyticsCollectionEnabled(true);
-  }, [currentPatient, analytics, userName, props.navigation.state.params]);
+  }, [currentPatient, analytics, props.navigation.state.params]);
 
   useEffect(() => {
     async function fetchData() {
       const userLoggedIn = await AsyncStorage.getItem('gotIt');
       if (userLoggedIn == 'true') {
         setshowPopUp(false);
+      } else {
+        setshowPopUp(true);
       }
     }
     fetchData();
@@ -337,8 +362,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
               <Text
                 style={[
                   styles.textStyle,
-                  profile.firstName &&
-                  userName === profile.firstName.split(' ')[0].toLocaleLowerCase()
+                  profile.firstName && currentPatient!.firstName === profile.firstName
                     ? { color: theme.colors.APP_GREEN }
                     : null,
                 ]}
@@ -546,6 +570,9 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MEDICINES clicked');
                   props.navigation.navigate('MEDICINES');
                 } else if (i == 3) {
+                  CommonLogEvent(AppRoutes.ConsultRoom, 'TESTS clicked');
+                  props.navigation.navigate('TESTS');
+                } else if (i == 4) {
                   CommonLogEvent(AppRoutes.ConsultRoom, 'MY_ACCOUNT clicked');
                   props.navigation.navigate('MY ACCOUNT');
                 }
@@ -553,7 +580,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
             >
               <View
                 style={{
-                  width: width / 4,
+                  width: width / 5,
                   height: 57,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -614,7 +641,6 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                   paddingTop: 16,
                   paddingHorizontal: 20,
                   backgroundColor: theme.colors.WHITE,
-                  marginTop: 4,
                 }}
               >
                 <TouchableOpacity
@@ -634,9 +660,37 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                 }}
               >
                 <View style={{ flexDirection: 'row' }}>
-                  <Text style={styles.hiTextStyle}>
+                  <ProfileList
+                    navigation={props.navigation}
+                    saveUserChange={true}
+                    childView={
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          paddingRight: 8,
+                          borderRightWidth: 0,
+                          borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                          backgroundColor: theme.colors.WHITE,
+                        }}
+                      >
+                        <Text style={styles.hiTextStyle}>{'hi'}</Text>
+                        <View>
+                          <Text style={styles.nameTextStyle}>
+                            {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                          </Text>
+                          <View style={styles.seperatorStyle} />
+                        </View>
+                        <View style={{ paddingTop: 15 }}>
+                          <DropdownGreen />
+                        </View>
+                      </View>
+                    }
+                    setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+                    unsetloaderDisplay={true}
+                  ></ProfileList>
+                  {/* <Text style={styles.hiTextStyle}>
                     {string.home.hi} {userName}!
-                  </Text>
+                  </Text> */}
                   {/* <View>
                     <View
                       style={{
@@ -665,8 +719,11 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
                       CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
                       props.navigation.navigate(AppRoutes.DoctorSearch);
                     } else if (i == 1) {
-                      CommonLogEvent(AppRoutes.ConsultRoom, 'DoctorSearch_clicked');
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'SearchMedicineScene_clicked');
                       props.navigation.navigate(AppRoutes.SearchMedicineScene);
+                    } else if (i == 2) {
+                      CommonLogEvent(AppRoutes.ConsultRoom, 'SearchTestScene_clicked');
+                      props.navigation.navigate(AppRoutes.SearchTestScene);
                     }
                   }}
                 >
@@ -762,6 +819,14 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = (props) => {
         </View>
       </BottomPopUp> */}
       {showSpinner && <Spinner />}
+      {/* {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )} */}
       <NotificationListener navigation={props.navigation} />
     </View>
   );

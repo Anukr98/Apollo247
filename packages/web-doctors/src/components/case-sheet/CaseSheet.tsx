@@ -164,9 +164,15 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
   const [followUpPanel, setFollowUpPanel] = useState<boolean>(props.startAppointment);
   const [otherInstructions, setOtherInstructions] = useState<boolean>(props.startAppointment);
   const [vitals, setVitals] = useState<boolean>(props.startAppointment);
+  const { appointmentInfo } = useContext(CaseSheetContext);
 
   const items = [
-    { key: 'symptoms', value: 'Chief Complaints', state: symptoms, component: <Symptoms /> },
+    {
+      key: 'symptoms',
+      value: 'Chief Complaints',
+      state: symptoms,
+      component: <Symptoms />,
+    },
     {
       key: 'lifestyle',
       value: 'Patient’s Medical and Family History',
@@ -185,8 +191,18 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       state: healthVault,
       component: <HealthVault />,
     },
-    { key: 'note', value: "Junior Doctor's Notes", state: note, component: <DoctorsNotes /> },
-    { key: 'diagnosis', value: 'Diagnosis', state: diagnosis, component: <Diagnosis /> },
+    {
+      key: 'note',
+      value: "Junior Doctor's Notes",
+      state: note,
+      component: <DoctorsNotes />,
+    },
+    {
+      key: 'diagnosis',
+      value: 'Diagnosis',
+      state: diagnosis,
+      component: <Diagnosis />,
+    },
     {
       key: 'medicinePrescription',
       value: 'Medication Prescribed',
@@ -205,16 +221,15 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
       state: otherInstructions,
       component: <OtherInstructions />,
     },
-    { key: 'followup', value: 'Follow up', state: followUpPanel, component: <FollowUp /> },
+    {
+      key: 'followup',
+      value: 'Follow up',
+      state: followUpPanel,
+      component: <FollowUp startAppointment={props.startAppointment} />,
+    },
   ];
 
-  const { notes, setSRDNotes, followUp, setFollowUp } = useContext(CaseSheetContext);
-
-  useEffect(() => {
-    followUp[0] = props.startAppointment;
-    setFollowUp(followUp);
-  }, [props.startAppointment]);
-
+  const { notes, setSRDNotes } = useContext(CaseSheetContext);
   const handlePanelExpansion = (expansionKey: string) => (
     e: React.ChangeEvent<{}>,
     isExpanded: boolean
@@ -289,6 +304,7 @@ export const CaseSheet: React.FC<CashSheetProps> = (props) => {
             onBlur={(e) => {
               setSRDNotes(e.target.value);
             }}
+            disabled={!props.startAppointment}
           />
         </Typography>
       </Box>

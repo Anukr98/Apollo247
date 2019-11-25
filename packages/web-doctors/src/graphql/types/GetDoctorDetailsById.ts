@@ -2,75 +2,50 @@
 /* eslint-disable */
 // This file was automatically generated and should not be edited.
 
-import { Salutation, DoctorType, ConsultMode, ConsultType, WeekDay } from "./globalTypes";
+import { DoctorType, DOCTOR_ONLINE_STATUS, Salutation, ConsultMode, ConsultType, WeekDay, AccountType } from "./globalTypes";
 
 // ====================================================
 // GraphQL query operation: GetDoctorDetailsById
 // ====================================================
 
-export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty {
-  __typename: "DoctorSpecialties";
-  id: string;
+export interface GetDoctorDetailsById_getDoctorDetailsById_consultHours {
+  __typename: "ConsultHours";
+  consultMode: ConsultMode;
+  startTime: string;
+  endTime: string;
+  consultType: ConsultType;
+  weekDay: WeekDay;
+  consultDuration: number | null;
+}
+
+export interface GetDoctorDetailsById_getDoctorDetailsById_packages {
+  __typename: "Packages";
   name: string;
-  image: string | null;
+  fees: string;
 }
 
-export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility {
-  __typename: "Facility";
-  name: string;
-  facilityType: string;
-  streetLine1: string | null;
-  streetLine2: string | null;
-  streetLine3: string | null;
-  city: string | null;
-  country: string | null;
-  latitude: string | null;
-  longitude: string | null;
-  id: string;
-}
-
-export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital {
-  __typename: "DoctorHospital";
-  facility: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility;
-}
-
-export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor {
-  __typename: "Profile";
-  firstName: string | null;
-  lastName: string | null;
-  experience: string | null;
-  qualification: string | null;
-  id: string;
-  photoUrl: string | null;
-  specialty: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty;
-  doctorHospital: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital[];
-}
-
-export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam {
-  __typename: "StarTeam";
-  associatedDoctor: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor | null;
+export interface GetDoctorDetailsById_getDoctorDetailsById_bankAccount {
+  __typename: "BankAccount";
+  accountNumber: string;
+  state: string | null;
+  IFSCcode: string;
+  accountType: AccountType;
+  bankName: string;
+  accountHolderName: string;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_specialty {
   __typename: "DoctorSpecialties";
-  id: string;
-  image: string | null;
   name: string;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility {
   __typename: "Facility";
-  city: string | null;
-  country: string | null;
-  facilityType: string;
-  latitude: string | null;
-  longitude: string | null;
   name: string;
-  state: string | null;
   streetLine1: string | null;
   streetLine2: string | null;
   streetLine3: string | null;
-  id: string;
+  city: string | null;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById_doctorHospital {
@@ -78,40 +53,90 @@ export interface GetDoctorDetailsById_getDoctorDetailsById_doctorHospital {
   facility: GetDoctorDetailsById_getDoctorDetailsById_doctorHospital_facility;
 }
 
-export interface GetDoctorDetailsById_getDoctorDetailsById_consultHours {
-  __typename: "ConsultHours";
-  consultMode: ConsultMode;
-  consultType: ConsultType;
-  endTime: string;
+export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility {
+  __typename: "Facility";
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  city: string | null;
+}
+
+export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital {
+  __typename: "DoctorHospital";
+  facility: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital_facility;
+}
+
+export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty {
+  __typename: "DoctorSpecialties";
+  name: string;
+}
+
+export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor {
+  __typename: "Profile";
+  country: string | null;
+  doctorType: DoctorType;
+  delegateNumber: string | null;
+  emailAddress: string | null;
+  experience: string | null;
+  firstName: string | null;
   id: string;
-  startTime: string;
-  weekDay: WeekDay;
-  isActive: boolean;
+  lastName: string | null;
+  mobileNumber: string;
+  photoUrl: string | null;
+  qualification: string | null;
+  salutation: Salutation | null;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
+  zip: string | null;
+  doctorHospital: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_doctorHospital[];
+  specialty: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor_specialty;
+}
+
+export interface GetDoctorDetailsById_getDoctorDetailsById_starTeam {
+  __typename: "StarTeam";
+  isActive: boolean | null;
+  associatedDoctor: GetDoctorDetailsById_getDoctorDetailsById_starTeam_associatedDoctor | null;
 }
 
 export interface GetDoctorDetailsById_getDoctorDetailsById {
   __typename: "DoctorDetails";
-  id: string;
-  salutation: Salutation | null;
+  awards: string | null;
+  city: string | null;
+  country: string | null;
+  dateOfBirth: string | null;
+  doctorType: DoctorType;
+  delegateNumber: string | null;
+  emailAddress: string | null;
+  experience: string | null;
+  firebaseToken: string | null;
+  displayName: string | null;
   firstName: string;
+  isActive: boolean;
+  id: string;
+  languages: string | null;
   lastName: string;
   mobileNumber: string;
-  experience: string | null;
-  specialization: string | null;
-  languages: string | null;
-  city: string | null;
-  awards: string | null;
-  photoUrl: string | null;
-  registrationNumber: string;
   onlineConsultationFees: string;
+  onlineStatus: DOCTOR_ONLINE_STATUS;
+  photoUrl: string | null;
   physicalConsultationFees: string;
   qualification: string | null;
-  doctorType: DoctorType;
-  starTeam: (GetDoctorDetailsById_getDoctorDetailsById_starTeam | null)[] | null;
-  specialty: GetDoctorDetailsById_getDoctorDetailsById_specialty | null;
+  registrationNumber: string;
+  salutation: Salutation | null;
+  specialization: string | null;
+  state: string | null;
+  streetLine1: string | null;
+  streetLine2: string | null;
+  streetLine3: string | null;
   zip: string | null;
-  doctorHospital: GetDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
   consultHours: (GetDoctorDetailsById_getDoctorDetailsById_consultHours | null)[] | null;
+  packages: (GetDoctorDetailsById_getDoctorDetailsById_packages | null)[] | null;
+  bankAccount: (GetDoctorDetailsById_getDoctorDetailsById_bankAccount | null)[] | null;
+  specialty: GetDoctorDetailsById_getDoctorDetailsById_specialty | null;
+  doctorHospital: GetDoctorDetailsById_getDoctorDetailsById_doctorHospital[];
+  starTeam: (GetDoctorDetailsById_getDoctorDetailsById_starTeam | null)[] | null;
 }
 
 export interface GetDoctorDetailsById {
@@ -119,5 +144,5 @@ export interface GetDoctorDetailsById {
 }
 
 export interface GetDoctorDetailsByIdVariables {
-  id: string;
+  id?: string | null;
 }

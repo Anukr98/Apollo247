@@ -11,7 +11,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { theme } from '../../theme/theme';
+import { theme } from '@aph/mobile-patients/src/theme/theme';
 
 const textStyle = {
   color: theme.colors.SHERPA_BLUE,

@@ -44,19 +44,23 @@ import {
 import {
   TRANSFER_INITIATED_TYPE,
   APPOINTMENT_STATE,
+  REQUEST_ROLES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
-} from '../../graphql/types/bookRescheduleAppointment';
-import { Spinner } from '../ui/Spinner';
+} from '@aph/mobile-patients/src/graphql/types/bookRescheduleAppointment';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import {
   checkIfReschedule,
   checkIfRescheduleVariables,
-} from '../../graphql/types/checkIfReschedule';
-import { getNetStatus } from '../../helpers/helperFunctions';
-import { NoInterNetPopup } from '../ui/NoInterNetPopup';
-import { CommonLogEvent, CommonScreenLog } from '../../FunctionHelpers/DeviceHelper';
+} from '@aph/mobile-patients/src/graphql/types/checkIfReschedule';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
+import {
+  CommonLogEvent,
+  CommonScreenLog,
+} from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 
 const { width, height } = Dimensions.get('window');
 
@@ -156,7 +160,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
-
+  const [sucesspopup, setSucessPopup] = useState<boolean>(false);
   const { getPatientApiCall } = useAuth();
 
   useEffect(() => {
@@ -179,12 +183,10 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const NextAvailableSlotAPI = () => {
     getNetStatus().then((status) => {
       if (status) {
-        console.log('Network status', status);
         nextAvailableSlot();
       } else {
         setNetworkStatus(true);
         setshowSpinner(false);
-        console.log('Network status failed', status);
       }
     });
   };
@@ -229,6 +231,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
       })
       .then((availabilitySlot) => {
         setshowSpinner(false);
+        console.log('availabilitySlot', availabilitySlot);
 
         if (
           availabilitySlot &&
@@ -299,6 +302,8 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   };
 
   const rescheduleAPI = (availability: any) => {
+    console.log('availability', availability);
+
     const bookRescheduleInput = {
       appointmentId: data.id,
       doctorId: doctorDetails.id,
@@ -382,7 +387,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
     const appointmentTransferInput = {
       appointmentId: data.id,
       cancelReason: '',
-      cancelledBy: TRANSFER_INITIATED_TYPE.PATIENT, //appointmentDate,
+      cancelledBy: REQUEST_ROLES.PATIENT, //appointmentDate,
       cancelledById: data.patientId,
     };
 
@@ -400,13 +405,14 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         .then((data: any) => {
           setshowSpinner(false);
           console.log(data, 'data');
-          props.navigation.dispatch(
-            StackActions.reset({
-              index: 0,
-              key: null,
-              actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
-            })
-          );
+          setSucessPopup(true);
+          // props.navigation.dispatch(
+          //   StackActions.reset({
+          //     index: 0,
+          //     key: null,
+          //     actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+          //   })
+          // );
         })
         .catch((e: string) => {
           setshowSpinner(false);
@@ -544,6 +550,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
                   AppRoutes.AppointmentDetails,
                   'RESCHEDULE APPOINTMENT DETAILS CLICKED'
                 );
+
                 try {
                   dateIsAfter ? NextAvailableSlotAPI() : null;
                 } catch (error) {}
@@ -704,6 +711,41 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             </View>
           </BottomPopUp>
         )}
+        {sucesspopup && (
+          <BottomPopUp
+            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
+            description={'Appointment sucessfully cancelled'}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                marginHorizontal: 20,
+                //justifyContent: 'space-between',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <View style={{ height: 60 }}>
+                <TouchableOpacity
+                  style={styles.gotItStyles}
+                  onPress={() => {
+                    setShowCancelPopup(false);
+                    setSucessPopup(false);
+                    props.navigation.dispatch(
+                      StackActions.reset({
+                        index: 0,
+                        key: null,
+                        actions: [NavigationActions.navigate({ routeName: AppRoutes.TabBar })],
+                      })
+                    );
+                  }}
+                >
+                  <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </BottomPopUp>
+        )}
         {networkStatus && <NoInterNetPopup onClickClose={() => setNetworkStatus(false)} />}
         <View
           style={{
@@ -740,7 +782,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             setdisplayoverlay={() => reshedulePopUpMethod()}
             acceptChange={() => acceptChange()}
             appadatetime={props.navigation.state.params!.data.appointmentDateTime}
-            reschduleDateTime={availability.data}
+            reschduleDateTime={availability && availability.data}
             rescheduleCount={newRescheduleCount ? newRescheduleCount.rescheduleCount : 1}
             data={data}
           />

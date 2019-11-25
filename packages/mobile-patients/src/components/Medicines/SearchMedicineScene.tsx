@@ -43,8 +43,10 @@ import {
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
 import { MedicineFilter, FilterRange, SortByOptions } from './MedicineFilter';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -130,10 +132,12 @@ const styles = StyleSheet.create({
 export interface SearchMedicineSceneProps
   extends NavigationScreenProps<{
     searchText: string;
+    isTest: boolean;
   }> {}
 
 export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) => {
   const searchTextFromProp = props.navigation.getParam('searchText');
+  const isTest = props.navigation.getParam('isTest');
 
   const [showMatchingMedicines, setShowMatchingMedicines] = useState<boolean>(false);
   const [searchText, setSearchText] = useState<string>('');
@@ -270,20 +274,19 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
     savePastSeacrh(sku, name).catch((e) => {
       aphConsole.log({ e });
     });
-    addCartItem &&
-      addCartItem({
-        id: sku,
-        mou,
-        name: stripHtml(name),
-        price: special_price
-          ? typeof special_price == 'string'
-            ? parseInt(special_price)
-            : special_price
-          : price,
-        prescriptionRequired: is_prescription_required == '1',
-        quantity: 1,
-        thumbnail,
-      });
+    addCartItem!({
+      id: sku,
+      mou,
+      name: stripHtml(name),
+      price: special_price
+        ? typeof special_price == 'string'
+          ? parseInt(special_price)
+          : special_price
+        : price,
+      prescriptionRequired: is_prescription_required == '1',
+      quantity: 1,
+      thumbnail,
+    });
   };
 
   const onRemoveCartItem = ({ sku }: MedicineProduct) => {
@@ -449,7 +452,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       <Header
         container={{ borderBottomWidth: 0 }}
         leftIcon={'backArrow'}
-        title={'SEARCH MEDICINE'}
+        title={isTest ? 'SEARCH TESTS ' : 'SEARCH MEDICINE'}
         rightComponent={
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
@@ -457,7 +460,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               style={{ marginRight: 24 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
-                props.navigation.navigate(AppRoutes.YourCart);
+                props.navigation.navigate(isTest ? AppRoutes.TestsCart : AppRoutes.YourCart);
               }}
             >
               <CartIcon />
@@ -531,7 +534,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const fetchLocation = (text: string) => {
-    const key = 'AIzaSyDzbMikhBAUPlleyxkIS9Jz7oYY2VS8Xps';
+    const key = AppConfig.Configuration.GOOGLE_API_KEY;
     isValidPinCode(text);
     setPinCode(text);
     axios
@@ -649,9 +652,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         medicineName={stripHtml(medicine.name)}
         imageUrl={
           medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
-            ? `${medicine.thumbnail}`
+            ? `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${medicine.thumbnail}`
             : ''
         }
+        isTest={isTest}
+        // specialPrice={}
         price={price}
         specialPrice={specialPrice}
         unit={(foundMedicineInCart && foundMedicineInCart.quantity) || 0}
@@ -701,7 +706,11 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
               ListHeaderComponent={
                 (medicineList.length > 0 && (
                   <SectionHeaderComponent
-                    sectionTitle={`Matching Medicines — ${medicineList.length}`}
+                    sectionTitle={
+                      isTest
+                        ? `Matching Tests — ${medicineList.length}`
+                        : `Matching Medicines — ${medicineList.length}`
+                    }
                     style={{ marginBottom: 0 }}
                   />
                 )) ||

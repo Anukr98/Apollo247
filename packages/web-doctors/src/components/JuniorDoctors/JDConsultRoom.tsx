@@ -445,10 +445,7 @@ export const JDConsultRoom: React.FC = () => {
   const [otherInstructions, setOtherInstructions] = useState<
     GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_otherInstructions[] | null
   >(null);
-  const [diagnosticPrescription, setDiagnosticPrescription] = useState<
-    | GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription[]
-    | null
-  >(null);
+  const [diagnosticPrescription, setDiagnosticPrescription] = useState<any[] | null>(null);
   const [medicinePrescription, setMedicinePrescription] = useState<
     GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_medicinePrescription[] | null
   >(null);
@@ -478,10 +475,11 @@ export const JDConsultRoom: React.FC = () => {
   const [familyHistory, setFamilyHistory] = useState<string>('');
   const [gender, setGender] = useState<string>('');
   const [callId, setcallId] = useState<string>('');
-
+  const [documentArray, setDocumentArray] = useState();
   /* case sheet data*/
   let assignedDoctorFirstName = '',
     assignedDoctorLastName = '',
+    assignedDoctorDisplayName = '',
     assignedDoctorMobile = '',
     assignedDoctorSpecialty = '',
     assignedDoctorPhoto = '',
@@ -509,6 +507,11 @@ export const JDConsultRoom: React.FC = () => {
       (assignedDoctorDetailsData &&
         assignedDoctorDetailsData.getDoctorDetailsById &&
         assignedDoctorDetailsData.getDoctorDetailsById.lastName) ||
+      '';
+    assignedDoctorDisplayName =
+      (assignedDoctorDetailsData &&
+        assignedDoctorDetailsData.getDoctorDetailsById &&
+        assignedDoctorDetailsData.getDoctorDetailsById.displayName) ||
       '';
     assignedDoctorMobile =
       (assignedDoctorDetailsData &&
@@ -655,7 +658,7 @@ export const JDConsultRoom: React.FC = () => {
             : setOtherInstructions([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.diagnosticPrescription
             ? setDiagnosticPrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
-                .diagnosticPrescription as unknown) as GetJuniorDoctorCaseSheet_getJuniorDoctorCaseSheet_caseSheetDetails_diagnosticPrescription[])
+                .diagnosticPrescription as unknown) as any[])
             : setDiagnosticPrescription([]);
           _data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!.medicinePrescription
             ? setMedicinePrescription((_data!.data!.getJuniorDoctorCaseSheet!.caseSheetDetails!
@@ -822,7 +825,6 @@ export const JDConsultRoom: React.FC = () => {
           setLoaded(true);
         });
       return () => {
-        // console.log('in return...');
         const cookieStr = `action=`;
         document.cookie = cookieStr + ';path=/;';
       };
@@ -865,14 +867,11 @@ export const JDConsultRoom: React.FC = () => {
         }
       })
       .catch((error: ApolloError) => {
-        console.log('Error in Call Notification', error.message);
         alert('An error occurred while sending notification to Client.');
       });
   };
 
   const saveCasesheetAction = (flag: boolean, endConsult: boolean) => {
-    // console.log(diagnosis && diagnosis.length, diagnosis!, flag);
-
     // this condition is written to avoid __typename from already existing data
     let symptomsFinal = null,
       diagnosisFinal = null,
@@ -891,8 +890,12 @@ export const JDConsultRoom: React.FC = () => {
       });
     }
     if (diagnosticPrescription && diagnosticPrescription.length > 0) {
-      diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
+      const diagnosticPrescriptionFinal1 = diagnosticPrescription.map((prescription) => {
         return _omit(prescription, ['__typename']);
+      });
+      // convert itemName to itemname
+      diagnosticPrescriptionFinal = diagnosticPrescription.map((prescription) => {
+        return { itemname: prescription.itemName };
       });
     }
     if (medicinePrescription && medicinePrescription.length > 0) {
@@ -949,7 +952,6 @@ export const JDConsultRoom: React.FC = () => {
           const errorMessage = error && error.message;
           alert(errorMessage);
           setSaving(false);
-          console.log('Error occured while update casesheet', e);
         });
     }
   };
@@ -1001,7 +1003,6 @@ export const JDConsultRoom: React.FC = () => {
       })
       .catch((e: any) => {
         setError('Error occured creating session');
-        console.log('Error occured creating session', e);
       });
   };
 
@@ -1017,6 +1018,7 @@ export const JDConsultRoom: React.FC = () => {
 
   const disableChat = () => {
     let status;
+    let casesheetStatus;
     if (
       casesheetInfo &&
       casesheetInfo.getJuniorDoctorCaseSheet &&
@@ -1025,17 +1027,29 @@ export const JDConsultRoom: React.FC = () => {
     ) {
       status = casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.appointment.status;
     }
-    return isActive === 'done' || (status && status === STATUS.CANCELLED) ? true : false;
+    if (
+      casesheetInfo &&
+      casesheetInfo.getJuniorDoctorCaseSheet &&
+      casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails &&
+      casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.status
+    ) {
+      casesheetStatus = casesheetInfo.getJuniorDoctorCaseSheet.caseSheetDetails.status;
+    }
+    return isActive === 'done' ||
+      (casesheetStatus && casesheetStatus === STATUS.COMPLETED) ||
+      (status && status === STATUS.CANCELLED) ||
+      (status && status === STATUS.COMPLETED)
+      ? true
+      : false;
   };
 
   const idleTimerRef = useRef(null);
   const idleTimeValueInMinutes = 1;
-
   return !loaded ? (
     <LinearProgress />
   ) : (
     <div className={classes.root}>
-      {isActive === 'active' && !isAudioVideoCall && (
+      {!disableChat() && !isAudioVideoCall && (
         <IdleTimer
           ref={idleTimerRef}
           element={document}
@@ -1064,6 +1078,8 @@ export const JDConsultRoom: React.FC = () => {
             juniorDoctorNotes,
             diagnosis,
             setDiagnosis,
+            documentArray,
+            setDocumentArray,
             otherInstructions,
             setOtherInstructions,
             diagnosticPrescription,
@@ -1081,10 +1097,11 @@ export const JDConsultRoom: React.FC = () => {
             followUpDate,
             setFollowUpDate,
             healthVault: casesheetInfo!.getJuniorDoctorCaseSheet!.patientDetails!.healthVault,
+            appointmentDocuments: casesheetInfo!.getJuniorDoctorCaseSheet!.caseSheetDetails!
+              .appointment!.appointmentDocuments,
             pastAppointments: casesheetInfo!.getJuniorDoctorCaseSheet!.pastAppointments,
             setCasesheetNotes,
             autoCloseCaseSheet,
-
             height,
             weight,
             bp,
@@ -1179,9 +1196,12 @@ export const JDConsultRoom: React.FC = () => {
                           <div className={classes.assign}>Assigned to:</div>
                           <div
                             className={classes.doctorName}
-                          >{`${assignedDoctorSalutation} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
+                          >{`${assignedDoctorSalutation}${'.'} ${assignedDoctorFirstName} ${assignedDoctorLastName}`}</div>
                           <div className={classes.doctorType}>{assignedDoctorSpecialty}</div>
-                          <div className={classes.doctorContact}>{assignedDoctorMobile}</div>
+                          <div className={classes.doctorContact}>
+                            {assignedDoctorMobile.slice(0, 3)}{' '}
+                            {assignedDoctorMobile.split('+91').join(' ')}
+                          </div>
                         </div>
                       </>
                     )}
@@ -1189,7 +1209,7 @@ export const JDConsultRoom: React.FC = () => {
                 </div>
                 {/* patient and doctors details end */}
 
-                {isActive === 'active' && (
+                {!disableChat() && (
                   <JDCallPopover
                     setStartConsultAction={(flag: boolean) => setStartConsultAction(flag)}
                     createSessionAction={createSessionAction}
@@ -1211,6 +1231,7 @@ export const JDConsultRoom: React.FC = () => {
                     assignedDoctorSalutation={assignedDoctorSalutation}
                     assignedDoctorFirstName={assignedDoctorFirstName}
                     assignedDoctorLastName={assignedDoctorLastName}
+                    assignedDoctorDisplayName={assignedDoctorDisplayName}
                     isAudioVideoCallEnded={(isAudioVideoCall: boolean) => {
                       setIsAuditoVideoCall(isAudioVideoCall);
                     }}

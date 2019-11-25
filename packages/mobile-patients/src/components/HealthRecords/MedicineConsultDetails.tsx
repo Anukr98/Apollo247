@@ -23,15 +23,19 @@ import {
   PermissionsAndroid,
 } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
-import { Button } from '../ui/Button';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import RNFetchBlob from 'react-native-fetch-blob';
-import { Spinner } from '../ui/Spinner';
-import { useShoppingCart, ShoppingCartItem } from '../ShoppingCartProvider';
-import { getMedicineDetailsApi } from '../../helpers/apiCalls';
-import { AppRoutes } from '../NavigatorContainer';
+import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
+import {
+  useShoppingCart,
+  ShoppingCartItem,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import moment from 'moment';
-import { useAllCurrentPatients } from '../../hooks/authHooks';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -102,7 +106,8 @@ const styles = StyleSheet.create({
 export interface RecordDetailsProps extends NavigationScreenProps {}
 
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
-  const [loading, setLoading] = useState<boolean>(false);
+  const { loading, setLoading } = useUIElements();
+
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   console.log('a', data);
 
@@ -117,10 +122,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
       Alert.alert('Alert', 'Item not available.');
       return;
     }
-    setLoading(true);
+    setLoading && setLoading(true);
     getMedicineDetailsApi(data.medicineSKU)
       .then(({ data: { productdp } }) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const medicineDetails = (productdp && productdp[0]) || {};
         const isInStock = medicineDetails.is_in_stock;
         if (!isInStock) {
@@ -149,7 +154,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
         props.navigation.navigate(AppRoutes.YourCart);
       })
       .catch((err) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         console.log(err, 'MedicineDetailsScene err');
         Alert.alert('Alert', 'No medicines found.');
       });
@@ -215,7 +220,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                         }
                         let dirs = RNFetchBlob.fs.dirs;
 
-                        setLoading(true);
+                        setLoading && setLoading(true);
                         RNFetchBlob.config({
                           fileCache: true,
                           addAndroidDownloads: {
@@ -230,7 +235,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                             //some headers ..
                           })
                           .then((res) => {
-                            setLoading(false);
+                            setLoading && setLoading(false);
 
                             if (Platform.OS === 'android') {
                               try {
@@ -244,7 +249,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
                           })
                           .catch((err) => {
                             console.log('error ', err);
-                            setLoading(false);
+                            setLoading && setLoading(false);
                             // ...
                           });
                       }
@@ -314,7 +319,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             }}
           />
         </View>
-        {loading && <Spinner />}
       </SafeAreaView>
     </View>
   );

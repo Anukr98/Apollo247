@@ -12,6 +12,7 @@ import {
   Filter,
   NotificationIcon,
   NoData,
+  DropdownGreen,
 } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
@@ -37,22 +38,31 @@ import {
   View,
   Alert,
   Platform,
+  AsyncStorage,
+  Dimensions,
 } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProps } from 'react-navigation';
-import { Button } from '../ui/Button';
+import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import {
   getPatientMedicalRecords,
   getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords,
-} from '../../graphql/types/getPatientMedicalRecords';
-import { g } from '../../helpers/helperFunctions';
+} from '@aph/mobile-patients/src/graphql/types/getPatientMedicalRecords';
+import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import {
   deletePatientMedicalRecord,
   deletePatientMedicalRecordVariables,
-} from '../../graphql/types/deletePatientMedicalRecord';
-import { checkIfFollowUpBooked } from '../../graphql/types/checkIfFollowUpBooked';
-import { OverlayRescheduleView } from '../Consult/OverlayRescheduleView';
-import { CommonLogEvent } from '../../FunctionHelpers/DeviceHelper';
+} from '@aph/mobile-patients/src/graphql/types/deletePatientMedicalRecord';
+import { checkIfFollowUpBooked } from '@aph/mobile-patients/src/graphql/types/checkIfFollowUpBooked';
+import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
+import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
+import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
+import { useUIElements } from '../UIElementsProvider';
+
+const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   filterViewStyle: {
@@ -63,6 +73,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  hiTextStyle: {
+    marginLeft: 20,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  nameTextStyle: {
+    marginLeft: 5,
+    color: '#02475b',
+    ...theme.fonts.IBMPlexSansSemiBold(36),
+  },
+  seperatorStyle: {
+    height: 2,
+    backgroundColor: '#00b38e',
+    //marginTop: 5,
+    marginHorizontal: 5,
+    marginBottom: 6,
   },
 });
 
@@ -95,16 +122,21 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
   const [FilterData, setFilterData] = useState<filterDataType[]>(filterData);
   const [displayFilter, setDisplayFilter] = useState<boolean>(false);
   const [displayOrderPopup, setdisplayOrderPopup] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const { currentPatient } = useAllCurrentPatients();
+  // const [loading, setLoading && setLoading] = useState<boolean>(true);
+  const { loading, setLoading } = useUIElements();
+
   const [pastarrya, setPastarrya] = useState<[]>([]);
   const [arrayValues, setarrayValues] = useState<any>();
   const client = useApolloClient();
   const { getPatientApiCall } = useAuth();
   const [displayoverlay, setdisplayoverlay] = useState<boolean>(false);
   const [isfollowcount, setIsfollowucount] = useState<number>(0);
+  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
+  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
+  const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   useEffect(() => {
+    currentPatient && setProfile(currentPatient!);
     if (!currentPatient) {
       getPatientApiCall();
     }
@@ -118,7 +150,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     if (selectedOptions.includes('Clinic Visits')) filterArray.push('PHYSICAL');
     if (selectedOptions.includes('Prescriptions')) filterArray.push('PRESCRIPTION');
 
-    setLoading(true);
+    setLoading && setLoading(true);
     client
       .query<getPatientPastConsultsAndPrescriptions>({
         query: GET_PAST_CONSULTS_PRESCRIPTIONS,
@@ -147,7 +179,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             ...c,
           };
         });
-        setselectedTab(`${tabs[0].title}`);
+        //setselectedTab(`${tabs[0].title}`);
 
         medOrders.forEach((c) => {
           consultsAndMedOrders[c!.quoteDateTime] = {
@@ -167,51 +199,50 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
                 .getTime()
           );
 
-        console.log('sort', array);
+        // console.log('sort', array);
         setarrayValues(array);
         //setarrayValues(Object.keys(consultsAndMedOrders).map((i) => consultsAndMedOrders[i]));
 
-        setLoading(false);
+        setLoading && setLoading(false);
       })
       .catch((e) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
         console.log('Error occured while fetching Heath records', error);
         //Alert.alert('Error', error);
       });
   };
 
-  const fetchData = useCallback((loading: boolean = false) => {
-    loading && setLoading(true);
-    client
-      .query<getPatientMedicalRecords>({
-        query: GET_MEDICAL_RECORD,
-        variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data }) => {
-        console.log('data', data);
-        loading && setLoading(false);
-        const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
-        setmedicalRecords(records);
-      })
-      .catch((error) => {
-        loading && setLoading(false);
-        console.log('Error occured', { error });
-        Alert.alert('Error', error.message);
-      });
-  }, []);
+  const fetchData = useCallback(
+    (loading: boolean = false) => {
+      loading && setLoading && setLoading(true);
+      client
+        .query<getPatientMedicalRecords>({
+          query: GET_MEDICAL_RECORD,
+          variables: {
+            patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+          },
+          fetchPolicy: 'no-cache',
+        })
+        .then(({ data }) => {
+          console.log('data', data);
+          loading && setLoading && setLoading(false);
+          const records = g(data, 'getPatientMedicalRecords', 'medicalRecords');
+          setmedicalRecords(records);
+        })
+        .catch((error) => {
+          loading && setLoading && setLoading(false);
+          console.log('Error occured', { error });
+          //Alert.alert('Error', error.message);
+        });
+    },
+    [currentPatient]
+  );
 
   useEffect(() => {
     fetchPastData();
     fetchData();
-  }, []);
-
-  // useEffect(() => {
-  //   fetchData();
-  // }, []);
+  }, [currentPatient]);
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
@@ -222,7 +253,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     return () => {
       didFocusSubscription && didFocusSubscription.remove();
     };
-  }, [props.navigation]);
+  }, [props.navigation, currentPatient]);
 
   const renderDeleteMedicalOrder = (MedicaId: string) => {
     client
@@ -246,12 +277,100 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
     return (
       <View
         style={{
-          height: 250,
+          //height: 250,
           // justifyContent: 'space-between',
-          ...theme.viewStyles.shadowStyle,
+          //...theme.viewStyles.shadowStyle,
+          backgroundColor: 'white',
         }}
       >
         <View
+          style={{
+            justifyContent: 'space-between',
+            flexDirection: 'row',
+            paddingTop: 16,
+            paddingHorizontal: 20,
+            backgroundColor: theme.colors.WHITE,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => props.navigation.replace(AppRoutes.ConsultRoom)}
+          >
+            <ApolloLogo />
+          </TouchableOpacity>
+          <View style={{ flexDirection: 'row' }}>
+            <NotificationIcon />
+          </View>
+        </View>
+        <View>
+          <ProfileList
+            navigation={props.navigation}
+            saveUserChange={true}
+            childView={
+              <View
+                style={{
+                  flexDirection: 'row',
+                  paddingRight: 8,
+                  borderRightWidth: 0,
+                  borderRightColor: 'rgba(2, 71, 91, 0.2)',
+                  backgroundColor: theme.colors.WHITE,
+                }}
+              >
+                <Text style={styles.hiTextStyle}>{'hi'}</Text>
+                <View>
+                  <Text style={styles.nameTextStyle}>
+                    {(currentPatient && currentPatient!.firstName!.toLowerCase()) || ''}
+                  </Text>
+                  <View style={styles.seperatorStyle} />
+                </View>
+                <View style={{ paddingTop: 15 }}>
+                  <DropdownGreen />
+                </View>
+              </View>
+            }
+            selectedProfile={profile}
+            setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+          ></ProfileList>
+          {/* <MaterialMenu
+            onPress={(item) => {
+              const val = (allCurrentPatients || []).find(
+                (_item) => _item.firstName == item.value.toString()
+              );
+              setCurrentPatientId!(val!.id);
+              AsyncStorage.setItem('selectUserId', val!.id);
+            }}
+            options={
+              allCurrentPatients &&
+              allCurrentPatients!.map((item) => {
+                return { key: item.id, value: item.firstName };
+              })
+            }
+            menuContainerStyle={{
+              alignItems: 'flex-end',
+              marginTop: 16,
+              marginLeft: width / 2 - 95,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                paddingRight: 8,
+                borderRightWidth: 0.5,
+                borderRightColor: 'rgba(2, 71, 91, 0.2)',
+              }}
+            >
+              <Text style={styles.hiTextStyle}>hi</Text>
+              <View>
+                <Text style={styles.nameTextStyle}>{userName}</Text>
+                <View style={styles.seperatorStyle} />
+              </View>
+              <View style={{ paddingTop: 15 }}>
+                <DropdownGreen />
+              </View>
+            </View>
+          </MaterialMenu> */}
+        </View>
+        {/* <View
           style={{
             position: 'absolute',
             top: 0,
@@ -288,10 +407,10 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
               </View>
             </View>
           </UserIntro>
-        </View>
+        </View> */}
         <TabsComponent
           style={{
-            marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
+            //marginTop: Platform.OS === 'ios' ? 205 : 216, //226,
             backgroundColor: theme.colors.CARD_BG,
           }}
           height={44}
@@ -329,6 +448,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
 
         {arrayValues == 0 ? (
           <View style={{ justifyContent: 'center', flexDirection: 'column' }}>
+            {renderFilter()}
             <View
               style={{
                 marginTop: 38,
@@ -421,6 +541,8 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
         fetchPolicy: 'no-cache',
       })
       .then(({ data }) => {
+        console.log('CHECK_IF_FOLLOWUP_BOOKED', data);
+
         setIsfollowucount(data.checkIfFollowUpBooked);
         setdisplayoverlay(true);
         props.navigation.push(AppRoutes.ConsultDetails, {
@@ -468,7 +590,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           data={JSON.parse(JSON.stringify(FilterData))}
           filterLength={() => {
             setTimeout(() => {
-              setLoading(false);
+              setLoading && setLoading(false);
             }, 500);
           }}
         />
@@ -481,7 +603,14 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
           getData={(data: (PickerImage | PickerImage[])[]) => {}}
         />
       )}
-      {loading && <Spinner />}
+      {/* {displayAddProfile && (
+        <AddProfile
+          setdisplayoverlay={setDisplayAddProfile}
+          setProfile={(profile) => {
+            setProfile(profile);
+          }}
+        />
+      )} */}
     </View>
   );
 };

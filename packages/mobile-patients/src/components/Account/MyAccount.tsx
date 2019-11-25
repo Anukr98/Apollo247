@@ -22,15 +22,17 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getNetStatus } from '../../helpers/helperFunctions';
-import { NoInterNetPopup } from '../ui/NoInterNetPopup';
+import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { useApolloClient } from 'react-apollo-hooks';
-import { DELETE_DEVICE_TOKEN } from '../../graphql/profiles';
+import { DELETE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   deleteDeviceToken,
   deleteDeviceTokenVariables,
-} from '../../graphql/types/deleteDeviceToken';
-import { ApolloLogo } from '../ApolloLogo';
+} from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
+import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import DeviceInfo from 'react-native-device-info';
 
 const { height, width } = Dimensions.get('window');
 
@@ -93,10 +95,30 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
 
+  const buildName = () => {
+    switch (apiRoutes.graphql()) {
+      case 'https://aph.dev.api.popcornapps.com//graphql':
+        return 'DEV';
+      case 'https://aph.staging.api.popcornapps.com//graphql':
+        return 'QA';
+      case 'https://aph.uat.api.popcornapps.com//graphql':
+        return 'UAT';
+      case 'https://aph.vapt.api.popcornapps.com//graphql':
+        return 'VAPT';
+      case 'https://api.apollo247.com//graphql':
+        return 'PROD';
+      case 'https://asapi.apollo247.com//graphql':
+        return 'PRF';
+      default:
+        return '';
+    }
+  };
+
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
     }
+    currentPatient && setprofileDetails(currentPatient);
   }, [currentPatient]);
 
   const headMov = scrollY.interpolate({
@@ -189,6 +211,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     AsyncStorage.setItem('userLoggedIn', 'false');
     AsyncStorage.setItem('multiSignUp', 'false');
     AsyncStorage.setItem('signUp', 'false');
+    AsyncStorage.setItem('selectUserId', '');
     props.navigation.dispatch(
       StackActions.reset({
         index: 0,
@@ -208,7 +231,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
 
     const input = {
       deviceToken: currentDeviceToken.deviceToken,
-      patientId: currentPatient ? currentPatient.id : '',
+      patientId: currentPatient ? currentPatient && currentPatient.id : '',
     };
     console.log('deleteDeviceTokenInput', input);
 
@@ -224,9 +247,11 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
         onPressLogout();
       })
       .catch((e: string) => {
-        console.log('Error occured while adding Doctor', e);
-        setshowSpinner(false);
-        onPressLogout();
+        try {
+          console.log('delete device token', e);
+          setshowSpinner(false);
+          onPressLogout();
+        } catch {}
       });
   };
 
@@ -258,7 +283,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
               // profileDetails.photoUrl &&
               // profileDetails.photoUrl.match(/(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)/) && (
               <Animated.Image
-                source={require('../ui/icons/no-photo-icon-round.png')}
+                source={require('@aph/mobile-patients/src/components/ui/icons/no-photo-icon-round.png')}
                 style={{ top: 10, height: 140, width: 140, opacity: imgOp }}
                 resizeMode={'contain'}
               />
@@ -290,13 +315,15 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             </TouchableOpacity>
           }
         />
-        <View
+        {/* <View
           style={{
             zIndex: 3,
             position: 'absolute',
             top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 50 : 40) : 20,
             left: 20,
             right: 0,
+            width: 77,
+            height: 57,
           }}
         >
           <TouchableOpacity
@@ -305,7 +332,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           >
             <ApolloLogo />
           </TouchableOpacity>
-        </View>
+        </View> */}
       </>
     );
   };
@@ -314,7 +341,17 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     return (
       <View>
         <ListCard
-          container={{ marginTop: 20 }}
+          container={{ marginTop: 14 }}
+          title={'Manage Profiles'}
+          leftIcon={<NotificaitonAccounts />}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.ManageProfile, {
+              mobileNumber: profileDetails && profileDetails.mobileNumber,
+            })
+          }
+        />
+        <ListCard
+          container={{ marginTop: 4 }}
           title={'Address Book'}
           leftIcon={<Location />}
           onPress={() => props.navigation.navigate(AppRoutes.AddressBook)}
@@ -366,7 +403,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              DEV V 1.0(48)
+              {`${buildName()} V ${DeviceInfo.getVersion()}(${DeviceInfo.getBuildNumber()})`}
             </Text>
           </View>
         </Animated.ScrollView>
