@@ -266,6 +266,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const secondMessage = '^^#secondMessage';
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
+  const cancelConsultInitiated = '^^#cancelConsultInitiated';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -942,6 +943,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === jdThankyou) {
         console.log('jdThankyou');
+        addMessages(message);
+      } else if (message.message.message === cancelConsultInitiated) {
+        console.log('cancelConsultInitiated');
         addMessages(message);
       }
     } else {
@@ -2151,6 +2155,39 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
+  const doctorCancelConsultAutomatedMessage = (rowData: any, index: number) => {
+    return (
+      <View
+        style={{
+          backgroundColor: '#0087ba',
+          marginLeft: 38,
+          borderRadius: 10,
+          marginBottom: 4,
+          width: 244,
+        }}
+      >
+        <Text
+          style={{
+            color: '#ffffff',
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            ...theme.fonts.IBMPlexSansMedium(15),
+            textAlign: 'left',
+          }}
+        >
+          Doctor has ended cancelled your appointment. Please rebook it again
+        </Text>
+        <Button
+          title={'Okay'}
+          style={{ flex: 0.4, marginRight: 16, marginLeft: 5 }}
+          onPress={() => {
+            console.log('Cancel okay clicked');
+          }}
+        />
+      </View>
+    );
+  };
+
   const renderChatRow = (
     rowData: { id: string; message: string; duration: string; transferInfo: any; url: any },
     index: number
@@ -2191,14 +2228,13 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 <>
                   {rowData.message === consultPatientStartedMsg ? (
                     <>{patientAutomatedMessage(rowData, index)}</>
-                  ) : rowData.message === firstMessage ? (
+                  ) : rowData.message === firstMessage ||
+                    rowData.message === secondMessage ||
+                    rowData.message === languageQue ||
+                    rowData.message === jdThankyou ? (
                     <>{doctorAutomatedMessage(rowData, index)}</>
-                  ) : rowData.message === secondMessage ? (
-                    <>{doctorAutomatedMessage(rowData, index)}</>
-                  ) : rowData.message === languageQue ? (
-                    <>{doctorAutomatedMessage(rowData, index)}</>
-                  ) : rowData.message === jdThankyou ? (
-                    <>{doctorAutomatedMessage(rowData, index)}</>
+                  ) : rowData.message === cancelConsultInitiated ? (
+                    <>{doctorCancelConsultAutomatedMessage(rowData, index)}</>
                   ) : (
                     <>{messageView(rowData, index)}</>
                   )}
