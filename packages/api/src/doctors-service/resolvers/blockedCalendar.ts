@@ -28,6 +28,7 @@ export const blockedCalendarTypeDefs = gql`
       doctorId: String!
       start: DateTime!
       end: DateTime!
+      reason: String
     ): BlockedCalendarResult!
     updateBlockedCalendarItem(
       id: Int!
@@ -36,11 +37,6 @@ export const blockedCalendarTypeDefs = gql`
       end: DateTime!
     ): BlockedCalendarResult!
     removeBlockedCalendarItem(id: Int!): BlockedCalendarResult!
-    testInitiateRescheduleAppointment1(
-      doctorId: String!
-      startDate: DateTime!
-      endDate: DateTime!
-    ): Boolean!
   }
 `;
 
@@ -49,6 +45,7 @@ type BlockedCalendarItem = {
   doctorId: string;
   start: Date;
   end: Date;
+  reason: string;
 };
 type BlockedCalendarResult = { blockedCalendar: BlockedCalendarItem[] };
 
@@ -83,10 +80,10 @@ const addBlockedCalendarItem: Resolver<
   Omit<BlockedCalendarItem, 'id'>,
   DoctorsServiceContext,
   BlockedCalendarResult
-> = async (parent, { doctorId, start, end }, context) => {
+> = async (parent, { doctorId, start, end, reason }, context) => {
   checkAuth(doctorId, context);
   const { bciRepo } = getRepos(context);
-  const itemToAdd = bciRepo.create({ doctorId, start, end });
+  const itemToAdd = bciRepo.create({ doctorId, start, end, reason });
   const existingItems = await bciRepo.find({ doctorId });
   const overlap = doesItemOverlap(itemToAdd, existingItems);
   if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
@@ -118,11 +115,11 @@ const updateBlockedCalendarItem: Resolver<
   checkAuth(doctorId, context);
   const { bciRepo } = getRepos(context);
   /*const itemToUpdate = await bciRepo.findOneOrFail(id);
-  const existingItems = (await bciRepo.find({ doctorId })).filter(
-    (item) => item.id !== itemToUpdate.id
-  );
-  const overlap = doesItemOverlap(itemToUpdate, existingItems);
-  if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);*/
+const existingItems = (await bciRepo.find({ doctorId })).filter(
+  (item) => item.id !== itemToUpdate.id
+);
+const overlap = doesItemOverlap(itemToUpdate, existingItems);
+if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);*/
   const itemToAdd = bciRepo.create({ doctorId, start, end });
   const itemToUpdate = await bciRepo.findOneOrFail(id);
   const existingItems = (await bciRepo.find({ doctorId })).filter(
@@ -150,25 +147,6 @@ const removeBlockedCalendarItem: Resolver<
   return { blockedCalendar };
 };
 
-const testInitiateRescheduleAppointment1: Resolver<
-  null,
-  { doctorId: string; startDate: Date; endDate: Date },
-  DoctorsServiceContext,
-  Boolean
-> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
-  const resRepo = consultsDb.getCustomRepository(RescheduleAppointmentDetailsRepository);
-
-  await resRepo.getAppointmentsAndReschedule(
-    args.doctorId,
-    args.startDate,
-    args.endDate,
-    consultsDb,
-    doctorsDb,
-    patientsDb
-  );
-  return true;
-};
-
 export const blockedCalendarResolvers = {
   Query: {
     getBlockedCalendar,
@@ -177,6 +155,5 @@ export const blockedCalendarResolvers = {
     addBlockedCalendarItem,
     updateBlockedCalendarItem,
     removeBlockedCalendarItem,
-    testInitiateRescheduleAppointment1,
   },
 };

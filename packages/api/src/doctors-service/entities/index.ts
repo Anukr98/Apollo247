@@ -82,20 +82,29 @@ export enum DOCTOR_ONLINE_STATUS {
 ///////////////////////////////////////////////////////////
 @Entity()
 export class BlockedCalendarItem extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @Column({ nullable: true })
+  consultHoursId: string;
+
+  @Column({ nullable: true, default: ConsultMode.BOTH })
+  consultMode: ConsultMode;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
 
   @Column()
   doctorId: string;
 
   @Column({ type: 'timestamp with time zone' })
-  start: Date;
-
-  @Column({ type: 'timestamp with time zone' })
   end: Date;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdDate: Date;
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ nullable: true, type: 'text' })
+  reason: string;
+
+  @Column({ type: 'timestamp with time zone' })
+  start: Date;
 }
 ///////////////////////////////////////////////////////////
 
