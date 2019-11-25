@@ -41,7 +41,7 @@ export const bookAppointmentTypeDefs = gql`
     doctorId: ID!
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
-    hospitalId: ID
+    hospitalId: ID!
     status: STATUS!
     patientName: String!
     appointmentState: APPOINTMENT_STATE!
@@ -53,7 +53,7 @@ export const bookAppointmentTypeDefs = gql`
     doctorId: ID!
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
-    hospitalId: ID
+    hospitalId: ID!
     status: STATUS!
     patientName: String!
     appointmentState: APPOINTMENT_STATE!
@@ -65,7 +65,7 @@ export const bookAppointmentTypeDefs = gql`
     doctorId: ID!
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
-    hospitalId: ID
+    hospitalId: ID!
   }
 
   type BookAppointmentResult {
@@ -86,7 +86,7 @@ type BookAppointmentInput = {
   doctorId: string;
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string;
+  hospitalId: string;
 };
 
 type AppointmentBooking = {
@@ -95,7 +95,7 @@ type AppointmentBooking = {
   doctorId: string;
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string;
+  hospitalId: string;
   status: STATUS;
   patientName: string;
   appointmentState: APPOINTMENT_STATE;
@@ -107,7 +107,7 @@ type AppointmentBookingResult = {
   doctorId: string;
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string;
+  hospitalId: string;
   status: STATUS;
   patientName: string;
   appointmentState: APPOINTMENT_STATE;
@@ -149,7 +149,10 @@ const bookAppointment: Resolver<
   if (isJunior) {
     throw new AphError(AphErrorMessages.INVALID_DOCTOR_ID, undefined, {});
   }
-
+  // check if hospital id is linked to doctor
+  if (docDetails.doctorHospital[0].facility.id !== appointmentInput.hospitalId) {
+    throw new AphError(AphErrorMessages.INVALID_HOSPITAL_ID, undefined, {});
+  }
   //check if doctor and hospital are matched
   const facilityId = appointmentInput.hospitalId;
   if (facilityId) {
@@ -204,6 +207,17 @@ const bookAppointment: Resolver<
 
   if (!checkHours) {
     throw new AphError(AphErrorMessages.OUT_OF_CONSULT_HOURS, undefined, {});
+  }
+
+  // check if patient cancelled appointment for more than 3 weeks in a week
+
+  const apptsrepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const cancelledCount = await apptsrepo.checkPatientCancelledHistory(
+    appointmentInput.patientId,
+    appointmentInput.doctorId
+  );
+  if (cancelledCount >= 3) {
+    throw new AphError(AphErrorMessages.BOOKING_LIMIT_EXCEEDED, undefined, {});
   }
 
   const appointmentAttrs: Omit<AppointmentBooking, 'id'> = {
