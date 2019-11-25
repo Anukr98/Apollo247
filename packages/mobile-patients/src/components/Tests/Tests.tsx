@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
 export interface TestsProps extends NavigationScreenProps {}
 
 export const Tests: React.FC<TestsProps> = (props) => {
-  const { cartItems, addCartItem, removeCartItem } = useDiagnosticsCart();
+  const { cartItems, addCartItem, removeCartItem, clearCartInfo } = useDiagnosticsCart();
   const cartItemsCount = cartItems.length;
   const { currentPatient } = useAllCurrentPatients();
   // const [data, setData] = useState<MedicinePageAPiResponse>();
@@ -378,6 +378,15 @@ export const Tests: React.FC<TestsProps> = (props) => {
       .then((response) => {
         const addrComponents = g(response, 'data', 'result', 'address_components') || [];
         const { lat, lng } = g(response, 'data', 'result', 'geometry', 'location')! || {};
+        const city =
+          findAddrComponents('locality', addrComponents) ||
+          findAddrComponents('administrative_area_level_2', addrComponents);
+        if (
+          city.toLowerCase() !=
+          ((locationForDiagnostics && locationForDiagnostics.city) || '').toLowerCase()
+        ) {
+          clearCartInfo && clearCartInfo();
+        }
 
         if (addrComponents.length > 0) {
           setLocationDetails!({
@@ -391,9 +400,7 @@ export const Tests: React.FC<TestsProps> = (props) => {
             ]
               .filter((i) => i)
               .join(', '),
-            city:
-              findAddrComponents('locality', addrComponents) ||
-              findAddrComponents('administrative_area_level_2', addrComponents),
+            city,
             state: findAddrComponents('administrative_area_level_1', addrComponents),
             country: findAddrComponents('country', addrComponents),
             pincode: findAddrComponents('postal_code', addrComponents),

@@ -214,11 +214,13 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const setDiagnosticClinic: DiagnosticsCartContextProps['setDiagnosticClinic'] = (item) => {
     _setDiagnosticClinic(item);
     _setDiagnosticSlot(null);
+    _setDeliveryAddressId('');
   };
 
   const setDiagnosticSlot: DiagnosticsCartContextProps['setDiagnosticSlot'] = (item) => {
     _setDiagnosticSlot(item);
     _setDiagnosticClinic(null);
+    _setClinicId('');
   };
 
   const setEPrescriptions: DiagnosticsCartContextProps['setEPrescriptions'] = (items) => {
@@ -303,14 +305,15 @@ export const DiagnosticsCartProvider: React.FC = (props) => {
   const setClinicId = (id: DiagnosticsCartContextProps['clinicId']) => {
     setDeliveryType(MEDICINE_DELIVERY_TYPE.STORE_PICKUP);
     _setClinicId(id);
-    _setDeliveryAddressId('');
+    // _setDeliveryAddressId('');
   };
 
   const setDeliveryAddressId = (id: DiagnosticsCartContextProps['deliveryAddressId']) => {
     setDeliveryType(MEDICINE_DELIVERY_TYPE.HOME_DELIVERY);
     _setDeliveryAddressId(id);
-    _setClinicId('');
+    // _setClinicId('');
   };
+
   const addPhysicalPrescription: DiagnosticsCartContextProps['addPhysicalPrescription'] = (
     item
   ) => {
