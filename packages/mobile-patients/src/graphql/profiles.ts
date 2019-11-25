@@ -1659,3 +1659,21 @@ export const DOWNLOAD_DOCUMENT = gql`
     }
   }
 `;
+export const UPLOAD_CHAT_FILE_PRISM = gql`
+  mutation uploadChatDocumentToPrism(
+    $fileType: UPLOAD_FILE_TYPES!
+    $base64FileInput: String!
+    $appointmentId: String
+    $patientId: String!
+  ) {
+    uploadChatDocumentToPrism(
+      fileType: $fileType
+      base64FileInput: $base64FileInput
+      appointmentId: $appointmentId
+      patientId: $patientId
+    ) {
+      status
+      fileId
+    }
+  }
+`;

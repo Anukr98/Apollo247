@@ -1065,7 +1065,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
             UploadDocumentInput: {
               base64FileInput: item.base64,
               category: 'HealthChecks',
-              fileType: item.fileType.toUpperCase(),
+              fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
               patientId: currentPatient && currentPatient!.id,
             },
           },

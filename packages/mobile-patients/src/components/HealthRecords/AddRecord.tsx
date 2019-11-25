@@ -230,7 +230,10 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
             UploadDocumentInput: {
               base64FileInput: item.data,
               category: 'HealthChecks',
-              fileType: item.path!.substring(item.path!.lastIndexOf('.') + 1).toUpperCase(),
+              fileType:
+                item.path!.substring(item.path!.lastIndexOf('.') + 1) == 'jpg'
+                  ? 'JPEG'
+                  : item.path!.substring(item.path!.lastIndexOf('.') + 1).toUpperCase(),
               patientId: currentPatient && currentPatient!.id,
             },
           },
