@@ -645,7 +645,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
               onPress={() =>
                 !!medicineDetails.image
                   ? props.navigation.navigate(AppRoutes.ImageSliderScreen, {
-                      images: [AppConfig.Configuration.IMAGES_BASE_URL + medicineDetails.image],
+                      images: [AppConfig.Configuration.IMAGES_BASE_URL[0] + medicineDetails.image],
                       heading: medicineDetails.name,
                     })
                   : {}
@@ -653,7 +653,9 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
             >
               {!!medicineDetails.image ? (
                 <Image
-                  source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL + medicineDetails.image }}
+                  source={{
+                    uri: AppConfig.Configuration.IMAGES_BASE_URL[0] + medicineDetails.image,
+                  }}
                   style={styles.doctorImage}
                 />
               ) : (
@@ -809,7 +811,7 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
         {data.image ? (
           <Image
             placeholderStyle={styles.imagePlaceholderStyle}
-            source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL + data.image }}
+            source={{ uri: AppConfig.Configuration.IMAGES_BASE_URL[0] + data.image }}
             style={{ height: 40, width: 40 }}
             resizeMode="contain"
           />
