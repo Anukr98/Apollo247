@@ -9,6 +9,7 @@ import {
   GetMedicineOrdersList,
   GetMedicineOrdersListVariables,
   GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus,
+  GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
 import {
   MEDICINE_DELIVERY_TYPE,
@@ -19,7 +20,7 @@ import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/a
 import string from '@aph/mobile-patients/src/strings/strings.json';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import { SafeAreaView, StyleSheet, View, Alert, TouchableOpacity } from 'react-native';
 import { NavigationScreenProps, ScrollView } from 'react-navigation';
@@ -41,6 +42,13 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
   const isTest = props.navigation.getParam('isTest');
+  const ordersFetched = props.navigation.getParam('orders');
+  const [orders, setOrders] = useState<
+    GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]
+  >(props.navigation.getParam('orders'));
+  const refetch = props.navigation.getParam('refetch');
+  const error = props.navigation.getParam('error');
+  const loading = props.navigation.getParam('loading');
 
   useEffect(() => {
     if (!currentPatient) {
@@ -48,37 +56,37 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     }
   }, [currentPatient]);
 
-  let { data, error, loading, refetch } = useQuery<
-    GetMedicineOrdersList,
-    GetMedicineOrdersListVariables
-  >(GET_MEDICINE_ORDERS_LIST, {
-    variables: { patientId: currentPatient && currentPatient.id },
-    fetchPolicy: 'no-cache',
-  });
+  // let { data, error, loading, refetch } = useQuery<
+  //   GetMedicineOrdersList,
+  //   GetMedicineOrdersListVariables
+  // >(GET_MEDICINE_ORDERS_LIST, {
+  //   variables: { patientId: currentPatient && currentPatient.id },
+  //   fetchPolicy: 'no-cache',
+  // });
 
-  const orders = (
-    (!loading && g(data, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
-    []
-  ).filter(
-    (item) =>
-      !(
-        (item!.medicineOrdersStatus || []).length == 1 &&
-        (item!.medicineOrdersStatus || []).find(
-          (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
-        )
-      )
-  );
+  // const orders = (
+  //   (!loading && g(data, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
+  //   []
+  // ).filter(
+  //   (item) =>
+  //     !(
+  //       (item!.medicineOrdersStatus || []).length == 1 &&
+  //       (item!.medicineOrdersStatus || []).find(
+  //         (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
+  //       )
+  //     )
+  // );
 
-  useEffect(() => {
-    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      refetch()
-        .then(() => {})
-        .catch(() => {});
-    });
-    return () => {
-      _didFocusSubscription && _didFocusSubscription.remove();
-    };
-  }, []);
+  // useEffect(() => {
+  //   const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+  //     refetch()
+  //       .then(() => {})
+  //       .catch(() => {});
+  //   });
+  //   return () => {
+  //     _didFocusSubscription && _didFocusSubscription.remove();
+  //   };
+  // }, []);
 
   const getDeliverType = (type: MEDICINE_DELIVERY_TYPE) => {
     switch (type) {
@@ -140,6 +148,10 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
                 props.navigation.navigate(AppRoutes.OrderDetailsScene, {
                   orderAutoId: order!.orderAutoId,
                   orderDetails: order!.medicineOrdersStatus,
+                  setOrders: (
+                    orders: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]
+                  ) => setOrders(orders),
+                  refetch: refetch,
                 });
               }}
               title={'Medicines'}

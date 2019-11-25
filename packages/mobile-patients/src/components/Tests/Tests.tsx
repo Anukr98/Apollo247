@@ -292,15 +292,20 @@ export const Tests: React.FC<TestsProps> = (props) => {
     }
   }, [locationForDiagnostics && locationForDiagnostics.cityId]);
 
-  const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
-    getDiagnosticOrdersList,
-    getDiagnosticOrdersListVariables
-  >(GET_DIAGNOSTIC_ORDER_LIST, {
-    variables: {
-      patientId: currentPatient && currentPatient.id,
-    },
-    fetchPolicy: 'no-cache',
-  });
+  const {
+    data: orders,
+    error: ordersError,
+    loading: ordersLoading,
+    refetch: ordersRefetch,
+  } = useQuery<getDiagnosticOrdersList, getDiagnosticOrdersListVariables>(
+    GET_DIAGNOSTIC_ORDER_LIST,
+    {
+      variables: {
+        patientId: currentPatient && currentPatient.id,
+      },
+      fetchPolicy: 'no-cache',
+    }
+  );
 
   const _orders = (!ordersLoading && g(orders, 'getDiagnosticOrdersList', 'ordersList')) || [];
 
@@ -599,7 +604,13 @@ export const Tests: React.FC<TestsProps> = (props) => {
       (!ordersLoading && _orders.length > 0 && (
         <ListCard
           onPress={() =>
-            props.navigation.navigate(AppRoutes.YourOrdersTest, { orders: _orders, isTest: true })
+            props.navigation.navigate(AppRoutes.YourOrdersTest, {
+              orders: _orders,
+              isTest: true,
+              refetch: ordersRefetch,
+              error: ordersError,
+              loading: ordersLoading,
+            })
           }
           container={{
             marginBottom: 24,

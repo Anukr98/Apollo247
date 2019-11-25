@@ -152,10 +152,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const shopByBrand = g(data, 'shop_by_brand') || [];
   const hotSellers = g(data, 'hot_sellers', 'products') || [];
 
-  const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
-    GetMedicineOrdersList,
-    GetMedicineOrdersListVariables
-  >(GET_MEDICINE_ORDERS_LIST, {
+  const {
+    data: orders,
+    error: ordersError,
+    loading: ordersLoading,
+    refetch: ordersRefetch,
+  } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(GET_MEDICINE_ORDERS_LIST, {
     variables: { patientId: currentPatient && currentPatient.id },
     fetchPolicy: 'no-cache',
   });
@@ -362,7 +364,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       (!ordersLoading && _orders.length > 0 && (
         <ListCard
-          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.YourOrdersScene, {
+              orders: _orders,
+              refetch: ordersRefetch,
+              error: ordersError,
+              loading: ordersLoading,
+            })
+          }
           container={{ marginBottom: 24 }}
           title={'Your Orders'}
           leftIcon={<MedicineIcon />}
