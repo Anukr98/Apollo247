@@ -289,7 +289,8 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
     }
   };
   const dataLoading = () => {
-    // setLoading(true);
+    setLoading(true);
+
     const selectedTab = tabsArray[selectedTabIndex];
     client
       .query<GetPatientLog>({
@@ -313,16 +314,21 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
 
         var arrayOfObjAfter = _.map(
           _.uniq(
-            _.map(obj, function(obj1) {
-              return JSON.stringify(obj1);
+            _.map(obj, function(obj) {
+              return JSON.stringify(obj);
             })
           ),
-          function(obj1) {
-            return JSON.parse(obj1);
+          function(obj) {
+            return JSON.parse(obj);
           }
         );
         setPatientList(arrayOfObjAfter as any);
         setLoading(false);
+        document
+          .getElementById('messages')!
+          .scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // document.getElementById("messages")!.scrollIntoView(false);
       })
       .catch((e: any) => {
         //setError('Error occured in getcasesheet api');
@@ -376,6 +382,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
         label={item.value}
         onClick={(e) => {
           setselectedTabIndex(index);
+          setOffset(0);
         }}
       />
     );
@@ -458,7 +465,7 @@ export const PatientLog: React.FC<DoctorsProfileProps> = (DoctorsProfileProps) =
                 <CircularProgress className={classes.loading} />
               </Typography>
             ) : (
-              <div>
+              <div id="messages">
                 {selectedTabIndex === 0 && (
                   <TabContainer>
                     <AllPatient patientData={patientList} />
