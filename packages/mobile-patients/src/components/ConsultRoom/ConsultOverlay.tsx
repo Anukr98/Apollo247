@@ -56,19 +56,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
-  congratulationsDescriptionStyle: {
-    marginHorizontal: 24,
-    marginTop: 8,
-    color: theme.colors.SKY_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(17),
-    lineHeight: 24,
-  },
 });
-
-type TimeArray = {
-  label: string;
-  time: string[];
-}[];
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
   // dispalyoverlay: boolean;
@@ -103,6 +91,12 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const scrollViewRef = React.useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [disablePay, setdisablePay] = useState<boolean>(false);
+  const [
+    selectedClinic,
+    setselectedClinic,
+  ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
+    props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
+  );
 
   const todayDate = new Date().toDateString().split('T')[0];
   console.log(availableInMin, 'ConsultO');
@@ -136,16 +130,26 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       0 < availableInMin!
         ? nextAvailableSlot
         : selectedTimeSlot;
+
+    const doctorClinics = props.clinics.filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const hospitalId = isConsultOnline
+      ? doctorClinics.length > 0 && doctorClinics[0].facility
+        ? doctorClinics[0].facility.id
+        : ''
+      : selectedClinic
+      ? selectedClinic.facility.id
+      : '';
     const appointmentInput: BookAppointmentInput = {
       patientId: props.patientId,
       doctorId: props.doctor ? props.doctor.id : '',
       appointmentDateTime: timeSlot, //appointmentDate,
       appointmentType:
         selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
-      hospitalId:
-        props.clinics && props.clinics.length > 0 && props.clinics[0].facility
-          ? props.clinics[0].facility.id
-          : '',
+      hospitalId,
     };
     client
       .mutate<bookAppointment>({
@@ -378,6 +382,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setshowSpinner={setshowSpinner}
                   setshowOfflinePopup={setshowOfflinePopup}
                   scrollToSlots={scrollToSlots}
+                  setselectedClinic={setselectedClinic}
                 />
               )}
               <View style={{ height: 96 }} />
