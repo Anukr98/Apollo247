@@ -279,7 +279,6 @@ export const ConsultRoom: React.FC = (props) => {
     const currentTime = new Date().getTime();
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
     if (appointmentTime <= currentTime) {
-      if (isToday(appointmentTime)) todaysConsultations++;
       return appointmentDetails;
     }
   });
