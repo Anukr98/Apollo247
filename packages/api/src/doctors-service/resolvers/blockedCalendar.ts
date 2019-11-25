@@ -89,7 +89,7 @@ const addBlockedCalendarItem: Resolver<
   if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
   await bciRepo.save(itemToAdd);
 
-  //push notification logic
+  //push notification logic no change
   const rescheduleRepo = context.consultsDb.getCustomRepository(
     RescheduleAppointmentDetailsRepository
   );
