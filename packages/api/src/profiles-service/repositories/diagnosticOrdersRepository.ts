@@ -41,6 +41,7 @@ export class DiagnosticOrdersRepository extends Repository<DiagnosticOrders> {
   getListOfOrders(patient: string) {
     return this.find({
       where: { patient, orderStatus: Not(DIAGNOSTIC_ORDER_STATUS.ORDER_FAILED) },
+      order: { createdDate: 'DESC' },
       relations: ['diagnosticOrderLineItems', 'diagnosticOrderLineItems.diagnostics'],
     });
   }

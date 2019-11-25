@@ -11,6 +11,8 @@ import { MedicineOrders } from 'profiles-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { MedicineOrdersRepository } from 'profiles-service/repositories/MedicineOrdersRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
+//import { PatientLabResults, LabTestResults, TestResultFiles } from 'types/labResults';
 
 export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
   enum MEDICINE_DELIVERY_TYPE {
@@ -92,6 +94,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
     estimatedAmount: Float
     deliveryCharges: Float
     prescriptionImageUrl: String
+    prismPrescriptionFileId: String
     shopId: String
     medicineOrderLineItems: [Medicine]
   }
@@ -105,6 +108,7 @@ export const getPatientConsultsAndPrescriptionsTypeDefs = gql`
     getPatientPastConsultsAndPrescriptions(
       consultsAndOrdersInput: PatientConsultsAndOrdersInput
     ): PatientConsultsAndOrders
+    getPatientLabResults(patientId: String!): Boolean
   }
 `;
 
@@ -176,6 +180,37 @@ const getPatientPastConsultsAndPrescriptions: Resolver<
   return { consults: patientAppointments, medicineOrders: patientMedicineOrders };
 };
 
+const getPatientLabResults: Resolver<
+  null,
+  { patientId: string },
+  ConsultServiceContext,
+  boolean
+> = async (parent, args, { firebaseUid, mobileNumber, patientsDb }) => {
+  const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
+  //get authtoken for the logged in user mobile number
+  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
+
+  if (!prismAuthToken) return false;
+
+  //get users list for the mobile number
+  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
+  console.log(prismUserList);
+
+  //check if current user uhid matches with response uhids
+  const uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
+
+  if (!uhid) {
+    return false;
+  }
+
+  //just call get prism user details with the corresponding uhid
+  await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+
+  const labResults = await patientsRepo.getPatientLabResults(uhid, prismAuthToken);
+  console.log(labResults);
+  return false;
+};
+
 export const getPatientConsultsAndPrescriptionsResolvers = {
   ConsultRecord: {
     doctorInfo(consults: ConsultRecord) {
@@ -184,5 +219,6 @@ export const getPatientConsultsAndPrescriptionsResolvers = {
   },
   Query: {
     getPatientPastConsultsAndPrescriptions,
+    getPatientLabResults,
   },
 };

@@ -9,17 +9,37 @@ import { AppointmentRepository } from 'consults-service/repositories/appointment
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { AppointmentDocuments } from 'consults-service/entities';
+import { UPLOAD_FILE_TYPES, PRISM_DOCUMENT_CATEGORY } from 'profiles-service/entities';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
 import { AppointmentDocumentRepository } from 'consults-service/repositories/appointmentDocumentRepository';
+import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 
 export const uploadChatDocumentTypeDefs = gql`
+  enum PRISM_DOCUMENT_CATEGORY {
+    HealthChecks
+    OpSummary
+  }
+
+  enum UPLOAD_FILE_TYPES {
+    JPG
+    PNG
+    JPEG
+    PDF
+  }
+
   type UploadChatDocumentResult {
     filePath: String
+  }
+
+  type UploadPrismChatDocumentResult {
+    status: Boolean!
+    fileId: String
   }
 
   type UploadedDocumentDetails {
     id: String
     documentPath: String
+    prismFileId: String
   }
 
   type ChatDocumentDeleteResult {
@@ -33,12 +53,28 @@ export const uploadChatDocumentTypeDefs = gql`
       base64FileInput: String
     ): UploadChatDocumentResult!
 
-    addChatDocument(appointmentId: ID!, documentPath: String!): UploadedDocumentDetails
+    uploadChatDocumentToPrism(
+      appointmentId: String
+      patientId: String!
+      fileType: UPLOAD_FILE_TYPES!
+      base64FileInput: String!
+    ): UploadPrismChatDocumentResult!
+
+    addChatDocument(
+      appointmentId: ID!
+      documentPath: String
+      prismFileId: String
+    ): UploadedDocumentDetails
     removeChatDocument(documentPathId: ID!): ChatDocumentDeleteResult
   }
 `;
 type UploadChatDocumentResult = {
   filePath: string;
+};
+
+type UploadPrismChatDocumentResult = {
+  status: Boolean;
+  fileId: string;
 };
 
 const uploadChatDocument: Resolver<
@@ -112,14 +148,58 @@ const uploadChatDocument: Resolver<
   return { filePath: client.getBlobUrl(readmeBlob.name) };
 };
 
+const uploadChatDocumentToPrism: Resolver<
+  null,
+  {
+    appointmentId: string;
+    patientId: string;
+    fileType: UPLOAD_FILE_TYPES;
+    base64FileInput: string;
+  },
+  ConsultServiceContext,
+  UploadPrismChatDocumentResult
+> = async (parent, args, { mobileNumber, consultsDb, patientsDb }) => {
+  const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+  const appointmentDetails = await appointmentRepo.findById(args.appointmentId);
+  if (appointmentDetails == null)
+    throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
+
+  const patientsRepo = patientsDb.getCustomRepository(PatientRepository);
+  //get authtoken for the logged in user mobile number
+  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
+  if (!prismAuthToken) return { status: false, fileId: '' };
+
+  //get users list for the mobile number
+  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
+
+  //check if current user uhid matches with response uhids
+  const uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
+  if (!uhid) {
+    return { status: false, fileId: '' };
+  }
+
+  //just call get prism user details with the corresponding uhid
+  await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+
+  const uploadDocInput = {
+    ...args,
+    category: PRISM_DOCUMENT_CATEGORY.OpSummary,
+  };
+
+  const fileId = await patientsRepo.uploadDocumentToPrism(uhid, prismAuthToken, uploadDocInput);
+
+  return fileId ? { status: true, fileId } : { status: false, fileId: '' };
+};
+
 type UploadedDocumentDetails = {
   id: string;
   documentPath: string;
+  prismFileId: string;
 };
 
 const addChatDocument: Resolver<
   null,
-  { appointmentId: string; documentPath: string },
+  { appointmentId: string; documentPath: string; prismFileId: string },
   ConsultServiceContext,
   UploadedDocumentDetails
 > = async (parent, args, { consultsDb, doctorsDb, mobileNumber }) => {
@@ -133,15 +213,20 @@ const addChatDocument: Resolver<
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
-  if (args.documentPath.length == 0) throw new AphError(AphErrorMessages.INVALID_DOCUMENT_PATH);
+  if (args.prismFileId.length == 0) throw new AphError(AphErrorMessages.INVALID_DOCUMENT_PATH);
 
   const documentAttrs: Partial<AppointmentDocuments> = {
     documentPath: args.documentPath,
+    prismFileId: args.prismFileId,
     appointment: appointmentData,
   };
   const appointmentDocumentRepo = consultsDb.getCustomRepository(AppointmentDocumentRepository);
   const appointmentDocuments = await appointmentDocumentRepo.saveDocument(documentAttrs);
-  return { id: appointmentDocuments.id, documentPath: appointmentDocuments.documentPath };
+  return {
+    id: appointmentDocuments.id,
+    documentPath: appointmentDocuments.documentPath,
+    prismFileId: appointmentDocuments.prismFileId,
+  };
 };
 
 type ChatDocumentDeleteResult = {
@@ -172,6 +257,7 @@ const removeChatDocument: Resolver<
 export const uploadChatDocumentResolvers = {
   Mutation: {
     uploadChatDocument,
+    uploadChatDocumentToPrism,
     addChatDocument,
     removeChatDocument,
   },
