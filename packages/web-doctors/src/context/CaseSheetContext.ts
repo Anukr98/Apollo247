@@ -42,16 +42,8 @@ export interface CaseSheetContextProps {
         React.SetStateAction<GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null>
       >
     | (() => void);
-  diagnosticPrescription:
-    | GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[]
-    | null;
-  setDiagnosticPrescription:
-    | React.Dispatch<
-        React.SetStateAction<
-          GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosticPrescription[] | null
-        >
-      >
-    | (() => void);
+  diagnosticPrescription: any[] | null;
+  setDiagnosticPrescription: React.Dispatch<React.SetStateAction<any[] | null>> | (() => void);
   medicinePrescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null;
   setMedicinePrescription:
     | React.Dispatch<
