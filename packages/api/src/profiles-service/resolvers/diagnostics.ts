@@ -164,6 +164,9 @@ const searchDiagnostics: Resolver<
   ProfilesServiceContext,
   SearchDiagnosticsResult
 > = async (parent, args, { profilesDb }) => {
+  if (args.searchText == '')
+    throw new AphError(AphErrorMessages.INVALID_SEARCH_VALUE, undefined, {});
+
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
   const diagnostics =
     args.city == ''
