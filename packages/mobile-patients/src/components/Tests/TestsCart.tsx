@@ -259,29 +259,29 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     }
   }, [clinicId]);
 
-  useEffect(() => {
-    setLoading!(true);
-    (currentPatientId &&
-      addresses.length == 0 &&
-      client
-        .query<getPatientAddressList, getPatientAddressListVariables>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          variables: { patientId: currentPatientId },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          setLoading!(false);
-          setAddresses && setAddresses(addressList!);
-        })
-        .catch((e) => {
-          setLoading!(false);
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Something went wrong, unable to fetch addresses.`,
-          });
-        })) ||
-      setLoading!(false);
-  }, [currentPatientId]);
+  // useEffect(() => {
+  //   setLoading!(true);
+  //   (currentPatientId &&
+  //     addresses.length == 0 &&
+  //     client
+  //       .query<getPatientAddressList, getPatientAddressListVariables>({
+  //         query: GET_PATIENT_ADDRESS_LIST,
+  //         variables: { patientId: currentPatientId },
+  //         fetchPolicy: 'no-cache',
+  //       })
+  //       .then(({ data: { getPatientAddressList: { addressList } } }) => {
+  //         setLoading!(false);
+  //         setAddresses && setAddresses(addressList!);
+  //       })
+  //       .catch((e) => {
+  //         setLoading!(false);
+  //         showAphAlert!({
+  //           title: `Uh oh.. :(`,
+  //           description: `Something went wrong, unable to fetch addresses.`,
+  //         });
+  //       })) ||
+  //     setLoading!(false);
+  // }, [currentPatientId]);
 
   /*  useEffect(() => {
       getCartInfo()
