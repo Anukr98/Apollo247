@@ -29,6 +29,8 @@ import {
   GET_PATIENT_ADDRESS_LIST,
   UPLOAD_FILE,
   SEARCH_DIAGNOSTICS,
+  UPLOAD_DOCUMENT,
+  DOWNLOAD_DOCUMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
 import {
@@ -54,6 +56,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import {
@@ -69,6 +72,8 @@ import {
   searchDiagnosticsVariables,
 } from '@aph/mobile-patients/src/graphql/types/searchDiagnostics';
 import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
+import { uploadDocument } from '../../graphql/types/uploadDocument';
+import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -262,17 +267,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     setLoading!(true);
     (currentPatientId &&
-      addresses.length == 0 &&
+      // addresses.length == 0 &&
       client
         .query<getPatientAddressList, getPatientAddressListVariables>({
           query: GET_PATIENT_ADDRESS_LIST,
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          setLoading!(false);
-          setAddresses && setAddresses(addressList!);
-        })
+        .then(
+          ({
+            data: {
+              getPatientAddressList: { addressList },
+            },
+          }) => {
+            setLoading!(false);
+            setAddresses && setAddresses(addressList!);
+          }
+        )
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({
@@ -1035,46 +1046,120 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       : true)
   );
 
+  // const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
+  //   return Promise.all(
+  //     prescriptions.map((item) =>
+  //       client.mutate<uploadFile, uploadFileVariables>({
+  //         mutation: UPLOAD_FILE,
+  //         fetchPolicy: 'no-cache',
+  //         variables: {
+  //           fileType: item.fileType,
+  //           base64FileInput: item.base64,
+  //         },
+  //       })
+  //     )
+  //   );
+  // };
+
   const multiplePhysicalPrescriptionUpload = (prescriptions = physicalPrescriptions) => {
     return Promise.all(
       prescriptions.map((item) =>
-        client.mutate<uploadFile, uploadFileVariables>({
-          mutation: UPLOAD_FILE,
+        client.mutate<uploadDocument>({
+          mutation: UPLOAD_DOCUMENT,
           fetchPolicy: 'no-cache',
           variables: {
-            fileType: item.fileType,
-            base64FileInput: item.base64,
+            UploadDocumentInput: {
+              base64FileInput: item.base64,
+              category: 'HealthChecks',
+              fileType: item.fileType == 'jpg' ? 'JPEG' : item.fileType.toUpperCase(),
+              patientId: currentPatient && currentPatient!.id,
+            },
           },
         })
       )
     );
   };
-
   const onPressProceedToPay = () => {
     const prescriptions = physicalPrescriptions;
     if (prescriptions.length == 0) {
+      console.log('withoutdocumnets');
+
       props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else {
       setLoading!(true);
       const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+      console.log('unUploadedPres', unUploadedPres);
       multiplePhysicalPrescriptionUpload(unUploadedPres)
         .then((data) => {
           setLoading!(false);
-          const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
-          const newuploadedPrescriptions = unUploadedPres.map(
-            (item, index) =>
-              ({
-                ...item,
-                uploadedUrl: uploadUrls[index],
-              } as PhysicalPrescription)
+
+          const uploadUrlscheck = data.map((item) =>
+            item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
           );
-          setPhysicalPrescriptions &&
-            setPhysicalPrescriptions([
-              ...newuploadedPrescriptions,
-              ...prescriptions.filter((item) => item.uploadedUrl),
-            ]);
-          setLoading!(false);
-          props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+          console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
+          var filtered = uploadUrlscheck.filter(function(el) {
+            return el != null;
+          });
+          console.log('filtered', filtered);
+
+          if (filtered.length > 0) {
+            client
+              .query<downloadDocuments>({
+                query: DOWNLOAD_DOCUMENT,
+                fetchPolicy: 'no-cache',
+                variables: {
+                  downloadDocumentsInput: {
+                    patientId: currentPatient && currentPatient.id,
+                    fileIds: uploadUrlscheck,
+                  },
+                },
+              })
+              .then(({ data }) => {
+                console.log(data, 'DOWNLOAD_DOCUMENT');
+                const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+                console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+                const uploadUrls = uploadUrlscheck!.map((item) => item);
+                console.log(uploadUrls, 'uploadUrls');
+                const newuploadedPrescriptions = unUploadedPres.map(
+                  (item, index) =>
+                    ({
+                      ...item,
+                      uploadedUrl: uploadUrls[index],
+                    } as PhysicalPrescription)
+                );
+                console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+                setPhysicalPrescriptions &&
+                  setPhysicalPrescriptions([
+                    ...newuploadedPrescriptions,
+                    ...prescriptions.filter((item) => item.uploadedUrl),
+                  ]);
+                setLoading!(false);
+                props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+              })
+              .catch((e: string) => {
+                console.log('Error occured', e);
+              })
+              .finally(() => {
+                setshowSpinner(false);
+              });
+          } else {
+            Alert.alert('your uploaded images are failed');
+          }
+          // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
+          // const newuploadedPrescriptions = unUploadedPres.map(
+          //   (item, index) =>
+          //     ({
+          //       ...item,
+          //       uploadedUrl: uploadUrls[index],
+          //     } as PhysicalPrescription)
+          // );
+          // setPhysicalPrescriptions &&
+          //   setPhysicalPrescriptions([
+          //     ...newuploadedPrescriptions,
+          //     ...prescriptions.filter((item) => item.uploadedUrl),
+          //   ]);
+          // setLoading!(false);
+          // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
         })
         .catch((e) => {
           aphConsole.log({ e });

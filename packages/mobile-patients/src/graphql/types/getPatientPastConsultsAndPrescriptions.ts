@@ -117,6 +117,7 @@ export interface getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAn
   estimatedAmount: number | null;
   prescriptionImageUrl: string | null;
   shopId: string | null;
+  prismPrescriptionFileId: string | null;
   medicineOrderLineItems: (getPatientPastConsultsAndPrescriptions_getPatientPastConsultsAndPrescriptions_medicineOrders_medicineOrderLineItems | null)[] | null;
 }
 

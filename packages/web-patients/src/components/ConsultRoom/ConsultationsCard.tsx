@@ -176,29 +176,32 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface ConsultationsCardProps {
-  appointments: GetPatientAppointments;
+  appointments: appointmentDetails[];
 }
 
 export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles({});
 
-  let bookedAppointments: appointmentDetails[] = [];
+  // let bookedAppointments: appointmentDetails[] = [];
 
-  if (
-    props.appointments.getPatinetAppointments.patinetAppointments &&
-    props.appointments.getPatinetAppointments.patinetAppointments.length > 0
-  ) {
-    bookedAppointments = props.appointments.getPatinetAppointments.patinetAppointments;
-  }
+  // if (
+  //   props.appointments.getPatinetAppointments.patinetAppointments &&
+  //   props.appointments.getPatinetAppointments.patinetAppointments.length > 0
+  // ) {
+  //   bookedAppointments =
+  //     props.appointments.getPatinetAppointments.patinetAppointments;
+  // }
   // filter appointments that are greater than current time.
-  const filterAppointments = bookedAppointments.filter((appointmentDetails) => {
-    const currentTime = new Date().getTime();
-    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+  // const filterAppointments = bookedAppointments.filter(appointmentDetails => {
+  //   const currentTime = new Date().getTime();
+  //   const appointmentTime = new Date(
+  //     appointmentDetails.appointmentDateTime
+  //   ).getTime();
 
-    if (appointmentTime > currentTime) {
-      return appointmentDetails;
-    }
-  });
+  //   if (appointmentTime > currentTime) {
+  //     return appointmentDetails;
+  //   }
+  // });
 
   const otherDateMarkup = (appointmentTime: number) => {
     if (isToday(new Date(appointmentTime))) {
@@ -230,7 +233,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 214px)'}>
         <div className={classes.consultationSection}>
           <Grid container spacing={2}>
-            {filterAppointments.map((appointmentDetails, index) => {
+            {props.appointments.map((appointmentDetails, index) => {
               const appointmentId = appointmentDetails.id;
               const firstName =
                 appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.firstName
@@ -264,7 +267,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   : '';
               const isConsultStarted = appointmentDetails.isConsultStarted;
               return (
-                <Grid item sm={6} key={index}>
+                <Grid item sm={4} key={index}>
                   <div className={classes.consultCard}>
                     <div className={classes.consultCardWrap}>
                       <div className={classes.startDoctor}>
@@ -282,7 +285,7 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             difference <= 15 ? classes.availableNow : ''
                           }`}
                         >
-                          {difference <= 15
+                          {difference <= 15 && difference > 0
                             ? `Available in ${difference} mins`
                             : otherDateMarkup(appointmentTime)}
                         </div>

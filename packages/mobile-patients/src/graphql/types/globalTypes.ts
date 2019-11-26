@@ -139,6 +139,11 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum PRISM_DOCUMENT_CATEGORY {
+  HealthChecks = "HealthChecks",
+  OpSummary = "OpSummary",
+}
+
 export enum REQUEST_ROLES {
   DOCTOR = "DOCTOR",
   JUNIOR = "JUNIOR",
@@ -193,6 +198,13 @@ export enum TEST_COLLECTION_TYPE {
 export enum TRANSFER_INITIATED_TYPE {
   DOCTOR = "DOCTOR",
   PATIENT = "PATIENT",
+}
+
+export enum UPLOAD_FILE_TYPES {
+  JPEG = "JPEG",
+  JPG = "JPG",
+  PDF = "PDF",
+  PNG = "PNG",
 }
 
 export enum WeekDay {
@@ -321,6 +333,11 @@ export interface DoctorPhysicalAvailabilityInput {
   availableDate: any;
   doctorId: string;
   facilityId: string;
+}
+
+export interface DownloadDocumentsInput {
+  fileIds: string[];
+  patientId: string;
 }
 
 export interface EditProfileInput {
@@ -519,6 +536,13 @@ export interface UpdatePatientInput {
   dateOfBirth?: any | null;
   relation?: Relation | null;
   photoUrl?: string | null;
+}
+
+export interface UploadDocumentInput {
+  fileType: UPLOAD_FILE_TYPES;
+  base64FileInput: string;
+  patientId: string;
+  category: PRISM_DOCUMENT_CATEGORY;
 }
 
 //==============================================================

@@ -167,22 +167,22 @@ export const SearchTestScene: React.FC<SearchTestSceneProps> = (props) => {
     searchTextFromProp && onSearchMedicine(searchTextFromProp);
   }, []);
 
-  useEffect(() => {
-    client
-      .query<getPatientPastMedicineSearches, getPatientPastMedicineSearchesVariables>({
-        query: GET_PATIENT_PAST_MEDICINE_SEARCHES,
-        variables: {
-          patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
-        },
-        fetchPolicy: 'no-cache',
-      })
-      .then(({ data: { getPatientPastMedicineSearches } }) => {
-        setPastSearches(getPatientPastMedicineSearches || []);
-      })
-      .catch((error) => {
-        aphConsole.log('Error occured', { error });
-      });
-  }, [currentPatient]);
+  // useEffect(() => {
+  // client
+  //   .query<getPatientPastMedicineSearches, getPatientPastMedicineSearchesVariables>({
+  //     query: GET_PATIENT_PAST_MEDICINE_SEARCHES,
+  //     variables: {
+  //       patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+  //     },
+  //     fetchPolicy: 'no-cache',
+  //   })
+  //   .then(({ data: { getPatientPastMedicineSearches } }) => {
+  //     setPastSearches(getPatientPastMedicineSearches || []);
+  //   })
+  //   .catch((error) => {
+  //     aphConsole.log('Error occured', { error });
+  //   });
+  // }, [currentPatient]);
 
   const showGenericALert = (e: { response: AxiosResponse }) => {
     const error = e && e.response && e.response.data.message;

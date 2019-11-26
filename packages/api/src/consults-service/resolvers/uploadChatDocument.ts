@@ -213,7 +213,7 @@ const addChatDocument: Resolver<
   const appointmentData = await appointmentRepo.findById(args.appointmentId);
   if (appointmentData == null) throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID);
 
-  if (args.prismFileId.length == 0) throw new AphError(AphErrorMessages.INVALID_DOCUMENT_PATH);
+  //if (args.prismFileId.length == 0) throw new AphError(AphErrorMessages.INVALID_DOCUMENT_PATH);
 
   const documentAttrs: Partial<AppointmentDocuments> = {
     documentPath: args.documentPath,

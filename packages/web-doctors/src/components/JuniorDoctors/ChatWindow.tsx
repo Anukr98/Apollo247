@@ -382,6 +382,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
   const startConsult = "^^#startconsult";
   const startConsultjr = "^^#startconsultJr";
   const stopConsult = "^^#stopconsult";
+  const stopConsultJr = "^^#stopconsultJr";
   const documentUpload = "^^#DocumentUpload";
   const transferconsult = "^^#transferconsult";
   const rescheduleconsult = "^^#rescheduleconsult";
@@ -585,7 +586,7 @@ export const ChatWindow: React.FC<ConsultRoomProps> = props => {
     if (
       rowData.message === startConsult ||
       rowData.message === startConsultjr ||
-      rowData.message === stopConsult ||
+      rowData.message === stopConsultJr ||
       rowData.message === languageQue ||
       rowData.message === jdThankyou
     ) {

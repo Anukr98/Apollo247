@@ -39,6 +39,8 @@ import {
   BOOK_APPOINTMENT_TRANSFER,
   UPDATE_APPOINTMENT_SESSION,
   UPLOAD_CHAT_FILE,
+  UPLOAD_CHAT_FILE_PRISM,
+  DOWNLOAD_DOCUMENT,
 } from '@aph/mobile-patients/src/graphql/profiles';
 import {
   bookTransferAppointment,
@@ -47,6 +49,7 @@ import {
 import {
   BookTransferAppointmentInput,
   TRANSFER_INITIATED_TYPE,
+  UPLOAD_FILE_TYPES,
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   updateAppointmentSession,
@@ -109,6 +112,8 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { OverlayRescheduleView } from '@aph/mobile-patients/src/components/Consult/OverlayRescheduleView';
 import { UploadPrescriprionPopup } from '@aph/mobile-patients/src/components/Medicines/UploadPrescriprionPopup';
 import { SelectEPrescriptionModal } from '@aph/mobile-patients/src/components/Medicines/SelectEPrescriptionModal';
+import { uploadChatDocumentToPrism } from '../../graphql/types/uploadChatDocumentToPrism';
+import { downloadDocuments } from '../../graphql/types/downloadDocuments';
 
 const { ExportDeviceToken } = NativeModules;
 const { height, width } = Dimensions.get('window');
@@ -238,6 +243,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const [transferAccept, setTransferAccept] = useState<boolean>(false);
   const [transferDcotorName, setTransferDcotorName] = useState<string>('');
   const [bottompopup, setBottompopup] = useState<boolean>(false);
+  const [wrongFormat, setwrongFormat] = useState<boolean>(false);
   const [checkReschudule, setCheckReschudule] = useState<boolean>(false);
   const [newRescheduleCount, setNewRescheduleCount] = useState<rescheduleType>();
   const [nextSlotAvailable, setNextSlotAvailable] = useState<string>('');
@@ -3400,52 +3406,153 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     console.log('upload base66', base66);
     console.log('upload fileType', type);
     console.log('chanel', channel);
+    console.log('resource', resource);
     CommonLogEvent(AppRoutes.ChatRoom, 'Upload document');
-
-    setLoading(true);
-    const textin = {
-      fileType: type,
-      base64FileInput: base66, //resource.data,
-      appointmentId: channel,
-    };
-    console.log('textin', textin);
-    client
-      .mutate<uploadChatDocument, uploadChatDocumentVariables>({
-        mutation: UPLOAD_CHAT_FILE,
-        fetchPolicy: 'no-cache',
-        variables: {
-          fileType: type,
-          base64FileInput: base66, //resource.data,
+    resource.map((item: any) => {
+      if (
+        item.fileType == 'jpg' ||
+        item.fileType == 'jpeg' ||
+        item.fileType == 'pdf' ||
+        item.fileType == 'png'
+      ) {
+        console.log('item', item.base64);
+        setLoading(true);
+        const textin = {
+          fileType: type == 'jpg' ? 'JPEG' : type.toUpperCase(), //type,
+          base64FileInput: item.base64, //resource.data,
           appointmentId: channel,
-        },
-      })
-      .then((data) => {
-        console.log('upload data', data);
-        setLoading(false);
-
-        const text = {
-          id: patientId,
-          message: imageconsult,
-          fileType: 'image',
-          url: data.data && data.data.uploadChatDocument.filePath,
         };
+        console.log('textin', textin);
+        client
+          .mutate<uploadChatDocumentToPrism>({
+            mutation: UPLOAD_CHAT_FILE_PRISM,
+            fetchPolicy: 'no-cache',
+            variables: {
+              fileType: item.fileType == 'jpg' ? 'JPEG' : type.toUpperCase(), //type.toUpperCase(),
+              base64FileInput: item.base64, //resource.data,
+              appointmentId: channel,
+              patientId: currentPatient && currentPatient.id,
+            },
+          })
+          .then((data) => {
+            console.log('upload data', data);
+            setLoading(false);
 
-        pubnub.publish(
-          {
-            channel: channel,
-            message: text,
-            storeInHistory: true,
-            sendByPost: true,
-          },
-          (status, response) => {}
-        );
-        KeepAwake.activate();
-      })
-      .catch((e) => {
-        setLoading(false);
-        KeepAwake.activate();
-        console.log('upload data error', e);
-      });
+            if (data && data.data! && data.data!.uploadChatDocumentToPrism.status) {
+              client
+                .query<downloadDocuments>({
+                  query: DOWNLOAD_DOCUMENT,
+                  fetchPolicy: 'no-cache',
+                  variables: {
+                    downloadDocumentsInput: {
+                      patientId: currentPatient && currentPatient.id,
+                      fileIds: data.data!.uploadChatDocumentToPrism.fileId,
+                    },
+                  },
+                })
+                .then(({ data }) => {
+                  console.log(data, 'DOWNLOAD_DOCUMENT');
+                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+                  console.log(uploadUrlscheck![0], 'DOWNLOAD_DOCUMENTcmple');
+                  const text = {
+                    id: patientId,
+                    message: imageconsult,
+                    fileType: 'image',
+                    url: uploadUrlscheck![0],
+                  };
+
+                  pubnub.publish(
+                    {
+                      channel: channel,
+                      message: text,
+                      storeInHistory: true,
+                      sendByPost: true,
+                    },
+                    (status, response) => {}
+                  );
+                  KeepAwake.activate();
+                })
+                .catch((e: string) => {
+                  console.log('Error occured', e);
+                })
+                .finally(() => {
+                  setLoading(false);
+                });
+            } else {
+              Alert.alert('Upload document failed');
+            }
+            // const text = {
+            //   id: patientId,
+            //   message: imageconsult,
+            //   fileType: 'image',
+            //   url: data.data && data.data.uploadChatDocument.filePath,
+            // };
+
+            // pubnub.publish(
+            //   {
+            //     channel: channel,
+            //     message: text,
+            //     storeInHistory: true,
+            //     sendByPost: true,
+            //   },
+            //   (status, response) => {}
+            // );
+            // KeepAwake.activate();
+          })
+          .catch((e) => {
+            setLoading(false);
+            KeepAwake.activate();
+            console.log('upload data error', e);
+          });
+      } else {
+        setwrongFormat(true);
+      }
+    });
+
+    // const textin = {
+    //   fileType: type,
+    //   base64FileInput: base66, //resource.data,
+    //   appointmentId: channel,
+    // };
+    // console.log('textin', textin);
+    // client
+    //   .mutate<uploadChatDocumentToPrism>({
+    //     mutation: UPLOAD_CHAT_FILE_PRISM,
+    //     fetchPolicy: 'no-cache',
+    //     variables: {
+    //       fileType: UPLOAD_FILE_TYPES.JPEG, //type.toUpperCase(),
+    //       base64FileInput: base66, //resource.data,
+    //       appointmentId: channel,
+    //       patientId: currentPatient && currentPatient.id,
+    //     },
+    //   })
+    //   .then((data) => {
+    //     console.log('upload data', data);
+    //     setLoading(false);
+
+    //     // const text = {
+    //     //   id: patientId,
+    //     //   message: imageconsult,
+    //     //   fileType: 'image',
+    //     //   url: data.data && data.data.uploadChatDocument.filePath,
+    //     // };
+
+    //     // pubnub.publish(
+    //     //   {
+    //     //     channel: channel,
+    //     //     message: text,
+    //     //     storeInHistory: true,
+    //     //     sendByPost: true,
+    //     //   },
+    //     //   (status, response) => {}
+    //     // );
+    //     // KeepAwake.activate();
+    //   })
+    //   .catch((e) => {
+    //     setLoading(false);
+    //     KeepAwake.activate();
+    //     console.log('upload data error', e);
+    //   });
     // try {
     //   const fileType = resource.uri!.substring(resource.uri!.lastIndexOf('.') + 1);
     //   console.log('upload fileType', fileType);
@@ -3519,6 +3626,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           setDropdownVisible(false);
           if (selectedType == 'CAMERA_AND_GALLERY') {
             console.log('ca');
+
             uploadDocument(response, response[0].base64, response[0].fileType);
             //updatePhysicalPrescriptions(response);
           } else {
@@ -3538,44 +3646,107 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             return;
           } else {
             console.log('sussess', 'ssss');
-            setLoading(true);
-            client
-              .mutate<uploadChatDocument, uploadChatDocumentVariables>({
-                mutation: UPLOAD_CHAT_FILE,
-                fetchPolicy: 'no-cache',
-                variables: {
-                  fileType: 'pdf',
-                  base64FileInput: selectedEPres[0].uploadedUrl, //resource.data,
-                  appointmentId: channel,
-                },
-              })
-              .then((data) => {
-                setLoading(false);
-                console.log('upload selectedEPres data', data);
-
-                const text = {
-                  id: patientId,
-                  message: imageconsult,
-                  fileType: 'image',
-                  url: data.data && data.data.uploadChatDocument.filePath,
-                };
-
-                pubnub.publish(
-                  {
-                    channel: channel,
-                    message: text,
-                    storeInHistory: true,
-                    sendByPost: true,
+            const ePresUrls = selectedEPres.map((item) => item!.prismPrescriptionFileId);
+            console.log('ePresUrls', ePresUrls);
+            let ePresAndPhysicalPresUrls = [...ePresUrls];
+            console.log(
+              'ePresAndPhysicalPresUrls',
+              ePresAndPhysicalPresUrls
+                .join(',')
+                .split(',')
+                .map((item) => item.trim())
+                .filter((i) => i)
+            );
+            if (ePresAndPhysicalPresUrls.length > 0) {
+              client
+                .query<downloadDocuments>({
+                  query: DOWNLOAD_DOCUMENT,
+                  fetchPolicy: 'no-cache',
+                  variables: {
+                    downloadDocumentsInput: {
+                      patientId: currentPatient && currentPatient.id,
+                      fileIds: ePresAndPhysicalPresUrls
+                        .join(',')
+                        .split(',')
+                        .map((item) => item.trim())
+                        .filter((i) => i),
+                    },
                   },
-                  (status, response) => {}
-                );
-                KeepAwake.activate();
-              })
-              .catch((e) => {
-                setLoading(false);
-                KeepAwake.activate();
-                console.log('upload data error', e);
-              });
+                })
+                .then(({ data }) => {
+                  console.log(data, 'DOWNLOAD_DOCUMENT');
+                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+                  console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+                  if (uploadUrlscheck!.length > 0) {
+                    uploadUrlscheck!.map((item) => {
+                      //console.log(item, 'showitem');
+                      const text = {
+                        id: patientId,
+                        message: imageconsult,
+                        fileType: 'image',
+                        url: item,
+                      };
+
+                      pubnub.publish(
+                        {
+                          channel: channel,
+                          message: text,
+                          storeInHistory: true,
+                          sendByPost: true,
+                        },
+                        (status, response) => {}
+                      );
+                      KeepAwake.activate();
+                    });
+                  } else {
+                    Alert.alert('Images are not uploaded');
+                  }
+                })
+                .catch((e: string) => {
+                  console.log('Error occured', e);
+                })
+                .finally(() => {
+                  setLoading!(false);
+                });
+            }
+            // setLoading(true);
+            // client
+            //   .mutate<uploadChatDocument, uploadChatDocumentVariables>({
+            //     mutation: UPLOAD_CHAT_FILE,
+            //     fetchPolicy: 'no-cache',
+            //     variables: {
+            //       fileType: 'pdf',
+            //       base64FileInput: selectedEPres[0].uploadedUrl, //resource.data,
+            //       appointmentId: channel,
+            //     },
+            //   })
+            //   .then((data) => {
+            //     setLoading(false);
+            //     console.log('upload selectedEPres data', data);
+
+            //     const text = {
+            //       id: patientId,
+            //       message: imageconsult,
+            //       fileType: 'image',
+            //       url: data.data && data.data.uploadChatDocument.filePath,
+            //     };
+
+            //     pubnub.publish(
+            //       {
+            //         channel: channel,
+            //         message: text,
+            //         storeInHistory: true,
+            //         sendByPost: true,
+            //       },
+            //       (status, response) => {}
+            //     );
+            //     KeepAwake.activate();
+            //   })
+            //   .catch((e) => {
+            //     setLoading(false);
+            //     KeepAwake.activate();
+            //     console.log('upload data error', e);
+            //   });
           }
           //setEPrescriptions && setEPrescriptions([...selectedEPres]);
         }}
@@ -3886,6 +4057,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     ],
                   })
                 );
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {wrongFormat && (
+        <BottomPopUp
+          title={'Hi:)'}
+          description="Opps ! The selected jpg format is unsupport. Please choose a different one"
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setwrongFormat(false);
+                setDropdownVisible(false);
               }}
             >
               <Text

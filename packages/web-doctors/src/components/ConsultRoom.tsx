@@ -357,6 +357,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
   const startConsult = "^^#startconsult";
   const startConsultjr = "^^#startconsultJr";
   const stopConsult = "^^#stopconsult";
+  const stopConsultJr = "^^#stopconsultJr";
   const transferconsult = "^^#transferconsult";
   const rescheduleconsult = "^^#rescheduleconsult";
   const followupconsult = "^^#followupconsult";
@@ -581,7 +582,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
     if (
       rowData.message === startConsult ||
       rowData.message === startConsultjr ||
-      rowData.message === stopConsult ||
+      rowData.message === stopConsultJr ||
       rowData.message === languageQue ||
       rowData.message === jdThankyou
     ) {

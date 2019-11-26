@@ -627,7 +627,6 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
   const stopcallMsg = "^^callme`stop^^";
   const acceptcallMsg = "^^callme`accept^^";
   const startConsult = "^^#startconsult";
-  const startConsultjr = "^^#startconsultJr";
   const stopConsult = "^^#stopconsult";
   const transferconsult = "^^#transferconsult";
   const rescheduleconsult = "^^#rescheduleconsult";
@@ -1676,7 +1675,7 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                             setIsCancelPopoverOpen(true);
                           } else {
                             alert(
-                              "You are not allowed to cancel the appointment"
+                              "You are not allowed to cancel the appointment."
                             );
                           }
                         }}
@@ -1698,11 +1697,11 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                     <li
                       onClick={() => {
                         handleCloseThreeDots();
-                        const rescheduleCount =
+                        const rescheduleCountByDoctor =
                           (appointmentInfo &&
-                            appointmentInfo.rescheduleCount) ||
+                            appointmentInfo.rescheduleCountByDoctor) ||
                           0;
-                        if (rescheduleCount >= 3) {
+                        if (rescheduleCountByDoctor >= 3) {
                           setIsCancelDialogOpen(true);
                         } else {
                           setIsCancelDialogOpen(false);
@@ -1976,6 +1975,9 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                     }
                   })
                     .then(response => {
+                      if (showVideo) {
+                        stopAudioVideoCall();
+                      }
                       setIsCancelPopoverOpen(false);
                       cancelConsultAction();
                       unSubscribeBrowserButtonsListener();
