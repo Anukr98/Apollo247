@@ -82,9 +82,6 @@ export enum DOCTOR_ONLINE_STATUS {
 ///////////////////////////////////////////////////////////
 @Entity()
 export class BlockedCalendarItem extends BaseEntity {
-  @Column({ nullable: true })
-  consultHoursId: string;
-
   @Column({ nullable: true, default: ConsultMode.BOTH })
   consultMode: ConsultMode;
 
