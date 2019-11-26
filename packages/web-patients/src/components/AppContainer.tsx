@@ -18,7 +18,7 @@ import { PatientsList } from 'components/PatientsList';
 import { CartPoc } from 'components/CartPoc';
 import { CartLanding } from 'components/Cart/CartLanding';
 import { MedicineLanding } from 'components/Medicine/MedicineLanding';
-import { ConsultRoom } from 'components/ConsultRoom/ConsultRoom';
+import { Appointments } from 'components/ConsultRoom/Appointments';
 import { ChatRoom } from 'components/ChatRoom/ChatRoom';
 import { PrescriptionsLanding } from 'components/Prescriptions/PrescriptionsLanding';
 import { MyAccount } from 'components/MyAccount/MyAccount';
@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 const App: React.FC = () => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const { signInError } = useAuth();
   useEffect(() => {
     if (signInError) window.alert('Error signing in :(');
@@ -66,7 +66,7 @@ const App: React.FC = () => {
           path={clientRoutes.prescriptionsLanding()}
           component={PrescriptionsLanding}
         />
-        <AuthRouted exact path={clientRoutes.consultRoom()} component={ConsultRoom} />
+        <AuthRouted exact path={clientRoutes.appointments()} component={Appointments} />
         <AuthRouted
           exact
           path={clientRoutes.chatRoom(':appointmentId', ':doctorId')}

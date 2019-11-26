@@ -38,24 +38,21 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const AllowLocation: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
       <div className={classes.windowBody}>
         <Typography variant="h2">Hi! :)</Typography>
-        <p>We need to know your location to function better. Please allow us to auto detect your location or enter location manually.</p>
+        <p>
+          We need to know your location to function better. Please allow us to auto detect your
+          location or enter location manually.
+        </p>
       </div>
       <div className={classes.actions}>
-        <AphButton>
-          Enter Manualy
-        </AphButton>
-        <AphButton
-          color="primary"
-        >
-          Allow Auto Detect
-        </AphButton>
+        <AphButton>Enter Manualy</AphButton>
+        <AphButton color="primary">Allow Auto Detect</AphButton>
       </div>
     </div>
   );

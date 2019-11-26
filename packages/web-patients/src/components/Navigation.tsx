@@ -65,17 +65,17 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 export const Navigation: React.FC = (props) => {
-  const classes = useStyles();
+  const classes = useStyles({});
   const currentPath = window.location.pathname;
   const { cartItems } = useShoppingCart();
 
   return (
     <div className={classes.appNavigation} data-cypress="Navigation">
       <Link
-        className={currentPath === clientRoutes.consultRoom() ? classes.menuItemActive : ''}
-        to={clientRoutes.consultRoom()}
+        className={currentPath === clientRoutes.appointments() ? classes.menuItemActive : ''}
+        to={clientRoutes.appointments()}
       >
-        Consult Room
+        Appointments
       </Link>
       <Link
         to={clientRoutes.healthRecords()}
