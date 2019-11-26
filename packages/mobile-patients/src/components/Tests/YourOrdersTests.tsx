@@ -51,6 +51,14 @@ export const YourOrdersTest: React.FC<YourOrdersTestProps> = (props) => {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    refetch().then((data: any) => {
+      const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+      setOrders(_orders);
+    });
+  }, []);
+
   // console.log('', currentPatient);
   // let { data, error, loading, refetch } = useQuery<
   //   getDiagnosticOrdersList,

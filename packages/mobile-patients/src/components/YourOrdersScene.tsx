@@ -56,6 +56,13 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
     }
   }, [currentPatient]);
 
+  useEffect(() => {
+    refetch().then((data: any) => {
+      const _orders = g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || [];
+      setOrders(_orders);
+    });
+  }, []);
+
   // let { data, error, loading, refetch } = useQuery<
   //   GetMedicineOrdersList,
   //   GetMedicineOrdersListVariables

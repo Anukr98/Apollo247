@@ -19,6 +19,7 @@ import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCar
 import { Remove, AddIcon } from '@aph/mobile-patients/src/components/ui/Icons';
 import { PATIENT_ADDRESS_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CapsuleView } from '@aph/mobile-patients/src/components/ui/CapsuleView';
+import { useDiagnosticsCart } from '../DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   addressContainer: {
@@ -48,6 +49,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(true);
 
   const { setAddresses, addresses } = useShoppingCart();
+  const { setAddresses: setAdd } = useDiagnosticsCart();
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
 
@@ -75,6 +77,7 @@ export const AddressBook: React.FC<AddressBookProps> = (props) => {
       setaddressList(data.getPatientAddressList.addressList);
       setshowSpinner(false);
       setAddresses && setAddresses(data.getPatientAddressList.addressList);
+      setAdd && setAdd(data.getPatientAddressList.addressList);
     }
   }
 

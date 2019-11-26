@@ -520,57 +520,60 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const checkServicability = (
     selectedAddress: savePatientAddress_savePatientAddress_patientAddress
   ) => {
-    setCheckingServicability(true);
-    client
-      .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
-        query: GET_DIAGNOSTIC_SLOTS,
-        fetchPolicy: 'no-cache',
-        variables: {
-          patientId: currentPatient!.id,
-          hubCode: 'HYD_HUB1', // not considering this field at backend
-          selectedDate: moment(date).format('YYYY-MM-DD'),
-          zipCode: parseInt(selectedAddress.zipcode!),
-        },
-      })
-      .then(({ data }) => {
-        setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
-        setPinCode && setPinCode(selectedAddress.zipcode!);
-        aphConsole.log({ data }, 'GET_DIAGNOSTIC_SLOTS');
-        var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
-        var t = finalaray!.slotInfo!.map((item) => {
-          return {
-            label: (item!.slot || '').toString(),
-            time: `${item!.startTime} - ${item!.endTime}`,
-          };
-        });
-        aphConsole.log(t, 'finalaray');
-        setDiagnosticSlot &&
-          setDiagnosticSlot({
-            employeeSlotId: finalaray!.slotInfo![0]!.slot!,
-            diagnosticBranchCode: data!.getDiagnosticSlots.diagnosticBranchCode!,
-            diagnosticEmployeeCode: finalaray!.employeeCode || '',
-            slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
-            slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
-            city: selectedAddress!.city || '',
-            date: date.getTime(),
+    if (!checkingServicability) {
+      setCheckingServicability(true);
+      client
+        .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+          query: GET_DIAGNOSTIC_SLOTS,
+          fetchPolicy: 'no-cache',
+          variables: {
+            patientId: currentPatient!.id,
+            hubCode: 'HYD_HUB1', // not considering this field at backend
+            selectedDate: moment(date).format('YYYY-MM-DD'),
+            zipCode: parseInt(selectedAddress.zipcode!),
+          },
+        })
+        .then(({ data }) => {
+          setDeliveryAddressId && setDeliveryAddressId(selectedAddress.id);
+          setPinCode && setPinCode(selectedAddress.zipcode!);
+          aphConsole.log({ data }, 'GET_DIAGNOSTIC_SLOTS');
+          var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+          var t = finalaray!.slotInfo!.map((item) => {
+            return {
+              label: (item!.slot || '').toString(),
+              time: `${item!.startTime} - ${item!.endTime}`,
+            };
           });
-        settimeArray(t);
-        setselectedTimeSlot(t[0].time);
-      })
-      .catch((e) => {
-        aphConsole.log('Error occured', { e });
-        setDeliveryAddressId && setDeliveryAddressId('');
-        setPinCode && setPinCode('');
-        setselectedTimeSlot('');
-        showAphAlert!({
-          title: 'Uh oh.. :(',
-          description:
-            'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+          aphConsole.log(t, 'finalaray');
+          setDiagnosticSlot &&
+            setDiagnosticSlot({
+              employeeSlotId: finalaray!.slotInfo![0]!.slot!,
+              diagnosticBranchCode: data!.getDiagnosticSlots.diagnosticBranchCode!,
+              diagnosticEmployeeCode: finalaray!.employeeCode || '',
+              slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
+              slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
+              city: selectedAddress!.city || '',
+              date: date.getTime(),
+            });
+          settimeArray(t);
+          setselectedTimeSlot(t[0].time);
+        })
+        .catch((e) => {
+          aphConsole.log('Error occured', { e });
+          setDeliveryAddressId && setDeliveryAddressId('');
+          setDiagnosticSlot && setDiagnosticSlot(null);
+          setPinCode && setPinCode('');
+          setselectedTimeSlot('');
+          showAphAlert!({
+            title: 'Uh oh.. :(',
+            description:
+              'Sorry! We’re working hard to get to this area! In the meantime, you can either visit clinic near your location or change the address.',
+          });
+        })
+        .finally(() => {
+          setCheckingServicability(false);
         });
-      })
-      .finally(() => {
-        setCheckingServicability(false);
-      });
+    }
   };
 
   const renderHomeDelivery = () => {
@@ -636,7 +639,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <View style={styles.rowSpaceBetweenStyle}>
           <Text
             style={styles.yellowTextStyle}
-            onPress={() => props.navigation.navigate(AppRoutes.AddAddress)}
+            onPress={() => props.navigation.navigate(AppRoutes.AddAddress, { addOnly: true })}
           >
             ADD NEW ADDRESS
           </Text>
@@ -645,8 +648,16 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               <Text
                 style={styles.yellowTextStyle}
                 onPress={() => {
-                  setDiagnosticSlot && setDiagnosticSlot(null);
-                  props.navigation.navigate(AppRoutes.SelectDeliveryAddress, { isTest: true });
+                  props.navigation.navigate(AppRoutes.SelectDeliveryAddress, {
+                    isTest: true,
+                    selectedAddressId: deliveryAddressId,
+                    isChanged: (val: boolean, id?: string) => {
+                      if (val && id) {
+                        setDeliveryAddressId && setDeliveryAddressId(id);
+                        setDiagnosticSlot && setDiagnosticSlot(null);
+                      }
+                    },
+                  });
                 }}
               >
                 VIEW ALL

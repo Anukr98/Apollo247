@@ -400,6 +400,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       //   // setLoading && setLoading(false);
       // });
     } else {
+      setLoading && setLoading(false);
       props.navigation.goBack();
     }
   };

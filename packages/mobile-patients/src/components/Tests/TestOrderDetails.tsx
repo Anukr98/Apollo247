@@ -140,6 +140,10 @@ export const TestOrderDetails: React.FC<TestOrderDetailsProps> = (props) => {
         })
       );
     } else {
+      refetchOrders().then((data: any) => {
+        const _orders = g(data, 'data', 'getDiagnosticOrdersList', 'ordersList') || [];
+        setOrders(_orders);
+      });
       props.navigation.goBack();
     }
     return false;

@@ -129,28 +129,56 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    setLoading!(true);
-    (currentPatient &&
-      // addresses.length == 0 &&
-      client
-        .query<getPatientAddressList, getPatientAddressListVariables>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          variables: { patientId: currentPatientId },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          setLoading!(false);
-          setAddresses && setAddresses(addressList!);
-        })
-        .catch((e) => {
-          setLoading!(false);
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Something went wrong, unable to fetch addresses.`,
+    if (deliveryAddressId && addresses) {
+      const selectedAddressIndex = addresses.findIndex(
+        (address) => address.id == deliveryAddressId
+      );
+      addresses &&
+        pinCodeServiceabilityApi(addresses[selectedAddressIndex].zipcode!)
+          .then(({ data: { Availability } }) => {
+            setCheckingServicability(false);
+            if (Availability) {
+              setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
+            } else {
+              setDeliveryAddressId && setDeliveryAddressId('');
+              showAphAlert!({
+                title: 'Uh oh.. :(',
+                description:
+                  'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+              });
+            }
+          })
+          .catch((e) => {
+            aphConsole.log({ e });
+            setCheckingServicability(false);
+            handleGraphQlError(e);
           });
-        })) ||
-      setLoading!(false);
-  }, [currentPatient]);
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   setLoading!(true);
+  //   (currentPatient &&
+  //     addresses.length == 0 &&
+  //     client
+  //       .query<getPatientAddressList, getPatientAddressListVariables>({
+  //         query: GET_PATIENT_ADDRESS_LIST,
+  //         variables: { patientId: currentPatientId },
+  //         fetchPolicy: 'no-cache',
+  //       })
+  //       .then(({ data: { getPatientAddressList: { addressList } } }) => {
+  //         setLoading!(false);
+  //         setAddresses && setAddresses(addressList!);
+  //       })
+  //       .catch((e) => {
+  //         setLoading!(false);
+  //         showAphAlert!({
+  //           title: `Uh oh.. :(`,
+  //           description: `Something went wrong, unable to fetch addresses.`,
+  //         });
+  //       })) ||
+  //     setLoading!(false);
+  // }, [currentPatient]);
 
   /*  useEffect(() => {
     getCartInfo()
