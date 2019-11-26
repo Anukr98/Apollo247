@@ -99,6 +99,7 @@ export interface ScheduleCalanderProps {
   isDropDown?: boolean;
   dropdownArray?: TimeOptionArray[];
   CALENDAR_TYPE: CALENDAR_TYPE;
+  setDropArray?: (args0: TimeOptionArray[]) => void;
 }
 
 export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
@@ -160,17 +161,19 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
           });
         });
     } else if (!!props.selectedTimeSlot && dropArray) {
-      (dropArray.length > 0 &&
+      if (dropArray.length > 0) {
         dropArray.map((value) => {
           if (value.time === props.selectedTimeSlot) {
             setSelectedDrop(value);
           }
-        })) ||
-        getDropArrayData(date);
+        });
+      } else {
+        getDropArrayData(date, props.selectedTimeSlot);
+      }
     }
-  }, [props.selectedTimeSlot, dropArray]);
+  }, []);
 
-  const getDropArrayData = (selectedDate: Date) => {
+  const getDropArrayData = (selectedDate: Date, selectedTime?: string) => {
     setshowSpinner(true);
     const selectedAddress = addresses.find((item) => deliveryAddressId == item.id);
     client
@@ -205,9 +208,17 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             time: `${item!.startTime} - ${item!.endTime}`,
           };
         });
-        console.log(t, 'finalaray');
         setDropArray(t);
-        setSelectedDrop(t[0]);
+        props.setDropArray && props.setDropArray(t);
+        if (selectedTime) {
+          t.map((value) => {
+            if (value.time === selectedTime) {
+              setSelectedDrop(value);
+            }
+          });
+        } else {
+          setSelectedDrop(t[0]);
+        }
       })
       .catch((e: string) => {
         setshowSpinner(false);
@@ -406,7 +417,10 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={() => props.setdisplayoverlay(false)}
+            onPress={() => {
+              props.setdisplayoverlay(false);
+              selectedDrop && props.setselectedTimeSlot(selectedDrop!.time);
+            }}
             style={{
               marginTop: Platform.OS === 'ios' ? (isIphoneX ? 58 : 34) : 14,
               backgroundColor: 'white',

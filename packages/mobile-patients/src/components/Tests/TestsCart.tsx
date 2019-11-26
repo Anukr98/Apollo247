@@ -1210,11 +1210,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
         <ScheduleCalander
           date={date}
           setDate={(date) => setDate(date)}
-          setdisplayoverlay={setDisplaySchedule}
+          setdisplayoverlay={(val) => setDisplaySchedule(val)}
           selectedTimeSlot={selectedTimeSlot}
           setselectedTimeSlot={(selected) => setselectedTimeSlot(selected)}
           isDropDown={true}
           dropdownArray={timeArray}
+          setDropArray={(array) => settimeArray(array)}
           CALENDAR_TYPE={CALENDAR_TYPE.WEEK}
         />
       )}
