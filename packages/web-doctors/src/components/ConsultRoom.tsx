@@ -465,6 +465,7 @@ export const ConsultRoom: React.FC<ConsultRoomProps> = props => {
           message.message.message !== rescheduleconsult &&
           message.message.message !== followupconsult &&
           message.message.message !== patientConsultStarted &&
+          message.message.message !== stopConsult &&
           message.message.message !== firstMessage &&
           message.message.message !== secondMessage &&
           message.message.message !== covertVideoMsg &&
