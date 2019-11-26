@@ -81,7 +81,7 @@ export const bookAppointmentTypeDefs = gql`
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID!
-    symptoms: ID
+    symptoms: String
     bookingSource: BOOKINGSOURCE
     deviceType: DEVICETYPE
   }
