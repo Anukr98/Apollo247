@@ -331,6 +331,7 @@ export const HealthRecordsHome: React.FC<HealthRecordsHomeProps> = (props) => {
             }
             selectedProfile={profile}
             setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+            unsetloaderDisplay={true}
           ></ProfileList>
           {/* <MaterialMenu
             onPress={(item) => {
