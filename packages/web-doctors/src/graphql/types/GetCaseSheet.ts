@@ -77,6 +77,7 @@ export interface GetCaseSheet_getCaseSheet_caseSheetDetails_appointment {
   appointmentState: string | null;
   displayId: string;
   rescheduleCount: number;
+  rescheduleCountByDoctor: number;
 }
 
 export interface GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile_specialty {
