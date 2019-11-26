@@ -1698,11 +1698,11 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
                     <li
                       onClick={() => {
                         handleCloseThreeDots();
-                        const rescheduleCount =
+                        const rescheduleCountByDoctor =
                           (appointmentInfo &&
-                            appointmentInfo.rescheduleCount) ||
+                            appointmentInfo.rescheduleCountByDoctor) ||
                           0;
-                        if (rescheduleCount >= 3) {
+                        if (rescheduleCountByDoctor >= 3) {
                           setIsCancelDialogOpen(true);
                         } else {
                           setIsCancelDialogOpen(false);
