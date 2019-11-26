@@ -1153,21 +1153,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
               setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
             ></ProfileList>
           </View>
-          {/* <Text
-            style={{
-              height: isSearchFocused ? 0 : 'auto',
-              ...theme.viewStyles.text('SB', 36, '#02475b', 1),
-              paddingTop: 20,
-              backgroundColor: '#fff',
-              paddingHorizontal: 20,
-            }}
-          >
-            {(currentPatient &&
-              currentPatient.firstName &&
-              `hi ${currentPatient.firstName.toLowerCase()}!`) ||
-              ''}
-          </Text> */}
-
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>
             <View style={{ backgroundColor: 'white' }}>{renderSearchBar()}</View>
             {renderSearchBarAndSuggestions()}
@@ -1177,14 +1162,6 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           </View>
         </ScrollView>
       </SafeAreaView>
-      {/* {displayAddProfile && (
-        <AddProfile
-          setdisplayoverlay={setDisplayAddProfile}
-          setProfile={(profile) => {
-            setProfile(profile);
-          }}
-        />
-      )} */}
       {renderEPrescriptionModal()}
       {renderUploadPrescriprionPopup()}
     </View>
