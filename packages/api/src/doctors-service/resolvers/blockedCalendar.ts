@@ -187,9 +187,9 @@ const blockMultipleCalendarItems: Resolver<
   checkAuth(blockCalendarInputs.doctorId, context);
   const doctorId = blockCalendarInputs.doctorId;
   const reason = blockCalendarInputs.reason;
-  let CalendarItem: BlockedCalendarItem[] = [];
+  const CalendarItem: BlockedCalendarItem[] = [];
 
-  let overlapCount: number = await checkOverlaps(0);
+  const overlapCount: number = await checkOverlaps(0);
 
   if (overlapCount > 0) {
     throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
