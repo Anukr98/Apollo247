@@ -13,6 +13,7 @@ import {
   AdminUsers,
   Secretary,
   DoctorSecretary,
+  DoctorsFavouriteMedicine,
 } from 'doctors-service/entities';
 import {
   Patient,
@@ -107,6 +108,7 @@ export const connect = async () => {
         AdminUsers,
         Secretary,
         DoctorSecretary,
+        DoctorsFavouriteMedicine,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,

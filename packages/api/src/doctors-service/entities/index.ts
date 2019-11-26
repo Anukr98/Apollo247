@@ -77,6 +77,18 @@ export enum DOCTOR_ONLINE_STATUS {
   AWAY = 'AWAY',
 }
 
+export enum MEDICINE_TIMINGS {
+  EVENING = 'EVENING',
+  MORNING = 'MORNING',
+  NIGHT = 'NIGHT',
+  NOON = 'NOON',
+}
+
+export enum MEDICINE_TO_BE_TAKEN {
+  AFTER_FOOD = 'AFTER_FOOD',
+  BEFORE_FOOD = 'BEFORE_FOOD',
+}
+
 ///////////////////////////////////////////////////////////
 // BlockedCalendarItem
 ///////////////////////////////////////////////////////////
@@ -171,6 +183,12 @@ export class Doctor extends BaseEntity {
 
   @OneToMany((type) => ConsultHours, (consultHours) => consultHours.doctor)
   consultHours: ConsultHours[];
+
+  @OneToMany(
+    (type) => DoctorsFavouriteMedicine,
+    (doctorFavouriteMedicine) => doctorFavouriteMedicine.doctor
+  )
+  doctorFavouriteMedicine: DoctorsFavouriteMedicine[];
 
   @OneToMany((type) => DoctorDeviceTokens, (doctorDeviceTokens) => doctorDeviceTokens.doctor)
   doctorDeviceTokens: DoctorDeviceTokens[];
@@ -419,6 +437,42 @@ export class DoctorSpecialty extends BaseEntity {
   }
 }
 //doctorSpecialty ends
+
+//DoctorFavouriteMedicine starts
+@Entity()
+export class DoctorsFavouriteMedicine extends BaseEntity {
+  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorFavouriteMedicine)
+  doctor: Doctor;
+
+  @Column({ nullable: true })
+  externalId: string;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  medicineConsumptionDurationInDays: Number;
+
+  @Column({ nullable: true })
+  medicineDosage: string;
+
+  @Column({ nullable: true })
+  medicineUnit: string;
+
+  @Column({ nullable: true })
+  medicineInstructions: string;
+
+  @Column('simple-array')
+  medicineTimings: MEDICINE_TIMINGS;
+
+  @Column('simple-array')
+  medicineToBeTaken: MEDICINE_TO_BE_TAKEN;
+
+  @Column({ nullable: true })
+  medicineName: string;
+}
+
+// DoctorFavouriteMedicine ends
 
 //facility starts
 @Entity()

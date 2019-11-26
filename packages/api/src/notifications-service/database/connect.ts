@@ -25,6 +25,7 @@ import {
   AdminUsers,
   Secretary,
   DoctorSecretary,
+  DoctorsFavouriteMedicine,
 } from 'doctors-service/entities';
 import 'reflect-metadata';
 import { createConnections } from 'typeorm';
@@ -92,6 +93,7 @@ export const connect = async () => {
         AdminUsers,
         Secretary,
         DoctorSecretary,
+        DoctorsFavouriteMedicine,
       ],
       type: 'postgres',
       host: process.env.DOCTORS_DB_HOST,
