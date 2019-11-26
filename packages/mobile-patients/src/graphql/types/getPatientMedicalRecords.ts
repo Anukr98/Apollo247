@@ -29,6 +29,7 @@ export interface getPatientMedicalRecords_getPatientMedicalRecords_medicalRecord
   additionalNotes: string | null;
   sourceName: string | null;
   documentURLs: string | null;
+  prismFileIds: string | null;
   medicalRecordParameters: (getPatientMedicalRecords_getPatientMedicalRecords_medicalRecords_medicalRecordParameters | null)[] | null;
 }
 

@@ -591,7 +591,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         medicineName={stripHtml(medicine.name)}
         imageUrl={
           medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
-            ? `${medicine.thumbnail}`
+            ? `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${medicine.thumbnail}`
             : ''
         }
         isTest={isTest}

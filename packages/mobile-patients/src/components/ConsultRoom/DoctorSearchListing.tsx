@@ -51,6 +51,7 @@ import {
   View,
 } from 'react-native';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
+import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
 
 const styles = StyleSheet.create({
   topView: {
@@ -141,7 +142,8 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
   const [locationSearchList, setlocationSearchList] = useState<{ name: string; placeId: string }[]>(
     []
   );
-  const { locationDetails, setLocationDetails } = useAppCommonData();
+  const { locationForDiagnostics, locationDetails, setLocationDetails } = useAppCommonData();
+  const { clearCartInfo } = useDiagnosticsCart();
   const { showAphAlert, hideAphAlert, setLoading: setLoadingContext } = useUIElements();
 
   // const [doctorsAvailability, setdoctorsAvailability] = useState<
@@ -585,7 +587,15 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       .then((response) => {
         const addrComponents = g(response, 'data', 'result', 'address_components') || [];
         const coordinates = g(response, 'data', 'result', 'geometry', 'location')! || {};
-
+        const city =
+          findAddrComponents('locality', addrComponents) ||
+          findAddrComponents('administrative_area_level_2', addrComponents);
+        if (
+          city.toLowerCase() !=
+          ((locationForDiagnostics && locationForDiagnostics.city) || '').toLowerCase()
+        ) {
+          clearCartInfo && clearCartInfo();
+        }
         if (addrComponents.length > 0) {
           setcurrentLocation(item.name);
           setshowSpinner(true);
@@ -602,9 +612,7 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
             ]
               .filter((i) => i)
               .join(', '),
-            city:
-              findAddrComponents('locality', addrComponents) ||
-              findAddrComponents('administrative_area_level_2', addrComponents),
+            city,
             state: findAddrComponents('administrative_area_level_1', addrComponents),
             country: findAddrComponents('country', addrComponents),
             pincode: findAddrComponents('postal_code', addrComponents),
