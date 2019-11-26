@@ -5,6 +5,7 @@ import { AphTextField } from '@aph/web-ui-components';
 import { LocationContext } from 'components/LocationProvider';
 import PlacesAutocomplete from 'react-places-autocomplete';
 import { Helmet } from 'react-helmet';
+import { AllowLocation } from 'components/AllowLocation';
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -107,6 +108,37 @@ const useStyles = makeStyles((theme: Theme) => {
       fontWeight: 500,
       color: '#02475b',
     },
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
   });
 });
 
@@ -135,6 +167,10 @@ export const AppLocations: React.FC = (props) => {
   const searchOptions = {
     componentRestrictions: { country: ['in'] },
   };
+
+  const mascotRef = useRef(null);
+  const [isPopoverOpen] = React.useState<boolean>(true);
+
 
   const [address, setAddress] = React.useState('');
   const [selectedAddress, setSelectedAddress] = React.useState('');
@@ -220,6 +256,28 @@ export const AppLocations: React.FC = (props) => {
             </div>
           )}
         </PlacesAutocomplete>
+      </Popover>
+      <Popover
+        open={isPopoverOpen}
+        anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <AllowLocation />
+          </div>
+        </div>
       </Popover>
     </div >
   );
