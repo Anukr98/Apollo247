@@ -655,6 +655,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = props => {
   const startConsult = "^^#startconsult";
   const startConsultjr = "^^#startconsultJr";
   const stopConsult = "^^#stopconsult";
+  const stopConsultJr = "^^#stopconsultJr";
   const transferconsult = "^^#transferconsult";
   const rescheduleconsult = "^^#rescheduleconsult";
   const followupconsult = "^^#followupconsult";
@@ -1166,7 +1167,7 @@ export const JDCallPopover: React.FC<CallPopoverProps> = props => {
   const onStopConsult = () => {
     const text = {
       id: props.doctorId,
-      message: stopConsult,
+      message: stopConsultJr,
       isTyping: true,
       automatedText:
         "Thank you " +

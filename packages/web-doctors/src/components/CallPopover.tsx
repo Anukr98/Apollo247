@@ -627,7 +627,6 @@ export const CallPopover: React.FC<CallPopoverProps> = props => {
   const stopcallMsg = "^^callme`stop^^";
   const acceptcallMsg = "^^callme`accept^^";
   const startConsult = "^^#startconsult";
-  const startConsultjr = "^^#startconsultJr";
   const stopConsult = "^^#stopconsult";
   const transferconsult = "^^#transferconsult";
   const rescheduleconsult = "^^#rescheduleconsult";
