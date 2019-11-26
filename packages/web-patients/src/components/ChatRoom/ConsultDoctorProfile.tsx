@@ -490,17 +490,10 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   );
 
   const cancelAppointmentApi = () => {
-    // const appointmentTransferInput = {
-    //   appointmentId: appointmentId,
-    //   cancelReason: "",
-    //   cancelledBy: REQUEST_ROLES.PATIENT,
-    //   cancelledById: patientId
-    // };
     cancelMutation()
       .then((data: any) => {
         setShowCancelPopup(false);
         window.location.href = clientRoutes.appointments();
-        console.log(data, 'data');
       })
       .catch((e: string) => {
         setShowCancelPopup(false);
