@@ -1,6 +1,12 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { STATUS, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'consults-service/entities';
+import {
+  STATUS,
+  APPOINTMENT_TYPE,
+  APPOINTMENT_STATE,
+  BOOKINGSOURCE,
+  DEVICETYPE,
+} from 'consults-service/entities';
 import { ConsultServiceContext } from 'consults-service/consultServiceContext';
 import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
@@ -35,6 +41,15 @@ export const bookAppointmentTypeDefs = gql`
     PHYSICAL
   }
 
+  enum BOOKINGSOURCE {
+    MOBILE
+    WEB
+  }
+  enum DEVICETYPE {
+    IOS
+    ANDROID
+  }
+
   type AppointmentBooking {
     id: ID!
     patientId: ID!
@@ -66,6 +81,9 @@ export const bookAppointmentTypeDefs = gql`
     appointmentDateTime: DateTime!
     appointmentType: APPOINTMENT_TYPE!
     hospitalId: ID!
+    symptoms: String
+    bookingSource: BOOKINGSOURCE
+    deviceType: DEVICETYPE
   }
 
   type BookAppointmentResult {
@@ -87,6 +105,9 @@ type BookAppointmentInput = {
   appointmentDateTime: Date;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId: string;
+  symptoms?: string;
+  bookingSource?: BOOKINGSOURCE;
+  deviceType?: DEVICETYPE;
 };
 
 type AppointmentBooking = {
