@@ -1746,6 +1746,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = props => {
               onClick={() => {
                 mutationCancelJrdConsult()
                   .then((res: any) => {
+                    if (showVideo) {
+                      stopAudioVideoCall();
+                    }
                     setIsCancelPopoverOpen(false);
                     cancelConsultAction();
                     mutationRemoveConsult();
