@@ -169,7 +169,7 @@ export const AppLocations: React.FC = (props) => {
   };
 
   const mascotRef = useRef(null);
-  const [isPopoverOpen] = React.useState<boolean>(true);
+  const [isPopoverOpen] = React.useState<boolean>(false);
 
 
   const [address, setAddress] = React.useState('');

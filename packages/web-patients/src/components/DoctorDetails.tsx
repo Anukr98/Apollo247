@@ -120,11 +120,12 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: 'none',
     },
     modalBox: {
-      maxWidth: 320,
+      maxWidth: 676,
       margin: 'auto',
       marginTop: 88,
-      backgroundColor: theme.palette.text.primary,
+      backgroundColor: theme.palette.common.white,
       position: 'relative',
+      outline: 'none',
     },
     tabsRoot: {
       backgroundColor: theme.palette.common.white,
@@ -138,9 +139,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: 'rgba(2,71,91,0.5)',
       padding: '14px 10px',
       textTransform: 'none',
-      [theme.breakpoints.down('xs')]: {
-        width: '50%',
-      },
+      minWidth: '50%',
     },
     tabSelected: {
       color: theme.palette.secondary.dark,
