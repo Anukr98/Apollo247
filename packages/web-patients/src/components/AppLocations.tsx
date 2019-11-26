@@ -1,6 +1,7 @@
 import React, { useRef, useContext } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
-import { Theme, Popover, TextField, List, ListItem, Divider } from '@material-ui/core';
+import { Theme, Popover } from '@material-ui/core';
+import { AphTextField } from '@aph/web-ui-components';
 import { LocationContext } from 'components/LocationProvider';
 import PlacesAutocomplete from 'react-places-autocomplete';
 import { Helmet } from 'react-helmet';
@@ -20,6 +21,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: 'flex',
       alignItems: 'center',
       cursor: 'pointer',
+      width: 210,
     },
     iconType: {
       width: 25,
@@ -35,7 +37,10 @@ const useStyles = makeStyles((theme: Theme) => {
       fontSize: 13,
       fontWeight: 600,
       color: theme.palette.secondary.light,
+      overflow: 'hidden',
       textTransform: 'uppercase',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
     },
     textField: {
       marginLeft: theme.spacing(1),
@@ -49,6 +54,58 @@ const useStyles = makeStyles((theme: Theme) => {
     locationIcon: {
       color: '#00b38e',
       marginRight: 5,
+    },
+    locationPopWrap: {
+      width: 240,
+      padding: '16px 20px',
+    },
+    inputLabel: {
+      color: '#02475b',
+      fontSize: 12,
+      fontWeight: 500,
+    },
+    searchInput: {
+      display: 'flex',
+      '& >div:first-child': {
+        width: 'calc(100% - 40px)',
+      },
+    },
+    popLocationIcon: {
+      textAlign: 'center',
+      paddingTop: 8,
+      paddingLeft: 16,
+      '& img': {
+        maxWidth: 24,
+      },
+    },
+    locationAutoComplete: {
+      color: '#02475b',
+      paddingTop: 10,
+      '& ul': {
+        margin: 0,
+        padding: 0,
+        '& li': {
+          color: '#02475b',
+          cursor: 'pointer',
+          padding: '8px 0',
+          fontSize: 16,
+          fontWeight: 500,
+          borderBottom: '0.5px solid rgba(2,71,91,0.3)',
+          listStyleType: 'none',
+          '&:last-child': {
+            paddingBottom: 0,
+            borderBottom: 'none',
+          },
+        },
+      },
+    },
+    popPaperRoot: {
+      marginTop: -16,
+    },
+    dateLoader: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: '#02475b',
     },
   });
 });
@@ -109,14 +166,17 @@ export const AppLocations: React.FC = (props) => {
           {selectedAddress.length > 0
             ? selectedAddress
             : currentLocation && currentLocation.length > 0
-            ? currentLocation
-            : 'No location'}
+              ? currentLocation
+              : 'No location'}
         </span>
       </div>
       <Popover
         open={isLocationPopoverOpen}
         anchorEl={locationRef.current}
         onClose={() => setIsLocationPopoverOpen(false)}
+        classes={{
+          paper: classes.popPaperRoot,
+        }}
         anchorOrigin={{
           vertical: 'top',
           horizontal: 'left',
@@ -133,58 +193,34 @@ export const AppLocations: React.FC = (props) => {
           searchOptions={searchOptions}
         >
           {({ getInputProps, suggestions, getSuggestionItemProps, loading }: InputProps) => (
-            <div>
-              {/* <input
-                {...getInputProps({
-                  placeholder: "Search Places ...",
-                  className: "location-search-input"
-                })}
-              /> */}
-              <TextField
-                id="outlined-search"
-                label="Current Location"
-                type="search"
-                className={classes.textField}
-                margin="normal"
-                {...getInputProps({
-                  placeholder: 'Search Places ...',
-                  className: 'location-search-input',
-                })}
-              />
-              <div className={classes.iconType}>
-                <img src={require('images/ic-location.svg')} alt="" />
+            <div className={classes.locationPopWrap}>
+              <label className={classes.inputLabel}>Current Location</label>
+              <div className={classes.searchInput}>
+                <AphTextField
+                  type="search"
+                  placeholder="Search Places..."
+                  {...getInputProps()}
+                />
+                <div className={classes.popLocationIcon}>
+                  <img src={require('images/ic-location.svg')} alt="" />
+                </div>
               </div>
-              <div className="autocomplete-dropdown-container">
-                {loading && <div>Loading...</div>}
-                {suggestions.map((suggestion: SuggestionProps) => {
-                  const className = suggestion.active
-                    ? 'suggestion-item--active'
-                    : 'suggestion-item';
-                  // inline style for demonstration purpose
-                  const style = {
-                    backgroundColor: 'white',
-                    cursor: 'pointer',
-                    color: 'black',
-                  };
-                  return suggestion.index < 3 ? (
-                    <div
-                      {...getSuggestionItemProps(suggestion, {
-                        className,
-                        style,
-                      })}
-                    >
-                      <List component="nav" aria-label="main mailbox folders">
-                        <ListItem button>{suggestion.formattedSuggestion.mainText}</ListItem>
-                        <Divider />
-                      </List>
-                    </div>
-                  ) : null;
-                })}
+              <div className={classes.locationAutoComplete}>
+                {loading && <div className={classes.dateLoader}>Loading...</div>}
+                <ul>
+                  {suggestions.map((suggestion: SuggestionProps) => {
+                    return suggestion.index < 3 ? (
+                      <li {...getSuggestionItemProps(suggestion)}>
+                        {suggestion.formattedSuggestion.mainText}
+                      </li>
+                    ) : null;
+                  })}
+                </ul>
               </div>
             </div>
           )}
         </PlacesAutocomplete>
       </Popover>
-    </div>
+    </div >
   );
 };
