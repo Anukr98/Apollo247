@@ -512,7 +512,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
             onClick={() => {
               setIsDialogOpen(false);
               setIsPopoverOpen(false);
-              window.location.href = clientRoutes.consultRoom();
+              window.location.href = clientRoutes.appointments();
             }}
             autoFocus
           >
