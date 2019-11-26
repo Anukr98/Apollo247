@@ -8,9 +8,12 @@ import { Dimensions, Platform, AsyncStorage } from 'react-native';
 import firebase from 'react-native-firebase';
 import { aphConsole } from '../helpers/helperFunctions';
 import { AppConfig } from '../strings/AppConfig';
-import Bugfender from '@bugfender/rn-bugfender';
+import { Client } from 'bugsnag-react-native';
+import { DEVICE_TYPE } from '../graphql/types/globalTypes';
 
+const bugsnag = new Client();
 const isReleaseOn = AppConfig.Configuration.ANALYTICAL_ENIVRONMENT == 'release';
+const isEnvironment = AppConfig.Configuration.LOG_ENVIRONMENT;
 
 export const DeviceHelper = () => {
   const isIphoneX = () => {
@@ -47,10 +50,20 @@ export const CommonScreenLog = (stringName: string, parameterName: string) => {
   }
 };
 
-export const CommonBugFender = (stringName: string, errorValue: string) => {
+export const CommonBugFender = (stringName: string, errorValue: Error) => {
   // if (isReleaseOn) {
   try {
-    Platform.OS === 'ios' ? Bugfender.d(stringName, errorValue) : null;
+    bugsnag.notify(errorValue, function(report) {
+      report.metadata = {
+        stringName: {
+          viewSource:
+            Platform.OS === 'ios'
+              ? DEVICE_TYPE.IOS + ' ' + isEnvironment + ' ' + stringName
+              : DEVICE_TYPE.ANDROID + ' ' + isEnvironment + ' ' + stringName,
+          errorValue: errorValue as any,
+        },
+      };
+    });
   } catch (error) {
     aphConsole.log('CommonBugFender error', error);
   }

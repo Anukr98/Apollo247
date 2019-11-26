@@ -77,6 +77,16 @@ export enum CONSULTS_RX_SEARCH_FILTER {
   PRESCRIPTION = 'PRESCRIPTION',
 }
 
+export enum BOOKINGSOURCE {
+  MOBILE = 'MOBILE',
+  WEB = 'WEB',
+}
+
+export enum DEVICETYPE {
+  IOS = 'IOS',
+  ANDROID = 'ANDROID',
+}
+
 //Appointment starts
 @Entity()
 export class Appointment extends BaseEntity {
@@ -161,6 +171,15 @@ export class Appointment extends BaseEntity {
 
   @Column({ nullable: true })
   updatedDate: Date;
+
+  @Column({ nullable: true })
+  symptoms: string;
+
+  @Column({ default: BOOKINGSOURCE.MOBILE })
+  bookingSource: BOOKINGSOURCE;
+
+  @Column({ nullable: true })
+  deviceType: DEVICETYPE;
 
   @BeforeUpdate()
   updateDateUpdate() {

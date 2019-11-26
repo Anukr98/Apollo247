@@ -210,7 +210,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
-export const ConsultRoom: React.FC = (props) => {
+export const Appointments: React.FC = (props) => {
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
   // const currentDate = new Date().toISOString().substring(0, 10);

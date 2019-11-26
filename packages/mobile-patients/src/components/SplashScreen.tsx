@@ -7,7 +7,6 @@ import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContaine
 import firebase from 'react-native-firebase';
 import SplashScreenView from 'react-native-splash-screen';
 import { Relation } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import Bugfender from '@bugfender/rn-bugfender';
 
 const styles = StyleSheet.create({
   mainView: {
@@ -108,8 +107,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = (props) => {
     }
     fetchData();
     SplashScreenView.hide();
-    Bugfender.init('dxeqKryYySc7rIzZ9SP8HatX28ExaVeC');
-    Bugfender.enableUIEventLogging();
   }, [props.navigation]);
 
   // useEffect(() => {
