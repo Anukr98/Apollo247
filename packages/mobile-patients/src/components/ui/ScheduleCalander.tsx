@@ -145,9 +145,8 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
-  useEffect(() => {
-    console.log(props, 'forj', dropArray);
 
+  useEffect(() => {
     if (!!props.selectedTimeSlot && timeArray) {
       timeArray &&
         timeArray.length > 0 &&
@@ -188,7 +187,6 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
         },
       })
       .then(({ data }) => {
-        console.log(data, 'GET_DIAGNOSTIC_SLOTScal');
         setshowSpinner(false);
         var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
         setDiagnosticSlot &&
@@ -222,7 +220,6 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
       })
       .catch((e: string) => {
         setshowSpinner(false);
-        console.log('Error occured', e);
       })
       .finally(() => {
         setshowSpinner(false);
@@ -234,7 +231,6 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
       <CalendarView
         date={date}
         onPressDate={(selectedDate) => {
-          console.log(moment(selectedDate).format('YYYY-MM-DD'), 'selectedDate');
           setDate(selectedDate);
           setshowSpinner(true);
           setDropArray([]);
