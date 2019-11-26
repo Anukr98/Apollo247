@@ -344,7 +344,6 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const classes = useStyles({});
 
   const { doctorDetails, appointmentId, hasDoctorJoined } = props;
-  console.log(appointmentId);
   const currentDate = new Date().toISOString().substring(0, 10);
 
   const [showMore, setShowMore] = useState<boolean>(true);
