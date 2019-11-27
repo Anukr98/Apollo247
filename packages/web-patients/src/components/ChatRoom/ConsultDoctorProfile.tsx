@@ -54,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
       position: 'absolute',
       right: 10,
       top: 10,
+      cursor: 'pointer',
       '& img': {
         verticalAlign: 'middle',
       },
@@ -716,10 +717,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
-              <Typography variant="h2">Hi! :)</Typography>
+              <Typography variant="h2">hi! :)</Typography>
               <p>
-                Since you're cancelling 15 minutes before your appointment, we'll issuew you a full
-                refund!
+                Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!
               </p>
             </div>
             <div className={classes.actions}>
