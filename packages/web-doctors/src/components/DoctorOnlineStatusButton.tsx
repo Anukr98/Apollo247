@@ -92,21 +92,23 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
   >([]);
   const [jrdNoFillDialog, setJrdNoFillDialog] = useState(false);
   let activeConsults: any;
-  client
-    .query<GetConsultQueue, GetConsultQueueVariables>({
-      query: GET_CONSULT_QUEUE,
-      fetchPolicy: 'no-cache',
-      variables: { doctorId: currentDoctor!.id },
-    })
-    .then((data) => {
-      setConsultQueue(data.data.getConsultQueue.consultQueue);
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+  if (currentDoctor && currentDoctor.id) {
+    client
+      .query<GetConsultQueue, GetConsultQueueVariables>({
+        query: GET_CONSULT_QUEUE,
+        fetchPolicy: 'no-cache',
+        variables: { doctorId: currentDoctor.id },
+      })
+      .then((data) => {
+        setConsultQueue(data.data.getConsultQueue.consultQueue);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
-  if (consultQueue) {
-    activeConsults = consultQueue.filter((consult) => consult.isActive);
+    if (consultQueue) {
+      activeConsults = consultQueue.filter((consult) => consult.isActive);
+    }
   }
 
   const { data, error, loading } = useQuery<GetDoctorDetails>(GET_DOCTOR_DETAILS);
@@ -186,7 +188,6 @@ export const DoctorOnlineStatusButton: React.FC<OnlineAwayButtonProps> = (props)
             exclusive
             value={onlineStatus}
             onChange={(e, newStatus: DOCTOR_ONLINE_STATUS) => {
-              // console.log(e, 'e');
               if (newStatus !== onlineStatus) {
                 updateDoctorOnlineStatus({
                   variables: {
