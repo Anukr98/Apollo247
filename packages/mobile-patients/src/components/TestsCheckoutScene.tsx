@@ -321,7 +321,9 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       centerCity: City || '',
       centerState: State || '',
       centerLocality: Locality || '',
-
+      // prismPrescriptionFileId: [
+      //           ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
+      //         ].join(','),
       totalPrice: grandTotal,
       patientId: (currentPatient && currentPatient.id) || '',
       prescriptionUrl: [

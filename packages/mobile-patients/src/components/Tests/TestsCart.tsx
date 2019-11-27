@@ -1221,11 +1221,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
                     } as EPrescription)
                 );
                 console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
-                setEPrescriptions &&
-                  setEPrescriptions([
-                    ...newuploadedPrescriptions,
-                    ...prescriptions.filter((item) => item),
-                  ]);
+                setEPrescriptions && setEPrescriptions([...ePrescriptions.filter((item) => item)]);
                 setLoading!(false);
                 console.log(ePrescriptions, 'setEPrescriptions');
 
