@@ -77,9 +77,7 @@ const addPatientFeedback: Resolver<
     doctorId: doctorId ? doctorId : '',
   };
   const patientFeedbackRepo = profilesDb.getCustomRepository(PatientFeedbackRepository);
-  const patientFeedbackRecord = await patientFeedbackRepo.addFeedbackRecord(
-    addPatientFeedbackAttrs
-  );
+  await patientFeedbackRepo.addFeedbackRecord(addPatientFeedbackAttrs);
   return { status: true };
 };
 
