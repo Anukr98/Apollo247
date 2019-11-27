@@ -226,7 +226,11 @@ const bookAppointment: Resolver<
     doctorsDb
   );
 
-  if (!checkHours) {
+  if (checkHours === 'outOfBufferTime') {
+    throw new AphError(AphErrorMessages.APPOINTMENT_BOOK_DATE_ERROR, undefined, {});
+  }
+
+  if (checkHours === 'outOfConsultHours') {
     throw new AphError(AphErrorMessages.OUT_OF_CONSULT_HOURS, undefined, {});
   }
 
