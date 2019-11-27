@@ -68,6 +68,18 @@ export const REMOVE_BLOCKED_CALENDAR_ITEM = gql`
   }
 `;
 
+export const BLOCK_MULTIPLE_CALENDAR_ITEMS = gql`
+  mutation BlockMultipleCalendarItems($blockCalendarInputs: BlockMultipleItems!) {
+    blockMultipleCalendarItems(blockCalendarInputs: $blockCalendarInputs) {
+      blockedCalendar {
+        id
+        doctorId
+        start
+        end
+      }
+    }
+  }
+`;
 /* get doctor details by doctor id */
 export const GET_DOCTOR_DETAILS_BY_ID = gql`
   query GetDoctorDetailsById($id: String!) {
