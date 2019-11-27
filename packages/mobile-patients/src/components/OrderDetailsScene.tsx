@@ -1,14 +1,21 @@
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { OrderSummary } from '@aph/mobile-patients/src/components/OrderSummaryView';
+import {
+  EPrescription,
+  ShoppingCartItem,
+  useShoppingCart,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CrossPopup, DropdownGreen, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { TabsComponent } from '@aph/mobile-patients/src/components/ui/TabsComponent';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import {
   GET_MEDICINE_ORDER_DETAILS,
   SAVE_ORDER_CANCEL_STATUS,
@@ -18,15 +25,17 @@ import {
   GetMedicineOrderDetailsVariables,
   GetMedicineOrderDetails_getMedicineOrderDetails_MedicineOrderDetails,
 } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrderDetails';
+import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import {
   saveOrderCancelStatus,
   saveOrderCancelStatusVariables,
 } from '@aph/mobile-patients/src/graphql/types/saveOrderCancelStatus';
+import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 import {
+  aphConsole,
   g,
   getOrderStatusText,
   handleGraphQlError,
-  aphConsole,
 } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import string from '@aph/mobile-patients/src/strings/strings.json';
@@ -50,14 +59,6 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  useShoppingCart,
-  ShoppingCartItem,
-  EPrescription,
-} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
-import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
-import { getMedicineDetailsApi } from '@aph/mobile-patients/src/helpers/apiCalls';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -170,6 +171,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     };
   }, []);
 
+  const showErrorPopup = (desc: string) => {
+    showAphAlert!({
+      title: 'Uh oh.. :(',
+      description: desc,
+    });
+  };
+
   const getFormattedDate = (time: string) => {
     return moment(time).format('D MMM YYYY');
   };
@@ -239,19 +247,13 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
 
         setLoading!(false);
         if (items.length > itemsToAdd.length) {
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description: 'Few items are out of stock.',
-          });
+          showErrorPopup('Few items are out of stock.');
         }
         props.navigation.navigate(AppRoutes.YourCart, { isComingFromConsult: true });
       })
       .catch((e) => {
         setLoading!(false);
-        showAphAlert!({
-          title: 'Uh oh.. :(',
-          description: 'Something went wrong.',
-        });
+        showErrorPopup('Something went wrong.');
       });
   };
 
@@ -481,7 +483,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
           setCancelVisible(false);
           setComment('');
           setSelectedReason('');
-          setMenuOpen(false);
         };
         const requestStatus = g(data, 'saveOrderCancelStatus', 'requestStatus');
         if (requestStatus == 'true') {
@@ -502,41 +503,63 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
       });
   };
 
-  const onPressCancelOrder = () => {
-    setMenuOpen(false);
-    const isDelivered = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
-    );
-    const isCancelled = orderStatusList.find(
-      (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
-    );
+  // const onPressCancelOrder = () => {
+  // const isDelivered = orderStatusList.find(
+  //   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED
+  // );
+  // const isCancelled = orderStatusList.find(
+  //   (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED
+  // );
+  // const isPrescriptionOrder = orderStatusList.find(
+  //   (item) =>
+  //     item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
+  //     item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+  // );
+  // if (isDelivered) {
+  //   showErrorPopup('You cannot cancel the order wich is delivered.');
+  //   // Alert.alert('Alert', 'You cannot cancel the order wich is delivered.');
+  // } else if (isCancelled) {
+  //   showErrorPopup('Order is already cancelled.');
+  //   // Alert.alert('Alert', 'Order is already cancelled.');
+  // } else {
+  //   setCancelVisible(true);
+  // }
+  // setCancelVisible(true);
+  // };
 
-    if (isDelivered) {
-      Alert.alert('Alert', 'You cannot cancel the order wich is delivered.');
-    } else if (isCancelled) {
-      Alert.alert('Alert', 'Order is already cancelled.');
-    } else {
-      setCancelVisible(true);
-    }
-  };
-
-  const [isMenuOpen, setMenuOpen] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
-  const renderMenuOptions = () => {
-    if (isMenuOpen) {
-      return (
-        <View style={{ position: 'absolute', top: 0, right: 0 }}>
-          <DropDown
-            options={[
-              {
-                optionText: 'Cancel Order',
-                onPress: () => onPressCancelOrder(),
-              },
-            ]}
-          />
-        </View>
-      );
-    }
+
+  const renderMoreMenu = () => {
+    const cannotCancelOrder = orderStatusList.find(
+      (item) =>
+        item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.CANCELLED ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_CART_READY ||
+        item!.orderStatus == MEDICINE_ORDER_STATUS.PRESCRIPTION_UPLOADED
+    );
+    if (cannotCancelOrder || !orderStatusList.length) return null;
+    return (
+      <MaterialMenu
+        options={['Cancel Order'].map((item) => ({
+          key: item,
+          value: item,
+        }))}
+        menuContainerStyle={{
+          alignItems: 'center',
+          marginTop: 24,
+        }}
+        lastContainerStyle={{ borderBottomWidth: 0 }}
+        bottomPadding={{ paddingBottom: 0 }}
+        itemTextStyle={{ ...theme.viewStyles.text('M', 16, '#01475b') }}
+        onPress={(item) => {
+          if (item.value == 'Cancel Order') {
+            setCancelVisible(true);
+          }
+        }}
+      >
+        <More />
+      </MaterialMenu>
+    );
   };
 
   return (
@@ -548,21 +571,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             leftIcon="backArrow"
             title={`ORDER #${orderAutoId}`}
             container={{ borderBottomWidth: 0 }}
-            // rightComponent={
-            //   <TouchableOpacity
-            //     activeOpacity={1}
-            //     onPress={() => {
-            //       setMenuOpen(true);
-            //     }}
-            //   >
-            //     <More />
-            //   </TouchableOpacity>
-            // }
+            rightComponent={renderMoreMenu()}
             onPressLeftIcon={() => {
               handleBack();
             }}
           />
-          {renderMenuOptions()}
         </View>
 
         <TabsComponent
