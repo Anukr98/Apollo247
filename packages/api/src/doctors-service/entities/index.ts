@@ -182,10 +182,19 @@ export class Doctor extends BaseEntity {
   consultHours: ConsultHours[];
 
   @OneToMany(
+    (type) => DoctorsFavouriteAdvice,
+    (doctorFavouriteAdvice) => doctorFavouriteAdvice.doctor
+  )
+  doctorFavouriteAdvice: DoctorsFavouriteAdvice[];
+
+  @OneToMany(
     (type) => DoctorsFavouriteMedicine,
     (doctorFavouriteMedicine) => doctorFavouriteMedicine.doctor
   )
   doctorFavouriteMedicine: DoctorsFavouriteMedicine[];
+
+  @OneToMany((type) => DoctorsFavouriteTests, (doctorFavouriteTest) => doctorFavouriteTest.doctor)
+  doctorFavouriteTest: DoctorsFavouriteTests[];
 
   @OneToMany((type) => DoctorDeviceTokens, (doctorDeviceTokens) => doctorDeviceTokens.doctor)
   doctorDeviceTokens: DoctorDeviceTokens[];
@@ -435,42 +444,6 @@ export class DoctorSpecialty extends BaseEntity {
 }
 //doctorSpecialty ends
 
-//DoctorFavouriteMedicine starts
-@Entity()
-export class DoctorsFavouriteMedicine extends BaseEntity {
-  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorFavouriteMedicine)
-  doctor: Doctor;
-
-  @Column({ nullable: true })
-  externalId: string;
-
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column({ nullable: true })
-  medicineConsumptionDurationInDays: Number;
-
-  @Column({ nullable: true })
-  medicineDosage: string;
-
-  @Column({ nullable: true })
-  medicineUnit: string;
-
-  @Column({ nullable: true })
-  medicineInstructions: string;
-
-  @Column('simple-array')
-  medicineTimings: MEDICINE_TIMINGS;
-
-  @Column('simple-array')
-  medicineToBeTaken: MEDICINE_TO_BE_TAKEN;
-
-  @Column({ nullable: true })
-  medicineName: string;
-}
-
-// DoctorFavouriteMedicine ends
-
 //facility starts
 @Entity()
 export class Facility extends BaseEntity {
@@ -643,6 +616,14 @@ export class AdminUsers extends BaseEntity {
 
   @Column()
   userType: AdminType;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }
 //admin user ends
 
@@ -668,6 +649,13 @@ export class Secretary extends BaseEntity {
 
   @Column({ default: true })
   isActive: Boolean;
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }
 //secretary ends
 
@@ -689,5 +677,109 @@ export class DoctorSecretary extends BaseEntity {
 
   @ManyToOne((type) => Secretary, (secretary) => secretary.doctorSecretary)
   secretary: Secretary;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
 }
 //doctor secretary ends
+
+//DoctorFavouriteMedicine starts
+@Entity()
+export class DoctorsFavouriteMedicine extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorFavouriteMedicine)
+  doctor: Doctor;
+
+  @Column({ nullable: true })
+  externalId: string;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ nullable: true })
+  medicineConsumptionDurationInDays: Number;
+
+  @Column({ nullable: true })
+  medicineDosage: string;
+
+  @Column({ nullable: true })
+  medicineUnit: string;
+
+  @Column({ nullable: true })
+  medicineInstructions: string;
+
+  @Column('simple-array')
+  medicineTimings: MEDICINE_TIMINGS;
+
+  @Column('simple-array')
+  medicineToBeTaken: MEDICINE_TO_BE_TAKEN;
+
+  @Column({ nullable: true })
+  medicineName: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+// DoctorFavouriteMedicine ends
+
+//doctors favoutite tests starts
+@Entity()
+export class DoctorsFavouriteTests extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorFavouriteTest)
+  doctor: Doctor;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  itemname: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//doctors favoutite tests ends
+
+//doctors favoutite advice starts
+@Entity()
+export class DoctorsFavouriteAdvice extends BaseEntity {
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdDate: Date;
+
+  @ManyToOne((type) => Doctor, (doctor) => doctor.doctorFavouriteAdvice)
+  doctor: Doctor;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'text' })
+  instruction: string;
+
+  @Column({ nullable: true })
+  updatedDate: Date;
+
+  @BeforeUpdate()
+  updateDateUpdate() {
+    this.updatedDate = new Date();
+  }
+}
+//doctors favoutite advice ends
