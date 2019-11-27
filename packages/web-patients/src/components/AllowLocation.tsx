@@ -37,9 +37,13 @@ const useStyles = makeStyles((theme: Theme) => {
   };
 });
 
-export const AllowLocation: React.FC = (props) => {
+type AllowLocationProps = {
+  setIsLocationPopoverOpen: (isLocationPopoverOpen: boolean) => void;
+  setIsPopoverOpen: (isPopoverOpen: boolean) => void;
+};
+
+export const AllowLocation: React.FC<AllowLocationProps> = (props) => {
   const classes = useStyles({});
-  const [isDialogOpen, setIsDialogOpen] = React.useState<boolean>(false);
 
   return (
     <div className={classes.root}>
@@ -51,8 +55,17 @@ export const AllowLocation: React.FC = (props) => {
         </p>
       </div>
       <div className={classes.actions}>
-        <AphButton>Enter Manualy</AphButton>
-        <AphButton color="primary">Allow Auto Detect</AphButton>
+        <AphButton
+          onClick={() => {
+            props.setIsPopoverOpen(false);
+            props.setIsLocationPopoverOpen(true);
+          }}
+        >
+          Enter Manualy
+        </AphButton>
+        <AphButton color="primary" onClick={() => props.setIsPopoverOpen(false)}>
+          Allow Auto Detect
+        </AphButton>
       </div>
     </div>
   );
