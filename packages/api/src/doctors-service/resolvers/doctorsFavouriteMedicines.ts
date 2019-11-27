@@ -124,8 +124,8 @@ const getDoctorFavouriteMedicineList: Resolver<
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
-  const FavouriteTestList = await favouriteTestRepo.favouriteMedicines(doctordata.id);
-  return { medicineList: FavouriteTestList };
+  const favouriteTestList = await favouriteTestRepo.favouriteMedicines(doctordata.id);
+  return { medicineList: favouriteTestList };
 };
 
 export const saveDoctorFavouriteMedicineResolver = {
