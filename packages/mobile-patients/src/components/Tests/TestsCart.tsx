@@ -10,7 +10,10 @@ import {
 import { MedicineUploadPrescriptionView } from '@aph/mobile-patients/src/components/Medicines/MedicineUploadPrescriptionView';
 import { RadioSelectionItem } from '@aph/mobile-patients/src/components/Medicines/RadioSelectionItem';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
-import { PhysicalPrescription } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
+import {
+  PhysicalPrescription,
+  EPrescription,
+} from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { CALENDAR_TYPE } from '@aph/mobile-patients/src/components/ui/CalendarView';
@@ -201,6 +204,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     diagnosticSlot,
     setDiagnosticClinic,
     setDiagnosticSlot,
+    setEPrescriptions,
   } = useDiagnosticsCart();
 
   const clinicHours: clinicHoursData[] = [
@@ -1073,96 +1077,171 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
       )
     );
   };
+
   const onPressProceedToPay = () => {
     const prescriptions = physicalPrescriptions;
-    if (prescriptions.length == 0) {
+    console.log(ePrescriptions, 'ePrescriptions');
+
+    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
       console.log('withoutdocumnets');
 
       props.navigation.navigate(AppRoutes.TestsCheckoutScene);
     } else {
-      setLoading!(true);
-      const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-      console.log('unUploadedPres', unUploadedPres);
-      multiplePhysicalPrescriptionUpload(unUploadedPres)
-        .then((data) => {
-          setLoading!(false);
+      if (prescriptions.length > 0) {
+        setLoading!(true);
+        const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+        console.log('unUploadedPres', unUploadedPres);
+        multiplePhysicalPrescriptionUpload(unUploadedPres)
+          .then((data) => {
+            setLoading!(false);
 
-          const uploadUrlscheck = data.map((item) =>
-            item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
-          );
-          console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
-          var filtered = uploadUrlscheck.filter(function(el) {
-            return el != null;
-          });
-          console.log('filtered', filtered);
+            const uploadUrlscheck = data.map((item) =>
+              item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
+            );
+            console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
+            var filtered = uploadUrlscheck.filter(function(el) {
+              return el != null;
+            });
+            console.log('filtered', filtered);
 
-          if (filtered.length > 0) {
-            client
-              .query<downloadDocuments>({
-                query: DOWNLOAD_DOCUMENT,
-                fetchPolicy: 'no-cache',
-                variables: {
-                  downloadDocumentsInput: {
-                    patientId: currentPatient && currentPatient.id,
-                    fileIds: uploadUrlscheck,
+            if (filtered.length > 0) {
+              client
+                .query<downloadDocuments>({
+                  query: DOWNLOAD_DOCUMENT,
+                  fetchPolicy: 'no-cache',
+                  variables: {
+                    downloadDocumentsInput: {
+                      patientId: currentPatient && currentPatient.id,
+                      fileIds: uploadUrlscheck,
+                    },
                   },
+                })
+                .then(({ data }) => {
+                  console.log(data, 'DOWNLOAD_DOCUMENT');
+                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+                  console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+                  const uploadUrls = uploadUrlscheck!.map((item) => item);
+                  console.log(uploadUrls, 'uploadUrls');
+                  const newuploadedPrescriptions = unUploadedPres.map(
+                    (item, index) =>
+                      ({
+                        ...item,
+                        uploadedUrl: uploadUrls[index],
+                      } as PhysicalPrescription)
+                  );
+                  console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+                  setPhysicalPrescriptions &&
+                    setPhysicalPrescriptions([
+                      ...newuploadedPrescriptions,
+                      ...prescriptions.filter((item) => item.uploadedUrl),
+                    ]);
+                  setLoading!(false);
+                  props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+                })
+                .catch((e: string) => {
+                  console.log('Error occured', e);
+                })
+                .finally(() => {
+                  setshowSpinner(false);
+                });
+            } else {
+              Alert.alert('your uploaded images are failed');
+            }
+            // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
+            // const newuploadedPrescriptions = unUploadedPres.map(
+            //   (item, index) =>
+            //     ({
+            //       ...item,
+            //       uploadedUrl: uploadUrls[index],
+            //     } as PhysicalPrescription)
+            // );
+            // setPhysicalPrescriptions &&
+            //   setPhysicalPrescriptions([
+            //     ...newuploadedPrescriptions,
+            //     ...prescriptions.filter((item) => item.uploadedUrl),
+            //   ]);
+            // setLoading!(false);
+            // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+          })
+          .catch((e) => {
+            aphConsole.log({ e });
+            setLoading!(false);
+            showAphAlert!({
+              title: 'Uh oh.. :(',
+              description: 'Error occurred while uploading prescriptions.',
+            });
+          });
+      }
+      if (ePrescriptions.length > 0) {
+        const ePresUrls = ePrescriptions.map((item) => {
+          console.log('item', item.prismPrescriptionFileId);
+
+          return item!.prismPrescriptionFileId;
+        });
+
+        console.log('ePresUrls', ePresUrls);
+        let ePresAndPhysicalPresUrls = [...ePresUrls];
+        console.log(
+          'ePresAndPhysicalPresUrls',
+          ePresAndPhysicalPresUrls
+            .join(',')
+            .split(',')
+            .map((item) => item.trim())
+            .filter((i) => i)
+        );
+        if (ePresAndPhysicalPresUrls.length > 0) {
+          client
+            .query<downloadDocuments>({
+              query: DOWNLOAD_DOCUMENT,
+              fetchPolicy: 'no-cache',
+              variables: {
+                downloadDocumentsInput: {
+                  patientId: currentPatient && currentPatient.id,
+                  fileIds: ePresAndPhysicalPresUrls
+                    .join(',')
+                    .split(',')
+                    .map((item) => item.trim())
+                    .filter((i) => i),
                 },
-              })
-              .then(({ data }) => {
-                console.log(data, 'DOWNLOAD_DOCUMENT');
+              },
+            })
+            .then(({ data }) => {
+              console.log(data, 'DOWNLOAD_DOCUMENT');
+              const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+              console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+              if (uploadUrlscheck!.length > 0) {
                 const uploadUrlscheck = data.downloadDocuments.downloadPaths;
                 console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
                 const uploadUrls = uploadUrlscheck!.map((item) => item);
                 console.log(uploadUrls, 'uploadUrls');
-                const newuploadedPrescriptions = unUploadedPres.map(
+                const newuploadedPrescriptions = uploadUrls.map(
                   (item, index) =>
                     ({
-                      ...item,
                       uploadedUrl: uploadUrls[index],
-                    } as PhysicalPrescription)
+                    } as EPrescription)
                 );
                 console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
-                setPhysicalPrescriptions &&
-                  setPhysicalPrescriptions([
+                setEPrescriptions &&
+                  setEPrescriptions([
                     ...newuploadedPrescriptions,
-                    ...prescriptions.filter((item) => item.uploadedUrl),
+                    ...prescriptions.filter((item) => item),
                   ]);
                 setLoading!(false);
+                console.log(ePrescriptions, 'setEPrescriptions');
+
                 props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-              })
-              .catch((e: string) => {
-                console.log('Error occured', e);
-              })
-              .finally(() => {
-                setshowSpinner(false);
-              });
-          } else {
-            Alert.alert('your uploaded images are failed');
-          }
-          // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
-          // const newuploadedPrescriptions = unUploadedPres.map(
-          //   (item, index) =>
-          //     ({
-          //       ...item,
-          //       uploadedUrl: uploadUrls[index],
-          //     } as PhysicalPrescription)
-          // );
-          // setPhysicalPrescriptions &&
-          //   setPhysicalPrescriptions([
-          //     ...newuploadedPrescriptions,
-          //     ...prescriptions.filter((item) => item.uploadedUrl),
-          //   ]);
-          // setLoading!(false);
-          // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-        })
-        .catch((e) => {
-          aphConsole.log({ e });
-          setLoading!(false);
-          showAphAlert!({
-            title: 'Uh oh.. :(',
-            description: 'Error occurred while uploading prescriptions.',
-          });
-        });
+              } else {
+                Alert.alert('Images are not uploaded');
+              }
+            })
+            .catch((e: string) => {
+              console.log('Error occured', e);
+            })
+            .finally(() => {
+              setLoading!(false);
+            });
+        }
+      }
     }
   };
 

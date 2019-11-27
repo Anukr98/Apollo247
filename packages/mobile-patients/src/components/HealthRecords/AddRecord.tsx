@@ -245,9 +245,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
     const valid = medicalRecordParameters.map((item) => {
       return (
         (item.maximum || item.minimum || item.result || item.parameterName) &&
-        item.maximum! > item.minimum! &&
-        item.result! <= item.maximum! &&
-        item.result! >= item.minimum!
+        item.maximum! > item.minimum! //&&
+        // item.result! <= item.maximum! &&
+        // item.result! >= item.minimum!
       );
     });
     return valid.find((i) => i === false) !== undefined;
@@ -263,7 +263,11 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   };
 
   const formatNumber = (value: string) => {
-    let number = value.indexOf('.') === value.length - 1 ? value : parseFloat(value);
+    let number =
+      value.indexOf('.') === value.length - 1 ||
+      value.indexOf('0', value.length - 1) === value.length - 1
+        ? value
+        : parseFloat(value);
     return number;
   };
 
