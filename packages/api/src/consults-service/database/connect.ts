@@ -53,6 +53,7 @@ import {
   DiagnosticHotSellers,
   DiagnosticOrgans,
   DiagnosticPincodeHubs,
+  PatientFeedback,
 } from 'profiles-service/entities';
 
 export const connect = async () => {
@@ -131,6 +132,7 @@ export const connect = async () => {
         DiagnosticHotSellers,
         DiagnosticOrgans,
         DiagnosticPincodeHubs,
+        PatientFeedback,
       ],
       type: 'postgres',
       host: process.env.PROFILES_DB_HOST,
