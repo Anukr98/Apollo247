@@ -11,6 +11,7 @@ import {
   PrismGetUsersResponse,
   PrismSignUpUserData,
 } from 'types/prism';
+
 import { UploadDocumentInput } from 'profiles-service/resolvers/uploadDocumentToPrism';
 
 import { AphError } from 'AphError';
@@ -202,10 +203,50 @@ export class PatientRepository extends Repository<Patient> {
         return res.json();
       })
       .catch((error) => {
-        throw new AphError(AphErrorMessages.PRISM_GET_USERS_ERROR);
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
       });
 
-    return labResults;
+    return labResults.errorCode == '0' ? labResults.response : [];
+  }
+
+  async getPatientHealthChecks(uhid: string, authToken: string) {
+    const prismHeaders = {
+      method: 'GET',
+      timeOut: ApiConstants.PRISM_TIMEOUT,
+    };
+
+    const healthChecks = await fetch(
+      `${process.env.PRISM_GET_USER_HEALTH_CHECKS_API}?authToken=${authToken}&uhid=${uhid}`,
+      prismHeaders
+    )
+      .then((res) => {
+        return res.json();
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
+      });
+
+    return healthChecks.errorCode == '0' ? healthChecks.response : [];
+  }
+
+  async getPatientHospitalizations(uhid: string, authToken: string) {
+    const prismHeaders = {
+      method: 'GET',
+      timeOut: ApiConstants.PRISM_TIMEOUT,
+    };
+
+    const hospitalizations = await fetch(
+      `${process.env.PRISM_GET_USER_HOSPITALIZATIONS_API}?authToken=${authToken}&uhid=${uhid}`,
+      prismHeaders
+    )
+      .then((res) => {
+        return res.json();
+      })
+      .catch((error) => {
+        throw new AphError(AphErrorMessages.GET_MEDICAL_RECORDS_ERROR);
+      });
+
+    return hospitalizations.errorCode == '0' ? hospitalizations.response : [];
   }
 
   saveNewProfile(patientAttrs: Partial<Patient>) {
