@@ -1322,4 +1322,10 @@ export class PatientFeedback extends BaseEntity {
 
   @Column()
   feedbackType: FEEDBACKTYPE;
+
+  @Column()
+  transactionId: string;
+
+  @Column({ nullable: true })
+  doctorId: string;
 }
