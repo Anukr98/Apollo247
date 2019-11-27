@@ -275,11 +275,11 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       <div className={classes.startDoctor}>
                         <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
                         {appointmentDetails.doctorInfo &&
-                        appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO ? (
-                          <span>
-                            <img src={require('images/ic_star.svg')} alt="" />
-                          </span>
-                        ) : null}
+                          appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO && (
+                            <span>
+                              <img src={require('images/ic_star.svg')} alt="" />
+                            </span>
+                          )}
                       </div>
                       <div className={classes.doctorInfo}>
                         <div
