@@ -19758,9 +19758,13 @@
               "kind": "NON_NULL",
               "name": null,
               "ofType": {
-                "kind": "ENUM",
-                "name": "MEDICINE_TIMINGS",
-                "ofType": null
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "ENUM",
+                  "name": "MEDICINE_TIMINGS",
+                  "ofType": null
+                }
               }
             },
             "defaultValue": null
@@ -19769,9 +19773,13 @@
             "name": "medicineToBeTaken",
             "description": null,
             "type": {
-              "kind": "ENUM",
-              "name": "MEDICINE_TO_BE_TAKEN",
-              "ofType": null
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "ENUM",
+                "name": "MEDICINE_TO_BE_TAKEN",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
@@ -19793,9 +19801,13 @@
             "name": "doctorId",
             "description": null,
             "type": {
-              "kind": "SCALAR",
-              "name": "ID",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "ID",
+                "ofType": null
+              }
             },
             "defaultValue": null
           }
