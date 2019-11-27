@@ -45,28 +45,25 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
       borderRadius: 0,
       boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      paddingLeft: 20,
+      paddingRight: 20,
     },
     tabRoot: {
       fontSize: 16,
-      fontWeight: theme.typography.fontWeightMedium,
+      fontWeight: 500,
       textAlign: 'center',
       color: '#02475b',
       padding: '14px 10px',
       textTransform: 'none',
-      width: '50%',
-      opacity: 1,
+      opacity: 0.5,
       lineHeight: 'normal',
-      [theme.breakpoints.down('xs')]: {
-        width: '50%',
-      },
     },
     tabSelected: {
-      fontWeight: theme.typography.fontWeightBold,
-      color: '#02475b',
+      opacity: 1,
     },
     tabsIndicator: {
       backgroundColor: '#00b38e',
-      height: 4,
+      height: 3,
     },
     headerSticky: {
       position: 'fixed',
@@ -84,15 +81,10 @@ const useStyles = makeStyles((theme: Theme) => {
     consultPage: {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
-      paddingLeft: 40,
-      paddingRight: 20,
-      paddingTop: 46,
-      paddingBottom: 40,
+      paddingTop: 30,
     },
     consultationsHeader: {
-      paddingBottom: 60,
-      width: 'calc(100% - 328px)',
-      paddingRight: 20,
+      padding: '10px 40px 30px 40px',
       '& h1': {
         display: 'flex',
         fontSize: 50,
@@ -157,7 +149,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultSection: {
       display: 'flex',
-      paddingRight: 20,
+      padding: 20,
     },
     leftSection: {
       width: 'calc(100% - 328px)',
@@ -166,9 +158,6 @@ const useStyles = makeStyles((theme: Theme) => {
     rightSection: {
       width: 328,
       marginTop: -183,
-    },
-    noConsultations: {
-      paddingBottom: 0,
     },
     bottomPopover: {
       overflow: 'initial',
@@ -194,8 +183,13 @@ const useStyles = makeStyles((theme: Theme) => {
       backgroundColor: theme.palette.common.white,
     },
     noAppointments: {
-      padding: 10,
-      margin: 10,
+      backgroundColor: theme.palette.common.white,
+      minWidth: 320,
+      margin: 'auto',
+      padding: 16,
+      marginTop: 8,
+      borderRadius: 10,
+      display: 'flex',
     },
     mascotIcon: {
       position: 'absolute',
@@ -203,6 +197,25 @@ const useStyles = makeStyles((theme: Theme) => {
       top: -40,
       '& img': {
         maxWidth: 80,
+      },
+    },
+    leftGroup: {
+      width: 'calc(100% - 52px)',
+      '& h3': {
+        margin: 0,
+        padding: 0,
+        fontSize: 16,
+        color: '#02475b',
+        fontWeight: 500,
+      },
+      '& button': {
+        marginTop: 12,
+      },
+    },
+    rightGroup: {
+      paddingLeft: 16,
+      '& img': {
+        maxWidth: 36,
       },
     },
   };
@@ -297,9 +310,7 @@ export const Appointments: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.consultPage}>
           <div
-            className={`${classes.consultationsHeader} ${
-              availableAppointments.length === 0 ? classes.noConsultations : ''
-            }`}
+            className={`${classes.consultationsHeader}`}
           >
             {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
               <Typography variant="h1">
@@ -340,24 +351,7 @@ export const Appointments: React.FC = (props) => {
             )}
 
             {availableAppointments.length === 0 ? (
-              <>
-                <p>You have no consultations today :) Hope you are doing well?</p>
-                <div className={classes.bottomActions}>
-                  <Route
-                    render={({ history }) => (
-                      <AphButton
-                        fullWidth
-                        color="primary"
-                        onClick={() => {
-                          history.push(clientRoutes.doctorsLanding());
-                        }}
-                      >
-                        Consult Doctor
-                      </AphButton>
-                    )}
-                  />
-                </div>
-              </>
+              <p>You have no consultations today :) Hope you are doing well?</p>
             ) : todaysConsultations > 0 ? (
               <p>
                 You have {availableAppointments.length}
@@ -367,16 +361,6 @@ export const Appointments: React.FC = (props) => {
               <p>You have no consultations today :)</p>
             )}
           </div>
-        </div>
-        {/* <div className={classes.consultSection}>
-          <div className={classes.rightSection}>
-            {data ? <ConsultationsCard appointments={data} /> : null}
-          </div>
-          <div className={classes.rightSection}>
-            <ThingsToDo />
-          </div>
-        </div> */}
-        <div>
           <div>
             <Tabs
               value={tabValue}
@@ -404,30 +388,42 @@ export const Appointments: React.FC = (props) => {
                 label="Past"
               />
             </Tabs>
-          </div>
-          <TabContainer>
-            <div className={tabValue !== 0 ? classes.none : classes.block}>
-              <div className={classes.consultSection}>
-                {availableAppointments && availableAppointments.length > 0 ? (
-                  <ConsultationsCard appointments={availableAppointments} />
-                ) : (
-                  <div className={classes.noAppointments}>
-                    <div>want to book an Appointment?</div>
-                    <button onClick={() => (window.location.href = clientRoutes.doctorsLanding())}>
-                      Book an Appointment
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </TabContainer>
-          <TabContainer>
-            <div className={tabValue !== 1 ? classes.none : classes.block}>
-              <div className={classes.consultSection}>
+            {tabValue === 0 && (
+              <TabContainer>
+                  {availableAppointments && availableAppointments.length > 0 ? (
+                    <ConsultationsCard appointments={availableAppointments} />
+                  ) : (
+                    <div className={classes.consultSection}>
+                      <div className={classes.noAppointments}>
+                        <div className={classes.leftGroup}>
+                          <h3>Want to book an appointment?</h3>
+                          <Route
+                            render={({ history }) => (
+                              <AphButton
+                                color="primary"
+                                onClick={() => {
+                                  history.push(clientRoutes.doctorsLanding());
+                                }}
+                              >
+                                Book an Appointment
+                              </AphButton>
+                            )}
+                          />
+                        </div>
+                        <div className={classes.rightGroup}>
+                          <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+              </TabContainer>
+            )}
+            {tabValue === 1 && (
+              <TabContainer>
                 {pastAppointments ? <ConsultationsCard appointments={pastAppointments} /> : null}
-              </div>
-            </div>
-          </TabContainer>
+              </TabContainer>
+            )}
+          </div>
         </div>
       </div>
       <Popover
