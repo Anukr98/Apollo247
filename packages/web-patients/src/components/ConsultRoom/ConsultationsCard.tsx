@@ -1,5 +1,5 @@
 import { makeStyles } from '@material-ui/styles';
-import { Theme, Grid, Avatar } from '@material-ui/core';
+import { Theme, Grid, Avatar, Switch } from '@material-ui/core';
 import React, { useState } from 'react';
 import Scrollbars from 'react-custom-scrollbars';
 import {
@@ -228,6 +228,35 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
     ADD_TO_CONSULT_QUEUE
   );
 
+  const getAppointmentStatus = (status: STATUS, isConsultStarted: boolean | null) => {
+    switch (status) {
+      case STATUS.PENDING:
+        return isConsultStarted ? 'CONTINUE CONSULT' : 'PREPARE FOR CONSULT';
+      default:
+        return 'CHAT WITH DOCTOR';
+    }
+  };
+
+  const showAppointmentAction = (
+    appointmentState: APPOINTMENT_STATE | null,
+    status: STATUS,
+    isConsultStarted: boolean | null
+  ) => {
+    if (appointmentState) {
+      switch (appointmentState) {
+        case APPOINTMENT_STATE.NEW:
+          return getAppointmentStatus(status, isConsultStarted);
+        case APPOINTMENT_STATE.AWAITING_RESCHEDULE:
+          return 'RESCHEDULE';
+        case APPOINTMENT_STATE.RESCHEDULE:
+          return isConsultStarted ? 'CONTINUE CONSULT' : 'PREPARE FOR CONSULT';
+        default:
+          return 'CHAT WITH DOCTOR';
+      }
+    }
+    getAppointmentStatus(status, isConsultStarted);
+  };
+
   return (
     <div className={classes.root}>
       <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 365px)'}>
@@ -266,8 +295,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   ? appointmentDetails.doctorId
                   : '';
               const isConsultStarted = appointmentDetails.isConsultStarted;
-              const awaitingReschedule =
-                appointmentDetails.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE;
+              const { appointmentState, status } = appointmentDetails;
+
               return (
                 <Grid item sm={4} key={index}>
                   <div className={classes.consultCard}>
@@ -325,7 +354,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     <div className={classes.cardBottomActons}>
                       <AphButton
                         onClick={() => {
-                          !awaitingReschedule && isConsultStarted
+                          !(appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE) &&
+                          isConsultStarted
                             ? (window.location.href = clientRoutes.chatRoom(
                                 appointmentId,
                                 doctorId
@@ -342,15 +372,13 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                                   );
                                 })
                                 .catch((e: ApolloError) => {
-                                  console.log(e);
+                                  alert(e);
                                 });
                         }}
                       >
-                        {awaitingReschedule
-                          ? 'RESCHEDULE'
-                          : isConsultStarted
-                          ? 'Continue Consult'
-                          : 'Start Consult'}
+                        {appointmentDetails.isFollowUp === 'false'
+                          ? showAppointmentAction(appointmentState, status, isConsultStarted)
+                          : 'SCHEDULE FOLLOWUP'}
                       </AphButton>
                       <div className={classes.noteText}>You are entitled to 1 free follow-up!</div>
                     </div>

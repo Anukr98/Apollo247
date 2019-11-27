@@ -43,6 +43,7 @@ export interface GetPatientAppointments_getPatinetAppointments_patinetAppointmen
   bookingDate: any | null;
   isConsultStarted: boolean | null;
   appointmentState: APPOINTMENT_STATE | null;
+  isFollowUp: string;
   doctorInfo: GetPatientAppointments_getPatinetAppointments_patinetAppointments_doctorInfo | null;
 }
 
