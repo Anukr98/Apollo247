@@ -5,6 +5,14 @@ const pharmaTokendp5 = 'Bearer dp50h14gpxtqf8gi1ggnctqcrr0io6ms';
 const apolloProdBaseUrl = 'https://www.apollopharmacy.in';
 const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 
+enum AppEnv {
+  DEV = 'DEV',
+  QA = 'QA',
+  PROD = 'PROD',
+}
+
+const APP_ENV: AppEnv = AppEnv.DEV as AppEnv; //Change to AppEnv.(DEV, QA, PROD) for respective API environments in the app. Also don't forget to change src/helpers/apiRoutes.ts
+
 const PharmaApiConfig = {
   dev: {
     MED_SEARCH: [apolloProdBaseUrl, pharmaToken201], //later cahnge to UAT
@@ -55,7 +63,7 @@ const PharmaApiConfig = {
 };
 
 //Development;
-const Configuration = {
+const ConfigurationDev = {
   LOG_ENVIRONMENT: 'debug',
   ANALYTICAL_ENIVRONMENT: 'debug',
   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
@@ -75,44 +83,99 @@ const Configuration = {
 };
 
 // QA
-// const Configuration = {
-//   LOG_ENVIRONMENT: 'release',
-//   ANALYTICAL_ENIVRONMENT: 'debug',
-//   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-//   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
-//   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
-//   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-//   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
-//   DELIVERY_CHARGES: 25,
-//   DIASGNOS_DELIVERY_CHARGES: 0,
-//   PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
-//   PRO_TOKBOX_KEY: '46429002',
-//   PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
-//   PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
-//   DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
-//   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-//   ...PharmaApiConfig.prod,
-// };
+const ConfigurationQA = {
+  LOG_ENVIRONMENT: 'release',
+  ANALYTICAL_ENIVRONMENT: 'debug',
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com',
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: '4A8C9CCC-C5A3-11E9-9A19-8C85900A8328',
+  PRO_TOKBOX_KEY: '46429002',
+  PRO_PUBNUB_PUBLISH: 'pub-c-75e6dc17-2d81-4969-8410-397064dae70e',
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-9cc337b6-e0f4-11e9-8d21-f2f6e193974b',
+  DOCUMENT_BASE_URL: 'https://apolloaphstorage.blob.core.windows.net/popaphstorage/popaphstorage/',
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  ...PharmaApiConfig.prod,
+};
 
 //Production
-// const Configuration = {
-//   LOG_ENVIRONMENT: 'release',
-//   ANALYTICAL_ENIVRONMENT: 'release',
-//   MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
-//   PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
-//   PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
-//   PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
-//   MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
-//   DELIVERY_CHARGES: 25,
-//   DIASGNOS_DELIVERY_CHARGES: 0,
-//   PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', // PRODUCTION
-//   PRO_TOKBOX_KEY: '46422952', // PRODUCTION
-//   PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
-//   PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
-//   DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
-//   GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
-//   ...PharmaApiConfig.prod,
-// };
+const ConfigurationProd = {
+  LOG_ENVIRONMENT: 'release',
+  ANALYTICAL_ENIVRONMENT: 'release',
+  MEDICINE_PAST_SEARCHES_SHOW_COUNT: 5,
+  PAYMENT_GATEWAY_BASE_URL: 'https://pmt.apollo247.com', //PRODUCTION
+  PAYMENT_GATEWAY_SUCCESS_PATH: '/mob?',
+  PAYMENT_GATEWAY_ERROR_PATH: '/mob-error?',
+  MIN_CART_VALUE_FOR_FREE_DELIVERY: 199,
+  DELIVERY_CHARGES: 25,
+  DIASGNOS_DELIVERY_CHARGES: 0,
+  PRAKTISE_API_KEY: 'C2B3FAEE-C576-11E9-AEF4-8C85900A8328', // PRODUCTION
+  PRO_TOKBOX_KEY: '46422952', // PRODUCTION
+  PRO_PUBNUB_PUBLISH: 'pub-c-e275fde3-09e1-44dd-bc32-5c3d04c3b2ef', // PRODUCTION
+  PRO_PUBNUB_SUBSCRIBER: 'sub-c-517dafbc-d955-11e9-aa3a-6edd521294c5', // PRODUCTION
+  DOCUMENT_BASE_URL: 'https://prodaphstorage.blob.core.windows.net/prodaphstorage/prodaphstorage/', //Production
+  GOOGLE_API_KEY: 'AIzaSyCu4uyf9ln--tU-8V32nnFyfk8GN4koLI0',
+  ...PharmaApiConfig.prod,
+};
+
+const Configuration =
+  APP_ENV == AppEnv.PROD ? ConfigurationProd : AppEnv.QA ? ConfigurationQA : ConfigurationDev;
+
+export const MedicineFeedBackData = {
+  POOR: {
+    question: 'What went wrong?',
+    options: [
+      'Delivery person was impolite',
+      'Packaging',
+      'Delivery time',
+      'Difficulty in using the App',
+      'Medicine unavailability',
+      'Comparatively better offers on other portals',
+      'Payment-related issues on App',
+      'Medicine delivered was nearing expiry date',
+      'Incorrect medicines delivered',
+      'Unvailability of some medicines',
+      'Others',
+    ],
+  },
+  OKAY: {
+    question: 'What could have been improved?',
+    options: [
+      'Delivery time',
+      'Medicine options to choose from ',
+      'Ordering experience',
+      'Better offers',
+      'Better packaging',
+      'Others',
+    ],
+  },
+  GOOD: {
+    question: 'Thanks! How can we make this a Great experience for you?',
+    options: [
+      'Add more medicines to choose from',
+      'Simplify ordering experience',
+      'Better offers',
+      'Improve packaging',
+      'Improve delivery time',
+      'Others',
+    ],
+  },
+  GREAT: {
+    question: 'What went well?',
+    options: [
+      'Ordering experience',
+      'Variety and options to choose from',
+      'Delivery time',
+      'Delivery person was friendly and polite',
+      ' Great offers and prices',
+      'Others',
+    ],
+  },
+};
 
 export const NeedHelp = [
   {

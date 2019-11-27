@@ -8,7 +8,12 @@ import {
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
 import { DropDown, Option } from '@aph/mobile-patients/src/components/ui/DropDown';
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
-import { CrossPopup, DropdownGreen, More } from '@aph/mobile-patients/src/components/ui/Icons';
+import {
+  CrossPopup,
+  DropdownGreen,
+  MedicineIcon,
+  More,
+} from '@aph/mobile-patients/src/components/ui/Icons';
 import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
 import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHelpAssistant';
 import { OrderProgressCard } from '@aph/mobile-patients/src/components/ui/OrderProgressCard';
@@ -59,6 +64,11 @@ import {
   ScrollView,
   StackActions,
 } from 'react-navigation';
+import { MedicineFeedBackData } from '../strings/AppConfig';
+import { RadioSelectionItem } from './Medicines/RadioSelectionItem';
+import { Spearator } from './ui/BasicComponents';
+import { FeedbackInfoCard } from './ui/FeedbackInfoCard';
+import { RatingSmilyView, RatingStatus } from './ui/RatingSmilyView';
 
 const styles = StyleSheet.create({
   headerShadowContainer: {
@@ -118,13 +128,6 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const { cartItems, setCartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
   const { showAphAlert, setLoading } = useUIElements();
-
-  useEffect(() => {
-    if (!currentPatient) {
-      getPatientApiCall();
-    }
-  }, [currentPatient]);
-
   const { data, loading, refetch } = useQuery<
     GetMedicineOrderDetails,
     GetMedicineOrderDetailsVariables
@@ -155,6 +158,102 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
     }
     return false;
   };
+
+  const [ratingStatus, setRatingStatus] = useState<RatingStatus>();
+  const [ratingOption, setRatingOption] = useState<string>();
+  const [ratingSuggestion, setRatingSuggestion] = useState<string>();
+
+  const onSubmitFeedBack = () => {
+    // Alert.alert('Success');
+    setLoading!(true);
+  };
+
+  const renderRatingContent = () => {
+    const _statusDate = g(
+      orderStatusList.find((item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED),
+      'statusDate'
+    );
+    const _time = moment(_statusDate).format('D MMM YYYY');
+    const title = `Medicines — #${orderAutoId}`;
+    // const desc = `Delivered On: 24 Oct 2019`;
+    const desc = `Delivered On: ${_time}`;
+    const question = ratingStatus ? MedicineFeedBackData[ratingStatus].question : '';
+    const options = ratingStatus ? MedicineFeedBackData[ratingStatus].options : [];
+
+    return (
+      <View style={{}}>
+        <FeedbackInfoCard
+          style={{ marginTop: 16, marginHorizontal: 20 }}
+          title={title}
+          description={desc}
+          imageComponent={<MedicineIcon />}
+        />
+        <RatingSmilyView
+          style={{ marginTop: 36.5, marginBottom: ratingStatus ? 0 : 40, marginHorizontal: 20 }}
+          status={ratingStatus}
+          onStatusChange={(_ratingStatus) => {
+            setRatingStatus(_ratingStatus);
+          }}
+        />
+        {!!ratingStatus && (
+          <>
+            <View style={{ marginHorizontal: 20 }}>
+              <Spearator style={{ marginTop: 19.8 }} />
+              <Text style={{ ...theme.viewStyles.text('M', 14, '#02475b'), marginTop: 23.8 }}>
+                {question}
+              </Text>
+              {options.map((item) => (
+                <RadioSelectionItem
+                  title={item}
+                  isSelected={item == ratingOption}
+                  hideSeparator={true}
+                  onPress={() => setRatingOption(item)}
+                />
+              ))}
+              <Spearator style={{ marginTop: 19.8 }} />
+              <View style={{ marginTop: 23.8 }}>
+                <Text style={theme.viewStyles.text('M', 17, '#0087ba')}>
+                  {'What can be improved?'}
+                </Text>
+                <TextInputComponent
+                  placeholder={'Write your suggestion here...'}
+                  value={ratingSuggestion}
+                  onChangeText={(text) => setRatingSuggestion(text)}
+                  inputStyle={{
+                    paddingBottom: 8,
+                    marginTop: 8,
+                  }}
+                />
+              </View>
+            </View>
+            <View style={{ flex: 1, marginTop: 40, marginBottom: 20 }}>
+              <Button
+                disabled={!ratingOption}
+                onPress={onSubmitFeedBack}
+                title={'SUBMIT FEEDBACK'}
+                style={{ width: '66.66%' }}
+              />
+            </View>
+          </>
+        )}
+      </View>
+    );
+  };
+
+  // For feedback popup
+  // useEffect(() => {
+  //   if (
+  //     goToHomeOnBack &&
+  //     orderStatusList.find((item) => item!.orderStatus == MEDICINE_ORDER_STATUS.DELIVERED)
+  //   ) {
+  //     showAphAlert!({
+  //       unDismissable: true,
+  //       title: 'We value your feedback! :)',
+  //       description: 'How was your overall experience with the following medicine delivery —',
+  //       children: renderRatingContent(),
+  //     });
+  //   }
+  // }, []);
 
   useEffect(() => {
     const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
