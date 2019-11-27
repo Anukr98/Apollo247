@@ -172,7 +172,7 @@ const useStyles = makeStyles((theme: Theme) => {
       '& button': {
         minWidth: 288,
       },
-    },    
+    },
   };
 });
 
@@ -375,7 +375,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                     Oops! No slots available with Dr. {doctorName} :(
                   </div>
                 )}
-            </div>
+              </div>
             </Grid>
           </Grid>
         </div>
@@ -427,7 +427,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
         open={isDialogOpen}
         disableBackdropClick
         disableEscapeKeyDown
-        onClose={() => setIsDialogOpen(false)} 
+        onClose={() => setIsDialogOpen(false)}
         maxWidth="sm"
       >
         <AphDialogTitle>Appointment Confirmation</AphDialogTitle>
@@ -435,7 +435,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
           Your appointment has been successfully booked with <span>Dr. {doctorName}</span>
         </div>
         <div className={classes.dialogActions}>
-         <AphButton
+          <AphButton
             color="primary"
             onClick={() => {
               setIsDialogOpen(false);
@@ -445,7 +445,7 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
             Ok
           </AphButton>
         </div>
-      </AphDialog>      
+      </AphDialog>
     </div>
   );
 };

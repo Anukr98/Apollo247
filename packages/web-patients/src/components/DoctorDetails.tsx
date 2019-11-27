@@ -351,7 +351,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
                 />
               )}
 
-              {availableForPhysicalConsultation && !isPayrollDoctor && (
+              {availableForPhysicalConsultation && (
                 <Tab
                   classes={{
                     root: classes.tabRoot,
@@ -371,7 +371,7 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
               </TabContainer>
             )}
 
-            {tabValue === 1 && availableForPhysicalConsultation && !isPayrollDoctor && (
+            {tabValue === 1 && availableForPhysicalConsultation && (
               <TabContainer>
                 <VisitClinic doctorDetails={doctorDetails} />
               </TabContainer>

@@ -1,4 +1,4 @@
-import React, { useRef, useContext } from 'react';
+import React, { useRef, useContext, useEffect } from 'react';
 import { makeStyles, createStyles } from '@material-ui/styles';
 import { Theme, Popover } from '@material-ui/core';
 import { AphTextField } from '@aph/web-ui-components';
@@ -151,6 +151,7 @@ type SuggestionProps = {
     mainText: string;
     secondText: string;
   };
+  matchedSubstrings: Array<{ length: number; offset: number }>;
 };
 
 type InputProps = {
@@ -169,8 +170,7 @@ export const AppLocations: React.FC = (props) => {
   };
 
   const mascotRef = useRef(null);
-  const [isPopoverOpen] = React.useState<boolean>(false);
-
+  const [isPopoverOpen, setIsPopoverOpen] = React.useState<boolean>(false);
 
   const [address, setAddress] = React.useState('');
   const [selectedAddress, setSelectedAddress] = React.useState('');
@@ -183,6 +183,29 @@ export const AppLocations: React.FC = (props) => {
     setSelectedAddress(address.substring(0, address.indexOf(',')));
     setAddress('');
     setIsLocationPopoverOpen(false);
+  };
+
+  useEffect(() => {
+    if (!localStorage.getItem('currentAddress')) {
+      navigator.permissions &&
+        navigator.permissions.query({ name: 'geolocation' }).then((PermissionStatus) => {
+          if (PermissionStatus.state === 'denied') {
+            alert('Location Permission was denied. Please allow browser settings.');
+          } else if (PermissionStatus.state !== 'granted') {
+            setIsPopoverOpen(true);
+          }
+          console.log(PermissionStatus);
+        });
+    }
+  });
+
+  const renderSuggestion = (text: string, matchedLength: number) => {
+    return (
+      <>
+        <span style={{ fontWeight: 500 }}>{text.substring(0, matchedLength)}</span>
+        <span style={{ fontWeight: 400 }}>{text.substring(matchedLength, text.length)}</span>
+      </>
+    );
   };
 
   return (
@@ -199,11 +222,11 @@ export const AppLocations: React.FC = (props) => {
       >
         <img className={classes.locationIcon} src={require('images/ic_location_on.svg')} alt="" />
         <span className={classes.selectedLocation}>
-          {selectedAddress.length > 0
+          {!isPopoverOpen && selectedAddress.length > 0
             ? selectedAddress
-            : currentLocation && currentLocation.length > 0
-              ? currentLocation
-              : 'No location'}
+            : !isPopoverOpen && currentLocation && currentLocation.length > 0
+            ? currentLocation
+            : 'No location'}
         </span>
       </div>
       <Popover
@@ -232,11 +255,7 @@ export const AppLocations: React.FC = (props) => {
             <div className={classes.locationPopWrap}>
               <label className={classes.inputLabel}>Current Location</label>
               <div className={classes.searchInput}>
-                <AphTextField
-                  type="search"
-                  placeholder="Search Places..."
-                  {...getInputProps()}
-                />
+                <AphTextField type="search" placeholder="Search Places..." {...getInputProps()} />
                 <div className={classes.popLocationIcon}>
                   <img src={require('images/ic-location.svg')} alt="" />
                 </div>
@@ -247,7 +266,10 @@ export const AppLocations: React.FC = (props) => {
                   {suggestions.map((suggestion: SuggestionProps) => {
                     return suggestion.index < 3 ? (
                       <li {...getSuggestionItemProps(suggestion)}>
-                        {suggestion.formattedSuggestion.mainText}
+                        {renderSuggestion(
+                          suggestion.formattedSuggestion.mainText,
+                          suggestion.matchedSubstrings[0].length
+                        )}
                       </li>
                     ) : null;
                   })}
@@ -275,10 +297,13 @@ export const AppLocations: React.FC = (props) => {
             <div className={classes.mascotIcon}>
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
-            <AllowLocation />
+            <AllowLocation
+              setIsLocationPopoverOpen={setIsLocationPopoverOpen}
+              setIsPopoverOpen={setIsPopoverOpen}
+            />
           </div>
         </div>
       </Popover>
-    </div >
+    </div>
   );
 };

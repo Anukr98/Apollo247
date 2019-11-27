@@ -368,7 +368,8 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           <div className={classes.consultGroup}>
             {differenceInMinutes > 0 ? (
               <p>
-                Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to consult now or schedule for later?
+                Dr. {doctorName} is available in {differenceInMinutes} mins! Would you like to
+                consult now or schedule for later?
               </p>
             ) : null}
             <div className={classes.actions}>
@@ -418,13 +419,15 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
               </div>
             </Grid>
             <Grid item sm={6}>
-                {morningSlots.length > 0 ||
+              {morningSlots.length > 0 ||
               afternoonSlots.length > 0 ||
               eveningSlots.length > 0 ||
               lateNightSlots.length > 0 ? (
                 <div
                   className={`${classes.consultGroup} ${classes.scheduleTimeSlots} ${
-                    showCalendar || scheduleLater || !consultNowAvailable ? classes.showTimeSlot : ''
+                    showCalendar || scheduleLater || !consultNowAvailable
+                      ? classes.showTimeSlot
+                      : ''
                   }`}
                 >
                   <DayTimeSlots
@@ -436,13 +439,13 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
                     timeSelected={(timeSelected) => setTimeSelected(timeSelected)}
                   />
                 </div>
-                ) : (
-                  <div className={classes.consultGroup}>
-                    <div className={classes.noSlotsAvailable}>
-                      Oops! No slots available with Dr. {doctorName} :(
-                    </div>
+              ) : (
+                <div className={classes.consultGroup}>
+                  <div className={classes.noSlotsAvailable}>
+                    Oops! No slots available with Dr. {doctorName} :(
                   </div>
-                )}
+                </div>
+              )}
             </Grid>
           </Grid>
         </div>
@@ -504,7 +507,7 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
         open={isDialogOpen}
         disableBackdropClick
         disableEscapeKeyDown
-        onClose={() => setIsDialogOpen(false)} 
+        onClose={() => setIsDialogOpen(false)}
         maxWidth="sm"
       >
         <AphDialogTitle>Appointment Confirmation</AphDialogTitle>
@@ -512,11 +515,12 @@ export const OnlineConsult: React.FC<OnlineConsultProps> = (props) => {
           Your appointment has been successfully booked with <span>Dr. {doctorName}</span>
         </div>
         <div className={classes.dialogActions}>
-         <AphButton
+          <AphButton
             color="primary"
             onClick={() => {
               setIsDialogOpen(false);
               setIsPopoverOpen(false);
+              window.location.href = clientRoutes.appointments();
             }}
             autoFocus
           >

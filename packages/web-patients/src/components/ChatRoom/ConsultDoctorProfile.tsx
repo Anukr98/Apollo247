@@ -694,7 +694,9 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
-              <Typography variant="h2">Hi, Sankeerth :)</Typography>
+              <Typography variant="h2">
+                {`Hi, ${currentPatient && currentPatient.firstName} :)`}
+              </Typography>
               <p>
                 Since you're cancelling 15 minutes before your appointment, we'll issuew you a full
                 refund!
