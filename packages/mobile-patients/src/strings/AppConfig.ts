@@ -7,14 +7,14 @@ const apolloUatBaseUrl = 'https://uat.apollopharmacy.in';
 
 const PharmaApiConfig = {
   dev: {
-    MED_SEARCH: [apolloProdBaseUrl, pharmaToken201],
-    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201],
-    MED_SEARCH_SUGGESTION: [apolloUatBaseUrl, pharmaToken201],
+    MED_SEARCH: [apolloProdBaseUrl, pharmaToken201], //later cahnge to UAT
+    MED_DETAIL: [apolloUatBaseUrl, pharmaToken201], // change to PROD
+    MED_SEARCH_SUGGESTION: [apolloUatBaseUrl, pharmaToken201], // change to PROD
     STORES_LIST: [apolloProdBaseUrl, pharmaToken201],
     PIN_SERVICEABILITY: [apolloProdBaseUrl, pharmaToken201],
     INVENTORY_CHECK: ['https://online.apollopharmacy.org/APOLLO247/Orderplace.svc', pharmaTokencTf],
     SHOP_BY_CITY: [apolloUatBaseUrl],
-    IMAGES_BASE_URL: [`${apolloUatBaseUrl}/pub/media`],
+    IMAGES_BASE_URL: [`${apolloProdBaseUrl}/pub/media`],
     GET_DELIVERY_TIME: [
       'http://tpuat.apollopharmacy.org:9090/IEngine/webresources/Inventory/getDeliveryTimePartial',
       pharmaTokenYXV,

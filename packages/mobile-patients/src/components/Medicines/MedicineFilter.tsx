@@ -99,36 +99,37 @@ export const MedicineFilter: React.FC<MedicineFilterProps> = (props) => {
     );
   };
 
-  const { data, loading, error } = useFetch(() => getMedicinePageProducts());
+  // const { data, loading, error } = useFetch(() => getMedicinePageProducts());
   // TODO: Optimize API call for `hideCategoryFilter` prop
 
   const renderCategories = () => {
-    const shopByCategory = (!loading && !error && g(data, 'data', 'shop_by_category')) || [];
-    let categories = shopByCategory.map((item) => [item.title, item.category_id]);
-    if (categories.length) {
-      categories = [['All', ''], ...categories];
-    }
-    // const categories = [
-    //   ['All', ''],
-    //   ['Personal Care', '14'],
-    //   ['Mom & Baby', '24'],
-    //   ['Nutrition', '6'],
-    //   ['Healthcare', '71'],
-    //   ['Special Offers', '234'],
-    //   ['Holland & Barrett', '97'],
-    //   ['Apollo Products', '680'],
-    // ];
+    // const shopByCategory = (!loading && !error && g(data, 'data', 'shop_by_category')) || [];
+    // let categories = shopByCategory.map((item) => [item.title, item.category_id]);
+    // if (categories.length) {
+    //   categories = [['All', ''], ...categories];
+    // }
+    const categories = [
+      ['All', ''],
+      ['Personal Care', '14'],
+      ['Mom & Baby', '24'],
+      ['Nutrition', '6'],
+      ['Healthcare', '71'],
+      ['Special Offers', '234'],
+      ['Holland & Barrett', '97'],
+      ['Apollo Products', '680'],
+    ];
     if (hideCategoryFilter) {
       return null;
     }
-    return loading ? (
-      <Spinner
-        style={{
-          position: 'relative',
-          backgroundColor: 'transparent',
-        }}
-      />
-    ) : (
+    // return loading ? (
+    //   <Spinner
+    //     style={{
+    //       position: 'relative',
+    //       backgroundColor: 'transparent',
+    //     }}
+    //   />
+    // ) :
+    return (
       <View
         style={{
           backgroundColor: '#f7f8f5',
