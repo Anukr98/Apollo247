@@ -339,6 +339,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
             streetLine2
             streetLine3
             city
+            facilityType
           }
         }
       }

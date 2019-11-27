@@ -88,6 +88,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [showSuccessPopUp, setshowSuccessPopUp] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [AppointmentExistAlert, setAppointmentExistAlert] = useState<boolean>(false);
+  const [limitExceededAlert, setLimitExceededAlert] = useState<boolean>(false);
+
   const scrollViewRef = React.useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [disablePay, setdisablePay] = useState<boolean>(false);
@@ -99,7 +101,6 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   );
 
   const todayDate = new Date().toDateString().split('T')[0];
-  console.log(availableInMin, 'ConsultO');
   const scrollToSlots = (top: number = 400) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
   };
@@ -173,6 +174,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             message === 'DOCTOR_SLOT_BLOCKED'
           )
             setAppointmentExistAlert(true);
+          else if (message === 'BOOKING_LIMIT_EXCEEDED') {
+            setLimitExceededAlert(true);
+          }
         } catch (error) {}
       });
   };
@@ -433,6 +437,25 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               style={styles.gotItStyles}
               onPress={() => {
                 setAppointmentExistAlert(false);
+                props.setdisplayoverlay(false);
+              }}
+            >
+              <Text style={styles.gotItTextStyles}>Okay</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {limitExceededAlert && (
+        <BottomPopUp
+          title={'Alert!'}
+          description={`Sorry! You have already cancelled the appointment 3 times in the past 7 days. Please book a fresh appointment later`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.gotItStyles}
+              onPress={() => {
+                setLimitExceededAlert(false);
                 props.setdisplayoverlay(false);
               }}
             >
