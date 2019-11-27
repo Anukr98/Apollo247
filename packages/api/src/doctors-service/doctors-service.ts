@@ -44,7 +44,7 @@ import {
 import {
   saveDoctorFavouriteMedicineTypeDefs,
   saveDoctorFavouriteMedicineResolver,
-} from 'doctors-service/resolvers/doctorsFavouriteMedicine';
+} from 'doctors-service/resolvers/doctorsFavouriteMedicines';
 import { doctorDataTypeDefs, doctorDataResolvers } from 'doctors-service/resolvers/doctorData';
 import {
   blockedCalendarTypeDefs,
