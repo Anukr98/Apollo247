@@ -1,6 +1,5 @@
 import gql from 'graphql-tag';
 import { Resolver } from 'api-gateway';
-import { getConnection } from 'typeorm';
 import { DoctorsFavouriteTests } from 'doctors-service/entities';
 import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { DoctorRepository } from 'doctors-service/repositories/doctorRepository';
@@ -32,7 +31,7 @@ const getDoctorFavouriteTestList: Resolver<
   FavouriteTestList
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb, firebaseUid }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  let doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteTestRepository);
