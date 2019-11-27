@@ -6,7 +6,7 @@ import {
   GetPatientAppointments,
   GetPatientAppointments_getPatinetAppointments_patinetAppointments as appointmentDetails,
 } from 'graphql/types/GetPatientAppointments';
-import { DoctorType, APPOINTMENT_TYPE } from 'graphql/types/globalTypes';
+import { DoctorType, APPOINTMENT_TYPE, APPOINTMENT_STATE } from 'graphql/types/globalTypes';
 import _isNull from 'lodash/isNull';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -253,8 +253,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   : '';
               const specialization =
                 appointmentDetails.doctorInfo &&
-                  appointmentDetails.doctorInfo.specialty &&
-                  !_isNull(appointmentDetails.doctorInfo.specialty.name)
+                appointmentDetails.doctorInfo.specialty &&
+                !_isNull(appointmentDetails.doctorInfo.specialty.name)
                   ? appointmentDetails.doctorInfo.specialty.name
                   : '';
               const currentTime = new Date().getTime();
@@ -266,6 +266,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   ? appointmentDetails.doctorId
                   : '';
               const isConsultStarted = appointmentDetails.isConsultStarted;
+              const awaitingReschedule =
+                appointmentDetails.appointmentState === APPOINTMENT_STATE.AWAITING_RESCHEDULE;
               return (
                 <Grid item sm={4} key={index}>
                   <div className={classes.consultCard}>
@@ -273,17 +275,17 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                       <div className={classes.startDoctor}>
                         <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
                         {appointmentDetails.doctorInfo &&
-                          appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO ? (
-                            <span>
-                              <img src={require('images/ic_star.svg')} alt="" />
-                            </span>
-                          ) : null}
+                        appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO ? (
+                          <span>
+                            <img src={require('images/ic_star.svg')} alt="" />
+                          </span>
+                        ) : null}
                       </div>
                       <div className={classes.doctorInfo}>
                         <div
                           className={`${classes.availability} ${
                             difference <= 15 && difference > 0 ? classes.availableNow : ''
-                            }`}
+                          }`}
                         >
                           {difference <= 15 && difference > 0
                             ? `Available in ${difference} mins`
@@ -308,8 +310,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
                               <img src={require('images/ic_onlineconsult.svg')} alt="" />
                             ) : (
-                                <img src={require('images/ic_clinicvisit.svg')} alt="" />
-                              )}
+                              <img src={require('images/ic_clinicvisit.svg')} alt="" />
+                            )}
                           </span>
                         </div>
                         <div className={classes.appointBooked}>
@@ -323,28 +325,32 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                     <div className={classes.cardBottomActons}>
                       <AphButton
                         onClick={() => {
-                          isConsultStarted
+                          !awaitingReschedule && isConsultStarted
                             ? (window.location.href = clientRoutes.chatRoom(
-                              appointmentId,
-                              doctorId
-                            ))
-                            : addConsultToQueue({
-                              variables: {
                                 appointmentId,
-                              },
-                            })
-                              .then((res) => {
-                                window.location.href = clientRoutes.chatRoom(
+                                doctorId
+                              ))
+                            : addConsultToQueue({
+                                variables: {
                                   appointmentId,
-                                  doctorId
-                                );
+                                },
                               })
-                              .catch((e: ApolloError) => {
-                                console.log(e);
-                              });
+                                .then((res) => {
+                                  window.location.href = clientRoutes.chatRoom(
+                                    appointmentId,
+                                    doctorId
+                                  );
+                                })
+                                .catch((e: ApolloError) => {
+                                  console.log(e);
+                                });
                         }}
                       >
-                        {isConsultStarted ? 'Continue Consult' : 'Start Consult'}
+                        {awaitingReschedule
+                          ? 'RESCHEDULE'
+                          : isConsultStarted
+                          ? 'Continue Consult'
+                          : 'Start Consult'}
                       </AphButton>
                       <div className={classes.noteText}>You are entitled to 1 free follow-up!</div>
                     </div>

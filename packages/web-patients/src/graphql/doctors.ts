@@ -271,6 +271,7 @@ export const GET_PATIENT_APPOINTMENTS = gql`
         status
         bookingDate
         isConsultStarted
+        appointmentState
         doctorInfo {
           id
           firstName
