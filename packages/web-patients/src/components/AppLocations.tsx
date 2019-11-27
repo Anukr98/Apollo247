@@ -159,7 +159,6 @@ type InputProps = {
   suggestions: Array<SuggestionProps>;
   getSuggestionItemProps: Function;
   loading: boolean;
-  value: string;
 };
 
 export const AppLocations: React.FC = (props) => {
@@ -252,7 +251,7 @@ export const AppLocations: React.FC = (props) => {
           onSelect={handleSelect}
           searchOptions={searchOptions}
         >
-          {({ getInputProps, suggestions, getSuggestionItemProps, loading, value }: InputProps) => (
+          {({ getInputProps, suggestions, getSuggestionItemProps, loading }: InputProps) => (
             <div className={classes.locationPopWrap}>
               <label className={classes.inputLabel}>Current Location</label>
               <div className={classes.searchInput}>
