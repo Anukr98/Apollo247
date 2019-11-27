@@ -90,10 +90,6 @@ import InCallManager from 'react-native-incall-manager';
 import KeepAwake from 'react-native-keep-awake';
 import SoftInputMode from 'react-native-set-soft-input-mode';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-// import {
-//   addToConsultQueue,
-//   addToConsultQueueVariables,
-// } from '@aph/mobile-patients/src/graphql/types/addToConsultQueue';
 import {
   bookRescheduleAppointment,
   bookRescheduleAppointmentVariables,
@@ -273,6 +269,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   const languageQue = '^^#languageQue';
   const jdThankyou = '^^#jdThankyou';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const stopConsultJr = '^^#stopconsultJr';
 
   const patientId = appointmentData.patientId;
   const channel = appointmentData.id;
@@ -592,6 +589,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         pubNubMessages(message);
       },
       presence: (presenceEvent) => {
+        console.log('presenceEvent', presenceEvent);
+
         if (presenceEvent.occupancy >= 2) {
         }
       },
@@ -699,6 +698,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }
 
             checkAutomatedPatientText();
+            checkForRescheduleMessage(newmessage);
 
             setTimeout(() => {
               flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
@@ -712,6 +712,19 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         }
       }
     );
+  };
+
+  const checkForRescheduleMessage = (newmessage: any) => {
+    const result = insertText.filter((obj: any) => {
+      // console.log('resultinsertText', obj.message);
+      return obj.message === rescheduleConsultMsg;
+    });
+    if (result.length > 0) {
+      console.log('result.length ', result);
+      checkIfReschduleApi(newmessage, 'Followup');
+      NextAvailableSlot(newmessage, 'Followup');
+      setCheckReschudule(true);
+    }
   };
 
   const checkAutomatedPatientText = () => {
@@ -908,7 +921,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         updateSessionAPI();
         checkingAppointmentDates();
         addMessages(message);
-      } else if (message.message.message === stopConsultMsg) {
+      } else if (message.message.message === stopConsultJr) {
         console.log('listener remainingTime', remainingTime);
         stopInterval();
         setConvertVideo(false);
@@ -952,7 +965,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
         addMessages(message);
       } else if (message.message.message === cancelConsultInitiated) {
         console.log('cancelConsultInitiated');
-        addMessages(message);
+        setShowPopup(true);
       }
     } else {
       console.log('succss');
@@ -967,6 +980,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     if (!isCall || !isAudioCall) {
       setChatReceived(true);
     }
+
+    checkForRescheduleMessage(insertText);
+
     setTimeout(() => {
       flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: false });
     }, 300);
@@ -1029,7 +1045,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const transferReschedule = (rowData: any, index: number) => {
-    console.log('rowData', rowData);
+    console.log('transferReschedule', rowData);
     return (
       <>
         {rowData.message === transferConsultMsg ? (
@@ -1252,17 +1268,43 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             {checkReschudule && reschduleLoadView(rowData, index, 'Transfer')}
           </View>
         ) : (
-          <View
-            style={{
-              backgroundColor: 'transparent',
-              width: 282,
-              borderRadius: 10,
-              marginVertical: 2,
-              alignSelf: 'flex-start',
-            }}
-          >
-            {leftComponent === 1 && (
-              <View
+          <>
+            {rowData.message === rescheduleConsultMsg ? (
+              <View>{checkReschudule && reschduleLoadView(rowData, index, 'Reschedule')}</View>
+            ) : (
+              <View>{followUpView(rowData, index, 'Followup')}</View>
+            )}
+          </>
+        )}
+      </>
+    );
+  };
+
+  const followUpView = (rowData: any, index: number, type: string) => {
+    console.log('followUpView', rowData);
+
+    return (
+      <>
+        <View
+          style={{
+            backgroundColor: 'transparent',
+            width: 282,
+            borderRadius: 10,
+            marginVertical: 2,
+            alignSelf: 'flex-start',
+          }}
+        >
+          {leftComponent === 1 && (
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                bottom: 0,
+                position: 'absolute',
+                left: 0,
+              }}
+            >
+              <Mascot
                 style={{
                   width: 32,
                   height: 32,
@@ -1270,255 +1312,245 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   position: 'absolute',
                   left: 0,
                 }}
-              >
-                <Mascot
-                  style={{
-                    width: 32,
-                    height: 32,
-                    bottom: 0,
-                    position: 'absolute',
-                    left: 0,
-                  }}
-                />
-              </View>
-            )}
-            <View
+              />
+            </View>
+          )}
+          <View
+            style={{
+              width: 244,
+              height: 176,
+              backgroundColor: '#0087ba',
+              marginLeft: 38,
+              borderRadius: 10,
+              // marginTop: 16,
+              marginBottom: 4,
+            }}
+          >
+            <Text
               style={{
-                width: 244,
-                height: 176,
-                backgroundColor: '#0087ba',
-                marginLeft: 38,
-                borderRadius: 10,
-                // marginTop: 16,
-                marginBottom: 4,
+                marginHorizontal: 16,
+                marginTop: 12,
+                color: 'white',
+                lineHeight: 22,
+                ...theme.fonts.IBMPlexSansMedium(15),
               }}
             >
+              {`Hello ${userName},\nHope your consultation went well… Here is your prescription.`}
+            </Text>
+            <StickyBottomComponent
+              style={{
+                paddingHorizontal: 0,
+                backgroundColor: 'transparent',
+                shadowColor: 'transparent',
+              }}
+            >
+              <Button
+                title={'DOWNLOAD'}
+                style={{
+                  flex: 0.5,
+                  marginLeft: 16,
+                  marginRight: 5,
+                  backgroundColor: '#0087ba',
+                  borderWidth: 2,
+                  borderColor: '#fcb715',
+                }}
+                titleTextStyle={{ color: 'white' }}
+                onPress={() => {
+                  try {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'PDF Url');
+
+                    console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
+
+                    let dirs = RNFetchBlob.fs.dirs;
+                    console.log('dirs', dirs);
+                    if (Platform.OS == 'ios') {
+                    }
+
+                    console.log(
+                      'pdf downloadDest',
+                      rowData.transferInfo &&
+                        rowData.transferInfo.pdfUrl &&
+                        rowData.transferInfo.pdfUrl.split('/').pop()
+                    );
+
+                    setLoading(true);
+                    RNFetchBlob.config({
+                      fileCache: true,
+                      addAndroidDownloads: {
+                        useDownloadManager: true,
+                        notification: false,
+                        mime: 'application/pdf',
+                        path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
+                        description: 'File downloaded by download manager.',
+                      },
+                    })
+                      .fetch('GET', rowData.transferInfo.pdfUrl, {
+                        //some headers ..
+                      })
+                      .then((res) => {
+                        setLoading(false);
+                        // the temp file path
+                        console.log('The file saved to res ', res);
+                        console.log('The file saved to ', res.path());
+                        saveimageIos(rowData.transferInfo.pdfUrl);
+                        // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                        // RNFetchBlob.ios.openDocument(res.path());
+                        if (Platform.OS === 'android') {
+                          Alert.alert('Download Complete');
+                        }
+                        Platform.OS === 'ios'
+                          ? RNFetchBlob.ios.previewDocument(res.path())
+                          : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
+                      })
+                      .catch((err) => {
+                        console.log('error ', err);
+                        setLoading(false);
+                        // ...
+                      });
+                  } catch (error) {}
+                }}
+              />
+
+              <Button
+                title={'VIEW'}
+                style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
+                onPress={() => {
+                  try {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Navigate to consult details');
+
+                    console.log('Followupdata', rowData.transferInfo.caseSheetId);
+                    console.log('rowdata', rowData);
+                    props.navigation.navigate(AppRoutes.ConsultDetails, {
+                      CaseSheet: rowData.transferInfo.appointmentId,
+                      DoctorInfo: rowData.transferInfo.doctorInfo,
+                      PatientId: appointmentData.patientId,
+                      appointmentType: appointmentData.appointmentType,
+                      DisplayId: '',
+                      BlobName:
+                        rowData.transferInfo &&
+                        rowData.transferInfo.pdfUrl &&
+                        rowData.transferInfo.pdfUrl.split('/').pop(),
+                    });
+                  } catch (error) {}
+                }}
+              />
+            </StickyBottomComponent>
+          </View>
+          <View
+            style={{
+              width: 244,
+              height: 206,
+              backgroundColor: '#0087ba',
+              marginLeft: 38,
+              borderRadius: 10,
+              marginBottom: 4,
+            }}
+          >
+            <Text
+              style={{
+                color: 'white',
+                lineHeight: 22,
+                ...theme.fonts.IBMPlexSansMedium(15),
+                textAlign: 'left',
+                marginHorizontal: 16,
+                marginTop: 12,
+              }}
+            >
+              I’ve also scheduled a{' '}
               <Text
                 style={{
-                  marginHorizontal: 16,
-                  marginTop: 12,
                   color: 'white',
                   lineHeight: 22,
-                  ...theme.fonts.IBMPlexSansMedium(15),
+                  ...theme.fonts.IBMPlexSansBold(15),
+                  textAlign: 'left',
                 }}
               >
-                {`Hello ${userName},\nHope your consultation went well… Here is your prescription.`}
+                free follow-up{' '}
               </Text>
-              <StickyBottomComponent
-                style={{
-                  paddingHorizontal: 0,
-                  backgroundColor: 'transparent',
-                  shadowColor: 'transparent',
-                }}
-              >
-                <Button
-                  title={'DOWNLOAD'}
-                  style={{
-                    flex: 0.5,
-                    marginLeft: 16,
-                    marginRight: 5,
-                    backgroundColor: '#0087ba',
-                    borderWidth: 2,
-                    borderColor: '#fcb715',
-                  }}
-                  titleTextStyle={{ color: 'white' }}
-                  onPress={() => {
-                    try {
-                      CommonLogEvent(AppRoutes.ChatRoom, 'PDF Url');
-
-                      console.log('pdf url', rowData.transferInfo && rowData.transferInfo.pdfUrl);
-
-                      let dirs = RNFetchBlob.fs.dirs;
-                      console.log('dirs', dirs);
-                      if (Platform.OS == 'ios') {
-                      }
-
-                      console.log(
-                        'pdf downloadDest',
-                        rowData.transferInfo &&
-                          rowData.transferInfo.pdfUrl &&
-                          rowData.transferInfo.pdfUrl.split('/').pop()
-                      );
-
-                      setLoading(true);
-                      RNFetchBlob.config({
-                        fileCache: true,
-                        addAndroidDownloads: {
-                          useDownloadManager: true,
-                          notification: false,
-                          mime: 'application/pdf',
-                          path: Platform.OS === 'ios' ? dirs.MainBundleDir : dirs.DownloadDir,
-                          description: 'File downloaded by download manager.',
-                        },
-                      })
-                        .fetch('GET', rowData.transferInfo.pdfUrl, {
-                          //some headers ..
-                        })
-                        .then((res) => {
-                          setLoading(false);
-                          // the temp file path
-                          console.log('The file saved to res ', res);
-                          console.log('The file saved to ', res.path());
-                          saveimageIos(rowData.transferInfo.pdfUrl);
-                          // RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                          // RNFetchBlob.ios.openDocument(res.path());
-                          if (Platform.OS === 'android') {
-                            Alert.alert('Download Complete');
-                          }
-                          Platform.OS === 'ios'
-                            ? RNFetchBlob.ios.previewDocument(res.path())
-                            : RNFetchBlob.android.actionViewIntent(res.path(), 'application/pdf');
-                        })
-                        .catch((err) => {
-                          console.log('error ', err);
-                          setLoading(false);
-                          // ...
-                        });
-                    } catch (error) {}
-                  }}
-                />
-
-                <Button
-                  title={'VIEW'}
-                  style={{ flex: 0.5, marginRight: 16, marginLeft: 5 }}
-                  onPress={() => {
-                    try {
-                      CommonLogEvent(AppRoutes.ChatRoom, 'Navigate to consult details');
-
-                      console.log('Followupdata', rowData.transferInfo.caseSheetId);
-                      console.log('rowdata', rowData);
-                      props.navigation.navigate(AppRoutes.ConsultDetails, {
-                        CaseSheet: rowData.transferInfo.appointmentId,
-                        DoctorInfo: rowData.transferInfo.doctorInfo,
-                        PatientId: appointmentData.patientId,
-                        appointmentType: appointmentData.appointmentType,
-                        DisplayId: '',
-                        BlobName:
-                          rowData.transferInfo &&
-                          rowData.transferInfo.pdfUrl &&
-                          rowData.transferInfo.pdfUrl.split('/').pop(),
-                      });
-                    } catch (error) {}
-                  }}
-                />
-              </StickyBottomComponent>
-            </View>
-            <View
-              style={{
-                width: 244,
-                height: 206,
-                backgroundColor: '#0087ba',
-                marginLeft: 38,
-                borderRadius: 10,
-                marginBottom: 4,
-              }}
-            >
               <Text
                 style={{
                   color: 'white',
                   lineHeight: 22,
                   ...theme.fonts.IBMPlexSansMedium(15),
                   textAlign: 'left',
-                  marginHorizontal: 16,
-                  marginTop: 12,
                 }}
               >
-                I’ve also scheduled a{' '}
-                <Text
-                  style={{
-                    color: 'white',
-                    lineHeight: 22,
-                    ...theme.fonts.IBMPlexSansBold(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  free follow-up{' '}
-                </Text>
-                <Text
-                  style={{
-                    color: 'white',
-                    lineHeight: 22,
-                    ...theme.fonts.IBMPlexSansMedium(15),
-                    textAlign: 'left',
-                  }}
-                >
-                  for you —
-                </Text>
+                for you —
               </Text>
-              <View
+            </Text>
+            <View
+              style={{
+                marginHorizontal: 16,
+                marginTop: 9,
+                opacity: 0.5,
+                height: 2,
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 1,
+                borderColor: '#ffffff',
+                overflow: 'hidden',
+              }}
+            />
+            <Text
+              style={{
+                marginHorizontal: 16,
+                marginTop: 9,
+                lineHeight: 22,
+                ...theme.fonts.IBMPlexSansSemiBold(15),
+                color: 'white',
+              }}
+            >
+              {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
+            </Text>
+            <View
+              style={{
+                marginHorizontal: 16,
+                marginTop: 10,
+                opacity: 0.5,
+                height: 2,
+                borderStyle: 'dashed',
+                borderWidth: 1,
+                borderRadius: 1,
+                borderColor: '#ffffff',
+                overflow: 'hidden',
+              }}
+            />
+            <StickyBottomComponent
+              style={{
+                paddingHorizontal: 0,
+                backgroundColor: 'transparent',
+                shadowColor: 'transparent',
+                paddingTop: 13,
+              }}
+            >
+              <Button
+                title={'RESCHEDULE'}
                 style={{
-                  marginHorizontal: 16,
-                  marginTop: 9,
-                  opacity: 0.5,
-                  height: 2,
-                  borderStyle: 'dashed',
-                  borderWidth: 1,
-                  borderRadius: 1,
-                  borderColor: '#ffffff',
-                  overflow: 'hidden',
+                  flex: 0.5,
+                  marginLeft: 16,
+                  marginRight: 5,
+                  backgroundColor: '#0087ba',
+                  borderWidth: 2,
+                  borderColor: '#fcb715',
                 }}
-              />
-              <Text
-                style={{
-                  marginHorizontal: 16,
-                  marginTop: 9,
-                  lineHeight: 22,
-                  ...theme.fonts.IBMPlexSansSemiBold(15),
-                  color: 'white',
-                }}
-              >
-                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
-              </Text>
-              <View
-                style={{
-                  marginHorizontal: 16,
-                  marginTop: 10,
-                  opacity: 0.5,
-                  height: 2,
-                  borderStyle: 'dashed',
-                  borderWidth: 1,
-                  borderRadius: 1,
-                  borderColor: '#ffffff',
-                  overflow: 'hidden',
-                }}
-              />
-              <StickyBottomComponent
-                style={{
-                  paddingHorizontal: 0,
-                  backgroundColor: 'transparent',
-                  shadowColor: 'transparent',
-                  paddingTop: 13,
-                }}
-              >
-                <Button
-                  title={'RESCHEDULE'}
-                  style={{
-                    flex: 0.5,
-                    marginLeft: 16,
-                    marginRight: 5,
-                    backgroundColor: '#0087ba',
-                    borderWidth: 2,
-                    borderColor: '#fcb715',
-                  }}
-                  titleTextStyle={{ color: 'white' }}
-                  onPress={() => {
-                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
+                titleTextStyle={{ color: 'white' }}
+                onPress={() => {
+                  CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
 
-                    console.log('Button Clicked');
-                    checkIfReschduleApi(rowData, 'Followup');
-                    NextAvailableSlot(rowData, 'Followup');
-                    setCheckReschudule(true);
-                    setTransferData(rowData.transferInfo);
-                    setTimeout(() => {
-                      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
-                    }, 200);
-                  }}
-                />
-              </StickyBottomComponent>
-            </View>
-            {checkReschudule && reschduleLoadView(rowData, index, 'Followup')}
+                  console.log('Button Clicked');
+                  checkIfReschduleApi(rowData, 'Followup');
+                  NextAvailableSlot(rowData, 'Followup');
+                  setCheckReschudule(true);
+                  setTransferData(rowData.transferInfo);
+                  setTimeout(() => {
+                    flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
+                  }, 200);
+                }}
+              />
+            </StickyBottomComponent>
           </View>
-        )}
+          {checkReschudule && reschduleLoadView(rowData, index, 'Followup')}
+        </View>
       </>
     );
   };
@@ -1547,7 +1579,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
           >
             {newRescheduleCount && newRescheduleCount!.rescheduleCount < 3
-              ? 'We’re sorry that you have to reschedule. You can reschedule up to 3 times for free.'
+              ? `We’re sorry that you have to reschedule. You can reschedule up to ${newRescheduleCount} times for free.`
               : `Since you hace already rescheduled 3 times with ${appointmentData.doctorInfo.displayName}, we will consider this a new paid appointment.`}
           </Text>
         </View>
@@ -1572,7 +1604,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
             }}
           >
             Next slot for {appointmentData.doctorInfo.displayName} is available on —
-            {/* Next slot for Dr. {rowData.transferInfo.doctorInfo.firstName} is available on — */}
           </Text>
           <View
             style={{
@@ -1633,7 +1664,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               onPress={() => {
                 if (type === 'Followup') {
                   CommonLogEvent(AppRoutes.ChatRoom, 'Display Overlay');
-
+                  checkIfReschduleApi(rowData, 'Followup');
                   setdisplayoverlay(true);
                 } else {
                   // props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -1668,6 +1699,20 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                       initiatedId: patientId,
                       patientId: patientId,
                       rescheduledId: '',
+                    };
+                    console.log('bookRescheduleInput', bookRescheduleInput);
+                    rescheduleAPI(rowData, bookRescheduleInput);
+                  } else if (type === 'Reschedule') {
+                    const bookRescheduleInput = {
+                      appointmentId: rowData.transferInfo.appointmentId,
+                      doctorId: rowData.transferInfo.transferDateTime
+                        ? rowData.transferInfo.doctorInfo.id
+                        : rowData.transferInfo.doctorId,
+                      newDateTimeslot: nextSlotAvailable,
+                      initiatedBy: TRANSFER_INITIATED_TYPE.DOCTOR,
+                      initiatedId: patientId,
+                      patientId: patientId,
+                      rescheduledId: rowData.transferInfo.reschduleId,
                     };
                     console.log('bookRescheduleInput', bookRescheduleInput);
                     rescheduleAPI(rowData, bookRescheduleInput);
@@ -1860,7 +1905,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                 </Text>
               ) : null}
             </View>
-          ) : rowData.message === '^^#stopconsult' ? (
+          ) : rowData.message === stopConsultJr ? (
             <View
               style={{
                 backgroundColor: '#0087ba',
@@ -2161,39 +2206,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     );
   };
 
-  const doctorCancelConsultAutomatedMessage = (rowData: any, index: number) => {
-    return (
-      <View
-        style={{
-          backgroundColor: '#0087ba',
-          marginLeft: 38,
-          borderRadius: 10,
-          marginBottom: 4,
-          width: 244,
-        }}
-      >
-        <Text
-          style={{
-            color: '#ffffff',
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            ...theme.fonts.IBMPlexSansMedium(15),
-            textAlign: 'left',
-          }}
-        >
-          Doctor has ended cancelled your appointment. Please rebook it again
-        </Text>
-        <Button
-          title={'Okay'}
-          style={{ flex: 0.4, marginRight: 16, marginLeft: 5 }}
-          onPress={() => {
-            console.log('Cancel okay clicked');
-          }}
-        />
-      </View>
-    );
-  };
-
   const renderChatRow = (
     rowData: { id: string; message: string; duration: string; transferInfo: any; url: any },
     index: number
@@ -2203,7 +2215,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       rowData.message === endCallMsg ||
       rowData.message === audioCallMsg ||
       rowData.message === videoCallMsg ||
-      rowData.message === acceptedCallMsg
+      rowData.message === acceptedCallMsg ||
+      rowData.message === stopConsultMsg
     ) {
       return null;
     }
@@ -2239,8 +2252,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                     rowData.message === languageQue ||
                     rowData.message === jdThankyou ? (
                     <>{doctorAutomatedMessage(rowData, index)}</>
-                  ) : rowData.message === cancelConsultInitiated ? (
-                    <>{doctorCancelConsultAutomatedMessage(rowData, index)}</>
                   ) : (
                     <>{messageView(rowData, index)}</>
                   )}
@@ -3714,7 +3725,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
                   const uploadUrlscheck = data.downloadDocuments.downloadPaths;
                   console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
                   if (uploadUrlscheck!.length > 0) {
-                    uploadUrlscheck!.map((item) => {
+                    uploadUrlscheck!.map((item: any) => {
                       //console.log(item, 'showitem');
                       const text = {
                         id: patientId,
@@ -4136,6 +4147,45 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
+      {showPopup && (
+        <BottomPopUp
+          title={`Hi ${(currentPatient && currentPatient.firstName) || ''}`}
+          description={`we’re really sorry. ${appointmentData.doctorInfo.displayName} will not be able to make it for this appointment. Any payment that you have made for this consultation would be refunded in 2-4 working days. We request you to please book appointment with any of our other Apollo certified doctors`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              style={{
+                height: 60,
+                paddingRight: 25,
+                backgroundColor: 'transparent',
+              }}
+              onPress={() => {
+                setBottompopup(false);
+                props.navigation.dispatch(
+                  StackActions.reset({
+                    index: 0,
+                    key: null,
+                    actions: [
+                      NavigationActions.navigate({
+                        routeName: AppRoutes.TabBar,
+                      }),
+                    ],
+                  })
+                );
+              }}
+            >
+              <Text
+                style={{
+                  paddingTop: 16,
+                  ...theme.viewStyles.yellowTextStyle,
+                }}
+              >
+                OK, GOT IT
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
       {displayoverlay && transferData && (
         <OverlayRescheduleView
           setdisplayoverlay={() => setdisplayoverlay(false)}
@@ -4155,57 +4205,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           isfollowupcount={0}
         />
       )}
-      <View>
-        {/* {isDropdownVisible == true ? (
-          <View
-            style={{
-              width: 200,
-              bottom: dropDownBottomStyle,
-              position: 'absolute',
-              left: 15,
-              shadowColor: '#808080',
-              shadowOffset: { width: 0, height: 5 },
-              shadowOpacity: 0.4,
-              shadowRadius: 20,
-              elevation: 25,
-              zIndex: 2,
-            }}
-          >
-            <DropDown
-              cardContainer={{
-                elevation: 25,
-              }}
-              options={[
-                {
-                  optionText: 'Camera',
-                  onPress: () => {
-                    try {
-                      setDropdownVisible(false);
-                      Keyboard.dismiss();
-                      ImagePicker.launchCamera(options, (response) => {
-                        uploadDocument(response);
-                      });
-                    } catch (error) {}
-                  },
-                },
-                {
-                  optionText: 'Gallery',
-                  onPress: () => {
-                    try {
-                      setDropdownVisible(false);
-                      Keyboard.dismiss();
-                      ImagePicker.launchImageLibrary(options, (response) => {
-                        console.log('response', response);
-                        uploadDocument(response);
-                      });
-                    } catch (error) {}
-                  },
-                },
-              ]}
-            />
-          </View>
-        ) : null} */}
-      </View>
+      <View></View>
 
       {uploadPrescriptionPopup()}
       {renderPrescriptionModal()}
