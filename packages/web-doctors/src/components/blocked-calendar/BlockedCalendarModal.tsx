@@ -29,11 +29,16 @@ import {
   ADD_BLOCKED_CALENDAR_ITEM,
   GET_BLOCKED_CALENDAR,
   UPDATE_BLOCKED_CALENDAR_ITEM,
+  BLOCK_MULTIPLE_CALENDAR_ITEMS,
 } from 'graphql/doctors';
 import {
   AddBlockedCalendarItem,
   AddBlockedCalendarItemVariables,
 } from 'graphql/types/AddBlockedCalendarItem';
+import {
+  BlockMultipleCalendarItems,
+  BlockMultipleCalendarItemsVariables,
+} from 'graphql/types/BlockMultipleCalendarItems';
 import React, { useState, useEffect } from 'react';
 import { Mutation } from 'react-apollo';
 import { format, parse } from 'date-fns';
@@ -883,100 +888,138 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
         >
           CANCEL
         </Button>
-        <Mutation<UpdateBlockedCalendarItem, UpdateBlockedCalendarItemVariables>
-          mutation={UPDATE_BLOCKED_CALENDAR_ITEM}
+
+        <Mutation<BlockMultipleCalendarItems, BlockMultipleCalendarItemsVariables>
+          mutation={BLOCK_MULTIPLE_CALENDAR_ITEMS}
           onCompleted={() => handleSubmitComplete()}
         >
-          {(updateBlockedCalendarItem, { loading: updateLoading }) => (
-            <Mutation<AddBlockedCalendarItem, AddBlockedCalendarItemVariables>
-              mutation={ADD_BLOCKED_CALENDAR_ITEM}
+          {(BlockMultipleCalendarItems, { loading: multipleLoading }) => (
+            <Mutation<UpdateBlockedCalendarItem, UpdateBlockedCalendarItemVariables>
+              mutation={UPDATE_BLOCKED_CALENDAR_ITEM}
               onCompleted={() => handleSubmitComplete()}
             >
-              {(addBlockedCalendarItem, { loading: addLoading }) => {
-                const loading = addLoading || updateLoading;
-                return (
-                  <Button
-                    type="submit"
-                    disabled={loading || invalid}
-                    variant="contained"
-                    onClick={() => {
-                      //2019-10-18 2019-10-18
-                      //console.log(start, end);
-                      const startDate = parse(start, 'yyyy-MM-dd', new Date());
-                      const endDate = parse(end, 'yyyy-MM-dd', new Date());
-                      //console.log(startDate, endDate);
-                      if (selectedBlockOption === 'consulthours' && chackedSingleValue) {
-                        const [startHours, startMins] = chackedSingleValue.startTime.split(':');
-                        startDate.setHours(parseInt(startHours, 10));
-                        startDate.setMinutes(parseInt(startMins, 10));
-                        const [endHours, endMins] = chackedSingleValue.endTime.split(':');
-                        endDate.setHours(parseInt(endHours, 10));
-                        endDate.setMinutes(parseInt(endMins, 10));
-                      }
-                      if (durationSelected) {
-                        startDate.setHours(0);
-                        startDate.setMinutes(0);
-                        endDate.setHours(23);
-                        endDate.setMinutes(59);
-                      } else {
-                        if (startTime && endTime) {
-                          const [startHours, startMins] = startTime.split(':');
-                          startDate.setHours(parseInt(startHours, 10));
-                          startDate.setMinutes(parseInt(startMins, 10));
-                          const [endHours, endMins] = endTime.split(':');
-                          endDate.setHours(parseInt(endHours, 10));
-                          endDate.setMinutes(parseInt(endMins, 10));
-                        } else {
-                          startDate.setHours(0);
-                          startDate.setMinutes(0);
-                          endDate.setHours(23);
-                          endDate.setMinutes(59);
-                        }
-                      }
-                      const addArgs = {
-                        refetchQueries: [
-                          {
-                            query: GET_BLOCKED_CALENDAR,
-                            variables: { doctorId },
-                          },
-                        ],
-                        awaitRefetchQueries: true,
-                        variables: {
-                          doctorId,
-                          start: startDate.toISOString(),
-                          end: endDate.toISOString(),
-                          reason: blockReason,
-                        },
-                      };
-                      const handleError = (error: ApolloError) => {
-                        const networkErrorMessage = error.networkError
-                          ? error.networkError.message
-                          : null;
-                        const allMessages = error.graphQLErrors
-                          .map((e) => e.message)
-                          .concat(networkErrorMessage ? networkErrorMessage : []);
-                        const isOverlapError = allMessages.includes(
-                          AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS
-                        );
-                        setIsOverlapError(isOverlapError);
-                      };
-                      const isUpdate = item && item.id != null;
-                      //console.log(addArgs);
-                      if (isUpdate) {
-                        const updateArgs = {
-                          ...addArgs,
-                          variables: { ...addArgs.variables, id: item!.id },
-                        };
-                        updateBlockedCalendarItem(updateArgs).catch(handleError);
-                      } else {
-                        addBlockedCalendarItem(addArgs).catch(handleError);
-                      }
-                    }}
-                  >
-                    {loading && <CircularProgress size={20} />} BLOCK CALENDAR
-                  </Button>
-                );
-              }}
+              {(updateBlockedCalendarItem, { loading: updateLoading }) => (
+                <Mutation<AddBlockedCalendarItem, AddBlockedCalendarItemVariables>
+                  mutation={ADD_BLOCKED_CALENDAR_ITEM}
+                  onCompleted={() => handleSubmitComplete()}
+                >
+                  {(addBlockedCalendarItem, { loading: addLoading }) => {
+                    const loading = addLoading || updateLoading || multipleLoading;
+                    return (
+                      <Button
+                        type="submit"
+                        disabled={loading || invalid}
+                        variant="contained"
+                        onClick={() => {
+                          //2019-10-18 2019-10-18
+                          //console.log(start, end);
+                          const startDate = parse(start, 'yyyy-MM-dd', new Date());
+                          const endDate = parse(end, 'yyyy-MM-dd', new Date());
+                          //console.log(startDate, endDate);
+
+                          if (durationSelected) {
+                            startDate.setHours(0);
+                            startDate.setMinutes(0);
+                            endDate.setHours(23);
+                            endDate.setMinutes(59);
+                          } else if (selectedBlockOption === 'entireday') {
+                            if (startTime && endTime) {
+                              const [startHours, startMins] = startTime.split(':');
+                              startDate.setHours(parseInt(startHours, 10));
+                              startDate.setMinutes(parseInt(startMins, 10));
+                              const [endHours, endMins] = endTime.split(':');
+                              endDate.setHours(parseInt(endHours, 10));
+                              endDate.setMinutes(parseInt(endMins, 10));
+                            } else {
+                              startDate.setHours(0);
+                              startDate.setMinutes(0);
+                              endDate.setHours(23);
+                              endDate.setMinutes(59);
+                            }
+                          }
+                          const addArgs = {
+                            refetchQueries: [
+                              {
+                                query: GET_BLOCKED_CALENDAR,
+                                variables: { doctorId },
+                              },
+                            ],
+                            awaitRefetchQueries: true,
+                            variables: {
+                              doctorId,
+                              start: startDate.toISOString(),
+                              end: endDate.toISOString(),
+                              reason: blockReason,
+                            },
+                          };
+                          const handleError = (error: ApolloError) => {
+                            const networkErrorMessage = error.networkError
+                              ? error.networkError.message
+                              : null;
+                            const allMessages = error.graphQLErrors
+                              .map((e) => e.message)
+                              .concat(networkErrorMessage ? networkErrorMessage : []);
+                            const isOverlapError = allMessages.includes(
+                              AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS
+                            );
+                            setIsOverlapError(isOverlapError);
+                          };
+                          const isUpdate = item && item.id != null;
+                          //console.log(addArgs);
+                          if (isUpdate) {
+                            const updateArgs = {
+                              ...addArgs,
+                              variables: { ...addArgs.variables, id: item!.id },
+                            };
+                            updateBlockedCalendarItem(updateArgs).catch(handleError);
+                          } else if (selectedBlockOption === 'consulthours') {
+                            if (selectedBlockOption === 'consulthours' && chackedSingleValue) {
+                              const [startHours, startMins] = chackedSingleValue.startTime.split(
+                                ':'
+                              );
+                              startDate.setHours(parseInt(startHours, 10));
+                              startDate.setMinutes(parseInt(startMins, 10));
+                              const [endHours, endMins] = chackedSingleValue.endTime.split(':');
+                              endDate.setHours(parseInt(endHours, 10));
+                              endDate.setMinutes(parseInt(endMins, 10));
+                            }
+                            const addMultiArgs = {
+                              refetchQueries: [
+                                {
+                                  query: GET_BLOCKED_CALENDAR,
+                                  variables: { doctorId },
+                                },
+                              ],
+                              awaitRefetchQueries: true,
+                              variables: {
+                                blockCalendarInputs: {
+                                  doctorId,
+                                  reason: blockReason,
+                                  itemDetails: [
+                                    {
+                                      start: startDate.toISOString(),
+                                      end: endDate.toISOString(),
+                                      consultMode: chackedSingleValue.cosultMode,
+                                    },
+                                  ],
+                                },
+                              },
+                            };
+
+                            BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                          } else if (selectedBlockOption === 'customtime') {
+                            addBlockedCalendarItem(addArgs).catch(handleError);
+                          } else {
+                            addBlockedCalendarItem(addArgs).catch(handleError);
+                          }
+                        }}
+                      >
+                        {loading && <CircularProgress size={20} />} BLOCK CALENDAR
+                      </Button>
+                    );
+                  }}
+                </Mutation>
+              )}
             </Mutation>
           )}
         </Mutation>
