@@ -587,7 +587,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
       .then((response) => {
         const addrComponents = g(response, 'data', 'result', 'address_components') || [];
         const coordinates = g(response, 'data', 'result', 'geometry', 'location')! || {};
-
         const city =
           findAddrComponents('locality', addrComponents) ||
           findAddrComponents('administrative_area_level_2', addrComponents);
@@ -597,7 +596,6 @@ export const DoctorSearchListing: React.FC<DoctorSearchListingProps> = (props) =
         ) {
           clearCartInfo && clearCartInfo();
         }
-
         if (addrComponents.length > 0) {
           setcurrentLocation(item.name);
           setshowSpinner(true);

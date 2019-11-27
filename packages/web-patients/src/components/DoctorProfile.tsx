@@ -33,6 +33,9 @@ const useStyles = makeStyles((theme: Theme) => {
     doctorImage: {
       borderRadius: '5px 5px 0 0',
       overflow: 'hidden',
+      '& img': {
+        maxWidth: '100%',
+      },
     },
     doctorInfo: {
       padding: '20px 5px 0 20px',
@@ -320,8 +323,6 @@ export const DoctorProfile: React.FC<DoctorProfileProps> = (props) => {
           <div className={classes.doctorImage}>
             <img
               src={profileImage || 'https://via.placeholder.com/328x138'}
-              width="330"
-              height="300"
               alt={firstName || ''}
             />
           </div>

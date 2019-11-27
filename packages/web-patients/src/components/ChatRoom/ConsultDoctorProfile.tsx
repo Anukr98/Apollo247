@@ -1,4 +1,4 @@
-import { Theme } from '@material-ui/core';
+import { Theme, Typography, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
@@ -21,6 +21,10 @@ import _startCase from 'lodash/startCase';
 import _toLower from 'lodash/toLower';
 import { clientRoutes } from 'helpers/clientRoutes';
 import formatDistanceStrict from 'date-fns/formatDistance';
+import { REQUEST_ROLES } from 'graphql/types/globalTypes';
+import { useMutation } from 'react-apollo-hooks';
+import { cancelAppointment, cancelAppointmentVariables } from 'graphql/types/cancelAppointment';
+import { CANCEL_APPOINTMENT } from 'graphql/profiles';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -259,6 +263,7 @@ const useStyles = makeStyles((theme: Theme) => {
     hideMore: {
       display: 'none',
     },
+
     canelAppointmentBtn: {
       position: 'absolute',
       right: 10,
@@ -275,6 +280,57 @@ const useStyles = makeStyles((theme: Theme) => {
         justifyContent: 'left',
       },
     },
+
+    bottomPopover: {
+      overflow: 'initial',
+      backgroundColor: 'transparent',
+      boxShadow: 'none',
+      [theme.breakpoints.down('xs')]: {
+        left: '0px !important',
+        maxWidth: '100%',
+        width: '100%',
+        top: '38px !important',
+      },
+    },
+    successPopoverWindow: {
+      display: 'flex',
+      marginRight: 5,
+      marginBottom: 5,
+    },
+    windowWrap: {
+      width: 368,
+      borderRadius: 10,
+      paddingTop: 36,
+      boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
+      backgroundColor: theme.palette.common.white,
+    },
+    mascotIcon: {
+      position: 'absolute',
+      right: 12,
+      top: -40,
+      '& img': {
+        maxWidth: 72,
+      },
+    },
+    actions: {
+      padding: '10px 20px 20px 20px',
+      display: 'flex',
+      '& button': {
+        borderRadius: 10,
+        minWidth: 156,
+        '&:first-child': {
+          color: '#fc9916',
+        },
+        '&:last-child': {
+          marginLeft: 'auto',
+        },
+      },
+    },
+    windowBody: {
+      padding: 20,
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
   };
 });
 
@@ -288,11 +344,12 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
   const classes = useStyles({});
 
   const { doctorDetails, appointmentId, hasDoctorJoined } = props;
-  const { allCurrentPatients } = useAllCurrentPatients();
   const currentDate = new Date().toISOString().substring(0, 10);
 
   const [showMore, setShowMore] = useState<boolean>(true);
   const [moreOrLessMessage, setMoreOrLessMessage] = useState<string>('MORE');
+
+  const [showCancelPopup, setShowCancelPopup] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const patientId = currentPatient ? currentPatient.id : '';
@@ -334,16 +391,8 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
 
   // redirect the user to consult room if any mismatch in appointment id.
   if (appointmentDetails.length === 0) {
-    window.location.href = clientRoutes.consultRoom();
+    window.location.href = clientRoutes.appointments();
   }
-
-  // console.log(
-  //   '--------------->>>>>>>>>>>>>>>',
-  //   appointmentDetails,
-  //   data && data.getPatinetAppointments.patinetAppointments
-  // );
-
-  // console.log(doctorDetails, '................');
 
   const firstName =
     doctorDetails && doctorDetails.getDoctorDetailsById
@@ -416,14 +465,39 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
     });
   }
 
-  // console.log(difference, 'difference in minutes.....');
-
   const otherDateMarkup = (appointmentTime: number) => {
     if (isTomorrow(new Date(appointmentTime))) {
       return `Tomorrow ${format(new Date(appointmentTime), 'h:mm a')}`;
     } else {
       return format(new Date(appointmentTime), 'dd MMM yyyy, h:mm a');
     }
+  };
+
+  const cancelMutation = useMutation<cancelAppointment, cancelAppointmentVariables>(
+    CANCEL_APPOINTMENT,
+    {
+      variables: {
+        cancelAppointmentInput: {
+          appointmentId: appointmentId,
+          cancelReason: '',
+          cancelledBy: REQUEST_ROLES.PATIENT,
+          cancelledById: patientId,
+        },
+      },
+      fetchPolicy: 'no-cache',
+    }
+  );
+
+  const cancelAppointmentApi = () => {
+    cancelMutation()
+      .then((data: any) => {
+        setShowCancelPopup(false);
+        window.location.href = clientRoutes.appointments();
+      })
+      .catch((e: string) => {
+        setShowCancelPopup(false);
+        alert(`Error occured while cancelling the appointment, ${e}`);
+      });
   };
 
   return (
@@ -440,7 +514,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             <img src={require('images/ic_more.svg')} alt="" />
           </div>
           <div className={classes.canelAppointmentBtn}>
-            <AphButton>Cancel Appointment</AphButton>
+            <AphButton onClick={() => setShowCancelPopup(true)}>Cancel Appointment</AphButton>
           </div>
         </div>
         <div className={classes.doctorInfo}>
@@ -601,6 +675,42 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           {/* <AphButton fullWidth>Reschedule</AphButton> */}
         </div>
       </div>
+      <Popover
+        open={showCancelPopup}
+        // anchorEl={mascotRef.current}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        classes={{ paper: classes.bottomPopover }}
+      >
+        <div className={classes.successPopoverWindow}>
+          <div className={classes.windowWrap}>
+            <div className={classes.mascotIcon}>
+              <img src={require('images/ic_mascot.png')} alt="" />
+            </div>
+            <div className={classes.windowBody}>
+              <Typography variant="h2">
+                {`Hi, ${currentPatient && currentPatient.firstName} :)`}
+              </Typography>
+              <p>
+                Since you're cancelling 15 minutes before your appointment, we'll issuew you a full
+                refund!
+              </p>
+            </div>
+            <div className={classes.actions}>
+              <AphButton>Reschedule Instead</AphButton>
+              <AphButton color="primary" onClick={() => cancelAppointmentApi()}>
+                Cancel Consult
+              </AphButton>
+            </div>
+          </div>
+        </div>
+      </Popover>
     </div>
   );
 };

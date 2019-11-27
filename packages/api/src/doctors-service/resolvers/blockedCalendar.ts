@@ -6,6 +6,7 @@ import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
 import { areIntervalsOverlapping } from 'date-fns';
 import { RescheduleAppointmentDetailsRepository } from 'consults-service/repositories/rescheduleAppointmentDetailsRepository';
+import { ConsultMode } from 'doctors-service/entities';
 
 export const blockedCalendarTypeDefs = gql`
   type BlockedCalendarItem {
@@ -19,6 +20,18 @@ export const blockedCalendarTypeDefs = gql`
     blockedCalendar: [BlockedCalendarItem!]!
   }
 
+  input CalendarItem {
+    start: DateTime!
+    end: DateTime!
+    consultMode: ConsultMode
+  }
+
+  input BlockMultipleItems {
+    doctorId: String!
+    reason: String
+    itemDetails: [CalendarItem]
+  }
+
   extend type Query {
     getBlockedCalendar(doctorId: String!): BlockedCalendarResult!
   }
@@ -28,6 +41,7 @@ export const blockedCalendarTypeDefs = gql`
       doctorId: String!
       start: DateTime!
       end: DateTime!
+      reason: String
     ): BlockedCalendarResult!
     updateBlockedCalendarItem(
       id: Int!
@@ -36,11 +50,7 @@ export const blockedCalendarTypeDefs = gql`
       end: DateTime!
     ): BlockedCalendarResult!
     removeBlockedCalendarItem(id: Int!): BlockedCalendarResult!
-    testInitiateRescheduleAppointment1(
-      doctorId: String!
-      startDate: DateTime!
-      endDate: DateTime!
-    ): Boolean!
+    blockMultipleCalendarItems(blockCalendarInputs: BlockMultipleItems): BlockedCalendarResult!
   }
 `;
 
@@ -49,6 +59,7 @@ type BlockedCalendarItem = {
   doctorId: string;
   start: Date;
   end: Date;
+  reason: string;
 };
 type BlockedCalendarResult = { blockedCalendar: BlockedCalendarItem[] };
 
@@ -83,16 +94,16 @@ const addBlockedCalendarItem: Resolver<
   Omit<BlockedCalendarItem, 'id'>,
   DoctorsServiceContext,
   BlockedCalendarResult
-> = async (parent, { doctorId, start, end }, context) => {
+> = async (parent, { doctorId, start, end, reason }, context) => {
   checkAuth(doctorId, context);
   const { bciRepo } = getRepos(context);
-  const itemToAdd = bciRepo.create({ doctorId, start, end });
+  const itemToAdd = bciRepo.create({ doctorId, start, end, reason });
   const existingItems = await bciRepo.find({ doctorId });
   const overlap = doesItemOverlap(itemToAdd, existingItems);
   if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
   await bciRepo.save(itemToAdd);
 
-  //push notification logic
+  //push notification logic no change
   const rescheduleRepo = context.consultsDb.getCustomRepository(
     RescheduleAppointmentDetailsRepository
   );
@@ -119,7 +130,7 @@ const updateBlockedCalendarItem: Resolver<
   const { bciRepo } = getRepos(context);
   /*const itemToUpdate = await bciRepo.findOneOrFail(id);
   const existingItems = (await bciRepo.find({ doctorId })).filter(
-    (item) => item.id !== itemToUpdate.id
+  (item) => item.id !== itemToUpdate.id
   );
   const overlap = doesItemOverlap(itemToUpdate, existingItems);
   if (overlap) throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);*/
@@ -150,23 +161,79 @@ const removeBlockedCalendarItem: Resolver<
   return { blockedCalendar };
 };
 
-const testInitiateRescheduleAppointment1: Resolver<
-  null,
-  { doctorId: string; startDate: Date; endDate: Date },
-  DoctorsServiceContext,
-  Boolean
-> = async (parent, args, { consultsDb, doctorsDb, patientsDb }) => {
-  const resRepo = consultsDb.getCustomRepository(RescheduleAppointmentDetailsRepository);
+type CalendarItem = {
+  start: Date;
+  end: Date;
+  consultMode: ConsultMode;
+};
 
-  await resRepo.getAppointmentsAndReschedule(
-    args.doctorId,
-    args.startDate,
-    args.endDate,
-    consultsDb,
-    doctorsDb,
-    patientsDb
-  );
-  return true;
+type BlockMultipleItems = {
+  doctorId: string;
+  reason: string;
+  itemDetails: CalendarItem[];
+};
+
+type BlockCalendarInputs = {
+  blockCalendarInputs: BlockMultipleItems;
+};
+
+const blockMultipleCalendarItems: Resolver<
+  null,
+  BlockCalendarInputs,
+  DoctorsServiceContext,
+  BlockedCalendarResult
+> = async (parent, { blockCalendarInputs }, context) => {
+  const { bciRepo } = getRepos(context);
+  checkAuth(blockCalendarInputs.doctorId, context);
+  const doctorId = blockCalendarInputs.doctorId;
+  const reason = blockCalendarInputs.reason;
+  const CalendarItem: BlockedCalendarItem[] = [];
+
+  const overlapCount: number = await checkOverlaps(0);
+
+  if (overlapCount > 0) {
+    throw new AphError(AphErrorMessages.BLOCKED_CALENDAR_ITEM_OVERLAPS);
+  }
+  await bciRepo.save(CalendarItem);
+
+  //push notification starts
+  blockCalendarInputs.itemDetails.forEach(async (item) => {
+    const start = item.start;
+    const end = item.end;
+    const rescheduleRepo = context.consultsDb.getCustomRepository(
+      RescheduleAppointmentDetailsRepository
+    );
+    await rescheduleRepo.getAppointmentsAndReschedule(
+      doctorId,
+      start,
+      end,
+      context.consultsDb,
+      context.doctorsDb,
+      context.patientsDb
+    );
+  });
+  //push notification ends
+
+  const blockedCalendar = await bciRepo.find({ doctorId });
+  return { blockedCalendar };
+
+  function checkOverlaps(overlapCount: number) {
+    let currentIndex = 0;
+    return new Promise<number>(async (resolve, reject) => {
+      blockCalendarInputs.itemDetails.forEach(async (item) => {
+        const start = item.start;
+        const end = item.end;
+        const consultMode = item.consultMode;
+        const itemToAdd = bciRepo.create({ doctorId, start, end, reason, consultMode });
+        CalendarItem.push(itemToAdd);
+        const existingItems = await bciRepo.find({ doctorId });
+        const overlap = doesItemOverlap(itemToAdd, existingItems);
+        if (overlap) overlapCount++;
+        currentIndex++;
+        if (currentIndex == blockCalendarInputs.itemDetails.length) resolve(overlapCount);
+      });
+    });
+  }
 };
 
 export const blockedCalendarResolvers = {
@@ -177,6 +244,6 @@ export const blockedCalendarResolvers = {
     addBlockedCalendarItem,
     updateBlockedCalendarItem,
     removeBlockedCalendarItem,
-    testInitiateRescheduleAppointment1,
+    blockMultipleCalendarItems,
   },
 };

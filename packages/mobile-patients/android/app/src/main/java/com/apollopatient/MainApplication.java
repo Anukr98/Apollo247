@@ -4,7 +4,7 @@ import android.app.Application;
 
 import com.crashlytics.android.Crashlytics;
 import com.facebook.react.ReactApplication;
-import com.bugfender.react.RNBugfenderPackage;
+import com.bugsnag.BugsnagReactNative;
 import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import io.fabric.sdk.android.Fabric;
 import io.github.mr03web.softinputmode.SoftInputModePackage;
@@ -44,7 +44,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new RNBugfenderPackage(),
+            BugsnagReactNative.getPackage(),
             new RNGestureHandlerPackage(),
             new SoftInputModePackage(),
             new PickerPackage(),

@@ -53,8 +53,7 @@ const useStyles = makeStyles((theme: Theme) => {
       color: '#0087ba',
       fontWeight: 500,
       lineHeight: 1.71,
-      paddingTop: 15,
-      paddingBottom: 5,
+      padding: 6,
     },
     buttonActive: {
       backgroundColor: '#00b38e',

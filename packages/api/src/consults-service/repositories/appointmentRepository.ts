@@ -50,6 +50,18 @@ export class AppointmentRepository extends Repository<Appointment> {
     });
   }
 
+  checkPatientCancelledHistory(patientId: string, doctorId: string) {
+    const newStartDate = new Date(format(addDays(new Date(), -8), 'yyyy-MM-dd') + 'T18:30');
+    const newEndDate = new Date(format(new Date(), 'yyyy-MM-dd') + 'T18:30');
+    const whereClause = {
+      patientId,
+      doctorId,
+      cancelledById: patientId,
+      bookingDate: Between(newStartDate, newEndDate),
+    };
+    return this.count({ where: whereClause });
+  }
+
   findByIdAndStatus(id: string, status: STATUS) {
     return this.findOne({
       where: { id, status },
@@ -672,7 +684,12 @@ export class AppointmentRepository extends Repository<Appointment> {
     rescheduleCount: number,
     appointmentState: APPOINTMENT_STATE
   ) {
-    return this.update(id, { appointmentDateTime, rescheduleCount, appointmentState });
+    return this.update(id, {
+      appointmentDateTime,
+      rescheduleCount,
+      appointmentState,
+      status: STATUS.PENDING,
+    });
   }
 
   rescheduleAppointmentByDoctor(
