@@ -70,7 +70,7 @@ const getCurrentPatients: Resolver<
   GetCurrentPatientsResult
 > = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
   let isPrismWorking = 1;
-  /*const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
+  const prismUrl = process.env.PRISM_GET_USERS_URL ? process.env.PRISM_GET_USERS_URL : '';
   const prismHost = process.env.PRISM_HOST ? process.env.PRISM_HOST : '';
   if (prismUrl == '') {
     //throw new AphError(AphErrorMessages.INVALID_PRISM_URL, undefined, {});
@@ -108,9 +108,7 @@ const getCurrentPatients: Resolver<
         isPrismWorking = 0;
       });
   }
-  console.log(uhids, 'uhid', isPrismWorking);*/
-
-  isPrismWorking = 0;
+  console.log(uhids, 'uhid', isPrismWorking);
   const findOrCreatePatient = (
     findOptions: { uhid?: Patient['uhid']; mobileNumber: Patient['mobileNumber'] },
     createOptions: Partial<Patient>
@@ -122,7 +120,7 @@ const getCurrentPatients: Resolver<
     });
   };
   let patientPromises: Object[] = [];
-  /*if (uhids != null && uhids.response != null) {
+  if (uhids != null && uhids.response != null) {
     isPrismWorking = 1;
     //isPatientInPrism = uhids.response && uhids.response.signUpUserData;
     patientPromises = uhids.response!.signUpUserData.map((data) => {
@@ -140,7 +138,7 @@ const getCurrentPatients: Resolver<
     });
   } else {
     isPrismWorking = 0;
-  }*/
+  }
   if (isPrismWorking == 0) {
     patientPromises = [
       findOrCreatePatient(
