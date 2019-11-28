@@ -46,4 +46,32 @@ export class DoctorFavouriteMedicineRepository extends Repository<DoctorsFavouri
       });
     });
   }
+
+  getFavouriteMedicineByName(medicineName: string, doctorId: string) {
+    return this.createQueryBuilder('doctors_favourite_medicine')
+      .where('LOWER(doctorsFavouriteMedicine.medicineName) LIKE :medicineName', {
+        medicineName: `${medicineName}%`,
+      })
+      .andWhere('doctors_favourite_tests.doctor = :doctorId', { doctorId })
+      .getMany()
+      .catch((favouritemMedicineError) => {
+        throw new AphError(AphErrorMessages.GET_DOCTOR_FAVOURITE_MEDICINE_ERROR, undefined, {
+          favouritemMedicineError,
+        });
+      });
+  }
+
+  checkMedicineNameWhileUpdate(medicineName: string, id: string) {
+    return this.createQueryBuilder('doctors_favourite_medicine')
+      .where('LOWER(doctors_favourite_medicine.medicineName) LIKE :medicineName', {
+        medicineName: `${medicineName}%`,
+      })
+      .andWhere('doctors_favourite_medicine.id != :id', { id })
+      .getMany()
+      .catch((favouritemMedicineError) => {
+        throw new AphError(AphErrorMessages.GET_DOCTOR_FAVOURITE_MEDICINE_ERROR, undefined, {
+          favouritemMedicineError,
+        });
+      });
+  }
 }
