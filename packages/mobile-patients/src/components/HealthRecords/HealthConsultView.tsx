@@ -519,13 +519,16 @@ export const HealthConsultView: React.FC<HealthConsultViewProps> = (props) => {
                             'HEALTH_CONSULT_VIEW',
                             'Navigate to Medicine consult details'
                           ),
-                            props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
-                              data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
-                              medicineDate: moment(props.PastData!.quoteDateTime).format(
-                                'DD MMM YYYY'
-                              ),
-                              PrescriptionUrl: props.PastData!.prescriptionImageUrl,
-                            });
+                            console.log('MedicineConsultDetails', props.PastData);
+
+                          props.navigation.navigate(AppRoutes.MedicineConsultDetails, {
+                            data: item, //props.PastData.medicineOrderLineItems, //item, //props.PastData.medicineOrderLineItems[0],
+                            medicineDate: moment(props.PastData!.quoteDateTime).format(
+                              'DD MMM YYYY'
+                            ),
+                            PrescriptionUrl: props.PastData!.prescriptionImageUrl,
+                            prismPrescriptionFileId: props.PastData!.prismPrescriptionFileId,
+                          });
                         }}
                       >
                         <View style={{ flexDirection: 'row' }}>
