@@ -6,9 +6,23 @@
 // START Enums and Input Objects
 //==============================================================
 
+export enum APPOINTMENT_STATE {
+  AWAITING_RESCHEDULE = "AWAITING_RESCHEDULE",
+  AWAITING_TRANSFER = "AWAITING_TRANSFER",
+  NEW = "NEW",
+  RESCHEDULE = "RESCHEDULE",
+  TRANSFER = "TRANSFER",
+  TRANSFERRED = "TRANSFERRED",
+}
+
 export enum APPOINTMENT_TYPE {
   ONLINE = "ONLINE",
   PHYSICAL = "PHYSICAL",
+}
+
+export enum BOOKINGSOURCE {
+  MOBILE = "MOBILE",
+  WEB = "WEB",
 }
 
 export enum ConsultMode {
@@ -20,6 +34,11 @@ export enum ConsultMode {
 export enum ConsultType {
   FIXED = "FIXED",
   PREFERRED = "PREFERRED",
+}
+
+export enum DEVICETYPE {
+  ANDROID = "ANDROID",
+  IOS = "IOS",
 }
 
 export enum DoctorType {
@@ -137,6 +156,9 @@ export interface BookAppointmentInput {
   appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
   hospitalId: string;
+  symptoms?: string | null;
+  bookingSource?: BOOKINGSOURCE | null;
+  deviceType?: DEVICETYPE | null;
 }
 
 export interface CancelAppointmentInput {

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
   WebView,
+  BackHandler,
 } from 'react-native';
 import { NavigationScreenProps } from 'react-navigation';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -17,8 +18,6 @@ import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp'
 import { Header } from '@aph/mobile-patients/src/components/ui/Header';
 import { CheckedIcon, MedicineIcon, UnCheck } from '@aph/mobile-patients/src/components/ui/Icons';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
-import { GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList_medicineOrdersStatus } from '@aph/mobile-patients/src/graphql/types/GetMedicineOrdersList';
-import { MEDICINE_ORDER_STATUS } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   popupButtonStyle: {
@@ -53,6 +52,28 @@ export const PaymentScene: React.FC<PaymentSceneProps> = (props) => {
   const [isRemindMeChecked, setIsRemindMeChecked] = useState(true);
 
   const { getPatientApiCall } = useAuth();
+
+  const handleBack = async () => {
+    Alert.alert('Alert', 'Cancel Order?', [
+      { text: 'No' },
+      { text: 'Yes', onPress: () => props.navigation.goBack() },
+    ]);
+  };
+
+  useEffect(() => {
+    const _didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
+      BackHandler.addEventListener('hardwareBackPress', handleBack);
+    });
+
+    const _willBlurSubscription = props.navigation.addListener('willBlur', (payload) => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBack);
+    });
+
+    return () => {
+      _didFocusSubscription && _didFocusSubscription.remove();
+      _willBlurSubscription && _willBlurSubscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (!currentPatient) {

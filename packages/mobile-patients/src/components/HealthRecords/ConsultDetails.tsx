@@ -48,6 +48,7 @@ import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -137,7 +138,9 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const data = props.navigation.state.params!.DoctorInfo;
   console.log('phr', data);
 
-  const [loading, setLoading] = useState<boolean>(true);
+  // const [loading, setLoading && setLoading] = useState<boolean>(true);
+  const { loading, setLoading } = useUIElements();
+
   const client = useApolloClient();
   const [showsymptoms, setshowsymptoms] = useState<boolean>(true);
   const [showPrescription, setshowPrescription] = useState<boolean>(true);
@@ -168,7 +171,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    setLoading(true);
+    setLoading && setLoading(true);
     client
       .query<getCaseSheet, getCaseSheetVariables>({
         query: GET_CASESHEET_DETAILS,
@@ -178,14 +181,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         },
       })
       .then((_data) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         props.navigation.state.params!.DisplayId = _data.data.getCaseSheet!.caseSheetDetails!.appointment!.displayId;
         setcaseSheetDetails(_data.data.getCaseSheet!.caseSheetDetails!);
       })
       .catch((error) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const errorMessage = error && error.message.split(':')[1].trim();
-        console.log('Error occured while GET_CASESHEET_DETAILS error', errorMessage, error);
+        console.log(errorMessage, 'err');
         if (errorMessage === 'NO_CASESHEET_EXIST') {
           setshowNotExistAlert(true);
         }
@@ -325,14 +328,14 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   const { setCartItems, cartItems, ePrescriptions, setEPrescriptions } = useShoppingCart();
 
   const onAddToCart = () => {
-    setLoading(true);
+    setLoading && setLoading(true);
 
     const medPrescription = caseSheetDetails!.medicinePrescription || [];
     const docUrl = AppConfig.Configuration.DOCUMENT_BASE_URL.concat(caseSheetDetails!.blobName!);
 
     Promise.all(medPrescription.map((item) => getMedicineDetailsApi(item!.id!)))
       .then((result) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const medicines = result
           .map(({ data: { productdp } }, index) => {
             const medicineDetails = (productdp && productdp[0]) || {};
@@ -393,7 +396,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
         props.navigation.push(AppRoutes.YourCart, { isComingFromConsult: true });
       })
       .catch((e) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         console.log({ e });
         Alert.alert('Alert', 'Oops! Something went wrong.');
       });
@@ -713,7 +716,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                       }
                       let dirs = RNFetchBlob.fs.dirs;
 
-                      setLoading(true);
+                      setLoading && setLoading(true);
                       RNFetchBlob.config({
                         fileCache: true,
                         addAndroidDownloads: {
@@ -734,7 +737,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                           }
                         )
                         .then((res) => {
-                          setLoading(false);
+                          setLoading && setLoading(false);
                           if (Platform.OS === 'android') {
                             Alert.alert('Download Complete');
                           }
@@ -744,7 +747,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
                         })
                         .catch((err) => {
                           console.log('error ', err);
-                          setLoading(false);
+                          setLoading && setLoading(false);
                           // ...
                         });
                     }

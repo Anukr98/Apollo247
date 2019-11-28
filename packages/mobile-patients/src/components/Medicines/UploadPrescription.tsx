@@ -151,7 +151,10 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
       'Graph ql call for save prescription medicine order'
     );
     setLoading!(true);
-    const ePresUrls = EPrescriptions.map((item) => item!.prismPrescriptionFileId);
+    const ePresUrls = EPrescriptions.map((item) => {
+      return item!.prismPrescriptionFileId;
+    });
+
     console.log('ePresUrls', ePresUrls);
     let ePresAndPhysicalPresUrls = [...ePresUrls];
     console.log(
@@ -195,7 +198,8 @@ export const UploadPrescription: React.FC<UploadPrescriptionProps> = (props) => 
                 .join(',')
                 .split(',')
                 .map((item) => item.trim())
-                .filter((i) => i),
+                .filter((i) => i)
+                .toString(),
             };
             console.log('prescriptionMedicineInput', prescriptionMedicineInput);
             const { _data } = client.mutate<

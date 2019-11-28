@@ -46,6 +46,7 @@ import { MaterialMenu } from '../ui/MaterialMenu';
 import { getDataFromTree } from 'react-apollo';
 import { AddProfile } from '../ui/AddProfile';
 import { ProfileList } from '../ui/ProfileList';
+import { useUIElements } from '../UIElementsProvider';
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
@@ -193,7 +194,9 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [consultations, setconsultations] = useState<
     getPatinetAppointments_getPatinetAppointments_patinetAppointments[]
   >([]);
-  const [showSpinner, setshowSpinner] = useState<boolean>(true);
+
+  const { loading, setLoading } = useUIElements();
+
   const [showSchdulesView, setShowSchdulesView] = useState<boolean>(false);
   const [newAppointmentTime, setNewAppointmentTime] = useState<string>('');
   const [newRescheduleCount, setNewRescheduleCount] = useState<number>(0);
@@ -205,25 +208,27 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
 
   const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
-  useEffect(() => {
-    if (!currentPatient) {
-      console.log('No current patients available');
-      getPatientApiCall();
-      currentPatient && setProfile(currentPatient!);
-    }
-  }, [currentPatient]);
+
+  //Duplicate
+  // useEffect(() => {
+  //   if (!currentPatient) {
+  //     console.log('No current patients available');
+  //     getPatientApiCall();
+  //     currentPatient && setProfile(currentPatient!);
+  //   }
+  // }, [currentPatient]);
 
   const client = useApolloClient();
 
   useEffect(() => {
     const didFocusSubscription = props.navigation.addListener('didFocus', (payload) => {
-      setshowSpinner(true);
+      setLoading && setLoading(true);
       setconsultations([]);
       getNetStatus().then((status) => {
         if (status) {
           fetchAppointments();
         } else {
-          setshowSpinner(false);
+          setLoading && setLoading(false);
           setshowOfflinePopup(true);
         }
       });
@@ -303,7 +308,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
       if (status) {
         fetchAppointments();
       } else {
-        setshowSpinner(false);
+        setLoading && setLoading(false);
         setshowOfflinePopup(true);
       }
     });
@@ -317,6 +322,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   // console.log('inputdata', inputData);
 
   const fetchAppointments = () => {
+    setLoading && setLoading(true);
     console.log('inputdata', inputData);
     client
       .query<getPatinetAppointments>({
@@ -343,7 +349,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
         console.log('Error occured', e);
       })
       .finally(() => {
-        setshowSpinner(false);
+        setLoading && setLoading(false);
       });
   };
 
@@ -903,6 +909,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               }
               selectedProfile={profile}
               setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+              unsetloaderDisplay={true}
             ></ProfileList>
             {/* <MaterialMenu
               onPress={(item) => {
@@ -1238,7 +1245,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
           </View>
         </BottomPopUp>
       )}
-      {showSpinner && <Spinner />}
+      {/* {loading && <Spinner />} */}
       {/* {displayAddProfile && (
         <AddProfile
           setdisplayoverlay={setDisplayAddProfile}

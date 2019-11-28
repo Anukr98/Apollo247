@@ -40,10 +40,12 @@ const downloadDocuments: Resolver<
 
   if (!prismAuthToken) return { downloadPaths: [] };
 
-  const downloadPaths = downloadDocumentsInput.fileIds.map((fileId) => {
-    const fileIdName = fileId.split('_');
-    if (fileId == '') return '';
-    return `${process.env.PRISM_DOWNLOAD_FILE_API}?authToken=${prismAuthToken}&fileId=${fileIdName[0]}&fileName=${fileIdName[1]}`;
+  const downloadPaths = downloadDocumentsInput.fileIds.map((fileIdName) => {
+    if (fileIdName == '') return '';
+    const fileIdNameArray = fileIdName.split('_');
+    const fileId = fileIdNameArray.shift();
+    const fileName = fileIdNameArray.join('_');
+    return `${process.env.PRISM_DOWNLOAD_FILE_API}?authToken=${prismAuthToken}&fileId=${fileId}&fileName=${fileName}`;
   });
 
   return { downloadPaths };

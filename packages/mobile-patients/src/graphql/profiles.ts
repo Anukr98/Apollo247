@@ -1678,3 +1678,11 @@ export const UPLOAD_CHAT_FILE_PRISM = gql`
     }
   }
 `;
+
+export const ADD_PATIENT_FEEDBACK = gql`
+  mutation addPatientFeedback($patientFeedbackInput: PatientFeedbackInput) {
+    addPatientFeedback(patientFeedbackInput: $patientFeedbackInput) {
+      status
+    }
+  }
+`;
