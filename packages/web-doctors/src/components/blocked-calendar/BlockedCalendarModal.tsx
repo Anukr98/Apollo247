@@ -171,6 +171,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
       setInvalid(false);
     } else if (selectedBlockOption === 'customtime') {
       setInvalid(customTimeArray && customTimeArray.length < 1);
+      if (startTime && endTime) {
+        setInvalid(false);
+      }
+      if (customTimeArray && customTimeArray.length > 0) {
+        setInvalid(false);
+      }
     }
   }, [
     selectedBlockOption,
@@ -182,6 +188,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     invalidTime,
     checked,
     customTimeArray,
+    startTime,
+    endTime,
   ]);
   const handleSubmitComplete = () => {
     setStart('');
@@ -1026,12 +1034,12 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                               variables: {
                                 blockCalendarInputs: {
                                   doctorId,
-                                  reason: blockReason,
+                                  reason: '',
                                   itemDetails: [
                                     {
                                       start: startDate.toISOString(),
                                       end: endDate.toISOString(),
-                                      consultMode: chackedSingleValue.cosultMode,
+                                      consultMode: chackedSingleValue.consultMode,
                                     },
                                   ],
                                 },
@@ -1040,46 +1048,50 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
 
                             BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
                           } else if (selectedBlockOption === 'customtime') {
+                            if (startTime && endTime) {
+                              let obj = {
+                                startTime: startTime,
+                                endTime: endTime,
+                              };
+                              customTimeArray.push(obj);
+                            }
                             if (customTimeArray) {
+                              const dateRangeArray: any = [];
                               customTimeArray.map((item: any, index: number) => {
-                                console.log('9999999999999999', item);
+                                const [startHours, startMins] = item.startTime.split(':');
+                                startDate.setHours(parseInt(startHours, 10));
+                                startDate.setMinutes(parseInt(startMins, 10));
+                                const [endHours, endMins] = item.endTime.split(':');
+                                endDate.setHours(parseInt(endHours, 10));
+                                endDate.setMinutes(parseInt(endMins, 10));
+                                let obj = {
+                                  start: startDate.toISOString(),
+                                  end: endDate.toISOString(),
+                                };
+                                dateRangeArray.push(obj);
                               });
 
-                              // const [startHours, startMins] = chackedSingleValue.startTime.split(
-                              //   ':'
-                              // );
-                              // startDate.setHours(parseInt(startHours, 10));
-                              // startDate.setMinutes(parseInt(startMins, 10));
-                              // const [endHours, endMins] = chackedSingleValue.endTime.split(':');
-                              // endDate.setHours(parseInt(endHours, 10));
-                              // endDate.setMinutes(parseInt(endMins, 10));
-                              // }
-                              // const addMultiArgs = {
-                              //   refetchQueries: [
-                              //     {
-                              //       query: GET_BLOCKED_CALENDAR,
-                              //       variables: { doctorId },
-                              //     },
-                              //   ],
-                              //   awaitRefetchQueries: true,
-                              //   variables: {
-                              //     blockCalendarInputs: {
-                              //       doctorId,
-                              //       reason: blockReason,
-                              //       itemDetails: [
-                              //         {
-                              //           start: startDate.toISOString(),
-                              //           end: endDate.toISOString(),
-                              //           consultMode: chackedSingleValue.cosultMode,
-                              //         },
-                              //       ],
-                              //     },
-                              //   },
-                            }
+                              const addMultiArgs = {
+                                refetchQueries: [
+                                  {
+                                    query: GET_BLOCKED_CALENDAR,
+                                    variables: { doctorId },
+                                  },
+                                ],
+                                awaitRefetchQueries: true,
+                                variables: {
+                                  blockCalendarInputs: {
+                                    doctorId,
+                                    reason: '',
+                                    itemDetails: dateRangeArray,
+                                  },
+                                },
+                              };
 
-                            // BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
-                          } else {
-                            addBlockedCalendarItem(addArgs).catch(handleError);
+                              BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
+                            } else {
+                              addBlockedCalendarItem(addArgs).catch(handleError);
+                            }
                           }
                         }}
                       >
