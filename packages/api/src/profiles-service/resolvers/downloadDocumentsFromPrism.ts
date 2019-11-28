@@ -41,10 +41,10 @@ const downloadDocuments: Resolver<
   if (!prismAuthToken) return { downloadPaths: [] };
 
   const downloadPaths = downloadDocumentsInput.fileIds.map((fileIdName) => {
+    if (fileIdName == '') return '';
     const fileIdNameArray = fileIdName.split('_');
     const fileId = fileIdNameArray.shift();
     const fileName = fileIdNameArray.join('_');
-    if (fileIdName == '') return '';
     return `${process.env.PRISM_DOWNLOAD_FILE_API}?authToken=${prismAuthToken}&fileId=${fileId}&fileName=${fileName}`;
   });
 
