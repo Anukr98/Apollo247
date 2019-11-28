@@ -89,6 +89,17 @@ export const ManageProfile: React.FC<ManageProfileProps> = (props) => {
   };
 
   useEffect(() => {
+    setLoading && setLoading(true);
+    if (allCurrentPatients) {
+      setProfiles(allCurrentPatients.filter((item) => item.id !== item.emailAddress));
+      setLoading && setLoading(false);
+    } else {
+      getPatientApiCall();
+      setLoading && setLoading(true);
+    }
+  }, []);
+
+  useEffect(() => {
     // setLoading!(true);
     // client
     //   .query<getPatientByMobileNumber, getPatientByMobileNumberVariables>({
