@@ -1,6 +1,6 @@
 import { Theme, Typography, Popover } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { AphButton } from '@aph/web-ui-components';
 import Scrollbars from 'react-custom-scrollbars';
 import { GetDoctorDetailsById as DoctorDetails } from 'graphql/types/GetDoctorDetailsById';
@@ -44,11 +44,17 @@ const useStyles = makeStyles((theme: Theme) => {
       borderRadius: '5px 5px 0 0',
       overflow: 'hidden',
       position: 'relative',
+      textAlign: 'center',
+      '& img': {
+        maxWidth: '100%',
+        maxHeight: 138,
+      },
     },
     moreProfileActions: {
       position: 'absolute',
       right: 10,
       top: 10,
+      cursor: 'pointer',
       '& img': {
         verticalAlign: 'middle',
       },
@@ -313,14 +319,13 @@ const useStyles = makeStyles((theme: Theme) => {
       },
     },
     actions: {
-      padding: '10px 20px 20px 20px',
+      padding: '0 20px 20px 20px',
       display: 'flex',
       '& button': {
         borderRadius: 10,
-        minWidth: 156,
-        '&:first-child': {
-          color: '#fc9916',
-        },
+        color: '#fc9916',
+        padding: 0,
+        boxShadow: 'none',
         '&:last-child': {
           marginLeft: 'auto',
         },
@@ -330,6 +335,22 @@ const useStyles = makeStyles((theme: Theme) => {
       padding: 20,
       paddingTop: 0,
       paddingBottom: 0,
+      '& p': {
+        fontSize: 17,
+        fontWeight: 500,
+        lineHeight: 1.41,
+        color: theme.palette.secondary.main,
+        marginTop: 20,
+      },
+    },
+    cancelBtn: {
+      textTransform: 'none',
+      color: '#02475b',
+      fontSize: 16,
+      fontWeight: 500,
+    },
+    cancelPopover: {
+      marginTop: -10,
     },
   };
 });
@@ -342,6 +363,9 @@ interface ConsultDoctorProfileProps {
 
 export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props) => {
   const classes = useStyles({});
+
+  const cancelAppointRef = useRef(null);
+  const [isCancelPopoverOpen, setIsCancelPopoverOpen] = React.useState<boolean>(false);
 
   const { doctorDetails, appointmentId, hasDoctorJoined } = props;
   const currentDate = new Date().toISOString().substring(0, 10);
@@ -506,15 +530,14 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         <div className={classes.doctorImage}>
           <img
             src={profileImage !== null ? profileImage : 'https://via.placeholder.com/328x138'}
-            height="300"
-            width="300"
             alt={firstName}
           />
-          <div className={classes.moreProfileActions}>
+          <div
+            onClick={() => setIsCancelPopoverOpen(true)}
+            ref={cancelAppointRef}
+            className={classes.moreProfileActions}
+          >
             <img src={require('images/ic_more.svg')} alt="" />
-          </div>
-          <div className={classes.canelAppointmentBtn}>
-            <AphButton onClick={() => setShowCancelPopup(true)}>Cancel Appointment</AphButton>
           </div>
         </div>
         <div className={classes.doctorInfo}>
@@ -694,20 +717,38 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
               <img src={require('images/ic_mascot.png')} alt="" />
             </div>
             <div className={classes.windowBody}>
-              <Typography variant="h2">Hi, Sankeerth :)</Typography>
+              <Typography variant="h2">hi! :)</Typography>
               <p>
-                Since you're cancelling 15 minutes before your appointment, we'll issuew you a full
+                Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full
                 refund!
               </p>
             </div>
             <div className={classes.actions}>
               <AphButton>Reschedule Instead</AphButton>
-              <AphButton color="primary" onClick={() => cancelAppointmentApi()}>
-                Cancel Consult
-              </AphButton>
+              <AphButton onClick={() => cancelAppointmentApi()}>Cancel Consult</AphButton>
             </div>
           </div>
         </div>
+      </Popover>
+      <Popover
+        open={isCancelPopoverOpen}
+        anchorEl={cancelAppointRef.current}
+        onClose={() => setIsCancelPopoverOpen(false)}
+        classes={{
+          paper: classes.cancelPopover,
+        }}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        <AphButton onClick={() => setShowCancelPopup(true)} className={classes.cancelBtn}>
+          Cancel Appointment
+        </AphButton>
       </Popover>
     </div>
   );
