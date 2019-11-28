@@ -69,8 +69,8 @@ const addDoctorFavouriteTest: Resolver<
   const testInput: Partial<DoctorsFavouriteTests> = { ...args, doctor: doctordata };
   await favouriteTestRepo.saveDoctorFavouriteTest(testInput);
 
-  const FavouriteTestList = await favouriteTestRepo.getDoctorFavouriteTestList(doctordata.id);
-  return { testList: FavouriteTestList };
+  const favouriteTestList = await favouriteTestRepo.getDoctorFavouriteTestList(doctordata.id);
+  return { testList: favouriteTestList };
 };
 
 const deleteDoctorFavouriteTest: Resolver<
@@ -95,8 +95,8 @@ const deleteDoctorFavouriteTest: Resolver<
   //delete test
   await favouriteTestRepo.deleteFavouriteTest(args.testId);
 
-  const FavouriteTestList = await favouriteTestRepo.getDoctorFavouriteTestList(doctordata.id);
-  return { testList: FavouriteTestList };
+  const favouriteTestList = await favouriteTestRepo.getDoctorFavouriteTestList(doctordata.id);
+  return { testList: favouriteTestList };
 };
 
 const updateDoctorFavouriteTest: Resolver<
@@ -119,8 +119,8 @@ const updateDoctorFavouriteTest: Resolver<
   const testInput: Partial<DoctorsFavouriteTests> = { ...args, doctor: doctordata };
   await favouriteTestRepo.saveDoctorFavouriteTest(testInput);
 
-  const FavouriteTestList = await favouriteTestRepo.getDoctorFavouriteTestList(doctordata.id);
-  return { testList: FavouriteTestList };
+  const favouriteTestList = await favouriteTestRepo.getDoctorFavouriteTestList(doctordata.id);
+  return { testList: favouriteTestList };
 };
 
 export const doctorFavouriteTestResolvers = {
