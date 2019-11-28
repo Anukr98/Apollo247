@@ -719,13 +719,14 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
             <div className={classes.windowBody}>
               <Typography variant="h2">hi! :)</Typography>
               <p>
-                Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full
-                refund!
+                Since you’re cancelling 15 minutes before your appointment, we’ll issue you a full refund!
               </p>
             </div>
             <div className={classes.actions}>
               <AphButton>Reschedule Instead</AphButton>
-              <AphButton onClick={() => cancelAppointmentApi()}>Cancel Consult</AphButton>
+              <AphButton onClick={() => cancelAppointmentApi()}>
+                Cancel Consult
+              </AphButton>
             </div>
           </div>
         </div>
@@ -736,7 +737,7 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
         onClose={() => setIsCancelPopoverOpen(false)}
         classes={{
           paper: classes.cancelPopover,
-        }}
+        }}        
         anchorOrigin={{
           vertical: 'top',
           horizontal: 'right',
@@ -746,10 +747,13 @@ export const ConsultDoctorProfile: React.FC<ConsultDoctorProfileProps> = (props)
           horizontal: 'right',
         }}
       >
-        <AphButton onClick={() => setShowCancelPopup(true)} className={classes.cancelBtn}>
+        <AphButton
+          onClick={() => setShowCancelPopup(true)}
+          className={classes.cancelBtn}
+        >
           Cancel Appointment
         </AphButton>
-      </Popover>
+      </Popover>      
     </div>
   );
 };
