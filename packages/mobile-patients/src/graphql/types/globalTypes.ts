@@ -249,7 +249,7 @@ export interface BookAppointmentInput {
   doctorId: string;
   appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string | null;
+  hospitalId: string;
 }
 
 export interface BookFollowUpAppointmentInput {
