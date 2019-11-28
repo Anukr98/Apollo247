@@ -152,6 +152,69 @@ export const Consult: React.FC<ConsultProps> = (props) => {
   const [subscribeToVideo, setSubscribeToVideo] = React.useState(props.isVideoCall ? true : false);
   const { patientDetails } = useContext(CaseSheetContext);
   const apikey = process.env.OPENTOK_KEY;
+  const sessionHandler = {
+    connectionDestroyed: (event: any) => {
+      console.log('session connectionDestroyed', event);
+      props.toggelChatVideo();
+      props.stopAudioVideoCallpatient();
+      setIscall(false);
+    },
+    error: (error: string) => {
+      console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
+    },
+    otrnError: (error: string) => {
+      console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
+    },
+    connectionCreated: (event: string) => {},
+    sessionConnected: (event: string) => {
+      console.log('session stream sessionConnected!', event);
+      //KeepAwake.activate();
+    },
+    sessionDisconnected: (event: string) => {
+      console.log('session stream sessionDisconnected!', event);
+      // eventsAfterConnectionDestroyed();
+      // disconnectCallText();
+    },
+    sessionReconnected: (event: string) => {
+      console.log('session stream sessionReconnected!', event);
+      // KeepAwake.activate();
+    },
+    sessionReconnecting: (event: string) => {
+      console.log('session stream sessionReconnecting!', event);
+      // KeepAwake.activate();
+    },
+    signal: (event: string) => {
+      console.log('session stream signal!', event);
+    },
+  };
+  const publisherHandler = {
+    streamCreated: (event: string) => {
+      console.log('Publisher stream created!', event);
+    },
+    streamDestroyed: (event: string) => {
+      console.log('Publisher stream destroyed!', event);
+    },
+    error: (error: string) => {
+      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
+    },
+    otrnError: (error: string) => {
+      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
+    },
+  };
+  const subscriberHandler = {
+    error: (error: string) => {
+      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+    connected: (event: string) => {
+      console.log('Subscribe stream connected!', event);
+    },
+    disconnected: (event: string) => {
+      console.log('Subscribe stream disconnected!', event);
+    },
+    otrnError: (error: string) => {
+      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
+  };
   return (
     <div className={classes.consult}>
       <div>
@@ -184,13 +247,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
               apiKey={apikey}
               sessionId={props.sessionId}
               token={props.token}
-              eventHandlers={{
-                connectionDestroyed: (event: any) => {
-                  props.toggelChatVideo();
-                  props.stopAudioVideoCallpatient();
-                  setIscall(false);
-                },
-              }}
+              eventHandlers={sessionHandler}
             >
               <OTPublisher
                 className={
@@ -203,6 +260,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                   // subscribeToVideo: subscribeToVideo,
                   // subscribeToAudio: subscribeToAudio,
                 }}
+                eventHandlers={publisherHandler}
               />
 
               <div
@@ -227,10 +285,11 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                 > */}
                 <OTStreams>
                   <OTSubscriber
-                  // properties={{
-                  //   subscribeToVideo: subscribeToVideo,
-                  //   subscribeToAudio: subscribeToAudio,
-                  // }}
+                    // properties={{
+                    //   subscribeToVideo: subscribeToVideo,
+                    //   subscribeToAudio: subscribeToAudio,
+                    // }}
+                    eventHandlers={subscriberHandler}
                   />
                 </OTStreams>
                 {/* </div> */}
