@@ -225,8 +225,8 @@ export const AppLocations: React.FC = (props) => {
           {!isPopoverOpen && selectedAddress.length > 0
             ? selectedAddress
             : !isPopoverOpen && currentLocation && currentLocation.length > 0
-              ? currentLocation
-              : 'No location'}
+            ? currentLocation
+            : 'No location'}
         </span>
       </div>
       <Popover
