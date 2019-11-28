@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
 
-app.get('/consultTransaction', (req, res) => {
+app.get('/consulttransaction', (req, res) => {
   console.log(req.query.CompleteResponse, req.query.ORDERID);
   console.log(req.query.BANKTXNID);
   console.log(req.query.STATUS);
