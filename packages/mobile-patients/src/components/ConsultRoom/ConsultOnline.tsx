@@ -201,17 +201,6 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
     const todayDate = new Date().toISOString().slice(0, 10);
 
     getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
-      // client
-      //   .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
-      //     query: NEXT_AVAILABLE_SLOT,
-      //     variables: {
-      //       DoctorNextAvailableSlotInput: {
-      //         doctorIds:
-      //         availableDate: todayDate,
-      //       },
-      //     },
-      //     fetchPolicy: 'no-cache',
-      //   })
       .then(({ data }: any) => {
         try {
           props.setshowSpinner && props.setshowSpinner(false);

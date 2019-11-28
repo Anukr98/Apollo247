@@ -315,7 +315,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             </TouchableOpacity>
           }
         />
-        {/* <View
+        <View
           style={{
             zIndex: 3,
             position: 'absolute',
@@ -332,7 +332,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           >
             <ApolloLogo />
           </TouchableOpacity>
-        </View> */}
+        </View>
       </>
     );
   };
