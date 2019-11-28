@@ -102,6 +102,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
   const [dateRange, setDateRange] = useState();
   const [chackedSingleValue, setChackedSingleValue] = useState();
   const [checked, setChecked] = useState(false);
+  const [listChecked, setListChecked] = useState(false);
+  const [startEndList, setStartEndList] = useState();
   useEffect(() => {
     setStart(item ? format(item.start, 'yyyy-MM-dd') : '');
     setEnd(item ? format(item.end, 'yyyy-MM-dd') : '');
@@ -162,35 +164,7 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
 
   // let invalid = true;
   const [invalid, setInvalid] = useState(true);
-  useEffect(() => {
-    if (selectedBlockOption === 'entireday') {
-      setInvalid(dateInvalid || timeInvalid || invalidStTime || invalidTime);
-    } else if (selectedBlockOption === 'consulthours' && !chackedSingleValue && !checked) {
-      setInvalid(true);
-    } else if (selectedBlockOption === 'consulthours' && chackedSingleValue && checked) {
-      setInvalid(false);
-    } else if (selectedBlockOption === 'customtime') {
-      setInvalid(customTimeArray && customTimeArray.length < 1);
-      if (startTime && endTime) {
-        setInvalid(false);
-      }
-      if (customTimeArray && customTimeArray.length > 0) {
-        setInvalid(false);
-      }
-    }
-  }, [
-    selectedBlockOption,
-    chackedSingleValue,
-    invalid,
-    dateInvalid,
-    timeInvalid,
-    invalidStTime,
-    invalidTime,
-    checked,
-    customTimeArray,
-    startTime,
-    endTime,
-  ]);
+
   const handleSubmitComplete = () => {
     setStart('');
     setEnd('');
@@ -455,6 +429,87 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
     setConsultHours(consultDurationDay);
   };
+
+  const listOfStartEnd = (value: any) => {
+    const selectedDay =
+      (value && new Date(value).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()) ||
+      new Date().toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
+
+    const consultHours = doctorSlot && doctorSlot.length > 0 && doctorSlot;
+
+    const filteredDay =
+      consultHours &&
+      _.filter(consultHours, function(o) {
+        if (o && o.weekDay) {
+          return o.weekDay === selectedDay;
+        }
+      });
+    const consultDurationDay: any = filteredDay && Array.isArray(filteredDay) ? filteredDay[0] : {};
+    const startTime = consultDurationDay.startTime;
+    const endTime = consultDurationDay.endTime;
+
+    const [startHours, startMins] = startTime.split(':');
+    let localhours = Number(startHours) + 5;
+    let localMinuts = Number(startMins) + 30;
+
+    if (localMinuts > 59) {
+      localMinuts = Number(localMinuts) - 60;
+      localhours = Number(localhours) + 1;
+      if (localhours > 23) {
+        localhours = 0;
+      }
+    }
+    const startDate = parse(value, 'yyyy-MM-dd', new Date());
+    const endDate = parse(value, 'yyyy-MM-dd', new Date());
+    startDate.setHours(parseInt(localhours.toString(), 10));
+    startDate.setMinutes(parseInt(localMinuts.toString(), 10));
+    const [endHours, endMins] = endTime.split(':');
+    let localEndhours = Number(endHours) + 5;
+    let localEndMinuts = Number(endMins) + 30;
+    if (localEndMinuts > 59) {
+      localEndMinuts = Number(localEndMinuts) - 60;
+      localEndhours = Number(localEndhours) + 1;
+      if (localEndhours > 23) {
+        localEndhours = 0;
+      }
+    }
+
+    endDate.setHours(parseInt(localEndhours.toString(), 10));
+    endDate.setMinutes(parseInt(localEndMinuts.toString(), 10));
+    let obj = {
+      start: startDate.toISOString(),
+      end: endDate.toISOString(),
+    };
+    if (startEndList && startEndList.length > 0) {
+      const xyz =
+        startEndList &&
+        _.filter(startEndList, function(o) {
+          if (o && o.start) {
+            return new Date(o.start).getDate() === new Date(obj.start).getDate();
+          }
+        });
+      let index = 0;
+      for (var i = 0; i < startEndList.length; i++) {
+        if (new Date(startEndList[i].start).getDate() == new Date(obj.start).getDate()) {
+          index = i;
+        }
+      }
+      if (xyz && xyz.length > 0) {
+        const local = startEndList;
+        local.splice(index, 1);
+        setStartEndList(local);
+      } else {
+        const local1 = startEndList;
+        local1.push(obj);
+        setStartEndList(local1);
+      }
+    } else {
+      const local2: any = [];
+      local2.push(obj);
+      setStartEndList(local2);
+    }
+  };
+
   const convertTocunsultBlockStartEndTime = (value: any) => {
     const selectedDay =
       (value && new Date(value).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase()) ||
@@ -506,6 +561,57 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow;
   };
+  const nextTODate = (val: any) => {
+    const today = new Date(val);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow;
+  };
+  useEffect(() => {
+    if (selectedBlockOption === 'entireday') {
+      setInvalid(dateInvalid || timeInvalid || invalidStTime || invalidTime);
+    } else if (
+      durationSelected &&
+      selectedBlockOption === 'consulthours' &&
+      startEndList &&
+      startEndList.length < 1
+    ) {
+      setInvalid(true);
+    } else if (
+      durationSelected &&
+      selectedBlockOption === 'consulthours' &&
+      startEndList &&
+      startEndList.length > 0
+    ) {
+      setInvalid(false);
+    } else if (selectedBlockOption === 'consulthours' && !chackedSingleValue && !checked) {
+      setInvalid(true);
+    } else if (selectedBlockOption === 'consulthours' && chackedSingleValue && checked) {
+      setInvalid(false);
+    } else if (selectedBlockOption === 'customtime') {
+      setInvalid(customTimeArray && customTimeArray.length < 1);
+      if (startTime && endTime) {
+        setInvalid(false);
+      }
+      if (customTimeArray && customTimeArray.length > 0) {
+        setInvalid(false);
+      }
+    }
+  }, [
+    selectedBlockOption,
+    chackedSingleValue,
+    invalid,
+    dateInvalid,
+    timeInvalid,
+    invalidStTime,
+    invalidTime,
+    checked,
+    customTimeArray,
+    startTime,
+    endTime,
+    durationSelected,
+    startEndList,
+  ]);
 
   return (
     <Dialog
@@ -581,7 +687,8 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                       margin="normal"
                       id="date-picker-inline"
                       label="To"
-                      minDate={new Date()}
+                      disabled={!start}
+                      minDate={nextTODate(start)}
                       value={end}
                       onChange={(date) => {
                         setEnd(date ? getFormattedDate(date) : '');
@@ -705,6 +812,10 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                                   <FormControlLabel
                                     control={<Checkbox value="checkedA" />}
                                     label={convertTocunsultBlockStartEndTime(item)}
+                                    onChange={() => {
+                                      listOfStartEnd(item);
+                                      setChecked(!checked);
+                                    }}
                                   />
                                 </FormGroup>
                               </div>
@@ -991,6 +1102,25 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                               variables: { ...addArgs.variables, id: item!.id },
                             };
                             updateBlockedCalendarItem(updateArgs).catch(handleError);
+                          } else if (durationSelected && selectedBlockOption === 'consulthours') {
+                            const addMultiArgs = {
+                              refetchQueries: [
+                                {
+                                  query: GET_BLOCKED_CALENDAR,
+                                  variables: { doctorId },
+                                },
+                              ],
+                              awaitRefetchQueries: true,
+                              variables: {
+                                blockCalendarInputs: {
+                                  doctorId,
+                                  reason: '',
+                                  itemDetails: startEndList,
+                                },
+                              },
+                            };
+
+                            BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
                           } else if (selectedBlockOption === 'consulthours') {
                             if (selectedBlockOption === 'consulthours' && chackedSingleValue) {
                               const [startHours, startMins] = chackedSingleValue.startTime.split(
@@ -1089,9 +1219,9 @@ export const BlockedCalendarAddModal: React.FC<BlockedCalendarAddModalProps> = (
                               };
 
                               BlockMultipleCalendarItems(addMultiArgs).catch(handleError);
-                            } else {
-                              addBlockedCalendarItem(addArgs).catch(handleError);
                             }
+                          } else {
+                            addBlockedCalendarItem(addArgs).catch(handleError);
                           }
                         }}
                       >
