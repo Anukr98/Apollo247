@@ -47,6 +47,7 @@ import { Download } from '@aph/mobile-patients/src/components/ui/Icons';
 import { Spinner } from '@aph/mobile-patients/src/components/ui/Spinner';
 import { MEDICINE_UNIT } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { BottomPopUp } from '@aph/mobile-patients/src/components/ui/BottomPopUp';
 import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
@@ -102,6 +103,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: theme.colors.SEPARATOR_LINE,
   },
+  gotItStyles: {
+    height: 60,
+    paddingRight: 25,
+    backgroundColor: 'transparent',
+  },
+  gotItTextStyles: {
+    paddingTop: 16,
+    ...theme.viewStyles.yellowTextStyle,
+  },
 });
 
 export interface ConsultDetailsProps extends NavigationScreenProps {
@@ -149,6 +159,7 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
   );
   const [rescheduleType, setRescheduleType] = useState<rescheduleType>();
   const [testShow, setTestShow] = useState<boolean>(true);
+  const [showNotExistAlert, setshowNotExistAlert] = useState<boolean>(false);
 
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
@@ -176,9 +187,12 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
       })
       .catch((error) => {
         setLoading && setLoading(false);
-        const errorMessage = error && error.message;
-        console.log('Error occured while GET_CASESHEET_DETAILS error', errorMessage, error);
-        Alert.alert('Error', errorMessage);
+        const errorMessage = error && error.message.split(':')[1].trim();
+        console.log(errorMessage, 'err');
+        if (errorMessage === 'NO_CASESHEET_EXIST') {
+          setshowNotExistAlert(true);
+        }
+        // Alert.alert('Error');
       });
   }, []);
 
@@ -780,6 +794,27 @@ export const ConsultDetails: React.FC<ConsultDetailsProps> = (props) => {
             />
           )}
         </SafeAreaView>
+        {loading && <Spinner />}
+        {showNotExistAlert && (
+          <BottomPopUp
+            title={'Alert!'}
+            description={
+              'No consultation happened, hence there is no case sheet for this appointment'
+            }
+          >
+            <View style={{ height: 60, alignItems: 'flex-end' }}>
+              <TouchableOpacity
+                activeOpacity={1}
+                style={styles.gotItStyles}
+                onPress={() => {
+                  setshowNotExistAlert(false);
+                }}
+              >
+                <Text style={styles.gotItTextStyles}>OK, GOT IT</Text>
+              </TouchableOpacity>
+            </View>
+          </BottomPopUp>
+        )}
       </View>
     );
   return null;
