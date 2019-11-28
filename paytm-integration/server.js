@@ -30,6 +30,62 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/views'));
 app.set('view engine', 'ejs');
 
+app.get('/consultTransaction', (req, res) => {
+  console.log(req.query.CompleteResponse, req.query.ORDERID);
+  console.log(req.query.BANKTXNID);
+  console.log(req.query.STATUS);
+  console.log(req.query.TXNAMOUNT);
+  console.log(req.query.TXNDATE);
+  if (req.query.STATUS == 'TXN_SUCCESS') {
+    res.redirect(`/consultpg-success?tk=${req.query.ORDERID}&status=${req.query.STATUS}`);
+  } else {
+    res.redirect(`/consultpg-error?tk=${req.query.ORDERID}&status=${req.query.STATUS}`);
+  }
+  //res.send('payment response');
+});
+
+app.get('/consultpg-success', (req, res) => {
+  const payloadToken = req.query.tk;
+  if (payloadToken) {
+    res.statusCode = 200;
+    res.send({
+      status: 'success',
+      orderId: payloadToken,
+    });
+  } else {
+    res.statusCode = 401;
+    res.send({
+      status: 'failed',
+      reason: 'Unauthorized',
+      code: '800',
+    });
+  }
+});
+
+app.get('/consultpg-error', (req, res) => {
+  res.send({
+    status: 'failed',
+  });
+});
+
+app.get('/consultpayment', (req, res) => {
+  //res.send('consult payment');
+  axios
+    .post('http://rest.askapollo.com:9047/restservice.svc/GetMarchantIdAnonymousforSourceApp ', {
+      AdminId: 'AskApollo',
+      AdminPassword: 'AskApollo',
+      sourceApp: '7729FD68-C552-4C90-B31E-98AA6C84FEBF~web',
+    })
+    .then((resp) => {
+      console.log(resp.data, resp.data.Result);
+      res.render('consults.ejs', { merchantId: resp.data.Result });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.send(err, 'merchant id error');
+    });
+});
+
 app.get('/paymed', (req, res) => {
   const requestedSources = ['mobile', 'web'];
 
