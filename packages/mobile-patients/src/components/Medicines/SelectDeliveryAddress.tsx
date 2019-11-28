@@ -26,13 +26,15 @@ export interface SelectDeliveryAddressProps extends NavigationScreenProps {}
 
 export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (props) => {
   const isTest = props.navigation.getParam('isTest');
+  const selectedAddress = props.navigation.getParam('selectedAddressId');
+  const isChanged = props.navigation.getParam('isChanged');
 
   const {
     addresses: addressList,
     deliveryAddressId: selectedAddressId,
     setDeliveryAddressId: setSelectedAddressId,
   } = isTest ? useDiagnosticsCart() : useShoppingCart();
-  const [selectedId, setselectedId] = useState<string>(selectedAddressId);
+  const [selectedId, setselectedId] = useState<string>(selectedAddressId || selectedAddress);
   const [selectedPinCode, setselectedPinCode] = useState<string>(selectedAddressId);
   const [loading, setLoading] = useState<boolean>(false);
   const renderBottomButtons = () => {
@@ -41,10 +43,11 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
         <Button
           title="DONE"
           style={{ flex: 1, marginHorizontal: 60 }}
+          disabled={!selectedId}
           onPress={() => {
             setLoading(true);
             if (isTest) {
-              setSelectedAddressId && setSelectedAddressId(selectedId);
+              isChanged(true, selectedId);
               props.navigation.goBack();
             } else {
               pinCodeServiceabilityApi(selectedPinCode)
@@ -112,7 +115,10 @@ export const SelectDeliveryAddress: React.FC<SelectDeliveryAddressProps> = (prop
             ...theme.viewStyles.cardViewStyle,
             borderRadius: 0,
           }}
-          onPressLeftIcon={() => props.navigation.goBack()}
+          onPressLeftIcon={() => {
+            isChanged(false);
+            props.navigation.goBack();
+          }}
         />
         <ScrollView bounces={false}>
           {renderAddresses()}

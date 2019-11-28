@@ -358,7 +358,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
       try {
         const [saveAddressResult, pinAvailabilityResult] = await Promise.all([
           saveAddress(addressInput),
-          pinCodeServiceabilityApi(pincode),
+          addOnly ? null : pinCodeServiceabilityApi(pincode),
         ]);
 
         setshowSpinner(false);
@@ -367,7 +367,7 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
         addAddress && addAddress(address);
         addA!(address);
 
-        if (pinAvailabilityResult.data.Availability || addOnly) {
+        if ((pinAvailabilityResult && pinAvailabilityResult.data.Availability) || addOnly) {
           setDeliveryAddressId && setDeliveryAddressId(address.id || '');
           setD!(address.id || '');
           props.navigation.goBack();

@@ -143,69 +143,61 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    if (!(locationDetails && locationDetails.pincode)) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          getPlaceInfoByLatLng(latitude, longitude)
-            .then((obj) => {
-              try {
-                if (
-                  obj.data.results.length > 0 &&
-                  obj.data.results[0].address_components.length > 0
-                ) {
-                  const address = obj.data.results[0].address_components[0].short_name;
-                  console.log(address, 'address obj');
-                  const addrComponents = obj.data.results[0].address_components || [];
-                  const _pincode = (
-                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
-                  ).long_name;
-                  // setpincode(_pincode || '');
-                  fetchStorePickup(_pincode || '');
-                }
-              } catch {}
-            })
-            .catch((error) => {
-              console.log(error, 'geocode error');
-            });
-        },
-        (error) => {
-          console.log(error.code, error.message, 'getCurrentPosition error');
-        },
-        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+    if (deliveryAddressId && addresses) {
+      const selectedAddressIndex = addresses.findIndex(
+        (address) => address.id == deliveryAddressId
       );
-      console.log('pincode');
-    } else {
-      fetchStorePickup(locationDetails.pincode);
+      addresses &&
+        pinCodeServiceabilityApi(addresses[selectedAddressIndex].zipcode!)
+          .then(({ data: { Availability } }) => {
+            setCheckingServicability(false);
+            if (Availability) {
+              setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
+            } else {
+              setDeliveryAddressId && setDeliveryAddressId('');
+              showAphAlert!({
+                title: 'Uh oh.. :(',
+                description:
+                  'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+              });
+            }
+          })
+          .catch((e) => {
+            aphConsole.log({ e });
+            setCheckingServicability(false);
+            handleGraphQlError(e);
+          });
     }
   }, []);
 
-  useEffect(() => {
-    setLoading!(true);
-    (currentPatient &&
-      // addresses.length == 0 &&
-      client
-        .query<getPatientAddressList, getPatientAddressListVariables>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          variables: { patientId: currentPatientId },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          setLoading!(false);
-          setAddresses && setAddresses(addressList!);
-        })
-        .catch((e) => {
-          setLoading!(false);
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Something went wrong, unable to fetch addresses.`,
-          });
-        })) ||
-      setLoading!(false);
-  }, [currentPatient]);
+  // useEffect(() => {
+  //   setLoading!(true);
+  //   (currentPatient &&
+  //     addresses.length == 0 &&
+  //     client
+  //       .query<getPatientAddressList, getPatientAddressListVariables>({
+  //         query: GET_PATIENT_ADDRESS_LIST,
+  //         variables: { patientId: currentPatientId },
+  //         fetchPolicy: 'no-cache',
+  //       })
+  //       .then(({ data: { getPatientAddressList: { addressList } } }) => {
+  //         setLoading!(false);
+  //         setAddresses && setAddresses(addressList!);
+  //       })
+  //       .catch((e) => {
+  //         setLoading!(false);
+  //         showAphAlert!({
+  //           title: `Uh oh.. :(`,
+  //           description: `Something went wrong, unable to fetch addresses.`,
+  //         });
+  //       })) ||
+  //     setLoading!(false);
+  // }, [currentPatient]);
+
   useEffect(() => {
     onFinishUpload();
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
+
   /*  useEffect(() => {
     getCartInfo()
       .then((cartInfo) => {
