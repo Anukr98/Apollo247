@@ -31,6 +31,8 @@ import {
   deleteDeviceTokenVariables,
 } from '@aph/mobile-patients/src/graphql/types/deleteDeviceToken';
 import { ApolloLogo } from '@aph/mobile-patients/src/components/ApolloLogo';
+import { apiRoutes } from '@aph/mobile-patients/src/helpers/apiRoutes';
+import DeviceInfo from 'react-native-device-info';
 
 const { height, width } = Dimensions.get('window');
 
@@ -92,6 +94,25 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
     GetCurrentPatients_getCurrentPatients_patients | null | undefined
   >(currentPatient);
   const { signOut, getPatientApiCall } = useAuth();
+
+  const buildName = () => {
+    switch (apiRoutes.graphql()) {
+      case 'https://aph.dev.api.popcornapps.com//graphql':
+        return 'DEV';
+      case 'https://aph.staging.api.popcornapps.com//graphql':
+        return 'QA';
+      case 'https://aph.uat.api.popcornapps.com//graphql':
+        return 'UAT';
+      case 'https://aph.vapt.api.popcornapps.com//graphql':
+        return 'VAPT';
+      case 'https://api.apollo247.com//graphql':
+        return 'PROD';
+      case 'https://asapi.apollo247.com//graphql':
+        return 'PRF';
+      default:
+        return '';
+    }
+  };
 
   useEffect(() => {
     if (!currentPatient) {
@@ -382,7 +403,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
                 paddingTop: 10,
               }}
             >
-              PRO V 1.0(15)
+              {`${buildName()} V ${DeviceInfo.getVersion()}(${DeviceInfo.getBuildNumber()})`}
             </Text>
           </View>
         </Animated.ScrollView>

@@ -7,6 +7,7 @@ import { NeedHelpAssistant } from '@aph/mobile-patients/src/components/ui/NeedHe
 import { SectionHeaderComponent } from '@aph/mobile-patients/src/components/ui/SectionHeader';
 import { TextInputComponent } from '@aph/mobile-patients/src/components/ui/TextInputComponent';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
+import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   GET_PATIENT_PAST_MEDICINE_SEARCHES,
   SAVE_SEARCH,
@@ -17,16 +18,13 @@ import {
   getPatientPastMedicineSearches_getPatientPastMedicineSearches,
 } from '@aph/mobile-patients/src/graphql/types/getPatientPastMedicineSearches';
 import { SEARCH_TYPE } from '@aph/mobile-patients/src/graphql/types/globalTypes';
-import {
-  MedicineProduct,
-  pinCodeServiceabilityApi,
-  searchMedicineApi,
-} from '@aph/mobile-patients/src/helpers/apiCalls';
-import { aphConsole, handleGraphQlError } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { MedicineProduct, searchMedicineApi } from '@aph/mobile-patients/src/helpers/apiCalls';
+import { aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
+import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import axios, { AxiosResponse } from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   ActivityIndicator,
@@ -36,16 +34,13 @@ import {
   StyleProp,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
   ViewStyle,
 } from 'react-native';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
-import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { useDiagnosticsCart } from '@aph/mobile-patients/src/components/DiagnosticsCartProvider';
-import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
+import { FilterRange, MedicineFilter, SortByOptions } from './MedicineFilter';
 
 const styles = StyleSheet.create({
   safeAreaViewStyle: {
@@ -146,12 +141,32 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   const [pastSearches, setPastSearches] = useState<
     (getPatientPastMedicineSearches_getPatientPastMedicineSearches | null)[]
   >([]);
+  const medicineListRef = useRef<FlatList<MedicineProduct> | null>();
 
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
   const { addCartItem, removeCartItem, updateCartItem, cartItems } = useShoppingCart();
   const { showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
+
+  const getSpecialPrice = (special_price?: string | number) =>
+    special_price
+      ? typeof special_price == 'string'
+        ? parseInt(special_price)
+        : special_price
+      : undefined;
+
+  // const filteredMedicineList = medicineList
+  //   .filter((item) => item.price >= 100 && item.price <= 200)
+  //   .filter((item) => {
+  //     if (!item.special_price) return false;
+  //     const specialPrice = getSpecialPrice(item.price);
+  //     const discountPercentage = ((item.price - specialPrice!) / item.price) * 100;
+  //     return discountPercentage >= 5 && discountPercentage <= 90 ? true : false;
+  //   })
+  //   .sort((med1, med2) => {
+  //     return getSpecialPrice(med2.special_price)! - getSpecialPrice(med1.special_price)!;
+  //   });
 
   useEffect(() => {
     if (!currentPatient) {
@@ -384,6 +399,37 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const [filterVisible, setFilterVisible] = useState(false);
+  const [discount, setdiscount] = useState<FilterRange>({
+    from: undefined,
+    to: undefined,
+  });
+  const [price, setprice] = useState<FilterRange>({
+    from: undefined,
+    to: undefined,
+  });
+  const [sortBy, setSortBy] = useState<SortByOptions>();
+  const [categoryIds, setcategoryIds] = useState<string[]>([]);
+
+  const renderFilterView = () => {
+    return (
+      <MedicineFilter
+        isVisible={filterVisible}
+        onClose={() => setFilterVisible(false)}
+        onApplyFilter={(discountRange, priceRange, sortBy, categoryIds) => {
+          setFilterVisible(false);
+          setIsLoading(true);
+          setdiscount(discountRange);
+          setprice(priceRange);
+          setSortBy(sortBy);
+          setcategoryIds(categoryIds);
+          medicineList.length &&
+            medicineListRef.current &&
+            medicineListRef.current.scrollToIndex({ index: 0 });
+          setIsLoading(false);
+        }}
+      />
+    );
+  };
 
   const renderHeader = () => {
     const cartItemsCount = cartItems.length;
@@ -396,18 +442,18 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <TouchableOpacity
               activeOpacity={1}
-              // style={{ marginRight: 24 }}
+              style={{ marginRight: 24 }}
               onPress={() => {
                 CommonLogEvent(AppRoutes.SearchMedicineScene, 'Navigate to your cart');
-                props.navigation.navigate(isTest ? AppRoutes.TestsCart : AppRoutes.YourCart);
+                props.navigation.navigate(AppRoutes.MedAndTestCart, { isComingFromConsult: true });
               }}
             >
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            {/* <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
+            <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
               <Filter />
-            </TouchableOpacity> */}
+            </TouchableOpacity>
           </View>
         }
         onPressLeftIcon={() => props.navigation.goBack()}
@@ -444,76 +490,6 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           }}
         />
         {renderSorryMessage}
-      </View>
-    );
-  };
-
-  /**
-   * @description returns true if empty string or starts with number other than zero else false
-   */
-  const isValidPinCode = (text: string): boolean => text == '' || /^([1-9][0-9]*)$/.test(text);
-
-  const checkServicability = (text: string) => {
-    isValidPinCode(text) && setPinCode(text);
-    if (text.length == 6) {
-      // call api here
-      pinCodeServiceabilityApi(text)
-        .then(({ data: { Availability } }) => {
-          if (!Availability) {
-            showAphAlert!({
-              title: `Uh oh.. :(`,
-              description: `Sorry! This pincode is not serviceable.`,
-            });
-          }
-        })
-        .catch((e) => {
-          // handleGraphQlError(e);
-        });
-    }
-  };
-
-  const fetchLocation = (text: string) => {
-    const key = AppConfig.Configuration.GOOGLE_API_KEY;
-    isValidPinCode(text);
-    setPinCode(text);
-    axios
-      .get(
-        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${text}&latitude=17.3355835&longitude=78.46756239999999&key=${key}`
-      )
-      .then((obj) => {
-        if (obj.data.predictions) {
-          const address = obj.data.predictions.map(
-            (item: {
-              structured_formatting: {
-                main_text: string;
-              };
-            }) => {
-              return item.structured_formatting.main_text;
-            }
-          );
-          // setlocationSearchList(address);
-          // setcurrentLocation(address.toUpperCase());
-        }
-      })
-      .catch((error) => {
-        aphConsole.log(error);
-      });
-  };
-
-  const renderDeliveryPinCode = () => {
-    return (
-      <View style={styles.deliveryPinCodeContaner}>
-        <Text numberOfLines={1} style={styles.pinCodeStyle}>
-          Delivery Pincode
-        </Text>
-        <TextInput
-          maxLength={6}
-          value={pinCode}
-          onChange={({ nativeEvent: { text } }) => checkServicability(text)}
-          underlineColorAndroid="transparent"
-          style={styles.pinCodeTextInput}
-          selectionColor={theme.colors.INPUT_BORDER_SUCCESS}
-        />
       </View>
     );
   };
@@ -624,6 +600,57 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
   };
 
   const renderMatchingMedicines = () => {
+    let filteredMedicineList = medicineList;
+
+    // Category
+    if (categoryIds.length) {
+      filteredMedicineList = filteredMedicineList.filter((item) =>
+        categoryIds.includes(item.category_id)
+      );
+    }
+    // Price
+    if (typeof price.from == 'number' && typeof price.to == 'number') {
+      filteredMedicineList = filteredMedicineList.filter(
+        (item) => item.price >= price.from! && item.price <= price.to!
+      );
+    }
+    // Discount
+    if (typeof discount.from == 'number' && typeof discount.to == 'number') {
+      filteredMedicineList = filteredMedicineList.filter((item) => {
+        if (!item.special_price) return discount.from == 0 || discount.from == undefined;
+        const specialPrice = getSpecialPrice(item.special_price);
+        const discountPercentage = ((item.price - specialPrice!) / item.price) * 100;
+
+        return discountPercentage >= (discount.from || 0) && discountPercentage <= discount.to!
+          ? true
+          : false;
+      });
+    }
+    // Sorting
+    if (sortBy == 'Price-L-H') {
+      filteredMedicineList = filteredMedicineList.sort((med1, med2) => {
+        return (
+          getSpecialPrice(med1.special_price || med1.price)! -
+          getSpecialPrice(med2.special_price || med2.price)!
+        );
+      });
+    } else if (sortBy == 'Price-H-L') {
+      filteredMedicineList = filteredMedicineList.sort((med1, med2) => {
+        return (
+          getSpecialPrice(med2.special_price || med2.price)! -
+          getSpecialPrice(med1.special_price || med1.price)!
+        );
+      });
+    } else if (sortBy == 'A-Z') {
+      filteredMedicineList = filteredMedicineList.sort((med1, med2) =>
+        med1.name < med2.name ? -1 : med1.name > med2.name ? 1 : 0
+      );
+    } else if (sortBy == 'Z-A') {
+      filteredMedicineList = filteredMedicineList.sort((med1, med2) =>
+        med1.name > med2.name ? -1 : med1.name < med2.name ? 1 : 0
+      );
+    }
+
     return (
       <>
         {isLoading ? (
@@ -637,18 +664,23 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
           !!searchText &&
           searchText.length > 2 && (
             <FlatList
+              ref={(ref) => {
+                medicineListRef.current = ref;
+              }}
               onScroll={() => Keyboard.dismiss()}
-              data={medicineList}
-              renderItem={({ item, index }) => renderMedicineCard(item, index, medicineList)}
+              data={filteredMedicineList}
+              renderItem={({ item, index }) =>
+                renderMedicineCard(item, index, filteredMedicineList)
+              }
               keyExtractor={(_, index) => `${index}`}
               bounces={false}
               ListHeaderComponent={
-                (medicineList.length > 0 && (
+                (filteredMedicineList.length > 0 && (
                   <SectionHeaderComponent
                     sectionTitle={
                       isTest
-                        ? `Matching Tests — ${medicineList.length}`
-                        : `Matching Medicines — ${medicineList.length}`
+                        ? `Matching Tests — ${filteredMedicineList.length}`
+                        : `Matching Medicines — ${filteredMedicineList.length}`
                     }
                     style={{ marginBottom: 0 }}
                   />
@@ -670,6 +702,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
       </View>
       {/* {renderDeliveryPinCode()} */}
       {showMatchingMedicines ? renderMatchingMedicines() : renderPastSearches()}
+      {renderFilterView()}
     </SafeAreaView>
   );
 };
