@@ -513,7 +513,6 @@ export const Symptoms: React.FC = (props) => {
                           <AphTextField
                             placeholder=""
                             value={symptom}
-                            inputProps={{ maxLength: 30 }}
                             onChange={(event) => {
                               setSymptom(event.target.value);
                               clearError();
