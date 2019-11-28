@@ -5,6 +5,7 @@ import { makeStyles } from '@material-ui/styles';
 import { Theme, Grid } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
+import Slider from 'react-slick';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -157,7 +158,10 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingBottom: 7,
     },
     marginNone: {
-      marginBottom: 'none',
+      marginBottom: 0,
+    },
+    allProductsList: {
+      padding: '30px 40px',
     },
   };
 });
@@ -169,6 +173,13 @@ export const MedicineLanding: React.FC = (props) => {
 
   const orderId = queryParams.get('orderAutoId') || '';
   const orderStatus = queryParams.get('status') || '';
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1
+  };
 
   if (parseInt(orderId, 10) > 0 && orderStatus === 'success') {
     localStorage.removeItem('cartItems');
@@ -240,6 +251,28 @@ export const MedicineLanding: React.FC = (props) => {
                 </div>
               </div>
             </div>
+          </div>
+          <div className={classes.allProductsList}>
+            <Slider {...settings}>
+              <div>
+                <h3>1</h3>
+              </div>
+              <div>
+                <h3>2</h3>
+              </div>
+              <div>
+                <h3>3</h3>
+              </div>
+              <div>
+                <h3>4</h3>
+              </div>
+              <div>
+                <h3>5</h3>
+              </div>
+              <div>
+                <h3>6</h3>
+              </div>
+            </Slider>
           </div>
         </div>
       </div>
