@@ -54,6 +54,14 @@ import { JDTypeDefs, JDResolvers } from 'doctors-service/resolvers/JDAdmin';
 import { format, differenceInMilliseconds } from 'date-fns';
 import path from 'path';
 import { ApiConstants } from 'ApiConstants';
+import {
+  doctorFavouriteAdviceTypeDefs,
+  doctorFavouriteAdviceResolvers,
+} from 'doctors-service/resolvers/doctorFavouriteAdvice';
+import {
+  doctorFavouriteTestTypeDefs,
+  doctorFavouriteTestResolvers,
+} from 'doctors-service/resolvers/doctorFavouriteTest';
 
 (async () => {
   await connect();
@@ -158,6 +166,14 @@ import { ApiConstants } from 'ApiConstants';
       {
         typeDefs: JDTypeDefs,
         resolvers: JDResolvers,
+      },
+      {
+        typeDefs: doctorFavouriteAdviceTypeDefs,
+        resolvers: doctorFavouriteAdviceResolvers,
+      },
+      {
+        typeDefs: doctorFavouriteTestTypeDefs,
+        resolvers: doctorFavouriteTestResolvers,
       },
     ]),
     plugins: [

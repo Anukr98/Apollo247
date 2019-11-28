@@ -42,8 +42,8 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineDosage: String
     medicineUnit: String
     medicineInstructions: String
-    medicineTimings: MEDICINE_TIMINGS
-    medicineToBeTaken: MEDICINE_TO_BE_TAKEN
+    medicineTimings: [MEDICINE_TIMINGS]
+    medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
     medicineName: String!
     doctorId: ID
     id: ID!
@@ -51,6 +51,14 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
 
   type DoctorFavouriteMedicineResult {
     favouriteMedicine: DoctorFavouriteMedicine
+  }
+
+  type FavouriteMedicineList {
+    medicineList: [DoctorFavouriteMedicine]
+  }
+
+  extend type Query {
+    getDoctorFavouriteMedicineList: FavouriteMedicineList
   }
 
   extend type Mutation {
@@ -101,7 +109,29 @@ const saveDoctorsFavouriteMedicine: Resolver<
   return { favouriteMedicine: saveFavouriteMedicine };
 };
 
+type FavouriteMedicineList = {
+  medicineList: DoctorsFavouriteMedicine[];
+};
+
+const getDoctorFavouriteMedicineList: Resolver<
+  null,
+  {},
+  DoctorsServiceContext,
+  FavouriteMedicineList
+> = async (parent, args, { mobileNumber, doctorsDb, consultsDb, firebaseUid }) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
+  const favouriteTestList = await favouriteTestRepo.favouriteMedicines(doctordata.id);
+  return { medicineList: favouriteTestList };
+};
+
 export const saveDoctorFavouriteMedicineResolver = {
+  Query: {
+    getDoctorFavouriteMedicineList,
+  },
   Mutation: {
     saveDoctorsFavouriteMedicine,
   },

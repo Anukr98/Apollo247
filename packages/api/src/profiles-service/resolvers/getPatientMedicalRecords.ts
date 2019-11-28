@@ -6,6 +6,13 @@ import { MedicalRecordsRepository } from 'profiles-service/repositories/medicalR
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
+import { format } from 'date-fns';
+
+import {
+  PrismLabTestResult,
+  PrismHealthCheckResult,
+  PrismHospitalizationResult,
+} from 'types/prismMedicalRecords';
 
 export const getPatientMedicalRecordsTypeDefs = gql`
   type MedicalRecords {
@@ -35,13 +42,108 @@ export const getPatientMedicalRecordsTypeDefs = gql`
   type MedicalRecordsResult {
     medicalRecords: [MedicalRecords]
   }
+
+  type LabTestResult {
+    id: String
+    labTestName: String
+    labTestSource: String
+    labTestDate: String
+    labTestReferredBy: String
+    additionalNotes: String
+    testResultPrismFileIds: [String]
+    labTestResultParameters: [LabTestResultParameter]
+    departmentName: String
+    signingDocName: String
+  }
+
+  type LabTestResultParameter {
+    parameterName: String!
+    unit: String
+    result: String
+    range: String
+  }
+
+  type HealthCheckResult {
+    id: String
+    healthCheckName: String
+    healthCheckDate: String
+    healthCheckPrismFileIds: [String]
+    healthCheckSummary: String
+    source: String
+    appointmentDate: String
+    followupDate: String
+  }
+
+  type HospitalizationResult {
+    id: String
+    diagnosisNotes: String
+    dateOfDischarge: String
+    dateOfHospitalization: String
+    dateOfNextVisit: String
+    hospitalizationPrismFileIds: [String]
+    source: String
+  }
+
+  type PrismMedicalRecordsResult {
+    labTests: [LabTestResult]
+    healthChecks: [HealthCheckResult]
+    hospitalizations: [HospitalizationResult]
+  }
   extend type Query {
     getPatientMedicalRecords(patientId: ID!, offset: Int, limit: Int): MedicalRecordsResult
+    getPatientPrismMedicalRecords(patientId: ID!): PrismMedicalRecordsResult
   }
 `;
 
 type MedicalRecordsResult = {
   medicalRecords: MedicalRecords[];
+};
+
+type LabTestResult = {
+  id: string;
+  labTestName: string;
+  labTestSource: string;
+  labTestDate: string;
+  labTestReferredBy: string;
+  additionalNotes: string;
+  testResultPrismFileIds: string[];
+  labTestResultParameters: LabTestResultParameter[];
+  departmentName: string;
+  signingDocName: string;
+};
+
+type LabTestResultParameter = {
+  parameterName: string;
+  unit: string;
+  result: string;
+  range: string;
+};
+
+type HealthCheckResult = {
+  appointmentDate: string;
+  followupDate: string;
+  healthCheckDate: string;
+  healthCheckPrismFileIds: string[];
+  healthCheckName: string;
+  healthCheckSummary: string;
+  id: string;
+  source: string;
+};
+
+type HospitalizationResult = {
+  dateOfDischarge: string;
+  dateOfHospitalization: string;
+  dateOfNextVisit: string;
+  diagnosisNotes: string;
+  hospitalizationPrismFileIds: string[];
+  id: string;
+  source: string;
+};
+
+type PrismMedicalRecordsResult = {
+  labTests: LabTestResult[];
+  healthChecks: HealthCheckResult[];
+  hospitalizations: HospitalizationResult[];
 };
 
 const getPatientMedicalRecords: Resolver<
@@ -63,8 +165,130 @@ const getPatientMedicalRecords: Resolver<
   return { medicalRecords };
 };
 
+//Includes  User Lab Results + Hospitalizations + HealthChecks
+const getPatientPrismMedicalRecords: Resolver<
+  null,
+  { patientId: string },
+  ProfilesServiceContext,
+  PrismMedicalRecordsResult
+> = async (parent, args, { firebaseUid, mobileNumber, profilesDb }) => {
+  const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
+  //get authtoken for the logged in user mobile number
+  const prismAuthToken = await patientsRepo.getPrismAuthToken(mobileNumber);
+
+  if (!prismAuthToken) throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
+
+  //get users list for the mobile number
+  const prismUserList = await patientsRepo.getPrismUsersList(mobileNumber, prismAuthToken);
+
+  //check if current user uhid matches with response uhids
+  const uhid = await patientsRepo.validateAndGetUHID(args.patientId, prismUserList);
+
+  if (!uhid) {
+    throw new AphError(AphErrorMessages.PRISM_AUTH_TOKEN_ERROR, undefined, {});
+  }
+
+  //just call get prism user details with the corresponding uhid
+  await patientsRepo.getPrismUsersDetails(uhid, prismAuthToken);
+  const formattedLabResults: LabTestResult[] = [];
+  const labResults = await patientsRepo.getPatientLabResults(uhid, prismAuthToken);
+  labResults.forEach((element: PrismLabTestResult) => {
+    let prismFileIds: string[] = [];
+    let labResultParams: LabTestResultParameter[] = [];
+    //collecting prism file ids
+    if (element.testResultFiles.length > 0) {
+      prismFileIds = element.testResultFiles.map((item) => {
+        return `${item.id}_${item.fileName}`;
+      });
+    }
+    //collecting test result params
+    if (element.labTestResults.length > 0) {
+      labResultParams = element.labTestResults.map((item) => {
+        return {
+          parameterName: item.parameterName,
+          result: item.result,
+          unit: item.unit,
+          range: item.range,
+          outOfRange: item.outOfRange,
+          resultDate: item.resultDate,
+        };
+      });
+    }
+
+    const labResult = {
+      id: element.id,
+      labTestName: element.labTestName,
+      labTestSource: element.labTestSource,
+      labTestDate: format(new Date(element.labTestDate), 'yyyy-MM-dd HH:mm'),
+      labTestReferredBy: element.labTestRefferedBy,
+      additionalNotes: element.additionalNotes,
+      testResultPrismFileIds: prismFileIds,
+      labTestResultParameters: labResultParams,
+      departmentName: element.departmentName,
+      signingDocName: element.signingDocName,
+    };
+
+    formattedLabResults.push(labResult);
+  });
+
+  const formattedHealthChecks: HealthCheckResult[] = [];
+  const healthChecks = await patientsRepo.getPatientHealthChecks(uhid, prismAuthToken);
+  healthChecks.forEach((element: PrismHealthCheckResult) => {
+    //collecting prism file ids
+    let prismFileIds: string[] = [];
+    if (element.healthCheckFiles.length > 0) {
+      prismFileIds = element.healthCheckFiles.map((item) => {
+        return `${item.id}_${item.fileName}`;
+      });
+    }
+    const healthCheckResult = {
+      appointmentDate: format(new Date(element.appointmentDate), 'yyyy-MM-dd HH:mm'),
+      followupDate: format(new Date(element.followupDate), 'yyyy-MM-dd HH:mm'),
+      healthCheckDate: format(new Date(element.healthCheckDate), 'yyyy-MM-dd HH:mm'),
+      healthCheckPrismFileIds: prismFileIds,
+      healthCheckName: element.healthCheckName,
+      healthCheckSummary: element.healthCheckSummary,
+      id: element.id,
+      source: element.source,
+    };
+
+    formattedHealthChecks.push(healthCheckResult);
+  });
+
+  const formattedHospitalizations: HospitalizationResult[] = [];
+  const hospitalizations = await patientsRepo.getPatientHospitalizations(uhid, prismAuthToken);
+  hospitalizations.forEach((element: PrismHospitalizationResult) => {
+    //collecting prism file ids
+    let prismFileIds: string[] = [];
+    if (element.hospitalizationFiles.length > 0) {
+      prismFileIds = element.hospitalizationFiles.map((item) => {
+        return `${item.id}_${item.fileName}`;
+      });
+    }
+    const hospitalizationResult = {
+      id: element.id,
+      diagnosisNotes: element.diagnosisNotes,
+      dateOfDischarge: format(new Date(element.dateOfDischarge), 'yyyy-MM-dd HH:mm'),
+      dateOfHospitalization: format(new Date(element.dateOfHospitalization), 'yyyy-MM-dd HH:mm'),
+      dateOfNextVisit: format(new Date(element.dateOfNextVisit), 'yyyy-MM-dd HH:mm'),
+      hospitalizationPrismFileIds: prismFileIds,
+      source: element.source,
+    };
+    formattedHospitalizations.push(hospitalizationResult);
+  });
+
+  const result = {
+    labTests: formattedLabResults,
+    healthChecks: formattedHealthChecks,
+    hospitalizations: formattedHospitalizations,
+  };
+
+  return result;
+};
+
 export const getPatientMedicalRecordsResolvers = {
   Query: {
     getPatientMedicalRecords,
+    getPatientPrismMedicalRecords,
   },
 };
