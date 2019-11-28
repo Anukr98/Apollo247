@@ -179,8 +179,8 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
   const addOnly: boolean = props.navigation.state.params
     ? props.navigation.state.params.addOnly
     : false;
-  const addressData = props.navigation.getParam('DataAddress');
 
+  const addressData = props.navigation.getParam('DataAddress');
   const { addAddress, setDeliveryAddressId } = useShoppingCart();
   const { addAddress: addA, setDeliveryAddressId: setD } = useDiagnosticsCart();
   const { getPatientApiCall } = useAuth();
@@ -860,7 +860,9 @@ export const AddAddress: React.FC<AddAddressProps> = (props) => {
             }}
           >
             <Button
-              title={props.navigation.getParam('KeyName') == 'Update' ? 'SAVE' : 'SAVE & USE'}
+              title={
+                props.navigation.getParam('KeyName') == 'Update' || addOnly ? 'SAVE' : 'SAVE & USE'
+              }
               style={{ marginHorizontal: 40, width: '70%' }}
               onPress={onSavePress}
               disabled={!isAddressValid}
