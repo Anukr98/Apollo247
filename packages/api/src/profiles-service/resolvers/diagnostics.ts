@@ -94,7 +94,11 @@ export const diagnosticsTypeDefs = gql`
   }
 
   extend type Query {
-    searchDiagnostics(city: String, patientId: String, searchText: String): SearchDiagnosticsResult!
+    searchDiagnostics(
+      city: String
+      patientId: String
+      searchText: String!
+    ): SearchDiagnosticsResult!
     getDiagnosticsCites(patientId: String, cityName: String): GetAllCitiesResult!
     getDiagnosticSlots(
       patientId: String
@@ -164,15 +168,14 @@ const searchDiagnostics: Resolver<
   ProfilesServiceContext,
   SearchDiagnosticsResult
 > = async (parent, args, { profilesDb }) => {
-  if (args.searchText == '')
+  if (args.searchText.trim().length == 0)
     throw new AphError(AphErrorMessages.INVALID_SEARCH_VALUE, undefined, {});
 
+  console.log(args.city, 'hhhhhhhhhhh');
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
-  const diagnostics =
-    args.city == ''
-      ? await diagnosticsRepo.searchDiagnosticswithoutcity(args.searchText.toUpperCase())
-      : await diagnosticsRepo.searchDiagnostics(args.searchText.toUpperCase(), args.city);
-  console.log(diagnostics, 'diagnostics');
+  const diagnostics = args.city
+    ? await diagnosticsRepo.searchDiagnostics(args.searchText.toUpperCase(), args.city)
+    : await diagnosticsRepo.searchDiagnosticswithoutcity(args.searchText.toUpperCase());
   return { diagnostics };
 };
 
