@@ -171,7 +171,6 @@ const searchDiagnostics: Resolver<
   if (args.searchText.trim().length == 0)
     throw new AphError(AphErrorMessages.INVALID_SEARCH_VALUE, undefined, {});
 
-  console.log(args.city, 'hhhhhhhhhhh');
   const diagnosticsRepo = profilesDb.getCustomRepository(DiagnosticsRepository);
   const diagnostics = args.city
     ? await diagnosticsRepo.searchDiagnostics(args.searchText.toUpperCase(), args.city)
