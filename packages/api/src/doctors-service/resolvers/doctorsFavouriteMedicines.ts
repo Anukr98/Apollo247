@@ -167,7 +167,7 @@ const removeFavouriteMedicine: Resolver<
   return { medicineList: doctorsOtherFavouriteMedicines };
 };
 
-type updateDoctorsFavouriteMedicineInput = {
+type UpdateDoctorsFavouriteMedicineInput = {
   externalId: string;
   medicineConsumptionDurationInDays: number;
   medicineDosage: string;
@@ -179,20 +179,16 @@ type updateDoctorsFavouriteMedicineInput = {
   id: string;
 };
 
-type updateDoctorsFavouriteMedicineInputArgs = {
-  updateDoctorsFavouriteMedicineInput: updateDoctorsFavouriteMedicineInput;
+type UpdateDoctorsFavouriteMedicineInputArgs = {
+  updateDoctorsFavouriteMedicineInput: UpdateDoctorsFavouriteMedicineInput;
 };
 
 const updateDoctorFavouriteMedicine: Resolver<
   null,
-  updateDoctorsFavouriteMedicineInputArgs,
+  UpdateDoctorsFavouriteMedicineInputArgs,
   DoctorsServiceContext,
   FavouriteMedicineList
-> = async (
-  parent,
-  { updateDoctorsFavouriteMedicineInput },
-  { doctorsDb, currentUser, mobileNumber }
-) => {
+> = async (parent, { updateDoctorsFavouriteMedicineInput }, { doctorsDb, mobileNumber }) => {
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
