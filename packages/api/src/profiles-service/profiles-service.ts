@@ -75,6 +75,10 @@ import {
   addPatientMedicalRecordResolvers,
 } from 'profiles-service/resolvers/addMedicalRecord';
 import {
+  addPatientFeedbackTypeDefs,
+  addPatientFeedbackResolvers,
+} from 'profiles-service/resolvers/patientFeedback';
+import {
   deletePatientMedicalRecordTypeDefs,
   deletePatientMedicalRecordResolvers,
 } from 'profiles-service/resolvers/deleteMedicalRecord';
@@ -258,6 +262,10 @@ import { ApiConstants } from 'ApiConstants';
       {
         typeDefs: addPatientMedicalRecordTypeDefs,
         resolvers: addPatientMedicalRecordResolvers,
+      },
+      {
+        typeDefs: addPatientFeedbackTypeDefs,
+        resolvers: addPatientFeedbackResolvers,
       },
       {
         typeDefs: deletePatientMedicalRecordTypeDefs,

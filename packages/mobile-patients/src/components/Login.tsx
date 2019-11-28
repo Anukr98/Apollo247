@@ -238,7 +238,7 @@ export const Login: React.FC<LoginProps> = (props) => {
                 console.log(error.message, 'errormessage');
 
                 CommonLogEvent(AppRoutes.Login, error.message);
-                CommonBugFender(AppRoutes.Login, error.message);
+                CommonBugFender(AppRoutes.Login, error);
                 Alert.alert(
                   'Error',
                   (error && error.message) || 'The interaction was cancelled by the user.'

@@ -271,17 +271,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   useEffect(() => {
     setLoading!(true);
     (currentPatientId &&
-      addresses.length == 0 &&
+      // addresses.length == 0 &&
       client
         .query<getPatientAddressList, getPatientAddressListVariables>({
           query: GET_PATIENT_ADDRESS_LIST,
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          setLoading!(false);
-          setAddresses && setAddresses(addressList!);
-        })
+        .then(
+          ({
+            data: {
+              getPatientAddressList: { addressList },
+            },
+          }) => {
+            setLoading!(false);
+            setAddresses && setAddresses(addressList!);
+          }
+        )
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({

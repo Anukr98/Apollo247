@@ -70,6 +70,12 @@ export enum PATIENT_ADDRESS_TYPE {
   OTHER = "OTHER",
 }
 
+export enum REQUEST_ROLES {
+  DOCTOR = "DOCTOR",
+  JUNIOR = "JUNIOR",
+  PATIENT = "PATIENT",
+}
+
 export enum Relation {
   BROTHER = "BROTHER",
   COUSIN = "COUSIN",
@@ -86,6 +92,7 @@ export enum SEARCH_TYPE {
   DOCTOR = "DOCTOR",
   MEDICINE = "MEDICINE",
   SPECIALTY = "SPECIALTY",
+  TEST = "TEST",
 }
 
 export enum STATUS {
@@ -129,7 +136,14 @@ export interface BookAppointmentInput {
   doctorId: string;
   appointmentDateTime: any;
   appointmentType: APPOINTMENT_TYPE;
-  hospitalId?: string | null;
+  hospitalId: string;
+}
+
+export interface CancelAppointmentInput {
+  appointmentId: string;
+  cancelReason?: string | null;
+  cancelledBy: REQUEST_ROLES;
+  cancelledById: string;
 }
 
 export interface DoctorAvailabilityInput {
@@ -178,6 +192,7 @@ export interface MedicineCartInput {
   patientAddressId: string;
   devliveryCharges?: number | null;
   prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
   items?: (MedicineCartItem | null)[] | null;
 }
 
@@ -189,6 +204,7 @@ export interface MedicineCartItem {
   mrp?: number | null;
   isPrescriptionNeeded?: number | null;
   prescriptionImageUrl?: string | null;
+  prismPrescriptionFileId?: string | null;
   mou?: number | null;
   isMedicine?: string | null;
 }

@@ -145,25 +145,78 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
   const client = useApolloClient();
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   useEffect(() => {
+    console.log(props, 'forj', dropArray);
+
     if (!!props.selectedTimeSlot && timeArray) {
       timeArray &&
         timeArray.length > 0 &&
         timeArray.map((value) => {
           value.time.map((name: string) => {
+            console.log(name, props.selectedTimeSlot);
+
             if (name === props.selectedTimeSlot) {
               setselectedtiming(value.label);
             }
           });
         });
     } else if (!!props.selectedTimeSlot && dropArray) {
-      dropArray.length > 0 &&
+      (dropArray.length > 0 &&
         dropArray.map((value) => {
           if (value.time === props.selectedTimeSlot) {
             setSelectedDrop(value);
           }
-        });
+        })) ||
+        getDropArrayData(date);
     }
-  }, [props.selectedTimeSlot]);
+  }, [props.selectedTimeSlot, dropArray]);
+
+  const getDropArrayData = (selectedDate: Date) => {
+    setshowSpinner(true);
+    const selectedAddress = addresses.find((item) => deliveryAddressId == item.id);
+    client
+      .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
+        query: GET_DIAGNOSTIC_SLOTS,
+        fetchPolicy: 'no-cache',
+        variables: {
+          patientId: currentPatient!.id,
+          hubCode: 'HYD_HUB1',
+          selectedDate: moment(selectedDate).format('YYYY-MM-DD'),
+          zipCode: parseInt(selectedAddress!.zipcode!),
+        },
+      })
+      .then(({ data }) => {
+        console.log(data, 'GET_DIAGNOSTIC_SLOTScal');
+        setshowSpinner(false);
+        var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
+        setDiagnosticSlot &&
+          setDiagnosticSlot({
+            diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode')!,
+            employeeSlotId: finalaray!.slotInfo![0]!.slot!,
+            diagnosticEmployeeCode: finalaray!.employeeCode || '',
+            slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
+            slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
+            city: selectedAddress!.city || '',
+            date: date.getTime(),
+          });
+
+        var t = finalaray!.slotInfo!.map((item) => {
+          return {
+            label: (item!.slot || '').toString(),
+            time: `${item!.startTime} - ${item!.endTime}`,
+          };
+        });
+        console.log(t, 'finalaray');
+        setDropArray(t);
+        setSelectedDrop(t[0]);
+      })
+      .catch((e: string) => {
+        setshowSpinner(false);
+        console.log('Error occured', e);
+      })
+      .finally(() => {
+        setshowSpinner(false);
+      });
+  };
 
   const renderCalendarView = () => {
     return (
@@ -174,48 +227,7 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
           setDate(selectedDate);
           setshowSpinner(true);
           setDropArray([]);
-          const selectedAddress = addresses.find((item) => deliveryAddressId == item.id);
-          client
-            .query<getDiagnosticSlots, getDiagnosticSlotsVariables>({
-              query: GET_DIAGNOSTIC_SLOTS,
-              fetchPolicy: 'no-cache',
-              variables: {
-                patientId: currentPatient!.id,
-                hubCode: 'HYD_HUB1',
-                selectedDate: moment(selectedDate).format('YYYY-MM-DD'),
-                zipCode: parseInt(selectedAddress!.zipcode!),
-              },
-            })
-            .then(({ data }) => {
-              console.log(data, 'GET_DIAGNOSTIC_SLOTScal');
-              setshowSpinner(false);
-              var finalaray = g(data, 'getDiagnosticSlots', 'diagnosticSlot', '0' as any);
-              setDiagnosticSlot &&
-                setDiagnosticSlot({
-                  diagnosticBranchCode: g(data, 'getDiagnosticSlots', 'diagnosticBranchCode')!,
-                  employeeSlotId: finalaray!.slotInfo![0]!.slot!,
-                  diagnosticEmployeeCode: finalaray!.employeeCode || '',
-                  slotStartTime: finalaray!.slotInfo![0]!.startTime!.toString(),
-                  slotEndTime: finalaray!.slotInfo![0]!.endTime!.toString(),
-                  city: selectedAddress!.city || '',
-                  date: date.getTime(),
-                });
-
-              var t = finalaray!.slotInfo!.map((item) => {
-                return {
-                  label: (item!.slot || '').toString(),
-                  time: `${item!.startTime} - ${item!.endTime}`,
-                };
-              });
-              console.log(t, 'finalaray');
-              setDropArray(t);
-              setSelectedDrop(t[0]);
-            })
-            .catch((e: string) => {
-              setshowSpinner(false);
-              console.log('Error occured', e);
-            })
-            .finally(() => {});
+          getDropArrayData(selectedDate);
         }}
         calendarType={type}
         onCalendarTypeChanged={(type) => {
@@ -357,8 +369,8 @@ export const ScheduleCalander: React.FC<ScheduleCalanderProps> = (props) => {
             setDiagnosticSlot &&
               setDiagnosticSlot({
                 ...diagnosticSlot!,
-                slotStartTime: selectedDrop!.time.split('-')[0],
-                slotEndTime: selectedDrop!.time.split('-')[1],
+                slotStartTime: selectedDrop!.time.split('-')[0].trim(),
+                slotEndTime: selectedDrop!.time.split('-')[1].trim(),
                 date: date.getTime(),
               });
             props.setDate(date);

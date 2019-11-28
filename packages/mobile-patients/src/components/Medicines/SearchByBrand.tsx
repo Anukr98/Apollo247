@@ -470,7 +470,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
         medicineName={medicine.name}
         imageUrl={
           medicine.thumbnail && !medicine.thumbnail.includes('/default/placeholder')
-            ? `${medicine.thumbnail}`
+            ? `${AppConfig.Configuration.IMAGES_BASE_URL[0]}${medicine.thumbnail}`
             : ''
         }
         price={price}

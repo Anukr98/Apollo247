@@ -26,7 +26,7 @@ import { ADD_TO_CONSULT_QUEUE } from 'graphql/consult';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
-      padding: '0 5px',
+      padding: '20px 5px',
     },
     consultationSection: {
       paddingLeft: 15,
@@ -176,29 +176,32 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 interface ConsultationsCardProps {
-  appointments: GetPatientAppointments;
+  appointments: appointmentDetails[];
 }
 
 export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
   const classes = useStyles({});
 
-  let bookedAppointments: appointmentDetails[] = [];
+  // let bookedAppointments: appointmentDetails[] = [];
 
-  if (
-    props.appointments.getPatinetAppointments.patinetAppointments &&
-    props.appointments.getPatinetAppointments.patinetAppointments.length > 0
-  ) {
-    bookedAppointments = props.appointments.getPatinetAppointments.patinetAppointments;
-  }
+  // if (
+  //   props.appointments.getPatinetAppointments.patinetAppointments &&
+  //   props.appointments.getPatinetAppointments.patinetAppointments.length > 0
+  // ) {
+  //   bookedAppointments =
+  //     props.appointments.getPatinetAppointments.patinetAppointments;
+  // }
   // filter appointments that are greater than current time.
-  const filterAppointments = bookedAppointments.filter((appointmentDetails) => {
-    const currentTime = new Date().getTime();
-    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+  // const filterAppointments = bookedAppointments.filter(appointmentDetails => {
+  //   const currentTime = new Date().getTime();
+  //   const appointmentTime = new Date(
+  //     appointmentDetails.appointmentDateTime
+  //   ).getTime();
 
-    if (appointmentTime > currentTime) {
-      return appointmentDetails;
-    }
-  });
+  //   if (appointmentTime > currentTime) {
+  //     return appointmentDetails;
+  //   }
+  // });
 
   const otherDateMarkup = (appointmentTime: number) => {
     if (isToday(new Date(appointmentTime))) {
@@ -227,10 +230,10 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
 
   return (
     <div className={classes.root}>
-      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 214px)'}>
+      <Scrollbars autoHide={true} autoHeight autoHeightMax={'calc(100vh - 365px)'}>
         <div className={classes.consultationSection}>
           <Grid container spacing={2}>
-            {filterAppointments.map((appointmentDetails, index) => {
+            {props.appointments.map((appointmentDetails, index) => {
               const appointmentId = appointmentDetails.id;
               const firstName =
                 appointmentDetails.doctorInfo && appointmentDetails.doctorInfo.firstName
@@ -250,8 +253,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   : '';
               const specialization =
                 appointmentDetails.doctorInfo &&
-                appointmentDetails.doctorInfo.specialty &&
-                !_isNull(appointmentDetails.doctorInfo.specialty.name)
+                  appointmentDetails.doctorInfo.specialty &&
+                  !_isNull(appointmentDetails.doctorInfo.specialty.name)
                   ? appointmentDetails.doctorInfo.specialty.name
                   : '';
               const currentTime = new Date().getTime();
@@ -264,25 +267,25 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                   : '';
               const isConsultStarted = appointmentDetails.isConsultStarted;
               return (
-                <Grid item sm={6} key={index}>
+                <Grid item sm={4} key={index}>
                   <div className={classes.consultCard}>
                     <div className={classes.consultCardWrap}>
                       <div className={classes.startDoctor}>
                         <Avatar alt="" src={doctorImage} className={classes.doctorAvatar} />
                         {appointmentDetails.doctorInfo &&
-                        appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO ? (
-                          <span>
-                            <img src={require('images/ic_star.svg')} alt="" />
-                          </span>
-                        ) : null}
+                          appointmentDetails.doctorInfo.doctorType === DoctorType.STAR_APOLLO ? (
+                            <span>
+                              <img src={require('images/ic_star.svg')} alt="" />
+                            </span>
+                          ) : null}
                       </div>
                       <div className={classes.doctorInfo}>
                         <div
                           className={`${classes.availability} ${
-                            difference <= 15 ? classes.availableNow : ''
-                          }`}
+                            difference <= 15 && difference > 0 ? classes.availableNow : ''
+                            }`}
                         >
-                          {difference <= 15
+                          {difference <= 15 && difference > 0
                             ? `Available in ${difference} mins`
                             : otherDateMarkup(appointmentTime)}
                         </div>
@@ -305,8 +308,8 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                             {appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE ? (
                               <img src={require('images/ic_onlineconsult.svg')} alt="" />
                             ) : (
-                              <img src={require('images/ic_clinicvisit.svg')} alt="" />
-                            )}
+                                <img src={require('images/ic_clinicvisit.svg')} alt="" />
+                              )}
                           </span>
                         </div>
                         <div className={classes.appointBooked}>
@@ -322,23 +325,23 @@ export const ConsultationsCard: React.FC<ConsultationsCardProps> = (props) => {
                         onClick={() => {
                           isConsultStarted
                             ? (window.location.href = clientRoutes.chatRoom(
-                                appointmentId,
-                                doctorId
-                              ))
+                              appointmentId,
+                              doctorId
+                            ))
                             : addConsultToQueue({
-                                variables: {
+                              variables: {
+                                appointmentId,
+                              },
+                            })
+                              .then((res) => {
+                                window.location.href = clientRoutes.chatRoom(
                                   appointmentId,
-                                },
+                                  doctorId
+                                );
                               })
-                                .then((res) => {
-                                  window.location.href = clientRoutes.chatRoom(
-                                    appointmentId,
-                                    doctorId
-                                  );
-                                })
-                                .catch((e: ApolloError) => {
-                                  console.log(e);
-                                });
+                              .catch((e: ApolloError) => {
+                                console.log(e);
+                              });
                         }}
                       >
                         {isConsultStarted ? 'Continue Consult' : 'Start Consult'}

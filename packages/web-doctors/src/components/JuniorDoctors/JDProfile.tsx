@@ -172,12 +172,18 @@ export const JDProfile: React.FC = (props) => {
     currentDoctor && currentDoctor.mobileNumber
       ? _startCase(_toLower(currentDoctor.mobileNumber))
       : '';
+  const mobileDoctor = doctorMobileNumber.toString().split('');
+  const realDigits = mobileDoctor.map(Number);
+  const digits = realDigits.slice(0, 2);
+  const numbers = realDigits.slice(2, 12).join('');
+
   const doctorSalutation =
     currentDoctor && currentDoctor.salutation ? _startCase(_toLower(currentDoctor.salutation)) : '';
   const doctorSpecialty =
     currentDoctor && currentDoctor.specialty && currentDoctor.specialty.name
       ? _startCase(_toLower(currentDoctor.specialty.name))
       : '';
+  const doctorQualification = currentDoctor && currentDoctor.qualification;
   const doctorPhotoUrl = currentDoctor && currentDoctor.photoUrl ? currentDoctor.photoUrl : '';
 
   return isSigningIn ? (
@@ -205,8 +211,11 @@ export const JDProfile: React.FC = (props) => {
                 <div
                   className={classes.doctorName}
                 >{`${doctorSalutation} ${doctorFirstName} ${doctorLastName}`}</div>
-                <div className={classes.doctorType}>{doctorSpecialty}</div>
-                <div className={classes.contactNo}>{doctorMobileNumber}</div>
+                <div className={classes.doctorType}>{doctorQualification}</div>
+                <div className={classes.contactNo}>
+                  {'+'}
+                  {digits} {numbers}
+                </div>
               </div>
             </div>
             <div className={classes.bottomActions}>

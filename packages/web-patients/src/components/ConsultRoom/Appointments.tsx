@@ -22,6 +22,9 @@ import { useAuth } from 'hooks/authHooks';
 import { STATUS } from 'graphql/types/globalTypes';
 import isToday from 'date-fns/isToday';
 import { TransferConsultMessage } from 'components/ConsultRoom/TransferConsultMessage';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import moment from 'moment';
 // import { getIstTimestamp } from 'helpers/dateHelpers';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -31,6 +34,36 @@ const useStyles = makeStyles((theme: Theme) => {
       [theme.breakpoints.down('xs')]: {
         paddingTop: 101,
       },
+    },
+    none: {
+      display: 'none',
+    },
+    block: {
+      display: 'block',
+    },
+    tabsRoot: {
+      backgroundColor: theme.palette.common.white,
+      borderRadius: 0,
+      boxShadow: '0 5px 20px 0 rgba(128, 128, 128, 0.3)',
+      paddingLeft: 20,
+      paddingRight: 20,
+    },
+    tabRoot: {
+      fontSize: 16,
+      fontWeight: 500,
+      textAlign: 'center',
+      color: '#02475b',
+      padding: '14px 10px',
+      textTransform: 'none',
+      opacity: 0.5,
+      lineHeight: 'normal',
+    },
+    tabSelected: {
+      opacity: 1,
+    },
+    tabsIndicator: {
+      backgroundColor: '#00b38e',
+      height: 3,
     },
     headerSticky: {
       position: 'fixed',
@@ -48,15 +81,10 @@ const useStyles = makeStyles((theme: Theme) => {
     consultPage: {
       borderRadius: '0 0 10px 10px',
       backgroundColor: '#f7f8f5',
-      paddingLeft: 40,
-      paddingRight: 20,
-      paddingTop: 46,
-      paddingBottom: 40,
+      paddingTop: 30,
     },
     consultationsHeader: {
-      paddingBottom: 60,
-      width: 'calc(100% - 328px)',
-      paddingRight: 20,
+      padding: '10px 40px 30px 40px',
       '& h1': {
         display: 'flex',
         fontSize: 50,
@@ -121,7 +149,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     consultSection: {
       display: 'flex',
-      paddingRight: 20,
+      padding: 20,
     },
     leftSection: {
       width: 'calc(100% - 328px)',
@@ -130,9 +158,6 @@ const useStyles = makeStyles((theme: Theme) => {
     rightSection: {
       width: 328,
       marginTop: -183,
-    },
-    noConsultations: {
-      paddingBottom: 0,
     },
     bottomPopover: {
       overflow: 'initial',
@@ -157,6 +182,15 @@ const useStyles = makeStyles((theme: Theme) => {
       boxShadow: '0 5px 40px 0 rgba(0, 0, 0, 0.3)',
       backgroundColor: theme.palette.common.white,
     },
+    noAppointments: {
+      backgroundColor: theme.palette.common.white,
+      minWidth: 320,
+      margin: 'auto',
+      padding: 16,
+      marginTop: 8,
+      borderRadius: 10,
+      display: 'flex',
+    },
     mascotIcon: {
       position: 'absolute',
       right: 12,
@@ -165,18 +199,39 @@ const useStyles = makeStyles((theme: Theme) => {
         maxWidth: 80,
       },
     },
+    leftGroup: {
+      width: 'calc(100% - 52px)',
+      '& h3': {
+        margin: 0,
+        padding: 0,
+        fontSize: 16,
+        color: '#02475b',
+        fontWeight: 500,
+      },
+      '& button': {
+        marginTop: 12,
+      },
+    },
+    rightGroup: {
+      paddingLeft: 16,
+      '& img': {
+        maxWidth: 36,
+      },
+    },
   };
 });
 
 type Patient = GetCurrentPatients_getCurrentPatients_patients;
 
-export const ConsultRoom: React.FC = (props) => {
+export const Appointments: React.FC = (props) => {
   const classes = useStyles({});
   const { allCurrentPatients, currentPatient, setCurrentPatientId } = useAllCurrentPatients();
-  const currentDate = new Date().toISOString().substring(0, 10);
+  // const currentDate = new Date().toISOString().substring(0, 10);
+  const currentDate = moment(new Date(), 'YYYY-MM-DD').format('YYYY-MM-DD');
   const { isSignedIn } = useAuth();
   const mascotRef = useRef(null);
   const [isPopoverOpen] = React.useState<boolean>(false);
+  const [tabValue, setTabValue] = React.useState<number>(0);
 
   const { data, loading, error } = useQueryWithSkip<
     GetPatientAppointments,
@@ -211,25 +266,39 @@ export const ConsultRoom: React.FC = (props) => {
   console.log(appointments + '');
 
   // filter appointments that are greater than current time.
-  const filterAppointments = appointments.filter((appointmentDetails) => {
+  // const filterAppointments = appointments.filter(appointmentDetails => {
+  //   const currentTime = new Date().getTime();
+  //   const appointmentTime = new Date(
+  //     appointmentDetails.appointmentDateTime
+  //   ).getTime();
+  //   if (appointmentTime > currentTime) {
+  //     if (isToday(appointmentTime)) todaysConsultations++;
+
+  //     return appointmentDetails;
+  //   }
+  // });
+
+  const availableAppointments = appointments.filter((appointmentDetails) => {
     const currentTime = new Date().getTime();
-    // const aptArray = appointmentDetails.appointmentDateTime.split('T');
-    // const appointmentTime = getIstTimestamp(new Date(aptArray[0]), aptArray[1].substring(0, 5));
     const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
-    // const appointmentStatus = appointmentDetails.status;
-    if (
-      // appointmentTime > currentTime &&
-      // appointmentDetails.appointmentType === APPOINTMENT_TYPE.ONLINE
-      // the above condition is commented as per demo feedback on 13/08/2019
-      // appointmentTime > currentTime &&
-      // appointmentStatus === STATUS.IN_PROGRESS
-      appointmentTime > currentTime
-    ) {
+    if (appointmentTime > currentTime) {
       if (isToday(appointmentTime)) todaysConsultations++;
 
       return appointmentDetails;
     }
   });
+
+  const pastAppointments = appointments.filter((appointmentDetails) => {
+    const currentTime = new Date().getTime();
+    const appointmentTime = new Date(appointmentDetails.appointmentDateTime).getTime();
+    if (appointmentTime <= currentTime) {
+      return appointmentDetails;
+    }
+  });
+
+  const TabContainer: React.FC = (props) => {
+    return <Typography component="div">{props.children}</Typography>;
+  };
 
   return isSignedIn ? (
     <div className={classes.root}>
@@ -241,9 +310,7 @@ export const ConsultRoom: React.FC = (props) => {
       <div className={classes.container}>
         <div className={classes.consultPage}>
           <div
-            className={`${classes.consultationsHeader} ${
-              filterAppointments.length === 0 ? classes.noConsultations : ''
-            }`}
+            className={`${classes.consultationsHeader}`}
           >
             {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
               <Typography variant="h1">
@@ -283,41 +350,79 @@ export const ConsultRoom: React.FC = (props) => {
               <Typography variant="h1">hello there!</Typography>
             )}
 
-            {filterAppointments.length === 0 ? (
-              <>
-                <p>You have no consultations today :) Hope you are doing well?</p>
-                <div className={classes.bottomActions}>
-                  <Route
-                    render={({ history }) => (
-                      <AphButton
-                        fullWidth
-                        color="primary"
-                        onClick={() => {
-                          history.push(clientRoutes.doctorsLanding());
-                        }}
-                      >
-                        Consult Doctor
-                      </AphButton>
-                    )}
-                  />
-                </div>
-              </>
+            {availableAppointments.length === 0 ? (
+              <p>You have no consultations today :) Hope you are doing well?</p>
             ) : todaysConsultations > 0 ? (
               <p>
-                You have {filterAppointments.length}
-                {filterAppointments.length > 1 ? ' consultations' : ' consultation'} today!
+                You have {availableAppointments.length}
+                {availableAppointments.length > 1 ? ' consultations' : ' consultation'} today!
               </p>
             ) : (
               <p>You have no consultations today :)</p>
             )}
           </div>
-        </div>
-        <div className={classes.consultSection}>
-          <div className={classes.leftSection}>
-            {data ? <ConsultationsCard appointments={data} /> : null}
-          </div>
-          <div className={classes.rightSection}>
-            <ThingsToDo />
+          <div>
+            <Tabs
+              value={tabValue}
+              variant="fullWidth"
+              classes={{
+                root: classes.tabsRoot,
+                indicator: classes.tabsIndicator,
+              }}
+              onChange={(e, newValue) => {
+                setTabValue(newValue);
+              }}
+            >
+              <Tab
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+                label="Active"
+              />
+              <Tab
+                classes={{
+                  root: classes.tabRoot,
+                  selected: classes.tabSelected,
+                }}
+                label="Past"
+              />
+            </Tabs>
+            {tabValue === 0 && (
+              <TabContainer>
+                  {availableAppointments && availableAppointments.length > 0 ? (
+                    <ConsultationsCard appointments={availableAppointments} />
+                  ) : (
+                    <div className={classes.consultSection}>
+                      <div className={classes.noAppointments}>
+                        <div className={classes.leftGroup}>
+                          <h3>Want to book an appointment?</h3>
+                          <Route
+                            render={({ history }) => (
+                              <AphButton
+                                color="primary"
+                                onClick={() => {
+                                  history.push(clientRoutes.doctorsLanding());
+                                }}
+                              >
+                                Book an Appointment
+                              </AphButton>
+                            )}
+                          />
+                        </div>
+                        <div className={classes.rightGroup}>
+                          <img src={require('images/ic_doctor_consult.svg')} alt="" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+              </TabContainer>
+            )}
+            {tabValue === 1 && (
+              <TabContainer>
+                {pastAppointments ? <ConsultationsCard appointments={pastAppointments} /> : null}
+              </TabContainer>
+            )}
           </div>
         </div>
       </div>

@@ -134,6 +134,12 @@ export enum DIAGNOSTIC_ORDER_STATUS {
   ORDER_FAILED = 'ORDER_FAILED',
 }
 
+export enum FEEDBACKTYPE {
+  CONSULT = 'CONSULT',
+  PHARMACY = 'PHARMACY',
+  DIAGNOSTICS = 'DIAGNOSTICS',
+}
+
 //medicine orders starts
 @Entity()
 export class MedicineOrders extends BaseEntity {
@@ -511,6 +517,9 @@ export class Patient extends BaseEntity {
 
   @OneToMany((type) => MedicalRecords, (medicalRecords) => medicalRecords.patient)
   medicalRecords: MedicalRecords[];
+
+  @OneToMany((type) => PatientFeedback, (patientfeedback) => patientfeedback.patient)
+  patientfeedback: PatientFeedback[];
 
   @Column()
   @Validate(MobileNumberValidator)
@@ -1292,4 +1301,25 @@ export class DiagnosticPincodeHubs extends BaseEntity {
 
   @Column({ nullable: true })
   areaName: string;
+}
+
+@Entity()
+export class PatientFeedback extends BaseEntity {
+  @ManyToOne((type) => Patient, (patient) => patient.id)
+  patient: Patient;
+
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  rating: string;
+
+  @Column({ type: 'text' })
+  thankyouNote: string;
+
+  @Column()
+  reason: string;
+
+  @Column()
+  feedbackType: FEEDBACKTYPE;
 }
