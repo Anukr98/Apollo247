@@ -1724,14 +1724,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               )}
             </div>
             <div className={classes.tabFooter}>
-              <Button
-                className={classes.cancelConsult}
-                onClick={() => {
-                  setIsPopoverOpen(false);
-                }}
-              >
-                Cancel
-              </Button>
+              
               <Button
                 className={classes.ResheduleCosultButton}
                 onClick={() => {
