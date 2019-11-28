@@ -49,8 +49,8 @@ export class DoctorFavouriteMedicineRepository extends Repository<DoctorsFavouri
 
   getFavouriteMedicineByName(medicineName: string, doctorId: string) {
     return this.createQueryBuilder('doctors_favourite_medicine')
-      .where('LOWER(doctors_favourite_medicine.medicineName) LIKE :medicineName', {
-        medicineName: `${medicineName}%`,
+      .where('LOWER(doctors_favourite_medicine.medicineName) = :medicineName', {
+        medicineName: `${medicineName}`,
       })
       .andWhere('doctors_favourite_medicine.doctor = :doctorId', { doctorId })
       .getMany()
@@ -63,8 +63,8 @@ export class DoctorFavouriteMedicineRepository extends Repository<DoctorsFavouri
 
   checkMedicineNameWhileUpdate(medicineName: string, id: string) {
     return this.createQueryBuilder('doctors_favourite_medicine')
-      .where('LOWER(doctors_favourite_medicine.medicineName) LIKE :medicineName', {
-        medicineName: `${medicineName}%`,
+      .where('LOWER(doctors_favourite_medicine.medicineName) = :medicineName', {
+        medicineName: `${medicineName}`,
       })
       .andWhere('doctors_favourite_medicine.id != :id', { id })
       .getMany()

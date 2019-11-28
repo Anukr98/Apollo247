@@ -111,6 +111,9 @@ const saveDoctorsFavouriteMedicine: Resolver<
   const doctordata = await doctorRepository.findById(saveDoctorsFavouriteMedicineInput.doctorId);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
+  if (saveDoctorsFavouriteMedicineInput.medicineName.length == 0)
+    throw new AphError(AphErrorMessages.INVALID_ENTITY);
+
   const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
 
   //check for medicine name exsitence
@@ -199,6 +202,9 @@ const updateDoctorFavouriteMedicine: Resolver<
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  if (updateDoctorsFavouriteMedicineInput.medicineName.length == 0)
+    throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   //check if id exists or not
   const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
