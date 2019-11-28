@@ -45,6 +45,7 @@ import {
   Clinic,
   getPlaceInfoByPincode,
   searchClinicApi,
+  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -228,7 +229,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const { currentPatient } = useAllCurrentPatients();
   const currentPatientId = currentPatient && currentPatient!.id;
   const client = useApolloClient();
-  const { locationForDiagnostics } = useAppCommonData();
+  const { locationForDiagnostics, locationDetails } = useAppCommonData();
 
   const { setLoading, showAphAlert } = useUIElements();
   const { getPatientApiCall } = useAuth();
@@ -243,6 +244,43 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
+
+  useEffect(() => {
+    if (!(locationDetails && locationDetails.pincode)) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          getPlaceInfoByLatLng(latitude, longitude)
+            .then((obj) => {
+              try {
+                if (
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
+                ) {
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(address, 'address obj');
+                  const addrComponents = obj.data.results[0].address_components || [];
+                  const _pincode = (
+                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+                  ).long_name;
+                  setPinCode && setPinCode(_pincode || '');
+                }
+              } catch {}
+            })
+            .catch((error) => {
+              console.log(error, 'geocode error');
+            });
+        },
+        (error) => {
+          console.log(error.code, error.message, 'getCurrentPosition error');
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      );
+      console.log('pincode');
+    } else {
+      setPinCode && setPinCode(locationDetails.pincode);
+    }
+  }, []);
 
   useEffect(() => {
     onFinishUpload();

@@ -34,6 +34,7 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
+  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -53,6 +54,7 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { uploadDocument } from '../../graphql/types/uploadDocument';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -133,11 +135,50 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
+  const { locationDetails } = useAppCommonData();
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
     }
   }, [currentPatient]);
+
+  useEffect(() => {
+    if (!(locationDetails && locationDetails.pincode)) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          getPlaceInfoByLatLng(latitude, longitude)
+            .then((obj) => {
+              try {
+                if (
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
+                ) {
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(address, 'address obj');
+                  const addrComponents = obj.data.results[0].address_components || [];
+                  const _pincode = (
+                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+                  ).long_name;
+                  // setpincode(_pincode || '');
+                  fetchStorePickup(_pincode || '');
+                }
+              } catch {}
+            })
+            .catch((error) => {
+              console.log(error, 'geocode error');
+            });
+        },
+        (error) => {
+          console.log(error.code, error.message, 'getCurrentPosition error');
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      );
+      console.log('pincode');
+    } else {
+      fetchStorePickup(locationDetails.pincode);
+    }
+  }, []);
 
   useEffect(() => {
     setLoading!(true);
