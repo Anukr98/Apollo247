@@ -157,6 +157,8 @@ const removeFavouriteMedicine: Resolver<
   DoctorsServiceContext,
   FavouriteMedicineList
 > = async (parent, args, { mobileNumber, doctorsDb }) => {
+  if (args.id.trim().length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
+
   const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
@@ -203,7 +205,7 @@ const updateDoctorFavouriteMedicine: Resolver<
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  if (updateDoctorsFavouriteMedicineInput.medicineName.length == 0)
+  if (updateDoctorsFavouriteMedicineInput.medicineName.trim().length == 0)
     throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   //check if id exists or not
