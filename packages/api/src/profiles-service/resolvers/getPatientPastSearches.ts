@@ -79,7 +79,7 @@ const getPatientPastMedicineSearches: Resolver<
   SearchData[]
 > = async (parent, args, { profilesDb, doctorsDb }) => {
   const searchHistoryRepository = profilesDb.getCustomRepository(SearchHistoryRepository);
-  const searchType = args.type && args.type == SEARCH_TYPE.TEST ? args.type : SEARCH_TYPE.MEDICINE;
+  const searchType = args.type && args.type === SEARCH_TYPE.TEST ? args.type : SEARCH_TYPE.MEDICINE;
   const recentMedicineSearches = await searchHistoryRepository.getPatientRecentSearchHistory(
     args.patientId,
     [searchType]
