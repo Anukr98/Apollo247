@@ -6,6 +6,7 @@ import { Theme } from '@material-ui/core';
 import { Header } from 'components/Header';
 import { AphTextField, AphButton } from '@aph/web-ui-components';
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
+import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -162,6 +163,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     allProductsList: {
       padding: '30px 40px',
+      paddingBottom: 10,
     },
     sliderSection: {
       paddingBottom: 22,
@@ -174,6 +176,15 @@ const useStyles = makeStyles((theme: Theme) => {
       borderBottom: 'solid 0.5px rgba(2, 71, 91, 0.3)',
       paddingBottom: 8,
       marginBottom: 10,
+      display: 'flex',
+    },
+    viewAllLink: {
+      marginLeft: 'auto',
+      '& a': {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: '#fc9916',
+      },
     },
   };
 });
@@ -209,7 +220,7 @@ export const MedicineLanding: React.FC = (props) => {
                     className={classes.searchInput}
                   />
                   <AphButton className={classes.searchBtn}>
-                    <img src={require('images/ic_add.svg')} alt="" />
+                    <img src={require('images/ic_send.svg')} alt="" />
                   </AphButton>
                 </div>
                 <div className={classes.productsBanner}>
@@ -263,6 +274,17 @@ export const MedicineLanding: React.FC = (props) => {
                 Shop by Health Areas
               </div>
               <ShopByAreas />
+            </div>
+            <div className={classes.sliderSection}>
+              <div className={classes.sectionTitle}>
+                <span>Shop by Brand</span>
+                <div className={classes.viewAllLink}>
+                  <Link to={clientRoutes.yourOrders()}>
+                    View All
+                  </Link>
+                </div>
+              </div>
+              <ShopByBrand />
             </div>
           </div>
         </div>
