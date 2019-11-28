@@ -1113,6 +1113,9 @@ export const JDCallPopover: React.FC<CallPopoverProps> = props => {
         if (message.message && message.message.message === acceptcallMsg) {
           setIsCallAccepted(true);
         }
+      },
+      presence: presenceEvent => {
+        console.log(presenceEvent);
       }
     });
     return function cleanup() {
