@@ -56,7 +56,7 @@ const addDoctorFavouriteTest: Resolver<
 
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteTestRepository);
 
-  if (args.itemname.length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
+  if (args.itemname.trim().length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   //check if test already exists
   const getTestByName = await favouriteTestRepo.getDoctorFavouriteTestByName(
@@ -81,6 +81,8 @@ const deleteDoctorFavouriteTest: Resolver<
   DoctorsServiceContext,
   FavouriteTestList
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb, firebaseUid }) => {
+  if (args.testId.trim().length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
+
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
@@ -111,7 +113,7 @@ const updateDoctorFavouriteTest: Resolver<
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  if (args.itemname.length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
+  if (args.itemname.trim().length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteTestRepository);
 
