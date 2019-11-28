@@ -49,8 +49,16 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     id: ID!
   }
 
-  type DoctorFavouriteMedicineResult {
-    favouriteMedicine: DoctorFavouriteMedicine
+  input UpdateDoctorsFavouriteMedicineInput {
+    externalId: String
+    medicineConsumptionDurationInDays: Int
+    medicineDosage: String
+    medicineUnit: String
+    medicineInstructions: String
+    medicineTimings: [MEDICINE_TIMINGS]!
+    medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
+    medicineName: String!
+    id: ID!
   }
 
   type FavouriteMedicineList {
@@ -64,9 +72,17 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
   extend type Mutation {
     saveDoctorsFavouriteMedicine(
       saveDoctorsFavouriteMedicineInput: SaveDoctorsFavouriteMedicineInput
-    ): DoctorFavouriteMedicineResult!
+    ): FavouriteMedicineList!
+    removeFavouriteMedicine(id: String): FavouriteMedicineList!
+    updateDoctorFavouriteMedicine(
+      updateDoctorsFavouriteMedicineInput: UpdateDoctorsFavouriteMedicineInput
+    ): FavouriteMedicineList
   }
 `;
+
+type FavouriteMedicineList = {
+  medicineList: DoctorsFavouriteMedicine[];
+};
 
 type SaveDoctorsFavouriteMedicineInput = {
   externalId: string;
@@ -80,10 +96,6 @@ type SaveDoctorsFavouriteMedicineInput = {
   doctorId: string;
 };
 
-type DoctorFavouriteMedicineResult = {
-  favouriteMedicine: DoctorsFavouriteMedicine;
-};
-
 type saveDoctorsFavouriteMedicineInputArgs = {
   saveDoctorsFavouriteMedicineInput: SaveDoctorsFavouriteMedicineInput;
 };
@@ -92,25 +104,26 @@ const saveDoctorsFavouriteMedicine: Resolver<
   null,
   saveDoctorsFavouriteMedicineInputArgs,
   DoctorsServiceContext,
-  DoctorFavouriteMedicineResult
+  FavouriteMedicineList
 > = async (parent, { saveDoctorsFavouriteMedicineInput }, { doctorsDb, mobileNumber }) => {
+  //doctor check
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findById(saveDoctorsFavouriteMedicineInput.doctorId);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
+  //TODO :  check for medicine name exsitence
+
+  //add fav medicine
   const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
   const saveDoctorFavouriteMedicineAttrs: Partial<DoctorsFavouriteMedicine> = {
     ...saveDoctorsFavouriteMedicineInput,
     doctor: doctordata,
   };
-  const saveFavouriteMedicine = await favouriteMedicineRepo.saveDoctorFavouriteMedicine(
-    saveDoctorFavouriteMedicineAttrs
-  );
-  return { favouriteMedicine: saveFavouriteMedicine };
-};
+  await favouriteMedicineRepo.saveDoctorFavouriteMedicine(saveDoctorFavouriteMedicineAttrs);
 
-type FavouriteMedicineList = {
-  medicineList: DoctorsFavouriteMedicine[];
+  const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
+  const favouriteTestList = await favouriteTestRepo.favouriteMedicines(doctordata.id);
+  return { medicineList: favouriteTestList };
 };
 
 const getDoctorFavouriteMedicineList: Resolver<
@@ -128,11 +141,88 @@ const getDoctorFavouriteMedicineList: Resolver<
   return { medicineList: favouriteTestList };
 };
 
+const removeFavouriteMedicine: Resolver<
+  null,
+  { id: string },
+  DoctorsServiceContext,
+  FavouriteMedicineList
+> = async (parent, args, { mobileNumber, doctorsDb }) => {
+  const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
+
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  // check if id exists or not
+  const checkid = await favouriteMedicineRepo.findById(args.id);
+  if (checkid == null) throw new AphError(AphErrorMessages.INVALID_FAVOURITE_ID);
+
+  //delete medicine
+  await favouriteMedicineRepo.removeFavouriteMedicineById(args.id);
+
+  const doctorsOtherFavouriteMedicines = await favouriteMedicineRepo.favouriteMedicines(<string>(
+    doctordata.id
+  ));
+
+  return { medicineList: doctorsOtherFavouriteMedicines };
+};
+
+type updateDoctorsFavouriteMedicineInput = {
+  externalId: string;
+  medicineConsumptionDurationInDays: number;
+  medicineDosage: string;
+  medicineUnit: string;
+  medicineInstructions: string;
+  medicineTimings: [MEDICINE_TIMINGS];
+  medicineToBeTaken: [MEDICINE_TO_BE_TAKEN];
+  medicineName: string;
+  id: string;
+};
+
+type updateDoctorsFavouriteMedicineInputArgs = {
+  updateDoctorsFavouriteMedicineInput: updateDoctorsFavouriteMedicineInput;
+};
+
+const updateDoctorFavouriteMedicine: Resolver<
+  null,
+  updateDoctorsFavouriteMedicineInputArgs,
+  DoctorsServiceContext,
+  FavouriteMedicineList
+> = async (
+  parent,
+  { updateDoctorsFavouriteMedicineInput },
+  { doctorsDb, currentUser, mobileNumber }
+) => {
+  const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
+  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
+  if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
+
+  //check if id exists or not
+  const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
+  const checkId = await favouriteMedicineRepo.findById(updateDoctorsFavouriteMedicineInput.id);
+  if (checkId == null) throw new AphError(AphErrorMessages.INVALID_FAVOURITE_ID);
+
+  //update medicine
+  await favouriteMedicineRepo.updateFavouriteMedicine(
+    updateDoctorsFavouriteMedicineInput.id,
+    updateDoctorsFavouriteMedicineInput
+  );
+
+  //get medicine list
+  const doctorsOtherFavouriteMedicines = await favouriteMedicineRepo.favouriteMedicines(
+    doctordata.id
+  );
+
+  return { medicineList: doctorsOtherFavouriteMedicines };
+};
+
 export const saveDoctorFavouriteMedicineResolver = {
   Query: {
     getDoctorFavouriteMedicineList,
   },
   Mutation: {
     saveDoctorsFavouriteMedicine,
+    removeFavouriteMedicine,
+    updateDoctorFavouriteMedicine,
   },
 };
