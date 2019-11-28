@@ -50,7 +50,7 @@ const addDoctorFavouriteAdvice: Resolver<
   DoctorsServiceContext,
   FavouriteAdviceList
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb, firebaseUid }) => {
-  if (args.instruction.length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
+  if (args.instruction.trim().length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
@@ -72,7 +72,7 @@ const deleteDoctorFavouriteAdvice: Resolver<
   DoctorsServiceContext,
   FavouriteAdviceList
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb, firebaseUid }) => {
-  if (args.instructionId.length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
+  if (args.instructionId.trim().length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
@@ -93,7 +93,7 @@ const updateDoctorFavouriteAdvice: Resolver<
   DoctorsServiceContext,
   FavouriteAdviceList
 > = async (parent, args, { mobileNumber, doctorsDb, consultsDb, firebaseUid }) => {
-  if (args.id.length == 0 || args.instruction.length == 0)
+  if (args.id.trim().length == 0 || args.instruction.trim().length == 0)
     throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
