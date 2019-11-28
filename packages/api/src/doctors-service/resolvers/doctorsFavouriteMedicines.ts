@@ -90,8 +90,8 @@ type SaveDoctorsFavouriteMedicineInput = {
   medicineDosage: string;
   medicineUnit: string;
   medicineInstructions: string;
-  medicineTimings: MEDICINE_TIMINGS;
-  medicineToBeTaken: MEDICINE_TO_BE_TAKEN;
+  medicineTimings: MEDICINE_TIMINGS[];
+  medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
   medicineName: string;
   doctorId: string;
 };
@@ -173,8 +173,8 @@ type updateDoctorsFavouriteMedicineInput = {
   medicineDosage: string;
   medicineUnit: string;
   medicineInstructions: string;
-  medicineTimings: [MEDICINE_TIMINGS];
-  medicineToBeTaken: [MEDICINE_TO_BE_TAKEN];
+  medicineTimings: MEDICINE_TIMINGS[];
+  medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
   medicineName: string;
   id: string;
 };

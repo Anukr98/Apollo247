@@ -31,7 +31,7 @@ export class DoctorFavouriteMedicineRepository extends Repository<DoctorsFavouri
     });
   }
 
-  updateFavouriteMedicine(id: string, updatedata: any) {
+  updateFavouriteMedicine(id: string, updatedata: Partial<DoctorsFavouriteMedicine>) {
     return this.update(id, updatedata).catch((doctorFavouriteMedicineError) => {
       throw new AphError(AphErrorMessages.UPDATE_DOCTOR_FAVOURITE_MEDICINE_ERROR, undefined, {
         doctorFavouriteMedicineError,
