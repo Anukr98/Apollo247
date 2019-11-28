@@ -495,11 +495,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     streamDestroyed: (event: string) => {
       console.log('Publisher stream destroyed!', event);
     },
+    error: (error: string) => {
+      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
+    },
   };
 
   const subscriberEventHandlers = {
     error: (error: string) => {
-      console.log(`There was an error with the subscriber: ${error}`);
+      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
     },
     connected: (event: string) => {
       console.log('Subscribe stream connected!', event);
@@ -511,28 +514,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
 
   const sessionEventHandlers = {
     error: (error: string) => {
-      console.log(`There was an error with the session: ${error}`);
+      console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
     },
     connectionCreated: (event: string) => {},
     connectionDestroyed: (event: string) => {
-      setIsCall(false);
-      setIsAudioCall(false);
-      stopTimer();
-      setCallAccepted(false);
-      setHideStatusBar(true);
       console.log('session stream connectionDestroyed!', event);
-      setConvertVideo(false);
-      KeepAwake.activate();
-      setTimerStyles({
-        position: 'absolute',
-        marginHorizontal: 20,
-        marginTop: isIphoneX() ? 91 : 81,
-        width: width - 40,
-        color: 'white',
-        ...theme.fonts.IBMPlexSansSemiBold(12),
-        textAlign: 'center',
-        letterSpacing: 0.46,
-      });
+      eventsAfterConnectionDestroyed();
     },
     sessionConnected: (event: string) => {
       console.log('session stream sessionConnected!', event);
@@ -540,6 +527,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     sessionDisconnected: (event: string) => {
       console.log('session stream sessionDisconnected!', event);
+      eventsAfterConnectionDestroyed();
+      // disconnectCallText();
     },
     sessionReconnected: (event: string) => {
       console.log('session stream sessionReconnected!', event);
@@ -552,6 +541,26 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     signal: (event: string) => {
       console.log('session stream signal!', event);
     },
+  };
+
+  const eventsAfterConnectionDestroyed = () => {
+    setIsCall(false);
+    setIsAudioCall(false);
+    stopTimer();
+    setCallAccepted(false);
+    setHideStatusBar(true);
+    setConvertVideo(false);
+    KeepAwake.activate();
+    setTimerStyles({
+      position: 'absolute',
+      marginHorizontal: 20,
+      marginTop: isIphoneX() ? 91 : 81,
+      width: width - 40,
+      color: 'white',
+      ...theme.fonts.IBMPlexSansSemiBold(12),
+      textAlign: 'center',
+      letterSpacing: 0.46,
+    });
   };
 
   const config: Pubnub.PubnubConfig = {
@@ -715,14 +724,14 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
   };
 
   const checkForRescheduleMessage = (newmessage: any) => {
-    const result = insertText.filter((obj: any) => {
+    const result = newmessage.filter((obj: any) => {
       // console.log('resultinsertText', obj.message);
       return obj.message === rescheduleConsultMsg;
     });
     if (result.length > 0) {
-      console.log('result.length ', result);
-      checkIfReschduleApi(newmessage, 'Followup');
-      NextAvailableSlot(newmessage, 'Followup');
+      console.log('checkForRescheduleMessage ', result);
+      checkIfReschduleApi(result[0], 'Followup');
+      NextAvailableSlot(result[0], 'Followup');
       setCheckReschudule(true);
     }
   };
@@ -786,10 +795,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           return obj.message === startConsultjr;
         });
 
+        const jdThankyouResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === jdThankyou;
+        });
+
         if (
           result.length === 0 &&
           startConsultResult.length === 0 &&
-          startConsultjrResult.length === 0
+          startConsultjrResult.length === 0 &&
+          jdThankyouResult.length === 0
         ) {
           // console.log('result.length ', result);
           pubnub.publish(
@@ -838,10 +853,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           return obj.message === startConsultjr;
         });
 
+        const jdThankyouResult = insertText.filter((obj: any) => {
+          // console.log('resultinsertText', obj.message);
+          return obj.message === jdThankyou;
+        });
+
         if (
           result.length === 0 &&
           startConsultResult.length === 0 &&
-          startConsultjrResult.length === 0
+          startConsultjrResult.length === 0 &&
+          jdThankyouResult.length === 0
         ) {
           // console.log('result.length ', result);
           pubnub.publish(
@@ -1662,9 +1683,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               }}
               titleTextStyle={{ color: 'white' }}
               onPress={() => {
-                if (type === 'Followup') {
+                if (type === 'Followup' || type === 'Reschedule') {
                   CommonLogEvent(AppRoutes.ChatRoom, 'Display Overlay');
-                  checkIfReschduleApi(rowData, 'Followup');
+                  setTransferData(rowData.transferInfo);
                   setdisplayoverlay(true);
                 } else {
                   // props.navigation.navigate(AppRoutes.DoctorDetails, {
@@ -2488,6 +2509,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
       .catch((e: any) => {
         setLoading(false);
         const error = JSON.parse(JSON.stringify(e));
+        console.log('checkIfRescheduleerror', error);
       });
   };
 
@@ -3441,6 +3463,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     }
   };
 
+  const disconnectCallText = () => {
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: isAudio ? 'Audio call ended' : 'Video call ended',
+          duration: callTimerStarted,
+          id: patientId,
+        },
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status, response) => {}
+    );
+
+    pubnub.publish(
+      {
+        message: {
+          isTyping: true,
+          message: endCallMsg,
+          id: patientId,
+        },
+        channel: channel,
+        storeInHistory: true,
+      },
+      (status, response) => {}
+    );
+  };
+
   const options = {
     quality: 0.1,
     storageOptions: {
@@ -4197,7 +4248,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
           renderTab={
             appointmentData.appointmentType === 'ONLINE' ? 'Consult Online' : 'Visit Clinic'
           }
-          rescheduleCount={newRescheduleCount!}
+          rescheduleCount={newRescheduleCount && newRescheduleCount}
           appointmentId={transferData.appointmentId}
           data={transferData}
           bookFollowUp={false}
