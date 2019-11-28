@@ -293,6 +293,7 @@ export const CheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
           ...ePrescriptions.map((item) => item.uploadedUrl),
         ].join(','),
         prismPrescriptionFileId: [
+          ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
           ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
         ].join(','),
         items: cartItems.map(

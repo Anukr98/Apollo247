@@ -241,6 +241,12 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
   const [displaySchedule, setDisplaySchedule] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
+  const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
+  const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
+
+  useEffect(() => {
+    onFinishUpload();
+  }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
 
   useEffect(() => {
     setPatientId!(currentPatientId!);
@@ -1084,118 +1090,23 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
     );
   };
 
-  const onPressProceedToPay = () => {
+  const physicalPrescriptionUpload = () => {
     const prescriptions = physicalPrescriptions;
-    console.log(ePrescriptions, 'ePrescriptions');
-
-    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
-      console.log('withoutdocumnets');
-
-      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-    } else {
-      if (prescriptions.length > 0) {
-        setLoading!(true);
-        const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
-        console.log('unUploadedPres', unUploadedPres);
-        multiplePhysicalPrescriptionUpload(unUploadedPres)
-          .then((data) => {
-            setLoading!(false);
-
-            const uploadUrlscheck = data.map((item) =>
-              item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
-            );
-            console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
-            var filtered = uploadUrlscheck.filter(function(el) {
-              return el != null;
-            });
-            console.log('filtered', filtered);
-
-            if (filtered.length > 0) {
-              client
-                .query<downloadDocuments>({
-                  query: DOWNLOAD_DOCUMENT,
-                  fetchPolicy: 'no-cache',
-                  variables: {
-                    downloadDocumentsInput: {
-                      patientId: currentPatient && currentPatient.id,
-                      fileIds: uploadUrlscheck,
-                    },
-                  },
-                })
-                .then(({ data }) => {
-                  console.log(data, 'DOWNLOAD_DOCUMENT');
-                  const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-                  console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-                  const uploadUrls = uploadUrlscheck!.map((item) => item);
-                  console.log(uploadUrls, 'uploadUrls');
-                  const newuploadedPrescriptions = unUploadedPres.map(
-                    (item, index) =>
-                      ({
-                        ...item,
-                        uploadedUrl: uploadUrls[index],
-                      } as PhysicalPrescription)
-                  );
-                  console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
-                  setPhysicalPrescriptions &&
-                    setPhysicalPrescriptions([
-                      ...newuploadedPrescriptions,
-                      ...prescriptions.filter((item) => item.uploadedUrl),
-                    ]);
-                  setLoading!(false);
-                  props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-                })
-                .catch((e: string) => {
-                  console.log('Error occured', e);
-                })
-                .finally(() => {
-                  setshowSpinner(false);
-                });
-            } else {
-              Alert.alert('your uploaded images are failed');
-            }
-            // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
-            // const newuploadedPrescriptions = unUploadedPres.map(
-            //   (item, index) =>
-            //     ({
-            //       ...item,
-            //       uploadedUrl: uploadUrls[index],
-            //     } as PhysicalPrescription)
-            // );
-            // setPhysicalPrescriptions &&
-            //   setPhysicalPrescriptions([
-            //     ...newuploadedPrescriptions,
-            //     ...prescriptions.filter((item) => item.uploadedUrl),
-            //   ]);
-            // setLoading!(false);
-            // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-          })
-          .catch((e) => {
-            aphConsole.log({ e });
-            setLoading!(false);
-            showAphAlert!({
-              title: 'Uh oh.. :(',
-              description: 'Error occurred while uploading prescriptions.',
-            });
-          });
-      }
-      if (ePrescriptions.length > 0) {
-        const ePresUrls = ePrescriptions.map((item) => {
-          console.log('item', item.prismPrescriptionFileId);
-
-          return item!.prismPrescriptionFileId;
-        });
-
-        console.log('ePresUrls', ePresUrls);
-        let ePresAndPhysicalPresUrls = [...ePresUrls];
-        console.log(
-          'ePresAndPhysicalPresUrls',
-          ePresAndPhysicalPresUrls
-            .join(',')
-            .split(',')
-            .map((item) => item.trim())
-            .filter((i) => i)
+    setLoading!(true);
+    const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+    console.log('unUploadedPres', unUploadedPres);
+    multiplePhysicalPrescriptionUpload(unUploadedPres)
+      .then((data) => {
+        const uploadUrlscheck = data.map((item) =>
+          item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
         );
-        if (ePresAndPhysicalPresUrls.length > 0) {
+        console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
+        var filtered = uploadUrlscheck.filter(function(el) {
+          return el != null;
+        });
+        console.log('filtered', filtered);
+
+        if (filtered.length > 0) {
           client
             .query<downloadDocuments>({
               query: DOWNLOAD_DOCUMENT,
@@ -1203,11 +1114,7 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               variables: {
                 downloadDocumentsInput: {
                   patientId: currentPatient && currentPatient.id,
-                  fileIds: ePresAndPhysicalPresUrls
-                    .join(',')
-                    .split(',')
-                    .map((item) => item.trim())
-                    .filter((i) => i),
+                  fileIds: uploadUrlscheck,
                 },
               },
             })
@@ -1215,37 +1122,338 @@ export const TestsCart: React.FC<TestsCartProps> = (props) => {
               console.log(data, 'DOWNLOAD_DOCUMENT');
               const uploadUrlscheck = data.downloadDocuments.downloadPaths;
               console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-              if (uploadUrlscheck!.length > 0) {
-                const uploadUrlscheck = data.downloadDocuments.downloadPaths;
-                console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
-                const uploadUrls = uploadUrlscheck!.map((item) => item);
-                console.log(uploadUrls, 'uploadUrls');
-                const newuploadedPrescriptions = uploadUrls.map(
-                  (item, index) =>
-                    ({
-                      uploadedUrl: uploadUrls[index],
-                    } as EPrescription)
-                );
-                console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
-                setEPrescriptions && setEPrescriptions([...ePrescriptions.filter((item) => item)]);
-                setLoading!(false);
-                console.log(ePrescriptions, 'setEPrescriptions');
-
-                props.navigation.navigate(AppRoutes.TestsCheckoutScene);
-              } else {
-                Alert.alert('Images are not uploaded');
-              }
+              const uploadUrls = uploadUrlscheck!.map((item) => item);
+              console.log(uploadUrls, 'uploadUrls');
+              const newuploadedPrescriptions = unUploadedPres.map(
+                (item, index) =>
+                  ({
+                    ...item,
+                    uploadedUrl: uploadUrls[index],
+                    prismPrescriptionFileId: filtered[index],
+                  } as PhysicalPrescription)
+              );
+              console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+              setPhysicalPrescriptions && setPhysicalPrescriptions([...newuploadedPrescriptions]);
+              setisPhysicalUploadComplete(true);
             })
             .catch((e: string) => {
               console.log('Error occured', e);
             })
-            .finally(() => {
-              setLoading!(false);
-            });
+            .finally(() => {});
+        } else {
+          setLoading!(false);
+          Alert.alert('your uploaded images are failed');
         }
+        // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
+        // const newuploadedPrescriptions = unUploadedPres.map(
+        //   (item, index) =>
+        //     ({
+        //       ...item,
+        //       uploadedUrl: uploadUrls[index],
+        //     } as PhysicalPrescription)
+        // );
+        // setPhysicalPrescriptions &&
+        //   setPhysicalPrescriptions([
+        //     ...newuploadedPrescriptions,
+        //     ...prescriptions.filter((item) => item.uploadedUrl),
+        //   ]);
+        // setLoading!(false);
+        // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+      })
+      .catch((e) => {
+        aphConsole.log({ e });
+        setLoading!(false);
+        showAphAlert!({
+          title: 'Uh oh.. :(',
+          description: 'Error occurred while uploading prescriptions.',
+        });
+      });
+  };
+
+  const ePrescriptionUpload = () => {
+    setLoading!(true);
+    const ePresUrls = ePrescriptions.map((item) => {
+      console.log('item', item.prismPrescriptionFileId);
+      return item!.prismPrescriptionFileId;
+    });
+
+    console.log('ePresUrls', ePresUrls);
+    let ePresAndPhysicalPresUrls = [...ePresUrls];
+    console.log(
+      'ePresAndPhysicalPresUrls',
+      ePresAndPhysicalPresUrls
+        .join(',')
+        .split(',')
+        .map((item) => item.trim())
+        .filter((i) => i)
+    );
+    if (ePresAndPhysicalPresUrls.length > 0) {
+      client
+        .query<downloadDocuments>({
+          query: DOWNLOAD_DOCUMENT,
+          fetchPolicy: 'no-cache',
+          variables: {
+            downloadDocumentsInput: {
+              patientId: currentPatient && currentPatient.id,
+              fileIds: ePresAndPhysicalPresUrls
+                .join(',')
+                .split(',')
+                .map((item) => item.trim())
+                .filter((i) => i),
+            },
+          },
+        })
+        .then(({ data }) => {
+          console.log(data, 'DOWNLOAD_DOCUMENT');
+          const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+          console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+          if (uploadUrlscheck!.length > 0) {
+            const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+            console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+            const uploadUrls = uploadUrlscheck!.map((item) => item);
+            console.log(uploadUrls, 'uploadUrls');
+            const filescount = ePrescriptions.map(
+              (item) => item.prismPrescriptionFileId.split(',').length
+            );
+            let startIndex = 0;
+            const newuploadedPrescriptions = ePrescriptions.map((item, index) => {
+              const count = filescount[index];
+              const data = {
+                ...item,
+                uploadedUrl: uploadUrls.slice(startIndex, startIndex + count).join(','),
+              } as EPrescription;
+              startIndex = startIndex + count;
+              return data;
+            });
+            console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+            setEPrescriptions && setEPrescriptions(newuploadedPrescriptions);
+            console.log(ePrescriptions, 'setEPrescriptions');
+            setisEPrescriptionUploadComplete(true);
+          } else {
+            Alert.alert('Images are not uploaded');
+          }
+        })
+        .catch((e: string) => {
+          console.log('Error occured', e);
+        })
+        .finally(() => {});
+    }
+  };
+
+  const onFinishUpload = () => {
+    console.log(
+      physicalPrescriptions,
+      ePrescriptions,
+      isEPrescriptionUploadComplete,
+      isPhysicalUploadComplete,
+      'hhruso'
+    );
+
+    if (
+      physicalPrescriptions.length > 0 &&
+      ePrescriptions.length == 0 &&
+      isPhysicalUploadComplete
+    ) {
+      setLoading!(false);
+      setisPhysicalUploadComplete(false);
+      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+    } else if (
+      physicalPrescriptions.length == 0 &&
+      ePrescriptions.length > 0 &&
+      isEPrescriptionUploadComplete
+    ) {
+      setLoading!(false);
+      setisEPrescriptionUploadComplete(false);
+      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+    } else if (
+      physicalPrescriptions.length > 0 &&
+      ePrescriptions.length > 0 &&
+      isEPrescriptionUploadComplete &&
+      isPhysicalUploadComplete
+    ) {
+      setLoading!(false);
+      setisPhysicalUploadComplete(false);
+      setisEPrescriptionUploadComplete(false);
+      props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+    }
+  };
+
+  const onPressProceedToPay = () => {
+    const prescriptions = physicalPrescriptions;
+    if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+      props.navigation.navigate(AppRoutes.CheckoutScene);
+    } else {
+      if (prescriptions.length > 0) {
+        physicalPrescriptionUpload();
+      }
+      if (ePrescriptions.length > 0) {
+        ePrescriptionUpload();
       }
     }
   };
+  // const onPressProceedToPay = () => {
+  //   const prescriptions = physicalPrescriptions;
+  //   console.log(ePrescriptions, 'ePrescriptions');
+
+  //   if (prescriptions.length == 0 && ePrescriptions.length == 0) {
+  //     console.log('withoutdocumnets');
+
+  //     props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //   } else {
+  //     if (prescriptions.length > 0) {
+  //       setLoading!(true);
+  //       const unUploadedPres = prescriptions.filter((item) => !item.uploadedUrl);
+  //       console.log('unUploadedPres', unUploadedPres);
+  //       multiplePhysicalPrescriptionUpload(unUploadedPres)
+  //         .then((data) => {
+  //           setLoading!(false);
+
+  //           const uploadUrlscheck = data.map((item) =>
+  //             item.data!.uploadDocument.status ? item.data!.uploadDocument.fileId : null
+  //           );
+  //           console.log('uploaddocumentsucces', uploadUrlscheck, uploadUrlscheck.length);
+  //           var filtered = uploadUrlscheck.filter(function(el) {
+  //             return el != null;
+  //           });
+  //           console.log('filtered', filtered);
+
+  //           if (filtered.length > 0) {
+  //             client
+  //               .query<downloadDocuments>({
+  //                 query: DOWNLOAD_DOCUMENT,
+  //                 fetchPolicy: 'no-cache',
+  //                 variables: {
+  //                   downloadDocumentsInput: {
+  //                     patientId: currentPatient && currentPatient.id,
+  //                     fileIds: uploadUrlscheck,
+  //                   },
+  //                 },
+  //               })
+  //               .then(({ data }) => {
+  //                 console.log(data, 'DOWNLOAD_DOCUMENT');
+  //                 const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+  //                 console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+  //                 const uploadUrls = uploadUrlscheck!.map((item) => item);
+  //                 console.log(uploadUrls, 'uploadUrls');
+  //                 const newuploadedPrescriptions = unUploadedPres.map(
+  //                   (item, index) =>
+  //                     ({
+  //                       ...item,
+  //                       uploadedUrl: uploadUrls[index],
+  //                     } as PhysicalPrescription)
+  //                 );
+  //                 console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+  //                 setPhysicalPrescriptions &&
+  //                   setPhysicalPrescriptions([
+  //                     ...newuploadedPrescriptions,
+  //                     ...prescriptions.filter((item) => item.uploadedUrl),
+  //                   ]);
+  //                 setLoading!(false);
+  //                 ePrescriptions.length == 0 &&
+  //                   props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //               })
+  //               .catch((e: string) => {
+  //                 console.log('Error occured', e);
+  //               })
+  //               .finally(() => {
+  //                 setshowSpinner(false);
+  //               });
+  //           } else {
+  //             Alert.alert('your uploaded images are failed');
+  //           }
+  //           // const uploadUrls = data.map((item) => item.data!.uploadFile.filePath);
+  //           // const newuploadedPrescriptions = unUploadedPres.map(
+  //           //   (item, index) =>
+  //           //     ({
+  //           //       ...item,
+  //           //       uploadedUrl: uploadUrls[index],
+  //           //     } as PhysicalPrescription)
+  //           // );
+  //           // setPhysicalPrescriptions &&
+  //           //   setPhysicalPrescriptions([
+  //           //     ...newuploadedPrescriptions,
+  //           //     ...prescriptions.filter((item) => item.uploadedUrl),
+  //           //   ]);
+  //           // setLoading!(false);
+  //           // props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //         })
+  //         .catch((e) => {
+  //           aphConsole.log({ e });
+  //           setLoading!(false);
+  //           showAphAlert!({
+  //             title: 'Uh oh.. :(',
+  //             description: 'Error occurred while uploading prescriptions.',
+  //           });
+  //         });
+  //     }
+  //     if (ePrescriptions.length > 0) {
+  //       const ePresUrls = ePrescriptions.map((item) => {
+  //         console.log('item', item.prismPrescriptionFileId);
+
+  //         return item!.prismPrescriptionFileId;
+  //       });
+
+  //       console.log('ePresUrls', ePresUrls);
+  //       let ePresAndPhysicalPresUrls = [...ePresUrls];
+  //       console.log(
+  //         'ePresAndPhysicalPresUrls',
+  //         ePresAndPhysicalPresUrls
+  //           .join(',')
+  //           .split(',')
+  //           .map((item) => item.trim())
+  //           .filter((i) => i)
+  //       );
+  //       if (ePresAndPhysicalPresUrls.length > 0) {
+  //         client
+  //           .query<downloadDocuments>({
+  //             query: DOWNLOAD_DOCUMENT,
+  //             fetchPolicy: 'no-cache',
+  //             variables: {
+  //               downloadDocumentsInput: {
+  //                 patientId: currentPatient && currentPatient.id,
+  //                 fileIds: ePresAndPhysicalPresUrls
+  //                   .join(',')
+  //                   .split(',')
+  //                   .map((item) => item.trim())
+  //                   .filter((i) => i),
+  //               },
+  //             },
+  //           })
+  //           .then(({ data }) => {
+  //             console.log(data, 'DOWNLOAD_DOCUMENT');
+  //             const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+  //             console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+  //             if (uploadUrlscheck!.length > 0) {
+  //               const uploadUrlscheck = data.downloadDocuments.downloadPaths;
+  //               console.log(uploadUrlscheck, 'DOWNLOAD_DOCUMENTcmple');
+  //               const uploadUrls = uploadUrlscheck!.map((item) => item);
+  //               console.log(uploadUrls, 'uploadUrls');
+  //               const newuploadedPrescriptions = uploadUrls.map(
+  //                 (item, index) =>
+  //                   ({
+  //                     uploadedUrl: uploadUrls[index],
+  //                   } as EPrescription)
+  //               );
+  //               console.log(newuploadedPrescriptions, 'newuploadedPrescriptions');
+  //               setEPrescriptions && setEPrescriptions([...ePrescriptions.filter((item) => item)]);
+  //               setLoading!(false);
+  //               console.log(ePrescriptions, 'setEPrescriptions');
+
+  //               props.navigation.navigate(AppRoutes.TestsCheckoutScene);
+  //             } else {
+  //               Alert.alert('Images are not uploaded');
+  //             }
+  //           })
+  //           .catch((e: string) => {
+  //             console.log('Error occured', e);
+  //           })
+  //           .finally(() => {
+  //             setLoading!(false);
+  //           });
+  //       }
+  //     }
+  //   }
+  // };
 
   const renderProfiles = () => {
     return (

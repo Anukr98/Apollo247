@@ -302,6 +302,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       ? `${slotStartTime}-${slotEndTime}`
       : ''
     ).replace(' ', '');
+    console.log(physicalPrescriptions, 'physical prescriptions');
 
     const orderInfo: DiagnosticOrderInput = {
       // for home collection order
@@ -321,15 +322,16 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
       centerCity: City || '',
       centerState: State || '',
       centerLocality: Locality || '',
-      // prismPrescriptionFileId: [
-      //           ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
-      //         ].join(','),
-      totalPrice: grandTotal,
-      patientId: (currentPatient && currentPatient.id) || '',
       prescriptionUrl: [
         ...physicalPrescriptions.map((item) => item.uploadedUrl),
         ...ePrescriptions.map((item) => item.uploadedUrl),
       ].join(','),
+      // prismPrescriptionFileId: [
+      //   ...physicalPrescriptions.map((item) => item.prismPrescriptionFileId),
+      //   ...ePrescriptions.map((item) => item.prismPrescriptionFileId),
+      // ].join(','),
+      totalPrice: grandTotal,
+      patientId: (currentPatient && currentPatient.id) || '',
       items: cartItems.map(
         (item) =>
           ({
@@ -342,6 +344,7 @@ export const TestsCheckoutScene: React.FC<CheckoutSceneProps> = (props) => {
 
     console.log(JSON.stringify({ diagnosticOrderInput: orderInfo }));
     console.log('orderInfo\n', { orderInfo });
+    setShowSpinner(false);
     saveOrder(orderInfo)
       .then(({ data }) => {
         console.log('\nOrder-Success\n', { data });

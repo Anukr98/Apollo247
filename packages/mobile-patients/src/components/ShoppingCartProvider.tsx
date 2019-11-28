@@ -26,6 +26,7 @@ export interface PhysicalPrescription {
   // path: string;
   base64: string;
   uploadedUrl?: string;
+  prismPrescriptionFileId?:string;
 }
 
 export interface EPrescription {
