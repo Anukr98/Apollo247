@@ -498,6 +498,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     error: (error: string) => {
       console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
     },
+    otrnError: (error: string) => {
+      console.log(`There was an error with the publisherEventHandlers: ${JSON.stringify(error)}`);
+    },
   };
 
   const subscriberEventHandlers = {
@@ -510,13 +513,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     disconnected: (event: string) => {
       console.log('Subscribe stream disconnected!', event);
     },
+    otrnError: (error: string) => {
+      console.log(`There was an error with the subscriberEventHandlers: ${JSON.stringify(error)}`);
+    },
   };
 
   const sessionEventHandlers = {
     error: (error: string) => {
       console.log(`There was an error with the sessionEventHandlers: ${JSON.stringify(error)}`);
     },
-    connectionCreated: (event: string) => {},
+    connectionCreated: (event: string) => {
+      console.log('session stream connectionCreated!', event);
+    },
     connectionDestroyed: (event: string) => {
       console.log('session stream connectionDestroyed!', event);
       eventsAfterConnectionDestroyed();
@@ -540,6 +548,18 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
     },
     signal: (event: string) => {
       console.log('session stream signal!', event);
+    },
+    streamCreated: (event: string) => {
+      console.log('session streamCreated created!', event);
+    },
+    streamDestroyed: (event: string) => {
+      console.log('session streamDestroyed destroyed!', event); // is called when the doctor network is disconnected
+    },
+    streamPropertyChanged: (event: string) => {
+      console.log('session streamPropertyChanged destroyed!', event);
+    },
+    otrnError: (error: string) => {
+      console.log(`There was an error with the otrnError sessionEventHandlers: ${JSON.stringify(error)}`);
     },
   };
 
