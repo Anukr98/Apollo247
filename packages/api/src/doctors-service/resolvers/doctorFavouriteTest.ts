@@ -56,6 +56,8 @@ const addDoctorFavouriteTest: Resolver<
 
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteTestRepository);
 
+  if (args.itemname.length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
+
   //check if test already exists
   const getTestByName = await favouriteTestRepo.getDoctorFavouriteTestByName(
     doctordata.id,
@@ -109,11 +111,21 @@ const updateDoctorFavouriteTest: Resolver<
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
+  if (args.itemname.length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
+
   const favouriteTestRepo = doctorsDb.getCustomRepository(DoctorFavouriteTestRepository);
 
   //check if test exists
   const getTestById = await favouriteTestRepo.getDoctorFavouriteTestById(doctordata.id, args.id);
   if (getTestById.length == 0) throw new AphError(AphErrorMessages.INVALID_TEST_ID);
+
+  //check for test name exsitence
+  const getTestByName = await favouriteTestRepo.checkTestNameWhileUpdate(
+    args.itemname.toLowerCase(),
+    args.id
+  );
+  if (getTestByName !== null && getTestByName.length > 0)
+    throw new AphError(AphErrorMessages.TEST_ALREADY_EXIST);
 
   //update test
   const testInput: Partial<DoctorsFavouriteTests> = { ...args, doctor: doctordata };
