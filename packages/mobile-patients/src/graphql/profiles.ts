@@ -339,6 +339,7 @@ export const SEARCH_DOCTOR_AND_SPECIALITY_BY_NAME = gql`
             streetLine2
             streetLine3
             city
+            facilityType
           }
         }
       }
@@ -1674,6 +1675,14 @@ export const UPLOAD_CHAT_FILE_PRISM = gql`
     ) {
       status
       fileId
+    }
+  }
+`;
+
+export const ADD_PATIENT_FEEDBACK = gql`
+  mutation addPatientFeedback($patientFeedbackInput: PatientFeedbackInput) {
+    addPatientFeedback(patientFeedbackInput: $patientFeedbackInput) {
+      status
     }
   }
 `;

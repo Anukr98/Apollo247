@@ -39,6 +39,7 @@ import { useApolloClient } from 'react-apollo-hooks';
 import { DownloadDocumentsInput } from '../../graphql/types/globalTypes';
 import { DOWNLOAD_DOCUMENT } from '../../graphql/profiles';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { useUIElements } from '../UIElementsProvider';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -109,7 +110,8 @@ const styles = StyleSheet.create({
 export interface RecordDetailsProps extends NavigationScreenProps {}
 
 export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
-  const [loading, setLoading] = useState<boolean>(false);
+  const { loading, setLoading } = useUIElements();
+
   const data = props.navigation.state.params ? props.navigation.state.params.data : {};
   //console.log('a', data);
   const [url, setUrls] = useState<string[]>([]);
@@ -158,10 +160,10 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
       Alert.alert('Alert', 'Item not available.');
       return;
     }
-    setLoading(true);
+    setLoading && setLoading(true);
     getMedicineDetailsApi(data.medicineSKU)
       .then(({ data: { productdp } }) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         const medicineDetails = (productdp && productdp[0]) || {};
         const isInStock = medicineDetails.is_in_stock;
         if (!isInStock) {
@@ -191,7 +193,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
         props.navigation.navigate(AppRoutes.YourCart);
       })
       .catch((err) => {
-        setLoading(false);
+        setLoading && setLoading(false);
         console.log(err, 'MedicineDetailsScene err');
         Alert.alert('Alert', 'No medicines found.');
       });
@@ -364,7 +366,6 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
             }}
           />
         </View>
-        {loading && <Spinner />}
       </SafeAreaView>
     </View>
   );

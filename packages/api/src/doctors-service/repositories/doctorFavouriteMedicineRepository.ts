@@ -22,4 +22,28 @@ export class DoctorFavouriteMedicineRepository extends Repository<DoctorsFavouri
       });
     });
   }
+
+  removeFavouriteMedicineById(id: string) {
+    return this.delete(id).catch((favouriteTestError) => {
+      throw new AphError(AphErrorMessages.DELETE_DOCTOR_FAVOURITE_MEDICINE_ERROR, undefined, {
+        favouriteTestError,
+      });
+    });
+  }
+
+  updateFavouriteMedicine(id: string, updatedata: Partial<DoctorsFavouriteMedicine>) {
+    return this.update(id, updatedata).catch((doctorFavouriteMedicineError) => {
+      throw new AphError(AphErrorMessages.UPDATE_DOCTOR_FAVOURITE_MEDICINE_ERROR, undefined, {
+        doctorFavouriteMedicineError,
+      });
+    });
+  }
+
+  findById(id: string) {
+    return this.findOne({ where: { id } }).catch((getFavouritesError) => {
+      throw new AphError(AphErrorMessages.GET_FAVOURITE_ERROR, undefined, {
+        getFavouritesError,
+      });
+    });
+  }
 }

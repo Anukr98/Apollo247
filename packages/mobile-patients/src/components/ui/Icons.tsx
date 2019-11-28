@@ -510,6 +510,18 @@ export const OkaySelected: React.FC<IconProps> = (props) => (
     source={require('./icons/okay_selected.png')}
   />
 );
+
+export const Good: React.FC<IconProps> = (props) => (
+  <IconBase style={{ height: 52, width: 52 }} {...props} source={require('./icons/good.png')} />
+);
+export const GoodSelected: React.FC<IconProps> = (props) => (
+  <IconBase
+    style={{ height: 52, width: 52 }}
+    {...props}
+    source={require('./icons/good_selected.png')}
+  />
+);
+
 export const Great: React.FC<IconProps> = (props) => (
   <IconBase style={{ height: 52, width: 52 }} {...props} source={require('./icons/great.png')} />
 );

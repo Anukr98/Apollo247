@@ -716,10 +716,10 @@ export class DoctorsFavouriteMedicine extends BaseEntity {
   medicineInstructions: string;
 
   @Column('simple-array')
-  medicineTimings: MEDICINE_TIMINGS;
+  medicineTimings: MEDICINE_TIMINGS[];
 
   @Column('simple-array')
-  medicineToBeTaken: MEDICINE_TO_BE_TAKEN;
+  medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
 
   @Column({ nullable: true })
   medicineName: string;

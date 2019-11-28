@@ -244,7 +244,9 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
   const isValid = () => {
     const valid = medicalRecordParameters.map((item) => {
       return (
-        item.maximum && item.minimum && item.maximum! > item.minimum! //&&
+        item.maximum && item.minimum && item.maximum! > item.minimum!
+        // (item.maximum || item.minimum || item.result || item.parameterName) &&
+        // item.maximum! > item.minimum! &&
         // item.result! <= item.maximum! &&
         // item.result! >= item.minimum!
       );
@@ -269,7 +271,6 @@ export const AddRecord: React.FC<AddRecordProps> = (props) => {
         : parseFloat(value);
     return number;
   };
-
   const onSavePress = () => {
     setshowSpinner(true);
     console.log('images', Images);

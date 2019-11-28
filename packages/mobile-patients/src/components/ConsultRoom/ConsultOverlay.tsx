@@ -28,7 +28,7 @@ import {
 } from '@aph/mobile-patients/src/graphql/types/globalTypes';
 import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApolloClient } from 'react-apollo-hooks';
 import {
   Alert,
@@ -42,6 +42,7 @@ import {
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
+import { getNextAvailableSlots } from '@aph/mobile-patients/src/helpers/clientCalls';
 
 const { width, height } = Dimensions.get('window');
 
@@ -55,19 +56,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     ...theme.viewStyles.yellowTextStyle,
   },
-  congratulationsDescriptionStyle: {
-    marginHorizontal: 24,
-    marginTop: 8,
-    color: theme.colors.SKY_BLUE,
-    ...theme.fonts.IBMPlexSansMedium(17),
-    lineHeight: 24,
-  },
 });
-
-type TimeArray = {
-  label: string;
-  time: string[];
-}[];
 
 export interface ConsultOverlayProps extends NavigationScreenProps {
   // dispalyoverlay: boolean;
@@ -99,15 +88,38 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
   const [showSuccessPopUp, setshowSuccessPopUp] = useState<boolean>(false);
   const [date, setDate] = useState<Date>(new Date());
   const [AppointmentExistAlert, setAppointmentExistAlert] = useState<boolean>(false);
+  const [limitExceededAlert, setLimitExceededAlert] = useState<boolean>(false);
+
   const scrollViewRef = React.useRef<any>(null);
   const [showOfflinePopup, setshowOfflinePopup] = useState<boolean>(false);
   const [disablePay, setdisablePay] = useState<boolean>(false);
+  const [
+    selectedClinic,
+    setselectedClinic,
+  ] = useState<getDoctorDetailsById_getDoctorDetailsById_doctorHospital | null>(
+    props.clinics && props.clinics.length > 0 ? props.clinics[0] : null
+  );
 
   const todayDate = new Date().toDateString().split('T')[0];
-  console.log(availableInMin, 'ConsultO');
   const scrollToSlots = (top: number = 400) => {
     scrollViewRef.current && scrollViewRef.current.scrollTo({ x: 0, y: top, animated: true });
   };
+
+  useEffect(() => {
+    const todayDate = new Date().toISOString().slice(0, 10);
+    getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
+      .then(({ data }: any) => {
+        try {
+          const nextSlot = data[0] ? data[0]!.availableSlot : '';
+          if (!nextSlot && data[0]!.physicalAvailableSlot) {
+            tabs.length > 1 && setselectedTab(tabs[1].title);
+          }
+        } catch {}
+      })
+      .catch((e: any) => {
+        console.log('error', e);
+      });
+  }, []);
 
   const onSubmitBookAppointment = () => {
     CommonLogEvent(AppRoutes.DoctorDetails, 'ConsultOverlay onSubmitBookAppointment clicked');
@@ -119,16 +131,26 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       0 < availableInMin!
         ? nextAvailableSlot
         : selectedTimeSlot;
+
+    const doctorClinics = props.clinics.filter((item) => {
+      if (item && item.facility && item.facility.facilityType)
+        return item.facility.facilityType === 'HOSPITAL';
+    });
+
+    const hospitalId = isConsultOnline
+      ? doctorClinics.length > 0 && doctorClinics[0].facility
+        ? doctorClinics[0].facility.id
+        : ''
+      : selectedClinic
+      ? selectedClinic.facility.id
+      : '';
     const appointmentInput: BookAppointmentInput = {
       patientId: props.patientId,
       doctorId: props.doctor ? props.doctor.id : '',
       appointmentDateTime: timeSlot, //appointmentDate,
       appointmentType:
         selectedTab === tabs[0].title ? APPOINTMENT_TYPE.ONLINE : APPOINTMENT_TYPE.PHYSICAL,
-      hospitalId:
-        props.clinics && props.clinics.length > 0 && props.clinics[0].facility
-          ? props.clinics[0].facility.id
-          : '',
+      hospitalId,
     };
     client
       .mutate<bookAppointment>({
@@ -152,6 +174,9 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
             message === 'DOCTOR_SLOT_BLOCKED'
           )
             setAppointmentExistAlert(true);
+          else if (message === 'BOOKING_LIMIT_EXCEEDED') {
+            setLimitExceededAlert(true);
+          }
         } catch (error) {}
       });
   };
@@ -361,6 +386,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                   setshowSpinner={setshowSpinner}
                   setshowOfflinePopup={setshowOfflinePopup}
                   scrollToSlots={scrollToSlots}
+                  setselectedClinic={setselectedClinic}
                 />
               )}
               <View style={{ height: 96 }} />
@@ -411,6 +437,25 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
               style={styles.gotItStyles}
               onPress={() => {
                 setAppointmentExistAlert(false);
+                props.setdisplayoverlay(false);
+              }}
+            >
+              <Text style={styles.gotItTextStyles}>Okay</Text>
+            </TouchableOpacity>
+          </View>
+        </BottomPopUp>
+      )}
+      {limitExceededAlert && (
+        <BottomPopUp
+          title={'Alert!'}
+          description={`Sorry! You have already cancelled the appointment 3 times in the past 7 days. Please book a fresh appointment later`}
+        >
+          <View style={{ height: 60, alignItems: 'flex-end' }}>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.gotItStyles}
+              onPress={() => {
+                setLimitExceededAlert(false);
                 props.setdisplayoverlay(false);
               }}
             >

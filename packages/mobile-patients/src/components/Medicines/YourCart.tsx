@@ -149,16 +149,10 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
           variables: { patientId: currentPatientId },
           fetchPolicy: 'no-cache',
         })
-        .then(
-          ({
-            data: {
-              getPatientAddressList: { addressList },
-            },
-          }) => {
-            setLoading!(false);
-            setAddresses && setAddresses(addressList!);
-          }
-        )
+        .then(({ data: { getPatientAddressList: { addressList } } }) => {
+          setLoading!(false);
+          setAddresses && setAddresses(addressList!);
+        })
         .catch((e) => {
           setLoading!(false);
           showAphAlert!({
