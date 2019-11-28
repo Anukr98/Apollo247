@@ -49,10 +49,10 @@ export class DoctorFavouriteMedicineRepository extends Repository<DoctorsFavouri
 
   getFavouriteMedicineByName(medicineName: string, doctorId: string) {
     return this.createQueryBuilder('doctors_favourite_medicine')
-      .where('LOWER(doctorsFavouriteMedicine.medicineName) LIKE :medicineName', {
+      .where('LOWER(doctors_favourite_medicine.medicineName) LIKE :medicineName', {
         medicineName: `${medicineName}%`,
       })
-      .andWhere('doctors_favourite_tests.doctor = :doctorId', { doctorId })
+      .andWhere('doctors_favourite_medicine.doctor = :doctorId', { doctorId })
       .getMany()
       .catch((favouritemMedicineError) => {
         throw new AphError(AphErrorMessages.GET_DOCTOR_FAVOURITE_MEDICINE_ERROR, undefined, {
