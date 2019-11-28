@@ -9,7 +9,7 @@ import { DoctorSpecialtyRepository } from 'doctors-service/repositories/doctorSp
 export const getPatientPastSearchesTypeDefs = gql`
   extend type Query {
     getPatientPastSearches(patientId: ID!): [SearchData]!
-    getPatientPastMedicineSearches(patientId: ID!): [SearchData]!
+    getPatientPastMedicineSearches(patientId: ID!, type: SEARCH_TYPE): [SearchData]!
   }
 `;
 
@@ -74,20 +74,21 @@ const getPatientPastSearches: Resolver<
 
 const getPatientPastMedicineSearches: Resolver<
   null,
-  { patientId: string },
+  { patientId: string; type: SEARCH_TYPE },
   ProfilesServiceContext,
   SearchData[]
 > = async (parent, args, { profilesDb, doctorsDb }) => {
   const searchHistoryRepository = profilesDb.getCustomRepository(SearchHistoryRepository);
+  const searchType = args.type && args.type == SEARCH_TYPE.TEST ? args.type : SEARCH_TYPE.MEDICINE;
   const recentMedicineSearches = await searchHistoryRepository.getPatientRecentSearchHistory(
     args.patientId,
-    [SEARCH_TYPE.MEDICINE]
+    [searchType]
   );
   const pastSearches: SearchData[] = [];
   if (recentMedicineSearches.length > 0) {
     recentMedicineSearches.forEach((search) => {
       const searchItem = {
-        searchType: SEARCH_TYPE.MEDICINE,
+        searchType: searchType,
         typeId: search.typeId,
         name: search.typeName,
         image: 'http://dev.popcornapps.com/apolloImages/medicine.png',
