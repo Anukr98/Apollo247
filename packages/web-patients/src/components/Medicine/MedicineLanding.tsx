@@ -4,12 +4,13 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import { makeStyles } from '@material-ui/styles';
 import { Theme } from '@material-ui/core';
 import { Header } from 'components/Header';
-import { AphTextField, AphButton } from '@aph/web-ui-components';
+import { AphButton } from '@aph/web-ui-components';
 import { ShopByAreas } from 'components/Medicine/Cards/ShopByAreas';
 import { ShopByBrand } from 'components/Medicine/Cards/ShopByBrand';
 import { ShopByCategory } from 'components/Medicine/Cards/ShopByCategory';
 import { DayDeals } from 'components/Medicine/Cards/DayDeals';
 import { HotSellers } from 'components/Medicine/Cards/HotSellers';
+import { MedicineAutoSearch } from 'components/Medicine/MedicineAutoSearch';
 
 const useStyles = makeStyles((theme: Theme) => {
   return {
@@ -217,15 +218,7 @@ export const MedicineLanding: React.FC = (props) => {
             <div className={classes.userName}>hi surj :)</div>
             <div className={classes.medicineTopGroup}>
               <div className={classes.searchSection}>
-                <div className={classes.searchMedicineForm}>
-                  <AphTextField
-                    placeholder="Search meds, brands and more"
-                    className={classes.searchInput}
-                  />
-                  <AphButton className={classes.searchBtn}>
-                    <img src={require('images/ic_send.svg')} alt="" />
-                  </AphButton>
-                </div>
+                <MedicineAutoSearch />
                 <div className={classes.productsBanner}>
                   <img src="https://via.placeholder.com/702x150" alt="" />
                 </div>
