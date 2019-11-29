@@ -17,7 +17,7 @@ export interface BlockedCalendarItemProps {
 
 export const BlockedCalendarItem: React.FC<BlockedCalendarItemProps> = (props) => {
   const { item, doctorId, onEdit } = props;
-  const sameDay = item.start.getDate() === item.end.getDate();
+  const sameDay = item.start.getDate() === item.end.getDate() && item.start.getMonth() === item.end.getMonth();
   var options = { weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric' };
   const dateText = sameDay
     ? // ? format(item.start, 'iii, P')
