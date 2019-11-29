@@ -53,6 +53,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -153,7 +154,7 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
   const [bottompopup, setBottompopup] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
-  const [showAlert, setshowAlert] = useState<boolean>(false);
+  const { showAphAlert } = useUIElements();
 
   const { getPatientApiCall } = useAuth();
 
@@ -389,8 +390,13 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
         .catch((e: any) => {
           setshowSpinner(false);
           console.log('Error occured while adding Doctor', e);
-          const message = e.message.split(':')[1].trim();
-          if (message == 'INVALID_APPOINTMENT_ID') setshowAlert(true);
+          const message = e.message ? e.message.split(':')[1].trim() : '';
+          if (message == 'INVALID_APPOINTMENT_ID') {
+            showAphAlert!({
+              title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+              description: 'Ongoing / Completed appointments cannot be cancelled.',
+            });
+          }
         });
     }
   };
@@ -760,33 +766,6 @@ export const AppointmentDetails: React.FC<AppointmentDetailsProps> = (props) => 
             data={data}
             cancelAppointmentApi={cancelAppointmentApi}
           />
-        )}
-        {showAlert && (
-          <BottomPopUp
-            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
-            description={'Ongoing / Completed appointments cannot be cancelled.'}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                marginHorizontal: 20,
-                //justifyContent: 'space-between',
-                alignItems: 'flex-end',
-                justifyContent: 'flex-end',
-              }}
-            >
-              <View style={{ height: 60 }}>
-                <TouchableOpacity
-                  style={styles.gotItStyles}
-                  onPress={() => {
-                    setshowAlert(false);
-                  }}
-                >
-                  <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </BottomPopUp>
         )}
         {showSpinner && <Spinner />}
       </View>
