@@ -263,8 +263,6 @@ export const Appointments: React.FC = (props) => {
       ? data.getPatinetAppointments.patinetAppointments
       : [];
 
-  console.log(appointments + '');
-
   // filter appointments that are greater than current time.
   // const filterAppointments = appointments.filter(appointmentDetails => {
   //   const currentTime = new Date().getTime();
@@ -309,9 +307,7 @@ export const Appointments: React.FC = (props) => {
       </div>
       <div className={classes.container}>
         <div className={classes.consultPage}>
-          <div
-            className={`${classes.consultationsHeader}`}
-          >
+          <div className={`${classes.consultationsHeader}`}>
             {allCurrentPatients && currentPatient && !_isEmpty(currentPatient.firstName) ? (
               <Typography variant="h1">
                 <span>hi</span>
@@ -390,32 +386,32 @@ export const Appointments: React.FC = (props) => {
             </Tabs>
             {tabValue === 0 && (
               <TabContainer>
-                  {availableAppointments && availableAppointments.length > 0 ? (
-                    <ConsultationsCard appointments={availableAppointments} />
-                  ) : (
-                    <div className={classes.consultSection}>
-                      <div className={classes.noAppointments}>
-                        <div className={classes.leftGroup}>
-                          <h3>Want to book an appointment?</h3>
-                          <Route
-                            render={({ history }) => (
-                              <AphButton
-                                color="primary"
-                                onClick={() => {
-                                  history.push(clientRoutes.doctorsLanding());
-                                }}
-                              >
-                                Book an Appointment
-                              </AphButton>
-                            )}
-                          />
-                        </div>
-                        <div className={classes.rightGroup}>
-                          <img src={require('images/ic_doctor_consult.svg')} alt="" />
-                        </div>
+                {availableAppointments && availableAppointments.length > 0 ? (
+                  <ConsultationsCard appointments={availableAppointments} />
+                ) : (
+                  <div className={classes.consultSection}>
+                    <div className={classes.noAppointments}>
+                      <div className={classes.leftGroup}>
+                        <h3>Want to book an appointment?</h3>
+                        <Route
+                          render={({ history }) => (
+                            <AphButton
+                              color="primary"
+                              onClick={() => {
+                                history.push(clientRoutes.doctorsLanding());
+                              }}
+                            >
+                              Book an Appointment
+                            </AphButton>
+                          )}
+                        />
+                      </div>
+                      <div className={classes.rightGroup}>
+                        <img src={require('images/ic_doctor_consult.svg')} alt="" />
                       </div>
                     </div>
-                  )}
+                  </div>
+                )}
               </TabContainer>
             )}
             {tabValue === 1 && (

@@ -428,7 +428,7 @@ export const CaseSheet: React.FC = () => {
       <Divider className={classes.divider} />
       <div className={classes.notesBox}>
         <Typography component="h4" variant="h4" className={classes.notesHeader}>
-          Notes
+          Notes (This is for Senior Doctor view only)
         </Typography>
         <AphTextField
           fullWidth

@@ -304,6 +304,8 @@ const bookAppointment: Resolver<
     appointment.displayId.toString() +
     '<br>Patient Name :-' +
     patientDetails.firstName +
+    '<br>Mobile Number :-' +
+    patientDetails.mobileNumber +
     '<br>Patient Location (city) :-\nDoctor Name :-' +
     docDetails.firstName +
     ' ' +
@@ -318,13 +320,13 @@ const bookAppointment: Resolver<
     format(addMinutes(istDateTime, 15), 'hh:mm') +
     '<br>Mode of Consult :-' +
     appointmentInput.appointmentType;
-  const toEmailId =
+  /*const toEmailId =
     process.env.NODE_ENV == 'dev' ||
     process.env.NODE_ENV == 'development' ||
     process.env.NODE_ENV == 'local'
       ? ApiConstants.PATIENT_APPT_EMAILID
-      : ApiConstants.PATIENT_APPT_EMAILID_PRODUCTION;
-
+      : ApiConstants.PATIENT_APPT_EMAILID_PRODUCTION;*/
+  const toEmailId = process.env.BOOK_APPT_TO_EMAIL ? process.env.BOOK_APPT_TO_EMAIL : '';
   const ccEmailIds =
     process.env.NODE_ENV == 'dev' ||
     process.env.NODE_ENV == 'development' ||

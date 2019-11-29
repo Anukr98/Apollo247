@@ -1,0 +1,39 @@
+<html>
+  <head></head>
+  <body onload="document.forms[0].submit()">
+    <form
+      name="PostForm"
+      method="POST"
+      action="https://staging.askapollo.com/Online-Consultation/common/OnlinePhysicalAppointmentPayment.aspx"
+    >
+      <input name="SourceApp" type="text" value="7729FD68-C552-4C90-B31E-98AA6C84FEBF~WEB" />
+      <input
+        name="PatientId"
+        type="text"
+        value="2f6d2742-66e8-4c3f-bbd5-eeb90abeaadd"
+      />//Registered Patient Id
+      <input name="MarchantId" type="text" value="<%= merchantId %>" />//unique for every
+      transaction
+      <input name="InterBookAppointmentId" type="text" value="0" />
+      <input name="CouponId" type="text" value="0" />
+      <input name="GatewayName" type="text" value="Paytm" />
+      <input name="TransactionAmount" type="text" value="1" />
+      <input
+        name="ReturnURL"
+        type="text"
+        value="https://aph.dev.pmt.popcornapps.com/consulttransaction"
+      />//your return URL
+      <input name="CurrencyFormat" type="text" value="INR" />
+      <input
+        name="AuthenticationToken"
+        type="text"
+        value="96CB6E3C60B7607CEF058CFF2A7311A0DE1926D4844F70C9239ADA7A48BFF814EEE90AF327E93CC07E69B788E791F47BA6CDA6D073B0B74C81E8210D90D2FBBBA87C212DF74EE421B65FEA53B19B824DF7A2426549059F73427D1040EEE74966DE0867DE400E764DFEF29C4DC4775F3C7FA8F4CE"
+      />
+      <input name="PaymentFor" type="text" value="PhysicalAppointment" />
+      <input name="Amount" type="text" value="1" />
+      <input name="EmailId" type="text" value="" />
+      <input name="PhoneNo" type="text" value="7337349648" />
+      <input name="PatientName" type="text" value="Sandeep" />
+    </form>
+  </body>
+</html>

@@ -25,6 +25,7 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { Link } from 'react-router-dom';
 import { clientRoutes } from 'helpers/clientRoutes';
 import Scrollbars from 'react-custom-scrollbars';
+import { LocationProvider } from 'components/LocationProvider';
 
 type Params = { id: string };
 
@@ -373,7 +374,9 @@ export const DoctorDetails: React.FC<DoctorDetailsProps> = (props) => {
 
             {tabValue === 1 && availableForPhysicalConsultation && (
               <TabContainer>
-                <VisitClinic doctorDetails={doctorDetails} />
+                <LocationProvider>
+                  <VisitClinic doctorDetails={doctorDetails} />
+                </LocationProvider>
               </TabContainer>
             )}
           </Paper>
