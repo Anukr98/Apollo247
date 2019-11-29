@@ -1045,7 +1045,7 @@ export const SEARCH_DIAGNOSTICS = gql`
   query SearchDiagnostics(
     $city: String
     $patientId: String
-    $searchText: String
+    $searchText: String!
   ) {
     searchDiagnostics(
       city: $city

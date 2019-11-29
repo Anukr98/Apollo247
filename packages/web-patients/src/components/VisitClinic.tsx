@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/styles';
 import { Theme, MenuItem, CircularProgress, Grid } from '@material-ui/core';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { AphButton, AphSelect, AphDialog, AphDialogTitle } from '@aph/web-ui-components';
 import { AphCalendar } from 'components/AphCalendar';
 import { DayTimeSlots } from 'components/DayTimeSlots';
@@ -25,7 +25,7 @@ import { clientRoutes } from 'helpers/clientRoutes';
 import _forEach from 'lodash/forEach';
 import { getIstTimestamp } from 'helpers/dateHelpers';
 import { usePrevious } from 'hooks/reactCustomHooks';
-
+import { LocationContext } from 'components/LocationProvider';
 const useStyles = makeStyles((theme: Theme) => {
   return {
     root: {
@@ -197,10 +197,14 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
 
   const prevDateSelected = usePrevious(dateSelected);
   const { currentPatient } = useAllCurrentPatients();
+  const { currentLocation } = useContext(LocationContext);
+  const { currentLat } = useContext(LocationContext);
+  const { currentLong } = useContext(LocationContext);
+
+  console.log('currentLocation...', currentLat, currentLong);
   const { doctorDetails } = props;
 
   const currentTime = new Date().getTime();
-
   const doctorName =
     doctorDetails &&
     doctorDetails.getDoctorDetailsById &&
@@ -243,7 +247,63 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
       }
     });
   }
+  const getDistance = (
+    fromLat: string | null,
+    fromLong: string | null,
+    toLat: string,
+    toLong: string
+  ): string | null => {
+    if (fromLat != null && fromLong != null && toLat != null && toLong != null) {
+      const toRadian = (n: number) => (n * Math.PI) / 180;
+      let toLatitude = parseFloat(toLat);
+      let toLongitude = parseFloat(toLong);
+      let fromLatitude = parseFloat(fromLat);
+      let fromLongitude = parseFloat(fromLong);
+      let R = 6371; // km
+      let x1 = toLatitude - fromLatitude;
+      let dLat = toRadian(x1);
+      let x2 = toLongitude - fromLongitude;
+      let dLon = toRadian(x2);
+      let a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadian(fromLatitude)) *
+          Math.cos(toRadian(toLatitude)) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      let d = R * c;
+      return `${d.toFixed(2)} km`;
+    }
+    return null;
+  };
 
+  const getClinicDistance = (
+    clinicId: string,
+    fromLatitude: string | null,
+    fromLongitude: string | null
+  ): string | null => {
+    const filteredClinics = clinics.filter(
+      (clinicDetails: Facility) => clinicDetails.facility.id === clinicId
+    );
+    console.log('filteredClinics', filteredClinics);
+    if (filteredClinics != null && filteredClinics.length > 0) {
+      if (
+        filteredClinics[0].facility.latitude != null &&
+        filteredClinics[0].facility.longitude != null
+      ) {
+        return getDistance(
+          fromLatitude,
+          fromLongitude,
+          filteredClinics[0].facility.latitude,
+          filteredClinics[0].facility.longitude
+        );
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  };
   const defaultClinicId =
     clinics.length > 0 && clinics[0] && clinics[0].facility ? clinics[0].facility.id : '';
 
@@ -355,7 +415,11 @@ export const VisitClinic: React.FC<VisitClinicProps> = (props) => {
                   <div className={classes.clinicDistance}>
                     <img src={require('images/ic_location.svg')} alt="" />
                     <br />
-                    2.5 Kms
+                    {getClinicDistance(
+                      clinicSelected || defaultClinicId,
+                      currentLat,
+                      currentLong
+                    ) || 2.5}
                   </div>
                 </div>
                 {morningSlots.length > 0 ||

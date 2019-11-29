@@ -172,7 +172,7 @@ export class Appointment extends BaseEntity {
   @Column({ nullable: true })
   updatedDate: Date;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   symptoms: string;
 
   @Column({ default: BOOKINGSOURCE.MOBILE })
