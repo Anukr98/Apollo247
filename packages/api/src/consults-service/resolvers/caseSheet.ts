@@ -765,7 +765,6 @@ const createJuniorDoctorCaseSheet: Resolver<
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-  console.log('doctorDataaaaaaaaaaa', doctorData);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   if (doctorData.doctorType != 'JUNIOR') throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -794,12 +793,7 @@ const createJuniorDoctorCaseSheet: Resolver<
       };
       symptomList.push(eachsymptom);
     });
-    console.log(
-      'data',
-      symptomList,
-      JSON.stringify(symptomList),
-      JSON.parse(JSON.stringify(symptomList))
-    );
+
     caseSheetAttrs.symptoms = JSON.parse(JSON.stringify(symptomList));
   }
 
