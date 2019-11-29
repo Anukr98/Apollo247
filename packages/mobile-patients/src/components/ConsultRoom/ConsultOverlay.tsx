@@ -440,7 +440,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 props.setdisplayoverlay(false);
               }}
             >
-              <Text style={styles.gotItTextStyles}>Okay</Text>
+              <Text style={styles.gotItTextStyles}>OK, GOT IT</Text>
             </TouchableOpacity>
           </View>
         </BottomPopUp>
@@ -448,7 +448,8 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
       {limitExceededAlert && (
         <BottomPopUp
           title={'Alert!'}
-          description={`Sorry! You have already cancelled the appointment 3 times in the past 7 days. Please book a fresh appointment later`}
+          // description={`Sorry! You have already cancelled the appointment 3 times in the past 7 days. Please book a fresh appointment later`}
+          description={`Sorry! You have cancelled 3 appointments with this doctor in past 7 days, please try later or choose another doctor.`}
         >
           <View style={{ height: 60, alignItems: 'flex-end' }}>
             <TouchableOpacity
@@ -459,7 +460,7 @@ export const ConsultOverlay: React.FC<ConsultOverlayProps> = (props) => {
                 props.setdisplayoverlay(false);
               }}
             >
-              <Text style={styles.gotItTextStyles}>Okay</Text>
+              <Text style={styles.gotItTextStyles}>OK, GOT IT</Text>
             </TouchableOpacity>
           </View>
         </BottomPopUp>

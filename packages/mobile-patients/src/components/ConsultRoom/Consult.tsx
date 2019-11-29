@@ -824,7 +824,7 @@ export const Consult: React.FC<ConsultProps> = (props) => {
                               paddingBottom: 16,
                             }}
                           >
-                            You can chat with the doctor for
+                            {'You can chat with the doctor for '}
                           </Text>
 
                           <Text

@@ -186,6 +186,8 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
+  const [showAlert, setshowAlert] = useState<boolean>(false);
+
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
 
@@ -261,6 +263,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   };
 
   const cancelAppointmentApi = () => {
+    setshowSpinner(true);
     const appointmentTransferInput = {
       appointmentId: data.id,
       cancelReason: '',
@@ -290,9 +293,11 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           //   })
           // );
         })
-        .catch((e: string) => {
+        .catch((e: any) => {
           setshowSpinner(false);
           console.log('Error occured while adding Doctor', e);
+          const message = e.message.split(':')[1].trim();
+          if (message == 'INVALID_APPOINTMENT_ID') setshowAlert(true);
         });
     }
   };
@@ -631,7 +636,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   onPress={() => {
                     CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
                     setShowCancelPopup(false);
-                    setshowSpinner(true);
                     cancelAppointmentApi();
                   }}
                 >
@@ -717,8 +721,35 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             reschduleDateTime={nextSlotAvailable}
             rescheduleCount={newRescheduleCount ? newRescheduleCount.rescheduleCount : 1}
             data={data}
-            setShowCancelPopup={setShowCancelPopup}
+            cancelAppointmentApi={cancelAppointmentApi}
           />
+        )}
+        {showAlert && (
+          <BottomPopUp
+            title={`Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`}
+            description={'Ongoing / Completed appointments cannot be cancelled.'}
+          >
+            <View
+              style={{
+                flexDirection: 'row',
+                marginHorizontal: 20,
+                //justifyContent: 'space-between',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <View style={{ height: 60 }}>
+                <TouchableOpacity
+                  style={styles.gotItStyles}
+                  onPress={() => {
+                    setshowAlert(false);
+                  }}
+                >
+                  <Text style={styles.gotItTextStyles}>{'OK, GOT IT'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </BottomPopUp>
         )}
         {showSpinner && <Spinner />}
       </View>

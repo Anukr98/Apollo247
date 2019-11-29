@@ -22,7 +22,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
-import { getNetStatus } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { getNetStatus, statusBarHeight } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { NoInterNetPopup } from '@aph/mobile-patients/src/components/ui/NoInterNetPopup';
 import { useApolloClient } from 'react-apollo-hooks';
 import { DELETE_DEVICE_TOKEN } from '@aph/mobile-patients/src/graphql/profiles';
@@ -263,7 +263,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
             position: 'absolute',
             height: 160,
             width: '100%',
-            top: Platform.OS === 'ios' ? 24 : 0,
+            top: statusBarHeight(),
             backgroundColor: headColor,
             justifyContent: 'flex-end',
             flexDirection: 'column',
@@ -302,7 +302,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           container={{
             zIndex: 3,
             position: 'absolute',
-            top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 40 : 20) : 0,
+            top: statusBarHeight(),
             left: 0,
             right: 0,
             height: 56,
@@ -319,7 +319,7 @@ export const MyAccount: React.FC<MyAccountProps> = (props) => {
           style={{
             zIndex: 3,
             position: 'absolute',
-            top: Platform.OS === 'ios' ? (height === 812 || height === 896 ? 50 : 40) : 20,
+            top: statusBarHeight() + 16,
             left: 20,
             right: 0,
             width: 77,
