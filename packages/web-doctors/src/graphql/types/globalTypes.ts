@@ -242,6 +242,18 @@ export interface RescheduleAppointmentInput {
   autoSelectSlot?: number | null;
 }
 
+export interface SaveDoctorsFavouriteMedicineInput {
+  externalId?: string | null;
+  medicineConsumptionDurationInDays: number;
+  medicineDosage: string;
+  medicineUnit: string;
+  medicineInstructions?: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[];
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineName: string;
+  doctorId: string;
+}
+
 export interface SymptomInput {
   symptom?: string | null;
   since?: string | null;

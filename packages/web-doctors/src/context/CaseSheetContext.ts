@@ -9,14 +9,16 @@ import {
   GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile,
   GetCaseSheet_getCaseSheet_pastAppointments,
   GetCaseSheet_getCaseSheet_patientDetails_healthVault,
-  GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument,
-} from 'graphql/types/GetCaseSheet';
-import { createContext } from 'react';
+  GetCaseSheet_getCaseSheet_caseSheetDetails_appointment_appointmentDocuments as appointmentDocument
+} from "graphql/types/GetCaseSheet";
+import { createContext } from "react";
 
 export interface CaseSheetContextProps {
   loading: boolean;
   caseSheetEdit: boolean;
-  setCaseSheetEdit: React.Dispatch<React.SetStateAction<boolean>> | (() => false);
+  setCaseSheetEdit:
+    | React.Dispatch<React.SetStateAction<boolean>>
+    | (() => false);
   patientDetails: GetCaseSheet_getCaseSheet_patientDetails | null;
   appointmentInfo: GetCaseSheet_getCaseSheet_caseSheetDetails_appointment | null;
   createdDoctorProfile: GetCaseSheet_getCaseSheet_caseSheetDetails_createdDoctorProfile | null;
@@ -24,31 +26,57 @@ export interface CaseSheetContextProps {
   symptoms: GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null;
   setSymptoms:
     | React.Dispatch<
-        React.SetStateAction<GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null>
+        React.SetStateAction<
+          GetCaseSheet_getCaseSheet_caseSheetDetails_symptoms[] | null
+        >
       >
     | (() => void);
   notes: string | null;
-  setSRDNotes: React.Dispatch<React.SetStateAction<string | null>> | (() => void);
+  setSRDNotes:
+    | React.Dispatch<React.SetStateAction<string | null>>
+    | (() => void);
   juniorDoctorNotes: string | null;
   diagnosis: GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null;
   setDiagnosis:
     | React.Dispatch<
-        React.SetStateAction<GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null>
+        React.SetStateAction<
+          GetCaseSheet_getCaseSheet_caseSheetDetails_diagnosis[] | null
+        >
       >
     | (() => void);
-  otherInstructions: GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null;
+  otherInstructions:
+    | GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[]
+    | null;
   setOtherInstructions:
     | React.Dispatch<
-        React.SetStateAction<GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null>
+        React.SetStateAction<
+          GetCaseSheet_getCaseSheet_caseSheetDetails_otherInstructions[] | null
+        >
       >
     | (() => void);
   diagnosticPrescription: any[] | null;
-  setDiagnosticPrescription: React.Dispatch<React.SetStateAction<any[] | null>> | (() => void);
-  medicinePrescription: GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null;
+  setDiagnosticPrescription:
+    | React.Dispatch<React.SetStateAction<any[] | null>>
+    | (() => void);
+  medicinePrescription:
+    | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+    | null;
   setMedicinePrescription:
     | React.Dispatch<
         React.SetStateAction<
-          GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | null
+          | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+          | null
+        >
+      >
+    | (() => void);
+
+  favouriteMedicines:
+    | GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[]
+    | [];
+  setFavouriteMedicines:
+    | React.Dispatch<
+        React.SetStateAction<
+          GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription[] | []
         >
       >
     | (() => void);
@@ -57,11 +85,17 @@ export interface CaseSheetContextProps {
   followUp: boolean[];
   setFollowUp: React.Dispatch<React.SetStateAction<boolean[]>> | (() => void);
   followUpConsultType: string[];
-  setFollowUpConsultType: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
+  setFollowUpConsultType:
+    | React.Dispatch<React.SetStateAction<string[]>>
+    | (() => void);
   followUpAfterInDays: string[];
-  setFollowUpAfterInDays: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
+  setFollowUpAfterInDays:
+    | React.Dispatch<React.SetStateAction<string[]>>
+    | (() => void);
   followUpDate: string[];
-  setFollowUpDate: React.Dispatch<React.SetStateAction<string[]>> | (() => void);
+  setFollowUpDate:
+    | React.Dispatch<React.SetStateAction<string[]>>
+    | (() => void);
   healthVault: GetCaseSheet_getCaseSheet_patientDetails_healthVault[] | null;
   pastAppointments: GetCaseSheet_getCaseSheet_pastAppointments[] | null;
   appointmentDocuments: appointmentDocument[] | null;
@@ -120,6 +154,8 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setDiagnosticPrescription: () => {},
   medicinePrescription: null,
   setMedicinePrescription: () => {},
+  favouriteMedicines: [],
+  setFavouriteMedicines: () => {},
   consultType: [],
   setConsultType: () => {},
   followUpConsultType: [],
@@ -134,17 +170,17 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   pastAppointments: null,
   documentArray: null,
   setDocumentArray: (documentArray: appointmentDocument) => {},
-  height: '',
-  weight: '',
-  bp: '',
-  temperature: '',
-  pastMedicalHistory: '',
-  pastSurgicalHistory: '',
-  dietAllergies: '',
-  drugAllergies: '',
-  lifeStyle: '',
-  familyHistory: '',
-  menstrualHistory: '',
+  height: "",
+  weight: "",
+  bp: "",
+  temperature: "",
+  pastMedicalHistory: "",
+  pastSurgicalHistory: "",
+  dietAllergies: "",
+  drugAllergies: "",
+  lifeStyle: "",
+  familyHistory: "",
+  menstrualHistory: "",
 
   setBp: () => {},
   setHeight: () => {},
@@ -158,9 +194,9 @@ export const CaseSheetContext = createContext<CaseSheetContextProps>({
   setFamilyHistory: () => {},
   setMenstrualHistory: () => {},
 
-  gender: '',
+  gender: "",
   setGender: () => {},
 
-  jrdName: '',
-  jrdSubmitDate: '',
+  jrdName: "",
+  jrdSubmitDate: ""
 });
