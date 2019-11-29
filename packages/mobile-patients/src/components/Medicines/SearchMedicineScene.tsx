@@ -202,6 +202,7 @@ export const SearchMedicineScene: React.FC<SearchMedicineSceneProps> = (props) =
         query: GET_PATIENT_PAST_MEDICINE_SEARCHES,
         variables: {
           patientId: currentPatient && currentPatient.id ? currentPatient.id : '',
+          type: SEARCH_TYPE.MEDICINE,
         },
         fetchPolicy: 'no-cache',
       })

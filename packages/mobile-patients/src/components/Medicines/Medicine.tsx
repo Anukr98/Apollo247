@@ -52,17 +52,14 @@ import {
   View,
   ViewStyle,
   Keyboard,
-  AsyncStorage,
 } from 'react-native';
 import { Image, Input } from 'react-native-elements';
 import { FlatList, NavigationScreenProps } from 'react-navigation';
 import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
-import { MaterialMenu } from '@aph/mobile-patients/src/components/ui/MaterialMenu';
-import { string } from '@aph/mobile-patients/src/strings/string';
-import { AddProfile } from '@aph/mobile-patients/src/components/ui/AddProfile';
 import { ProfileList } from '@aph/mobile-patients/src/components/ui/ProfileList';
 import { GetCurrentPatients_getCurrentPatients_patients } from '@aph/mobile-patients/src/graphql/types/GetCurrentPatients';
+import { MEDICINE_ORDER_STATUS } from '../../graphql/types/globalTypes';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -112,13 +109,11 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const config = AppConfig.Configuration;
   const { cartItems, addCartItem, removeCartItem } = useShoppingCart();
   const cartItemsCount = cartItems.length;
-  const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
   const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
-  const { width, height } = Dimensions.get('window');
 
   const { showAphAlert } = useUIElements();
-  const { allCurrentPatients, setCurrentPatientId, currentPatient } = useAllCurrentPatients();
+  const { currentPatient } = useAllCurrentPatients();
 
   useEffect(() => {
     setProfile(currentPatient!);
@@ -168,9 +163,18 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     fetchPolicy: 'cache-first',
   });
 
-  const _orders =
-    (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
-
+  const _orders = (
+    (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
+    []
+  ).filter(
+    (item) =>
+      !(
+        (item!.medicineOrdersStatus || []).length == 1 &&
+        (item!.medicineOrdersStatus || []).find(
+          (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
+        )
+      )
+  );
   // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
@@ -1145,6 +1149,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
         >
           <View style={{ backgroundColor: theme.colors.WHITE }}>
             <ProfileList
+              unsetloaderDisplay={true}
               navigation={props.navigation}
               saveUserChange={true}
               childView={
@@ -1170,7 +1175,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
                 </View>
               }
               selectedProfile={profile}
-              setDisplayAddProfile={(val) => setDisplayAddProfile(val)}
+              setDisplayAddProfile={() => {}}
             ></ProfileList>
           </View>
           <View style={[isSearchFocused ? { flex: 1 } : {}]}>

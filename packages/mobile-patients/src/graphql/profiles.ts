@@ -879,8 +879,8 @@ export const SAVE_DEVICE_TOKEN = gql`
 // `;
 
 export const GET_PATIENT_PAST_MEDICINE_SEARCHES = gql`
-  query getPatientPastMedicineSearches($patientId: ID!) {
-    getPatientPastMedicineSearches(patientId: $patientId) {
+  query getPatientPastMedicineSearches($patientId: ID!, $type: SEARCH_TYPE) {
+    getPatientPastMedicineSearches(patientId: $patientId, type: $type) {
       searchType
       typeId
       name
@@ -1598,7 +1598,7 @@ export const DELETE_DEVICE_TOKEN = gql`
 `;
 
 export const SEARCH_DIAGNOSTICS = gql`
-  query searchDiagnostics($city: String, $patientId: String, $searchText: String) {
+  query searchDiagnostics($city: String, $patientId: String, $searchText: String!) {
     searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
       diagnostics {
         id

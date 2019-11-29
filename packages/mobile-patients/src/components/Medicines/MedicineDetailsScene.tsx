@@ -1,3 +1,4 @@
+import { useAppCommonData } from '@aph/mobile-patients/src/components/AppCommonDataProvider';
 import { AppRoutes } from '@aph/mobile-patients/src/components/NavigatorContainer';
 import { useShoppingCart } from '@aph/mobile-patients/src/components/ShoppingCartProvider';
 import { Button } from '@aph/mobile-patients/src/components/ui/Button';
@@ -19,17 +20,17 @@ import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsPro
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import {
   getDeliveryTime,
+  getMedicineDetailsApi,
+  getPlaceInfoByLatLng,
   getSubstitutes,
   MedicineProduct,
   MedicineProductDetails,
-  getMedicineDetailsApi,
-  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
-import { isEmptyObject, aphConsole } from '@aph/mobile-patients/src/helpers/helperFunctions';
+import { aphConsole, isEmptyObject } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
 import { theme } from '@aph/mobile-patients/src/theme/theme';
 import moment from 'moment';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -45,7 +46,6 @@ import { Image } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import stripHtml from 'string-strip-html';
-import Axios from 'axios';
 
 const { width, height } = Dimensions.get('window');
 
@@ -200,37 +200,42 @@ export const MedicineDetailsScene: React.FC<MedicineDetailsSceneProps> = (props)
   const [medicineDetails, setmedicineDetails] = useState<MedicineProductDetails>(
     {} as MedicineProductDetails
   );
+  const { locationDetails } = useAppCommonData();
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        getPlaceInfoByLatLng(latitude, longitude)
-          .then((obj) => {
-            try {
-              if (
-                obj.data.results.length > 0 &&
-                obj.data.results[0].address_components.length > 0
-              ) {
-                const address = obj.data.results[0].address_components[0].short_name;
-                console.log(address, 'address obj');
-                const addrComponents = obj.data.results[0].address_components || [];
-                const _pincode = (
-                  addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
-                ).long_name;
-                setpincode(_pincode || '');
-              }
-            } catch {}
-          })
-          .catch((error) => {
-            console.log(error, 'geocode error');
-          });
-      },
-      (error) => {
-        console.log(error.code, error.message, 'getCurrentPosition error');
-      },
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
+    if (!(locationDetails && locationDetails.pincode)) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          getPlaceInfoByLatLng(latitude, longitude)
+            .then((obj) => {
+              try {
+                if (
+                  obj.data.results.length > 0 &&
+                  obj.data.results[0].address_components.length > 0
+                ) {
+                  const address = obj.data.results[0].address_components[0].short_name;
+                  console.log(address, 'address obj');
+                  const addrComponents = obj.data.results[0].address_components || [];
+                  const _pincode = (
+                    addrComponents.find((item: any) => item.types.indexOf('postal_code') > -1) || {}
+                  ).long_name;
+                  setpincode(_pincode || '');
+                }
+              } catch {}
+            })
+            .catch((error) => {
+              console.log(error, 'geocode error');
+            });
+        },
+        (error) => {
+          console.log(error.code, error.message, 'getCurrentPosition error');
+        },
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
+      );
+    } else {
+      setpincode(locationDetails.pincode || '');
+    }
   }, []);
 
   const [apiError, setApiError] = useState<boolean>(false);
