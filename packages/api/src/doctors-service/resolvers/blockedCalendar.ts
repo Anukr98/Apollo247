@@ -4,7 +4,7 @@ import { DoctorsServiceContext } from 'doctors-service/doctorsServiceContext';
 import { AphAuthenticationError, AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 import { BlockedCalendarItemRepository } from 'doctors-service/repositories/blockedCalendarItemRepository';
-import { areIntervalsOverlapping, isEqual } from 'date-fns';
+import { areIntervalsOverlapping, isEqual, isAfter } from 'date-fns';
 import { RescheduleAppointmentDetailsRepository } from 'consults-service/repositories/rescheduleAppointmentDetailsRepository';
 import { ConsultMode } from 'doctors-service/entities';
 
@@ -100,6 +100,15 @@ const addBlockedCalendarItem: Resolver<
   if (isEqual(new Date(start), new Date(end))) {
     throw new AphError(AphErrorMessages.INVALID_DATES);
   }
+
+  if (isAfter(new Date(start), new Date(end))) {
+    throw new AphError(AphErrorMessages.INVALID_DATES);
+  }
+
+  if (isAfter(new Date(), new Date(start))) {
+    throw new AphError(AphErrorMessages.INVALID_DATES);
+  }
+
   const itemToAdd = bciRepo.create({ doctorId, start, end, reason });
   const existingItems = await bciRepo.find({ doctorId });
   const overlap = doesItemOverlap(itemToAdd, existingItems);
@@ -229,6 +238,9 @@ const blockMultipleCalendarItems: Resolver<
         const start = item.start;
         const end = item.end;
         if (isEqual(new Date(start), new Date(end))) dateException++;
+        if (isAfter(new Date(start), new Date(end))) dateException++;
+        if (isAfter(new Date(), new Date(start))) dateException++;
+
         const consultMode = item.consultMode;
         const itemToAdd = bciRepo.create({ doctorId, start, end, reason, consultMode });
         CalendarItem.push(itemToAdd);
