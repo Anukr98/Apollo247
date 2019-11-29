@@ -755,7 +755,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
         }
       );
     } catch (e) {
-      console.log(e);
+      alert(e);
     }
   };
 
@@ -790,21 +790,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       },
     });
 
-  // {
-  //   return useMutation<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>(
-  //     GET_DOCTOR_NEXT_AVAILABILITY,
-  //     {
-  //       variables: {
-  //         DoctorNextAvailableSlotInput: {
-  //           doctorIds: [slotDoctorId],
-  //           availableDate: moment(todayDate).format('YYYY-MM-DD'),
-  //         },
-  //       },
-  //       fetchPolicy: 'no-cache',
-  //     }
-  //   );
-  // };
-
   const nextAvailableSlot = (rowData: any, Value: string) => {
     const todayDate = moment
       .utc(
@@ -817,7 +802,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
 
     const slotDoctorId =
       Value === 'Followup' ? rowData.transferInfo.doctorId : rowData.transferInfo.doctorInfo.id;
-    console.log('slotDoctorId', slotDoctorId);
 
     availableSlot(slotDoctorId, todayDate)
       .then(({ data }: any) => {
@@ -827,7 +811,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
             data.getDoctorNextAvailableSlot &&
             data.getDoctorNextAvailableSlot.doctorAvailalbeSlots
           ) {
-            console.log(data);
             setNextSlotAvailable(data.getDoctorNextAvailableSlot.doctorAvailalbeSlots);
           }
         } catch (error) {
@@ -836,7 +819,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
       })
       .catch((e: string) => {
         alert(e);
-        console.log('Error occured ', e);
       });
   };
 
@@ -898,20 +880,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = (props) => {
     </div>
   );
 
-  const getChatMsgInCall = (rowData: MessagesObjectProps) => (
-    <div className={classes.callEnded}>
-      <span>
-        <img src={require('images/ic_round_call.svg')} />
-      </span>
-      <div>
-        {rowData.message}
-        <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
-      </div>
-    </div>
-  );
+  // const getChatMsgInCall = (rowData: MessagesObjectProps) => (
+  //   <div className={classes.callEnded}>
+  //     <span>
+  //       <img src={require('images/ic_round_call.svg')} />
+  //     </span>
+  //     <div>
+  //       {rowData.message}
+  //       <span className={classes.durationMsg}>Duration- {rowData.duration}</span>
+  //     </div>
+  //   </div>
+  // );
 
   const renderChatRow = (rowData: MessagesObjectProps, index: number) => {
-    console.log(rowData);
     if (
       rowData.message === autoMessageStrings.typingMsg ||
       rowData.message === autoMessageStrings.stopcallMsg ||
