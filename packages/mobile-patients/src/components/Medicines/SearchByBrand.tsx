@@ -209,7 +209,7 @@ export const SearchByBrand: React.FC<SearchByBrandProps> = (props) => {
               <CartIcon />
               {cartItemsCount > 0 && renderBadge(cartItemsCount, {})}
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            <TouchableOpacity activeOpacity={1} onPress={() => setFilterVisible(true)}>
               <Filter />
             </TouchableOpacity>
           </View>
