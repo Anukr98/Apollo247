@@ -1035,7 +1035,7 @@ export const MedicinePrescription: React.FC = () => {
                   <div className={classes.dialogContent}>
                     <Grid container spacing={2}>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Dosage*</h6>
+                        <h6>Quantity (Per Dosage)</h6>
                         <AphTextField
                           inputProps={{ maxLength: 6 }}
                           value={tabletsCount}
@@ -1054,7 +1054,7 @@ export const MedicinePrescription: React.FC = () => {
                         )}
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Units*</h6>
+                        <h6>Units/Types</h6>
                         <div className={classes.unitsSelect}>
                           <AphSelect
                             style={{ paddingTop: 3 }}
@@ -1088,14 +1088,19 @@ export const MedicinePrescription: React.FC = () => {
                             <MenuItem classes={{ selected: classes.menuSelected }} value="DROPS">
                               drops
                             </MenuItem>
-                            <MenuItem classes={{ selected: classes.menuSelected }} value="NA">
-                              NA
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="OINTMENT">
+                             ointment
                             </MenuItem>
+                            <MenuItem classes={{ selected: classes.menuSelected }} value="OTHER">
+                              other
+                            </MenuItem>
+                           
+                            
                           </AphSelect>
                         </div>
                       </Grid>
                       <Grid item lg={6} md={6} xs={12}>
-                        <h6>Duration of Consumption*</h6>
+                        <h6>Duration (In days)</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
                             placeholder=""
@@ -1131,7 +1136,7 @@ export const MedicinePrescription: React.FC = () => {
                         )}
                       </Grid>
                       <Grid item lg={12} xs={12}>
-                        <h6>Time of the Day*</h6>
+                        <h6>Time of the Day</h6>
                         <div className={classes.numberTablets}>{daySlotsHtml}</div>
                         {errorState.daySlotErr && (
                           <FormHelperText
@@ -1147,6 +1152,7 @@ export const MedicinePrescription: React.FC = () => {
                         <h6>Instructions (if any)</h6>
                         <div className={classes.numberTablets}>
                           <AphTextField
+                            placeholder="Eg. Root of Administration, Gaps in Dosage, etc."
                             value={medicineInstruction}
                             onChange={(event: any) => {
                               setMedicineInstruction(event.target.value);

@@ -111,10 +111,20 @@ const saveDoctorsFavouriteMedicine: Resolver<
   const doctordata = await doctorRepository.findById(saveDoctorsFavouriteMedicineInput.doctorId);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  //TODO :  check for medicine name exsitence
+  if (saveDoctorsFavouriteMedicineInput.medicineName.trim().length == 0)
+    throw new AphError(AphErrorMessages.INVALID_ENTITY);
+
+  const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
+
+  //check for medicine name exsitence
+  const getMedicineByName = await favouriteMedicineRepo.getFavouriteMedicineByName(
+    saveDoctorsFavouriteMedicineInput.medicineName.toLowerCase(),
+    doctordata.id
+  );
+  if (getMedicineByName !== null && getMedicineByName.length > 0)
+    throw new AphError(AphErrorMessages.MEDICINE_ALREADY_EXIST);
 
   //add fav medicine
-  const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
   const saveDoctorFavouriteMedicineAttrs: Partial<DoctorsFavouriteMedicine> = {
     ...saveDoctorsFavouriteMedicineInput,
     doctor: doctordata,
@@ -147,6 +157,8 @@ const removeFavouriteMedicine: Resolver<
   DoctorsServiceContext,
   FavouriteMedicineList
 > = async (parent, args, { mobileNumber, doctorsDb }) => {
+  if (args.id.trim().length == 0) throw new AphError(AphErrorMessages.INVALID_ENTITY);
+
   const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
 
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
@@ -193,10 +205,21 @@ const updateDoctorFavouriteMedicine: Resolver<
   const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
+  if (updateDoctorsFavouriteMedicineInput.medicineName.trim().length == 0)
+    throw new AphError(AphErrorMessages.INVALID_ENTITY);
+
   //check if id exists or not
   const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
   const checkId = await favouriteMedicineRepo.findById(updateDoctorsFavouriteMedicineInput.id);
   if (checkId == null) throw new AphError(AphErrorMessages.INVALID_FAVOURITE_ID);
+
+  //check for medicine name exsitence
+  const getMedicineByName = await favouriteMedicineRepo.checkMedicineNameWhileUpdate(
+    updateDoctorsFavouriteMedicineInput.medicineName.toLowerCase(),
+    updateDoctorsFavouriteMedicineInput.id
+  );
+  if (getMedicineByName !== null && getMedicineByName.length > 0)
+    throw new AphError(AphErrorMessages.MEDICINE_ALREADY_EXIST);
 
   //update medicine
   await favouriteMedicineRepo.updateFavouriteMedicine(

@@ -4,7 +4,7 @@ import { ProfilesServiceContext } from 'profiles-service/profilesServiceContext'
 import { PatientFeedback, FEEDBACKTYPE } from 'profiles-service/entities';
 import { PatientFeedbackRepository } from 'profiles-service/repositories/patientFeedbackRepository';
 import { PatientRepository } from 'profiles-service/repositories/patientRepository';
-
+import { AppointmentRepository } from 'consults-service/repositories/appointmentRepository';
 import { AphError } from 'AphError';
 import { AphErrorMessages } from '@aph/universal/dist/AphErrorMessages';
 
@@ -21,6 +21,7 @@ export const addPatientFeedbackTypeDefs = gql`
     thankyouNote: String
     reason: String
     feedbackType: FEEDBACKTYPE
+    transactionId: ID!
   }
 
   type AddPatientFeedbackResult {
@@ -38,6 +39,7 @@ type PatientFeedbackInput = {
   thankyouNote: string;
   reason: string;
   feedbackType: FEEDBACKTYPE;
+  transactionId: string;
 };
 
 type PatientFeedbackInputArgs = { patientFeedbackInput: PatientFeedbackInput };
@@ -51,24 +53,31 @@ const addPatientFeedback: Resolver<
   PatientFeedbackInputArgs,
   ProfilesServiceContext,
   AddPatientFeedbackResult
-> = async (parent, { patientFeedbackInput }, { profilesDb }) => {
+> = async (parent, { patientFeedbackInput }, { profilesDb, consultsDb }) => {
   const patientsRepo = profilesDb.getCustomRepository(PatientRepository);
   const patient = await patientsRepo.findById(patientFeedbackInput.patientId);
   if (patient == null) {
     throw new AphError(AphErrorMessages.INVALID_PATIENT_ID, undefined, {});
   }
-
+  let doctorId = '';
+  if (patientFeedbackInput.feedbackType === FEEDBACKTYPE.CONSULT) {
+    const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
+    const appointmentDetails = await appointmentRepo.findByAppointmentId(
+      patientFeedbackInput.transactionId
+    );
+    doctorId = appointmentDetails[0].doctorId;
+  }
   const addPatientFeedbackAttrs: Partial<PatientFeedback> = {
     patient: patient,
     rating: patientFeedbackInput.rating,
     thankyouNote: patientFeedbackInput.thankyouNote,
     reason: patientFeedbackInput.reason,
     feedbackType: patientFeedbackInput.feedbackType,
+    transactionId: patientFeedbackInput.transactionId,
+    doctorId: doctorId ? doctorId : '',
   };
   const patientFeedbackRepo = profilesDb.getCustomRepository(PatientFeedbackRepository);
-  const patientFeedbackRecord = await patientFeedbackRepo.addFeedbackRecord(
-    addPatientFeedbackAttrs
-  );
+  await patientFeedbackRepo.addFeedbackRecord(addPatientFeedbackAttrs);
   return { status: true };
 };
 

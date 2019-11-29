@@ -8,6 +8,7 @@ import {
   Not,
   Connection,
   In,
+  Equal,
 } from 'typeorm';
 import {
   Appointment,
@@ -425,9 +426,12 @@ export class AppointmentRepository extends Repository<Appointment> {
       nextDate = addDays(appointmentDate, 1);
       weekDay = format(nextDate, 'EEEE').toUpperCase();
     }
-    //console.log(weekDay, 'weekday');
-    //console.log('entered here', selDate, weekDay);
-    let consultFlag = false;
+    enum CONSULTFLAG {
+      OUTOFCONSULTHOURS = 'OUTOFCONSULTHOURS',
+      OUTOFBUFFERTIME = 'OUTOFBUFFERTIME',
+      INCONSULTHOURS = 'INCONSULTHOURS',
+    }
+    let consultFlag;
     const consultHoursRepo = doctorsDb.getCustomRepository(DoctorConsultHoursRepository);
     let docConsultHrs: ConsultHours[];
     if (appointmentType == 'ONLINE') {
@@ -435,33 +439,34 @@ export class AppointmentRepository extends Repository<Appointment> {
     } else {
       docConsultHrs = await consultHoursRepo.getAnyPhysicalConsultHours(doctorId, weekDay);
     }
-
     if (docConsultHrs && docConsultHrs.length > 0) {
       docConsultHrs.map((docConsultHr) => {
-        if (consultFlag == false) {
-          //get the slots of the day first
-          let st = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-          const ed = `${nextDate.toDateString()} ${docConsultHr.endTime.toString()}`;
-          let consultStartTime = new Date(st);
-          const consultEndTime = new Date(ed);
-          //console.log(consultStartTime, consultEndTime);
-          let previousDate: Date = appointmentDate;
-          if (consultEndTime < consultStartTime) {
-            previousDate = addDays(previousDate, -1);
-            st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
-            consultStartTime = new Date(st);
-          }
-          //console.log(consultStartTime, 'start time');
-          //console.log(consultEndTime, 'end time');
-          if (appointmentDate >= consultStartTime && appointmentDate < consultEndTime) {
-            consultFlag = true;
-          } else {
-            consultFlag = false;
-          }
+        // if (consultFlag == CONSULTFLAG.OUTOFCONSULTHOURS) {
+        //get the slots of the day first
+        let st = `${nextDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+        const ed = `${nextDate.toDateString()} ${docConsultHr.endTime.toString()}`;
+        let consultStartTime = new Date(st);
+        const consultEndTime = new Date(ed);
+        const appointmentDateInfo = new Date(appointmentDate);
+        const currentDate = new Date();
+        let previousDate: Date = appointmentDate;
+        const currentBuffer = (appointmentDateInfo.getTime() - currentDate.getTime()) / (1000 * 60);
+        if (consultEndTime < consultStartTime) {
+          previousDate = addDays(previousDate, -1);
+          st = `${previousDate.toDateString()} ${docConsultHr.startTime.toString()}`;
+          consultStartTime = new Date(st);
         }
+        if (currentBuffer < docConsultHr.consultBuffer) {
+          consultFlag = CONSULTFLAG.OUTOFBUFFERTIME;
+        } else if (appointmentDate >= consultStartTime && appointmentDate < consultEndTime) {
+          consultFlag = CONSULTFLAG.INCONSULTHOURS;
+        } else {
+          consultFlag = CONSULTFLAG.OUTOFCONSULTHOURS;
+        }
+        // }
       });
     } else {
-      consultFlag = false;
+      consultFlag = CONSULTFLAG.OUTOFCONSULTHOURS;
     }
     return consultFlag;
   }
@@ -796,7 +801,13 @@ export class AppointmentRepository extends Repository<Appointment> {
     const newStartDate = new Date(format(addDays(fromDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(toDate, 'yyyy-MM-dd') + 'T18:30');
     return this.find({
-      where: [{ bookingDate: Between(newStartDate, newEndDate), appointmentState: 'NEW' }],
+      where: [
+        {
+          bookingDate: Between(newStartDate, newEndDate),
+          appointmentState: 'NEW',
+          cancelledBy: Not(Equal(REQUEST_ROLES.PATIENT)),
+        },
+      ],
       order: { bookingDate: 'DESC' },
     });
   }

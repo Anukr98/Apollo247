@@ -595,19 +595,19 @@ export const ConsultTabs: React.FC = () => {
               _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.lastName;
           }
 
-          // if (
-          //   _data &&
-          //   _data.data &&
-          //   _data.data.getCaseSheet &&
-          //   _data.data.getCaseSheet.juniorDoctorCaseSheet &&
-          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
-          //   _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation
-          // ) {
-          //   jrdSalutation =
-          //     _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation;
-          // }
+          if (
+            _data &&
+            _data.data &&
+            _data.data.getCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile &&
+            _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation
+          ) {
+            jrdSalutation =
+              _data.data.getCaseSheet.juniorDoctorCaseSheet.createdDoctorProfile.salutation;
+          }
 
-          setJrdName(`${jrdFirstName} ${jrdLastName}`);
+          setJrdName(`${jrdSalutation} ${jrdFirstName} ${jrdLastName}`);
         })
         .catch((error: ApolloError) => {
           const networkErrorMessage = error.networkError ? error.networkError.message : null;

@@ -964,7 +964,7 @@ export const SEARCH_DIAGNOSIS = gql`
   }
 `;
 export const SEARCH_DIAGNOSTICS = gql`
-  query SearchDiagnostics($city: String, $patientId: String, $searchText: String) {
+  query SearchDiagnostics($city: String, $patientId: String, $searchText: String!) {
     searchDiagnostics(city: $city, patientId: $patientId, searchText: $searchText) {
       diagnostics {
         itemName
