@@ -33,7 +33,7 @@ export interface ReschedulePopUpProps extends NavigationScreenProps {
   reschduleDateTime: string;
   data: any;
   rescheduleCount: number;
-  setShowCancelPopup: (arg0: boolean) => void;
+  cancelAppointmentApi: () => void;
 }
 export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
   const [showSpinner, setshowSpinner] = useState<boolean>(false);
@@ -352,7 +352,7 @@ export const ReschedulePopUp: React.FC<ReschedulePopUpProps> = (props) => {
                     style={{ flex: 0.5, marginRight: 20, marginLeft: 8 }}
                     onPress={() => {
                       props.setResheduleoverlay(false);
-                      props.setShowCancelPopup(true);
+                      props.cancelAppointmentApi();
                     }}
                   />
                 </View>

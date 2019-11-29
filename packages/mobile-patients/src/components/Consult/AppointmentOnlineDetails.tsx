@@ -49,6 +49,7 @@ import {
   View,
 } from 'react-native';
 import { NavigationActions, NavigationScreenProps, StackActions } from 'react-navigation';
+import { useUIElements } from '@aph/mobile-patients/src/components/UIElementsProvider';
 
 const { width, height } = Dimensions.get('window');
 
@@ -186,8 +187,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   const [networkStatus, setNetworkStatus] = useState<boolean>(false);
   // const [consultStarted, setConsultStarted] = useState<boolean>(false);
   const [sucesspopup, setSucessPopup] = useState<boolean>(false);
+
   const { currentPatient } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
+  const { showAphAlert } = useUIElements();
 
   useEffect(() => {
     if (!currentPatient) {
@@ -261,6 +264,7 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
   };
 
   const cancelAppointmentApi = () => {
+    setshowSpinner(true);
     const appointmentTransferInput = {
       appointmentId: data.id,
       cancelReason: '',
@@ -290,9 +294,16 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
           //   })
           // );
         })
-        .catch((e: string) => {
+        .catch((e: any) => {
           setshowSpinner(false);
           console.log('Error occured while adding Doctor', e);
+          const message = e.message ? e.message.split(':')[1].trim() : '';
+          if (message == 'INVALID_APPOINTMENT_ID') {
+            showAphAlert!({
+              title: `Hi, ${(currentPatient && currentPatient.firstName) || ''} :)`,
+              description: 'Ongoing / Completed appointments cannot be cancelled.',
+            });
+          }
         });
     }
   };
@@ -631,7 +642,6 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
                   onPress={() => {
                     CommonLogEvent(AppRoutes.AppointmentOnlineDetails, 'CANCEL CONSULT_CLICKED');
                     setShowCancelPopup(false);
-                    setshowSpinner(true);
                     cancelAppointmentApi();
                   }}
                 >
@@ -717,9 +727,10 @@ export const AppointmentOnlineDetails: React.FC<AppointmentOnlineDetailsProps> =
             reschduleDateTime={nextSlotAvailable}
             rescheduleCount={newRescheduleCount ? newRescheduleCount.rescheduleCount : 1}
             data={data}
-            setShowCancelPopup={setShowCancelPopup}
+            cancelAppointmentApi={cancelAppointmentApi}
           />
         )}
+
         {showSpinner && <Spinner />}
       </View>
     );
