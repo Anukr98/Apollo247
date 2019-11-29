@@ -33,7 +33,6 @@ export const saveDoctorFavouriteMedicineTypeDefs = gql`
     medicineTimings: [MEDICINE_TIMINGS]!
     medicineToBeTaken: [MEDICINE_TO_BE_TAKEN]
     medicineName: String!
-    doctorId: ID!
   }
 
   type DoctorFavouriteMedicine {
@@ -93,7 +92,6 @@ type SaveDoctorsFavouriteMedicineInput = {
   medicineTimings: MEDICINE_TIMINGS[];
   medicineToBeTaken: MEDICINE_TO_BE_TAKEN[];
   medicineName: string;
-  doctorId: string;
 };
 
 type saveDoctorsFavouriteMedicineInputArgs = {
@@ -108,7 +106,7 @@ const saveDoctorsFavouriteMedicine: Resolver<
 > = async (parent, { saveDoctorsFavouriteMedicineInput }, { doctorsDb, mobileNumber }) => {
   //doctor check
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
-  const doctordata = await doctorRepository.findById(saveDoctorsFavouriteMedicineInput.doctorId);
+  const doctordata = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   if (saveDoctorsFavouriteMedicineInput.medicineName.trim().length == 0)

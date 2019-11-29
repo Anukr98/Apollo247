@@ -37,6 +37,7 @@ import { PatientFamilyHistoryRepository } from 'profiles-service/repositories/pa
 import { PatientLifeStyleRepository } from 'profiles-service/repositories/patientLifeStyleRepository';
 import { PatientMedicalHistoryRepository } from 'profiles-service/repositories/patientMedicalHistory';
 import { SecretaryRepository } from 'doctors-service/repositories/secretaryRepository';
+import { SymptomsList } from 'types/appointmentTypes';
 
 export type DiagnosisJson = {
   name: string;
@@ -764,7 +765,7 @@ const createJuniorDoctorCaseSheet: Resolver<
   //get loggedin user details
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
-
+  console.log('doctorDataaaaaaaaaaa', doctorData);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
   if (doctorData.doctorType != 'JUNIOR') throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
@@ -780,6 +781,28 @@ const createJuniorDoctorCaseSheet: Resolver<
     createdDoctorId: doctorData.id,
     doctorType: doctorData.doctorType,
   };
+
+  if (appointmentData.symptoms && appointmentData.symptoms.length > 0) {
+    const symptoms = appointmentData.symptoms.split(',');
+    const symptomList: SymptomsList[] = [];
+    symptoms.map((symptom) => {
+      const eachsymptom = {
+        symptom: symptom,
+        since: null,
+        howOften: null,
+        severity: null,
+      };
+      symptomList.push(eachsymptom);
+    });
+    console.log(
+      'data',
+      symptomList,
+      JSON.stringify(symptomList),
+      JSON.parse(JSON.stringify(symptomList))
+    );
+    caseSheetAttrs.symptoms = JSON.parse(JSON.stringify(symptomList));
+  }
+
   caseSheetDetails = await caseSheetRepo.savecaseSheet(caseSheetAttrs);
   return caseSheetDetails;
 };
