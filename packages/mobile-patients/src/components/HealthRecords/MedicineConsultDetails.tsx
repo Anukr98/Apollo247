@@ -125,7 +125,7 @@ export const MedicineConsultDetails: React.FC<RecordDetailsProps> = (props) => {
   const { addCartItem, addEPrescription } = useShoppingCart();
   const { currentPatient } = useAllCurrentPatients();
   const client = useApolloClient();
-  console.log('prismPrescriptionFileId', prismFile.split(','));
+  // console.log('prismPrescriptionFileId', prismFile.split(','));
 
   useEffect(() => {
     if (prismFile == null || prismFile == '') {

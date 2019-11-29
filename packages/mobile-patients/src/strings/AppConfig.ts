@@ -123,7 +123,11 @@ const ConfigurationProd = {
 };
 
 const Configuration =
-  APP_ENV == AppEnv.PROD ? ConfigurationProd : AppEnv.QA ? ConfigurationQA : ConfigurationDev;
+  APP_ENV == AppEnv.PROD
+    ? ConfigurationProd
+    : APP_ENV == AppEnv.QA
+    ? ConfigurationQA
+    : ConfigurationDev;
 
 export const MedicineFeedBackData = {
   POOR: {

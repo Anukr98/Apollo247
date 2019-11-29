@@ -34,6 +34,7 @@ import { useAllCurrentPatients, useAuth } from '../../hooks/authHooks';
 import { useApolloClient } from 'react-apollo-hooks';
 import { BottomPopUp } from '../ui/BottomPopUp';
 import { string } from '../../strings/string';
+import { MedicalTest } from './AddRecord';
 
 const styles = StyleSheet.create({
   imageView: {
@@ -264,7 +265,9 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                     </View>
                     <View>
                       <Text style={styles.labelTextStyle}>Units</Text>
-                      <Text style={styles.valuesTextStyle}>{item.unit}</Text>
+                      <Text style={styles.valuesTextStyle}>
+                        {MedicalTest.find((itm) => itm.key === item.unit)!.value}
+                      </Text>
                     </View>
                     <View>
                       <Text style={styles.labelTextStyle}>Normal Range</Text>
@@ -445,7 +448,6 @@ export const RecordDetails: React.FC<RecordDetailsProps> = (props) => {
                 style={styles.gotItStyles}
                 onPress={() => {
                   setshowPopUp(false);
-                  props.navigation.goBack();
                 }}
               >
                 <Text style={styles.gotItTextStyles}>{string.LocalStrings.ok}</Text>

@@ -113,27 +113,12 @@ export const ProfileList: React.FC<ProfileListProps> = (props) => {
       console.log('storeVallue : uuh', storeVallue, currentPatient);
       if (storeVallue) {
         setCurrentPatientId(storeVallue);
-        console.log(
-          'logic value',
-          storeVallue &&
-            ((currentPatient && currentPatient!.id !== storeVallue) ||
-              currentPatient === null ||
-              (shopCart.addresses!.length === 0 || diagCart.addresses!.length === 0)),
-          'break logic: 1,2,3',
-          currentPatient && currentPatient!.id !== storeVallue,
-          currentPatient === null,
-          shopCart.addresses!.length === 0 || diagCart.addresses!.length === 0,
-          shopCart,
-          diagCart
-        );
-
         storeVallue &&
           ((currentPatient && currentPatient!.id !== storeVallue) ||
             currentPatient === null ||
             (shopCart.addresses!.length === 0 || diagCart.addresses!.length === 0)) &&
           setAddressList(storeVallue);
       } else if (currentPatient) {
-        setCurrentPatientId(currentPatient!.id);
         AsyncStorage.setItem('selectUserId', currentPatient!.id);
         setAddressList(currentPatient!.id);
       }

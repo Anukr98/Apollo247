@@ -34,6 +34,7 @@ import { savePatientAddress_savePatientAddress_patientAddress } from '@aph/mobil
 import {
   pinCodeServiceabilityApi,
   searchPickupStoresApi,
+  getPlaceInfoByLatLng,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { useAllCurrentPatients, useAuth } from '@aph/mobile-patients/src/hooks/authHooks';
 import { AppConfig } from '@aph/mobile-patients/src/strings/AppConfig';
@@ -53,6 +54,7 @@ import { FlatList, NavigationScreenProps, ScrollView } from 'react-navigation';
 import { CommonLogEvent } from '@aph/mobile-patients/src/FunctionHelpers/DeviceHelper';
 import { uploadDocument } from '../../graphql/types/uploadDocument';
 import { downloadDocuments } from '../../graphql/types/downloadDocuments';
+import { useAppCommonData } from '../AppCommonDataProvider';
 
 const styles = StyleSheet.create({
   labelView: {
@@ -133,6 +135,7 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   const { getPatientApiCall } = useAuth();
   const [isPhysicalUploadComplete, setisPhysicalUploadComplete] = useState<boolean>();
   const [isEPrescriptionUploadComplete, setisEPrescriptionUploadComplete] = useState<boolean>();
+  const { locationDetails } = useAppCommonData();
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -140,31 +143,61 @@ export const YourCart: React.FC<YourCartProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
-    setLoading!(true);
-    (currentPatient &&
-      // addresses.length == 0 &&
-      client
-        .query<getPatientAddressList, getPatientAddressListVariables>({
-          query: GET_PATIENT_ADDRESS_LIST,
-          variables: { patientId: currentPatientId },
-          fetchPolicy: 'no-cache',
-        })
-        .then(({ data: { getPatientAddressList: { addressList } } }) => {
-          setLoading!(false);
-          setAddresses && setAddresses(addressList!);
-        })
-        .catch((e) => {
-          setLoading!(false);
-          showAphAlert!({
-            title: `Uh oh.. :(`,
-            description: `Something went wrong, unable to fetch addresses.`,
+    if (deliveryAddressId && addresses) {
+      const selectedAddressIndex = addresses.findIndex(
+        (address) => address.id == deliveryAddressId
+      );
+      addresses &&
+        pinCodeServiceabilityApi(addresses[selectedAddressIndex].zipcode!)
+          .then(({ data: { Availability } }) => {
+            setCheckingServicability(false);
+            if (Availability) {
+              setDeliveryAddressId && setDeliveryAddressId(deliveryAddressId);
+            } else {
+              setDeliveryAddressId && setDeliveryAddressId('');
+              showAphAlert!({
+                title: 'Uh oh.. :(',
+                description:
+                  'Sorry! We’re working hard to get to this area! In the meantime, you can either pick up from a nearby store, or change the pincode.',
+              });
+            }
+          })
+          .catch((e) => {
+            aphConsole.log({ e });
+            setCheckingServicability(false);
+            handleGraphQlError(e);
           });
-        })) ||
-      setLoading!(false);
-  }, [currentPatient]);
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   setLoading!(true);
+  //   (currentPatient &&
+  //     addresses.length == 0 &&
+  //     client
+  //       .query<getPatientAddressList, getPatientAddressListVariables>({
+  //         query: GET_PATIENT_ADDRESS_LIST,
+  //         variables: { patientId: currentPatientId },
+  //         fetchPolicy: 'no-cache',
+  //       })
+  //       .then(({ data: { getPatientAddressList: { addressList } } }) => {
+  //         setLoading!(false);
+  //         setAddresses && setAddresses(addressList!);
+  //       })
+  //       .catch((e) => {
+  //         setLoading!(false);
+  //         showAphAlert!({
+  //           title: `Uh oh.. :(`,
+  //           description: `Something went wrong, unable to fetch addresses.`,
+  //         });
+  //       })) ||
+  //     setLoading!(false);
+  // }, [currentPatient]);
+
   useEffect(() => {
     onFinishUpload();
   }, [isEPrescriptionUploadComplete, isPhysicalUploadComplete]);
+
   /*  useEffect(() => {
     getCartInfo()
       .then((cartInfo) => {

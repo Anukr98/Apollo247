@@ -116,6 +116,8 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
   const orderAutoId = props.navigation.getParam('orderAutoId');
   const goToHomeOnBack = props.navigation.getParam('goToHomeOnBack');
   const showOrderSummaryTab = props.navigation.getParam('showOrderSummaryTab');
+  const setOrders = props.navigation.getParam('setOrders');
+  const refetchOrders = props.navigation.getParam('refetch');
 
   const client = useApolloClient();
 
@@ -592,6 +594,11 @@ export const OrderDetailsScene: React.FC<OrderDetailsSceneProps> = (props) => {
             .catch(() => {
               setInitialSate();
             });
+          refetchOrders().then((data: any) => {
+            const _orders = g(data, 'data', 'getMedicineOrdersList', 'MedicineOrdersList') || [];
+            console.log(_orders, 'hdub');
+            setOrders(_orders);
+          });
         } else {
           Alert.alert('Error', g(data, 'saveOrderCancelStatus', 'requestMessage')!);
         }

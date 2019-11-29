@@ -120,7 +120,7 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const [date, setDate] = useState<Date>(props.date);
   const [availableInMin, setavailableInMin] = useState<Number>(0);
   const [NextAvailableSlot, setNextAvailableSlot] = useState<string>('');
-
+  const [checkingAvailability, setCheckingAvailability] = useState<boolean>(false);
   useEffect(() => {
     console.log(availableInMin, 'ConsultOnline');
 
@@ -196,40 +196,60 @@ export const ConsultOnline: React.FC<ConsultOnlineProps> = (props) => {
   const client = useApolloClient();
 
   const checkAvailabilitySlot = () => {
-    props.setshowSpinner && props.setshowSpinner(true);
+    if (!checkingAvailability) {
+      setCheckingAvailability(true);
+      props.setshowSpinner && props.setshowSpinner(true);
 
-    const todayDate = new Date().toISOString().slice(0, 10);
+      const todayDate = new Date().toISOString().slice(0, 10);
 
-    getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
-      .then(({ data }: any) => {
-        try {
-          props.setshowSpinner && props.setshowSpinner(false);
-          if (data[0] && data[0]!.availableSlot && availableInMin === 0) {
-            const nextSlot = data[0]!.availableSlot;
-            // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
-            let timeDiff: Number = 0;
-            const today: Date = new Date();
-            const date2: Date = new Date(nextSlot);
-            if (date2 && today) {
-              timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
+      getNextAvailableSlots(client, props.doctor ? [props.doctor.id] : [], todayDate)
+        // client
+        //   .query<GetDoctorNextAvailableSlot, GetDoctorNextAvailableSlotVariables>({
+        //     query: NEXT_AVAILABLE_SLOT,
+        //     variables: {
+        //       DoctorNextAvailableSlotInput: {
+        //         doctorIds:
+        //         availableDate: todayDate,
+        //       },
+        //     },
+        //     fetchPolicy: 'no-cache',
+        //   })
+        .then(({ data }: any) => {
+          try {
+            props.setshowSpinner && props.setshowSpinner(false);
+            if (data[0] && data[0]!.availableSlot && availableInMin === 0) {
+              const nextSlot = data[0]!.availableSlot;
+              // const IOSFormat =  `${todayDate}T${nextSlot}:00.000Z`;
+              let timeDiff: Number = 0;
+              const today: Date = new Date();
+              const date2: Date = new Date(nextSlot);
+              if (date2 && today) {
+                timeDiff = Math.ceil(((date2 as any) - (today as any)) / 60000);
+              }
+              props.setNextAvailableSlot(nextSlot);
+              props.setavailableInMin(timeDiff);
+              setavailableInMin(timeDiff);
+              setNextAvailableSlot(nextSlot);
+              if (timeDiff > 60) {
+                setselectedCTA(onlineCTA[1]);
+              }
+              setDate(date2);
+              props.setDate(date2);
+              fetchSlots(date2);
             }
-            props.setNextAvailableSlot(nextSlot);
-            props.setavailableInMin(timeDiff);
-            setavailableInMin(timeDiff);
-            setNextAvailableSlot(nextSlot);
-            if (timeDiff > 60) {
-              setselectedCTA(onlineCTA[1]);
-            }
-            setDate(date2);
-            props.setDate(date2);
-            fetchSlots(date2);
+          } catch {
+          } finally {
+            setCheckingAvailability(false);
           }
-        } catch {}
-      })
-      .catch((e: any) => {
-        props.setshowSpinner && props.setshowSpinner(false);
-        console.log('error', e);
-      });
+        })
+        .catch((e: any) => {
+          props.setshowSpinner && props.setshowSpinner(false);
+          console.log('error', e);
+        })
+        .finally(() => {
+          setCheckingAvailability(false);
+        });
+    }
   };
 
   const renderTimings = () => {

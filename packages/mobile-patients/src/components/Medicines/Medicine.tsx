@@ -30,6 +30,7 @@ import {
   getMedicineSearchSuggestionsApi,
   MedicinePageAPiResponse,
   MedicineProduct,
+  Brand,
 } from '@aph/mobile-patients/src/helpers/apiCalls';
 import { g } from '@aph/mobile-patients/src/helpers/helperFunctions';
 import { useAllCurrentPatients } from '@aph/mobile-patients/src/hooks/authHooks';
@@ -113,7 +114,7 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const cartItemsCount = cartItems.length;
   const [displayAddProfile, setDisplayAddProfile] = useState<boolean>(false);
   const [profile, setProfile] = useState<GetCurrentPatients_getCurrentPatients_patients>();
-
+  const [allBrandData, setAllBrandData] = useState<Brand[]>([]);
   const { width, height } = Dimensions.get('window');
 
   const { showAphAlert } = useUIElements();
@@ -121,6 +122,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
 
   useEffect(() => {
     setProfile(currentPatient!);
+  }, [currentPatient]);
+  useEffect(() => {
     getMedicinePageProducts()
       .then((d) => {
         setData(d.data);
@@ -134,7 +137,10 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           description: "We're unable to fetch products, try later.",
         });
       });
-  }, [currentPatient]);
+    if (_orders.length === 0) {
+      ordersRefetch();
+    }
+  }, []);
 
   // Api Call
   // const { data, loading, error } = useFetch(() => getMedicinePageProducts());
@@ -152,12 +158,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
   const shopByBrand = g(data, 'shop_by_brand') || [];
   const hotSellers = g(data, 'hot_sellers', 'products') || [];
 
-  const { data: orders, error: ordersError, loading: ordersLoading } = useQuery<
-    GetMedicineOrdersList,
-    GetMedicineOrdersListVariables
-  >(GET_MEDICINE_ORDERS_LIST, {
+  const {
+    data: orders,
+    error: ordersError,
+    loading: ordersLoading,
+    refetch: ordersRefetch,
+  } = useQuery<GetMedicineOrdersList, GetMedicineOrdersListVariables>(GET_MEDICINE_ORDERS_LIST, {
     variables: { patientId: currentPatient && currentPatient.id },
-    fetchPolicy: 'no-cache',
+    fetchPolicy: 'cache-first',
   });
 
   const _orders =
@@ -362,7 +370,14 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     return (
       (!ordersLoading && _orders.length > 0 && (
         <ListCard
-          onPress={() => props.navigation.navigate(AppRoutes.YourOrdersScene)}
+          onPress={() =>
+            props.navigation.navigate(AppRoutes.YourOrdersScene, {
+              orders: _orders,
+              refetch: ordersRefetch,
+              error: ordersError,
+              loading: ordersLoading,
+            })
+          }
           container={{ marginBottom: 24 }}
           title={'Your Orders'}
           leftIcon={<MedicineIcon />}
@@ -720,7 +735,12 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
           rightTextStyle={{
             ...theme.viewStyles.text('B', 13, '#fc9916', 1, 24),
           }}
-          onPressRightText={() => props.navigation.navigate(AppRoutes.ShopByBrand)}
+          onPressRightText={() =>
+            props.navigation.navigate(AppRoutes.ShopByBrand, {
+              allBrandData: allBrandData,
+              setAllBrandData: (data: Brand[]) => setAllBrandData(data),
+            })
+          }
           style={{ paddingBottom: 1 }}
         />
         <FlatList
