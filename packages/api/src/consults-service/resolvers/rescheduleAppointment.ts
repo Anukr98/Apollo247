@@ -74,6 +74,7 @@ export const rescheduleAppointmentTypeDefs = gql`
     isPaid: Int!
     isCancel: Int!
     rescheduleCount: Int!
+    doctorRescheduleCount: Int!
     appointmentState: APPOINTMENT_STATE!
     isFollowUp: Int!
   }
@@ -156,6 +157,7 @@ const checkIfReschedule: Resolver<
   let isPaid = 0,
     isCancel = 0,
     rescheduleCount = 0,
+    doctorRescheduleCount = 0,
     isFollowUp: Boolean = false;
 
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
@@ -164,6 +166,7 @@ const checkIfReschedule: Resolver<
     throw new AphError(AphErrorMessages.INVALID_APPOINTMENT_ID, undefined, {});
   }
   rescheduleCount = apptDetails.rescheduleCount;
+  doctorRescheduleCount = apptDetails.rescheduleCountByDoctor;
   isFollowUp = apptDetails.isFollowUp;
   if (apptDetails && apptDetails.isFollowUp == false) {
     if (apptDetails.rescheduleCount >= 3) {
@@ -198,6 +201,7 @@ const checkIfReschedule: Resolver<
     isPaid,
     isCancel,
     rescheduleCount,
+    doctorRescheduleCount,
     appointmentState: apptDetails.appointmentState,
     isFollowUp,
   };

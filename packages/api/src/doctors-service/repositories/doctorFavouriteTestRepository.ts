@@ -52,4 +52,18 @@ export class DoctorFavouriteTestRepository extends Repository<DoctorsFavouriteTe
       });
     });
   }
+
+  checkTestNameWhileUpdate(itemName: string, id: string) {
+    return this.createQueryBuilder('doctors_favourite_tests')
+      .where('LOWER(doctors_favourite_tests.itemName) = :itemName', {
+        itemName: `${itemName}`,
+      })
+      .andWhere('doctors_favourite_tests.id != :id', { id })
+      .getMany()
+      .catch((favouritemMedicineError) => {
+        throw new AphError(AphErrorMessages.GET_DOCTOR_FAVOURITE_TEST_ERROR, undefined, {
+          favouritemMedicineError,
+        });
+      });
+  }
 }

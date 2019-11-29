@@ -1123,10 +1123,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       ).toISOString();
     }
 
-    if (followUp[0] && folloupDateTime !== '') {
+    if (folloupDateTime !== '') {
       const followupObj = {
         appointmentId: props.appointmentId,
-        folloupDateTime: folloupDateTime,
+        folloupDateTime: followUp[0] ? folloupDateTime : '',
         doctorId: props.doctorId,
         caseSheetId: props.caseSheetId,
         doctorInfo: currentPatient,
@@ -1724,14 +1724,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               )}
             </div>
             <div className={classes.tabFooter}>
-              <Button
-                className={classes.cancelConsult}
-                onClick={() => {
-                  setIsPopoverOpen(false);
-                }}
-              >
-                Cancel
-              </Button>
               <Button
                 className={classes.ResheduleCosultButton}
                 onClick={() => {
