@@ -163,18 +163,8 @@ export const Medicine: React.FC<MedicineProps> = (props) => {
     fetchPolicy: 'cache-first',
   });
 
-  const _orders = (
-    (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) ||
-    []
-  ).filter(
-    (item) =>
-      !(
-        (item!.medicineOrdersStatus || []).length == 1 &&
-        (item!.medicineOrdersStatus || []).find(
-          (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
-        )
-      )
-  );
+  const _orders =
+    (!ordersLoading && g(orders, 'getMedicineOrdersList', 'MedicineOrdersList')) || [];
   // Common Views
 
   const renderSectionLoader = (height: number = 100) => {
