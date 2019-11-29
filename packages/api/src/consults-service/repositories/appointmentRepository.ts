@@ -8,6 +8,7 @@ import {
   Not,
   Connection,
   In,
+  Equal,
 } from 'typeorm';
 import {
   Appointment,
@@ -796,7 +797,13 @@ export class AppointmentRepository extends Repository<Appointment> {
     const newStartDate = new Date(format(addDays(fromDate, -1), 'yyyy-MM-dd') + 'T18:30');
     const newEndDate = new Date(format(toDate, 'yyyy-MM-dd') + 'T18:30');
     return this.find({
-      where: [{ bookingDate: Between(newStartDate, newEndDate), appointmentState: 'NEW' }],
+      where: [
+        {
+          bookingDate: Between(newStartDate, newEndDate),
+          appointmentState: 'NEW',
+          cancelledBy: Not(Equal(REQUEST_ROLES.PATIENT)),
+        },
+      ],
       order: { bookingDate: 'DESC' },
     });
   }
