@@ -626,7 +626,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const firstMessage = '^^#firstMessage';
   const secondMessage = '^^#secondMessage';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
-  const noFollowupConsult = '^^#noFollowupConsult';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
@@ -1138,7 +1137,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           {
             message: {
               id: props.doctorId,
-              message: followUp[0] ? followupconsult : noFollowupConsult,
+              message: followupconsult,
               transferInfo: followupObj,
             },
             channel: channel,
