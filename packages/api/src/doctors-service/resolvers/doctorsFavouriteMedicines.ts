@@ -111,7 +111,7 @@ const saveDoctorsFavouriteMedicine: Resolver<
   const doctordata = await doctorRepository.findById(saveDoctorsFavouriteMedicineInput.doctorId);
   if (doctordata == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
-  if (saveDoctorsFavouriteMedicineInput.medicineName.length == 0)
+  if (saveDoctorsFavouriteMedicineInput.medicineName.trim().length == 0)
     throw new AphError(AphErrorMessages.INVALID_ENTITY);
 
   const favouriteMedicineRepo = doctorsDb.getCustomRepository(DoctorFavouriteMedicineRepository);
