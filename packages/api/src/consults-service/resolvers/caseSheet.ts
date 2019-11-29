@@ -24,6 +24,7 @@ import {
   PatientMedicalHistory,
   Gender,
 } from 'profiles-service/entities';
+import { DoctorType } from 'doctors-service/entities';
 import { DiagnosisData } from 'consults-service/data/diagnosis';
 import { DiagnosticData } from 'consults-service/data/diagnostics';
 import { AphStorageClient } from '@aph/universal/dist/AphStorageClient';
@@ -766,7 +767,7 @@ const createJuniorDoctorCaseSheet: Resolver<
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-  if (doctorData.doctorType != 'JUNIOR') throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (doctorData.doctorType != DoctorType.JUNIOR) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //check if junior doctor case-sheet exists already
   caseSheetDetails = await caseSheetRepo.getJuniorDoctorCaseSheet(args.appointmentId);
@@ -811,7 +812,7 @@ const createSeniorDoctorCaseSheet: Resolver<
   const doctorRepository = doctorsDb.getCustomRepository(DoctorRepository);
   const doctorData = await doctorRepository.findByMobileNumber(mobileNumber, true);
   if (doctorData == null) throw new AphError(AphErrorMessages.UNAUTHORIZED);
-  if (doctorData.doctorType == 'JUNIOR') throw new AphError(AphErrorMessages.UNAUTHORIZED);
+  if (doctorData.doctorType == DoctorType.JUNIOR) throw new AphError(AphErrorMessages.UNAUTHORIZED);
 
   //get appointment details
   const appointmentRepo = consultsDb.getCustomRepository(AppointmentRepository);
