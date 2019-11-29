@@ -3,6 +3,7 @@ import { Theme, Button } from "@material-ui/core";
 import React from "react";
 import Grid from "@material-ui/core/Grid";
 import { FavouriteMedicines } from "components/FavouriteMedicines";
+import { Tests } from "components/Tests";
 // import AphButton, AphDialogTitle, AphSelect } from '@aph/web-ui-components';
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -107,22 +108,7 @@ export const MyAccountPrescription: React.FC = () => {
           <Grid sm={6} xs={12} key={5} item>
             <div className={classes.faverite}>Favorite Tests</div>
             <div className={classes.card}>
-              <ul>
-                <li>
-                  Test ABC
-                  <span className={classes.iconRight}>
-                    <img src={require("images/round_edit_24_px.svg")} alt="" />
-                    <img src={require("images/ic_cancel_green.svg")} alt="" />
-                  </span>
-                </li>
-                <li>Test XYZ </li>
-                <li>
-                  <Button className={classes.addmedicine_btn}>
-                    <img src={require("images/ic_round-add.svg")} alt="" /> Add
-                    Tests
-                  </Button>
-                </li>
-              </ul>
+              <Tests></Tests>
             </div>
           </Grid>
           <Grid sm={6} xs={12} key={5} item>

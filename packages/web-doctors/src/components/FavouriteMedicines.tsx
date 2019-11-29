@@ -28,13 +28,24 @@ import Scrollbars from "react-custom-scrollbars";
 import { GetDoctorFavouriteMedicineList } from "graphql/types/GetDoctorFavouriteMedicineList";
 import {
   GET_DOCTOR_FAVOURITE_MEDICINE_LIST,
-  SAVE_DOCTORS_FAVOURITE_MEDICINE
+  SAVE_DOCTORS_FAVOURITE_MEDICINE,
+  UPDATE_DOCTOR_FAVOURITE_MEDICINE,
+  REMOVE_FAVOURITE_MEDICINE
 } from "graphql/profiles";
 import { useApolloClient } from "react-apollo-hooks";
 import {
   SaveDoctorsFavouriteMedicine,
   SaveDoctorsFavouriteMedicineVariables
 } from "graphql/types/SaveDoctorsFavouriteMedicine";
+import {
+  UpdateDoctorFavouriteMedicine,
+  UpdateDoctorFavouriteMedicineVariables
+} from "graphql/types/UpdateDoctorFavouriteMedicine";
+
+import {
+  RemoveFavouriteMedicine,
+  RemoveFavouriteMedicineVariables
+} from "graphql/types/RemoveFavouriteMedicine";
 
 import { GetCaseSheet_getCaseSheet_caseSheetDetails_medicinePrescription } from "graphql/types/GetCaseSheet";
 const apiDetails = {
@@ -727,9 +738,21 @@ export const FavouriteMedicines: React.FC = () => {
   const deletemedicine = (idx: any) => {
     selectedMedicines.splice(idx, 1);
     setSelectedMedicines(selectedMedicines);
+    client
+      .mutate<RemoveFavouriteMedicine, RemoveFavouriteMedicineVariables>({
+        mutation: REMOVE_FAVOURITE_MEDICINE,
+        variables: {
+          id: selectedMedicinesArr[idx].id
+        }
+      })
+      .then(data => {
+        console.log("data after mutation" + data);
+      });
+
     selectedMedicinesArr!.splice(idx, 1);
     setSelectedMedicinesArr(selectedMedicinesArr);
     const sum = idx + Math.random();
+
     setIdx(sum);
   };
   const updateMedicine = (idx: any) => {
@@ -955,7 +978,6 @@ export const FavouriteMedicines: React.FC = () => {
         medicineTimings: daySlotsArr,
         medicineToBeTaken: toBeTakenSlotsArr,
         medicineName: selectedValue,
-        id: "222e55b1-48b4-4b87-99ad-98a4c3619602",
         medicineUnit: medicineUnit
       };
 
@@ -1131,6 +1153,18 @@ export const FavouriteMedicines: React.FC = () => {
       });
       setDaySlots(dayslots);
 
+      client
+        .mutate<
+          UpdateDoctorFavouriteMedicine,
+          UpdateDoctorFavouriteMedicineVariables
+        >({
+          mutation: UPDATE_DOCTOR_FAVOURITE_MEDICINE,
+          variables: inputParamsArr
+        })
+        .then(data => {
+          console.log("data after mutation" + data);
+        });
+
       setMedicineInstruction("");
       setConsumptionDuration("");
       setTabletsCount(1);
@@ -1203,33 +1237,30 @@ export const FavouriteMedicines: React.FC = () => {
         <Grid container spacing={2}>
           <Grid sm={12} xs={12} key={5} item>
             <div className={classes.card}>
-              {console.log("selectedMedicinesArr111" + selectedMedicinesArr)}
               <ul>
                 {medicineLoader ? (
                   <CircularProgress className={classes.loader} />
                 ) : (
-                  selectedMedicinesArr! &&
+                  selectedMedicinesArr &&
                   selectedMedicinesArr.length > 0 &&
-                  selectedMedicinesArr.map((medicine: any, index: number) => {
-                    return (
-                      <li key={index}>
-                        {console.log("medicine ", medicine)}
-                        {medicine.medicineName}
-                        <span className={classes.iconRight}>
-                          <img
-                            onClick={() => updateMedicine(index)}
-                            src={require("images/round_edit_24_px.svg")}
-                            alt=""
-                          />
-                          <img
-                            onClick={() => deletemedicine(index)}
-                            src={require("images/ic_cancel_green.svg")}
-                            alt=""
-                          />
-                        </span>
-                      </li>
-                    );
-                  })
+                  selectedMedicinesArr.map((medicine: any, index: number) => (
+                    <li key={index}>
+                      {console.log("medicine ", medicine)}
+                      {medicine.medicineName}
+                      <span className={classes.iconRight}>
+                        <img
+                          onClick={() => updateMedicine(index)}
+                          src={require("images/round_edit_24_px.svg")}
+                          alt=""
+                        />
+                        <img
+                          onClick={() => deletemedicine(index)}
+                          src={require("images/ic_cancel_green.svg")}
+                          alt=""
+                        />
+                      </span>
+                    </li>
+                  ))
                 )}
                 <li>
                   <AphButton

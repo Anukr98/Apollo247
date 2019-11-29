@@ -283,6 +283,18 @@ export interface TransferAppointmentInput {
   transferInitiatedId: string;
 }
 
+export interface UpdateDoctorsFavouriteMedicineInput {
+  externalId?: string | null;
+  medicineConsumptionDurationInDays?: number | null;
+  medicineDosage?: string | null;
+  medicineUnit?: string | null;
+  medicineInstructions?: string | null;
+  medicineTimings: (MEDICINE_TIMINGS | null)[];
+  medicineToBeTaken?: (MEDICINE_TO_BE_TAKEN | null)[] | null;
+  medicineName: string;
+  id: string;
+}
+
 export interface UpdatePatientInput {
   id: string;
   firstName?: string | null;

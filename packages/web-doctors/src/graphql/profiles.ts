@@ -825,9 +825,8 @@ export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
     saveDoctorsFavouriteMedicine(
       saveDoctorsFavouriteMedicineInput: $saveDoctorsFavouriteMedicineInput
     ) {
-      favouriteMedicine {
+      medicineList {
         id
-        doctorId
         medicineName
         medicineUnit
         medicineToBeTaken
@@ -835,6 +834,30 @@ export const SAVE_DOCTORS_FAVOURITE_MEDICINE = gql`
         medicineConsumptionDurationInDays
         medicineTimings
         medicineDosage
+      }
+    }
+  }
+`;
+
+export const UPDATE_DOCTOR_FAVOURITE_MEDICINE = gql`
+  mutation UpdateDoctorFavouriteMedicine(
+    $updateDoctorsFavouriteMedicineInput: UpdateDoctorsFavouriteMedicineInput
+  ) {
+    updateDoctorFavouriteMedicine(
+      updateDoctorsFavouriteMedicineInput: $updateDoctorsFavouriteMedicineInput
+    ) {
+      medicineList {
+        id
+      }
+    }
+  }
+`;
+
+export const REMOVE_FAVOURITE_MEDICINE = gql`
+  mutation RemoveFavouriteMedicine($id: String) {
+    removeFavouriteMedicine(id: $id) {
+      medicineList {
+        id
       }
     }
   }

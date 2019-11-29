@@ -8,10 +8,9 @@ import { SaveDoctorsFavouriteMedicineInput, MEDICINE_TO_BE_TAKEN, MEDICINE_TIMIN
 // GraphQL mutation operation: SaveDoctorsFavouriteMedicine
 // ====================================================
 
-export interface SaveDoctorsFavouriteMedicine_saveDoctorsFavouriteMedicine_favouriteMedicine {
+export interface SaveDoctorsFavouriteMedicine_saveDoctorsFavouriteMedicine_medicineList {
   __typename: "DoctorFavouriteMedicine";
   id: string;
-  doctorId: string | null;
   medicineName: string;
   medicineUnit: string | null;
   medicineToBeTaken: (MEDICINE_TO_BE_TAKEN | null)[] | null;
@@ -22,8 +21,8 @@ export interface SaveDoctorsFavouriteMedicine_saveDoctorsFavouriteMedicine_favou
 }
 
 export interface SaveDoctorsFavouriteMedicine_saveDoctorsFavouriteMedicine {
-  __typename: "DoctorFavouriteMedicineResult";
-  favouriteMedicine: SaveDoctorsFavouriteMedicine_saveDoctorsFavouriteMedicine_favouriteMedicine | null;
+  __typename: "FavouriteMedicineList";
+  medicineList: (SaveDoctorsFavouriteMedicine_saveDoctorsFavouriteMedicine_medicineList | null)[] | null;
 }
 
 export interface SaveDoctorsFavouriteMedicine {
