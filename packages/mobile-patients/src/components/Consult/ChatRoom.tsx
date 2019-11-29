@@ -1457,119 +1457,122 @@ export const ChatRoom: React.FC<ChatRoomProps> = (props) => {
               />
             </StickyBottomComponent>
           </View>
-          <View
-            style={{
-              width: 244,
-              height: 206,
-              backgroundColor: '#0087ba',
-              marginLeft: 38,
-              borderRadius: 10,
-              marginBottom: 4,
-            }}
-          >
-            <Text
+          {rowData.transferInfo.folloupDateTime.length == 0 ? null : (
+            <View
               style={{
-                color: 'white',
-                lineHeight: 22,
-                ...theme.fonts.IBMPlexSansMedium(15),
-                textAlign: 'left',
-                marginHorizontal: 16,
-                marginTop: 12,
+                width: 244,
+                height: 206,
+                backgroundColor: '#0087ba',
+                marginLeft: 38,
+                borderRadius: 10,
+                marginBottom: 4,
               }}
             >
-              I’ve also scheduled a{' '}
-              <Text
-                style={{
-                  color: 'white',
-                  lineHeight: 22,
-                  ...theme.fonts.IBMPlexSansBold(15),
-                  textAlign: 'left',
-                }}
-              >
-                free follow-up{' '}
-              </Text>
               <Text
                 style={{
                   color: 'white',
                   lineHeight: 22,
                   ...theme.fonts.IBMPlexSansMedium(15),
                   textAlign: 'left',
+                  marginHorizontal: 16,
+                  marginTop: 12,
                 }}
               >
-                for you —
+                I’ve also scheduled a{' '}
+                <Text
+                  style={{
+                    color: 'white',
+                    lineHeight: 22,
+                    ...theme.fonts.IBMPlexSansBold(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  free follow-up{' '}
+                </Text>
+                <Text
+                  style={{
+                    color: 'white',
+                    lineHeight: 22,
+                    ...theme.fonts.IBMPlexSansMedium(15),
+                    textAlign: 'left',
+                  }}
+                >
+                  for you —
+                </Text>
               </Text>
-            </Text>
-            <View
-              style={{
-                marginHorizontal: 16,
-                marginTop: 9,
-                opacity: 0.5,
-                height: 2,
-                borderStyle: 'dashed',
-                borderWidth: 1,
-                borderRadius: 1,
-                borderColor: '#ffffff',
-                overflow: 'hidden',
-              }}
-            />
-            <Text
-              style={{
-                marginHorizontal: 16,
-                marginTop: 9,
-                lineHeight: 22,
-                ...theme.fonts.IBMPlexSansSemiBold(15),
-                color: 'white',
-              }}
-            >
-              {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
-            </Text>
-            <View
-              style={{
-                marginHorizontal: 16,
-                marginTop: 10,
-                opacity: 0.5,
-                height: 2,
-                borderStyle: 'dashed',
-                borderWidth: 1,
-                borderRadius: 1,
-                borderColor: '#ffffff',
-                overflow: 'hidden',
-              }}
-            />
-            <StickyBottomComponent
-              style={{
-                paddingHorizontal: 0,
-                backgroundColor: 'transparent',
-                shadowColor: 'transparent',
-                paddingTop: 13,
-              }}
-            >
-              <Button
-                title={'RESCHEDULE'}
+              <View
                 style={{
-                  flex: 0.5,
-                  marginLeft: 16,
-                  marginRight: 5,
-                  backgroundColor: '#0087ba',
-                  borderWidth: 2,
-                  borderColor: '#fcb715',
-                }}
-                titleTextStyle={{ color: 'white' }}
-                onPress={() => {
-                  CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
-
-                  console.log('Button Clicked');
-                  checkIfReschduleApi(rowData, 'Followup');
-                  NextAvailableSlot(rowData, 'Followup');
-                  setCheckReschudule(true);
-                  setTransferData(rowData.transferInfo);
-                  setTimeout(() => {
-                    flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
-                  }, 200);
+                  marginHorizontal: 16,
+                  marginTop: 9,
+                  opacity: 0.5,
+                  height: 2,
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderRadius: 1,
+                  borderColor: '#ffffff',
+                  overflow: 'hidden',
                 }}
               />
-            </StickyBottomComponent>
-          </View>
+              <Text
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 9,
+                  lineHeight: 22,
+                  ...theme.fonts.IBMPlexSansSemiBold(15),
+                  color: 'white',
+                }}
+              >
+                {moment(rowData.transferInfo.folloupDateTime).format('Do MMMM, dddd \nhh:mm a')}
+              </Text>
+              <View
+                style={{
+                  marginHorizontal: 16,
+                  marginTop: 10,
+                  opacity: 0.5,
+                  height: 2,
+                  borderStyle: 'dashed',
+                  borderWidth: 1,
+                  borderRadius: 1,
+                  borderColor: '#ffffff',
+                  overflow: 'hidden',
+                }}
+              />
+              <StickyBottomComponent
+                style={{
+                  paddingHorizontal: 0,
+                  backgroundColor: 'transparent',
+                  shadowColor: 'transparent',
+                  paddingTop: 13,
+                }}
+              >
+                <Button
+                  title={'RESCHEDULE'}
+                  style={{
+                    flex: 0.5,
+                    marginLeft: 16,
+                    marginRight: 5,
+                    backgroundColor: '#0087ba',
+                    borderWidth: 2,
+                    borderColor: '#fcb715',
+                  }}
+                  titleTextStyle={{ color: 'white' }}
+                  onPress={() => {
+                    CommonLogEvent(AppRoutes.ChatRoom, 'Chat reschedule follow up');
+
+                    console.log('Button Clicked');
+                    checkIfReschduleApi(rowData, 'Followup');
+                    NextAvailableSlot(rowData, 'Followup');
+                    setCheckReschudule(true);
+                    setTransferData(rowData.transferInfo);
+                    setTimeout(() => {
+                      flatListRef.current! && flatListRef.current!.scrollToEnd({ animated: true });
+                    }, 200);
+                  }}
+                />
+              </StickyBottomComponent>
+            </View>
+          )}
+
           {checkReschudule && reschduleLoadView(rowData, index, 'Followup')}
         </View>
       </>

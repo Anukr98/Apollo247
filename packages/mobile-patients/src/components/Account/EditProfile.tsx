@@ -254,7 +254,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
   const { width, height } = Dimensions.get('window');
   const { currentPatient, allCurrentPatients, setCurrentPatientId } = useAllCurrentPatients();
   const { getPatientApiCall } = useAuth();
-  const { loading, setLoading, showAphAlert } = useUIElements();
+  const { loading, setLoading, showAphAlert, hideAphAlert } = useUIElements();
 
   const [deleteProfile, setDeleteProfile] = useState<boolean>(false);
   const [uploadVisible, setUploadVisible] = useState<boolean>(false);
@@ -328,6 +328,43 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     }
   }, []);
 
+  const deleteConfirmation = () => {
+    showAphAlert!({
+      title: 'Hi!',
+      description: 'Are you sure you want to delete this profile ?',
+      children: (
+        <View
+          style={{
+            flexDirection: 'row',
+            marginHorizontal: 20,
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            marginVertical: 18,
+          }}
+        >
+          <Button
+            style={{
+              flex: 1,
+              marginRight: 16,
+            }}
+            title={'NO'}
+            onPress={() => {
+              hideAphAlert!();
+            }}
+          />
+          <Button
+            style={{ flex: 1 }}
+            title={'YES'}
+            onPress={() => {
+              hideAphAlert!();
+              deleteUserProfile();
+            }}
+          />
+        </View>
+      ),
+    });
+  };
+
   const deleteUserProfile = () => {
     setLoading && setLoading(true);
     if (currentPatient!.id !== profileData.id) {
@@ -351,8 +388,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
           })
           .catch((e) => {
             setLoading && setLoading(false);
-            setAlertMessage(true);
-            setBottomPopUp(true);
+            showAphAlert!({
+              title: 'Network Error!',
+              description: 'Please try again later.',
+            });
           });
         // .finally(() => {
         //   setLoading && setLoading(false);
@@ -409,8 +448,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
         })
         .catch((e) => {
           setLoading && setLoading(false);
-          setAlertMessage(true);
-          setBottomPopUp(true);
+          showAphAlert!({
+            title: 'Network Error!',
+            description: 'Please try again later.',
+          });
         });
       // .finally(() => {
       //   // setLoading && setLoading(false);
@@ -457,8 +498,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       })
       .catch((e) => {
         setLoading && setLoading(false);
-        setAlertMessage(true);
-        setBottomPopUp(true);
+        showAphAlert!({
+          title: 'Network Error!',
+          description: 'Please try again later.',
+        });
       });
     // .finally(() => {
     //   setLoading && setLoading(false);
@@ -651,8 +694,10 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
     //   setBottomPopUp(false);
     // }
     else {
-      setAlertMessage(false);
-      setBottomPopUp(true);
+      showAphAlert!({
+        title: 'Apollo',
+        description: "'Self' is already choosen for another profile.",
+      });
     }
   };
 
@@ -823,7 +868,7 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
               activeOpacity={1}
               onPress={() => {
                 setDeleteProfile(false);
-                deleteUserProfile();
+                deleteConfirmation();
               }}
             >
               <View
@@ -876,39 +921,6 @@ export const EditProfile: React.FC<EditProfileProps> = (props) => {
       </SafeAreaView>
       {deleteProfile && isEdit && renderDeleteButton()}
       {loading && <Spinner />}
-      {bottomPopUp && (
-        <BottomPopUp
-          title={alertMessage ? 'Network Error!' : 'Apollo'}
-          description={
-            alertMessage
-              ? 'Please try again later.'
-              : "'Self' is already choosen for another profile."
-          }
-        >
-          <View style={{ height: 60, alignItems: 'flex-end' }}>
-            <TouchableOpacity
-              style={{
-                height: 60,
-                paddingRight: 25,
-                backgroundColor: 'transparent',
-              }}
-              onPress={() => {
-                setBottomPopUp(false);
-                setAlertMessage(false);
-              }}
-            >
-              <Text
-                style={{
-                  paddingTop: 16,
-                  ...theme.viewStyles.yellowTextStyle,
-                }}
-              >
-                OK, GOT IT
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </BottomPopUp>
-      )}
     </View>
   );
 };
