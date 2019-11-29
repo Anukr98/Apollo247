@@ -626,6 +626,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
   const firstMessage = '^^#firstMessage';
   const secondMessage = '^^#secondMessage';
   const cancelConsultInitiated = '^^#cancelConsultInitiated';
+  const noFollowupConsult = '^^#noFollowupConsult';
 
   const [startTimerAppoinment, setstartTimerAppoinment] = React.useState<boolean>(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = React.useState(false);
@@ -1123,10 +1124,10 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
       ).toISOString();
     }
 
-    if (followUp[0] && folloupDateTime !== '') {
+    if (folloupDateTime !== '') {
       const followupObj = {
         appointmentId: props.appointmentId,
-        folloupDateTime: folloupDateTime,
+        folloupDateTime: followUp[0] ? folloupDateTime : '',
         doctorId: props.doctorId,
         caseSheetId: props.caseSheetId,
         doctorInfo: currentPatient,
@@ -1137,7 +1138,7 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
           {
             message: {
               id: props.doctorId,
-              message: followupconsult,
+              message: followUp[0] ? followupconsult : noFollowupConsult,
               transferInfo: followupObj,
             },
             channel: channel,
@@ -1724,7 +1725,6 @@ export const CallPopover: React.FC<CallPopoverProps> = (props) => {
               )}
             </div>
             <div className={classes.tabFooter}>
-              
               <Button
                 className={classes.ResheduleCosultButton}
                 onClick={() => {
