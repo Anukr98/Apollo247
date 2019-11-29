@@ -55,7 +55,7 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   const refetch: OrderRefetch = props.navigation.getParam('refetch');
   const error = props.navigation.getParam('error');
   const loading = props.navigation.getParam('loading');
-
+  const [isChanged, setisChanged] = useState<boolean>(false);
   useEffect(() => {
     if (!currentPatient) {
       getPatientApiCall();
@@ -63,20 +63,23 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
   }, [currentPatient]);
 
   useEffect(() => {
+    const filteredOrders = orders.filter(
+      (item) =>
+        !(
+          (item!.medicineOrdersStatus || []).length == 1 &&
+          (item!.medicineOrdersStatus || []).find(
+            (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
+          )
+        )
+    );
+    setOrders(filteredOrders);
+  }, [isChanged]);
+
+  useEffect(() => {
     refetch().then(({ data }) => {
       const _orders = g(data, 'getMedicineOrdersList', 'MedicineOrdersList')! || [];
-      const _filteredOrders = _orders.filter(
-        (item) =>
-          !(
-            (item!.medicineOrdersStatus || []).length == 1 &&
-            (item!.medicineOrdersStatus || []).find(
-              (item) => item!.orderStatus == MEDICINE_ORDER_STATUS.QUOTE
-            )
-          )
-      );
-      setOrders(
-        _filteredOrders as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]
-      );
+      setOrders(_orders as GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]);
+      setisChanged(!isChanged);
     });
   }, []);
 
@@ -174,7 +177,10 @@ export const YourOrdersScene: React.FC<YourOrdersSceneProps> = (props) => {
                   orderDetails: order!.medicineOrdersStatus,
                   setOrders: (
                     orders: GetMedicineOrdersList_getMedicineOrdersList_MedicineOrdersList[]
-                  ) => setOrders(orders),
+                  ) => {
+                    setOrders(orders);
+                    setisChanged(!isChanged);
+                  },
                   refetch: refetch,
                 });
               }}
